@@ -32,7 +32,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Xaero's Minimap | [Modrinth](https://modrinth.com/mod/xaeros-minimap) | 26.4.2 (1.20.1 Forge) | Minimap navigation | None known yet | testing |
 | AppleSkin | [Modrinth](https://modrinth.com/mod/appleskin) | 2.5.1 (1.20.1 Forge) | Exact hunger/saturation values on food | None known yet | testing |
 | Mouse Tweaks | [Modrinth](https://modrinth.com/mod/mouse-tweaks) | 2.25.1 (1.20.1 Forge) | Faster inventory management (shift/right-click-drag) | None known yet | testing |
-| Inventory Profiles Next | [Modrinth](https://modrinth.com/mod/inventory-profiles-next) | 1.10.20 (1.20.1 Forge) | One-key inventory sort | Pulls in libIPN + Kotlin for Forge automatically | testing |
+| Inventory Profiles Next | [Modrinth](https://modrinth.com/mod/inventory-profiles-next) | 1.10.20 (1.20.1 Forge) | One-key inventory sort | Pulls in libIPN + Kotlin for Forge automatically. **Real conflict with Mouse Tweaks found 2026-08-19** — both mods implement their own swipe-to-move/craft gestures over the same slots; see the Inventory conflict entry under Custom glue for the fix | testing |
 | libIPN | [Modrinth](https://modrinth.com/mod/libipn) | 4.0.2 | Hard dependency of Inventory Profiles Next | — | required |
 | Kotlin for Forge | [Modrinth](https://modrinth.com/mod/kotlin-for-forge) | 4.12.0 | Hard dependency of Inventory Profiles Next | — | required |
 | Waystones | [Modrinth](https://modrinth.com/mod/waystones) | 14.1.20 (1.20.1 Forge) | Fast-travel network. Deliberately included despite tension with tower-defense stakes — framed as "get back to base before nightfall," not a shortcut past danger | Pulls in Balm automatically | testing |
@@ -476,6 +476,45 @@ auto-resolved dependencies) against the existing 11:
   ModernFix GitHub wiki/FAQ directly — neither mod is mentioned anywhere in
   it. The scraped list was wrong; no action needed.
 - No other author-declared incompatibilities found.
+
+## Real conflict found in playtesting: Mouse Tweaks vs. Inventory Profiles Next (2026-08-19)
+
+Not an author-declared incompatibility (matches the note above — none
+were found that way), but a genuine in-game one, reported by the player
+as "hovering over inventory slots flashes green and fills, crafting
+gets buggy, items get crafted multiple times by accident." Both mods
+implement their own version of "swipe/drag the mouse across slots to
+move or craft items," and having both active at once caused the same
+gesture to be handled twice.
+
+Root-caused by extracting `InventoryProfilesNext-forge-1.20-1.10.20.jar`
+and reading its compiled config classes directly (`ModSettings`,
+`GuiSettings`, `Tweaks`) rather than guessing from its (mostly
+undocumented) settings menu — same "read the real thing, don't guess"
+approach as this pack's other debugging. Confirmed real, exact JSON
+config keys (one, `highlight_focused_items`, was confirmed as a literal
+string constant in the bytecode; the rest were derived from their
+Kotlin `SCREAMING_SNAKE_CASE` constant names via the same simple
+lowercase pattern the one confirmed key follows — not 100% guaranteed
+the same way, worth a quick in-game check that they took effect).
+Disabled in `config/inventoryprofilesnext/inventoryprofiles.json`
+(tracked at `pack/config/inventoryprofilesnext/`):
+- `Tweaks.swipe_move_crafting_result_slot` and
+  `Tweaks.container_swipe_moving_items` — IPN's own swipe-move/craft
+  gestures, the direct overlap with Mouse Tweaks' RMB/LMB drag tweaks.
+  Mouse Tweaks stays as the sole owner of drag-to-move behavior; nothing
+  changed in `config/MouseTweaks.cfg`.
+- `GuiSettings.show_continuous_crafting_checkbox` — hides the checkbox
+  IPN injects into crafting screens, so it can't be mis-clicked into a
+  persistent "keep crafting" mode. `continuous_crafting_saved_value`
+  (the checkbox's own toggle state) was already `false`.
+- `ModSettings.highlight_focused_items` and
+  `ModSettings.highlight_clicking_slot` — the actual "green fill on
+  hover, flashes" visual the player described; disabled since it read as
+  a bug rather than a feature in normal play.
+
+Needs a full relaunch to take effect (config file, read at startup, not
+a `server_scripts` hot-reload) — not yet confirmed fixed in-game.
 
 ## Adding a mod
 

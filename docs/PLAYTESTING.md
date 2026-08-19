@@ -94,10 +94,16 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   also backwards (Rare more likely than Common) until the same day —
   now Common 50% / Uncommon 25% / Rare 10%. Common's loot pool gained
   stone/wood/food staples on top of its scrap materials.
-- The starter sword/armor now disappear the moment wave 5 clears, with
-  an "IT'S UP TO YOU NOW" popup — **not yet confirmed in-game**, a full
-  5-wave clear hasn't happened since this was added. Worth specifically
-  checking: the gear actually leaves the inventory (including if worn,
-  not just unequipped), the popup fires exactly once (not on every wave
-  past 5), and nothing about the removal misfires early. See
-  `docs/MODS.md`'s Wave status HUD entry for the implementation.
+- The starter sword/armor disappear once the campaign's final wave
+  clears, with an "IT'S UP TO YOU NOW" popup — **confirmed working**
+  (2026-08-19 playtest). Currently gated on wave 2, not the real wave 5,
+  via a separate `GEAR_REMOVAL_WAVE` constant in `wave_status.js` for
+  faster playtest iteration — reset to `FINAL_WAVE` before this is
+  considered settled pack behavior. See `docs/MODS.md`'s Wave status HUD
+  entry for the implementation.
+- Mouse Tweaks and Inventory Profiles Next were fighting over the same
+  swipe/hover gestures — green flashing on inventory hover, occasional
+  accidental multi-crafting. Fixed via IPN's own config (disabled its
+  overlapping swipe-move/craft tweaks and hover highlight, kept Mouse
+  Tweaks as-is) — see `docs/MODS.md`'s conflict write-up. **Needs a full
+  relaunch and isn't yet confirmed fixed in-game.**

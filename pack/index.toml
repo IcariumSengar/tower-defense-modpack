@@ -13,6 +13,10 @@ file = "config/TFTH.toml"
 hash = "8f6814a973aaceaef3dd4a5f922c41886f0135c15c2ae3571697d905fdfffe95"
 
 [[files]]
+file = "config/inventoryprofilesnext/inventoryprofiles.json"
+hash = "76fc67431aca16208e1d58212cabbaadc278ef2a8702f0ff0a085b23acf6aa83"
+
+[[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 

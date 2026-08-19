@@ -1,0 +1,15 @@
+{
+    "ModSettings": {
+        "first_run": false,
+        "highlight_focused_items": false,
+        "highlight_clicking_slot": false
+    },
+    "GuiSettings": {
+        "continuous_crafting_saved_value": false,
+        "show_continuous_crafting_checkbox": false
+    },
+    "Tweaks": {
+        "swipe_move_crafting_result_slot": false,
+        "container_swipe_moving_items": false
+    }
+}
