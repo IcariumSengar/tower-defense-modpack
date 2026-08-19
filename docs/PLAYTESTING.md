@@ -9,6 +9,7 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
 - **Starting weapon**: a Sharpness 100 netherite sword — one-shots
   essentially everything. Keeps testing focused on the systems (waves,
   loot, base expansion), not your own combat skill.
+- **Full iron armor set** — given to inventory, not auto-equipped.
 - **Wave Horn**: right-click to summon the next wave — see below.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
   brick floor, oak door) built around wherever you spawn.

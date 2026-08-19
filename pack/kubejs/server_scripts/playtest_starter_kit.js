@@ -1,7 +1,9 @@
 // Playtest convenience only — not real pack design. On a player's first
-// join to a world, gives an overpowered weapon and fills in a small
-// starter base around their spawn point, so a fresh Superflat test world
-// is immediately playable without manual setup each time.
+// join to a world, gives an overpowered weapon, a full set of iron
+// armor, and fills in a small starter base around their spawn point, so
+// a fresh Superflat test world is immediately playable without manual
+// setup each time. Armor isn't auto-equipped, just given to inventory —
+// same as the sword/horn.
 //
 // Uses event.server.runCommandSilent(...) with absolute coordinates (not
 // player-relative ~) since it executes from the server console, not "as"
@@ -23,6 +25,10 @@ PlayerEvents.loggedIn((event) => {
 
   player.give(Item.of('minecraft:netherite_sword', 1, '{Enchantments:[{id:"minecraft:sharpness",lvl:100}]}'))
   player.give(Item.of('kubejs:wave_horn', 1))
+  player.give(Item.of('minecraft:iron_helmet', 1))
+  player.give(Item.of('minecraft:iron_chestplate', 1))
+  player.give(Item.of('minecraft:iron_leggings', 1))
+  player.give(Item.of('minecraft:iron_boots', 1))
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
