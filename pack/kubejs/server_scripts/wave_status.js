@@ -40,6 +40,12 @@ PlayerEvents.tick((event) => {
 
   const hostileCount = level.getEntities().filter((e) => {
     if (!HOSTILE_TYPES.includes(`${e.type}`)) return false
+    // A killed mob plays a ~1 second death animation before actually
+    // being removed from the world, so it's still present in
+    // getEntities() during that window - excluding anything already at
+    // 0 health makes the counter match what the player visually sees,
+    // not the ~1 second-delayed removal.
+    if (e.getHealth() <= 0) return false
     const dx = e.getX() - player.getX()
     const dy = e.getY() - player.getY()
     const dz = e.getZ() - player.getZ()

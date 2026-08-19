@@ -78,6 +78,10 @@ var WAVE_MOB_TYPES = [
 function nearbyWaveMobCount(player, level, radius) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
+    // Same fix as wave_status.js - a killed mob lingers ~1 second
+    // (death animation) before actual removal, so exclude anything
+    // already at 0 health rather than waiting for it to disappear.
+    if (e.getHealth() <= 0) return false
     var dx = e.getX() - player.getX()
     var dy = e.getY() - player.getY()
     var dz = e.getZ() - player.getZ()
