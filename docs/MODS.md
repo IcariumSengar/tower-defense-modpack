@@ -147,14 +147,24 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   mob count). Border-clamp and wave-triggered expansion fixes described
   under Base expansion below.
 
-  **Instant aggro (requested after second playtest)**: summoned mobs now
-  get `Attributes:[{Name:"generic.follow_range",Base:128}]` in their
-  `/summon` NBT, so they immediately notice and path to the player on
-  spawn rather than only within vanilla's shorter default follow range.
-  Superflat already guarantees line of sight, so this was the only
-  remaining gate between "spawns" and "immediately aggros." Standard
-  vanilla summon NBT, not KubeJS-specific — same confidence level as the
-  sword's Sharpness enchantment NBT, which is already confirmed working.
+  **Instant aggro, revised**: first pass gave summoned mobs
+  `Attributes:[{Name:"generic.follow_range",Base:128}]` in their
+  `/summon` NBT — correct as far as it goes, but only helps a mob that
+  can already *see* the player path further/faster. Flagged as
+  insufficient once terrain stops being guaranteed-flat (`docs/IDEAS.md`'s
+  fuller design), since vanilla's target-acquisition itself needs line of
+  sight — follow range alone doesn't bypass that. Real fix:
+  **`pack/kubejs/server_scripts/mob_aggro.js`**, a new script that calls
+  `Mob#setTarget(player)` directly on every wave-type mob in the level,
+  every 10 ticks, unconditionally — bypasses vanilla's sight-based
+  acquisition entirely, no distance or line-of-sight requirement, per
+  explicit design request. `setTarget` is a real, standard, unchanged-
+  across-versions vanilla method (not remapped/hidden by KubeJS), same
+  category of API as `getX()`/`getServer()`/`playSound()` that's worked
+  reliably throughout this pack's debugging — high confidence, but not
+  yet tested in-game. `follow_range` stays in place as a secondary
+  measure (lets a targeted mob actually chase the full distance once it
+  has a target).
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only

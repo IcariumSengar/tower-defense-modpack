@@ -141,12 +141,11 @@ function useWaveHorn(player) {
       var z = Math.floor(player.getZ() + Math.sin(angle) * r)
       x = Math.max(minX, Math.min(maxX, x))
       z = Math.max(minZ, Math.min(maxZ, z))
-      // generic.follow_range boosted well past the spawn radius (15-25
-      // blocks) so mobs immediately notice and path to the player on
-      // spawn, rather than only within vanilla's shorter default range
-      // (varies by mob, often well under the spawn distance here).
-      // Superflat already guarantees line of sight, so this is the only
-      // thing standing between "spawns" and "immediately aggros."
+      // generic.follow_range boosted well past the spawn radius so mobs
+      // can path the full distance once targeting the player. Secondary
+      // to mob_aggro.js, which forces targeting directly and doesn't
+      // depend on line of sight — this only matters once a mob already
+      // has a target and needs to actually be allowed to chase that far.
       server.runCommandSilent(
         `summon minecraft:${mobType} ${x} ${Math.floor(player.getY())} ${z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
       )
