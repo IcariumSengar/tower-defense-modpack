@@ -17,12 +17,24 @@ file = "kubejs/server_scripts/example_glue.js"
 hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
 [[files]]
+file = "kubejs/server_scripts/loot_bag_drops.js"
+hash = "c827c0daa0d48b186f02ae93784873bade9bf592db334337a8f1189ef3aaf92b"
+
+[[files]]
+file = "kubejs/server_scripts/loot_bag_open.js"
+hash = "8345e5006dd6b7790ed02f95540de7f31d17335e28ba228ad50b29e777391ece"
+
+[[files]]
 file = "kubejs/server_scripts/night_scaling.js"
 hash = "e70ca78295efbee21e84cebb579c8d3cf3429cd1bd437b9973a3579ada6ade60"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+[[files]]
+file = "kubejs/startup_scripts/loot_bags.js"
+hash = "d342b157718c59b175073e560580fb4fdb9fdd53f14f75c1feb851c5ac42c3ec"
 
 [[files]]
 file = "mods/.gitkeep"
@@ -106,6 +118,11 @@ metafile = true
 [[files]]
 file = "mods/libipn.pw.toml"
 hash = "5a98133891a72e041e37bc235e86d495e488387f1628fc1377e6b5169dfbb8bd"
+metafile = true
+
+[[files]]
+file = "mods/lootjs.pw.toml"
+hash = "713685d5c4c72d8bd46e314ea164b9f9a6a368dedf71398b2246142e2ed66c1f"
 metafile = true
 
 [[files]]

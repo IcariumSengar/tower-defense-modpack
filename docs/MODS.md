@@ -40,8 +40,37 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Waystones | [Modrinth](https://modrinth.com/mod/waystones) | 14.1.20 (1.20.1 Forge) | Fast-travel network. Deliberately included despite tension with tower-defense stakes — framed as "get back to base before nightfall," not a shortcut past danger | Pulls in Balm automatically | testing |
 | Balm | [Modrinth](https://modrinth.com/mod/balm) | 7.3.42 | Hard dependency of Waystones | — | required |
 | Corpse | [Modrinth](https://modrinth.com/mod/corpse) | 1.0.23 (1.20.1 Forge) | Death drops become a recoverable corpse instead of scattering — chosen over GraveStone Mod (same niche, picked one) | None known yet | testing |
+| LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 
 ## Custom glue
+
+- **Loot bag drop system** — the base-building resource loop: mobs drop
+  tiered loot bags on death, opened by right-clicking to receive a
+  randomized set of vanilla materials. Deliberately vanilla-materials-only
+  (no invented items besides the bag containers) to preserve the Minecraft
+  aesthetic, per design decision. Three tiers, keyed on mob *type* (not
+  night count):
+  - `kubejs:scavengers_bag` (Common, 15% chance) — vanilla hostiles (zombie,
+    husk, drowned, skeleton, spider, creeper)
+  - `kubejs:fortified_cache` (Uncommon, 25% chance) — TFTH's flesh-mob
+    roster
+  - `kubejs:warlords_hoard` (Rare, 75% chance) — TFTH's Incubators
+    specifically (the 50-heart core threats)
+
+  Implementation: `pack/kubejs/startup_scripts/loot_bags.js` (item
+  registration), `pack/kubejs/server_scripts/loot_bag_drops.js` (LootJS
+  drop rules), `pack/kubejs/server_scripts/loot_bag_open.js` (right-click
+  reward rolling). Entity IDs for TFTH were pulled directly from the mod
+  jar's lang file, not guessed — confirmed real. Note: Pure Suffering's
+  invasion mobs have no custom entity IDs of their own (verified by
+  inspecting the mod jar — it spawns vanilla mobs during invasions), so
+  they currently fall into the Common tier same as any other zombie/skeleton.
+  **Not yet verified in-game** — highest confidence on the LootJS drop
+  rules (checked against the README pinned to our exact installed version);
+  lower confidence on the custom-item + right-click half, since no single
+  canonical example combining both was found, only corroborating wiki
+  fragments. Bag items have no custom texture yet, so they'll show
+  KubeJS's placeholder texture until art is added.
 
 - **Night-based mob scaling** — first draft exists at
   `pack/kubejs/server_scripts/night_scaling.js` but is **deferred, not
