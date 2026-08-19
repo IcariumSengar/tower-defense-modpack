@@ -94,3 +94,10 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   also backwards (Rare more likely than Common) until the same day —
   now Common 50% / Uncommon 25% / Rare 10%. Common's loot pool gained
   stone/wood/food staples on top of its scrap materials.
+- The starter sword/armor now disappear the moment wave 5 clears, with
+  an "IT'S UP TO YOU NOW" popup — **not yet confirmed in-game**, a full
+  5-wave clear hasn't happened since this was added. Worth specifically
+  checking: the gear actually leaves the inventory (including if worn,
+  not just unequipped), the popup fires exactly once (not on every wave
+  past 5), and nothing about the removal misfires early. See
+  `docs/MODS.md`'s Wave status HUD entry for the implementation.

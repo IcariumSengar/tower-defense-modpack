@@ -37,6 +37,18 @@ const HOSTILE_TYPES = [
 
 const RADIUS = 80
 
+// Must match wave_spawner.js's WAVES.length — server_scripts don't
+// reliably share top-level scope across files (same duplication pattern
+// as HOSTILE_TYPES above), so this is redeclared here rather than
+// imported.
+const FINAL_WAVE = 5
+
+// Tag set on the sword/armor in playtest_starter_kit.js — matching on
+// this instead of item type is what lets removal target exactly the
+// starter gear, not any netherite sword/iron armor legitimately
+// crafted or looted since.
+const STARTER_GEAR_TAG = 'td_starter_gear'
+
 PlayerEvents.tick((event) => {
   const player = event.player
   const level = player.getLevel()
@@ -57,11 +69,11 @@ PlayerEvents.tick((event) => {
   }).length
 
   const wasInWave = data.getBoolean('td_inWave')
-  // Capped at 5 to match wave_spawner.js's WAVES.length (only 5 waves are
-  // designed; calls beyond that repeat wave 5's composition) - td_waveNumber
+  // Capped at FINAL_WAVE (only that many waves are designed; calls
+  // beyond that repeat the final wave's composition) - td_waveNumber
   // itself is an uncapped raw click-count, would otherwise show numbers
   // higher than any wave that's actually been designed.
-  const waveNumber = Math.min(data.getInt('td_waveNumber'), 5)
+  const waveNumber = Math.min(data.getInt('td_waveNumber'), FINAL_WAVE)
 
   if (hostileCount > 0) {
     player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)
@@ -78,5 +90,40 @@ PlayerEvents.tick((event) => {
     // advancing clock during the peaceful gap before the next horn use.
     player.getServer().runCommandSilent('time set day')
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
+
+    // Starter gear removal, once, the moment the curated campaign's
+    // final wave clears — waveNumber is capped at FINAL_WAVE, so every
+    // repeat/endless wave past this point also reads as FINAL_WAVE; the
+    // td_starterGearRemoved guard (same one-shot pattern as
+    // td_playtestKitGiven) is what keeps this to a single firing rather
+    // than re-running on every later wave clear.
+    if (waveNumber === FINAL_WAVE && !data.getBoolean('td_starterGearRemoved')) {
+      data.putBoolean('td_starterGearRemoved', true)
+
+      // /clear reaches armor and offhand slots as well as the main
+      // inventory (long-standing vanilla behavior, not KubeJS-specific),
+      // and its item argument NBT-matches as a partial predicate in
+      // 1.20.1 (pre-1.20.5 components rework) - the tag alone is enough
+      // to match regardless of the Lore/Enchantments also present on the
+      // real item. One command per item type since /clear takes a single
+      // item argument, not a list. Targets @a rather than a specific
+      // name/UUID - this pack is single-player-focused (see
+      // base_expansion.js's notes), so it's equivalent here and avoids
+      // needing to resolve the player's name from console context.
+      player.getServer().runCommandSilent(`clear @a minecraft:netherite_sword{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_helmet{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_chestplate{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_leggings{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_boots{${STARTER_GEAR_TAG}:1b}`)
+
+      // Same "big on-screen title, chat is easy to miss" reasoning as
+      // the wave-cleared title above, plus the fuller narrative beat in
+      // chat since a title can't carry more than a couple words legibly.
+      player.getServer().runCommandSilent(`title @a title {"text":"IT'S UP TO YOU NOW","color":"red","bold":true}`)
+      player.getServer().runCommandSilent(`title @a subtitle {"text":"The gear is gone. So is whoever wore it first.","color":"gray"}`)
+      player.tell('§8§o[The blade and armor crumble to rust and dust in your hands.]')
+      player.tell('§7Whoever carried this before you held the line for five waves before this place took them too. Their debt here is paid.')
+      player.tell('§c§lIt\'s up to you now.')
+    }
   }
 })

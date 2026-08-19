@@ -63,6 +63,49 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   covers (4-8 logs per roll = 16-32 planks, well over the 8 a chest
   needs).
 
+  **Starter gear removal + "It's up to you now" (2026-08-19)** —
+  narrative reframe of `playtest_starter_kit.js`'s overpowered starting
+  sword/armor as loot from a previous, unfortunate occupant of the base
+  (same "diary from a previous soul" device planned for the quest book,
+  `docs/IDEAS.md`'s Pack Aesthetic idea). Mechanically, the gear
+  disappears the moment the curated campaign's final wave clears —
+  reuses this same wave-clear detection edge (`td_inWave` true→false)
+  rather than adding a new one. Implementation:
+  - `FINAL_WAVE` constant (currently `5`) replaces what was a magic
+    number already present in the `waveNumber` cap logic — must be kept
+    in sync with `wave_spawner.js`'s `WAVES.length` by hand, same
+    cross-file duplication this pack already lives with for mob rosters.
+  - The starter sword/armor (not the Wave Horn — that stays) get a
+    `td_starter_gear:1b` NBT marker tag plus a flavor `Lore` line in
+    `playtest_starter_kit.js`, so removal matches on the tag, not item
+    type — a netherite sword or iron armor the player crafts or loots
+    later is untouched.
+  - Removal runs via five `/clear <target> <item>{td_starter_gear:1b}`
+    commands (one per item type — `/clear` takes a single item argument,
+    not a list), through the same `player.getServer().runCommandSilent`
+    elevated-permission pattern used everywhere else in this pack.
+    `/clear` reaches armor and offhand slots as well as the main
+    inventory (ordinary vanilla behavior, confirmed by removing to
+    validated Minecraft/Forge modding knowledge rather than a KubeJS
+    wrapper API) — chosen deliberately over KubeJS's own JS-side
+    inventory-manipulation surface (`player.inventory.extractItem`,
+    `player.armorSlots`, etc.), since that surface's exact scope
+    (whether the main-inventory wrapper alone covers equipped armor)
+    couldn't be confirmed from available docs, and 1.20.1 predates the
+    1.20.5 components rework so `/clear`'s legacy NBT-predicate matching
+    still applies cleanly.
+  - One-shot guarded by `td_starterGearRemoved`, same pattern as
+    `td_playtestKitGiven`.
+  - Popup reuses the existing `/title` mechanic for the short line
+    ("IT'S UP TO YOU NOW"), plus `player.tell(...)` for the fuller
+    narrative beat in chat (a title can't legibly carry more than a
+    couple words). Wording is a first pass, easy to retune like
+    everything else in this file.
+
+  Not yet tested in-game — a full 5-wave clear takes real playtest time
+  to reach; flagged the same way `mob_aggro.js`'s `setTarget` was before
+  its own confirmation.
+
 - **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
   `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
   `/puresuffering add` for testing (that command turned out to work, but

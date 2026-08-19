@@ -5,6 +5,13 @@
 // setup each time. Armor isn't auto-equipped, just given to inventory —
 // same as the sword/horn.
 //
+// Narratively reframed (2026-08-19) as gear looted from a previous,
+// unfortunate occupant of the base — same "diary from a previous soul"
+// device planned for the quest book (docs/IDEAS.md's Pack Aesthetic
+// idea). Mechanically, the sword/armor disappear once wave 5 clears —
+// see wave_status.js's removal logic, gated on the td_starter_gear NBT
+// tag set here, not item type.
+//
 // Uses event.server.runCommandSilent(...) with absolute coordinates (not
 // player-relative ~) since it executes from the server console, not "as"
 // the player.
@@ -16,6 +23,17 @@
 // and /setblock silently failed) — the sword/horn gave fine since
 // Item.of(...) doesn't depend on position.
 
+// Starter sword/armor carry a td_starter_gear:1b marker tag (plus a
+// flavor Lore line) so wave_status.js can remove exactly these items
+// after wave 5, not any netherite sword/iron armor the player has since
+// crafted or looted legitimately — see starterGearNbt() below. The Wave
+// Horn is NOT tagged; it's the core mechanic item, not narrative gear.
+function starterGearNbt(extra) {
+  const lore = '\'{"text":"Looted from a fallen soul who came before you...","italic":true,"color":"gray"}\''
+  const extraPart = extra ? extra + ',' : ''
+  return `{${extraPart}td_starter_gear:1b,display:{Lore:[${lore}]}}`
+}
+
 PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
@@ -23,12 +41,12 @@ PlayerEvents.loggedIn((event) => {
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
 
-  player.give(Item.of('minecraft:netherite_sword', 1, '{Enchantments:[{id:"minecraft:sharpness",lvl:100}]}'))
+  player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
   player.give(Item.of('kubejs:wave_horn', 1))
-  player.give(Item.of('minecraft:iron_helmet', 1))
-  player.give(Item.of('minecraft:iron_chestplate', 1))
-  player.give(Item.of('minecraft:iron_leggings', 1))
-  player.give(Item.of('minecraft:iron_boots', 1))
+  player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
+  player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
+  player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
+  player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
