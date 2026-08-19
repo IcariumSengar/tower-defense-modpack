@@ -139,6 +139,18 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   no custom texture yet, so they'll show KubeJS's placeholder texture
   until art is added.
 
+  **Fourth round (2026-08-19), once the mod was actually loading**:
+  `LootJS.modifiers(...)` ran without error, but `.thenAdd(...)` — the
+  chained method the README also documents — threw `TypeError: Cannot
+  find function thenAdd in object ...LootActionsBuilderJS`. Confirmed by
+  reading `LootActionsBuilderJS.java` and the `LootActionsContainer`
+  interface it implements directly: `.addLoot(...)` is the only real
+  method for adding loot, `thenAdd` doesn't exist anywhere in either.
+  The README's outer wrapper (`LootJS.modifiers`) was right; its inner
+  method name wasn't. Switched to `.addLoot(...)` — also confirmed via
+  `LootJSPlugin.java` that `LootEntry` has a registered TypeWrapper, so
+  passing a plain string item ID straight to `addLoot` is safe.
+
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`
   grows the worldborder by 5 blocks every 2 nights survived. Deliberately

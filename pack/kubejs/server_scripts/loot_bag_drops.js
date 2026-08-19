@@ -12,24 +12,29 @@ const COMMON_MOBS = ['minecraft:zombie', 'minecraft:skeleton', 'minecraft:husk',
 const UNCOMMON_MOBS = ['minecraft:spider', 'minecraft:witch']
 const RARE_MOBS = ['minecraft:wither_skeleton', 'minecraft:ravager']
 
-// `LootJS.modifiers(...)` is the correct, current syntax — confirmed
-// directly from LootJS's own source (LootJSEvent.java registers "LootJS"
-// as a KubeJS 6 EventGroup with a "modifiers" handler) and from KubeJS's
-// own onEvent migration guide (onEvent('x', ...) -> X.x(...), which for
-// LootJS means exactly LootJS.modifiers(...)).
+// `LootJS.modifiers(...)` is the correct, current outer syntax —
+// confirmed directly from LootJS's own source (LootJSEvent.java
+// registers "LootJS" as a KubeJS 6 EventGroup with a "modifiers"
+// handler). The chained builder method is `.addLoot(...)`, not
+// `.thenAdd(...)` — the README documents `.thenAdd` but that method
+// doesn't exist anywhere in LootActionsBuilderJS or the
+// LootActionsContainer interface it implements (confirmed by reading
+// both directly, and by the actual in-game TypeError naming
+// LootActionsBuilderJS when .thenAdd was tried). `.addLoot` is real,
+// confirmed both from that source and from LootJS's own example_scripts.
 LootJS.modifiers((event) => {
   // addEntityLootModifier is only confirmed to accept a single entity ID at
   // a time (every verified example does this), so each tier is wired up
   // per-entity rather than passing the whole array in one call.
   COMMON_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.15).thenAdd('kubejs:scavengers_bag')
+    event.addEntityLootModifier(id).randomChance(0.15).addLoot('kubejs:scavengers_bag')
   })
 
   UNCOMMON_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.25).thenAdd('kubejs:fortified_cache')
+    event.addEntityLootModifier(id).randomChance(0.25).addLoot('kubejs:fortified_cache')
   })
 
   RARE_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.75).thenAdd('kubejs:warlords_hoard')
+    event.addEntityLootModifier(id).randomChance(0.75).addLoot('kubejs:warlords_hoard')
   })
 })
