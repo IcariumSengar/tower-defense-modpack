@@ -31,6 +31,12 @@ PlayerEvents.loggedIn((event) => {
   const z = Math.floor(player.getZ())
   const half = 5
 
+  // Center the border on wherever the player actually spawned, not
+  // wherever the world's default (0,0) happens to be, then set it —
+  // matches the manual setup step from docs/PLAYTESTING.md, now automatic.
+  event.server.runCommandSilent(`worldborder center ${x} ${z}`)
+  event.server.runCommandSilent('worldborder set 50')
+
   const x0 = x - half
   const x1 = x + half
   const z0 = z - half

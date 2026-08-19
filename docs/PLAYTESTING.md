@@ -1,7 +1,7 @@
 # Playtest setup
 
 A repeatable, tightly-scoped way to test the pack without combat
-difficulty or manual setup getting in the way. Most of it is now
+difficulty or manual setup getting in the way. Almost everything is
 automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
 
 ## Automatic (fires once, on your first login to a new world)
@@ -12,6 +12,9 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
 - **Wave Horn**: right-click to summon the next wave — see below.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
   brick floor, oak door) built around wherever you spawn.
+- **Worldborder set to 50**, centered on your actual spawn point (not
+  the world's default 0,0). Grows automatically by 5 blocks every 2
+  waves cleared after that (`base_expansion.js`).
 - **Natural mob spawning disabled** (`doMobSpawning` gamerule) — the Wave
   Horn is the only mob source now. Note this also stops passive mobs
   (cows, etc.) since vanilla has no separate hostile-only toggle.
@@ -21,14 +24,9 @@ on a world you've already joined once.
 
 ## Manual setup (once per new world)
 
-1. **World Type: Superflat**, **Allow Cheats: ON** — flat terrain means no
-   generation lag and clear sightlines to see hordes coming.
-2. Bound the play area:
-   ```
-   /worldborder set 150
-   ```
-   Grows automatically by 5 blocks every 2 nights survived after that
-   (`base_expansion.js`).
+Only the world-creation screen itself, which nothing can automate:
+**World Type: Superflat**, **Allow Cheats: ON** — flat terrain means no
+generation lag and clear sightlines to see hordes coming.
 
 ## The test loop
 
@@ -43,8 +41,8 @@ vanilla-mobs-only 5-wave campaign (no modded mobs for now — see
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
-"Hostiles remaining" count; chat announces when a wave starts/clears
-(`wave_status.js`).
+"Hostiles remaining" count; chat announces when a wave starts (with mob
+count) and when it clears.
 
 Pure Suffering is still installed but dormant (`enableInvasions false`,
 and nothing calls `/puresuffering add` anymore) — its own broader
@@ -56,18 +54,21 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
 
 ## Known caveats
 
-- `playtest_starter_kit.js`, `wave_spawner.js`, and `wave_status.js` are
-  playtest tooling / first-pass design, not settled pack content — mob
-  counts per wave and the starter base are both easy to retune.
+- `playtest_starter_kit.js`, `wave_spawner.js`, `wave_status.js`, and
+  `base_expansion.js` are playtest tooling / first-pass design, not
+  settled pack content — mob counts per wave and the starter base are
+  both easy to retune.
 - TFTH was removed from the pack (2026-08-19) so the wave campaign could
   go vanilla-only — see `docs/MODS.md` under "Removed mods" for why and
   how to bring it back later.
-- Three real bugs found and fixed 2026-08-19, after first playtest — see
-  `docs/MODS.md`'s Wave spawner entry for the full story: no texture,
-  wrong command permission level, and (after briefly trying vanilla's
-  Goat Horn to get a free texture) a vanilla item cooldown that silently
-  blocked the interaction event entirely. Settled on a custom item with
-  no cooldown and a manual sound effect. If your world's starter kit
-  already fired with an old broken horn, run `/give @s kubejs:wave_horn`
-  to get a current one — the auto-give won't retrigger since it already
-  ran once.
+- The wave system went through a long real debugging saga (2026-08-19) —
+  nine real bugs found and fixed end to end, then a further round after
+  actual playtesting (spawn positions outside the worldborder, duplicate
+  chat messages, expansion trigger mismatch). Full writeup in
+  `docs/MODS.md`'s Wave spawner and Base expansion entries — worth
+  reading if something in this system breaks again, several of these
+  bugs were genuinely surprising (e.g. `Math.PI` not behaving as a
+  normal number, bare `.x`/`.y`/`.z` on entities producing `NaN`) and
+  are easy to reintroduce by instinct when writing new scripts.
+- Wave horn's item texture is a known placeholder (no artwork yet) —
+  same tradeoff already accepted for the loot bags.
