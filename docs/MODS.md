@@ -96,7 +96,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
      sound," since the sound is vanilla's own native behavior,
      unrelated to and unblocked by this check).
 
-  Final fix: reverted to the custom `kubejs:wave_horn` item (no
+  Reverted to the custom `kubejs:wave_horn` item for bug #3 (no
   cooldown, so the event reliably fires), with a manual
   `player.playSound(Utils.getSound('minecraft:event.raid.horn'))` to
   keep the horn feel — confirmed via source that `SoundEvent` has no
@@ -107,9 +107,24 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   for bug #2 — same pattern already proven in `playtest_starter_kit.js`.
   Applied the identical permission fix to `base_expansion.js`'s
   `/worldborder add` call, which had the same bug and was likely
-  silently failing too. Texture is back to being a known placeholder
-  until real art is added (same tradeoff already accepted for the loot
-  bags).
+  silently failing too.
+
+  4. Even after all three fixes, multiple real clicks on the (now
+     cooldown-free) custom item produced **zero log output at all** —
+     no errors, no chat messages, nothing. Root cause: Forge's
+     `PlayerInteractEvent.RightClickItem` (which `ItemEvents.rightClicked`
+     is built on) **only fires when the player isn't targeting a
+     block** — by design, confirmed against Forge's own documented
+     behavior and multiple real bug reports. Targeting a block fires
+     `RightClickBlock` instead, a completely separate event. On
+     Superflat, the ground is within reach almost constantly, so the
+     handler essentially never ran. Fixed by also hooking
+     `BlockEvents.rightClicked` (unfiltered — it filters by block type,
+     not held item, so it checks `event.item.getId()` itself) and
+     sharing the spawn logic between both hooks.
+
+  Texture is a known placeholder until real art is added (same
+  tradeoff already accepted for the loot bags).
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only

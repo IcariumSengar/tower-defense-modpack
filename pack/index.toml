@@ -30,11 +30,11 @@ hash = "8345e5006dd6b7790ed02f95540de7f31d17335e28ba228ad50b29e777391ece"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "88ce8c2ed00f0df7c013b913a84021c43a9f663c5e725f0dd50d334dff868320"
+hash = "f7a2811d27a2f13ebb0585ee97cab7edc8ca3ad2f6935c5938d950716b6ca1bc"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "1e50dfcebd49f0a9a460dd33379263fb437a7953ceffc5d1520b84a0262d1507"
+hash = "c52f9a808c5a4a3e04112670850ee56192bab2e3790cd4e358dae389ef5aa663"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
@@ -47,6 +47,10 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 [[files]]
 file = "kubejs/startup_scripts/loot_bags.js"
 hash = "d342b157718c59b175073e560580fb4fdb9fdd53f14f75c1feb851c5ac42c3ec"
+
+[[files]]
+file = "kubejs/startup_scripts/wave_horn.js"
+hash = "261d22151ce6ca4c6528d7d78da6f62804f9192d5c60be6afbd8f74acb2a1b28"
 
 [[files]]
 file = "mods/.gitkeep"

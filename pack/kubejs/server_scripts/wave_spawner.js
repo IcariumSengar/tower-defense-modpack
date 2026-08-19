@@ -28,6 +28,18 @@
 // even with cheats nominally on. player.getServer() gets the actual
 // console-level command source (always full permission), same pattern
 // already proven working in playtest_starter_kit.js.
+//
+// Hooked on BOTH ItemEvents.rightClicked and BlockEvents.rightClicked —
+// confirmed via Forge's own documented behavior (and multiple real bug
+// reports) that the underlying RightClickItem event Forge fires
+// *only* triggers when the player isn't targeting a block; targeting a
+// block fires RightClickBlock instead, a completely separate event. On
+// Superflat, the ground is within reach almost constantly, so relying
+// on ItemEvents.rightClicked alone meant the handler essentially never
+// fired — multiple real clicks produced zero log output, no errors, no
+// tells, nothing. BlockEvents.rightClicked has no per-item filter (it
+// filters by block, not by held item), so it's registered unfiltered
+// and checks event.item.id itself.
 
 const WAVES = [
   [['zombie', 4], ['skeleton', 4]],
@@ -56,10 +68,7 @@ function nearbyWaveMobCount(player, level, radius) {
   }).length
 }
 
-ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
-  if (event.level.isClientSide) return
-
-  const player = event.player
+function useWaveHorn(player) {
   const level = player.getLevel()
   const server = player.getServer()
 
@@ -90,4 +99,21 @@ ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
 
   const displayWave = Math.min(waveNumber, WAVES.length)
   player.tell(`§6[Wave Horn] §fWave ${displayWave} incoming! (${totalMobs} mobs)`)
+}
+
+// Covers right-clicking with nothing targeted (rare on Superflat, but
+// possible e.g. looking up).
+ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
+  if (event.level.isClientSide) return
+  useWaveHorn(event.player)
+})
+
+// Covers right-clicking while targeting a block — the common case on
+// Superflat. No per-item filter exists for this event (it filters by
+// block, not held item), so it's unfiltered and checks the held item
+// itself.
+BlockEvents.rightClicked((event) => {
+  if (event.level.isClientSide) return
+  if (event.item.getId() !== 'kubejs:wave_horn') return
+  useWaveHorn(event.player)
 })
