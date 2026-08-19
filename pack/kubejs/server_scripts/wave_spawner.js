@@ -1,13 +1,18 @@
-// Custom, deterministic 5-wave campaign — vanilla mobs only. Replaces
-// relying on Pure Suffering's own (semi-random, hard to debug in-game)
-// invasion-type system for this specific curated progression. Pure
-// Suffering stays installed but dormant (enableInvasions false) —
-// its broader invasion variety is still there to re-enable later.
+// Custom, deterministic 5-wave campaign. Replaces relying on Pure
+// Suffering's own (semi-random, hard to debug in-game) invasion-type
+// system for this specific curated progression. Pure Suffering stays
+// installed but dormant (enableInvasions false) — its broader invasion
+// variety is still there to re-enable later.
 //
 // Each wave adds a mob type on top of the previous wave's roster, per
-// design: 1) zombie+skeleton, 2) +spider, 3) +witch, 4) +wither_skeleton,
-// 5) +ravager (mini boss). Calling the horn again past wave 5 repeats
-// wave 5's composition — no waves designed beyond that yet.
+// design: 1) zombie+skeleton, 2) +spider+flesh_human, 3) +witch+
+// flesh_villager, 4) +wither_skeleton+flesh_hunter_i, 5) +ravager (mini
+// boss)+flesh_suffer. Calling the horn again past wave 5 repeats wave
+// 5's composition — no waves designed beyond that yet.
+//
+// Was vanilla-only from 2026-08-19 (TFTH removed for the first wave
+// debugging pass) until TFTH mobs were folded back in starting wave 2 —
+// see the WAVES comment below for which TFTH mobs and why.
 //
 // Counts are a first-pass guess, easy to retune (same pattern as
 // base_expansion.js's tuning).
@@ -58,12 +63,24 @@
 // correctly for position in this environment even though it's a common
 // pattern elsewhere in this codebase.
 
+// Mob type strings are now full namespaced IDs (was bare names like
+// 'zombie' with `minecraft:` hardcoded onto every summon - changed
+// 2026-08-19 so TFTH mobs, which need their own namespace, can sit in
+// the same table). TFTH added starting wave 2: flesh_human (Germ stage,
+// ~zombie-tier) at 2, flesh_villager (Germ stage) at 3, plaquecreaturetwo
+// = "Flesh Hunter I" (Awareness stage, tougher - MaxHealth 50/Armor 6
+// per TFTH.toml) at 4 alongside wither_skeleton, and flesh_suffer
+// (Awareness stage, AttackDamage 25 per TFTH.toml - hits hard) at 5
+// alongside the ravager mini-boss. TFTH's own autonomous Incubator/
+// spread systems are disabled via config (see pack/config/TFTH.toml) -
+// these are summoned directly, same as every vanilla mob here, not
+// spawned by the mod's own logic.
 var WAVES = [
-  [['zombie', 4], ['skeleton', 4]],
-  [['zombie', 4], ['skeleton', 4], ['spider', 4]],
-  [['zombie', 3], ['skeleton', 3], ['spider', 3], ['witch', 3]],
-  [['zombie', 3], ['skeleton', 3], ['spider', 2], ['witch', 2], ['wither_skeleton', 3]],
-  [['zombie', 2], ['skeleton', 2], ['spider', 2], ['witch', 2], ['wither_skeleton', 2], ['ravager', 1]],
+  [['minecraft:zombie', 4], ['minecraft:skeleton', 4]],
+  [['minecraft:zombie', 4], ['minecraft:skeleton', 4], ['minecraft:spider', 4], ['the_flesh_that_hates:flesh_human', 2]],
+  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 3], ['minecraft:witch', 3], ['the_flesh_that_hates:flesh_villager', 2]],
+  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 2], ['minecraft:witch', 2], ['minecraft:wither_skeleton', 3], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
+  [['minecraft:zombie', 2], ['minecraft:skeleton', 2], ['minecraft:spider', 2], ['minecraft:witch', 2], ['minecraft:wither_skeleton', 2], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
 ]
 
 var WAVE_MOB_TYPES = [
@@ -73,6 +90,10 @@ var WAVE_MOB_TYPES = [
   'minecraft:witch',
   'minecraft:wither_skeleton',
   'minecraft:ravager',
+  'the_flesh_that_hates:flesh_human',
+  'the_flesh_that_hates:flesh_villager',
+  'the_flesh_that_hates:plaquecreaturetwo',
+  'the_flesh_that_hates:flesh_suffer',
 ]
 
 function nearbyWaveMobCount(player, level, radius) {
@@ -159,7 +180,7 @@ function useWaveHorn(player) {
       // depend on line of sight — this only matters once a mob already
       // has a target and needs to actually be allowed to chase that far.
       server.runCommandSilent(
-        `summon minecraft:${mobType} ${x} ${Math.floor(player.getY())} ${z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
+        `summon ${mobType} ${x} ${Math.floor(player.getY())} ${z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
       )
       totalMobs++
     }

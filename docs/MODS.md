@@ -39,16 +39,8 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Balm | [Modrinth](https://modrinth.com/mod/balm) | 7.3.42 | Hard dependency of Waystones | — | required |
 | Corpse | [Modrinth](https://modrinth.com/mod/corpse) | 1.0.23 (1.20.1 Forge) | Death drops become a recoverable corpse instead of scattering — chosen over GraveStone Mod (same niche, picked one) | None known yet | testing |
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
-
-## Removed mods
-
-- **TFTH (The Flesh That Hates) + Geckolib (2026-08-19)** — removed
-  entirely, not just disabled. After the first real playtest, decided the
-  wave campaign should be vanilla-mobs-only for now (see the Wave spawner
-  entry under Custom glue) — TFTH exists purely to spawn its own
-  flesh-mob roster, so with that turned off there was no reason to keep
-  it loaded. Trivial to re-add (`packwiz modrinth add tfth -y`) when
-  modded mobs get folded back into the wave design later.
+| TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
+| GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
 
 ## Custom glue
 
@@ -194,9 +186,55 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only
-  mob source — note this also stops passive mobs (cows, etc.), vanilla
-  has no separate hostile-only toggle. TFTH removed entirely from the
-  pack for this — see its own note below.
+  vanilla mob source — note this also stops passive mobs (cows, etc.),
+  vanilla has no separate hostile-only toggle.
+
+  **TFTH mobs folded in starting wave 2 (2026-08-19)** — mob type
+  strings in `WAVES`/`WAVE_MOB_TYPES` are now full namespaced IDs
+  (`minecraft:zombie`, `the_flesh_that_hates:flesh_human`, etc.) instead
+  of bare names with `minecraft:` hardcoded onto every `/summon` — that
+  hardcoding is what made TFTH mobs impossible before; fixing it took
+  one line. Added, per wave: 2) `flesh_human` x2 (Germ stage, ~zombie
+  tier), 3) `flesh_villager` x2 (Germ stage), 4) `plaquecreaturetwo`
+  ("Flesh Hunter I", Awareness stage — MaxHealth 50/Armor 6 per
+  `TFTH.toml`, notably tougher) alongside wither_skeleton, 5)
+  `flesh_suffer` (Awareness stage, AttackDamage 25 per `TFTH.toml` — hits
+  harder than anything else in the roster) alongside the ravager
+  mini-boss. Mob IDs came directly from `TFTH.toml`'s own
+  `germsStageMobList`/`awarenessStageMobList` entries and its
+  "plaquecreaturetwo = Flesh Hunter I" style comments, not guessed.
+  `wave_status.js`'s `HOSTILE_TYPES`, `mob_aggro.js`'s `WAVE_MOB_TYPES`,
+  and `loot_bag_drops.js`'s tier lists were all updated to match (same
+  four-file-sync pattern already documented for the vanilla roster).
+
+  **TFTH config hardening (2026-08-19)** — before re-adding, checked
+  what TFTH actually does beyond supplying mob types, since research
+  showed it's an autonomous, self-spreading system (Incubators that
+  infect blocks and keep spawning mobs on their own timer, independent
+  of `doMobSpawning`) — directly opposed to this pack's "the Wave Horn
+  is the only mob source" design. Confirmed via the actual config file
+  left over from when TFTH was previously installed
+  (`config/TFTH.toml`/`config/TFTH-Data.toml`, now tracked at
+  `pack/config/`) rather than guessed from docs. Disabled before
+  re-adding the mod to the live instance:
+  - `enableIncubatorSpawn = false` — stops Incubators (the root of the
+    autonomous spawn/spread chain) from ever appearing on their own.
+  - `enableFleshBlockSpread = false` — stops the block-corruption
+    mechanic; the config's own infectable-block lists name
+    `oak_log`/`stone`/`cobblestone`/`stone_bricks` directly, i.e.
+    exactly the starter base's materials.
+  - `enableStructuresSpawn`, `enableFleshSpikes`, `enableFleshTerns`,
+    `enableGermStageMobSpawn`, `enableFleshBoil` — all set `false` too,
+    belt-and-suspenders in case any of these have a spawn trigger
+    independent of the Incubator/spread systems above (not fully
+    verifiable from config alone).
+  With these off, TFTH's entity types are summoned directly by
+  `wave_spawner.js` exactly like the vanilla mobs — nothing about the
+  mod's own automatic behavior should ever fire. One thing config
+  couldn't answer and is worth specifically watching for in-game:
+  `TFTH.toml`'s `spawnFleshHumanFrom` list includes `"minecraft:player"`
+  alongside `"minecraft:zombie"` — unclear what that does or whether it
+  can affect the player directly.
 
 - **Loot bag drop system** — the base-building resource loop: mobs drop
   tiered loot bags on death, opened by right-clicking to receive a
@@ -299,6 +337,15 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
     for Common, gold-tan with brass studs for Uncommon, deep red with a
     gold trim band and a gem for Rare — so rarity reads at a glance in
     inventory, not just from hovering for the tooltip.
+
+  **TFTH mobs added to tier lists (2026-08-19)** — `flesh_human`/
+  `flesh_villager` (wave 2-3 TFTH additions) join the Uncommon tier
+  alongside spider/witch; `plaquecreaturetwo`/`flesh_suffer` (wave 4-5
+  TFTH additions) join the Rare tier alongside wither_skeleton/ravager —
+  same wave-tier-tracks-loot-tier logic already used for the vanilla
+  roster (see Wave spawner's TFTH entry above for what these mobs are).
+  `addEntityLootModifier` needed no special handling for modded entity
+  IDs — same call, just a different namespace.
 
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`

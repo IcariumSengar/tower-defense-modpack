@@ -5,6 +5,14 @@ file = "config/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "config/TFTH-Data.toml"
+hash = "cea608bbe07dc6a3bcdaf2148a57172e83f604c10a2ee28ac928d866a043a0af"
+
+[[files]]
+file = "config/TFTH.toml"
+hash = "8f6814a973aaceaef3dd4a5f922c41886f0135c15c2ae3571697d905fdfffe95"
+
+[[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
@@ -38,7 +46,7 @@ hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "c8f538156b3389e51444bbe53ca70b68cd02ac28bf8782febda108a66507b4aa"
+hash = "48d42e00483ee5f8c4702bacea19a607bb72e6ab7cb55a1abe67da43db62c85d"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
@@ -46,7 +54,7 @@ hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "bcef1680f4a1f040ea66980f57aa0eaab71b44b071c54ed4d1421396c5d30409"
+hash = "dba3439cbe4a225e17e46a99cf72f7ed99faf70f7a16514f0f84f243d55e29b7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
@@ -54,11 +62,11 @@ hash = "e309efbbc8315fb5e84eac19f50adc4eb355c59d4fb16a548f79e86a36e4c316"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "abc3e3afec98be562721d659e5399940b655f2a6fac9783abb723d0033829fcf"
+hash = "52778bf2ce0deb807dc4c3604a74b238dc1b988ec4ed990444e608566acc866f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "8fa0f3e70526db732466dc4d6785144e16525f3eaab8fbad9ed1ebf7eab0c8d5"
+hash = "0c2d451a015eef94d20e8ae762ee43b2a2d7394ea013d4962815e5b9a3bfbb80"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -119,6 +127,11 @@ metafile = true
 [[files]]
 file = "mods/ferrite-core.pw.toml"
 hash = "902bac905b93271f02bd0951a22bac06a3da24f5c237fcaeb469e14a7679e508"
+metafile = true
+
+[[files]]
+file = "mods/geckolib.pw.toml"
+hash = "93e75c0ec763f3cd49fc9e3bcd24822178e123a7b2163c81a2709e82f4b70829"
 metafile = true
 
 [[files]]
@@ -204,6 +217,11 @@ metafile = true
 [[files]]
 file = "mods/srp-spartans-port.pw.toml"
 hash = "6dd6f760861f4ac7d77a61b8519ce4f6d129a9c81ca36b9c1724f32357bb6f72"
+metafile = true
+
+[[files]]
+file = "mods/tfth.pw.toml"
+hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
 metafile = true
 
 [[files]]

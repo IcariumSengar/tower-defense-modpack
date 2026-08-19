@@ -31,14 +31,16 @@ generation lag and clear sightlines to see hordes coming.
 
 ## The test loop
 
-Right-click the **Wave Horn** to summon the next wave. Deterministic,
-vanilla-mobs-only 5-wave campaign (no modded mobs for now — see
-`docs/MODS.md`):
+Right-click the **Wave Horn** to summon the next wave. Deterministic
+5-wave campaign, vanilla mobs plus TFTH mobs starting wave 2 (see
+`docs/MODS.md` for exact TFTH mob stats and the config changes made
+before re-adding it):
 1. zombie + skeleton
-2. + spider
-3. + witch
-4. + wither skeleton
-5. + ravager (mini boss) — repeats for calls beyond wave 5
+2. + spider + flesh_human
+3. + witch + flesh_villager
+4. + wither skeleton + flesh_hunter_i (tougher — TFTH's Awareness stage)
+5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage)
+   — repeats for calls beyond wave 5
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
@@ -65,8 +67,14 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   settled pack content — mob counts per wave and the starter base are
   both easy to retune.
 - TFTH was removed from the pack (2026-08-19) so the wave campaign could
-  go vanilla-only — see `docs/MODS.md` under "Removed mods" for why and
-  how to bring it back later.
+  go vanilla-only, then re-added the same day with most of its own
+  autonomous spawn/spread behavior disabled via config once wave 2+ was
+  ready for modded mobs — see `docs/MODS.md`'s Wave spawner entry for
+  exactly what was changed and why. **Not yet confirmed in-game** —
+  config-only, next real playtest should specifically check that no
+  Incubators/flesh spread show up unprompted, and watch for anything
+  unusual around `TFTH.toml`'s unexplained `spawnFleshHumanFrom`
+  including `"minecraft:player"`.
 - The wave system went through a long real debugging saga (2026-08-19) —
   nine real bugs found and fixed end to end, then a further round after
   actual playtesting (spawn positions outside the worldborder, duplicate

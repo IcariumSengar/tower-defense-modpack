@@ -1,7 +1,7 @@
 // Live "hostiles remaining" counter (action bar) plus a chat message
-// when a wave clears. Tracks all nearby vanilla hostile mobs — matches
-// wave_spawner.js's roster now that TFTH is removed and waves are
-// vanilla-only.
+// when a wave clears. Tracks all nearby hostile mobs — matches
+// wave_spawner.js's roster, including the TFTH mobs folded back in
+// starting wave 2 (2026-08-19).
 //
 // Deliberately does NOT send its own "wave incoming" chat message —
 // wave_spawner.js already sends one (with the mob count, which this
@@ -29,6 +29,10 @@ const HOSTILE_TYPES = [
   'minecraft:witch',
   'minecraft:wither_skeleton',
   'minecraft:ravager',
+  'the_flesh_that_hates:flesh_human',
+  'the_flesh_that_hates:flesh_villager',
+  'the_flesh_that_hates:plaquecreaturetwo',
+  'the_flesh_that_hates:flesh_suffer',
 ]
 
 const RADIUS = 80

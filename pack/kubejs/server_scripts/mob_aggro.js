@@ -31,6 +31,10 @@ var WAVE_MOB_TYPES = [
   'minecraft:witch',
   'minecraft:wither_skeleton',
   'minecraft:ravager',
+  'the_flesh_that_hates:flesh_human',
+  'the_flesh_that_hates:flesh_villager',
+  'the_flesh_that_hates:plaquecreaturetwo',
+  'the_flesh_that_hates:flesh_suffer',
 ]
 
 PlayerEvents.tick(function (event) {
