@@ -23,8 +23,35 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Spartan Weaponry | [Modrinth](https://modrinth.com/mod/spartan-weaponry) | 3.2.1 (1.20.1 Forge) | Hard dependency of the Parasites weapon port | — | required |
 | Spartan Weaponry Addon Toolkit | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/spartan-weaponry-addon-toolkit) | 1.6.1 | Hard dependency of the Parasites weapon port | — | required |
 
-## Custom glue needed (not a mod — KubeJS)
-- **Nightly wave scaling**: server-side day counter; each dusk, scale spawn count/mob health/damage and unlock tougher mobs at wave thresholds. **Re-evaluate now that The Pure Suffering Mod is installed** — it already does tiered invasion escalation, so this script may end up driving Epic Siege Mod's aggression config instead of duplicating what Pure Suffering already covers.
+## Custom glue
+
+- **Night-based mob scaling** — first draft exists at
+  `pack/kubejs/server_scripts/night_scaling.js` but is **deferred, not
+  committed**. There's no playable setup to test it against yet, and with
+  Epic Siege Mod (AI behavior) and Pure Suffering (tiered invasion events)
+  both already handling escalation, hand-tuning raw mob stats on top is a
+  later-priority refinement, not part of getting the mod list itself
+  solid. Revisit once the pack is actually running.
+
+## Compatibility check (2026-08-19)
+
+Reviewed all 11 tracked mods (7 picks + 4 auto-resolved dependencies)
+against each other:
+- No mod author has declared an "Incompatible" relation against any other
+  mod in this list (checked CurseForge's own Incompatible-relations field
+  directly for Epic Siege Mod, Pure Suffering, TFTH, and the Parasites
+  port — the four most likely to have known conflicts; the rest have no
+  dependency conflicts per packwiz's own resolution).
+- Pure Suffering had a real past bug ("crashes when a mod adds a mob with
+  broken AI," relevant given Epic Siege Mod and TFTH both add custom mob
+  behavior) — fixed in v1.6.8.3R; we're pinned to v1.6.8.5R-LTS1, so this
+  doesn't apply.
+- **Design note, not a conflict**: Epic Siege Mod's zombies dig/pillar to
+  reach targets, which can break vanilla-style mob-farm designs used with
+  Mob Grinding Utils. Build farms out of SecurityCraft reinforced blocks
+  (which Epic Siege's mobs can't break) to keep them escape-proof.
+
+No blockers found — this list is a solid base to build the pack around.
 
 ## Adding a mod
 

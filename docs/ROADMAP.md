@@ -23,6 +23,16 @@
 
 ## Mod list
 - See [docs/MODS.md](MODS.md) — tracked per-mod as they're picked.
+- Escalation is now handled by mods (Epic Siege Mod for AI, Pure Suffering
+  for tiered invasions), not hand-written from scratch — KubeJS's job
+  narrowed to gap-filling glue, not owning the whole mechanic.
+
+## Current priority
+No playable setup exists yet (no client/launcher configured), so the
+focus is getting the mod list itself solid — compatible, deduped,
+dependency-resolved — rather than writing/tuning KubeJS glue that can't
+be tested. Glue work (e.g. `night_scaling.js`, currently an uncommitted
+draft) resumes once the pack can actually be run.
 
 ## Open questions
 - (add things here as they come up)
