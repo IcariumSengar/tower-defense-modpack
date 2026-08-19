@@ -18,7 +18,7 @@ hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "c827c0daa0d48b186f02ae93784873bade9bf592db334337a8f1189ef3aaf92b"
+hash = "13e2b3b3bb7bc4c09c3972ac2e531ba24e6989137b3086d9cbb3b052e34d7d62"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
