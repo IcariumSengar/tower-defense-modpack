@@ -166,6 +166,15 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   measure (lets a targeted mob actually chase the full distance once it
   has a target).
 
+  **Day/night lock (2026-08-19)** — reported bug: summoned undead mobs
+  (zombie, skeleton, wither skeleton) were catching fire immediately on
+  spawn because waves could be called during daytime. Fixed by having
+  `useWaveHorn` run `time set night` + `gamerule doDaylightCycle false`
+  right before spawning, and `wave_status.js`'s "defeated" branch flip
+  both back (`time set day` + `doDaylightCycle true`) once the hostile
+  count returns to zero — locking the cycle, not just setting the time
+  once, so it can't drift back to day mid-fight on a long wave.
+
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only
   mob source — note this also stops passive mobs (cows, etc.), vanilla

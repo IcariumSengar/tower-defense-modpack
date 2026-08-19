@@ -45,6 +45,11 @@ still alive nearby — clear the wave first. Action bar shows a live
 "Hostiles remaining" count; chat announces when a wave starts (with mob
 count) and when it clears.
 
+Calling the horn also forces night and locks the day/night cycle (so
+zombies/skeletons don't burn on spawn or catch fire mid-fight) — it
+switches back to day and lets the cycle run normally again once the
+wave is cleared.
+
 Pure Suffering is still installed but dormant (`enableInvasions false`,
 and nothing calls `/puresuffering add` anymore) — its own broader
 invasion variety is documented in `docs/MODS.md` if you want to

@@ -113,6 +113,14 @@ function useWaveHorn(player) {
   var waveNumber = data.getInt('td_waveNumber') + 1
   data.putInt('td_waveNumber', waveNumber)
 
+  // Force night before spawning so undead mobs (zombie, skeleton,
+  // wither_skeleton) don't immediately catch fire from spawning into
+  // daylight. doDaylightCycle is also disabled so time can't drift back
+  // to day mid-fight - wave_status.js's "defeated" branch re-enables it
+  // and sets time back to day once the wave is cleared.
+  server.runCommandSilent('time set night')
+  server.runCommandSilent('gamerule doDaylightCycle false')
+
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
