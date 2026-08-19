@@ -9,7 +9,7 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
 - **Starting weapon**: a Sharpness 100 netherite sword — one-shots
   essentially everything. Keeps testing focused on the systems (waves,
   loot, base expansion), not your own combat skill.
-- **Goat Horn**: right-click to summon the next wave — see below.
+- **Wave Horn**: right-click to summon the next wave — see below.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
   brick floor, oak door) built around wherever you spawn.
 - **Natural mob spawning disabled** (`doMobSpawning` gamerule) — the Wave
@@ -32,7 +32,7 @@ on a world you've already joined once.
 
 ## The test loop
 
-Right-click the **Goat Horn** to summon the next wave. Deterministic,
+Right-click the **Wave Horn** to summon the next wave. Deterministic,
 vanilla-mobs-only 5-wave campaign (no modded mobs for now — see
 `docs/MODS.md`):
 1. zombie + skeleton
@@ -62,11 +62,12 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
 - TFTH was removed from the pack (2026-08-19) so the wave campaign could
   go vanilla-only — see `docs/MODS.md` under "Removed mods" for why and
   how to bring it back later.
-- Fixed 2026-08-19, after first playtest: the horn originally had no
-  texture (was a custom item with no artwork — now reuses vanilla's
-  Goat Horn) and did nothing when used (commands were run with the
-  player's own permission level instead of console-level — see
-  `docs/MODS.md`'s Wave spawner entry for the full explanation). If your
-  world's starter kit already fired with the old broken horn, run
-  `/give @s minecraft:goat_horn` to get a working one — the auto-give
-  won't retrigger since it already ran once.
+- Three real bugs found and fixed 2026-08-19, after first playtest — see
+  `docs/MODS.md`'s Wave spawner entry for the full story: no texture,
+  wrong command permission level, and (after briefly trying vanilla's
+  Goat Horn to get a free texture) a vanilla item cooldown that silently
+  blocked the interaction event entirely. Settled on a custom item with
+  no cooldown and a manual sound effect. If your world's starter kit
+  already fired with an old broken horn, run `/give @s kubejs:wave_horn`
+  to get a current one — the auto-give won't retrigger since it already
+  ran once.

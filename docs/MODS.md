@@ -61,16 +61,16 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   deeper unverified work, so this answers "how much danger is near me"
   rather than a precise invasion-only count. Not yet tested in-game.
 
-- **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js`.
-  Replaces relying on `/puresuffering add` for testing (that command
-  turned out to work, but debugging exactly when/why an invasion
-  actually starts — time-of-day gating, rarity rolls — was more friction
-  than it was worth for a precise curated progression). Right-click
-  vanilla's **Goat Horn** (`minecraft:goat_horn`, auto-given by the
-  starter kit) to summon the next wave; refuses to summon while mobs
-  from the current wave are still alive within 80 blocks. Deterministic,
-  vanilla-only 5-wave campaign (2026-08-19 design decision — no modded
-  mobs for now):
+- **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
+  `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
+  `/puresuffering add` for testing (that command turned out to work, but
+  debugging exactly when/why an invasion actually starts — time-of-day
+  gating, rarity rolls — was more friction than it was worth for a
+  precise curated progression). Right-click the **Wave Horn** item
+  (`kubejs:wave_horn`, auto-given by the starter kit) to summon the next
+  wave; refuses to summon while mobs from the current wave are still
+  alive within 80 blocks. Deterministic, vanilla-only 5-wave campaign
+  (2026-08-19 design decision — no modded mobs for now):
   1. zombie + skeleton
   2. + spider
   3. + witch
@@ -78,21 +78,38 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   5. + ravager (mini boss) — repeats for any call beyond wave 5, no
      further waves designed yet
 
-  **First playtest (2026-08-19) found two real bugs**: the horn had no
-  texture, and right-clicking it did nothing. Texture: originally a
-  custom `kubejs:wave_horn` item with no artwork, so it showed KubeJS's
-  placeholder — switched to reusing vanilla's Goat Horn instead, which
-  already has a texture/model/sound and fits thematically. No-spawn bug:
-  the `/summon` commands were run via `player.runCommandSilent(...)`,
-  which executes with the *player's own* command permission level
-  (`createCommandSourceStack()` on the entity) — not necessarily enough
-  for `/summon` (needs level 2) even with cheats nominally on. Switched
-  to `player.getServer().runCommandSilent(...)`, which runs as the
-  console (always full permission) — same pattern already used
-  successfully in `playtest_starter_kit.js`. Applied the same fix to
-  `base_expansion.js`'s `/worldborder add` call, which had the identical
-  bug and was likely silently failing too (not yet confirmed either way
-  — no explicit test feedback on it yet).
+  **First playtest (2026-08-19) found three real bugs, in order**:
+  1. The horn had no texture (custom `kubejs:wave_horn` item, no
+     artwork, so it showed KubeJS's placeholder).
+  2. The `/summon` commands were run via `player.runCommandSilent(...)`,
+     which executes with the *player's own* command permission level
+     (`createCommandSourceStack()` on the entity) — not necessarily
+     enough for `/summon` (needs level 2) even with cheats nominally on.
+  3. To fix #1, switched to reusing vanilla's Goat Horn (free texture/
+     model/sound) — which introduced a *worse* bug: `ItemEvents.rightClicked`
+     **never fires at all while an item is on cooldown**, confirmed
+     directly from `KubeJSItemEventHandler.java`'s own dispatch logic
+     (`if (!player.getCooldowns().isOnCooldown(...)) { ...post event... }`).
+     Goat Horn has a real vanilla cooldown built in, so every use after
+     the first was silently swallowed before our script ever saw it —
+     matching exactly what was reported ("does nothing except make the
+     sound," since the sound is vanilla's own native behavior,
+     unrelated to and unblocked by this check).
+
+  Final fix: reverted to the custom `kubejs:wave_horn` item (no
+  cooldown, so the event reliably fires), with a manual
+  `player.playSound(Utils.getSound('minecraft:event.raid.horn'))` to
+  keep the horn feel — confirmed via source that `SoundEvent` has no
+  registered TypeWrapper (a bare string would likely have thrown), but
+  `ResourceLocation` does, so routing through `Utils.getSound(...)` is
+  the safe path. And `player.getServer().runCommandSilent(...)` (console-
+  level, always full permission) instead of `player.runCommandSilent(...)`
+  for bug #2 — same pattern already proven in `playtest_starter_kit.js`.
+  Applied the identical permission fix to `base_expansion.js`'s
+  `/worldborder add` call, which had the same bug and was likely
+  silently failing too. Texture is back to being a known placeholder
+  until real art is added (same tradeoff already accepted for the loot
+  bags).
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only

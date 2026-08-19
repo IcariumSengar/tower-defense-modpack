@@ -12,11 +12,14 @@
 // Counts are a first-pass guess, easy to retune (same pattern as
 // base_expansion.js's tuning).
 //
-// Uses vanilla's Goat Horn (minecraft:goat_horn) instead of a custom
-// item — a custom item needs real artwork to not show KubeJS's
-// placeholder texture, and Goat Horn already has a texture, model, and
-// sound, plus it's thematically exactly right. Its own vanilla behavior
-// (playing a horn sound) still happens alongside this — not cancelled.
+// Uses a plain custom item (kubejs:wave_horn), not vanilla's Goat Horn —
+// tried Goat Horn first for the free texture/sound, but
+// ItemEvents.rightClicked never fires at all while an item is on
+// cooldown (confirmed from KubeJSItemEventHandler.java's own dispatch
+// logic), and Goat Horn has a real vanilla cooldown built in. That
+// silently blocked every use after the first. A plain item has no
+// cooldown, so the event reliably fires; a manual sound effect below
+// keeps the horn feel.
 //
 // Commands run via player.getServer().runCommandSilent(...), not
 // player.runCommandSilent(...) — the latter executes with the player's
@@ -53,12 +56,14 @@ function nearbyWaveMobCount(player, level, radius) {
   }).length
 }
 
-ItemEvents.rightClicked('minecraft:goat_horn', (event) => {
+ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
   if (event.level.isClientSide) return
 
   const player = event.player
   const level = player.getLevel()
   const server = player.getServer()
+
+  player.playSound(Utils.getSound('minecraft:event.raid.horn'))
 
   if (nearbyWaveMobCount(player, level, 80) > 0) {
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
