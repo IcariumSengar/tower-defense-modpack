@@ -100,7 +100,19 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
     ("IT'S UP TO YOU NOW"), plus `player.tell(...)` for the fuller
     narrative beat in chat (a title can't legibly carry more than a
     couple words). Wording is a first pass, easy to retune like
-    everything else in this file.
+    everything else in this file — it still says "five waves" even
+    while `GEAR_REMOVAL_WAVE` is temporarily 2 (see below), since the
+    text describes the real intended trigger.
+
+  **Temporarily gated on wave 2, not wave 5 (2026-08-19)** — added a
+  separate `GEAR_REMOVAL_WAVE` constant (`2`) rather than repurposing
+  `FINAL_WAVE` for this, since `FINAL_WAVE` also drives the wave-number
+  display cap and there are still genuinely 5 designed waves — lowering
+  it would've broken the HUD showing "Wave 3/4/5" correctly. Playtest
+  convenience only, so removal/popup can be checked without a full
+  5-wave clear each time; reset to `FINAL_WAVE` (or delete
+  `GEAR_REMOVAL_WAVE` and reference `FINAL_WAVE` directly) once
+  confirmed working.
 
   Not yet tested in-game — a full 5-wave clear takes real playtest time
   to reach; flagged the same way `mob_aggro.js`'s `setTarget` was before
