@@ -8,8 +8,10 @@
 // blocked every use after the first. A plain custom item has no
 // cooldown, so the event always fires — wave_spawner.js plays a manual
 // sound effect to keep the "horn" feel without vanilla's cooldown-gated
-// behavior. Texture is a known placeholder until real art is added
-// (same tradeoff already accepted for the loot bags).
+// behavior. Texture:
+// pack/kubejs/assets/kubejs/textures/item/wave_horn.png (16x16,
+// hand-authored placeholder — a curved tan horn, not KubeJS's generic
+// missing-texture icon). Loot bags still use the KubeJS placeholder.
 
 StartupEvents.registry('item', (event) => {
   event.create('wave_horn', 'basic').tooltip('§6Right-click to summon the next wave')

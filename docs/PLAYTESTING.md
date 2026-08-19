@@ -76,5 +76,11 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   bugs were genuinely surprising (e.g. `Math.PI` not behaving as a
   normal number, bare `.x`/`.y`/`.z` on entities producing `NaN`) and
   are easy to reintroduce by instinct when writing new scripts.
-- Wave horn's item texture is a known placeholder (no artwork yet) —
-  same tradeoff already accepted for the loot bags.
+- Wave horn's item texture is a hand-authored placeholder now (added
+  2026-08-19, not KubeJS's generic missing-texture icon, but still not
+  "real" art) — loot bags still show KubeJS's generic placeholder.
+- Loot bags were silently non-functional on right-click until
+  2026-08-19 (same `event.level.isClientSide` crash the Wave Horn had) —
+  fixed; see `docs/MODS.md`'s Loot bag drop system entry. Each tier's
+  loot pool was also expanded the same day for a clearer quality
+  progression between Common/Uncommon/Rare.

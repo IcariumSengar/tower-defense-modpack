@@ -82,8 +82,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   real bugs found and fixed, in order, each confirmed against actual
   source code or actual in-game evidence, not guessed**:
   1. **No texture** — custom `kubejs:wave_horn` item, no artwork, shows
-     KubeJS's placeholder. Still true, accepted (same tradeoff as the
-     loot bags).
+     KubeJS's placeholder. Fixed 2026-08-19 — see below.
   2. **Wrong command permission** — `/summon` ran via
      `player.runCommandSilent(...)`, which uses the *player's own*
      command permission level, not necessarily enough for `/summon`
@@ -141,7 +140,8 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   hostile counter, and the wave-complete/incoming messages.
 
   **Second playtest (2026-08-19)** — texture still a known placeholder
-  (unchanged, expected). Consolidated to one "wave incoming" message
+  at this point (fixed later the same day, see below). Consolidated to
+  one "wave incoming" message
   (was firing from both this script and `wave_status.js` — removed the
   duplicate from `wave_status.js`, kept this one since it includes the
   mob count). Border-clamp and wave-triggered expansion fixes described
@@ -174,6 +174,13 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   both back (`time set day` + `doDaylightCycle true`) once the hostile
   count returns to zero — locking the cycle, not just setting the time
   once, so it can't drift back to day mid-fight on a long wave.
+
+  **Texture added (2026-08-19)** —
+  `pack/kubejs/assets/kubejs/textures/item/wave_horn.png`, a hand-authored
+  16x16 placeholder (curved tan horn shape with a gold band and dark
+  bell), no model JSON needed since KubeJS's `basic` item type
+  auto-generates a model from the texture at the conventional path.
+  Replaces KubeJS's generic missing-texture icon; still not "real" art.
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only
@@ -215,10 +222,12 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   a removed API), then confirming via source that `LootJS.modifiers`
   really was right — neither fix mattered since the mod itself wasn't
   loaded either time. The custom-item + right-click half
-  (`loot_bag_open.js`, `loot_bags.js`) loaded with zero errors throughout
-  — that part's confidence was justified from the start. Bag items have
-  no custom texture yet, so they'll show KubeJS's placeholder texture
-  until art is added.
+  (`loot_bag_open.js`, `loot_bags.js`) loaded with zero *console* errors
+  throughout — but see the 2026-08-19 bug below, since "no console
+  errors" turned out not to mean "actually works." Bag items have no
+  custom texture yet, so they'll show KubeJS's placeholder texture until
+  art is added — the Wave Horn got a hand-authored placeholder texture
+  2026-08-19 (see its own entry above), the bags haven't yet.
 
   **Fourth round (2026-08-19), once the mod was actually loading**:
   `LootJS.modifiers(...)` ran without error, but `.thenAdd(...)` — the
@@ -231,6 +240,33 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   method name wasn't. Switched to `.addLoot(...)` — also confirmed via
   `LootJSPlugin.java` that `LootEntry` has a registered TypeWrapper, so
   passing a plain string item ID straight to `addLoot` is safe.
+
+  **Right-click-to-open never actually worked (found 2026-08-19)** —
+  bags were dropping fine but right-clicking one did nothing. Root
+  cause: the exact same confirmed bug as Wave Horn debugging bug #6 —
+  `event.level.isClientSide` throws a `NullPointerException` just by
+  being accessed, in any context, and it was the very first line of
+  `openBag()`. Every right-click crashed before reaching `shrink()`/
+  `give()`. Also only had `ItemEvents.rightClicked` registered, not
+  `BlockEvents.rightClicked` — the Wave Horn needed both to reliably
+  fire on Superflat (where right-clicking almost always targets the
+  ground block). Fixed by removing the `isClientSide` check, adding the
+  matching `BlockEvents.rightClicked` handler with the same 20-tick
+  cooldown dedup `wave_spawner.js` uses (keyed per item ID this time, so
+  opening a different bag right after doesn't get wrongly blocked), and
+  switching `const`/`let` to `var`/`function` throughout to match
+  `wave_spawner.js`'s confirmed-safe pattern for these callback types.
+
+  **Loot table quality gradient (2026-08-19)** — expanded each tier's
+  pool so the tiers read as a deliberate progression rather than three
+  disconnected lists: Common stays early-game scrap (added leather,
+  copper ingot, lapis lazuli), Uncommon is solid bulk materials with a
+  reachable ceiling into Common's ceiling items (added lapis block, iron
+  block, ender pearl), Rare now includes genuinely exciting late-game
+  vanilla items a player wouldn't normally see this early (netherite
+  ingot, totem of undying, enchanted golden apple) at low weight, on top
+  of the existing diamond/emerald/gold/netherite scrap/nether star
+  entries.
 
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`

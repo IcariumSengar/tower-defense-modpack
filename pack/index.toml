@@ -9,6 +9,10 @@ file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
 [[files]]
+file = "kubejs/assets/kubejs/textures/item/wave_horn.png"
+hash = "fc4ceb66506bc37f9f3803248016df4b8b664ae002bfa1faa062d9b371ef65c5"
+
+[[files]]
 file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
@@ -26,7 +30,7 @@ hash = "b83e5a72bb928191e098a50cca11bbba194e9c66b85ea26ce30765517f049822"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
-hash = "8345e5006dd6b7790ed02f95540de7f31d17335e28ba228ad50b29e777391ece"
+hash = "306cbf877427aea72b49484ccc9a21de132da05a8a8cbd8acfb5e322c4e46d25"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -54,7 +58,7 @@ hash = "d342b157718c59b175073e560580fb4fdb9fdd53f14f75c1feb851c5ac42c3ec"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"
-hash = "261d22151ce6ca4c6528d7d78da6f62804f9192d5c60be6afbd8f74acb2a1b28"
+hash = "de8b9a892518ae074991fc374d383e11beb94066a1ee70e9212d6a12020ab1b8"
 
 [[files]]
 file = "mods/.gitkeep"
