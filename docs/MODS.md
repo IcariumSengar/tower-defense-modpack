@@ -61,22 +61,38 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   deeper unverified work, so this answers "how much danger is near me"
   rather than a precise invasion-only count. Not yet tested in-game.
 
-- **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
-  `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
-  `/puresuffering add` for testing (that command turned out to work, but
-  debugging exactly when/why an invasion actually starts — time-of-day
-  gating, rarity rolls — was more friction than it was worth for a
-  precise curated progression). Right-click the **Wave Horn** item
-  (`kubejs:wave_horn`, auto-given by the starter kit) to summon the next
-  wave; refuses to summon while mobs from the current wave are still
-  alive within 80 blocks. Deterministic, vanilla-only 5-wave campaign
-  (2026-08-19 design decision — no modded mobs for now):
+- **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js`.
+  Replaces relying on `/puresuffering add` for testing (that command
+  turned out to work, but debugging exactly when/why an invasion
+  actually starts — time-of-day gating, rarity rolls — was more friction
+  than it was worth for a precise curated progression). Right-click
+  vanilla's **Goat Horn** (`minecraft:goat_horn`, auto-given by the
+  starter kit) to summon the next wave; refuses to summon while mobs
+  from the current wave are still alive within 80 blocks. Deterministic,
+  vanilla-only 5-wave campaign (2026-08-19 design decision — no modded
+  mobs for now):
   1. zombie + skeleton
   2. + spider
   3. + witch
   4. + wither skeleton
   5. + ravager (mini boss) — repeats for any call beyond wave 5, no
      further waves designed yet
+
+  **First playtest (2026-08-19) found two real bugs**: the horn had no
+  texture, and right-clicking it did nothing. Texture: originally a
+  custom `kubejs:wave_horn` item with no artwork, so it showed KubeJS's
+  placeholder — switched to reusing vanilla's Goat Horn instead, which
+  already has a texture/model/sound and fits thematically. No-spawn bug:
+  the `/summon` commands were run via `player.runCommandSilent(...)`,
+  which executes with the *player's own* command permission level
+  (`createCommandSourceStack()` on the entity) — not necessarily enough
+  for `/summon` (needs level 2) even with cheats nominally on. Switched
+  to `player.getServer().runCommandSilent(...)`, which runs as the
+  console (always full permission) — same pattern already used
+  successfully in `playtest_starter_kit.js`. Applied the same fix to
+  `base_expansion.js`'s `/worldborder add` call, which had the identical
+  bug and was likely silently failing too (not yet confirmed either way
+  — no explicit test feedback on it yet).
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only

@@ -38,15 +38,16 @@ PlayerEvents.tick((event) => {
   }).length
 
   const wasInWave = data.getBoolean('td_inWave')
+  const waveNumber = data.getInt('td_waveNumber')
 
   if (hostileCount > 0) {
-    player.setStatusMessage(`§c⚔ Hostiles remaining: ${hostileCount}`)
+    player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)
     if (!wasInWave) {
       data.putBoolean('td_inWave', true)
-      player.tell('§6[Wave] §fHostiles detected — incoming!')
+      player.tell(`§6[Wave] §fWave ${waveNumber} incoming!`)
     }
   } else if (wasInWave) {
     data.putBoolean('td_inWave', false)
-    player.tell('§6[Wave] §aAll clear — defeated!')
+    player.tell(`§6[Wave] §aWave ${waveNumber} defeated!`)
   }
 })

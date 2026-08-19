@@ -11,6 +11,20 @@
 //
 // Counts are a first-pass guess, easy to retune (same pattern as
 // base_expansion.js's tuning).
+//
+// Uses vanilla's Goat Horn (minecraft:goat_horn) instead of a custom
+// item — a custom item needs real artwork to not show KubeJS's
+// placeholder texture, and Goat Horn already has a texture, model, and
+// sound, plus it's thematically exactly right. Its own vanilla behavior
+// (playing a horn sound) still happens alongside this — not cancelled.
+//
+// Commands run via player.getServer().runCommandSilent(...), not
+// player.runCommandSilent(...) — the latter executes with the player's
+// own command permission level (createCommandSourceStack() on the
+// entity itself), which may not be enough for /summon (needs level 2)
+// even with cheats nominally on. player.getServer() gets the actual
+// console-level command source (always full permission), same pattern
+// already proven working in playtest_starter_kit.js.
 
 const WAVES = [
   [['zombie', 4], ['skeleton', 4]],
@@ -39,15 +53,15 @@ function nearbyWaveMobCount(player, level, radius) {
   }).length
 }
 
-ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
+ItemEvents.rightClicked('minecraft:goat_horn', (event) => {
   if (event.level.isClientSide) return
 
   const player = event.player
   const level = player.getLevel()
+  const server = player.getServer()
 
   if (nearbyWaveMobCount(player, level, 80) > 0) {
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
-    event.success()
     return
   }
 
@@ -64,12 +78,11 @@ ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
       const r = 15 + Math.random() * 10
       const x = Math.floor(player.x + Math.cos(angle) * r)
       const z = Math.floor(player.z + Math.sin(angle) * r)
-      player.runCommandSilent(`summon minecraft:${mobType} ${x} ${Math.floor(player.y)} ${z}`)
+      server.runCommandSilent(`summon minecraft:${mobType} ${x} ${Math.floor(player.y)} ${z}`)
       totalMobs++
     }
   })
 
   const displayWave = Math.min(waveNumber, WAVES.length)
   player.tell(`§6[Wave Horn] §fWave ${displayWave} incoming! (${totalMobs} mobs)`)
-  event.success()
 })
