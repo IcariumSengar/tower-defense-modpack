@@ -16,16 +16,14 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | SecurityCraft | [Modrinth](https://modrinth.com/mod/security-craft) | v1.10.2.1 (1.20.1 Forge/NeoForge) | Turrets, reinforced blocks, trophies, alarms — gives "build up your base between nights" real mechanical teeth | None known yet | testing |
 | Mob Grinding Utils | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/mob-grinding-utils) | 1.1.0 (1.20.1 Forge) | Mob fans/mashers/absorption hoppers — payoff for surviving a wave (turn the horde into XP/loot/power) rather than it just being a threat | None known yet | testing |
 | Epic Siege Mod | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/epic-siege-mod) | 14.171 (1.20.1 Forge) | Rewrites mob AI wholesale: zombies dig/pillar to reach you, creepers breach walls, skeletons snipe, endermen teleport targets, mobs swim/raid villages. Fully configurable (awareness radius, chaos mode) — this is the pack's primary "hordes get scary" mod | Replaces **Zombie Awareness** (removed — both rewrote mob AI goals, redundant/risked conflicting; Epic Siege is the more configurable, more established of the two, so it's the one that stayed). Also considered but rejected: **Nightmare Epic Siege** (same overlap problem, smaller/less-tested mod) | testing |
-| The Pure Suffering Mod | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/the-pure-suffering-mod) | 1.6.8.5R-LTS1 (1.20.1 Forge) | Invasion events that escalate in tier/severity over time — largely covers the "each night harder" escalation we'd planned to hand-write in KubeJS | Overlaps with the planned custom "nightly wave scaling" glue script (see docs/ROADMAP.md) — decide whether this mod replaces that script, or the script layers on top for something this mod doesn't cover (e.g. driving Epic Siege's aggression settings). **This is the only one of the three "danger" mods that's actually wave/schedule-based** — Epic Siege (AI) and TFTH (infection) are both always-on/ambient, not gated by an invasion schedule. Confirmed from the mod jar: invasions are a weighted random roll across ~20 invasion types (`data/puresuffering/invasion_types/*.json`), each with its own 5-stage in-invasion ramp (spawn rate/count increases as the night progresses), not a fixed "every N days" like Diseased Craft. **Testing commands** (pulled from the compiled command classes): `/puresuffering add primary puresuffering:<type>` queues a specific invasion on demand (types include `zombie`, `undead`, `mega_raid`, `warden`, `wither`, `arachnophobia`, `phantom_zone`, and more), `/puresuffering cycle` skips to the next invasion-roll check, `/puresuffering query` shows current/queued invasions, `/puresuffering clear` cancels them. | testing |
-| TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Spreading-infection threat with its own dynamic difficulty ("Biomass") that grows if ignored, shrinks if fought — a background threat independent of the day/night cycle | Pulls in Geckolib automatically. Runs on its own clock, not nights — decide later whether Incubators should be gated to only matter/spawn at certain times so it doesn't fight the night-based pacing of everything else | testing |
-| Geckolib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 | Hard dependency of TFTH (animation library) | — | required |
+| The Pure Suffering Mod | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/the-pure-suffering-mod) | 1.6.8.5R-LTS1 (1.20.1 Forge) | Invasion events that escalate in tier/severity over time | **Kept installed but dormant (2026-08-19)** — `enableInvasions` gamerule set `false`, and the custom vanilla-only wave campaign (`pack/kubejs/server_scripts/wave_spawner.js`) replaces it for now rather than fighting its semi-random invasion-type system for a specific curated progression. Its broader invasion variety (`zombie`, `undead`, `mega_raid`, `warden`, `wither`, `arachnophobia`, `phantom_zone`, and more, via `/puresuffering add primary puresuffering:<type>`) stays available to re-enable later at zero setup cost. | testing |
 | Scape And Spartans: Parasites Port | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/srp-spartans-port) | 1.0.5 (1.20.1 Forge) | **Not** the actual Scape and Run: Parasites mod (that's 1.12.2-only, unported, no permission for ports) — this only ports 4 SRP-themed weapon variants (bleed/viral/corrosion/immalleable) onto Spartan Weaponry. Added as the closest available substitute | Niche/early-stage mod — its own CurseForge page has a past warning about a save-breaking update (v1.0.1); we're on v1.0.5, but treat future `packwiz update` on this one with extra care (check changelog first) rather than blind-updating | testing |
 | Spartan Weaponry | [Modrinth](https://modrinth.com/mod/spartan-weaponry) | 3.2.1 (1.20.1 Forge) | Hard dependency of the Parasites weapon port | — | required |
 | Spartan Weaponry Addon Toolkit | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/spartan-weaponry-addon-toolkit) | 1.6.1 | Hard dependency of the Parasites weapon port | — | required |
 | Embeddium | [Modrinth](https://modrinth.com/mod/embeddium) | 0.3.31 (1.20.1 Forge) | Forge port of Sodium — full rendering-engine rewrite, the biggest FPS win available | None known yet | testing |
 | ModernFix | [Modrinth](https://modrinth.com/mod/modernfix) | 5.27.76 (1.20.1 Forge) | Faster load times, lower memory use, general bugfixes; built to be compatible with other perf mods | None known yet | testing |
 | FerriteCore | [Modrinth](https://modrinth.com/mod/ferrite-core) | 6.0.1 (Forge) | Memory-only optimization — devs of ModernFix recommend always pairing the two | None known yet | testing |
-| Radium | [Modrinth](https://modrinth.com/mod/radium) | 0.12.4 (1.20.1 Forge) | Forge port of Lithium — server tick/mob AI optimization, directly relevant given how many mobs Epic Siege/Pure Suffering/TFTH add | None known yet | testing |
+| Radium | [Modrinth](https://modrinth.com/mod/radium) | 0.12.4 (1.20.1 Forge) | Forge port of Lithium — server tick/mob AI optimization, directly relevant given how many mobs the wave system throws at once | None known yet | testing |
 | Entity Culling | [Modrinth](https://modrinth.com/mod/entityculling) | 1.10.5 (1.20.1 Forge) | Skips rendering entities not actually visible — helps with horde-on-screen moments | Client-side only | testing |
 | Clumps | [Modrinth](https://modrinth.com/mod/clumps) | 12.0.0.4 (1.20.1 Forge) | Merges XP orbs into one entity after a big kill instead of dozens | Server-side | testing |
 | Not Enough Crashes | [Modrinth](https://modrinth.com/mod/notenoughcrashes) | 4.4.9 (1.20.1 Forge) | Return to title screen and keep playing after a crash instead of losing the session | None known yet | testing |
@@ -42,6 +40,16 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Corpse | [Modrinth](https://modrinth.com/mod/corpse) | 1.0.23 (1.20.1 Forge) | Death drops become a recoverable corpse instead of scattering — chosen over GraveStone Mod (same niche, picked one) | None known yet | testing |
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 
+## Removed mods
+
+- **TFTH (The Flesh That Hates) + Geckolib (2026-08-19)** — removed
+  entirely, not just disabled. After the first real playtest, decided the
+  wave campaign should be vanilla-mobs-only for now (see the Wave spawner
+  entry under Custom glue) — TFTH exists purely to spawn its own
+  flesh-mob roster, so with that turned off there was no reason to keep
+  it loaded. Trivial to re-add (`packwiz modrinth add tfth -y`) when
+  modded mobs get folded back into the wave design later.
+
 ## Custom glue
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
@@ -53,27 +61,46 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   deeper unverified work, so this answers "how much danger is near me"
   rather than a precise invasion-only count. Not yet tested in-game.
 
+- **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
+  `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
+  `/puresuffering add` for testing (that command turned out to work, but
+  debugging exactly when/why an invasion actually starts — time-of-day
+  gating, rarity rolls — was more friction than it was worth for a
+  precise curated progression). Right-click the **Wave Horn** item
+  (`kubejs:wave_horn`, auto-given by the starter kit) to summon the next
+  wave; refuses to summon while mobs from the current wave are still
+  alive within 80 blocks. Deterministic, vanilla-only 5-wave campaign
+  (2026-08-19 design decision — no modded mobs for now):
+  1. zombie + skeleton
+  2. + spider
+  3. + witch
+  4. + wither skeleton
+  5. + ravager (mini boss) — repeats for any call beyond wave 5, no
+     further waves designed yet
+
+  Natural mob spawning is disabled (`doMobSpawning` gamerule, set
+  automatically by `playtest_starter_kit.js`) so the horn is the only
+  mob source — note this also stops passive mobs (cows, etc.), vanilla
+  has no separate hostile-only toggle. TFTH removed entirely from the
+  pack for this — see its own note below.
+
 - **Loot bag drop system** — the base-building resource loop: mobs drop
   tiered loot bags on death, opened by right-clicking to receive a
   randomized set of vanilla materials. Deliberately vanilla-materials-only
   (no invented items besides the bag containers) to preserve the Minecraft
-  aesthetic, per design decision. Three tiers, keyed on mob *type* (not
-  night count):
-  - `kubejs:scavengers_bag` (Common, 15% chance) — vanilla hostiles (zombie,
-    husk, drowned, skeleton, spider, creeper)
-  - `kubejs:fortified_cache` (Uncommon, 25% chance) — TFTH's flesh-mob
-    roster
-  - `kubejs:warlords_hoard` (Rare, 75% chance) — TFTH's Incubators
-    specifically (the 50-heart core threats)
+  aesthetic, per design decision. Retuned 2026-08-19 to track wave-roster
+  tier now that TFTH is gone — three tiers, keyed on mob *type*:
+  - `kubejs:scavengers_bag` (Common, 15% chance) — wave 1 mobs (zombie,
+    skeleton) plus husk/drowned/creeper for good measure
+  - `kubejs:fortified_cache` (Uncommon, 25% chance) — wave 2-3 additions
+    (spider, witch)
+  - `kubejs:warlords_hoard` (Rare, 75% chance) — wave 4-5 additions
+    (wither skeleton, ravager)
 
   Implementation: `pack/kubejs/startup_scripts/loot_bags.js` (item
   registration), `pack/kubejs/server_scripts/loot_bag_drops.js` (LootJS
   drop rules), `pack/kubejs/server_scripts/loot_bag_open.js` (right-click
-  reward rolling). Entity IDs for TFTH were pulled directly from the mod
-  jar's lang file, not guessed — confirmed real. Note: Pure Suffering's
-  invasion mobs have no custom entity IDs of their own (verified by
-  inspecting the mod jar — it spawns vanilla mobs during invasions), so
-  they currently fall into the Common tier same as any other zombie/skeleton.
+  reward rolling).
   **Real root cause found after three rounds of in-game testing
   (2026-08-19)**: `LootJS.modifiers(...)` — the syntax LootJS's own
   README documents — was correct the whole time. The `ReferenceError:

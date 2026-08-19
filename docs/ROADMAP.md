@@ -36,16 +36,23 @@
 
 ## Mod list
 - See [docs/MODS.md](MODS.md) — tracked per-mod as they're picked.
-- Escalation is now handled by mods (Epic Siege Mod for AI, Pure Suffering
-  for tiered invasions), not hand-written from scratch — KubeJS's job
-  narrowed to gap-filling glue, not owning the whole mechanic.
+- **Waves are vanilla-mobs-only for now (2026-08-19)**, after feedback
+  from the first real playtest — too many mob types was noise, not
+  signal. A hand-authored 5-wave campaign
+  (`pack/kubejs/server_scripts/wave_spawner.js`) replaced relying on
+  Epic Siege Mod / Pure Suffering / TFTH's combined variety. TFTH was
+  removed entirely; Pure Suffering stays installed but dormant; Epic
+  Siege Mod still applies its AI behavior to whatever the wave spawner
+  summons. Modded mobs are explicitly a later-revisit, not abandoned —
+  see `docs/MODS.md` under "Removed mods."
 
 ## Current priority
 Pack is playable and being actively playtested (see
 `docs/PLAYTESTING.md`) — CurseForge instance, Superflat world, on-demand
-wave triggering via Pure Suffering's admin commands. `night_scaling.js`
+wave triggering via the Wave Horn item. `night_scaling.js`
 (mob stat scaling) stays parked in `docs/deferred/` — the current
-mod-driven escalation (Epic Siege Mod + Pure Suffering) is covering that
+escalation is coming from the hand-authored wave campaign (each wave
+adds a tougher mob type) plus Epic Siege Mod's AI, not mob stats — that
 job for now.
 
 ## Open questions

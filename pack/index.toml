@@ -33,6 +33,10 @@ file = "kubejs/server_scripts/playtest_starter_kit.js"
 hash = "2b2c4ead0a0747114163a054f0ad878920e1a869fbe8eef497ae53ecc93129db"
 
 [[files]]
+file = "kubejs/server_scripts/wave_status.js"
+hash = "5aa1db8d09fd81172b1d3d6096158c1cf4fa434a3cf01beb92d7bc7abcc8e9ce"
+
+[[files]]
 file = "kubejs/startup_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
@@ -87,11 +91,6 @@ metafile = true
 [[files]]
 file = "mods/ferrite-core.pw.toml"
 hash = "902bac905b93271f02bd0951a22bac06a3da24f5c237fcaeb469e14a7679e508"
-metafile = true
-
-[[files]]
-file = "mods/geckolib.pw.toml"
-hash = "7ffae05c3b8101588b231db8116c34b36a77a0c6e6d7e6af867ae1c5b47e4d10"
 metafile = true
 
 [[files]]
@@ -177,11 +176,6 @@ metafile = true
 [[files]]
 file = "mods/srp-spartans-port.pw.toml"
 hash = "6dd6f760861f4ac7d77a61b8519ce4f6d129a9c81ca36b9c1724f32357bb6f72"
-metafile = true
-
-[[files]]
-file = "mods/tfth.pw.toml"
-hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
 metafile = true
 
 [[files]]

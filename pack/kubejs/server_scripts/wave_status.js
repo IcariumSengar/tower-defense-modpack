@@ -1,16 +1,13 @@
 // Live "hostiles remaining" counter (action bar) plus chat messages when
-// a wave starts / clears. Tracks ALL nearby hostile mobs, not
-// specifically Pure Suffering invasion mobs — there's no confirmed way to
-// distinguish "this zombie is part of an invasion" from "this zombie
-// wandered in on its own" without deeper unverified work against Pure
-// Suffering's internals, so this answers the practical question ("how
-// much danger is near me right now") rather than a precise wave-only
-// count. Good enough to see a wave arrive (count jumps) and clear
-// (count returns to 0).
+// a wave starts / clears. Tracks all nearby vanilla hostile mobs — matches
+// wave_spawner.js's roster now that TFTH is removed and waves are
+// vanilla-only. Some overlap with wave_spawner.js's own "Wave N incoming!"
+// message when the horn is used — both are kept since this one is a more
+// general ambient-danger signal, not exclusively tied to horn use.
 //
-// Same hostile-mob list as loot_bag_drops.js — duplicated rather than
-// shared, since KubeJS server_scripts don't reliably share top-level
-// scope across files. Keep both in sync if the mob list changes.
+// Same mob-type-list duplication pattern as loot_bag_drops.js and
+// wave_spawner.js — KubeJS server_scripts don't reliably share top-level
+// scope across files. Keep all three in sync if the mob roster changes.
 
 const HOSTILE_TYPES = [
   'minecraft:zombie',
@@ -20,30 +17,9 @@ const HOSTILE_TYPES = [
   'minecraft:spider',
   'minecraft:creeper',
   'minecraft:zombie_villager',
-  'the_flesh_that_hates:flesh_boomer',
-  'the_flesh_that_hates:flesh_community',
-  'the_flesh_that_hates:flesh_cow',
-  'the_flesh_that_hates:flesh_dog',
-  'the_flesh_that_hates:flesh_howler',
-  'the_flesh_that_hates:flesh_human',
-  'the_flesh_that_hates:flesh_hunter_two',
-  'the_flesh_that_hates:flesh_hunter_three',
-  'the_flesh_that_hates:flesh_justice',
-  'the_flesh_that_hates:flesh_pig',
-  'the_flesh_that_hates:flesh_pillager',
-  'the_flesh_that_hates:flesh_servant',
-  'the_flesh_that_hates:flesh_sheep',
-  'the_flesh_that_hates:flesh_suffer',
-  'the_flesh_that_hates:flesh_villager',
-  'the_flesh_that_hates:flesh_vindicator',
-  'the_flesh_that_hates:bruteplaquecreatureone',
-  'the_flesh_that_hates:plaquecontaminator',
-  'the_flesh_that_hates:plaquecreaturebaseone',
-  'the_flesh_that_hates:plaquecreatureone',
-  'the_flesh_that_hates:plaquecreaturetwo',
-  'the_flesh_that_hates:plaquethreelegcreature',
-  'the_flesh_that_hates:plaqueincubatorone',
-  'the_flesh_that_hates:plaqueincubatorstart',
+  'minecraft:witch',
+  'minecraft:wither_skeleton',
+  'minecraft:ravager',
 ]
 
 const RADIUS = 80

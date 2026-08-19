@@ -15,6 +15,9 @@ PlayerEvents.loggedIn((event) => {
   data.putBoolean('td_playtestKitGiven', true)
 
   player.give(Item.of('minecraft:netherite_sword', 1, '{Enchantments:[{id:"minecraft:sharpness",lvl:100}]}'))
+  player.give(Item.of('kubejs:wave_horn', 1))
+
+  event.server.runCommandSilent('gamerule doMobSpawning false')
 
   const x = Math.floor(player.x)
   const y = Math.floor(player.y)
