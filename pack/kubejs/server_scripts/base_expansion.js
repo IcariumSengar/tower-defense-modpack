@@ -10,8 +10,8 @@
 // already relies on, confirmed working in-game) — fine given this pack
 // is single-player-focused, not built for a real multiplayer server.
 
-const NIGHTS_PER_EXPANSION = 3
-const EXPANSION_BLOCKS = 20
+const NIGHTS_PER_EXPANSION = 2
+const EXPANSION_BLOCKS = 5
 const EXPANSION_TIME_SECONDS = 30
 
 PlayerEvents.tick((event) => {

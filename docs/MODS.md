@@ -79,7 +79,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`
-  grows the worldborder by 20 blocks every 3 nights survived. Deliberately
+  grows the worldborder by 5 blocks every 2 nights survived. Deliberately
   scoped down from the fuller design (no separate custom dimension, no
   hand-built `.nbt` structure) — reuses the Superflat Overworld and the
   existing `/fill`-based starter base instead, since both already work.

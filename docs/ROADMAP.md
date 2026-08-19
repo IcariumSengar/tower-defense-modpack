@@ -29,8 +29,8 @@
 - **Base expansion / "custom world" (2026-08-19):** first-step scope
   chosen from the fuller design notes in `docs/IDEAS.md` — reuse the
   Superflat Overworld (no separate custom dimension), keep the existing
-  `/fill`-based starter base, and grow the worldborder every 3 nights
-  survived (`pack/kubejs/server_scripts/base_expansion.js`). A real
+  `/fill`-based starter base, and grow the worldborder by 5 blocks every
+  2 nights survived (`pack/kubejs/server_scripts/base_expansion.js`). A real
   custom dimension and a hand-built `.nbt` starter structure are noted as
   the fancier version, revisit only if Superflat proves insufficient.
 
