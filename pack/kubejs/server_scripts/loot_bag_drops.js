@@ -45,19 +45,23 @@ const TFTH_FLESH_MOBS = [
 
 const TFTH_INCUBATORS = ['the_flesh_that_hates:plaqueincubatorone', 'the_flesh_that_hates:plaqueincubatorstart']
 
-LootJS.modifiers((event) => {
+// `LootJS.modifiers(...)` (as documented in LootJS's own README) throws
+// "LootJS is not defined" on our installed version (2.13.1) — confirmed
+// in-game. The older `onEvent("lootjs", ...)` + `.addLoot(...)` form from
+// LootJS's own example_scripts folder is what actually works at runtime.
+onEvent('lootjs', (event) => {
   // addEntityLootModifier is only confirmed to accept a single entity ID at
   // a time (every verified example does this), so each tier is wired up
   // per-entity rather than passing the whole array in one call.
   VANILLA_HOSTILES.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.15).thenAdd('kubejs:scavengers_bag')
+    event.addEntityLootModifier(id).randomChance(0.15).addLoot('kubejs:scavengers_bag')
   })
 
   TFTH_FLESH_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.25).thenAdd('kubejs:fortified_cache')
+    event.addEntityLootModifier(id).randomChance(0.25).addLoot('kubejs:fortified_cache')
   })
 
   TFTH_INCUBATORS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.75).thenAdd('kubejs:warlords_hoard')
+    event.addEntityLootModifier(id).randomChance(0.75).addLoot('kubejs:warlords_hoard')
   })
 })

@@ -65,12 +65,17 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   invasion mobs have no custom entity IDs of their own (verified by
   inspecting the mod jar — it spawns vanilla mobs during invasions), so
   they currently fall into the Common tier same as any other zombie/skeleton.
-  **Not yet verified in-game** — highest confidence on the LootJS drop
-  rules (checked against the README pinned to our exact installed version);
-  lower confidence on the custom-item + right-click half, since no single
-  canonical example combining both was found, only corroborating wiki
-  fragments. Bag items have no custom texture yet, so they'll show
-  KubeJS's placeholder texture until art is added.
+  **First in-game test (2026-08-19) caught one real bug**: LootJS's own
+  README documents `LootJS.modifiers((event) => {...})`, but that throws
+  `ReferenceError: "LootJS" is not defined` on our installed version
+  (2.13.1) — the README was ahead of what's actually in the 1.20.1
+  release. Fixed by switching to the older `onEvent("lootjs", (event) =>
+  {...})` + `.addLoot(...)` form, which is what LootJS's own
+  example_scripts folder actually uses (and what really works at
+  runtime). The custom-item + right-click half (`loot_bag_open.js`,
+  `loot_bags.js`) loaded with zero errors on the same test — that part's
+  confidence was justified. Bag items have no custom texture yet, so
+  they'll show KubeJS's placeholder texture until art is added.
 
 - **Night-based mob scaling** — first draft preserved at
   `docs/deferred/night_scaling.js` (moved out of `pack/kubejs/` so it
