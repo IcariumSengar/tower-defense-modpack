@@ -59,7 +59,17 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   specifically Pure Suffering invasion mobs — no confirmed way to
   distinguish "invasion mob" from "wandered in on its own" without
   deeper unverified work, so this answers "how much danger is near me"
-  rather than a precise invasion-only count. Not yet tested in-game.
+  rather than a precise invasion-only count. Confirmed working across
+  multiple playtests (see Wave spawner's debugging log below).
+
+  **Storage chest (2026-08-19)** — after clearing wave 1, the player had
+  loot bags/materials piling up with nowhere to put them. Added a
+  one-time `minecraft:chest` give the moment `td_waveNumber >= 1` and
+  the player isn't currently mid-wave — checked every tick rather than
+  only on the live defeat transition, so it also fires retroactively for
+  a save that already cleared wave 1 before this existed (which is
+  exactly the situation this was added for), not just for future saves
+  catching the transition live.
 
 - **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
   `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
@@ -279,6 +289,9 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
     cobblestone, oak logs, bread, cooked beef, apple — alongside the
     existing scrap materials, on the reasoning that a fresh base needs
     stone/wood/food before scrap metal matters.
+  - **Oak log weight bumped** from 25 to 40 (2026-08-19, after first
+    real playtest feedback) so it shows up more often than the other
+    Common entries — a fresh base wants wood most.
   - **Textures added** for all three bags —
     `pack/kubejs/assets/kubejs/textures/item/{scavengers_bag,
     fortified_cache,warlords_hoard}.png`, hand-authored 16x16 placeholders

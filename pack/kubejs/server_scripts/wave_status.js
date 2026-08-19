@@ -75,4 +75,21 @@ PlayerEvents.tick((event) => {
     player.getServer().runCommandSilent('time set day')
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
   }
+
+  // One-time storage chest, given the moment the player has cleared at
+  // least one wave (td_waveNumber >= 1) and isn't currently mid-wave —
+  // re-reads td_inWave fresh rather than reusing wasInWave, so this
+  // fires the same tick a wave clears, not a tick later. Checked every
+  // tick (not just in the branch above) so it also fires retroactively
+  // for a save that already cleared wave 1 before this existed, not
+  // just for a live defeat transition.
+  if (
+    data.getInt('td_waveNumber') >= 1 &&
+    !data.getBoolean('td_inWave') &&
+    !data.getBoolean('td_starterChestGiven')
+  ) {
+    data.putBoolean('td_starterChestGiven', true)
+    player.give(Item.of('minecraft:chest', 1))
+    player.tell('§6[Wave] §fA chest to store your loot — place it somewhere safe.')
+  }
 })

@@ -23,6 +23,13 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
 This only triggers on a **brand new world** — it won't retroactively fire
 on a world you've already joined once.
 
+## Automatic (fires once, after clearing your first wave — any world)
+
+- **Storage chest**: one `minecraft:chest` given automatically the
+  moment you've cleared wave 1, so there's somewhere to dump loot bag
+  rewards. Unlike the section above, this one *does* retroactively fire
+  on a world you already started, the next time it loads/reloads.
+
 ## Manual setup (once per new world)
 
 Only the world-creation screen itself, which nothing can automate:

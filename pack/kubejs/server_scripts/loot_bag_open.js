@@ -46,7 +46,7 @@ function randomCount(entry) {
 // random.
 var SCAVENGERS_BAG_POOL = [
   { item: 'minecraft:cobblestone', weight: 30, min: 8, max: 16 },
-  { item: 'minecraft:oak_log', weight: 25, min: 4, max: 8 },
+  { item: 'minecraft:oak_log', weight: 40, min: 4, max: 8 },
   { item: 'minecraft:bread', weight: 25, min: 3, max: 6 },
   { item: 'minecraft:iron_nugget', weight: 30, min: 2, max: 4 },
   { item: 'minecraft:coal', weight: 25, min: 2, max: 5 },

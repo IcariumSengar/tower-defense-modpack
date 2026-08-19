@@ -42,7 +42,7 @@ hash = "c8f538156b3389e51444bbe53ca70b68cd02ac28bf8782febda108a66507b4aa"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
-hash = "d233ea9dca85b6417e6f46c7c10b120c27526fc4382754f47e7e0b804f679989"
+hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -58,7 +58,7 @@ hash = "abc3e3afec98be562721d659e5399940b655f2a6fac9783abb723d0033829fcf"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "8fa0f3e70526db732466dc4d6785144e16525f3eaab8fbad9ed1ebf7eab0c8d5"
+hash = "a0091bb41d31b680466fe8e59ec2ba5f976a3991547bbf4fd8caad743b205925"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
