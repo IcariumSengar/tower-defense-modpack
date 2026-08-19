@@ -8,6 +8,12 @@
 // Same mob-type-list duplication pattern as loot_bag_drops.js and
 // wave_spawner.js — KubeJS server_scripts don't reliably share top-level
 // scope across files. Keep all three in sync if the mob roster changes.
+//
+// Uses .getX()/.getY()/.getZ(), not bare .x/.y/.z — confirmed in
+// wave_spawner.js's debugging that the bare-property form produces NaN
+// for position in this environment. This was silently broken the same
+// way (the counter would never have matched real distances), just
+// never surfaced since nothing depended on catching the error.
 
 const HOSTILE_TYPES = [
   'minecraft:zombie',
@@ -31,14 +37,18 @@ PlayerEvents.tick((event) => {
 
   const hostileCount = level.getEntities().filter((e) => {
     if (!HOSTILE_TYPES.includes(`${e.type}`)) return false
-    const dx = e.x - player.x
-    const dy = e.y - player.y
-    const dz = e.z - player.z
+    const dx = e.getX() - player.getX()
+    const dy = e.getY() - player.getY()
+    const dz = e.getZ() - player.getZ()
     return dx * dx + dy * dy + dz * dz <= RADIUS * RADIUS
   }).length
 
   const wasInWave = data.getBoolean('td_inWave')
-  const waveNumber = data.getInt('td_waveNumber')
+  // Capped at 5 to match wave_spawner.js's WAVES.length (only 5 waves are
+  // designed; calls beyond that repeat wave 5's composition) - td_waveNumber
+  // itself is an uncapped raw click-count, would otherwise show numbers
+  // higher than any wave that's actually been designed.
+  const waveNumber = Math.min(data.getInt('td_waveNumber'), 5)
 
   if (hostileCount > 0) {
     player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)

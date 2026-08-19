@@ -34,7 +34,7 @@ hash = "f7a2811d27a2f13ebb0585ee97cab7edc8ca3ad2f6935c5938d950716b6ca1bc"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "c52f9a808c5a4a3e04112670850ee56192bab2e3790cd4e358dae389ef5aa663"
+hash = "d640b9ee9d42327bbe6bc1a82e17829526128e5206ffdefdbdd0682a63efed5c"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"

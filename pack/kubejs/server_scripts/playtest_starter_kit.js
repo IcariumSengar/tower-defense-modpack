@@ -6,6 +6,13 @@
 // Uses event.server.runCommandSilent(...) with absolute coordinates (not
 // player-relative ~) since it executes from the server console, not "as"
 // the player.
+//
+// Uses player.getX()/getY()/getZ(), not bare .x/.y/.z — confirmed in
+// wave_spawner.js's debugging that the bare-property form produces NaN
+// for position in this environment. This means the starter base has
+// never actually been built until now (NaN coordinates -> every /fill
+// and /setblock silently failed) — the sword/horn gave fine since
+// Item.of(...) doesn't depend on position.
 
 PlayerEvents.loggedIn((event) => {
   const player = event.player
@@ -19,9 +26,9 @@ PlayerEvents.loggedIn((event) => {
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
-  const x = Math.floor(player.x)
-  const y = Math.floor(player.y)
-  const z = Math.floor(player.z)
+  const x = Math.floor(player.getX())
+  const y = Math.floor(player.getY())
+  const z = Math.floor(player.getZ())
   const half = 5
 
   const x0 = x - half

@@ -78,53 +78,69 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   5. + ravager (mini boss) — repeats for any call beyond wave 5, no
      further waves designed yet
 
-  **First playtest (2026-08-19) found three real bugs, in order**:
-  1. The horn had no texture (custom `kubejs:wave_horn` item, no
-     artwork, so it showed KubeJS's placeholder).
-  2. The `/summon` commands were run via `player.runCommandSilent(...)`,
-     which executes with the *player's own* command permission level
-     (`createCommandSourceStack()` on the entity) — not necessarily
-     enough for `/summon` (needs level 2) even with cheats nominally on.
-  3. To fix #1, switched to reusing vanilla's Goat Horn (free texture/
-     model/sound) — which introduced a *worse* bug: `ItemEvents.rightClicked`
-     **never fires at all while an item is on cooldown**, confirmed
-     directly from `KubeJSItemEventHandler.java`'s own dispatch logic
-     (`if (!player.getCooldowns().isOnCooldown(...)) { ...post event... }`).
-     Goat Horn has a real vanilla cooldown built in, so every use after
-     the first was silently swallowed before our script ever saw it —
-     matching exactly what was reported ("does nothing except make the
-     sound," since the sound is vanilla's own native behavior,
-     unrelated to and unblocked by this check).
+  **First real playtest (2026-08-19) was a long debugging saga — nine
+  real bugs found and fixed, in order, each confirmed against actual
+  source code or actual in-game evidence, not guessed**:
+  1. **No texture** — custom `kubejs:wave_horn` item, no artwork, shows
+     KubeJS's placeholder. Still true, accepted (same tradeoff as the
+     loot bags).
+  2. **Wrong command permission** — `/summon` ran via
+     `player.runCommandSilent(...)`, which uses the *player's own*
+     command permission level, not necessarily enough for `/summon`
+     (needs level 2) even with cheats nominally on. Fixed:
+     `player.getServer().runCommandSilent(...)` (console-level, always
+     full permission). Same bug existed in `base_expansion.js`'s
+     `/worldborder add` call — fixed there too.
+  3. **Goat Horn's cooldown silently blocks the event entirely** — tried
+     switching to vanilla's Goat Horn for a free texture/sound;
+     `ItemEvents.rightClicked` **never fires while an item is on
+     cooldown**, confirmed directly from `KubeJSItemEventHandler.java`'s
+     dispatch logic. Reverted to the custom item (no cooldown), with a
+     manual `player.playSound(Utils.getSound('minecraft:event.raid.horn'))`
+     to keep the horn feel — routed through `Utils.getSound(...)` since
+     `SoundEvent` has no registered TypeWrapper but `ResourceLocation` does.
+  4. **`event.player` looked broken but wasn't** — a red herring.
+     `ItemClickedEventJS`/`BlockRightClickedEventJS` only expose
+     `getEntity()` directly, but `PlayerEventJS` (their shared parent)
+     defines `getPlayer()` returning the same thing, so `.player` was
+     valid the whole time via inheritance. Switched to `.entity` anyway
+     (harmless, identical result) while chasing what turned out to be
+     bug #6.
+  5. **`const`/`let` inside `ItemEvents`/`BlockEvents.rightClicked`
+     callbacks throws `"redeclaration of var X"`** on the second and
+     later invocations — a Rhino quirk specific to these particular
+     callback types (`PlayerEvents.tick` elsewhere uses `const` with no
+     issue). Fixed by using `var` throughout both callback bodies.
+  6. **`event.level.isClientSide` throws `NullPointerException` just by
+     being accessed** — independent of how it's used (conditional, log
+     statement, template literal, all failed identically). Root cause
+     not fully understood; fixed by not referencing it at all.
+  7. **Both `ItemEvents.rightClicked` and `BlockEvents.rightClicked`
+     fire for the same physical click** — contrary to Forge's own
+     documented "`RightClickItem` only fires when not targeting a
+     block" rule, which didn't hold in practice here. Without a guard
+     this double-processed every click (e.g. wave 1→2, 3→4). Fixed with
+     a 20-tick (1 second) cooldown guard in `useWaveHorn` — also
+     necessary since holding right-click generates repeated events
+     across many ticks, not just one per physical click.
+  8. **Bare `.x`/`.y`/`.z` on entities produces `NaN`** — the real,
+     working accessors are `.getX()`/`.getY()`/`.getZ()` (plain vanilla
+     `Entity` methods, not remapped by KubeJS). This silently broke
+     `wave_status.js`'s distance check too, and — the big one —
+     **`playtest_starter_kit.js`'s starter base has never actually been
+     built in any test world**, since every `/fill`/`/setblock` had NaN
+     coordinates and silently failed. All three fixed.
+  9. **`Math.PI` itself evaluates to something unusable** in this
+     environment — confirmed directly in-game: `Math.random()`,
+     `Math.cos()`, `Math.sin()`, `Math.floor()` all worked individually,
+     but any expression multiplying by `Math.PI` came out `NaN`. Root
+     cause not understood; fixed by using the literal
+     `6.283185307179586` (2π) instead of `Math.PI * 2`.
 
-  Reverted to the custom `kubejs:wave_horn` item for bug #3 (no
-  cooldown, so the event reliably fires), with a manual
-  `player.playSound(Utils.getSound('minecraft:event.raid.horn'))` to
-  keep the horn feel — confirmed via source that `SoundEvent` has no
-  registered TypeWrapper (a bare string would likely have thrown), but
-  `ResourceLocation` does, so routing through `Utils.getSound(...)` is
-  the safe path. And `player.getServer().runCommandSilent(...)` (console-
-  level, always full permission) instead of `player.runCommandSilent(...)`
-  for bug #2 — same pattern already proven in `playtest_starter_kit.js`.
-  Applied the identical permission fix to `base_expansion.js`'s
-  `/worldborder add` call, which had the same bug and was likely
-  silently failing too.
-
-  4. Even after all three fixes, multiple real clicks on the (now
-     cooldown-free) custom item produced **zero log output at all** —
-     no errors, no chat messages, nothing. Root cause: Forge's
-     `PlayerInteractEvent.RightClickItem` (which `ItemEvents.rightClicked`
-     is built on) **only fires when the player isn't targeting a
-     block** — by design, confirmed against Forge's own documented
-     behavior and multiple real bug reports. Targeting a block fires
-     `RightClickBlock` instead, a completely separate event. On
-     Superflat, the ground is within reach almost constantly, so the
-     handler essentially never ran. Fixed by also hooking
-     `BlockEvents.rightClicked` (unfiltered — it filters by block type,
-     not held item, so it checks `event.item.getId()` itself) and
-     sharing the spawn logic between both hooks.
-
-  Texture is a known placeholder until real art is added (same
-  tradeoff already accepted for the loot bags).
+  Confirmed working in-game after all nine fixes: wave spawning, the
+  hostile counter, and the wave-complete/incoming messages. The starter
+  base and `base_expansion.js`'s worldborder growth share bug #8's fix
+  but haven't been separately re-confirmed in-game yet.
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only

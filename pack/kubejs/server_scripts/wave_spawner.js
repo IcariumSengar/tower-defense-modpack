@@ -16,32 +16,49 @@
 // tried Goat Horn first for the free texture/sound, but
 // ItemEvents.rightClicked never fires at all while an item is on
 // cooldown (confirmed from KubeJSItemEventHandler.java's own dispatch
-// logic), and Goat Horn has a real vanilla cooldown built in. That
-// silently blocked every use after the first. A plain item has no
-// cooldown, so the event reliably fires; a manual sound effect below
-// keeps the horn feel.
+// logic), and Goat Horn has a real vanilla cooldown built in. A plain
+// item has no cooldown, so the event reliably fires; a manual sound
+// effect below keeps the horn feel.
 //
 // Commands run via player.getServer().runCommandSilent(...), not
 // player.runCommandSilent(...) — the latter executes with the player's
-// own command permission level (createCommandSourceStack() on the
-// entity itself), which may not be enough for /summon (needs level 2)
-// even with cheats nominally on. player.getServer() gets the actual
-// console-level command source (always full permission), same pattern
-// already proven working in playtest_starter_kit.js.
+// own command permission level, which may not be enough for /summon
+// (needs level 2) even with cheats nominally on. player.getServer()
+// gets the console-level command source (always full permission).
 //
 // Hooked on BOTH ItemEvents.rightClicked and BlockEvents.rightClicked —
-// confirmed via Forge's own documented behavior (and multiple real bug
-// reports) that the underlying RightClickItem event Forge fires
-// *only* triggers when the player isn't targeting a block; targeting a
-// block fires RightClickBlock instead, a completely separate event. On
-// Superflat, the ground is within reach almost constantly, so relying
-// on ItemEvents.rightClicked alone meant the handler essentially never
-// fired — multiple real clicks produced zero log output, no errors, no
-// tells, nothing. BlockEvents.rightClicked has no per-item filter (it
-// filters by block, not by held item), so it's registered unfiltered
-// and checks event.item.id itself.
+// confirmed in-game that both fire for the same click (contrary to
+// Forge's documented "RightClickItem only fires when not targeting a
+// block" — that rule didn't hold in practice here), so a same-tick
+// dedup guard below prevents double-processing a single click.
+//
+// Player access is event.entity, not event.player — neither
+// ItemClickedEventJS nor BlockRightClickedEventJS expose a .player
+// property, only getEntity() (confirmed by reading both classes).
+//
+// Uses `var`, not `const`/`let`, inside both event callback bodies —
+// confirmed via in-game testing that const/let in these specific
+// repeatedly-invoked callbacks throws "TypeError: redeclaration of var
+// X" on the second and later invocations (a Rhino quirk with these
+// callback types specifically).
+//
+// Does NOT reference event.level.isClientSide anywhere — confirmed via
+// in-game testing that merely accessing this property throws
+// NullPointerException in this environment, independent of how it's
+// used (conditional, log statement, template literal, all failed the
+// same way). Root cause not fully understood; not needed anyway since
+// the dedup guard makes it safe to be called from multiple firings.
+//
+// Uses player.getX()/getY()/getZ(), not bare .x/.y/.z — confirmed via
+// in-game testing (summon commands built from .x/.y/.z came out as
+// literal "NaN" for the coordinates, so /summon silently failed every
+// time, result=0). getX()/getY()/getZ() are the real vanilla Entity
+// methods, not remapped or hidden by KubeJS, so they're always safe to
+// call directly. The bare-property form apparently doesn't resolve
+// correctly for position in this environment even though it's a common
+// pattern elsewhere in this codebase.
 
-const WAVES = [
+var WAVES = [
   [['zombie', 4], ['skeleton', 4]],
   [['zombie', 4], ['skeleton', 4], ['spider', 4]],
   [['zombie', 3], ['skeleton', 3], ['spider', 3], ['witch', 3]],
@@ -49,7 +66,7 @@ const WAVES = [
   [['zombie', 2], ['skeleton', 2], ['spider', 2], ['witch', 2], ['wither_skeleton', 2], ['ravager', 1]],
 ]
 
-const WAVE_MOB_TYPES = [
+var WAVE_MOB_TYPES = [
   'minecraft:zombie',
   'minecraft:skeleton',
   'minecraft:spider',
@@ -59,18 +76,28 @@ const WAVE_MOB_TYPES = [
 ]
 
 function nearbyWaveMobCount(player, level, radius) {
-  return level.getEntities().filter((e) => {
+  return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
-    const dx = e.x - player.x
-    const dy = e.y - player.y
-    const dz = e.z - player.z
+    var dx = e.getX() - player.getX()
+    var dy = e.getY() - player.getY()
+    var dz = e.getZ() - player.getZ()
     return dx * dx + dy * dy + dz * dz <= radius * radius
   }).length
 }
 
 function useWaveHorn(player) {
-  const level = player.getLevel()
-  const server = player.getServer()
+  var level = player.getLevel()
+  var server = player.getServer()
+  var data = player.persistentData
+
+  // Cooldown dedup (20 ticks / 1 second), not just same-tick — both
+  // ItemEvents.rightClicked and BlockEvents.rightClicked fire for one
+  // physical click, and holding right-click generates repeated events
+  // across many ticks, so a same-tick-only check wasn't enough.
+  var currentTick = level.getTime()
+  var lastTick = data.getInt('td_lastHornUseTick')
+  if (currentTick - lastTick < 20) return
+  data.putInt('td_lastHornUseTick', currentTick)
 
   player.playSound(Utils.getSound('minecraft:event.raid.horn'))
 
@@ -79,41 +106,46 @@ function useWaveHorn(player) {
     return
   }
 
-  const data = player.persistentData
-  const waveNumber = data.getInt('td_waveNumber') + 1
+  var waveNumber = data.getInt('td_waveNumber') + 1
   data.putInt('td_waveNumber', waveNumber)
 
-  const composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
-  let totalMobs = 0
+  var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
+  var totalMobs = 0
 
-  composition.forEach(([mobType, count]) => {
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2
-      const r = 15 + Math.random() * 10
-      const x = Math.floor(player.x + Math.cos(angle) * r)
-      const z = Math.floor(player.z + Math.sin(angle) * r)
-      server.runCommandSilent(`summon minecraft:${mobType} ${x} ${Math.floor(player.y)} ${z}`)
+  composition.forEach(function (pair) {
+    var mobType = pair[0]
+    var count = pair[1]
+    for (var i = 0; i < count; i++) {
+      // 6.283185307179586 = 2*PI as a literal, not Math.PI - confirmed
+      // via in-game testing that Math.PI itself evaluates to something
+      // that isn't a usable number in this environment (Math.random(),
+      // Math.cos(), Math.sin(), Math.floor() all work fine individually;
+      // only Math.PI produced NaN when multiplied). Root cause not
+      // understood, but sidestepping it entirely is simple and safe.
+      var angle = Math.random() * 6.283185307179586
+      var r = 15 + Math.random() * 10
+      var x = Math.floor(player.getX() + Math.cos(angle) * r)
+      var z = Math.floor(player.getZ() + Math.sin(angle) * r)
+      server.runCommandSilent(`summon minecraft:${mobType} ${x} ${Math.floor(player.getY())} ${z}`)
       totalMobs++
     }
   })
 
-  const displayWave = Math.min(waveNumber, WAVES.length)
+  var displayWave = Math.min(waveNumber, WAVES.length)
   player.tell(`§6[Wave Horn] §fWave ${displayWave} incoming! (${totalMobs} mobs)`)
 }
 
 // Covers right-clicking with nothing targeted (rare on Superflat, but
 // possible e.g. looking up).
-ItemEvents.rightClicked('kubejs:wave_horn', (event) => {
-  if (event.level.isClientSide) return
-  useWaveHorn(event.player)
+ItemEvents.rightClicked('kubejs:wave_horn', function (event) {
+  useWaveHorn(event.entity)
 })
 
 // Covers right-clicking while targeting a block — the common case on
 // Superflat. No per-item filter exists for this event (it filters by
 // block, not held item), so it's unfiltered and checks the held item
 // itself.
-BlockEvents.rightClicked((event) => {
-  if (event.level.isClientSide) return
+BlockEvents.rightClicked(function (event) {
   if (event.item.getId() !== 'kubejs:wave_horn') return
-  useWaveHorn(event.player)
+  useWaveHorn(event.entity)
 })
