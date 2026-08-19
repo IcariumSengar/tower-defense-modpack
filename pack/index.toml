@@ -25,10 +25,6 @@ file = "kubejs/server_scripts/loot_bag_open.js"
 hash = "8345e5006dd6b7790ed02f95540de7f31d17335e28ba228ad50b29e777391ece"
 
 [[files]]
-file = "kubejs/server_scripts/night_scaling.js"
-hash = "e70ca78295efbee21e84cebb579c8d3cf3429cd1bd437b9973a3579ada6ade60"
-
-[[files]]
 file = "kubejs/startup_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 

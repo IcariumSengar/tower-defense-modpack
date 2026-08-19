@@ -72,9 +72,11 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   fragments. Bag items have no custom texture yet, so they'll show
   KubeJS's placeholder texture until art is added.
 
-- **Night-based mob scaling** — first draft exists at
-  `pack/kubejs/server_scripts/night_scaling.js` but is **deferred, not
-  committed**. There's no playable setup to test it against yet, and with
+- **Night-based mob scaling** — first draft preserved at
+  `docs/deferred/night_scaling.js` (moved out of `pack/kubejs/` so it
+  doesn't get bundled into exports and can't accidentally load/error
+  during playtesting). Still **deferred**. There's no playable setup to
+  test it against yet, and with
   Epic Siege Mod (AI behavior) and Pure Suffering (tiered invasion events)
   both already handling escalation, hand-tuning raw mob stats on top is a
   later-priority refinement, not part of getting the mod list itself
