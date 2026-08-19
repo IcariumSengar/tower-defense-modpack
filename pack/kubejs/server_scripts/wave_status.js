@@ -1,9 +1,12 @@
-// Live "hostiles remaining" counter (action bar) plus chat messages when
-// a wave starts / clears. Tracks all nearby vanilla hostile mobs — matches
+// Live "hostiles remaining" counter (action bar) plus a chat message
+// when a wave clears. Tracks all nearby vanilla hostile mobs — matches
 // wave_spawner.js's roster now that TFTH is removed and waves are
-// vanilla-only. Some overlap with wave_spawner.js's own "Wave N incoming!"
-// message when the horn is used — both are kept since this one is a more
-// general ambient-danger signal, not exclusively tied to horn use.
+// vanilla-only.
+//
+// Deliberately does NOT send its own "wave incoming" chat message —
+// wave_spawner.js already sends one (with the mob count, which this
+// script doesn't know), so this used to duplicate it. Only sends
+// "defeated," which nothing else covers.
 //
 // Same mob-type-list duplication pattern as loot_bag_drops.js and
 // wave_spawner.js — KubeJS server_scripts don't reliably share top-level
@@ -54,7 +57,6 @@ PlayerEvents.tick((event) => {
     player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)
     if (!wasInWave) {
       data.putBoolean('td_inWave', true)
-      player.tell(`§6[Wave] §fWave ${waveNumber} incoming!`)
     }
   } else if (wasInWave) {
     data.putBoolean('td_inWave', false)

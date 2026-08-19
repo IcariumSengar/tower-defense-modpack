@@ -112,6 +112,19 @@ function useWaveHorn(player) {
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
+  // Clamp spawn positions to the current worldborder (minus a margin so
+  // nothing spawns literally against the wall) — without this, mobs
+  // spawned at the usual 15-25 block radius could land outside a small
+  // border, becoming permanently unreachable (and silently preventing
+  // the hostile counter from ever reaching 0, so "wave defeated" would
+  // never fire either).
+  var border = level.getWorldBorder()
+  var margin = 3
+  var minX = border.getMinX() + margin
+  var maxX = border.getMaxX() - margin
+  var minZ = border.getMinZ() + margin
+  var maxZ = border.getMaxZ() - margin
+
   composition.forEach(function (pair) {
     var mobType = pair[0]
     var count = pair[1]
@@ -126,6 +139,8 @@ function useWaveHorn(player) {
       var r = 15 + Math.random() * 10
       var x = Math.floor(player.getX() + Math.cos(angle) * r)
       var z = Math.floor(player.getZ() + Math.sin(angle) * r)
+      x = Math.max(minX, Math.min(maxX, x))
+      z = Math.max(minZ, Math.min(maxZ, z))
       server.runCommandSilent(`summon minecraft:${mobType} ${x} ${Math.floor(player.getY())} ${z}`)
       totalMobs++
     }

@@ -138,9 +138,14 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
      `6.283185307179586` (2π) instead of `Math.PI * 2`.
 
   Confirmed working in-game after all nine fixes: wave spawning, the
-  hostile counter, and the wave-complete/incoming messages. The starter
-  base and `base_expansion.js`'s worldborder growth share bug #8's fix
-  but haven't been separately re-confirmed in-game yet.
+  hostile counter, and the wave-complete/incoming messages.
+
+  **Second playtest (2026-08-19)** — texture still a known placeholder
+  (unchanged, expected). Consolidated to one "wave incoming" message
+  (was firing from both this script and `wave_status.js` — removed the
+  duplicate from `wave_status.js`, kept this one since it includes the
+  mob count). Border-clamp and wave-triggered expansion fixes described
+  under Base expansion below.
 
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only
@@ -201,16 +206,32 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`
-  grows the worldborder by 5 blocks every 2 nights survived. Deliberately
-  scoped down from the fuller design (no separate custom dimension, no
-  hand-built `.nbt` structure) — reuses the Superflat Overworld and the
-  existing `/fill`-based starter base instead, since both already work.
-  Counter lives on the player's persistent data rather than the world/
-  level — checked KubeJS's server/level `persistentData` against its own
-  source (`MinecraftServerMixin.java`) and found no save/load hook at
-  all, so it wouldn't actually survive a restart; player persistent data
-  does (same proven mechanism as the starter kit's first-join flag). Not
-  yet tested in-game.
+  grows the worldborder by 5 blocks every 2 **waves cleared**. Originally
+  built as "nights survived" (the available proxy before the Wave Horn
+  system existed), switched 2026-08-19 after a real playtest — the
+  original intent was always waves, and it now watches
+  `wave_status.js`'s `td_inWave` flag directly instead of re-scanning for
+  hostiles itself. Deliberately scoped down from the fuller design (no
+  separate custom dimension, no hand-built `.nbt` structure) — reuses the
+  Superflat Overworld and the existing `/fill`-based starter base
+  instead, since both already work. Counter lives on the player's
+  persistent data rather than the world/level — checked KubeJS's
+  server/level `persistentData` against its own source
+  (`MinecraftServerMixin.java`) and found no save/load hook at all, so it
+  wouldn't actually survive a restart; player persistent data does.
+
+  **Playtest feedback (2026-08-19)** also surfaced a real bug this
+  depends on: `wave_spawner.js` could summon mobs *outside* the current
+  worldborder (its 15-25 block spawn radius easily exceeds a small
+  border), making them permanently unreachable — which also silently
+  prevented the hostile counter from ever reaching 0, so "wave defeated"
+  never fired either. Fixed by clamping spawn positions to
+  `level.getWorldBorder()`'s bounds (minus a margin). This specific API
+  call (`getWorldBorder()`, `getMinX()`/`getMaxX()`/`getMinZ()`/`getMaxZ()`)
+  is standard vanilla `Level`/`WorldBorder` methods, not KubeJS-specific,
+  but hasn't been confirmed in-game yet given how many "should be fine"
+  assumptions turned out wrong in this same debugging session — worth
+  double-checking if the border-clamp behaves oddly.
 
 - **Night-based mob scaling** — first draft preserved at
   `docs/deferred/night_scaling.js` (moved out of `pack/kubejs/` so it
