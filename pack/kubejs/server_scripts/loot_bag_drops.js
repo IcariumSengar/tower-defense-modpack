@@ -45,23 +45,31 @@ const TFTH_FLESH_MOBS = [
 
 const TFTH_INCUBATORS = ['the_flesh_that_hates:plaqueincubatorone', 'the_flesh_that_hates:plaqueincubatorstart']
 
-// `LootJS.modifiers(...)` (as documented in LootJS's own README) throws
-// "LootJS is not defined" on our installed version (2.13.1) — confirmed
-// in-game. The older `onEvent("lootjs", ...)` + `.addLoot(...)` form from
-// LootJS's own example_scripts folder is what actually works at runtime.
-onEvent('lootjs', (event) => {
+// `LootJS.modifiers(...)` is the correct, current syntax — confirmed
+// directly from LootJS's own source (LootJSEvent.java registers "LootJS"
+// as a KubeJS 6 EventGroup with a "modifiers" handler) and from KubeJS's
+// own onEvent migration guide (onEvent('x', ...) -> X.x(...), which for
+// LootJS means exactly LootJS.modifiers(...)). A previous test showed
+// "LootJS is not defined" and this got switched to the older onEvent()
+// form as a result — but onEvent() is actually removed entirely in this
+// KubeJS version (confirmed by a second, later in-game test that
+// rejected it outright), so that fix was wrong. Reverted. The original
+// "not defined" error was most likely caused by something else in that
+// specific session (LootJS not fully loaded, from around the time the
+// CurseForge instance was being recreated), not a real API mismatch.
+LootJS.modifiers((event) => {
   // addEntityLootModifier is only confirmed to accept a single entity ID at
   // a time (every verified example does this), so each tier is wired up
   // per-entity rather than passing the whole array in one call.
   VANILLA_HOSTILES.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.15).addLoot('kubejs:scavengers_bag')
+    event.addEntityLootModifier(id).randomChance(0.15).thenAdd('kubejs:scavengers_bag')
   })
 
   TFTH_FLESH_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.25).addLoot('kubejs:fortified_cache')
+    event.addEntityLootModifier(id).randomChance(0.25).thenAdd('kubejs:fortified_cache')
   })
 
   TFTH_INCUBATORS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.75).addLoot('kubejs:warlords_hoard')
+    event.addEntityLootModifier(id).randomChance(0.75).thenAdd('kubejs:warlords_hoard')
   })
 })

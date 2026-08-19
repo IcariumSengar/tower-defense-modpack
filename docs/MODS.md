@@ -65,15 +65,21 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   invasion mobs have no custom entity IDs of their own (verified by
   inspecting the mod jar — it spawns vanilla mobs during invasions), so
   they currently fall into the Common tier same as any other zombie/skeleton.
-  **First in-game test (2026-08-19) caught one real bug**: LootJS's own
-  README documents `LootJS.modifiers((event) => {...})`, but that throws
-  `ReferenceError: "LootJS" is not defined` on our installed version
-  (2.13.1) — the README was ahead of what's actually in the 1.20.1
-  release. Fixed by switching to the older `onEvent("lootjs", (event) =>
-  {...})` + `.addLoot(...)` form, which is what LootJS's own
-  example_scripts folder actually uses (and what really works at
-  runtime). The custom-item + right-click half (`loot_bag_open.js`,
-  `loot_bags.js`) loaded with zero errors on the same test — that part's
+  **Syntax settled after two rounds of in-game testing (2026-08-19)**:
+  first test showed `LootJS.modifiers(...)` throwing `ReferenceError:
+  "LootJS" is not defined`, which got "fixed" by switching to the older
+  `onEvent("lootjs", ...)` form from LootJS's example_scripts folder. A
+  later test then showed KubeJS hard-rejecting `onEvent()` outright
+  ("no longer supported" — it's a removed KubeJS 5 API). Checked LootJS's
+  actual source (`LootJSEvent.java` registers `"LootJS"` as a real KubeJS
+  6 EventGroup with a `modifiers` handler) and KubeJS's own migration
+  guide (`onEvent('x', ...)` → `X.x(...)`, i.e. exactly
+  `LootJS.modifiers(...)`) — confirmed the README was right all along.
+  Reverted to `LootJS.modifiers(...)` + `.thenAdd(...)`. The original
+  "not defined" error was most likely a one-off from around when the
+  CurseForge instance was being recreated, not a real API mismatch. The
+  custom-item + right-click half (`loot_bag_open.js`,
+  `loot_bags.js`) loaded with zero errors on both tests — that part's
   confidence was justified. Bag items have no custom texture yet, so
   they'll show KubeJS's placeholder texture until art is added.
 
