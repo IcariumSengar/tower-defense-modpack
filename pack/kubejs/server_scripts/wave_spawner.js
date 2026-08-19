@@ -155,6 +155,12 @@ function useWaveHorn(player) {
 
   var displayWave = Math.min(waveNumber, WAVES.length)
   player.tell(`§6[Wave Horn] §fWave ${displayWave} incoming! (${totalMobs} mobs)`)
+  // Big on-screen title (like an achievement popup), not just chat —
+  // chat is easy to miss mid-fight. Uses vanilla /title via
+  // runCommandSilent, consistent with every other command in this pack
+  // rather than an unverified KubeJS-specific title API.
+  server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
+  server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
 }
 
 // Covers right-clicking with nothing targeted (rare on Superflat, but

@@ -61,5 +61,8 @@ PlayerEvents.tick((event) => {
   } else if (wasInWave) {
     data.putBoolean('td_inWave', false)
     player.tell(`§6[Wave] §aWave ${waveNumber} defeated!`)
+    // Big on-screen title, same reasoning as wave_spawner.js's "incoming"
+    // one — chat is easy to miss mid-fight.
+    player.getServer().runCommandSilent(`title @a title {"text":"WAVE ${waveNumber} CLEARED","color":"green","bold":true}`)
   }
 })
