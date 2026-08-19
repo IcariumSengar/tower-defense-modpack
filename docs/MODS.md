@@ -44,6 +44,15 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 
 ## Custom glue
 
+- **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
+  bar shows a live "Hostiles remaining: N" count, and chat announces
+  "incoming!" / "defeated!" when the nearby hostile count rises from /
+  falls to zero. Tracks all hostile mobs within 80 blocks, not
+  specifically Pure Suffering invasion mobs — no confirmed way to
+  distinguish "invasion mob" from "wandered in on its own" without
+  deeper unverified work, so this answers "how much danger is near me"
+  rather than a precise invasion-only count. Not yet tested in-game.
+
 - **Loot bag drop system** — the base-building resource loop: mobs drop
   tiered loot bags on death, opened by right-clicking to receive a
   randomized set of vanilla materials. Deliberately vanilla-materials-only
