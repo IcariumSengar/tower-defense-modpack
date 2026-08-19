@@ -13,12 +13,16 @@ file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "kubejs/server_scripts/base_expansion.js"
+hash = "795641f6963d8b21ec6b53323499dc34e9cd488dbc8fe9e418cc71949ce2fe1b"
+
+[[files]]
 file = "kubejs/server_scripts/example_glue.js"
 hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "13e2b3b3bb7bc4c09c3972ac2e531ba24e6989137b3086d9cbb3b052e34d7d62"
+hash = "e1e6acb96d35496f28ce2d5e898f8a8f6bcf25ecc2289e0f26c1683d3ad16326"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"

@@ -65,23 +65,27 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   invasion mobs have no custom entity IDs of their own (verified by
   inspecting the mod jar — it spawns vanilla mobs during invasions), so
   they currently fall into the Common tier same as any other zombie/skeleton.
-  **Syntax settled after two rounds of in-game testing (2026-08-19)**:
-  first test showed `LootJS.modifiers(...)` throwing `ReferenceError:
-  "LootJS" is not defined`, which got "fixed" by switching to the older
-  `onEvent("lootjs", ...)` form from LootJS's example_scripts folder. A
-  later test then showed KubeJS hard-rejecting `onEvent()` outright
-  ("no longer supported" — it's a removed KubeJS 5 API). Checked LootJS's
-  actual source (`LootJSEvent.java` registers `"LootJS"` as a real KubeJS
-  6 EventGroup with a `modifiers` handler) and KubeJS's own migration
-  guide (`onEvent('x', ...)` → `X.x(...)`, i.e. exactly
-  `LootJS.modifiers(...)`) — confirmed the README was right all along.
-  Reverted to `LootJS.modifiers(...)` + `.thenAdd(...)`. The original
-  "not defined" error was most likely a one-off from around when the
-  CurseForge instance was being recreated, not a real API mismatch. The
-  custom-item + right-click half (`loot_bag_open.js`,
-  `loot_bags.js`) loaded with zero errors on both tests — that part's
-  confidence was justified. Bag items have no custom texture yet, so
-  they'll show KubeJS's placeholder texture until art is added.
+  **Real root cause found after three rounds of in-game testing
+  (2026-08-19)**: `LootJS.modifiers(...)` — the syntax LootJS's own
+  README documents — was correct the whole time. The `ReferenceError:
+  "LootJS" is not defined` errors weren't a syntax problem at all: the
+  LootJS mod jar was never actually present in the running instance. Root
+  cause was `packwiz cf export` defaulting to `--side client`, which
+  **silently drops server-only mods with no warning** — both LootJS and
+  Radium are marked `side = "server"` in their `.pw.toml` (correctly —
+  neither has a client component) and were getting dropped from every
+  export. Fixed by always exporting `--side both` (documented in
+  README.md) — this pack only targets single-player, where the
+  integrated server needs every mod regardless of side. Two wrong
+  detours happened chasing this before finding it: first swapping to the
+  older `onEvent("lootjs", ...)` form (which KubeJS then hard-rejected as
+  a removed API), then confirming via source that `LootJS.modifiers`
+  really was right — neither fix mattered since the mod itself wasn't
+  loaded either time. The custom-item + right-click half
+  (`loot_bag_open.js`, `loot_bags.js`) loaded with zero errors throughout
+  — that part's confidence was justified from the start. Bag items have
+  no custom texture yet, so they'll show KubeJS's placeholder texture
+  until art is added.
 
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`

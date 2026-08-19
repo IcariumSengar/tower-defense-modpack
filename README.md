@@ -41,8 +41,12 @@ Mods are tracked as small `.pw.toml` files (URL + hash), not committed
 binaries, so the pack folder stays lightweight in git. To export a
 CurseForge/Modrinth-installable pack:
 ```
-packwiz cf export      # or: packwiz mr export
+packwiz cf export --side both      # or: packwiz mr export
 ```
+**`--side both` is required** — `cf export` defaults to `--side client`
+and silently drops server-only mods (Radium, LootJS) from the zip with
+no warning. Since this pack only targets single-player (the integrated
+server needs every mod too), always export both sides.
 
 ## Status
 
