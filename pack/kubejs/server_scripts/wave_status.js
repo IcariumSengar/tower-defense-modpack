@@ -40,18 +40,11 @@ const RADIUS = 80
 // Must match wave_spawner.js's WAVES.length — server_scripts don't
 // reliably share top-level scope across files (same duplication pattern
 // as HOSTILE_TYPES above), so this is redeclared here rather than
-// imported. Drives the wave-number display cap below - keep this at the
-// real designed wave count regardless of GEAR_REMOVAL_WAVE.
+// imported. Drives both the wave-number display cap below and the
+// starter gear removal trigger (was briefly split into its own
+// GEAR_REMOVAL_WAVE = 2 for faster playtest iteration - confirmed
+// working 2026-08-19, reset to the real wave 5 here).
 const FINAL_WAVE = 5
-
-// Deliberately separate from FINAL_WAVE, not the same constant reused -
-// temporarily set to 2 (2026-08-19, playtest convenience, real value is
-// FINAL_WAVE) so gear removal can be checked without a full 5-wave
-// clear each time. Reset to FINAL_WAVE (or just reference FINAL_WAVE
-// directly and delete this) once the removal/popup itself is confirmed
-// working - the "It's up to you now" narrative beat only makes sense at
-// the real end of the curated campaign.
-const GEAR_REMOVAL_WAVE = 2
 
 // Tag set on the sword/armor in playtest_starter_kit.js — matching on
 // this instead of item type is what lets removal target exactly the
@@ -101,15 +94,13 @@ PlayerEvents.tick((event) => {
     player.getServer().runCommandSilent('time set day')
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
 
-    // Starter gear removal, once, the moment GEAR_REMOVAL_WAVE clears
-    // (currently wave 2, for playtest speed — see its own comment
-    // above). The td_starterGearRemoved guard (same one-shot pattern as
-    // td_playtestKitGiven) is the real safety net against re-firing;
-    // waveNumber naturally only equals GEAR_REMOVAL_WAVE once anyway
-    // while it's below FINAL_WAVE (no capping in play yet at that
-    // point), unlike checking against FINAL_WAVE itself, which every
-    // repeat/endless wave past the cap would also match.
-    if (waveNumber === GEAR_REMOVAL_WAVE && !data.getBoolean('td_starterGearRemoved')) {
+    // Starter gear removal, once, the moment the curated campaign's
+    // final wave clears — waveNumber is capped at FINAL_WAVE, so every
+    // repeat/endless wave past this point also reads as FINAL_WAVE; the
+    // td_starterGearRemoved guard (same one-shot pattern as
+    // td_playtestKitGiven) is what keeps this to a single firing rather
+    // than re-running on every later wave clear.
+    if (waveNumber === FINAL_WAVE && !data.getBoolean('td_starterGearRemoved')) {
       data.putBoolean('td_starterGearRemoved', true)
 
       // /clear reaches armor and offhand slots as well as the main

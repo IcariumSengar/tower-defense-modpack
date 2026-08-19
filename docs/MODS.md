@@ -100,23 +100,16 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
     ("IT'S UP TO YOU NOW"), plus `player.tell(...)` for the fuller
     narrative beat in chat (a title can't legibly carry more than a
     couple words). Wording is a first pass, easy to retune like
-    everything else in this file — it still says "five waves" even
-    while `GEAR_REMOVAL_WAVE` is temporarily 2 (see below), since the
-    text describes the real intended trigger.
+    everything else in this file.
 
-  **Temporarily gated on wave 2, not wave 5 (2026-08-19)** — added a
-  separate `GEAR_REMOVAL_WAVE` constant (`2`) rather than repurposing
-  `FINAL_WAVE` for this, since `FINAL_WAVE` also drives the wave-number
-  display cap and there are still genuinely 5 designed waves — lowering
-  it would've broken the HUD showing "Wave 3/4/5" correctly. Playtest
-  convenience only, so removal/popup can be checked without a full
-  5-wave clear each time; reset to `FINAL_WAVE` (or delete
-  `GEAR_REMOVAL_WAVE` and reference `FINAL_WAVE` directly) once
-  confirmed working.
-
-  Not yet tested in-game — a full 5-wave clear takes real playtest time
-  to reach; flagged the same way `mob_aggro.js`'s `setTarget` was before
-  its own confirmation.
+  **Confirmed working (2026-08-19)** — verified with a temporary
+  `GEAR_REMOVAL_WAVE` constant (`2`) swapped in for `FINAL_WAVE`, so it
+  could be checked without a full 5-wave clear each time; kept as a
+  separate constant rather than lowering `FINAL_WAVE` itself, since that
+  one also drives the wave-number display cap and there are genuinely 5
+  designed waves. Player confirmed "work perfectly." Reset to
+  `FINAL_WAVE` (real wave 5) immediately after — same trigger logic,
+  just the wave number it fires on.
 
 - **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
   `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on

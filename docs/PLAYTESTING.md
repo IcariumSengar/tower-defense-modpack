@@ -94,12 +94,10 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   also backwards (Rare more likely than Common) until the same day —
   now Common 50% / Uncommon 25% / Rare 10%. Common's loot pool gained
   stone/wood/food staples on top of its scrap materials.
-- The starter sword/armor disappear once the campaign's final wave
+- The starter sword/armor disappear once the campaign's final wave (5)
   clears, with an "IT'S UP TO YOU NOW" popup — **confirmed working**
-  (2026-08-19 playtest). Currently gated on wave 2, not the real wave 5,
-  via a separate `GEAR_REMOVAL_WAVE` constant in `wave_status.js` for
-  faster playtest iteration — reset to `FINAL_WAVE` before this is
-  considered settled pack behavior. See `docs/MODS.md`'s Wave status HUD
+  (2026-08-19 playtest, verified at a temporarily-lowered wave 2, then
+  reset back to the real wave 5). See `docs/MODS.md`'s Wave status HUD
   entry for the implementation.
 - Mouse Tweaks and Inventory Profiles Next were fighting over the same
   swipe/hover gestures — green flashing on inventory hover, occasional
