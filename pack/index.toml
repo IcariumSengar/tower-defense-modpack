@@ -30,7 +30,7 @@ hash = "8345e5006dd6b7790ed02f95540de7f31d17335e28ba228ad50b29e777391ece"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "e531c35d279ad9cdccb5bb93eefbbf008b578e8a6d8429cfcae3e6d86b97bf9d"
+hash = "e309efbbc8315fb5e84eac19f50adc4eb355c59d4fb16a548f79e86a36e4c316"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"

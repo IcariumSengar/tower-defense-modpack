@@ -147,6 +147,15 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   mob count). Border-clamp and wave-triggered expansion fixes described
   under Base expansion below.
 
+  **Instant aggro (requested after second playtest)**: summoned mobs now
+  get `Attributes:[{Name:"generic.follow_range",Base:128}]` in their
+  `/summon` NBT, so they immediately notice and path to the player on
+  spawn rather than only within vanilla's shorter default follow range.
+  Superflat already guarantees line of sight, so this was the only
+  remaining gate between "spawns" and "immediately aggros." Standard
+  vanilla summon NBT, not KubeJS-specific — same confidence level as the
+  sword's Sharpness enchantment NBT, which is already confirmed working.
+
   Natural mob spawning is disabled (`doMobSpawning` gamerule, set
   automatically by `playtest_starter_kit.js`) so the horn is the only
   mob source — note this also stops passive mobs (cows, etc.), vanilla
