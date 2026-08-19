@@ -62,14 +62,14 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   rather than a precise invasion-only count. Confirmed working across
   multiple playtests (see Wave spawner's debugging log below).
 
-  **Storage chest (2026-08-19)** — after clearing wave 1, the player had
-  loot bags/materials piling up with nowhere to put them. Added a
-  one-time `minecraft:chest` give the moment `td_waveNumber >= 1` and
-  the player isn't currently mid-wave — checked every tick rather than
-  only on the live defeat transition, so it also fires retroactively for
-  a save that already cleared wave 1 before this existed (which is
-  exactly the situation this was added for), not just for future saves
-  catching the transition live.
+  **Storage-after-wave-1 request (2026-08-19)** — raised as "give the
+  player a way to store loot in a chest after wave 1." First pass gave a
+  `minecraft:chest` item directly; corrected per the actual intent —
+  the player wants to *craft* their own chest (8 planks, vanilla
+  recipe), not be handed one. No code needed for that beyond raw
+  material supply, which the oak log weight bump right above already
+  covers (4-8 logs per roll = 16-32 planks, well over the 8 a chest
+  needs).
 
 - **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
   `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
