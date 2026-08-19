@@ -1,6 +1,12 @@
 # Roadmap / Notes
 
 ## Decisions
+- **Guiding principle: keep footprint small.** This needs to stay
+  playtestable on ordinary hardware, not become a 200-mod kitchen-sink
+  pack. Applies to any mod *I* propose adding on my own initiative —
+  default to the lighter/leaner option, and call out footprint cost
+  (heavy deps, big content mods) before suggesting something bulky, even
+  if it's otherwise a good thematic fit.
 - Loader: Forge
 - Target Minecraft version: 1.20.1
 - Forge version pinned in `pack/pack.toml` — bump when updating.
