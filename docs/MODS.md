@@ -77,15 +77,27 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   confidence was justified. Bag items have no custom texture yet, so
   they'll show KubeJS's placeholder texture until art is added.
 
+- **Base expansion (worldborder growth)** — the "custom world" idea from
+  `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`
+  grows the worldborder by 20 blocks every 3 nights survived. Deliberately
+  scoped down from the fuller design (no separate custom dimension, no
+  hand-built `.nbt` structure) — reuses the Superflat Overworld and the
+  existing `/fill`-based starter base instead, since both already work.
+  Counter lives on the player's persistent data rather than the world/
+  level — checked KubeJS's server/level `persistentData` against its own
+  source (`MinecraftServerMixin.java`) and found no save/load hook at
+  all, so it wouldn't actually survive a restart; player persistent data
+  does (same proven mechanism as the starter kit's first-join flag). Not
+  yet tested in-game.
+
 - **Night-based mob scaling** — first draft preserved at
   `docs/deferred/night_scaling.js` (moved out of `pack/kubejs/` so it
   doesn't get bundled into exports and can't accidentally load/error
-  during playtesting). Still **deferred**. There's no playable setup to
-  test it against yet, and with
-  Epic Siege Mod (AI behavior) and Pure Suffering (tiered invasion events)
-  both already handling escalation, hand-tuning raw mob stats on top is a
-  later-priority refinement, not part of getting the mod list itself
-  solid. Revisit once the pack is actually running.
+  during playtesting). Still **deferred** — with Epic Siege Mod (AI
+  behavior) and Pure Suffering (tiered invasion events) both already
+  handling escalation, hand-tuning raw mob stats on top is a
+  later-priority refinement. Revisit once the mod-driven version's gaps
+  are actually known from play.
 
 ## Compatibility check (2026-08-19)
 

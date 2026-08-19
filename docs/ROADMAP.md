@@ -26,6 +26,13 @@
   step, deferred because it requires custom Java AI rather than just
   picking mods + KubeJS glue — bigger bet, revisit once the horde-density
   version is proven fun.
+- **Base expansion / "custom world" (2026-08-19):** first-step scope
+  chosen from the fuller design notes in `docs/IDEAS.md` — reuse the
+  Superflat Overworld (no separate custom dimension), keep the existing
+  `/fill`-based starter base, and grow the worldborder every 3 nights
+  survived (`pack/kubejs/server_scripts/base_expansion.js`). A real
+  custom dimension and a hand-built `.nbt` starter structure are noted as
+  the fancier version, revisit only if Superflat proves insufficient.
 
 ## Mod list
 - See [docs/MODS.md](MODS.md) — tracked per-mod as they're picked.
@@ -34,11 +41,12 @@
   narrowed to gap-filling glue, not owning the whole mechanic.
 
 ## Current priority
-No playable setup exists yet (no client/launcher configured), so the
-focus is getting the mod list itself solid — compatible, deduped,
-dependency-resolved — rather than writing/tuning KubeJS glue that can't
-be tested. Glue work (e.g. `night_scaling.js`, currently an uncommitted
-draft) resumes once the pack can actually be run.
+Pack is playable and being actively playtested (see
+`docs/PLAYTESTING.md`) — CurseForge instance, Superflat world, on-demand
+wave triggering via Pure Suffering's admin commands. `night_scaling.js`
+(mob stat scaling) stays parked in `docs/deferred/` — the current
+mod-driven escalation (Epic Siege Mod + Pure Suffering) is covering that
+job for now.
 
 ## Open questions
 - (add things here as they come up)

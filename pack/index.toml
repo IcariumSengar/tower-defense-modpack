@@ -25,6 +25,10 @@ file = "kubejs/server_scripts/loot_bag_open.js"
 hash = "8345e5006dd6b7790ed02f95540de7f31d17335e28ba228ad50b29e777391ece"
 
 [[files]]
+file = "kubejs/server_scripts/playtest_starter_kit.js"
+hash = "2b2c4ead0a0747114163a054f0ad878920e1a869fbe8eef497ae53ecc93129db"
+
+[[files]]
 file = "kubejs/startup_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
