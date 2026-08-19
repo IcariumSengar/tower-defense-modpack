@@ -27,8 +27,8 @@
 // cheats nominally on).
 
 var WAVES_PER_EXPANSION = 2
-var EXPANSION_BLOCKS = 5
-var EXPANSION_TIME_SECONDS = 30
+var EXPANSION_BLOCKS = 20
+var EXPANSION_TIME_SECONDS = 10
 
 PlayerEvents.tick(function (event) {
   var player = event.entity
