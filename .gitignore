@@ -1,0 +1,29 @@
+# Gradle
+.gradle/
+mod/build/
+mod/out/
+!mod/gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Minecraft / run dirs
+mod/run/
+mod/logs/
+
+# Packwiz local caches / exports
+pack/.packwizignore-cache/
+pack/*.mrpack
+pack/index.toml.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.env
