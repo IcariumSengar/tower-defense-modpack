@@ -36,17 +36,24 @@ function randomCount(entry) {
 }
 
 // Deliberate quality gradient across the three tiers, not just separate
-// unrelated pools: Common is early-game combat/crafting scrap, Uncommon
-// is solid bulk materials plus a small chance at Common's ceiling items
-// (diamond, ender pearl), Rare is iconic top-of-the-game vanilla loot
-// (totem, enchanted golden apple, netherite) that a player wouldn't
-// normally see this early. Each tier's weakest items overlap with the
-// tier below's strongest, so the jump feels earned rather than random.
+// unrelated pools: Common is early-game combat/crafting scrap plus basic
+// building/food staples (base-building and survival needs come first),
+// Uncommon is solid bulk materials plus a small chance at Common's
+// ceiling items (diamond, ender pearl), Rare is iconic top-of-the-game
+// vanilla loot (totem, enchanted golden apple, netherite) that a player
+// wouldn't normally see this early. Each tier's weakest items overlap
+// with the tier below's strongest, so the jump feels earned rather than
+// random.
 var SCAVENGERS_BAG_POOL = [
+  { item: 'minecraft:cobblestone', weight: 30, min: 8, max: 16 },
+  { item: 'minecraft:oak_log', weight: 25, min: 4, max: 8 },
+  { item: 'minecraft:bread', weight: 25, min: 3, max: 6 },
   { item: 'minecraft:iron_nugget', weight: 30, min: 2, max: 4 },
   { item: 'minecraft:coal', weight: 25, min: 2, max: 5 },
   { item: 'minecraft:string', weight: 20, min: 2, max: 4 },
   { item: 'minecraft:bone', weight: 20, min: 2, max: 4 },
+  { item: 'minecraft:cooked_beef', weight: 18, min: 2, max: 4 },
+  { item: 'minecraft:apple', weight: 18, min: 2, max: 4 },
   { item: 'minecraft:redstone', weight: 15, min: 2, max: 4 },
   { item: 'minecraft:gunpowder', weight: 15, min: 1, max: 3 },
   { item: 'minecraft:leather', weight: 15, min: 2, max: 3 },

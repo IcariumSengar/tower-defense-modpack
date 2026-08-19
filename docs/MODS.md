@@ -193,12 +193,13 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   randomized set of vanilla materials. Deliberately vanilla-materials-only
   (no invented items besides the bag containers) to preserve the Minecraft
   aesthetic, per design decision. Retuned 2026-08-19 to track wave-roster
-  tier now that TFTH is gone — three tiers, keyed on mob *type*:
-  - `kubejs:scavengers_bag` (Common, 15% chance) — wave 1 mobs (zombie,
+  tier now that TFTH is gone — three tiers, keyed on mob *type*, each
+  mob group only ever rolling its own tier's bag (no cross-tier drops):
+  - `kubejs:scavengers_bag` (Common, 50% chance) — wave 1 mobs (zombie,
     skeleton) plus husk/drowned/creeper for good measure
   - `kubejs:fortified_cache` (Uncommon, 25% chance) — wave 2-3 additions
     (spider, witch)
-  - `kubejs:warlords_hoard` (Rare, 75% chance) — wave 4-5 additions
+  - `kubejs:warlords_hoard` (Rare, 10% chance) — wave 4-5 additions
     (wither skeleton, ravager)
 
   Implementation: `pack/kubejs/startup_scripts/loot_bags.js` (item
@@ -224,10 +225,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   loaded either time. The custom-item + right-click half
   (`loot_bag_open.js`, `loot_bags.js`) loaded with zero *console* errors
   throughout — but see the 2026-08-19 bug below, since "no console
-  errors" turned out not to mean "actually works." Bag items have no
-  custom texture yet, so they'll show KubeJS's placeholder texture until
-  art is added — the Wave Horn got a hand-authored placeholder texture
-  2026-08-19 (see its own entry above), the bags haven't yet.
+  errors" turned out not to mean "actually works."
 
   **Fourth round (2026-08-19), once the mod was actually loading**:
   `LootJS.modifiers(...)` ran without error, but `.thenAdd(...)` — the
@@ -267,6 +265,27 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
   ingot, totem of undying, enchanted golden apple) at low weight, on top
   of the existing diamond/emerald/gold/netherite scrap/nether star
   entries.
+
+  **Second balance pass, textures + drop rate + Common contents
+  (2026-08-19)**:
+  - **Drop rate was backwards** — Rare rolled at 75% (more likely than
+    Common's 15%), the opposite of what "rare" should signal. Fixed to
+    Common 50% / Uncommon 25% / Rare 10%, so common bags are the ones you
+    actually see most often and a Warlord's Hoard stays a genuine event
+    even off a mini-boss kill. Tier separation itself (which mob group
+    can drop which bag) was already correct — each group only ever rolls
+    its own tier, no cross-tier contamination.
+  - **Common pool now includes base-building/survival staples** —
+    cobblestone, oak logs, bread, cooked beef, apple — alongside the
+    existing scrap materials, on the reasoning that a fresh base needs
+    stone/wood/food before scrap metal matters.
+  - **Textures added** for all three bags —
+    `pack/kubejs/assets/kubejs/textures/item/{scavengers_bag,
+    fortified_cache,warlords_hoard}.png`, hand-authored 16x16 placeholders
+    color-coded to each bag's existing tooltip rarity color: gray/plain
+    for Common, gold-tan with brass studs for Uncommon, deep red with a
+    gold trim band and a gem for Rare — so rarity reads at a glance in
+    inventory, not just from hovering for the tooltip.
 
 - **Base expansion (worldborder growth)** — the "custom world" idea from
   `docs/IDEAS.md`, first-step scope. `pack/kubejs/server_scripts/base_expansion.js`

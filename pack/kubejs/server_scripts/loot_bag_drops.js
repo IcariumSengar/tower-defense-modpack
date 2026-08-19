@@ -7,6 +7,17 @@
 // Also covers husk/drowned/creeper under Common even though they're not
 // part of the curated wave roster, in case they show up some other way
 // (Epic Siege Mod, a future wave, etc.) — cheap to leave in.
+//
+// Each mob group only ever rolls its own tier's bag (no cross-tier
+// entries) - a common zombie can never drop a Warlord's Hoard - which
+// already satisfied "reserve higher tier drops to higher tier enemies
+// only" once tier grouping was introduced.
+//
+// Drop RATE was inverted until 2026-08-19: Rare rolled at 75% (more
+// likely than Common's 15%), the opposite of what "rare" should mean.
+// Fixed so rarity now tracks both drop rate and content quality in the
+// same direction - Common is the bag you see most often, Rare is the
+// one that's genuinely a rare event even from a mini-boss kill.
 
 const COMMON_MOBS = ['minecraft:zombie', 'minecraft:skeleton', 'minecraft:husk', 'minecraft:drowned', 'minecraft:creeper']
 const UNCOMMON_MOBS = ['minecraft:spider', 'minecraft:witch']
@@ -27,7 +38,7 @@ LootJS.modifiers((event) => {
   // a time (every verified example does this), so each tier is wired up
   // per-entity rather than passing the whole array in one call.
   COMMON_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.15).addLoot('kubejs:scavengers_bag')
+    event.addEntityLootModifier(id).randomChance(0.5).addLoot('kubejs:scavengers_bag')
   })
 
   UNCOMMON_MOBS.forEach((id) => {
@@ -35,6 +46,6 @@ LootJS.modifiers((event) => {
   })
 
   RARE_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.75).addLoot('kubejs:warlords_hoard')
+    event.addEntityLootModifier(id).randomChance(0.1).addLoot('kubejs:warlords_hoard')
   })
 })

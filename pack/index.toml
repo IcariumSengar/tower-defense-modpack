@@ -9,6 +9,18 @@ file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
 [[files]]
+file = "kubejs/assets/kubejs/textures/item/fortified_cache.png"
+hash = "9f6cc5febf2d59e482fb26befef21afc9aba5e5e64bcc486da8145423bdccb58"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/item/scavengers_bag.png"
+hash = "6830a060fef26ae2d56d928939c4f9ece51e3b60a593a348dee4c9879326705d"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/item/warlords_hoard.png"
+hash = "2672d046624d5cb6a5f513941798740ae10b8f06a8c6c2e98cd6b6b832ab4932"
+
+[[files]]
 file = "kubejs/assets/kubejs/textures/item/wave_horn.png"
 hash = "fc4ceb66506bc37f9f3803248016df4b8b664ae002bfa1faa062d9b371ef65c5"
 
@@ -26,11 +38,11 @@ hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "b83e5a72bb928191e098a50cca11bbba194e9c66b85ea26ce30765517f049822"
+hash = "c8f538156b3389e51444bbe53ca70b68cd02ac28bf8782febda108a66507b4aa"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
-hash = "306cbf877427aea72b49484ccc9a21de132da05a8a8cbd8acfb5e322c4e46d25"
+hash = "d233ea9dca85b6417e6f46c7c10b120c27526fc4382754f47e7e0b804f679989"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -54,7 +66,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/startup_scripts/loot_bags.js"
-hash = "d342b157718c59b175073e560580fb4fdb9fdd53f14f75c1feb851c5ac42c3ec"
+hash = "b601fa13e6176846a090ff91747623f2ff8ffb6fd431f2744331ed7ef2e7ecd1"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"
