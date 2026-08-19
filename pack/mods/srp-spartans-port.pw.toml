@@ -1,0 +1,13 @@
+name = "Scape And Spartans: Parasites Port"
+filename = "srp_spartans-1.0.5.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "a1189bd3eae40cab32f2bc362409ef003d155634"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8296566
+project-id = 1396360

@@ -30,8 +30,13 @@ hash = "4e81241ba2da06f425efc5e09fb6b38470125c1581c39e1310c5843a0b96ec76"
 metafile = true
 
 [[files]]
-file = "mods/coroutil.pw.toml"
-hash = "9f2bb57e05bad305f03c25c275c6d11e952835a41b2da68dba10a0bd1f3f6261"
+file = "mods/epic-siege-mod.pw.toml"
+hash = "6a2dbbc2f810da20244a0d5edcc0690a682a665fc1e2ae85d6b48d620c08ade1"
+metafile = true
+
+[[files]]
+file = "mods/geckolib.pw.toml"
+hash = "7ffae05c3b8101588b231db8116c34b36a77a0c6e6d7e6af867ae1c5b47e4d10"
 metafile = true
 
 [[files]]
@@ -55,6 +60,26 @@ hash = "e0d0d32c780841642264e3cdb5b3b9fb23a21a97f55f0cd30c250638b4ab8c43"
 metafile = true
 
 [[files]]
-file = "mods/zombie-awareness.pw.toml"
-hash = "081b32c88849a82d01a3a98871b9860f395822179747d65812e86e9098e9cc61"
+file = "mods/spartan-weaponry-addon-toolkit.pw.toml"
+hash = "319c31c4fd88146a7239e6903de802b6a50cc9d5ab35074537aaa0d9680d0e12"
+metafile = true
+
+[[files]]
+file = "mods/spartan-weaponry.pw.toml"
+hash = "74ea4dfd995e75e83d0e0ffc80ffa97c80f56563e1affaf65837c916f38407fa"
+metafile = true
+
+[[files]]
+file = "mods/srp-spartans-port.pw.toml"
+hash = "6dd6f760861f4ac7d77a61b8519ce4f6d129a9c81ca36b9c1724f32357bb6f72"
+metafile = true
+
+[[files]]
+file = "mods/tfth.pw.toml"
+hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
+metafile = true
+
+[[files]]
+file = "mods/the-pure-suffering-mod.pw.toml"
+hash = "e90f68fd2790b780a79108c5d1f6c00938cebb0eac808dd7fe667a560d35020f"
 metafile = true
