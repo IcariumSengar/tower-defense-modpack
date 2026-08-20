@@ -129,21 +129,28 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   removed, but the pattern was the actual "jarring" part. Not literally
   fog rendered at the border's position, but should read as mist instead
   of a forcefield grid.
-- **Darkness issue was a real bug, not just a tuning gap** — first pass
-  brightened Spooklementary's day-specific sliders, user reported still
-  dark after relaunch. Checked `logs/latest.log` directly and found
-  Spooklementary v2.0.4 throws `Unknown variable: BIOME_PALE_GARDEN`
+- **Darkness took two real fixes, not one** — first, a genuine bug:
+  Spooklementary v2.0.4 threw `Unknown variable: BIOME_PALE_GARDEN`
   during shader pipeline creation (that biome doesn't exist until MC
-  1.21.4) — the custom-uniforms lighting pipeline was failing to fully
-  initialize, no slider tuning could fix that. Downgraded to
-  Spooklementary **v1.1** (predates the biome entirely), brightness
-  override carried over.
+  1.21.4), so its lighting pipeline never fully initialized. Downgraded
+  to v1.1 (predates the biome), confirmed crash gone from
+  `logs/latest.log`. **Still reported too dark after that** — confirmed
+  with the user it was during the peaceful daytime gap specifically, not
+  the intentionally-dark wave-time fog. The external per-shaderpack
+  settings-override file couldn't be confirmed as actually taking
+  effect after two rounds through it, so switched to editing the
+  shader's own `.glsl` defaults directly (unconditionally read on every
+  load, no external-file dependency to doubt) — day-intensity sliders to
+  their max, repackaged as `Spooklementary_TDM_tuned.zip`. This is now a
+  locally-modified shader, not a clean upstream download — see
+  `docs/MODS.md`'s Spooklementary entry.
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
-  `profile.MEDIUM`. User asked for more after the v1.1 downgrade —
-  went a further step to `profile.LOW` (shadows/lightshafts/FXAA cut
-  further). Also fixed an unthrottled full-entity-list scan in
-  `wave_status.js` running every tick regardless of wave state (now
-  every 4 ticks, matching `mob_aggro.js`'s existing throttle pattern).
-  Not yet re-tested for actual FPS impact or confirmed the darkness fix
-  worked.
+  `profile.MEDIUM` via a settings override, then to `profile.LOW` when
+  asked for more — both eventually baked directly into the shader's
+  `.glsl` defaults alongside the darkness fix, once the override
+  mechanism itself came into doubt. Also fixed an unthrottled
+  full-entity-list scan in `wave_status.js` running every tick
+  regardless of wave state (now every 4 ticks, matching
+  `mob_aggro.js`'s existing throttle pattern). **None of this — darkness
+  or performance — has been re-tested in-game yet.**
