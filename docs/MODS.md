@@ -13,13 +13,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | KubeJS | [Modrinth](https://modrinth.com/mod/kubejs) | 2001.6.5-build.26 (1.20.1 Forge) | Data-driven glue scripting (recipes, tags, loot, progression tweaks) without editing other mods' code | Pulls in Architectury API + Rhino automatically | required |
 | Architectury API | [Modrinth](https://modrinth.com/mod/architectury-api) | 9.2.14-forge | Hard dependency of KubeJS | — | required |
 | Rhino | [Modrinth](https://modrinth.com/mod/rhino) | 2001.2.3-build.10 | JS engine KubeJS runs scripts on — hard dependency, packwiz added it automatically | — | required |
-| SecurityCraft | [Modrinth](https://modrinth.com/mod/security-craft) | v1.10.2.1 (1.20.1 Forge/NeoForge) | Turrets, reinforced blocks, trophies, alarms — gives "build up your base between nights" real mechanical teeth | None known yet | testing |
-| Mob Grinding Utils | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/mob-grinding-utils) | 1.1.0 (1.20.1 Forge) | Mob fans/mashers/absorption hoppers — payoff for surviving a wave (turn the horde into XP/loot/power) rather than it just being a threat | None known yet | testing |
 | Epic Siege Mod | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/epic-siege-mod) | 14.171 (1.20.1 Forge) | Rewrites mob AI wholesale: zombies dig/pillar to reach you, creepers breach walls, skeletons snipe, endermen teleport targets, mobs swim/raid villages. Fully configurable (awareness radius, chaos mode) — this is the pack's primary "hordes get scary" mod | Replaces **Zombie Awareness** (removed — both rewrote mob AI goals, redundant/risked conflicting; Epic Siege is the more configurable, more established of the two, so it's the one that stayed). Also considered but rejected: **Nightmare Epic Siege** (same overlap problem, smaller/less-tested mod) | testing |
-| The Pure Suffering Mod | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/the-pure-suffering-mod) | 1.6.8.5R-LTS1 (1.20.1 Forge) | Invasion events that escalate in tier/severity over time | **Kept installed but dormant (2026-08-19)** — `enableInvasions` gamerule set `false`, and the custom vanilla-only wave campaign (`pack/kubejs/server_scripts/wave_spawner.js`) replaces it for now rather than fighting its semi-random invasion-type system for a specific curated progression. Its broader invasion variety (`zombie`, `undead`, `mega_raid`, `warden`, `wither`, `arachnophobia`, `phantom_zone`, and more, via `/puresuffering add primary puresuffering:<type>`) stays available to re-enable later at zero setup cost. | testing |
-| Scape And Spartans: Parasites Port | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/srp-spartans-port) | 1.0.5 (1.20.1 Forge) | **Not** the actual Scape and Run: Parasites mod (that's 1.12.2-only, unported, no permission for ports) — this only ports 4 SRP-themed weapon variants (bleed/viral/corrosion/immalleable) onto Spartan Weaponry. Added as the closest available substitute | Niche/early-stage mod — its own CurseForge page has a past warning about a save-breaking update (v1.0.1); we're on v1.0.5, but treat future `packwiz update` on this one with extra care (check changelog first) rather than blind-updating | testing |
-| Spartan Weaponry | [Modrinth](https://modrinth.com/mod/spartan-weaponry) | 3.2.1 (1.20.1 Forge) | Hard dependency of the Parasites weapon port | — | required |
-| Spartan Weaponry Addon Toolkit | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/spartan-weaponry-addon-toolkit) | 1.6.1 | Hard dependency of the Parasites weapon port | — | required |
 | Embeddium | [Modrinth](https://modrinth.com/mod/embeddium) | 0.3.31 (1.20.1 Forge) | Forge port of Sodium — full rendering-engine rewrite, the biggest FPS win available | None known yet | testing |
 | ModernFix | [Modrinth](https://modrinth.com/mod/modernfix) | 5.27.76 (1.20.1 Forge) | Faster load times, lower memory use, general bugfixes; built to be compatible with other perf mods | None known yet | testing |
 | FerriteCore | [Modrinth](https://modrinth.com/mod/ferrite-core) | 6.0.1 (Forge) | Memory-only optimization — devs of ModernFix recommend always pairing the two | None known yet | testing |
@@ -35,8 +29,6 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Inventory Profiles Next | [Modrinth](https://modrinth.com/mod/inventory-profiles-next) | 1.10.20 (1.20.1 Forge) | One-key inventory sort | Pulls in libIPN + Kotlin for Forge automatically. **Real conflict with Mouse Tweaks found 2026-08-19** — both mods implement their own swipe-to-move/craft gestures over the same slots; see the Inventory conflict entry under Custom glue for the fix | testing |
 | libIPN | [Modrinth](https://modrinth.com/mod/libipn) | 4.0.2 | Hard dependency of Inventory Profiles Next | — | required |
 | Kotlin for Forge | [Modrinth](https://modrinth.com/mod/kotlin-for-forge) | 4.12.0 | Hard dependency of Inventory Profiles Next | — | required |
-| Waystones | [Modrinth](https://modrinth.com/mod/waystones) | 14.1.20 (1.20.1 Forge) | Fast-travel network. Deliberately included despite tension with tower-defense stakes — framed as "get back to base before nightfall," not a shortcut past danger | Pulls in Balm automatically | testing |
-| Balm | [Modrinth](https://modrinth.com/mod/balm) | 7.3.42 | Hard dependency of Waystones | — | required |
 | Corpse | [Modrinth](https://modrinth.com/mod/corpse) | 1.0.23 (1.20.1 Forge) | Death drops become a recoverable corpse instead of scattering — chosen over GraveStone Mod (same niche, picked one) | None known yet | testing |
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
@@ -44,6 +36,47 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Oculus | [Modrinth](https://modrinth.com/mod/oculus) | 1.20.1-1.8.0 (1.20.1 Forge) | Iris-for-Forge shader loader — added 2026-08-20 to run the shader pack below, first piece of the "Atmosphere & Wave Feel" design (`docs/IDEAS.md`) | Declares **Embeddium** as its own required dependency (confirmed via Modrinth API, "any compatible version") — built to work with our existing renderer, not fight it, despite some older/version-unspecific web chatter about Oculus/Embeddium friction | testing |
 | Spooklementary | [Modrinth](https://modrinth.com/shader/spooklementary) | v2.0.4 (1.20.1) | Shader pack — Complementary-based, moody/desaturated horror atmosphere. Picked 2026-08-20 over Hysteria Shaders (1.20.1 build ~1yr stale, heavier volumetric feature set) and Gravemist (couldn't confirm it's actually available for 1.20.1 — zero Modrinth results). Blood moon effect confirmed **visual-only**, no functional overlap with the separate "Boss waves tied to Blood Moon" idea | Not a mod — a shaderpack zip in `shaderpacks/`, loaded via Oculus. See its own writeup under Custom glue for what still needs building on top of just "installed" | testing |
 | YetGamer's Custom Fog | [Modrinth](https://modrinth.com/mod/yetgamers-custom-fog) | 1.0.1 (1.20.1 Forge) | Added 2026-08-20 as a substitute for `docs/IDEAS.md`'s named Foggy Border/Fog (IMB11), **neither of which has any Forge build at all** (Foggy Border is Fabric-only; Fog/IMB11 is Fabric/NeoForge-only and starts at 1.21+ anyway — confirmed via Modrinth's version API directly, not search summaries). Ships a real runtime `/fog <targets> set\|reset <min> <max> <r> <g> <b> <sat> cylinder\|sphere` command — scriptable via the same `runCommandSilent` pattern as everything else in this pack, unlike a shader's own settings | No dependencies. Its fog is always player-relative, not tied to a fixed world coordinate — can't literally render fog "at the worldborder," see the Custom glue writeup for what it actually delivers instead | testing |
+
+## Removed mods
+
+Footprint audit (2026-08-20) — user asked to remove anything installed
+but not actually wired into any built system, tracking it here for
+future plans/ideas rather than carrying the weight of an unused mod.
+Cross-checked every mod against the actual KubeJS scripts (zero
+references found for any of these) before removing, not just guessed:
+
+- **SecurityCraft** — never integrated. Was meant to give base defense
+  "real mechanical teeth" but nothing in the pack ever gave/referenced
+  any of its items or directed the player toward it. Revisit if
+  base-building ever gets its own dedicated defense layer beyond the
+  worldborder + starter base.
+- **Mob Grinding Utils** — never integrated. Was meant to be the
+  "payoff for surviving a wave" reward loop, but the loot bag system
+  ended up filling that role instead. Revisit only if the loot bag
+  system ever needs a farming/automation layer on top.
+- **Scape And Spartans: Parasites Port** + its two hard dependencies
+  (**Spartan Weaponry**, **Spartan Weaponry Addon Toolkit**) — never
+  integrated. Nothing gives or references any of its weapons anywhere;
+  `playtest_starter_kit.js` only ever gave the plain netherite sword.
+  Revisit if weapon variety becomes a real design goal — note the
+  parasites port's own CurseForge page had a past save-breaking update
+  warning, worth rechecking before a future re-add.
+- **The Pure Suffering Mod** — was already dormant (`enableInvasions
+  false`, nothing calls `/puresuffering add`), kept installed
+  specifically as a candidate to replace the custom wave engine later
+  (see the Wave spawner sequencing discussion). Removed now per the
+  "don't carry unused footprint" audit — re-adding is a single
+  `packwiz` command if that direction gets picked up again, this isn't
+  a decision that got harder to reverse by removing it.
+- **Waystones** + its hard dependency **Balm** — never integrated.
+  Was a deliberate inclusion ("get back to base before nightfall"
+  framing) but nothing mechanical ever tied it to the wave loop — pure
+  flavor-text framing around an otherwise-standalone mod. Revisit if
+  the base-relocation/travel angle becomes an actual designed mechanic
+  rather than just flavor.
+
+None of these were hard blockers or bugs — all were clean removals of
+mods sitting parallel to, not part of, the pack's actual built systems.
 
 ## Custom glue
 

@@ -399,10 +399,20 @@ Specific mod not identified yet — several mods add a "Blood Moon"
 event (e.g. a standalone Blood Moon mod), not currently in the mod
 list ([MODS.md](MODS.md)). Needs a mod-list check (Forge/1.20.1
 availability, compatibility with Epic Siege Mod/Pure Suffering and the
-vanilla-only Wave Horn campaign) before this goes anywhere near a
-decision — logged generic for now per your call. (Note: TFTH was
-removed from the pack entirely on 2026-08-19, see MODS.md — dropped
-from the compatibility-check list above since it's no longer installed.)
+Wave Horn campaign) before this goes anywhere near a decision — logged
+generic for now per your call.
+
+**Correction (2026-08-20): TFTH is back in the pack, contradicting the
+"removed entirely" note this used to have here.** It was re-added
+(2026-08-19) with its own autonomous spawning explicitly disabled
+(`enableIncubatorSpawn`, `enableFleshBlockSpread`, and related config
+toggles turned off, since that system conflicted with "the Wave Horn is
+the only mob source") — its mob types are folded into the curated wave
+roster instead, summoned directly like any vanilla mob: `flesh_human`
+(wave 2), `flesh_villager` (wave 3), `plaquecreaturetwo`/"Flesh Hunter
+I" (wave 4), `flesh_suffer` (wave 5). So the campaign is no longer
+vanilla-only, and this idea's compatibility check should include TFTH
+again.
 
 Possible connection: Pure Suffering already drives tiered invasion
 events on its own schedule (see MODS.md) — worth checking whether a
@@ -1083,12 +1093,27 @@ waves cleared (see the Base Expansion idea above). This section's fog
 rendering is a visual layer on top of a border mechanic that's already
 built, not a new mechanical system.
 
-Mods named: **Foggy Border** (renders the worldborder itself as fog,
-doesn't change its mechanical behavior) + **Fog by IMB11** (general
-ambient/biome fog, config-driven color/start/end) — used together, each
-handling a different layer (border wall vs. ambient atmosphere).
-Neither is in [MODS.md](MODS.md) yet — need adding when this gets
-picked up for real.
+**Correction (2026-08-20): neither named mod actually works on this
+pack.** Checked directly against Modrinth's API rather than assuming —
+**Foggy Border is Fabric-only** and **Fog by IMB11 is Fabric/NeoForge
+only starting at 1.21+** — neither has a Forge 1.20.1 build at all.
+Real replacement found and built: **YetGamer's Custom Fog** (real Forge
+1.20.1 build, no dependencies, ships an actual `/fog` runtime command).
+Wired into the already-existing night-lock/day-restore pairing in
+`wave_spawner.js`/`wave_status.js` — dense fog fires alongside `time set
+night` when a wave starts (`fog @a set 8 32 25 25 30 0.3 cylinder`,
+cylinder chosen to roughly echo the worldborder's own shape), reset back
+to vanilla fog in the same "defeated" branch that restores daylight.
+
+**Real scope-down worth being clear about:** this fog is **player-relative,
+not tied to the worldborder's actual world coordinate** — no Forge
+1.20.1 mod was found that renders fog fixed at a border position. So
+the original "fog is the literal source of threat, rendered at the
+border line" framing isn't literally true of what got built — it reads
+as general ambient dread ("the horde's out there in the dark") rather
+than a wall you can see receding as the border grows. Delivers the
+*tension* the section wants, not the literal *visual* it originally
+described.
 
 ### Day/Night Density Contrast (locked)
 Day (build/loot phase) should pull the fog/horror aesthetic back
@@ -1104,7 +1129,13 @@ assumes exists — it does. Whatever scripts the atmosphere scaling can
 hook the same state this mechanic already tracks, rather than inventing
 a new day/night detector.
 
-### Shaders (locked concept, pack TBD)
+**Partially built (2026-08-20):** the fog layer specifically is real
+now — see the Fog Wall correction above, wired into this exact
+night-lock/day-restore pairing. The shader layer isn't — see the
+Shaders section below for a real constraint found on that front
+(no live scriptable intensity control).
+
+### Shaders (decided 2026-08-20, was "pack TBD")
 Night leans into aggressive ambient darkening with the fog wall as the
 primary lit/visible feature; day pulls back to a softer profile.
 Candidate packs named: **Spooklementary** (Complementary-based,
@@ -1116,39 +1147,84 @@ Shaders** (BSL-based, configurable via in-game menu, volumetric fog),
 **Gravemist** (heavy fog hiding mobs until the last second — closest
 match to the silhouette-first spawn concept below). No pack chosen yet.
 
-### Spawn Behavior (locked concept, tuning TBD)
+**Decided and built: went with Spooklementary, needs Oculus.** Compared
+all three candidates against Modrinth's API directly rather than
+guessing: Spooklementary confirmed 1.20.1 and actively maintained;
+Hysteria Shaders' 1.20.1 build is ~1 year stale with a heavier feature
+set than needed; **Gravemist couldn't be confirmed available for 1.20.1
+at all — zero Modrinth results** (the candidate list above was wrong to
+include it as a live option). Oculus (the shader loader Forge needs,
+equivalent to Iris on Fabric) declares Embeddium as its own required
+dependency — already in the pack, so it's built to work with the
+existing renderer rather than fight it.
+
+**Resolves the flagged blood-moon question:** confirmed **Spooklementary's
+blood moons are visual-only**, no functional trigger of their own — no
+conflict with the separate Blood Moon idea's mod-search, they're
+independent as hoped.
+
+**Real constraint found, affects the Day/Night Density Contrast idea:**
+Iris/Oculus shaders don't expose a live scriptable API. Dynamic
+day/night intensity control would need a settings-file-swap-and-reload
+approach, not smooth KubeJS control the way the fog layer's `/fog`
+command allows. Installing the pack was step one — the actual
+day/night-reactive intensity, and the rest of Spawn Behavior below,
+aren't built yet as of this shader-pack commit (staggered
+emergence/sound-first were built in a separate, later pass — see
+below).
+
+### Spawn Behavior (built 2026-08-20, was "locked concept, tuning TBD")
 - **Sound-first** — audio cues (growls, footsteps, ambience) play
   before mobs are visible, via `/playsound` or KubeJS `.playSound()`
-  fired ahead of the actual spawn. Not built yet.
+  fired ahead of the actual spawn. **Built**, alongside staggered
+  emergence below (same feature, same commit) — see there for detail.
 - **Silhouette-first** — mobs spawn just past the fog line, visible
   only as vague shapes before committing to pathing toward the player.
   Mostly a function of fog density (border + ambient) doing the work,
-  not new spawn logic.
-- **Staggered emergence** — mobs emerge over a few seconds rather than
-  all at once, for pacing/anticipation. **Doc claims this is "handled
-  in the existing KubeJS wave-spawn script via delayed/scheduled
-  spawns" — checked `wave_spawner.js` directly and this isn't accurate
-  yet**: its `composition.forEach` loop spawns every mob in the wave
-  synchronously, no delay/scheduling logic exists in the file. Not a
-  contradiction so much as the design doc getting ahead of the actual
-  build — worth building this for real rather than assuming it's
-  already there.
-- **Escalation lever** — stagger timing/gaps tighten as wave tiers
-  increase, so early waves stay readable and late waves can
-  intentionally collapse into an overwhelming "wave dump," tying into
-  the Balance Philosophy's "false security" curve. Tuning TBD.
+  not new spawn logic. Still not built as its own thing — the fog
+  layer above provides the raw material, but nothing explicitly stages
+  "visible-shape-then-commit" behavior yet.
+- **Staggered emergence — built 2026-08-20, and the earlier flag here
+  was correct.** This section originally noted the design doc claimed
+  staggered spawning already existed when it didn't — that build now
+  exists for real, in `wave_spawner.js`. Implementation: a `pendingSpawns`
+  queue (`{mobType, x, y, z, spawnTick, soundTick, soundPlayed}`)
+  processed by a `PlayerEvents.tick` handler — deliberately reusing the
+  same tick-loop pattern already proven in `wave_status.js`/`mob_aggro.js`
+  (Implementation Cluster material — no new, unverified scheduling API
+  introduced). Each mob gets a positioned `/playsound minecraft:ambient.cave`
+  cue **12 ticks (~0.6s)** before its actual `/summon` — positioned with
+  explicit coordinates rather than `player.playSound()`, so the cue
+  comes from where the mob is about to appear, not from the player.
+  `minecraft:ambient.cave` was chosen as a generic eerie one-shot since
+  TFTH's own sound event registry names weren't verified. One real bug
+  this introduced and fixed: the Wave Horn's reuse guard now also checks
+  `pendingSpawns.length > 0`, not just nearby-mob count — otherwise
+  spam-clicking the horn during the new emergence window could queue a
+  second wave's mobs on top of the first's before any of them existed
+  yet to be detected.
+- **Escalation lever — built with concrete numbers.** Gap between each
+  mob's emergence shrinks from a **16-tick base** at wave 1 down to a
+  **4-tick floor** by wave 5 (`Math.max(4, 16 - (waveNumber - 1) * 3)`),
+  matching the Balance Philosophy's "false security" curve intent — the
+  floor is 4 ticks rather than 0 so even wave 5 still reads as distinct
+  emergences, not one instant clump.
 
-### New open questions from this section
-- Whether Foggy Border, Fog (IMB11), and whichever shader pack gets
-  picked actually expose a scriptable hook for dynamic density/intensity
-  changes, vs. static config only — needs technical verification before
-  the day/night scaling idea above can actually be built.
-- Fog wall + shader pack compatibility (Foggy Border + Spooklementary/
-  Insanity/Hysteria/Gravemist) not yet tested together.
-- Whether staggered emergence should be built as its own thing, or as
-  part of whatever ends up implementing the wave-clear
-  orchestration/sequencing already being worked out above (reward →
-  choice popup → gear removal → countdown) — both are "things that
-  happen in a timed sequence around a wave," worth checking for shared
-  machinery before building separately.
+### Open questions from this section — updated 2026-08-20
+- **Resolved, split answer:** the scriptable-hook question is answered
+  now that real mods are in place — the **fog layer has one** (YetGamer's
+  Custom Fog's `/fog` command, already wired to wave state), the
+  **shader layer does not** (Oculus/Iris has no live API; would need a
+  settings-file-swap-and-reload approach). Day/night scaling is real for
+  fog, still blocked for shader intensity specifically.
+- Fog + shader compatibility (YetGamer's Custom Fog + Oculus/Spooklementary,
+  the actual pair now, not the originally-named Foggy Border/Gravemist
+  candidates) — still not confirmed tested together in-game.
+- **Resolved:** staggered emergence was built as part of `wave_spawner.js`
+  directly, at the wave-**start** point (`useWaveHorn`) — not the
+  wave-**clear** orchestration cluster discussed elsewhere in this file.
+  Worth being precise about that distinction: these are two different
+  trigger points (wave beginning vs. wave ending) that happen to both be
+  "timed sequences around a wave," not the same mechanism. No shared
+  machinery was needed or used between them.
 

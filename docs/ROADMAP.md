@@ -41,10 +41,12 @@
   signal. A hand-authored 5-wave campaign
   (`pack/kubejs/server_scripts/wave_spawner.js`) replaced relying on
   Epic Siege Mod / Pure Suffering / TFTH's combined variety. TFTH was
-  removed entirely; Pure Suffering stays installed but dormant; Epic
-  Siege Mod still applies its AI behavior to whatever the wave spawner
-  summons. Modded mobs are explicitly a later-revisit, not abandoned —
-  see `docs/MODS.md` under "Removed mods."
+  later re-added and is now folded directly into the wave roster
+  (waves 2-5); Pure Suffering was removed 2026-08-20 as part of a
+  footprint audit (was already dormant); Epic Siege Mod still applies
+  its AI behavior to whatever the wave spawner summons — see
+  `docs/MODS.md` under "Removed mods" for the removal reasoning and
+  re-add paths.
 
 ## Current priority
 Pack is playable and being actively playtested (see

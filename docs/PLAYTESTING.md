@@ -52,10 +52,9 @@ zombies/skeletons don't burn on spawn or catch fire mid-fight) — it
 switches back to day and lets the cycle run normally again once the
 wave is cleared.
 
-Pure Suffering is still installed but dormant (`enableInvasions false`,
-and nothing calls `/puresuffering add` anymore) — its own broader
-invasion variety is documented in `docs/MODS.md` if you want to
-experiment with it directly, but it's not part of the current test loop.
+Pure Suffering was removed 2026-08-20 as part of a footprint audit
+(was already dormant, `enableInvasions false`) — see `docs/MODS.md`'s
+Removed mods section if you want the re-add path later.
 
 Epic Siege Mod's AI behavior (zombies dig/pillar, creepers breach walls,
 etc.) is ambient/always-on and applies to whatever the horn spawns.

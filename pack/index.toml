@@ -99,11 +99,6 @@ hash = "4e81241ba2da06f425efc5e09fb6b38470125c1581c39e1310c5843a0b96ec76"
 metafile = true
 
 [[files]]
-file = "mods/balm.pw.toml"
-hash = "12c4913f51659fc1c0978004f411d9d9b878f589367e4fbe17ca5da60acbbce8"
-metafile = true
-
-[[files]]
 file = "mods/clumps.pw.toml"
 hash = "903352ffbd84d4b95fed905893f4715d9c3f88ec9fff6fb06f6e359e0b839dc3"
 metafile = true
@@ -174,11 +169,6 @@ hash = "713685d5c4c72d8bd46e314ea164b9f9a6a368dedf71398b2246142e2ed66c1f"
 metafile = true
 
 [[files]]
-file = "mods/mob-grinding-utils.pw.toml"
-hash = "22ffca942573f1c39cc6c495122a31706a12eeb655c013c6c017aa1306ccaf7b"
-metafile = true
-
-[[files]]
 file = "mods/modernfix.pw.toml"
 hash = "8b5e5a2517cd2d62a627c8092c8f1fad250e4600833c38fffd7f7fbbfdd063d9"
 metafile = true
@@ -209,38 +199,8 @@ hash = "5b92406160d9ea8a61ddf111caaecb7f6283678e2c40b08b72dce3eeaf20dc96"
 metafile = true
 
 [[files]]
-file = "mods/security-craft.pw.toml"
-hash = "e0d0d32c780841642264e3cdb5b3b9fb23a21a97f55f0cd30c250638b4ab8c43"
-metafile = true
-
-[[files]]
-file = "mods/spartan-weaponry-addon-toolkit.pw.toml"
-hash = "319c31c4fd88146a7239e6903de802b6a50cc9d5ab35074537aaa0d9680d0e12"
-metafile = true
-
-[[files]]
-file = "mods/spartan-weaponry.pw.toml"
-hash = "74ea4dfd995e75e83d0e0ffc80ffa97c80f56563e1affaf65837c916f38407fa"
-metafile = true
-
-[[files]]
-file = "mods/srp-spartans-port.pw.toml"
-hash = "6dd6f760861f4ac7d77a61b8519ce4f6d129a9c81ca36b9c1724f32357bb6f72"
-metafile = true
-
-[[files]]
 file = "mods/tfth.pw.toml"
 hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
-metafile = true
-
-[[files]]
-file = "mods/the-pure-suffering-mod.pw.toml"
-hash = "e90f68fd2790b780a79108c5d1f6c00938cebb0eac808dd7fe667a560d35020f"
-metafile = true
-
-[[files]]
-file = "mods/waystones.pw.toml"
-hash = "ff646e2f218fe9b5094b835855949b70f3f528f0d12ce2401455f60ee9017dbb"
 metafile = true
 
 [[files]]
