@@ -335,6 +335,41 @@ mods sitting parallel to, not part of, the pack's actual built systems.
        `T_UPPER_CURVE` `1.30`→`1.50`), real numbers from an actual
        guide, not another blind guess.
 
+  9. **Round 8 made it worse, not better — "absolutely garbage...
+     shadows are bright lights, barely playable" (2026-08-20).**
+     Checking the actual accumulated state instead of adding another
+     single-variable tweak: by this point nearly every brightness lever
+     was stacked at or near its max simultaneously — `T_EXPOSURE` `2.60`
+     (max `2.80`, default `1.40`), all four day light/atmosphere
+     intensities at their max `2.00` (default `1.00`), night intensities
+     also at max `2.00` (default `1.00`), `MINIMUM_LIGHT_MODE` above
+     default, **and** `REALTIME_SHADOWS` disabled — meaning nothing was
+     left to darken occluded surfaces at all. With no shadow darkening
+     and every light multiplier near its ceiling, occluded/shaded
+     geometry rendered at the same blown-out brightness as sunlit
+     surfaces instead of reading as shadow — exactly the reported
+     "shadows are bright lights."  **Full reset instead of another
+     incremental tweak**: re-enabled `REALTIME_SHADOWS` (`SHADOW_QUALITY`
+     back to its `2` default) so occlusion darkening exists again, and
+     pulled every stacked multiplier back to at-or-near default instead
+     of trying to find one more offsetting value: `MINIMUM_LIGHT_MODE`
+     `3`→`2` (default), `AMBIENT_MULT` `110`→`100` (default),
+     `T_EXPOSURE` `2.60`→`1.70` (a modest bump over default `1.40`, not
+     a near-max one), all four day sliders `2.00`→`1.20` (day brightness
+     is `T_EXPOSURE`'s job, confirmed correct earlier — these were pure
+     redundant stacking), night sliders `2.00`→`1.40`. Left the round-8
+     tonemap curve (`T_LOWER_CURVE`/`T_UPPER_CURVE` `1.30`/`1.50`) alone
+     — real reference values, not part of the stack that caused this.
+     All baked into `Spooklementary_TDM_tuned.zip`.
+
+  **Lesson**: disabling `REALTIME_SHADOWS` removes the *only* mechanism
+  that darkens occluded surfaces — doing that while every brightness
+  multiplier is simultaneously stacked near its ceiling guarantees
+  everything reads as uniformly overexposed instead of having real
+  shadow. When a tuning saga has been running long enough that many
+  independent levers are all pushed toward one extreme, the fix is a
+  full reset toward defaults, not one more offsetting nudge.
+
   None of the fixes in this entry have been re-tested in-game yet.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check

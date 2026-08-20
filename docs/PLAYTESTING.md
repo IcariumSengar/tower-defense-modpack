@@ -188,6 +188,18 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   sourced tonemap curve pair (`T_LOWER_CURVE`/`T_UPPER_CURVE` →
   `1.30`/`1.50`) for brightening shadowed areas without blowing out
   highlights, instead of another guessed number.
+- **That made it worse — "shadows are bright lights, barely playable."**
+  By this point nearly every brightness lever was stacked near its max
+  at once (`T_EXPOSURE` close to its ceiling, all day *and* night light
+  intensities maxed) while `REALTIME_SHADOWS` was off — so there was
+  nothing left to darken occluded surfaces, and shaded geometry rendered
+  as blown-out as direct light. Fixed with a full reset rather than one
+  more offsetting tweak: shadows re-enabled, and every stacked
+  multiplier pulled back to at-or-near default (`T_EXPOSURE` down to a
+  modest `1.70` instead of near-max, day sliders back to `1.20` from a
+  maxed `2.00`, night sliders to `1.40`). See `docs/MODS.md`'s
+  Spooklementary entry for the full before/after values. **Not yet
+  re-tested in-game.**
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when
