@@ -66,11 +66,11 @@ hash = "bb7d262bbd7fee0e64313631a2da42637fcc173672f3994cdda801f95baec486"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "52778bf2ce0deb807dc4c3604a74b238dc1b988ec4ed990444e608566acc866f"
+hash = "73b532c3e17ef0f0eeb47432bafec9f6566c39db01d407401a65df7094dfa1c7"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "e0086d22ebc221370aaed62c5d968720af072e6a18f64b29a0dda34c302105f0"
+hash = "7013b4259e04d82364b12e398848d8c0dd2bb58163908ae45659f62a16eb81c7"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -246,6 +246,11 @@ metafile = true
 [[files]]
 file = "mods/xaeros-minimap.pw.toml"
 hash = "20beda5f9b049a2352334a0f8dd8de122e7399f8a446d8f78aeecba85d99bbdc"
+metafile = true
+
+[[files]]
+file = "mods/yetgamers-custom-fog.pw.toml"
+hash = "ff5d6719b2bef7407291303f2213669d504ae1e6eff316e3b5d63df2f163e0ad"
 metafile = true
 
 [[files]]

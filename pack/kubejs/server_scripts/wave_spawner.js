@@ -96,6 +96,29 @@ var WAVE_MOB_TYPES = [
   'the_flesh_that_hates:flesh_suffer',
 ]
 
+// Staggered emergence + sound-first spawn cues (docs/IDEAS.md's
+// "Atmosphere & Wave Feel", Spawn Behavior). Design doc claimed this
+// already existed via "delayed/scheduled spawns" - checked, it didn't;
+// every mob summoned synchronously in one loop. Built as a plain queue
+// processed by the tick handler below rather than a one-off scheduled
+// callback API, since PlayerEvents.tick is the pattern already proven
+// reliable throughout this pack (wave_status.js, mob_aggro.js) - no new
+// unverified scheduling API introduced.
+var pendingSpawns = [] // {mobType, x, y, z, spawnTick, soundTick, soundPlayed}
+
+// Escalation lever: gap between each mob's emergence shrinks at higher
+// wave tiers, so early waves stay readable and late waves collapse into
+// an overwhelming dump - matches the design doc's "false security"
+// curve intent. Floor at 4 ticks (0.2s) rather than 0, so even wave 5
+// still reads as distinct emergences, not one instant clump.
+var BASE_STAGGER_GAP_TICKS = 16
+var MIN_STAGGER_GAP_TICKS = 4
+var SOUND_LEAD_TICKS = 12
+
+function staggerGapForWave(waveNumber) {
+  return Math.max(MIN_STAGGER_GAP_TICKS, BASE_STAGGER_GAP_TICKS - (waveNumber - 1) * 3)
+}
+
 function nearbyWaveMobCount(player, level, radius) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
@@ -126,7 +149,11 @@ function useWaveHorn(player) {
 
   player.playSound(Utils.getSound('minecraft:event.raid.horn'))
 
-  if (nearbyWaveMobCount(player, level, 80) > 0) {
+  // Also blocks re-use while staggered spawns are still queued but not
+  // yet actually summoned - without this, spam-clicking the horn during
+  // the emergence window could queue a second wave's mobs on top of the
+  // first's before any of them exist yet for nearbyWaveMobCount to see.
+  if (nearbyWaveMobCount(player, level, 80) > 0 || pendingSpawns.length > 0) {
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
     return
   }
@@ -141,6 +168,17 @@ function useWaveHorn(player) {
   // and sets time back to day once the wave is cleared.
   server.runCommandSilent('time set night')
   server.runCommandSilent('gamerule doDaylightCycle false')
+
+  // Day/Night Density Contrast (docs/IDEAS.md's "Atmosphere & Wave
+  // Feel") - dense, close, desaturated fog for the wave's duration via
+  // YetGamer's Custom Fog's /fog command. wave_status.js's "defeated"
+  // branch resets this back to vanilla fog, same pairing as the night
+  // lock above. Cylinder (not sphere) to roughly match the worldborder's
+  // own shape - this fog is always player-relative, not tied to the
+  // border's actual position (no Forge 1.20.1 mod found that renders
+  // fog at a fixed world coordinate), so it reads as "the horde's out
+  // there in the dark" tension rather than a literal border wall.
+  server.runCommandSilent('fog @a set 8 32 25 25 30 0.3 cylinder')
 
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
@@ -158,6 +196,12 @@ function useWaveHorn(player) {
   var minZ = border.getMinZ() + margin
   var maxZ = border.getMaxZ() - margin
 
+  // Staggered instead of all-at-once - each mob gets a queued spawn
+  // tick (staggerGap apart, tightening at higher waveNumber) and a sound
+  // cue tick shortly before it, processed by the tick handler below.
+  var staggerGap = staggerGapForWave(waveNumber)
+  var mobIndex = 0
+
   composition.forEach(function (pair) {
     var mobType = pair[0]
     var count = pair[1]
@@ -174,14 +218,17 @@ function useWaveHorn(player) {
       var z = Math.floor(player.getZ() + Math.sin(angle) * r)
       x = Math.max(minX, Math.min(maxX, x))
       z = Math.max(minZ, Math.min(maxZ, z))
-      // generic.follow_range boosted well past the spawn radius so mobs
-      // can path the full distance once targeting the player. Secondary
-      // to mob_aggro.js, which forces targeting directly and doesn't
-      // depend on line of sight — this only matters once a mob already
-      // has a target and needs to actually be allowed to chase that far.
-      server.runCommandSilent(
-        `summon ${mobType} ${x} ${Math.floor(player.getY())} ${z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
-      )
+      var spawnTick = currentTick + mobIndex * staggerGap
+      pendingSpawns.push({
+        mobType: mobType,
+        x: x,
+        y: Math.floor(player.getY()),
+        z: z,
+        spawnTick: spawnTick,
+        soundTick: spawnTick - SOUND_LEAD_TICKS,
+        soundPlayed: false,
+      })
+      mobIndex++
       totalMobs++
     }
   })
@@ -209,4 +256,42 @@ ItemEvents.rightClicked('kubejs:wave_horn', function (event) {
 BlockEvents.rightClicked(function (event) {
   if (event.item.getId() !== 'kubejs:wave_horn') return
   useWaveHorn(event.entity)
+})
+
+// Processes pendingSpawns - plays a positioned sound-first cue shortly
+// before each queued mob's spawn tick, then actually summons it once
+// that tick arrives. Early-returns when the queue is empty (the common
+// case) so this costs nothing outside an active wave's emergence
+// window. Uses /playsound with explicit coordinates (not
+// player.playSound(), which is player-relative and follows them) so the
+// cue is actually positioned where the mob is about to appear -
+// minecraft:ambient.cave is a generic eerie one-shot, not tied to any
+// specific mob type, since TFTH's own sound event registry names
+// weren't verified.
+PlayerEvents.tick(function (event) {
+  if (pendingSpawns.length === 0) return
+
+  var player = event.entity
+  var level = player.getLevel()
+  var server = player.getServer()
+  var currentTick = level.getTime()
+  var stillPending = []
+
+  pendingSpawns.forEach(function (spawn) {
+    if (!spawn.soundPlayed && currentTick >= spawn.soundTick) {
+      server.runCommandSilent(
+        `playsound minecraft:ambient.cave ambient @a ${spawn.x} ${spawn.y} ${spawn.z} 1 0.6`
+      )
+      spawn.soundPlayed = true
+    }
+    if (currentTick >= spawn.spawnTick) {
+      server.runCommandSilent(
+        `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
+      )
+    } else {
+      stillPending.push(spawn)
+    }
+  })
+
+  pendingSpawns = stillPending
 })

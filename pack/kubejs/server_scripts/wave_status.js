@@ -93,6 +93,10 @@ PlayerEvents.tick((event) => {
     // advancing clock during the peaceful gap before the next horn use.
     player.getServer().runCommandSilent('time set day')
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
+    // Undo wave_spawner.js's dense wave-fog — pulls the atmosphere back
+    // to normal vanilla fog for the peaceful gap, same "day pulls back
+    // significantly" contrast the design doc asks for.
+    player.getServer().runCommandSilent('fog @a reset')
 
     // Starter gear removal, once, the moment the curated campaign's
     // final wave clears — waveNumber is capped at FINAL_WAVE, so every
