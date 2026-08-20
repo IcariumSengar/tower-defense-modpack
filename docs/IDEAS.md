@@ -1215,6 +1215,19 @@ than a wall you can see receding as the border grows. Delivers the
 *tension* the section wants, not the literal *visual* it originally
 described.
 
+**"Enemies spawn from beyond the fog line, not inside the play area" —
+actually built correctly 2026-08-20, on the second attempt.** This
+specific sentence was read multiple times earlier the same session but
+never actually cross-checked against `wave_spawner.js`'s real spawn
+logic, which had always clamped mobs *inward* near the player. First
+correction attempt still spawned mobs just inside the border, on a
+wrong assumption that the border blocks mob movement the way it blocks
+players — caught directly by the user ("no not inside the border!!!
+spawn outside"). Real fix: mobs now spawn 6-14 blocks genuinely beyond
+a random point on the border and walk in, matching this sentence
+literally, not just in spirit. See `docs/MODS.md`'s Wave-clear/Fixed
+spawn entries for the mechanism.
+
 ### Day/Night Density Contrast (locked)
 Day (build/loot phase) should pull the fog/horror aesthetic back
 significantly so it reads as underlying tension, not dread. Night (wave

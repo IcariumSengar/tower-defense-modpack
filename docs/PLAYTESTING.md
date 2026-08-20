@@ -64,8 +64,8 @@ still alive nearby — clear the wave first. Action bar shows a live
 "Hostiles remaining" count; chat announces when a wave starts (with mob
 count) and when it clears.
 
-**Mobs spawn at the worldborder's edge, not near you** — they walk the
-real distance in rather than appearing nearby, so on a large border
+**Mobs spawn beyond the worldborder, not near you** — they walk in from
+outside the wall rather than appearing nearby, so on a large border
 expect a real gap between "wave incoming" and the first mob actually
 reaching you (staggered emergence + sound cues still apply on top of
 this).
@@ -366,17 +366,20 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   it does on players (reasoned, not directly confirmed); if mobs don't
   move after summoning, that's the first thing to check.
 - **"Enemies always spawn within the border, i want them to approach
-  menacingly from beyond the border" — fixed (2026-08-20).** Direct
-  catch against `docs/IDEAS.md`'s own Fog Wall design ("enemies spawn
-  from beyond the fog line, not inside the play area"), which the spawn
-  logic never actually implemented — it always spawned mobs near the
-  *player*, clamped inward if that landed outside the border, so mobs
-  never came from the edge at all, and the gap only grew as the border
-  expanded. Fixed by spawning at a random point along the border's
-  actual perimeter instead (still just inside it — vanilla's wall is
-  impassable, mobs spawned truly outside it would get permanently
-  stuck, same bug the old clamp was originally fixing). Mobs now walk
-  the real distance in; `mob_aggro.js`'s existing unconditional
-  `setTarget()` (already built anticipating this exact scenario) keeps
-  them beelining for the player rather than losing interest over the
-  longer distance. **Not yet re-tested in-game.**
+  menacingly from beyond the border" — took two attempts to actually
+  fix (2026-08-20).** Direct catch against `docs/IDEAS.md`'s own Fog
+  Wall design ("enemies spawn from beyond the fog line, not inside the
+  play area"). First fix still spawned mobs just *inside* the edge, not
+  beyond it — wrong, per direct correction ("no not inside the
+  border!!! spawn outside"). That mistake came from wrongly assuming
+  vanilla's worldborder blocks all entity movement across it the way it
+  blocks players — it doesn't; only *player* movement is clamped, mobs
+  path across it freely under normal AI. **Real fix**: mobs now spawn
+  6-14 blocks genuinely beyond a random edge of the border and walk in;
+  `mob_aggro.js`'s existing unconditional `setTarget()` keeps them
+  beelining for the player over the distance. Border damage (which
+  would otherwise chip mobs/the player near the edge) is disabled once
+  per world. **Your current test world won't have that disable applied
+  automatically** (it only fires on first login) — run
+  `/worldborder damage amount 0` manually to match. **Not yet
+  re-tested in-game.**

@@ -105,6 +105,13 @@ PlayerEvents.loggedIn((event) => {
   // docs/PLAYTESTING.md, now automatic.
   event.server.runCommandSilent(`worldborder center ${x} ${z}`)
   event.server.runCommandSilent('worldborder set 50')
+  // Wave mobs now deliberately spawn just beyond the border
+  // (wave_spawner.js, docs/IDEAS.md's Fog Wall design) and walk in -
+  // without this, vanilla's default border damage would chip them (and
+  // the player, near the edge) for no reason this pack actually wants;
+  // the border here is a containment/staging boundary, not a
+  // shrinking-zone mechanic.
+  event.server.runCommandSilent('worldborder damage amount 0')
 
   const x0 = x - half
   const x1 = x + half

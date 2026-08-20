@@ -693,18 +693,27 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     *player* and clamped it inward if that landed outside the border —
     so mobs always spawned near the player, never near the edge, and the
     gap only widened as `base_expansion.js` grew the border over time.
-    Vanilla's worldborder is a hard, impassable wall (the reason the old
-    clamp existed at all — an earlier bug had mobs spawning genuinely
-    outside it and getting permanently stuck), so **fixed by spawning
-    just inside the border's perimeter instead** — a new
-    `randomBorderEdgePosition()` picks a random point along any of the 4
-    edges (still respecting the same margin) rather than a radius around
-    the player. Mobs now walk the real distance in;
-    `mob_aggro.js`'s existing unconditional, no-distance-limit
-    `setTarget()` (already built with this exact scenario anticipated —
-    see its own comment, "this will matter once the pack moves off
-    Superflat") is what makes sure they reliably path the whole way
-    rather than losing interest partway.
+    **First fix still spawned mobs just inside the edge, not beyond it —
+    a second real miss, corrected after direct user pushback ("no not
+    inside the border!!! spawn outside").** That fix was built on a
+    wrong assumption: vanilla's worldborder blocks *player* movement
+    only, not general entity/mob movement — mobs path across it under
+    normal AI with no special resistance. The original 2026-08-19 bug
+    ("mobs spawning outside the border become permanently unreachable")
+    predates `mob_aggro.js`'s unconditional, no-distance-limit
+    `setTarget()` entirely, which is what actually makes a long walk-in
+    reliable now, not keeping mobs inside the wall. **Real fix**:
+    `randomBorderEdgePosition()` now spawns mobs 6-14 blocks genuinely
+    *beyond* a random edge of the border, and mobs walk the real
+    distance in. One real vanilla side effect of spawning outside:
+    border damage (default ~0.2 hearts/sec past the border's 5-block
+    safe buffer) would otherwise chip mobs and the player for no reason
+    this pack wants — disabled once per world via
+    `worldborder damage amount 0` in `playtest_starter_kit.js`'s
+    existing one-time worldborder setup. **Not yet re-tested — needs a
+    world with `worldborder damage amount 0` already applied; a world
+    already past its first login (like an existing test world) needs
+    that command run manually once.**
 
 - **World type switched from Superflat to Single Biome: Desert
   (2026-08-20)** — per the direct request "creating a world that isn't

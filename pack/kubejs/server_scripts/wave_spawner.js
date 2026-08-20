@@ -214,34 +214,43 @@ function useWaveHorn(player) {
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
-  // Spawn at the worldborder edge, not near the player (2026-08-20,
-  // fixing a real miss against docs/IDEAS.md's own Fog Wall design:
-  // "enemies spawn from beyond the fog line, not inside the play area").
-  // The old logic picked a position 15-25 blocks from the player and
-  // clamped it *inward* if that landed outside the border - meaning
-  // mobs always spawned near the player, never "from beyond the
-  // border," and as the border grew from base_expansion.js that gap
-  // only got worse. Mobs still can't literally spawn outside the border
-  // (vanilla's wall is a hard, impassable barrier - they'd be
-  // permanently stuck, the original bug this margin was fixing), so
-  // this spawns them just *inside* the edge instead, at a random point
-  // around the whole perimeter, and lets them walk the real distance in
-  // - mob_aggro.js's unconditional, no-distance-limit setTarget already
-  // exists specifically for this (see its own comment: "this will
-  // matter once the pack moves off Superflat").
+  // Spawn genuinely BEYOND the worldborder, not inside it (2026-08-20,
+  // second attempt - the first attempt still spawned mobs just inside
+  // the edge, on the wrong assumption that vanilla's worldborder blocks
+  // ALL entity movement across it the way it blocks players. It
+  // doesn't - the border only clamps *player* movement; mobs path
+  // across it under normal AI/movement with no special resistance. The
+  // pack's own docs/IDEAS.md Fog Wall design says exactly this:
+  // "enemies spawn from beyond the fog line, not inside the play area."
+  // The original 2026-08-19 bug this used to guard against ("mobs
+  // spawning outside the border become permanently unreachable") predates
+  // mob_aggro.js's unconditional, no-distance-limit setTarget entirely -
+  // that's what actually makes the long walk-in reliable now, not
+  // keeping mobs inside the wall.
+  //
+  // The one real vanilla side effect of spawning outside: border damage
+  // (default ~0.2 hearts/sec per block past the border's 5-block safe
+  // buffer) would otherwise chip mobs (and the player, if they ever near
+  // the edge) for no gameplay reason this pack actually wants - the
+  // border here is a containment/staging boundary, not a shrinking-zone
+  // battle-royale mechanic. Disabled once per world in
+  // playtest_starter_kit.js (`worldborder damage amount 0`), alongside
+  // its other one-time worldborder setup.
   var border = level.getWorldBorder()
-  var margin = 3
-  var minX = border.getMinX() + margin
-  var maxX = border.getMaxX() - margin
-  var minZ = border.getMinZ() + margin
-  var maxZ = border.getMaxZ() - margin
+  var edgeMinX = border.getMinX()
+  var edgeMaxX = border.getMaxX()
+  var edgeMinZ = border.getMinZ()
+  var edgeMaxZ = border.getMaxZ()
+  var SPAWN_OUTSIDE_MIN = 6
+  var SPAWN_OUTSIDE_MAX = 14
 
   function randomBorderEdgePosition() {
     var side = Math.floor(Math.random() * 4) // 0=minZ 1=maxZ 2=minX 3=maxX
-    if (side === 0) return { x: Math.floor(minX + Math.random() * (maxX - minX)), z: Math.floor(minZ) }
-    if (side === 1) return { x: Math.floor(minX + Math.random() * (maxX - minX)), z: Math.floor(maxZ) }
-    if (side === 2) return { x: Math.floor(minX), z: Math.floor(minZ + Math.random() * (maxZ - minZ)) }
-    return { x: Math.floor(maxX), z: Math.floor(minZ + Math.random() * (maxZ - minZ)) }
+    var offset = SPAWN_OUTSIDE_MIN + Math.random() * (SPAWN_OUTSIDE_MAX - SPAWN_OUTSIDE_MIN)
+    if (side === 0) return { x: Math.floor(edgeMinX + Math.random() * (edgeMaxX - edgeMinX)), z: Math.floor(edgeMinZ - offset) }
+    if (side === 1) return { x: Math.floor(edgeMinX + Math.random() * (edgeMaxX - edgeMinX)), z: Math.floor(edgeMaxZ + offset) }
+    if (side === 2) return { x: Math.floor(edgeMinX - offset), z: Math.floor(edgeMinZ + Math.random() * (edgeMaxZ - edgeMinZ)) }
+    return { x: Math.floor(edgeMaxX + offset), z: Math.floor(edgeMinZ + Math.random() * (edgeMaxZ - edgeMinZ)) }
   }
 
   // Staggered instead of all-at-once - each mob gets a queued spawn
