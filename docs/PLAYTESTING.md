@@ -133,21 +133,31 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   there near the center. Only runs during the peacetime gap between
   waves (defers entirely to `wave_spawner.js`'s existing combat fog
   while a wave is active).
-- **Darkness took two real fixes, not one** — first, a genuine bug:
+- **Darkness took three real fixes, not one** — first, a genuine bug:
   Spooklementary v2.0.4 threw `Unknown variable: BIOME_PALE_GARDEN`
   during shader pipeline creation (that biome doesn't exist until MC
   1.21.4), so its lighting pipeline never fully initialized. Downgraded
   to v1.1 (predates the biome), confirmed crash gone from
-  `logs/latest.log`. **Still reported too dark after that** — confirmed
-  with the user it was during the peaceful daytime gap specifically, not
-  the intentionally-dark wave-time fog. The external per-shaderpack
-  settings-override file couldn't be confirmed as actually taking
-  effect after two rounds through it, so switched to editing the
-  shader's own `.glsl` defaults directly (unconditionally read on every
-  load, no external-file dependency to doubt) — day-intensity sliders to
-  their max, repackaged as `Spooklementary_TDM_tuned.zip`. This is now a
-  locally-modified shader, not a clean upstream download — see
+  `logs/latest.log`. **Still reported too dark after that**, confirmed
+  during the peaceful daytime gap specifically — maxed the day-specific
+  intensity sliders directly in the `.glsl` (guaranteed to apply, not an
+  external override file). **Still reported "far too dark" on both day
+  AND night** — this ruled out the day/night-specific sliders entirely
+  (night's were never touched) and pointed at a day/night-agnostic
+  lever instead. Found `T_EXPOSURE` ("General Brightness" per the
+  shader's own `.lang` file — a *different* variable name than v2.0.4
+  used, which is why it was missed until now) and `AMBIENT_MULT`, both
+  bumped well above default. All three fixes are baked into
+  `Spooklementary_TDM_tuned.zip`'s `.glsl` defaults. This is a
+  locally-modified shader now, not a clean upstream download — see
   `docs/MODS.md`'s Spooklementary entry.
+- **Fog command chat spam fixed** — YetGamer's Custom Fog prints a
+  confirmation message on every `/fog` call by default, and
+  `border_fog.js` calls it up to 4x/second near the border. Silenced via
+  `gamerule sendCommandFeedback false` (the mod's own documented
+  mechanism for this), set once per server start in `border_fog.js` via
+  `ServerEvents.loaded` — takes effect on the next relaunch even for an
+  already-started save.
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when

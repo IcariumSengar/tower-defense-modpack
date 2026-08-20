@@ -54,7 +54,7 @@ hash = "fc2e8a5a3d7e0267796c27ae671baa00a2320aaa25b32df0d35751e264227a4e"
 
 [[files]]
 file = "kubejs/server_scripts/border_fog.js"
-hash = "04e34712beea134724bfdbef7130dcff3c03434e923cc0e33c26e01f6dd6cd44"
+hash = "4ae627595c93c8a6ac38ac37913a878053872c8cb7223d36412a69eeaf514d84"
 
 [[files]]
 file = "kubejs/server_scripts/example_glue.js"
@@ -227,4 +227,4 @@ metafile = true
 
 [[files]]
 file = "shaderpacks/Spooklementary_TDM_tuned.zip"
-hash = "742ed7a48c52bfd950e8f2d97b56ab5b5312804368a0acd6d23ae95072bd3260"
+hash = "6c568b981e65e2abd54397798b3791601d2a18e49716c6545a0595ba3f63faf0"

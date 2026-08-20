@@ -239,6 +239,34 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      like actual fog" — the texture override above is a smaller,
      complementary improvement to the wall's static appearance, not the
      primary fix.
+  4. **Still "far too dark" on both day AND night (2026-08-20)** — this
+     changed the diagnosis. The day-specific sliders were already maxed
+     at their defined ceiling (`2.00`) and guaranteed to apply (baked
+     directly into the `.glsl`), so if day was still dark, those sliders
+     were never the dominant factor — and "night too dark" ruled out the
+     day/night-specific atmosphere multipliers entirely, since none of
+     them were touched for night. Found the real lever: `T_EXPOSURE`
+     (`shaders/lib/common.glsl`), labeled directly in the shader's own
+     `en_US.lang` file as **"General Brightness"** — "adjusts the
+     overall brightness of the whole image," day/night-agnostic. Default
+     `1.40`; v1.1 uses this name where v2.0.4 used `TM_EXPOSURE`, which
+     is exactly why earlier searches for the v2.0.4 variable name missed
+     it in v1.1's source. Bumped to `2.60` (near its defined max `2.80`)
+     plus `AMBIENT_MULT` (ambient light, also day/night-agnostic) `100`
+     → `170`, both baked directly into `Spooklementary_TDM_tuned.zip`
+     alongside the earlier fixes.
+  5. **Fog command was spamming chat** — YetGamer's Custom Fog prints
+     its own confirmation message on every `/fog` call by default; fine
+     for one manual command, but `border_fog.js` calls it up to
+     4x/second while the player moves near the border. The mod's own
+     documentation ties this to vanilla's `sendCommandFeedback`
+     gamerule — silenced via `ServerEvents.loaded` in `border_fog.js`
+     (fires once per server start regardless of save, unlike
+     `playtest_starter_kit.js`'s first-join-only gate, so it takes
+     effect on the next relaunch even for an already-started save).
+     Harmless for every other command in this pack too, since they're
+     all run via `runCommandSilent` and never relied on seeing vanilla
+     feedback.
 
   None of the fixes in this entry have been re-tested in-game yet.
 

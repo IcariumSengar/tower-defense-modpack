@@ -29,6 +29,22 @@ var MIN_DISTANCE = 6
 
 var lastAppliedMaxDistance = -1
 
+// YetGamer's Custom Fog prints its own "Fog updated" style chat message
+// on every /fog call by default - fine for a single manual command, but
+// this script calls it up to 4x/second while the player is moving near
+// the border, which would spam chat constantly. The mod's own
+// documentation ties this output to vanilla's sendCommandFeedback
+// gamerule, so silencing it here covers this script (and is harmless
+// for every other command in this pack, since they're all run via
+// runCommandSilent and never relied on seeing vanilla command feedback
+// in the first place). ServerEvents.loaded fires once per server start
+// regardless of which save is loaded, unlike playtest_starter_kit.js's
+// PlayerEvents.loggedIn gate - so this takes effect on the next
+// relaunch even for a save that's already past first-join.
+ServerEvents.loaded(function (event) {
+  event.server.runCommandSilent('gamerule sendCommandFeedback false')
+})
+
 function lerp(a, b, t) {
   return a + (b - a) * t
 }
