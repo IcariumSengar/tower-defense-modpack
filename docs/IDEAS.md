@@ -1058,3 +1058,97 @@ raised:
   where reward placement specifically slots in relative to the popup —
   only the gear-removal-after-choices part is pinned down.
 
+## Atmosphere & Wave "Feel" (from updated design notes, 2026-08-20)
+
+New section in the refreshed design-notes doc, not previously in this
+file — the rest of that doc (Core Loop, Balance Philosophy, Map
+Generation, Loot & Crafting Materials, Machine Progression, Power
+System, Quest Book plan, Reference Mods, Tooling, Open Questions) is
+unchanged from what's already captured under "Full system design
+notes" above, so only the new material is added here. **Note the
+status difference**: this section is marked **"(locked)"** in the
+source doc — a firmer commitment than most raw ideas in this file,
+closer to "Resolved" entries elsewhere than to "unrefined, not decided."
+
+### Fog Wall (locked)
+The worldborder isn't just mechanical — it's rendered as a dense fog
+wall representing "the unknown beyond." Enemies spawn from beyond the
+fog line, not inside the play area, so fog is the literal source of
+threat. Border expands as waves are cleared (starts at 50, grows with
+progression).
+
+**Matches the real implementation exactly** — `base_expansion.js` is
+already auto-set to 50 on world creation and grows by 5 blocks every 2
+waves cleared (see the Base Expansion idea above). This section's fog
+rendering is a visual layer on top of a border mechanic that's already
+built, not a new mechanical system.
+
+Mods named: **Foggy Border** (renders the worldborder itself as fog,
+doesn't change its mechanical behavior) + **Fog by IMB11** (general
+ambient/biome fog, config-driven color/start/end) — used together, each
+handling a different layer (border wall vs. ambient atmosphere).
+Neither is in [MODS.md](MODS.md) yet — need adding when this gets
+picked up for real.
+
+### Day/Night Density Contrast (locked)
+Day (build/loot phase) should pull the fog/horror aesthetic back
+significantly so it reads as underlying tension, not dread. Night (wave
+phase) ramps it up fully. Applies to the whole atmosphere stack — border
+fog, ambient fog, shader intensity, ambience — not just one layer.
+
+**Direct connection to something already built:** the "day/night lock"
+mechanic (`useWaveHorn` sets `time set night` + freezes the daylight
+cycle for the wave's duration, `wave_status.js` flips it back on
+"defeated") is exactly the day/night-by-wave-state signal this section
+assumes exists — it does. Whatever scripts the atmosphere scaling can
+hook the same state this mechanic already tracks, rather than inventing
+a new day/night detector.
+
+### Shaders (locked concept, pack TBD)
+Night leans into aggressive ambient darkening with the fog wall as the
+primary lit/visible feature; day pulls back to a softer profile.
+Candidate packs named: **Spooklementary** (Complementary-based,
+increased fog, intensified darkness, blood moons — note the overlap
+with the separate "Boss waves tied to a Blood Moon event" idea above,
+worth checking if this shader pack's blood moons are purely visual or
+also functional before assuming they're independent), **Insanity/Hysteria
+Shaders** (BSL-based, configurable via in-game menu, volumetric fog),
+**Gravemist** (heavy fog hiding mobs until the last second — closest
+match to the silhouette-first spawn concept below). No pack chosen yet.
+
+### Spawn Behavior (locked concept, tuning TBD)
+- **Sound-first** — audio cues (growls, footsteps, ambience) play
+  before mobs are visible, via `/playsound` or KubeJS `.playSound()`
+  fired ahead of the actual spawn. Not built yet.
+- **Silhouette-first** — mobs spawn just past the fog line, visible
+  only as vague shapes before committing to pathing toward the player.
+  Mostly a function of fog density (border + ambient) doing the work,
+  not new spawn logic.
+- **Staggered emergence** — mobs emerge over a few seconds rather than
+  all at once, for pacing/anticipation. **Doc claims this is "handled
+  in the existing KubeJS wave-spawn script via delayed/scheduled
+  spawns" — checked `wave_spawner.js` directly and this isn't accurate
+  yet**: its `composition.forEach` loop spawns every mob in the wave
+  synchronously, no delay/scheduling logic exists in the file. Not a
+  contradiction so much as the design doc getting ahead of the actual
+  build — worth building this for real rather than assuming it's
+  already there.
+- **Escalation lever** — stagger timing/gaps tighten as wave tiers
+  increase, so early waves stay readable and late waves can
+  intentionally collapse into an overwhelming "wave dump," tying into
+  the Balance Philosophy's "false security" curve. Tuning TBD.
+
+### New open questions from this section
+- Whether Foggy Border, Fog (IMB11), and whichever shader pack gets
+  picked actually expose a scriptable hook for dynamic density/intensity
+  changes, vs. static config only — needs technical verification before
+  the day/night scaling idea above can actually be built.
+- Fog wall + shader pack compatibility (Foggy Border + Spooklementary/
+  Insanity/Hysteria/Gravemist) not yet tested together.
+- Whether staggered emergence should be built as its own thing, or as
+  part of whatever ends up implementing the wave-clear
+  orchestration/sequencing already being worked out above (reward →
+  choice popup → gear removal → countdown) — both are "things that
+  happen in a timed sequence around a wave," worth checking for shared
+  machinery before building separately.
+

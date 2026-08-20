@@ -105,3 +105,9 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   overlapping swipe-move/craft tweaks and hover highlight, kept Mouse
   Tweaks as-is) — see `docs/MODS.md`'s conflict write-up. **Needs a full
   relaunch and isn't yet confirmed fixed in-game.**
+- Shaders (Oculus + Spooklementary) added 2026-08-20 — **not yet
+  confirmed working in-game.** Needs a full relaunch. Once loaded,
+  shader quality/options are set via Minecraft's own Video Settings →
+  Shader Pack Settings menu, not anything KubeJS-controlled — the
+  day/night-reactive intensity from the design doc isn't built yet, this
+  is just the shader pack itself being installed and loadable.

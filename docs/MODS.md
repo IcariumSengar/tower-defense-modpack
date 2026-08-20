@@ -41,8 +41,32 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
 | GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
+| Oculus | [Modrinth](https://modrinth.com/mod/oculus) | 1.20.1-1.8.0 (1.20.1 Forge) | Iris-for-Forge shader loader — added 2026-08-20 to run the shader pack below, first piece of the "Atmosphere & Wave Feel" design (`docs/IDEAS.md`) | Declares **Embeddium** as its own required dependency (confirmed via Modrinth API, "any compatible version") — built to work with our existing renderer, not fight it, despite some older/version-unspecific web chatter about Oculus/Embeddium friction | testing |
+| Spooklementary | [Modrinth](https://modrinth.com/shader/spooklementary) | v2.0.4 (1.20.1) | Shader pack — Complementary-based, moody/desaturated horror atmosphere. Picked 2026-08-20 over Hysteria Shaders (1.20.1 build ~1yr stale, heavier volumetric feature set) and Gravemist (couldn't confirm it's actually available for 1.20.1 — zero Modrinth results). Blood moon effect confirmed **visual-only**, no functional overlap with the separate "Boss waves tied to Blood Moon" idea | Not a mod — a shaderpack zip in `shaderpacks/`, loaded via Oculus. See its own writeup under Custom glue for what still needs building on top of just "installed" | testing |
 
 ## Custom glue
+
+- **Atmosphere & Wave Feel — shader pack decided (2026-08-20)** — first
+  piece of the `docs/IDEAS.md` "Atmosphere & Wave Feel" (locked) section
+  picked up. Added **Oculus** (Iris-for-Forge shader loader) +
+  **Spooklementary** (shader pack, see the mod table entries above for
+  the comparison against Hysteria Shaders and Gravemist). This is just
+  "the shader pack is now installed and loadable" — none of the actual
+  design intent is built yet:
+  - **Day/night density contrast** (fog/shader pull back in daylight,
+    ramp up during waves) isn't implemented. Real constraint found while
+    picking a candidate: Iris/Oculus-format shaders don't expose a live
+    scriptable API for KubeJS to change intensity at runtime — the
+    realistic mechanism is swapping the shader's settings file and
+    forcing a reload (if Oculus/Iris exposes a reload command), not
+    smooth dynamic control. Needs its own investigation before building.
+  - **Foggy Border** and **Fog (IMB11)** — the two mods `docs/IDEAS.md`
+    names for the worldborder-as-fog-wall and ambient fog layers — are
+    still not in the pack. Spooklementary provides its own general
+    atmosphere but isn't a substitute for either.
+  - **Spawn behavior** (sound-first cues, silhouette-first, staggered
+    emergence, the escalation lever) is entirely separate KubeJS
+    scripting work, not touched by adding a shader pack at all.
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces
