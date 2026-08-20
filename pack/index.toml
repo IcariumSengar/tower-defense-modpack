@@ -38,7 +38,7 @@ hash = "fc4ceb66506bc37f9f3803248016df4b8b664ae002bfa1faa062d9b371ef65c5"
 
 [[files]]
 file = "kubejs/assets/minecraft/textures/misc/forcefield.png"
-hash = "07cf476a14641fea6662aab9a057bad70dc165f0937464b8ae16d3779282f41a"
+hash = "52d37819b74e4b8ef2a2026bab8be0988ca6d09ced9e799dc83bbce003cdbe3a"
 
 [[files]]
 file = "kubejs/client_scripts/.gitkeep"

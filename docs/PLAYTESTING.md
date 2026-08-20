@@ -133,6 +133,16 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   there near the center. Only runs during the peacetime gap between
   waves (defers entirely to `wave_spawner.js`'s existing combat fog
   while a wave is active).
+- **Worldborder texture looked "blocky" (2026-08-20).** The 16x16
+  texture visibly tiled across the wall with seams at each tile
+  boundary. Real CTM ("connected textures") doesn't apply — that's
+  block-face logic, and the worldborder is a dedicated renderer, not a
+  block, so no CTM system (or Embeddium) ever looks at it. Rebuilt at
+  64x64 using periodic (wraparound) noise so the pattern is
+  mathematically seamless across every tile edge, not just visually
+  close — verified with a tiled preview before deploying. See
+  `docs/MODS.md`'s Worldborder Fog Wall entry. **Not yet re-tested
+  in-game.**
 - **Darkness took three real fixes, not one** — first, a genuine bug:
   Spooklementary v2.0.4 threw `Unknown variable: BIOME_PALE_GARDEN`
   during shader pipeline creation (that biome doesn't exist until MC

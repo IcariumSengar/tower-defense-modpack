@@ -442,6 +442,29 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       this is a closed decision, not a paused one — don't re-propose a
       shaderpack here without new signal from the user.
 
+  13. **Worldborder texture looked "blocky" (2026-08-20), now that
+      shaders aren't there to soften it.** The original replacement
+      texture (round 2 above) was still just 16x16 — small enough that
+      the game visibly tiles it edge-to-edge across the huge worldborder
+      wall, and the raw noise pattern didn't wrap seamlessly, so each
+      16px tile boundary showed a visible seam/repeat, reading as a
+      grid instead of continuous mist. Real "connected textures" (CTM)
+      doesn't apply here regardless — that's block-face logic (Optifine/
+      Continuity), and the worldborder isn't a block; it's a dedicated
+      renderer that just repeats one square texture, consulted by
+      neither Embeddium nor any CTM-style system. The actual fix is
+      making the *texture itself* tile without seams. Rebuilt at 64x64
+      using three octaves of **periodic value noise** — lattice grids of
+      4/8/16 cells (all factors of 64), sampled with wraparound indexing
+      so the noise field is mathematically continuous across every tile
+      boundary, not just visually close — plus smoothstep interpolation
+      to avoid any hard lattice-cell edges. Verified by rendering a 4x4
+      tiled preview with gridlines overlaid before deploying: the cloud
+      pattern flows unbroken across every seam. Same white-RGB/
+      variable-alpha approach as before (game still applies its own
+      blue/green/red border-state tint on top), same KubeJS
+      `minecraft:textures/misc/forcefield.png` override mechanism.
+
   None of the remaining fixes in this entry (fog wall, staggered
   emergence, sound cues) have been re-tested in-game yet; the shader
   sub-thread is now moot.
