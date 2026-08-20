@@ -169,6 +169,15 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   round on the assumption night should stay moody — two explicit "too
   dark" reports specifically naming night made clear that assumption
   was wrong, bumped both to max, same as day's sliders.
+- **Overcorrected — "shadow is like a bright white light"** — several
+  brightness boosts got stacked across rounds without ever pulling any
+  back. Pulled back the two most directly tied to shadow brightness
+  specifically: `AMBIENT_MULT` (ambient fill light literally reaches
+  shadowed areas by definition) `170`→`110`, and `MINIMUM_LIGHT_MODE`
+  (added at its most aggressive tier the same round this broke) `4`→`3`.
+  `T_EXPOSURE` left alone since day is confirmed correct at its current
+  value. See `docs/MODS.md`'s Spooklementary entry for the lesson on
+  why this whiplash happened.
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when

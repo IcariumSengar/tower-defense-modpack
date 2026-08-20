@@ -289,6 +289,23 @@ mods sitting parallel to, not part of, the pack's actual built systems.
        `2.00`, same as morning/noon.
      All three baked into `Spooklementary_TDM_tuned.zip` alongside the
      earlier fixes.
+  7. **Overcorrected — "shadow is like a bright white light"
+     (2026-08-20).** Multiple brightness boosts got stacked across
+     rounds 4-6 without ever pulling any back once a new one got added.
+     Pulled back the two most directly tied to *shadow* brightness
+     specifically (as opposed to overall scene exposure, which is
+     `T_EXPOSURE` and confirmed correct for day — left alone):
+     `AMBIENT_MULT` (ambient fill light, which by definition reaches
+     areas not hit by direct light — i.e. shadows) `170` → `110`, and
+     `MINIMUM_LIGHT_MODE` (added in round 6 at its most aggressive tier
+     the same round this broke) `4` → `3`. Both still baked into
+     `Spooklementary_TDM_tuned.zip`.
+
+  **Lesson for this specific shader-tuning saga**: stop pushing
+  individual sliders further without reconsidering earlier ones in the
+  same pass — the "still dark" → "now too bright" whiplash across
+  rounds 4-7 came from treating each report as isolated instead of
+  looking at the cumulative effect of every change made so far.
 
   None of the fixes in this entry have been re-tested in-game yet.
 
