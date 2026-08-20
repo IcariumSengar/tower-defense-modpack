@@ -119,6 +119,18 @@ function staggerGapForWave(waveNumber) {
   return Math.max(MIN_STAGGER_GAP_TICKS, BASE_STAGGER_GAP_TICKS - (waveNumber - 1) * 3)
 }
 
+// YetGamer's Custom Fog prints its own "Fog updated" style chat message on
+// every /fog call by default - was only an issue when border_fog.js also
+// called it continuously (up to 4x/second near the border); that script is
+// gone now (fog is wave-only per docs/IDEAS.md's Day/Night Density
+// Contrast), but the wave-start/clear /fog calls below still benefit from
+// staying silent. ServerEvents.loaded fires once per server start
+// regardless of which save is loaded, so this takes effect on the next
+// relaunch even for a save already past first-join.
+ServerEvents.loaded(function (event) {
+  event.server.runCommandSilent('gamerule sendCommandFeedback false')
+})
+
 function nearbyWaveMobCount(player, level, radius) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
@@ -179,6 +191,21 @@ function useWaveHorn(player) {
   // fog at a fixed world coordinate), so it reads as "the horde's out
   // there in the dark" tension rather than a literal border wall.
   server.runCommandSilent('fog @a set 8 32 25 25 30 0.3 cylinder')
+
+  // Darkness effect layer (docs/IDEAS.md's "Darkness effect as the shader
+  // replacement") - the Warden's pulsing vision-closing vignette, applied
+  // as a plain vanilla status effect rather than any shader. Fog controls
+  // how far you can see; darkness controls how much of your peripheral
+  // vision is obscured - a different rendering mechanism, so the two
+  // layer together instead of competing. 1000000 is seconds, not ticks,
+  // and is /effect give's own max duration (~11.6 days) - comfortably
+  // longer than any wave, so no periodic top-up tick handler is needed;
+  // wave_status.js's "defeated" branch clears it explicitly, same
+  // give/clear pairing as the night lock and fog above. Amplifier fixed
+  // at 0 - unconfirmed whether a higher amplifier does anything visually
+  // for this effect (see docs/IDEAS.md's open risk on this), so not worth
+  // guessing at a number with no verified effect.
+  server.runCommandSilent('effect give @a minecraft:darkness 1000000 0 true')
 
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0

@@ -464,10 +464,30 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       variable-alpha approach as before (game still applies its own
       blue/green/red border-state tint on top), same KubeJS
       `minecraft:textures/misc/forcefield.png` override mechanism.
+  14. **Darkness effect built + fog restricted to wave-only (2026-08-20),
+      same day the shader was dropped.** Per `docs/IDEAS.md`'s new
+      "Darkness effect as the shader replacement" proposal (added by the
+      user directly, then asked to be built): `wave_spawner.js`'s
+      `useWaveHorn` now also runs
+      `effect give @a minecraft:darkness 1000000 0 true` right after the
+      fog command (1000000 is seconds, `/effect give`'s own max — no
+      periodic top-up tick handler needed), cleared explicitly in
+      `wave_status.js`'s "defeated" branch alongside the existing fog
+      reset — same give/clear pairing already used for night-lock and
+      fog, no new pattern. **Also**: fog explicitly requested to be
+      wave-only, not ambient during peacetime — `border_fog.js` (the
+      continuous peacetime proximity-fog script from round 3 above)
+      **deleted entirely**, since its whole purpose directly contradicted
+      that constraint. Its one non-fog side effect (silencing YetGamer's
+      Custom Fog's chat spam via `gamerule sendCommandFeedback false`)
+      moved into `wave_spawner.js`, now the sole owner of `/fog` calls.
+      The worldborder wall texture (round 13 above) is unaffected — it's
+      a static resource-pack override, always visible regardless of
+      day/night, and was explicitly out of scope for this change.
 
-  None of the remaining fixes in this entry (fog wall, staggered
-  emergence, sound cues) have been re-tested in-game yet; the shader
-  sub-thread is now moot.
+  None of the remaining fixes in this entry (staggered emergence, sound
+  cues) have been re-tested in-game yet; the shader sub-thread is now
+  moot.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check
   this session's additions weren't costing performance without being

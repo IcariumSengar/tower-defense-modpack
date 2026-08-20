@@ -48,9 +48,11 @@ still alive nearby — clear the wave first. Action bar shows a live
 count) and when it clears.
 
 Calling the horn also forces night and locks the day/night cycle (so
-zombies/skeletons don't burn on spawn or catch fire mid-fight) — it
-switches back to day and lets the cycle run normally again once the
-wave is cleared.
+zombies/skeletons don't burn on spawn or catch fire mid-fight), applies
+dense fog and the Warden's `minecraft:darkness` vision effect for
+atmosphere — it switches back to day, clears the fog and darkness, and
+lets the cycle run normally again once the wave is cleared. Fog and
+darkness are both wave-only; peacetime between waves has neither.
 
 Pure Suffering was removed 2026-08-20 as part of a footprint audit
 (was already dormant, `enableInvasions false`) — see `docs/MODS.md`'s
@@ -143,6 +145,17 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   close — verified with a tiled preview before deploying. See
   `docs/MODS.md`'s Worldborder Fog Wall entry. **Not yet re-tested
   in-game.**
+- **Darkness effect added, fog restricted to wave-only (2026-08-20).**
+  Waves now apply vanilla's `minecraft:darkness` status effect (the
+  Warden's vision-closing vignette) alongside the existing night-lock
+  and fog, cleared when the wave clears — a vanilla-command replacement
+  for the shader's atmosphere, per `docs/IDEAS.md`'s new proposal.
+  Separately, fog no longer runs during the peacetime gap between
+  waves at all — `border_fog.js`'s continuous proximity fog near the
+  border is gone; fog is wave-only now. The worldborder wall's texture
+  itself (separate from the fog effect) is unaffected and still always
+  visible. See `docs/MODS.md`'s Atmosphere & Wave Feel entry. **Not yet
+  re-tested in-game.**
 - **Darkness took three real fixes, not one** — first, a genuine bug:
   Spooklementary v2.0.4 threw `Unknown variable: BIOME_PALE_GARDEN`
   during shader pipeline creation (that biome doesn't exist until MC

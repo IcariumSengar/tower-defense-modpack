@@ -1197,6 +1197,105 @@ section is closed out, not just paused; don't re-propose Spooklementary
 or another shaderpack here without a new, different signal from the
 user first.
 
+**New signal received (2026-08-20) — back to the drawing board, not
+just "try a different shaderpack."** Explicit feedback: it took an
+incredibly long time to tune, and even the version that looked
+technically fine still didn't convey the atmosphere. Confirms the
+commit note above (the issue was the shader's whole aesthetic, not any
+remaining number) — worth actually changing approach, not re-running
+the same eleven-round tuning process against a different pack.
+
+### Darkness effect as the shader replacement (built 2026-08-20)
+
+Core idea: use vanilla's own `minecraft:darkness` status effect (the
+Warden's ability — a pulsing vignette that closes in around the edges
+of vision, not just a color tint) during waves, layered on top of the
+fog that already works, instead of any shader pack.
+
+**Why this is the right category of tool, based on what's actually
+failed vs. succeeded twice now in this exact pack:** every atmosphere
+piece that's worked reliably — night-lock, wave-state fog,
+`border_fog.js`'s proximity fog, on-screen titles, the staggered
+spawn/sound cues — is a plain vanilla command, fully scriptable from
+KubeJS. The one piece that failed, twice, across two separate sessions,
+is the one piece that wasn't: Oculus/Iris shaders have no live API at
+all, so eleven rounds of tuning were fighting a static config file, not
+a responsive system. `minecraft:darkness` is a vanilla effect, applied
+via `/effect give`, ships with the base game — zero new mod, zero
+compatibility risk, and genuinely scriptable rather than fought.
+
+**How it'd layer, not replace:** fog (existing) controls *how far you
+can see*; darkness would control *how much of your peripheral vision is
+obscured*, a different visual mechanism that doesn't compete with fog
+for the same rendering budget. Proposed stack during a wave: night-lock
+(real time) + combat fog (existing) + darkness effect (new) + staggered
+spawn/sound cues (existing) — five vanilla-command layers working
+together, none of them a shader.
+
+**Proposed technical shape, following patterns already proven in this
+codebase rather than inventing new ones:**
+- Apply `/effect give @a minecraft:darkness <duration> 0 true` inside
+  `useWaveHorn`, alongside the existing `time set night` and `/fog`
+  calls — same trigger point, same pairing pattern.
+- Vanilla effects expire on their own duration, so either give a
+  generously long duration up front, or top it up periodically via a
+  tick handler gated on `td_inWave` — same structure `border_fog.js`
+  already uses (check a flag, only re-issue the command when actually
+  needed, not every tick, to avoid spamming/flicker the same way that
+  script was careful not to spam `/fog`).
+- Clear it explicitly in `wave_status.js`'s "defeated" branch
+  (`/effect clear @a minecraft:darkness`), the same reset pairing
+  already used for fog and daylight.
+- Escalation lever: unclear yet whether the effect's `amplifier`
+  argument actually changes visual intensity in this MC version (it
+  might just affect transition timing, not strength) — needs in-game
+  verification before assuming it's a usable escalation dial, same
+  "verify before asserting" discipline this pack has needed repeatedly
+  (Math.PI, bare `.x/.y/.z`, `isClientSide`, all "should be fine"
+  assumptions that weren't). If amplifier doesn't help, escalate via
+  frequency/persistence instead (e.g. only active during combat at low
+  waves, always-on including peacetime approach-to-border at high
+  waves) rather than a stat that may not do anything.
+
+**Open risks, not yet resolved:**
+- Divorced from its normal Warden/sculk-shrieker context, players might
+  read the effect as "screen randomly dimming" without understanding
+  why — this pack already communicates well via titles/chat, so pairing
+  the effect with the existing "Wave incoming!" title is probably enough,
+  but worth watching for in an actual playtest.
+- Whether `hideParticles:true` actually suppresses anything relevant
+  here (it may only affect an inventory icon/particle overlay, not the
+  screen-darkening render itself) — another one to confirm in-game
+  rather than assume.
+
+**Built (2026-08-20), same-day as this proposal.** Implemented almost
+exactly as proposed, with one simplification: skipped the periodic
+tick-handler top-up entirely and just gave a single long-duration
+`/effect give @a minecraft:darkness 1000000 0 true` (1000000 is
+seconds, not ticks — `/effect give`'s own max, ~11.6 days) inside
+`useWaveHorn` right after the existing fog command, cleared explicitly
+in `wave_status.js`'s "defeated" branch alongside the existing fog
+reset — same give/clear pairing already used for night-lock and fog,
+no new pattern introduced. Amplifier left at `0`, unchanged from the
+open question above — no in-game verification yet on whether it does
+anything visually.
+
+**Also, per explicit instruction: fog is now wave-only, not
+peacetime-ambient.** `border_fog.js` (the peacetime proximity-fog
+script referenced throughout this section) has been **deleted
+entirely** — the user asked that the fog effect (distinct from the
+worldborder wall texture, which stays visible at all times regardless
+of day/night) only occur during a wave. Previously fog existed in two
+forms: `wave_spawner.js`'s fixed wave-time fog, and `border_fog.js`'s
+continuous peacetime proximity fog near the border edge — the latter
+directly contradicted this new constraint, so it's gone rather than
+adjusted. Its one non-fog side effect (silencing YetGamer's Custom
+Fog's chat-spam via `gamerule sendCommandFeedback false`) moved into
+`wave_spawner.js`, which is now the sole owner of `/fog` calls. This
+also resolves the "Day/Night Density Contrast" section's fog layer
+more cleanly than before — day is now genuinely fog-free rather than
+having its own (lighter) ambient fog layer.
+
 ### Spawn Behavior (built 2026-08-20, was "locked concept, tuning TBD")
 - **Sound-first** — audio cues (growls, footsteps, ambience) play
   before mobs are visible, via `/playsound` or KubeJS `.playSound()`

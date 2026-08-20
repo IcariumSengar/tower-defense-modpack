@@ -104,8 +104,12 @@ PlayerEvents.tick((event) => {
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
     // Undo wave_spawner.js's dense wave-fog — pulls the atmosphere back
     // to normal vanilla fog for the peaceful gap, same "day pulls back
-    // significantly" contrast the design doc asks for.
+    // significantly" contrast the design doc asks for. Fog is wave-only
+    // by design now — nothing re-applies it outside of useWaveHorn.
     player.getServer().runCommandSilent('fog @a reset')
+    // Undo wave_spawner.js's darkness effect — same give/clear pairing as
+    // the fog and night lock above.
+    player.getServer().runCommandSilent('effect clear @a minecraft:darkness')
 
     // Starter gear removal, once, the moment the curated campaign's
     // final wave clears — waveNumber is capped at FINAL_WAVE, so every
