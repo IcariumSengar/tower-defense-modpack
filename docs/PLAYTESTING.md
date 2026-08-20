@@ -15,10 +15,6 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
   exact spot (near world coordinates 0, 0) instead of wherever vanilla
   happened to scatter you. `gamerule spawnRadius 0` is also set, so
   future respawns land exactly there too, not nearby.
-- **A ~51x51 yard around spawn is flattened and resurfaced as sand** —
-  the world generates as real (non-flat) Desert terrain, so this covers
-  the dune/ravine unevenness that would otherwise be right at your
-  doorstep.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
   brick floor, oak door) built around that fixed spawn point.
 - **Worldborder set to 50**, centered on the same fixed point. Grows
@@ -35,30 +31,19 @@ on a world you've already joined once.
 
 Just **Allow Cheats: ON** — pick whatever World Type you want on the
 creation screen (including leaving it on "Default"), no customization
-needed. **World Type: Single Biome → Desert is no longer a manual
-step** (2026-08-20) — the pack ships a datapack override
-(`kubejs/data/minecraft/dimension/overworld.json`) that replaces the
-Overworld's generator with a fixed Desert biome source automatically,
-the same generator "Single Biome → Desert" produces manually, just
-baked into every world regardless of what's clicked on the creation
-screen. Real, non-flat terrain (desert dunes/mesas via the standard
-`minecraft:overworld` noise settings, just painted entirely as Desert)
-plus real vanilla structures (temples, wells, ruined portals, villages)
-generate normally within it — satisfies both "not flat" and "structures
-around the player" with zero custom placement code, and now zero manual
-setup too. **Not yet confirmed in-game** — this is the first time this
-pack has shipped a dimension-generator override via KubeJS's `data/`
-injection (previously only used for recipes/textures/simpler datapack
-content); if a fresh world *doesn't* generate as Desert, that's the
-first thing to check, and manually picking Single Biome → Desert on the
-creation screen remains a working fallback either way.
+needed. The pack forces the actual generator via a datapack override
+(`kubejs/data/minecraft/dimension/overworld.json`), same mechanism
+regardless of which world type gets clicked.
 
-**A wide area around fixed spawn is flattened too, not just the 11x11
-starter base** — a ~51x51 yard (matching the starting worldborder's
-diameter) gets leveled and resurfaced as sand, so the ground you
-actually start in reads as flat open desert, not dunes/ravines right up
-against the walls. Same one-shot trigger, only affects brand-new
-worlds. **Not yet confirmed in-game.**
+**Back on Superflat (2026-08-20).** Briefly switched to real terrain
+(Single Biome: Desert) for a non-flat, structure-populated world, but
+that read as "wonky, doesn't suit the gameplay" in actual play — the
+override now forces vanilla's own default flat generator (bedrock + 2
+dirt + grass, plains biome) instead, so a fresh world is Superflat
+automatically with zero manual customization, same as before real
+terrain was ever tried. This is deliberately "for now," not a closed
+decision — see `docs/IDEAS.md`'s Seed research section if real terrain
+gets revisited later.
 
 ## The test loop
 
@@ -398,3 +383,23 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   automatically** (it only fires on first login) — run
   `/worldborder damage amount 0` manually to match. **Not yet
   re-tested in-game.**
+- **First real terrain playtest crashed the whole starter-kit script
+  (2026-08-20)** — a duplicate `const half` declaration (leftover from
+  stacking edits) failed to parse entirely, so none of
+  `playtest_starter_kit.js` ran: no gear, no fixed spawn, no starter
+  base, no worldborder/mob-spawning setup. Explains three symptoms
+  reported from one test as a single root cause, not three bugs: "wave
+  0" showing (natural mobs, never disabled), no starter structure
+  (script never got that far), spawning near water (vanilla's own
+  unmodified spawn). Fixed, and `node --check` adopted as a pre-deploy
+  step for every script edit going forward — see `docs/MODS.md`'s Fixed
+  spawn entry.
+- **Real terrain reverted back to Superflat, same day** — Desert biome
+  generation (dunes, ravines, real structures) read as "wonky, doesn't
+  suit the gameplay" once actually played, not just built. The
+  `/spreadplayers`-based height-finding and the mob-spawn-beyond-border
+  fixes above are **kept** (both work correctly on flat terrain too, no
+  downside), only the world generator itself and the now-unnecessary
+  wide-flatten pass were reverted. Deliberately "for now," not closed —
+  see `docs/IDEAS.md`'s Seed research section if real terrain comes back
+  up. **Not yet re-tested in-game.**

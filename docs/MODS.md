@@ -807,7 +807,26 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     parser (close enough to Rhino's ES6 support for this), should have
     been run before this file was last deployed and will be from now on
     for every script edit.
-  bar shows a live "Hostiles remaining: N" count, and chat announces
+  - **Reverted back to Superflat, same day, per direct feedback** ("the
+    teraiin is wonky again and doesnt suit the gameplay") — real terrain
+    was tried, playtested, and rejected on gameplay feel, not a
+    technical failure. `kubejs/data/minecraft/dimension/overworld.json`
+    now forces vanilla's own default flat generator instead of the fixed
+    Desert biome source, using the exact same override mechanism, so a
+    fresh world is Superflat automatically with zero manual
+    customization — same "no manual step needed" property the Desert
+    override had. The wide-flatten pass above became pure dead weight on
+    flat ground (nothing to flatten) and would have needlessly
+    resurfaced the yard as sand, so it was removed entirely rather than
+    left inert. The `/spreadplayers`-based height-finding and
+    `wave_spawner.js`'s spawn-beyond-border fixes were **kept** — both
+    work correctly on flat terrain too, no reason to revert something
+    that isn't broken. Deliberately "for now," not a closed decision —
+    see `docs/IDEAS.md`'s Seed research section if real terrain gets
+    revisited.
+
+- **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`.
+  Action bar shows a live "Hostiles remaining: N" count, and chat announces
   "incoming!" / "defeated!" when the nearby hostile count rises from /
   falls to zero. Tracks all hostile mobs within 80 blocks, not
   specifically Pure Suffering invasion mobs — no confirmed way to

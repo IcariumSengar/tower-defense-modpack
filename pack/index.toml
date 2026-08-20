@@ -46,7 +46,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
-hash = "f98e4a91060cfc80a4a4683ffe009d7fe200ac06931eee111160a0f887d1997b"
+hash = "984e221836b7cb16805718063e8f45dbe549fa119eca3c4bf2cdd9962c69a37a"
 
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
@@ -74,7 +74,7 @@ hash = "dba3439cbe4a225e17e46a99cf72f7ed99faf70f7a16514f0f84f243d55e29b7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "e9783a8e3ce9e403cbc2e783179ce06289ecbdc5384aabe432c14062199a7b98"
+hash = "f356e172a648f086836543bca970a23816bda95c2ab4260bdf0793e911600866"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"

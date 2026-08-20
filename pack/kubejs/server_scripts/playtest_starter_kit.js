@@ -25,21 +25,22 @@
 // `/setworldspawn` + `gamerule spawnRadius 0` are still used exactly as
 // the design doc describes — only the structure-placement half changed.
 //
-// World type switched from Superflat to Single Biome: Desert (2026-08-20,
-// docs/IDEAS.md's "creating a world that isn't entirely flat" ask) — see
-// docs/PLAYTESTING.md's manual setup step. This invalidated the original
-// "read the player's own natural spawn Y" ground-finding trick: that was
-// only safe because Superflat height is uniform everywhere, so wherever
-// vanilla's default ~10-block spawn scatter landed the player, the
-// height matched (0,0)'s height too. Real terrain varies within that
-// same scatter radius (dunes, small hills), so a Y read from a scattered
-// position can no longer be trusted for (0,0) specifically. Fixed with
-// `/spreadplayers` instead — the standard vanilla heightmap-aware
-// "place on solid ground near this X,Z" command (avoids voids/liquids,
-// used for exactly this class of problem) — then reads the player's
-// actual resulting position as the ground truth, rather than assuming a
-// height. maxRange kept small (8) so this still reads as "the same
-// fixed spot," not a materially different location each world.
+// World type switched from Superflat to Single Biome: Desert on
+// 2026-08-20, then **reverted back to Superflat the same day** — real
+// terrain read as "wonky, doesn't suit the gameplay" per direct
+// feedback after playtesting it. `kubejs/data/minecraft/dimension/
+// overworld.json` now forces vanilla's own default flat generator
+// (bedrock+2 dirt+grass, plains biome) automatically, same mechanism as
+// the Desert override was, just pointed at a different generator - a
+// fresh world needs zero manual world-type customization either way.
+// This is deliberately "for now," not a closed decision - see
+// docs/IDEAS.md's Seed research section if real terrain gets revisited.
+//
+// `/spreadplayers` (below) was added specifically to handle uneven
+// Desert terrain, but works correctly on flat terrain too (finds the
+// same uniform height everywhere) - left in place rather than reverted
+// back to the older "read the player's own natural spawn Y" approach,
+// since it's strictly more robust with no downside on Superflat.
 //
 // Uses event.server.runCommandSilent(...) with absolute coordinates (not
 // player-relative ~) since it executes from the server console, not "as"
@@ -119,51 +120,20 @@ PlayerEvents.loggedIn((event) => {
 
   const run = (cmd) => event.server.runCommandSilent(cmd)
 
-  // Flatten a wide yard around fixed spawn, not just the 11x11 starter-
-  // base footprint (2026-08-20) - the Desert world-type override only
-  // fixes the *biome*, terrain height/ravines/caves still generate under
-  // standard vanilla noise, so the ground immediately around the base
-  // was still visibly uneven. Seed-hunting for a naturally flat spot was
-  // considered and rejected - same unverifiable-lead problem that
-  // already pushed this pack off a specific seed once before (see
-  // docs/IDEAS.md's Seed research section). Reused the existing
-  // technique instead, just wider: WIDE_HALF (25) matches the starting
-  // worldborder's radius (set to 50 below), so the entire starting play
-  // area reads as flat desert, not just the building itself.
-  //
-  // /fill's block-count limit is 32,768 - confirmed under it, not
-  // assumed: width is 2*WIDE_HALF+1 = 51 blocks per side, so 51*51 =
-  // 2601 blocks per Y layer. The foundation fill is 4 layers deep
-  // (10,404 blocks) and the headroom clear is 6 layers tall (15,606
-  // blocks) - both comfortably under the limit as single commands, no
-  // chunking needed.
-  //
-  // Ravines/caves deeper than the foundation's dig depth are still
-  // handled correctly despite the shallow dig, because /fill
-  // unconditionally overwrites every block in its volume - it's not
-  // "fill only if air," so any ravine or cave void *within* the filled
-  // range gets solidly capped regardless of how deep it continues below
-  // the fill's bottom layer. That deeper void stays a hollow cave
-  // underground, invisible and unreachable from the surface - not a gap
-  // in the visible ground.
-  const WIDE_HALF = 25
-  const wx0 = x - WIDE_HALF
-  const wx1 = x + WIDE_HALF
-  const wz0 = z - WIDE_HALF
-  const wz1 = z + WIDE_HALF
-  run(`fill ${wx0} ${floorY - 3} ${wz0} ${wx1} ${floorY} ${wz1} minecraft:stone`)
-  run(`fill ${wx0} ${wallY0} ${wz0} ${wx1} ${wallY1 + 3} ${wz1} minecraft:air`)
-  run(`fill ${wx0} ${floorY} ${wz0} ${wx1} ${floorY} ${wz1} minecraft:sand`)
-
   const half = 5
   const x0 = x - half
   const x1 = x + half
   const z0 = z - half
   const z1 = z + half
 
-  // Starter base footprint sits on ground the wide pass above already
-  // leveled and resurfaced as sand - just needs its own floor/walls/door
-  // on top now, no separate foundation dig or headroom clear here.
+  // No foundation dig / headroom clear needed - back on Superflat
+  // (2026-08-20, reverted from Single Biome: Desert - real terrain
+  // "wonky, doesn't suit the gameplay" per direct feedback), where
+  // height is uniform everywhere, so a single Y works across the whole
+  // footprint the same way it always did before this pack tried real
+  // terrain. See docs/IDEAS.md's Seed research section for the full
+  // history if real terrain gets revisited later - this is deliberately
+  // "for now," not a closed decision.
   run(`fill ${x0} ${floorY} ${z0} ${x1} ${floorY} ${z1} minecraft:stone_bricks`)
   run(`fill ${x0} ${wallY0} ${z0} ${x1} ${wallY1} ${z0} minecraft:cobblestone`)
   run(`fill ${x0} ${wallY0} ${z1} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)
