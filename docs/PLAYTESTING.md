@@ -119,16 +119,20 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   guaranteed active by default (fixed, pinned in `config/oculus.properties`),
   too dark during the day, worldborder still the vanilla blue
   line/vignette instead of fog.
-- **Worldborder fixed via texture replacement, not a mod** — no Forge
-  1.20.1 mod exists for this (checked four candidates directly), but the
-  border's wall is just a 16x16 texture
-  (`assets/minecraft/textures/misc/forcefield.png`). Replaced vanilla's
-  sharp diagonal-stripe pattern with a soft cloud-like one via the same
-  KubeJS resource-pack mechanism already used for the Wave Horn/loot bag
-  textures — the blue tint itself is applied by game code and can't be
-  removed, but the pattern was the actual "jarring" part. Not literally
-  fog rendered at the border's position, but should read as mist instead
-  of a forcefield grid.
+- **Worldborder: two layers, not one.** No Forge 1.20.1 mod exists for
+  this (checked four candidates directly). (1) The border's wall is just
+  a 16x16 texture (`assets/minecraft/textures/misc/forcefield.png`) —
+  replaced vanilla's sharp diagonal-stripe pattern with a soft cloud-like
+  one via the same KubeJS resource-pack mechanism used for the Wave
+  Horn/loot bag textures; the blue tint is applied by game code and
+  can't be removed, but the pattern was the "jarring" part. This alone
+  wasn't a strong enough effect. (2) **Real fix**: new
+  `border_fog.js` continuously scales YetGamer's Custom Fog's `/fog`
+  command based on the player's actual distance to the nearest
+  worldborder edge — genuinely thickens as you approach, thin/barely
+  there near the center. Only runs during the peacetime gap between
+  waves (defers entirely to `wave_spawner.js`'s existing combat fog
+  while a wave is active).
 - **Darkness took two real fixes, not one** — first, a genuine bug:
   Spooklementary v2.0.4 threw `Unknown variable: BIOME_PALE_GARDEN`
   during shader pipeline creation (that biome doesn't exist until MC

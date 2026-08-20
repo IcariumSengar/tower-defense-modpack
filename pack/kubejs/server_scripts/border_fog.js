@@ -1,0 +1,72 @@
+// Real "the world fogs up as you approach the border" effect
+// (docs/IDEAS.md's Fog Wall idea). No Forge 1.20.1 mod exists that
+// renders fog at the worldborder's fixed position (checked
+// exhaustively - see docs/MODS.md's Atmosphere & Wave Feel entry), but
+// YetGamer's Custom Fog's /fog command is real, scriptable, distance-
+// based fog - this uses it continuously, scaling density with the
+// player's actual distance to the nearest border edge, instead of the
+// one-shot wave-state set wave_spawner.js already does.
+//
+// Deliberately does nothing while a wave is active - wave_spawner.js's
+// useWaveHorn sets deliberate, already-tuned combat fog on wave start,
+// and wave_status.js resets it on wave clear. This script only manages
+// the *peacetime* gap between waves, so it never fights the wave-time
+// fog for control of the same command. lastAppliedMaxDistance resets to
+// -1 every tick a wave is active, so the first peacetime tick after a
+// wave clears always re-applies fresh rather than skipping because the
+// computed value happens to match a now-stale cache.
+//
+// Border treated as a square (min/maxX, min/maxZ) via
+// level.getWorldBorder() - same accessor wave_spawner.js already uses
+// for spawn clamping - matching vanilla's actual border shape, not a
+// circle.
+
+var PROXIMITY_FOG_START = 40 // blocks from the nearest edge where fog begins thickening
+var PROXIMITY_FOG_END = 5 // blocks from the nearest edge where fog is at its densest
+var FAR_MAX_DISTANCE = 200 // fog barely noticeable deep inside the border
+var NEAR_MAX_DISTANCE = 20 // thick, close fog right at the edge
+var MIN_DISTANCE = 6
+
+var lastAppliedMaxDistance = -1
+
+function lerp(a, b, t) {
+  return a + (b - a) * t
+}
+
+PlayerEvents.tick(function (event) {
+  var player = event.entity
+  var level = player.getLevel()
+
+  // Throttled to every 5 ticks (4x/second) - frequent enough to feel
+  // smooth while walking toward/away from the edge, cheap enough (one
+  // distance calc, no entity scan) that the throttle is just politeness.
+  if (level.getTime() % 5 !== 0) return
+
+  var data = player.persistentData
+  if (data.getBoolean('td_inWave')) {
+    lastAppliedMaxDistance = -1
+    return
+  }
+
+  var border = level.getWorldBorder()
+  var x = player.getX()
+  var z = player.getZ()
+  var distToEdge = Math.min(
+    x - border.getMinX(),
+    border.getMaxX() - x,
+    z - border.getMinZ(),
+    border.getMaxZ() - z
+  )
+  distToEdge = Math.max(0, distToEdge)
+
+  var t = 1 - (distToEdge - PROXIMITY_FOG_END) / (PROXIMITY_FOG_START - PROXIMITY_FOG_END)
+  t = Math.max(0, Math.min(1, t))
+
+  var maxDistance = Math.round(lerp(FAR_MAX_DISTANCE, NEAR_MAX_DISTANCE, t))
+  if (maxDistance === lastAppliedMaxDistance) return
+  lastAppliedMaxDistance = maxDistance
+
+  player.getServer().runCommandSilent(
+    'fog @a set ' + MIN_DISTANCE + ' ' + maxDistance + ' 25 25 30 0.3 cylinder'
+  )
+})

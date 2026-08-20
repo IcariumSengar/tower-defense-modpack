@@ -212,12 +212,35 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      namespace this time to override vanilla instead of adding new
      content) — same tinting behavior, but reads as drifting mist
      instead of a sci-fi forcefield grid. Not literally volumetric fog
-     rendered at the border's world position (still not achievable, per
-     the four-mod check above), but a real fix for "jarring," not just
-     documentation of a limitation.
+     rendered at the border's world position, and the texture alone
+     wasn't a strong enough effect on its own for what the user actually
+     wanted.
 
-  Fixes for #1 and #2 not yet re-tested in-game after this round of
-  changes.
+     **Real fix (2026-08-20): `pack/kubejs/server_scripts/border_fog.js`.**
+     A texture is still just a flat wall — it can't get denser as the
+     player approaches the way actual atmospheric fog does. But
+     YetGamer's Custom Fog's `/fog` command *is* real, scriptable,
+     distance-based fog, and we already control it. New script runs on a
+     5-tick throttle, computes the player's actual distance to the
+     nearest worldborder edge (`level.getWorldBorder()`, same accessor
+     `wave_spawner.js` already uses for spawn clamping — border treated
+     as a square, matching vanilla's real shape, not a circle), and
+     scales the fog's `MaxDistance` continuously from `200` (barely
+     noticeable near the center) down to `20` (thick, close) as the
+     player nears the last 40 blocks before the edge — a genuine "the
+     world fogs up as you approach the boundary" effect, not a static
+     look. Deliberately does nothing while a wave is active
+     (`td_inWave`) so it never fights `wave_spawner.js`'s already-tuned
+     combat fog for control of the same command — resets its own change
+     -detection cache every in-wave tick so the first peacetime tick
+     after a wave clears always re-applies fresh rather than skipping
+     because the computed value happens to match a stale cache from
+     before the wave. This is the piece that actually delivers "look
+     like actual fog" — the texture override above is a smaller,
+     complementary improvement to the wall's static appearance, not the
+     primary fix.
+
+  None of the fixes in this entry have been re-tested in-game yet.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check
   this session's additions weren't costing performance without being

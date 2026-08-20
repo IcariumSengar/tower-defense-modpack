@@ -53,6 +53,10 @@ file = "kubejs/server_scripts/base_expansion.js"
 hash = "fc2e8a5a3d7e0267796c27ae671baa00a2320aaa25b32df0d35751e264227a4e"
 
 [[files]]
+file = "kubejs/server_scripts/border_fog.js"
+hash = "04e34712beea134724bfdbef7130dcff3c03434e923cc0e33c26e01f6dd6cd44"
+
+[[files]]
 file = "kubejs/server_scripts/example_glue.js"
 hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
