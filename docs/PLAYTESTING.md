@@ -40,7 +40,8 @@ before re-adding it):
 3. + witch + flesh_villager
 4. + wither skeleton + flesh_hunter_i (tougher — TFTH's Awareness stage)
 5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage)
-   — repeats for calls beyond wave 5
+   — repeats for calls beyond wave 5, and every repeat is a **Blood
+   Moon** (see below)
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
@@ -56,6 +57,23 @@ darkness effect is wave-only; fog isn't — a lighter version keeps
 thickening near the worldborder edge during the peaceful gap too
 (`border_fog.js`), so night reads as a heavier version of an
 atmosphere that's already there, not fog appearing from nothing.
+
+**Wave 5 onward is a Blood Moon** — a distinct "BLOOD MOON RISES" title
+and slightly denser fog than a normal wave. Atmosphere only, not a
+harder mob roster (wave 5's composition is reused as-is for every
+later call, same as before).
+
+**After every wave clears, a reward choice appears in chat** — three
+clickable lines offering a permanent buff (Vitality: +2 hearts,
+Fortitude: less damage taken, Ferocity: hit harder). Click one to pick
+it; picking the same buff again later stacks it stronger rather than
+wasting the pick. **The Wave Horn won't work again until you've
+chosen** — this is deliberate (docs/IDEAS.md's design), not a bug. Once
+you choose (and, at wave 5 specifically, once the starter gear popup
+finishes), a 3-minute countdown to the next wave starts, shown on the
+action bar. Right-clicking the horn manually at any point during the
+countdown starts the next wave immediately and cancels the countdown —
+you're never forced to wait out the full 3 minutes.
 
 Pure Suffering was removed 2026-08-20 as part of a footprint audit
 (was already dormant, `enableInvasions false`) — see `docs/MODS.md`'s
@@ -274,3 +292,18 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   regardless of wave state (now every 4 ticks, matching
   `mob_aggro.js`'s existing throttle pattern). **None of this — darkness
   or performance — has been re-tested in-game yet.**
+- **Wave-clear orchestration built (2026-08-20)** — three features
+  requested together: the roguelike permanent buff choice (clickable
+  chat menu, three buffs, repeat picks stack via effect amplifier), a
+  3-minute countdown to the next wave (manual horn use always cancels
+  it), and Blood Moon boss waves (wave 5 onward — a distinct title and
+  denser fog, not a harder mob roster). The choice popup, gear removal
+  at wave 5, and countdown now fire in that exact order, not
+  simultaneously. See `docs/MODS.md`'s Wave-clear orchestration entry
+  for the full implementation writeup. **Entirely new, unconfirmed
+  in-game** — specifically worth checking: the chat-menu clicks actually
+  register (`player.hasTag(...)` detecting the `/tag` set by the
+  `clickEvent`), the countdown correctly cancels on manual horn use
+  without double-firing, and wave 5's gear-removal popup still fires
+  correctly now that it's one step later in the sequence than before
+  (after the choice, not inline with the other wave-clear effects).

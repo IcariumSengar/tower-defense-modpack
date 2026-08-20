@@ -33,8 +33,6 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
 | GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
-| Oculus | [Modrinth](https://modrinth.com/mod/oculus) | 1.20.1-1.8.0 (1.20.1 Forge) | Iris-for-Forge shader loader — added 2026-08-20 to run the shader pack below, first piece of the "Atmosphere & Wave Feel" design (`docs/IDEAS.md`) | Declares **Embeddium** as its own required dependency (confirmed via Modrinth API, "any compatible version") — built to work with our existing renderer, not fight it, despite some older/version-unspecific web chatter about Oculus/Embeddium friction | testing |
-| Spooklementary (locally tuned) | [Modrinth](https://modrinth.com/shader/spooklementary) (v1.1 base) | v1.1 base, hand-edited | Shader pack — Complementary-based, moody/desaturated horror atmosphere. Picked 2026-08-20 over Hysteria Shaders (1.20.1 build ~1yr stale, heavier volumetric feature set) and Gravemist (couldn't confirm it's actually available for 1.20.1 — zero Modrinth results). Blood moon effect confirmed **visual-only**, no functional overlap with the separate "Boss waves tied to Blood Moon" idea | **No longer a clean upstream download.** Downgraded v2.0.4 → v1.1 first (v2.0.4 throws `RuntimeException: Unknown variable: BIOME_PALE_GARDEN` during pipeline creation — that biome doesn't exist until MC 1.21.4; confirmed via source that v1.1, Oct 2023, predates it). Still too dark after that fix, and the per-shaderpack settings-override file (`shaderpacks/<name>.txt`, the "correct" Iris mechanism) couldn't be confirmed as actually taking effect after two attempts — so **the shader's own `.glsl` defaults were hand-edited directly** (`shaders/lib/common.glsl`: day-intensity sliders to their max `2.00`, quality settings to `profile.LOW`) and repackaged as `Spooklementary_TDM_tuned.zip`, tracked as a real file in `pack/shaderpacks/` rather than a `.pw.toml` pointing at an upstream URL, since the bytes no longer match anything Modrinth serves. Not a mod — loaded via Oculus. See its own writeup under Custom glue | testing |
 | YetGamer's Custom Fog | [Modrinth](https://modrinth.com/mod/yetgamers-custom-fog) | 1.0.1 (1.20.1 Forge) | Added 2026-08-20 as a substitute for `docs/IDEAS.md`'s named Foggy Border/Fog (IMB11), **neither of which has any Forge build at all** (Foggy Border is Fabric-only; Fog/IMB11 is Fabric/NeoForge-only and starts at 1.21+ anyway — confirmed via Modrinth's version API directly, not search summaries). Ships a real runtime `/fog <targets> set\|reset <min> <max> <r> <g> <b> <sat> cylinder\|sphere` command — scriptable via the same `runCommandSilent` pattern as everything else in this pack, unlike a shader's own settings | No dependencies. Its fog is always player-relative, not tied to a fixed world coordinate — can't literally render fog "at the worldborder," see the Custom glue writeup for what it actually delivers instead | testing |
 
 ## Removed mods
@@ -74,6 +72,21 @@ references found for any of these) before removing, not just guessed:
   flavor-text framing around an otherwise-standalone mod. Revisit if
   the base-relocation/travel angle becomes an actual designed mechanic
   rather than just flavor.
+- **Oculus** + **Spooklementary (locally tuned)** — added 2026-08-20 for
+  the "Atmosphere & Wave Feel" shader layer, tuned across eleven real
+  rounds (version-incompatibility crash, a long brightness/shadow saga,
+  isolating the fix to the shader's own single intended lever, removing
+  real-time shadows once exposure alone couldn't fix pitch-black
+  occlusion) — every individual fix was technically sound, but the
+  user's actual verdict was about the shader's whole aesthetic, not any
+  remaining number ("im just not feeling the whole shader feel now").
+  Removed entirely the same day, replaced with vanilla's own
+  `minecraft:darkness` status effect (see the Wave-clear orchestration
+  entry below) for the atmosphere piece instead. Revisit only with a
+  genuinely new signal from the user — this isn't an "unused, never
+  integrated" removal like the others above, it's a "built, tuned
+  extensively, and explicitly rejected on feel" one; don't re-propose a
+  shaderpack here without that new signal.
 
 None of these were hard blockers or bugs — all were clean removals of
 mods sitting parallel to, not part of, the pack's actual built systems.
@@ -529,6 +542,75 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     (see its own config-hardening entry), so it carries registry/loading
     weight but no continuous runtime cost. YetGamer's Custom Fog is a
     lightweight rendering-parameter mod with no dependencies.
+
+- **Wave-clear orchestration (2026-08-20)** — three `docs/IDEAS.md` ideas
+  built together, since the doc itself pins down a real ordering
+  requirement between them: wave-clear effects → choice popup (blocking)
+  → player chooses → starter-gear removal (wave 5 specifically) →
+  countdown to next wave. All three reuse the wave-clear trigger point
+  (`wave_status.js`'s `td_inWave` true→false transition) that base
+  expansion and starter-gear removal already hooked into — now five
+  things share it, exactly the "orchestration moment, not five
+  independent hooks" the design doc flagged as worth treating deliberately
+  once that many ideas converged on one trigger.
+  - **Roguelike permanent buff choice.** `docs/IDEAS.md`'s planned mod for
+    this, ScreenJS, checked directly and found dead — 1.19.2 only, last
+    released April 2023. Searched for an actively-maintained alternative
+    (per explicit request, not just defaulting to the fallback): the two
+    closest hits, "KubeJS GUI Overhauled" and "KubeJS Studio," are a
+    recipe-authoring tool and a developer IDE respectively — neither is a
+    player-facing in-game menu, and neither confirmed 1.20.1 anyway. Built
+    as a clickable `/tellraw` chat menu instead (`wave_status.js`) — three
+    JSON text components, each with a `clickEvent` running
+    `/tag @s add td_pick_<id>` as the clicking player. A second tick
+    handler watches for these tags via `player.hasTag(...)` (a direct
+    KubeJS entity method call, not a command — avoids the "commands run
+    via `player.getServer()` have no `@s`" pitfall entirely for the
+    read/clear side; the tag-setting `clickEvent` itself runs client-side
+    as the player, so `@s` is valid there specifically). Three buffs,
+    all real vanilla effects given permanently (`/effect give`'s own max
+    duration, ~11.6 days): **Vitality** (`health_boost`, +2 hearts),
+    **Fortitude** (`resistance`, less damage taken), **Ferocity**
+    (`strength`, hit harder). Repeat picks stack via amplifier (tracked
+    per-buff on player persistent data) rather than being wasted or drawn
+    from a shrinking pool — "start small, scale later" per the design
+    doc's own resolved note; real branching next-wave-composition choice
+    (the doc's second, separate mechanic) wasn't built this pass.
+  - **On-screen countdown timer.** 3-minute countdown starts once the
+    choice above resolves, auto-triggering the next wave at zero. Display
+    and auto-trigger deliberately live in `wave_spawner.js`, not
+    `wave_status.js` (where the structurally-similar action-bar pattern
+    this reuses actually lives) — auto-triggering means calling
+    `useWaveHorn()` directly, and this codebase's `server_scripts` don't
+    reliably share top-level functions across files, so `wave_status.js`
+    only sets a `player.persistentData` flag (`td_countdownActive`/
+    `td_countdownEndTick`), the same cross-file channel `td_inWave`
+    already uses between three other files. Manual horn use always
+    cancels a pending countdown (checked at the top of `useWaveHorn`) so
+    an early right-click can't race against the auto-trigger and cause a
+    double-fire — confirms the design doc's own "assumed but unconfirmed"
+    note that the manual horn should still work as an early-trigger
+    override, not get replaced by the timer.
+  - **Boss wave tied to a Blood Moon event, built custom.** Checked real
+    mods first — Enhanced Celestials (2.3M downloads, real Forge 1.20.1
+    build) — but decided against adding one without first confirming it
+    doesn't bring its own autonomous mob spawning, the same class of
+    conflict TFTH and Pure Suffering both caused before their configs
+    were hardened. Built custom instead, in `wave_spawner.js`: every wave
+    from the designed campaign's end onward (`waveNumber >= WAVES.length`,
+    the same threshold `wave_status.js`'s `FINAL_WAVE` caps display at and
+    removes starter gear on) is a Blood Moon — a distinct "BLOOD MOON
+    RISES" title and one denser fog lever (`MaxDistance` 32→24), no
+    mob-count/stat changes, matching the design doc's own framing ("feels
+    extra scary via atmosphere... rather than just a stat-scaling bump").
+    Deliberately a single new lever, not a stack of them, per the lesson
+    from this session's shader-tuning saga about compounding brightness/
+    intensity changes without re-examining the total.
+  - **Darkness effect** (built earlier the same day as a shader
+    replacement) already covered under Atmosphere & Wave Feel above — not
+    duplicated here, just noted as part of the same wave-clear-adjacent
+    work.
+  - None of the three pieces above have been re-tested in-game yet.
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces

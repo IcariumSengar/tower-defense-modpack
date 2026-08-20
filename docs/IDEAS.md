@@ -388,7 +388,7 @@ Checked these notes against [ROADMAP.md](ROADMAP.md) and
    as the path to a fully custom/tuned scaling system later, once the
    mod-driven version has been played and its gaps are actually known.
 
-## Boss waves tied to a Blood Moon event
+## Boss waves tied to a Blood Moon event (built 2026-08-20, custom)
 
 Core idea: make boss-wave nights coincide with a "Blood Moon" event from
 a mod, so the wave feels extra scary via that mod's own atmosphere/spawn
@@ -419,6 +419,24 @@ events on its own schedule (see MODS.md) — worth checking whether a
 Blood Moon mod could be the visual/atmosphere layer on top of an
 existing Pure Suffering invasion, rather than a second, competing
 event-scheduling system.
+
+**Built (2026-08-20): custom, no mod.** Pure Suffering was removed from
+the pack entirely on 2026-08-20 (footprint audit), so the possible
+connection above is moot. Checked real mods first (Enhanced Celestials,
+2.3M downloads, real Forge 1.20.1 build) but decided against adding one
+without first confirming it doesn't bring its own autonomous mob
+spawning — the same class of conflict TFTH and Pure Suffering both
+caused before their configs were hardened. Built custom instead: every
+wave from the designed campaign's end onward
+(`waveNumber >= WAVES.length` in `wave_spawner.js`, the same threshold
+`wave_status.js`'s `FINAL_WAVE` already caps display at and removes
+starter gear on) is a Blood Moon — a distinct "BLOOD MOON RISES" title
+and a single denser fog lever (`MaxDistance` 32→24), **not** a mob-
+count/stat change, matching this idea's own framing ("feels extra
+scary via atmosphere... rather than just a stat-scaling bump"). Means
+the moment starter gear disappears is also the first Blood Moon — a
+deliberate thematic pairing (training wheels off = the real danger
+starts), not a coincidence worth decoupling.
 
 ## Pack aesthetic: Fallout-TV-series post-apocalyptic desert Southwest
 
@@ -875,7 +893,7 @@ Decoration** cover the pack-aesthetic block palette *and* could double
 as set-dressing for lootable-building interiors once a structure-gen
 mod is in the picture — one decoration-mod pick serving two ideas.
 
-## Roguelike choice mechanics: permanent buff pick + next-wave choice on wave clear
+## Roguelike choice mechanics: permanent buff pick + next-wave choice on wave clear (buff pick built 2026-08-20)
 
 Core idea, two paired mechanics, both firing on wave completion:
 1. A choice popup offering **three permanent player buffs** — pick one.
@@ -926,6 +944,31 @@ Open questions:
   or stay flat — not specified yet.
 - Whether buff choices repeat/can reroll the same option across
   multiple wave clears, or are drawn from a shrinking pool.
+
+**Built (2026-08-20), buff-pick half only — next-wave composition
+choice still deferred, per "start small" above.** ScreenJS (this
+section's planned mod) checked directly and found dead — 1.19.2 only,
+last released April 2023. No actively-maintained alternative KubeJS
+GUI-screen addon exists for 1.20.1 either. Built as a clickable
+`/tellraw` chat menu instead (`wave_status.js`) — zero new mod
+dependency, same vanilla-scriptable pattern as everything else built
+this session. Resolves both open questions above: the three buffs are
+**Vitality** (+2 hearts), **Fortitude** (10% less damage taken), and
+**Ferocity** (hit harder) — real vanilla effects (`health_boost`,
+`resistance`, `strength`) given permanently via a duration at
+`/effect give`'s own max. Choices **repeat and stack**, not drawn from
+a shrinking pool — each buff tracks its own pick-count on player
+persistent data, and repeat picks raise the effect's amplifier (second
+Vitality pick = Health Boost II, etc.), so choosing the same buff
+repeatedly is a real, escalating strategy, not a wasted pick.
+
+**"Pause the game until chosen" resolved as a soft/functional pause,
+per this section's own deferred implementation-detail framing** — no
+literal tick freeze. The wave-clear orchestration (immediate effects →
+choice → gear removal at wave 5 → countdown) simply doesn't advance
+past the choice step until a pick is registered (`td_awaitingChoice`),
+and the Wave Horn itself refuses manual re-use while a choice is
+pending — functionally blocking, without needing to freeze the server.
 
 ## Starter gear as a dead soul's leftovers, taken away after wave 5
 
@@ -1005,7 +1048,7 @@ session — see below.
 >    elevated permission. Full list: `docs/MODS.md`'s Wave Horn
 >    debugging notes / `docs/IDEAS.md`'s "Confirmed working" section.
 
-## On-screen countdown timer to the next wave (auto-starts after 3 min)
+## On-screen countdown timer to the next wave (auto-starts after 3 min) (built 2026-08-20)
 
 Core idea: once a wave is cleared, a 3-minute countdown starts and
 displays on screen; when it hits zero, the next wave starts
@@ -1067,6 +1110,24 @@ raised:
   (at wave 5 specifically) → countdown to next wave begins. Still open:
   where reward placement specifically slots in relative to the popup —
   only the gear-removal-after-choices part is pinned down.
+
+**Built (2026-08-20), exactly this ordering.** Wave-clear reward
+placement wasn't built this pass (not requested), so the real sequence
+is: wave-clear effects (title/day/fog/darkness reset) → choice popup
+(blocking) → player chooses → starter-gear removal at wave 5 → 3-minute
+countdown begins. Confirmed the "manual horn still works during the
+countdown" assumption as the actual behavior: `useWaveHorn` cancels any
+active countdown the instant it's manually triggered, so an early
+right-click always wins and the auto-trigger never double-fires on top
+of it. Implementation split across two files for a real technical
+reason, not just organization: the countdown's display and auto-trigger
+live in `wave_spawner.js` (not `wave_status.js`, where the display logic
+this idea reuses actually lives) because auto-triggering the next wave
+means calling `useWaveHorn()` directly, and this codebase's
+`server_scripts` don't reliably share top-level functions across files
+— `wave_status.js` starts the countdown via a `player.persistentData`
+flag (the same cross-file channel `td_inWave` already uses), and
+`wave_spawner.js`'s own tick handler owns everything from there.
 
 ## Atmosphere & Wave "Feel" (from updated design notes, 2026-08-20)
 

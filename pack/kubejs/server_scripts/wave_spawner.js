@@ -158,8 +158,35 @@ function useWaveHorn(player) {
     return
   }
 
+  // Blocks re-use while the wave-clear reward choice (wave_status.js) is
+  // still unanswered - docs/IDEAS.md pins the ordering as wave-clear
+  // effects -> choice popup (blocking) -> countdown, so a manual horn
+  // click can't skip the choice by racing ahead of it.
+  if (data.getBoolean('td_awaitingChoice')) {
+    player.tell('§c[Wave Horn] §fChoose your reward before summoning the next wave.')
+    return
+  }
+
+  // A manual horn use always takes priority over an in-progress countdown
+  // (docs/IDEAS.md: "the manual Wave Horn presumably still works during
+  // the countdown... the timer is a forcing function for players who
+  // don't act, not a removal of the existing manual trigger") - cancels
+  // it here so the countdown tick handler below doesn't also fire
+  // useWaveHorn a second time once it independently reaches zero.
+  data.putBoolean('td_countdownActive', false)
+
   var waveNumber = data.getInt('td_waveNumber') + 1
   data.putInt('td_waveNumber', waveNumber)
+
+  // Boss wave tied to a Blood Moon event (docs/IDEAS.md, built custom -
+  // no Forge 1.20.1 Blood Moon mod was vetted, and the design doc itself
+  // frames this as atmosphere/presentation, "rather than just a stat-
+  // scaling bump," so no mob-count/stat changes here). Every wave from
+  // the designed campaign's end onward is a Blood Moon - the same
+  // WAVES.length threshold wave_status.js's FINAL_WAVE already caps
+  // display at and removes starter gear on, so the moment training-
+  // wheels gear disappears is also the first Blood Moon.
+  var isBloodMoon = waveNumber >= WAVES.length
 
   // Force night before spawning so undead mobs (zombie, skeleton,
   // wither_skeleton) don't immediately catch fire from spawning into
@@ -178,7 +205,11 @@ function useWaveHorn(player) {
   // border's actual position (no Forge 1.20.1 mod found that renders
   // fog at a fixed world coordinate), so it reads as "the horde's out
   // there in the dark" tension rather than a literal border wall.
-  server.runCommandSilent('fog @a set 8 32 25 25 30 0.3 cylinder')
+  // Blood Moon waves get a single denser lever (lower MaxDistance) on
+  // top of the normal wave fog - deliberately one number, not a stack of
+  // new levers, per the lesson from this session's shader-tuning saga.
+  var fogMaxDistance = isBloodMoon ? 24 : 32
+  server.runCommandSilent('fog @a set 8 ' + fogMaxDistance + ' 25 25 30 0.3 cylinder')
 
   // Darkness effect layer (docs/IDEAS.md's "Darkness effect as the shader
   // replacement") - the Warden's pulsing vision-closing vignette, applied
@@ -254,8 +285,13 @@ function useWaveHorn(player) {
   // chat is easy to miss mid-fight. Uses vanilla /title via
   // runCommandSilent, consistent with every other command in this pack
   // rather than an unverified KubeJS-specific title API.
-  server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
-  server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
+  if (isBloodMoon) {
+    server.runCommandSilent(`title @a title {"text":"BLOOD MOON RISES","color":"dark_red","bold":true}`)
+    server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"red"}`)
+  } else {
+    server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
+    server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
+  }
 }
 
 // Covers right-clicking with nothing targeted (rare on Superflat, but
@@ -309,4 +345,40 @@ PlayerEvents.tick(function (event) {
   })
 
   pendingSpawns = stillPending
+})
+
+// On-screen countdown to the next wave (docs/IDEAS.md's "On-screen
+// countdown timer to the next wave"). wave_status.js starts this
+// (td_countdownActive/td_countdownEndTick) once the wave-clear choice
+// popup is resolved - the auto-trigger has to live here rather than
+// there so it can call useWaveHorn() directly; server_scripts don't
+// reliably share top-level scope/functions across files (same
+// constraint noted throughout this codebase, e.g. HOSTILE_TYPES/WAVES
+// being redeclared per-file rather than imported), so cross-file
+// coordination goes through player.persistentData flags instead, same
+// as td_inWave already does between wave_status.js/base_expansion.js/
+// border_fog.js.
+var COUNTDOWN_DISPLAY_THROTTLE = 20 // once/second is plenty for a countdown display
+
+PlayerEvents.tick(function (event) {
+  var player = event.entity
+  var data = player.persistentData
+  if (!data.getBoolean('td_countdownActive')) return
+
+  var level = player.getLevel()
+  var currentTick = level.getTime()
+  var remaining = data.getInt('td_countdownEndTick') - currentTick
+
+  if (remaining <= 0) {
+    data.putBoolean('td_countdownActive', false)
+    useWaveHorn(player)
+    return
+  }
+
+  if (currentTick % COUNTDOWN_DISPLAY_THROTTLE !== 0) return
+  var totalSeconds = Math.ceil(remaining / 20)
+  var minutes = Math.floor(totalSeconds / 60)
+  var seconds = totalSeconds % 60
+  var secondsDisplay = seconds < 10 ? '0' + seconds : '' + seconds
+  player.setStatusMessage(`§b⏱ Next wave in: ${minutes}:${secondsDisplay}`)
 })
