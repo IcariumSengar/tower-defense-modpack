@@ -663,16 +663,48 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   - **`wave_spawner.js` needed the same class of fix.** Its mob-spawn
     logic reused the player's own Y for every summoned mob regardless of
     that specific mob's X/Z — harmless on flat Superflat, but on real
-    terrain a mob 15-25 blocks away can be several blocks off the
-    player's height, spawning embedded in terrain or floating. Fixed by
-    summoning 15 blocks (`SPAWN_HEIGHT_BUFFER`) above the estimated
-    ground height and letting vanilla gravity drop the mob onto the real
-    surface, rather than a per-mob heightmap query — simpler, lower risk,
-    costs only a brief harmless fall. The sound cue keeps using the
-    original (non-elevated) height so it still reads as coming from
-    ground level. **Not confirmed in-game for TFTH's GeckoLib-animated
-    mobs specifically** — only vanilla mob fall behavior is
-    well-established.
+    terrain a mob spawning some distance away can be several blocks off
+    the player's height, spawning embedded in terrain or floating.
+    First fix summoned mobs 15 blocks up and let vanilla gravity drop
+    them onto the real surface — technically correct, but user feedback
+    after a real playtest was "enemies are falling from the sky," which
+    reads as silly rather than menacing for mobs meant to approach with
+    dread. **Replaced (2026-08-20) with a silent correction**: summon at
+    the rough estimate regardless of accuracy, tag the entity uniquely
+    (`Tags:["td_justSpawned"]`), then `/spreadplayers <x> <z> 0 4 false
+    @e[type=<mobType>,tag=td_justSpawned,limit=1]` — the same vanilla
+    heightmap-aware placement command used for the player's own fixed
+    spawn in `playtest_starter_kit.js`, here targeting a mob instead of
+    a player — then immediately clear the tag. Instant, invisible
+    correction instead of a visible drop. Tag-add-then-remove is
+    race-safe since `pendingSpawns.forEach` processes one spawn at a
+    time, synchronously, within a tick. **Biggest unconfirmed
+    assumption**: `/spreadplayers` accepting a general `@e[...]` mob
+    selector, not just players, despite the command's name — reasoned
+    from its argument being typed as a generic multi-entity selector in
+    vanilla's command tree, consistent with how other "player" mods work
+    on arbitrary entities, but not directly verified. If mobs don't
+    move at all after summoning, check this first.
+  - **Mobs always spawned inside the border, never from beyond it — a
+    real miss against `docs/IDEAS.md`'s own Fog Wall design** ("enemies
+    spawn from beyond the fog line, not inside the play area"), caught
+    directly by the user after a playtest, not found proactively. The
+    original spawn logic picked a position 15-25 blocks from the
+    *player* and clamped it inward if that landed outside the border —
+    so mobs always spawned near the player, never near the edge, and the
+    gap only widened as `base_expansion.js` grew the border over time.
+    Vanilla's worldborder is a hard, impassable wall (the reason the old
+    clamp existed at all — an earlier bug had mobs spawning genuinely
+    outside it and getting permanently stuck), so **fixed by spawning
+    just inside the border's perimeter instead** — a new
+    `randomBorderEdgePosition()` picks a random point along any of the 4
+    edges (still respecting the same margin) rather than a radius around
+    the player. Mobs now walk the real distance in;
+    `mob_aggro.js`'s existing unconditional, no-distance-limit
+    `setTarget()` (already built with this exact scenario anticipated —
+    see its own comment, "this will matter once the pack moves off
+    Superflat") is what makes sure they reliably path the whole way
+    rather than losing interest partway.
 
 - **World type switched from Superflat to Single Biome: Desert
   (2026-08-20)** — per the direct request "creating a world that isn't

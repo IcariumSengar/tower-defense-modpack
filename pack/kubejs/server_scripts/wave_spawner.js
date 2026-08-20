@@ -214,18 +214,35 @@ function useWaveHorn(player) {
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
-  // Clamp spawn positions to the current worldborder (minus a margin so
-  // nothing spawns literally against the wall) — without this, mobs
-  // spawned at the usual 15-25 block radius could land outside a small
-  // border, becoming permanently unreachable (and silently preventing
-  // the hostile counter from ever reaching 0, so "wave defeated" would
-  // never fire either).
+  // Spawn at the worldborder edge, not near the player (2026-08-20,
+  // fixing a real miss against docs/IDEAS.md's own Fog Wall design:
+  // "enemies spawn from beyond the fog line, not inside the play area").
+  // The old logic picked a position 15-25 blocks from the player and
+  // clamped it *inward* if that landed outside the border - meaning
+  // mobs always spawned near the player, never "from beyond the
+  // border," and as the border grew from base_expansion.js that gap
+  // only got worse. Mobs still can't literally spawn outside the border
+  // (vanilla's wall is a hard, impassable barrier - they'd be
+  // permanently stuck, the original bug this margin was fixing), so
+  // this spawns them just *inside* the edge instead, at a random point
+  // around the whole perimeter, and lets them walk the real distance in
+  // - mob_aggro.js's unconditional, no-distance-limit setTarget already
+  // exists specifically for this (see its own comment: "this will
+  // matter once the pack moves off Superflat").
   var border = level.getWorldBorder()
   var margin = 3
   var minX = border.getMinX() + margin
   var maxX = border.getMaxX() - margin
   var minZ = border.getMinZ() + margin
   var maxZ = border.getMaxZ() - margin
+
+  function randomBorderEdgePosition() {
+    var side = Math.floor(Math.random() * 4) // 0=minZ 1=maxZ 2=minX 3=maxX
+    if (side === 0) return { x: Math.floor(minX + Math.random() * (maxX - minX)), z: Math.floor(minZ) }
+    if (side === 1) return { x: Math.floor(minX + Math.random() * (maxX - minX)), z: Math.floor(maxZ) }
+    if (side === 2) return { x: Math.floor(minX), z: Math.floor(minZ + Math.random() * (maxZ - minZ)) }
+    return { x: Math.floor(maxX), z: Math.floor(minZ + Math.random() * (maxZ - minZ)) }
+  }
 
   // Staggered instead of all-at-once - each mob gets a queued spawn
   // tick (staggerGap apart, tightening at higher waveNumber) and a sound
@@ -237,28 +254,17 @@ function useWaveHorn(player) {
     var mobType = pair[0]
     var count = pair[1]
     for (var i = 0; i < count; i++) {
-      // 6.283185307179586 = 2*PI as a literal, not Math.PI - confirmed
-      // via in-game testing that Math.PI itself evaluates to something
-      // that isn't a usable number in this environment (Math.random(),
-      // Math.cos(), Math.sin(), Math.floor() all work fine individually;
-      // only Math.PI produced NaN when multiplied). Root cause not
-      // understood, but sidestepping it entirely is simple and safe.
-      var angle = Math.random() * 6.283185307179586
-      var r = 15 + Math.random() * 10
-      var x = Math.floor(player.getX() + Math.cos(angle) * r)
-      var z = Math.floor(player.getZ() + Math.sin(angle) * r)
-      x = Math.max(minX, Math.min(maxX, x))
-      z = Math.max(minZ, Math.min(maxZ, z))
+      var pos = randomBorderEdgePosition()
       var spawnTick = currentTick + mobIndex * staggerGap
       pendingSpawns.push({
         mobType: mobType,
-        x: x,
-        // Ground-ish estimate, reused for the sound cue's position
-        // below (kept at the player's own height rather than the
-        // elevated summon height, so the audio still reads as coming
-        // from roughly ground level, not from up in the air).
+        x: pos.x,
+        // Ground-ish estimate, reused for the sound cue's position and
+        // as the summon command's starting Y - not required to be
+        // exact, since the /spreadplayers correction in the spawn tick
+        // handler below fixes the mob's actual final height.
         y: Math.floor(player.getY()),
-        z: z,
+        z: pos.z,
         spawnTick: spawnTick,
         soundTick: spawnTick - SOUND_LEAD_TICKS,
         soundPlayed: false,
@@ -309,19 +315,29 @@ BlockEvents.rightClicked(function (event) {
 // specific mob type, since TFTH's own sound event registry names
 // weren't verified.
 //
-// SPAWN_HEIGHT_BUFFER (2026-08-20, real-terrain switch): summoning
-// exactly at spawn.y (the player's own height) only worked on flat
-// Superflat ground, where every column shared the same height. Real
-// Desert terrain varies within the 15-25 block spawn radius (dunes,
+// Ground-height correction (2026-08-20, real-terrain switch): summoning
+// exactly at spawn.y (a rough player-height estimate) only worked on
+// flat Superflat ground, where every column shared the same height.
+// Real Desert terrain varies across the border's perimeter (dunes,
 // small dips), so a mob could summon embedded in terrain or floating
-// above it. Fixed by summoning well above spawn.y and letting vanilla
-// gravity drop the mob onto whatever the real ground height is at its
-// specific X/Z - simpler and lower-risk than a per-mob heightmap query,
-// at the cost of a brief, harmless fall (most hordes here are meant to
-// be killed anyway). Not yet confirmed in-game for TFTH's GeckoLib-
-// animated mobs specifically - flagged as a playtest check.
-var SPAWN_HEIGHT_BUFFER = 15
-
+// above it.
+//
+// First fix was summoning well above spawn.y and letting vanilla
+// gravity drop the mob onto the real surface — worked, but looked
+// wrong ("enemies falling from the sky") for mobs that are supposed to
+// read as menacingly approaching, not literally raining in. Replaced
+// with a silent correction instead: summon at the rough estimate (its
+// exact starting height doesn't matter, even if embedded/floating),
+// tag it uniquely, then use `/spreadplayers` — the same vanilla
+// heightmap-aware "place on solid ground here" command already used in
+// playtest_starter_kit.js for the player's own fixed spawn — to
+// teleport just that mob onto the real surface, instantly and
+// invisibly, before immediately clearing the tag. A small maxRange (4)
+// keeps the correction tight to the intended spawn point rather than
+// drifting. Tag-then-immediately-clear is race-safe here because
+// pendingSpawns.forEach processes one spawn at a time, synchronously,
+// within a single tick — even same-type mobs due on the same tick can't
+// collide on the tag (see the comment above summon in the loop below).
 PlayerEvents.tick(function (event) {
   if (pendingSpawns.length === 0) return
 
@@ -339,8 +355,17 @@ PlayerEvents.tick(function (event) {
       spawn.soundPlayed = true
     }
     if (currentTick >= spawn.spawnTick) {
+      // Tag added and removed within this same synchronous block, so
+      // the very next spawn processed (even same tick, even same mob
+      // type) can never see a stale tag from this one.
       server.runCommandSilent(
-        `summon ${spawn.mobType} ${spawn.x} ${spawn.y + SPAWN_HEIGHT_BUFFER} ${spawn.z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
+        `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} {Attributes:[{Name:"generic.follow_range",Base:128}],Tags:["td_justSpawned"]}`
+      )
+      server.runCommandSilent(
+        `spreadplayers ${spawn.x} ${spawn.z} 0 4 false @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest]`
+      )
+      server.runCommandSilent(
+        `tag @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest] remove td_justSpawned`
       )
     } else {
       stillPending.push(spawn)

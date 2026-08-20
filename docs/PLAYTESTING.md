@@ -64,6 +64,12 @@ still alive nearby — clear the wave first. Action bar shows a live
 "Hostiles remaining" count; chat announces when a wave starts (with mob
 count) and when it clears.
 
+**Mobs spawn at the worldborder's edge, not near you** — they walk the
+real distance in rather than appearing nearby, so on a large border
+expect a real gap between "wave incoming" and the first mob actually
+reaching you (staggered emergence + sound cues still apply on top of
+this).
+
 Calling the horn also forces night and locks the day/night cycle (so
 zombies/skeletons don't burn on spawn or catch fire mid-fight) and
 applies dense fog for atmosphere — it switches back to day, clears the
@@ -346,12 +352,31 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   within vanilla's default spawn-scatter radius, so that reasoning no
   longer holds — replaced with `/spreadplayers` (vanilla's real
   heightmap-aware "place on solid ground here" command) before reading
-  position. Also fixed `wave_spawner.js`'s mob spawning, which reused
-  the player's own Y for every mob regardless of that mob's actual
-  terrain height — summons now happen 15 blocks up and fall via gravity
-  onto the real ground. **Neither fix confirmed in-game yet** —
-  specifically worth checking: the starter base sits on a clean,
-  correctly-leveled pad rather than a lumpy/dune-clipped one, and TFTH's
-  GeckoLib-animated mobs fall and land normally rather than glitching
-  out (only vanilla mob fall behavior is well-established; TFTH's isn't
-  yet).
+  position. **Confirmed working enough to playtest** — surfaced two real
+  problems instead, both since fixed (see the next two bullets).
+- **"Enemies are falling from the sky" — fixed (2026-08-20).** The
+  gravity-drop mob-height fix above was technically correct but looked
+  wrong in an actual playtest — mobs are supposed to read as menacingly
+  approaching, not literally raining in. Replaced with a silent
+  `/spreadplayers`-based correction (tag the just-summoned mob
+  uniquely, spread it onto the real surface instantly, clear the tag) —
+  see `docs/MODS.md`'s Fixed spawn entry for the full mechanism. **Not
+  yet re-tested** — the biggest open question is whether
+  `/spreadplayers` actually works on a tagged mob selector the same way
+  it does on players (reasoned, not directly confirmed); if mobs don't
+  move after summoning, that's the first thing to check.
+- **"Enemies always spawn within the border, i want them to approach
+  menacingly from beyond the border" — fixed (2026-08-20).** Direct
+  catch against `docs/IDEAS.md`'s own Fog Wall design ("enemies spawn
+  from beyond the fog line, not inside the play area"), which the spawn
+  logic never actually implemented — it always spawned mobs near the
+  *player*, clamped inward if that landed outside the border, so mobs
+  never came from the edge at all, and the gap only grew as the border
+  expanded. Fixed by spawning at a random point along the border's
+  actual perimeter instead (still just inside it — vanilla's wall is
+  impassable, mobs spawned truly outside it would get permanently
+  stuck, same bug the old clamp was originally fixing). Mobs now walk
+  the real distance in; `mob_aggro.js`'s existing unconditional
+  `setTarget()` (already built anticipating this exact scenario) keeps
+  them beelining for the player rather than losing interest over the
+  longer distance. **Not yet re-tested in-game.**
