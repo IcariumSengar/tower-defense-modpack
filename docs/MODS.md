@@ -163,19 +163,35 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      `shaderpacks/Spooklementary_1.1.txt` (renamed from the old
      `_v2.0.4.txt`).
   3. **Worldborder still renders as vanilla's blue line/red vignette,
-     not fog — confirmed not fixable with current mod availability.**
-     Checked four candidate mods across Modrinth's API directly, not
-     just search results: Foggy Border (Fabric-only, already known),
-     Fog by IMB11 (Fabric/NeoForge-only, already known), **Worldborder
-     Tweaks** (its own description offers exactly this — "hide the
-     worldborder barrier" — but Fabric-only, no Forge build for any MC
-     version), **No Worldborder Tint** (does have Forge builds, but only
-     removes the red vignette tint, not the barrier texture itself, and
-     even that mod's Forge support skips straight from 1.8.9 to 1.20.6 —
-     no 1.20.1 build). No Forge 1.20.1 mod exists that can hide or
-     replace the worldborder's own rendering. Open gap, not a bug —
-     revisit if the ecosystem ever produces one, or if this pack ever
-     considers Fabric (a much bigger decision, not proposed here).
+     not fog.** No Forge 1.20.1 *mod* exists for this — checked four
+     candidates across Modrinth's API directly: Foggy Border
+     (Fabric-only), Fog by IMB11 (Fabric/NeoForge-only, 1.21+ anyway),
+     **Worldborder Tweaks** (its own description offers exactly this —
+     "hide the worldborder barrier" — but Fabric-only, no Forge build
+     for any MC version), **No Worldborder Tint** (does have Forge
+     builds, but only removes the red vignette tint, not the barrier
+     texture, and even that mod's Forge support skips straight from
+     1.8.9 to 1.20.6 — no 1.20.1 build).
+
+     **Solved a different way (2026-08-20): a resource pack texture
+     override, not a mod.** The border's rendered wall is just a plain
+     16x16 texture, `assets/minecraft/textures/misc/forcefield.png`
+     (confirmed by extracting it from the actual vanilla 1.20.1 client
+     jar) — grayscale, tinted blue/green/red by game code for
+     stationary/expanding/shrinking border state. That tint color isn't
+     resource-pack-overridable (it's a Java-side color multiply), but
+     the *pattern* is just pixels, and vanilla's own pattern is a sharp
+     diagonal-stripe grid — the actual source of "jarring," not the blue
+     tint itself. Replaced it with a soft, smoothly-interpolated
+     cloud-like alpha pattern (`kubejs/assets/minecraft/textures/misc/forcefield.png`,
+     same KubeJS resource-pack-injection mechanism already used for the
+     Wave Horn and loot bag textures, just targeting the `minecraft`
+     namespace this time to override vanilla instead of adding new
+     content) — same tinting behavior, but reads as drifting mist
+     instead of a sci-fi forcefield grid. Not literally volumetric fog
+     rendered at the border's world position (still not achievable, per
+     the four-mod check above), but a real fix for "jarring," not just
+     documentation of a limitation.
 
   Fixes for #1 and #2 not yet re-tested in-game after this round of
   changes.

@@ -118,9 +118,17 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   **First relaunch (2026-08-20) found three issues** — shader not
   guaranteed active by default (fixed, pinned in `config/oculus.properties`),
   too dark during the day, worldborder still the vanilla blue
-  line/vignette instead of fog (confirmed dead end — no Forge 1.20.1 mod
-  exists to hide or replace the worldborder's own rendering, checked
-  four candidates directly).
+  line/vignette instead of fog.
+- **Worldborder fixed via texture replacement, not a mod** — no Forge
+  1.20.1 mod exists for this (checked four candidates directly), but the
+  border's wall is just a 16x16 texture
+  (`assets/minecraft/textures/misc/forcefield.png`). Replaced vanilla's
+  sharp diagonal-stripe pattern with a soft cloud-like one via the same
+  KubeJS resource-pack mechanism already used for the Wave Horn/loot bag
+  textures — the blue tint itself is applied by game code and can't be
+  removed, but the pattern was the actual "jarring" part. Not literally
+  fog rendered at the border's position, but should read as mist instead
+  of a forcefield grid.
 - **Darkness issue was a real bug, not just a tuning gap** — first pass
   brightened Spooklementary's day-specific sliders, user reported still
   dark after relaunch. Checked `logs/latest.log` directly and found
