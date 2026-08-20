@@ -178,6 +178,16 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   `T_EXPOSURE` left alone since day is confirmed correct at its current
   value. See `docs/MODS.md`'s Spooklementary entry for the lesson on
   why this whiplash happened.
+- **Stopped guessing, pulled real reference values** — user pushed back
+  after the whiplash: "look at other modpacks' shader settings." Found
+  genuine community guidance specific to Spooklementary (not generic):
+  disable real-time shadows entirely, since this shader's own cloudy/
+  foggy look makes cast shadows read as "odd and out of place" — done
+  (`REALTIME_SHADOWS` off, a single clean toggle, costs nothing since
+  lightshafts were already disabled). Also applied a real community-
+  sourced tonemap curve pair (`T_LOWER_CURVE`/`T_UPPER_CURVE` →
+  `1.30`/`1.50`) for brightening shadowed areas without blowing out
+  highlights, instead of another guessed number.
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when

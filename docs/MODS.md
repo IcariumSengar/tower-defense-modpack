@@ -307,6 +307,34 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   rounds 4-7 came from treating each report as isolated instead of
   looking at the cumulative effect of every change made so far.
 
+  8. **Stopped guessing, pulled real reference values (2026-08-20)** —
+     user's explicit push after round 7's whiplash: "look at other
+     modpacks' shader settings and get it right" rather than continuing
+     to hand-tune blind. Two real findings, not more guessing:
+     - Base Complementary Shaders (the engine Spooklementary re-skins)
+       uses different variable names/scales entirely depending on
+       branch (`TONEMAP_EXPOSURE=5.6` in one official repo, a
+       completely different numeric scale than Spooklementary's
+       `T_EXPOSURE` 0.4–2.8 range) — confirms these can't be copied
+       across shader forks directly, only within the exact fork being
+       used.
+     - Found genuine, shader-specific community guidance instead:
+       **"disable real-time shadows, since the sky is so cloudy with
+       this shader that shadows can look a bit odd and out of place."**
+       Not generic advice — specific to Spooklementary's own foggy
+       aesthetic, and directly explains why shadow-quality tuning kept
+       fighting itself across rounds 6-7. Disabled `REALTIME_SHADOWS`
+       entirely (a single toggle the shader's own docs confirm cleanly
+       cascades — "will stop other shadow options from doing anything"
+       — costs nothing since `LIGHTSHAFT_QUALI_DEFINE` was already `0`)
+       rather than continuing to tune `SHADOW_QUALITY` up and down.
+       Also found a community-sourced reference pair for Complementary's
+       tonemap curve (`Lower:1.3, Upper:1.5`) specifically for
+       brightening dark/shadowed areas without blowing out highlights —
+       applied directly (`T_LOWER_CURVE` `1.20`→`1.30`,
+       `T_UPPER_CURVE` `1.30`→`1.50`), real numbers from an actual
+       guide, not another blind guess.
+
   None of the fixes in this entry have been re-tested in-game yet.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check
