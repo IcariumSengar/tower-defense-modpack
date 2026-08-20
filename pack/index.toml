@@ -49,6 +49,10 @@ file = "kubejs/server_scripts/base_expansion.js"
 hash = "fc2e8a5a3d7e0267796c27ae671baa00a2320aaa25b32df0d35751e264227a4e"
 
 [[files]]
+file = "kubejs/server_scripts/border_fog.js"
+hash = "0e23b169782ea8c982e0f4948e22d03d13e494d60eb0b7697032b5ece3058b12"
+
+[[files]]
 file = "kubejs/server_scripts/example_glue.js"
 hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
 
@@ -70,11 +74,11 @@ hash = "bb7d262bbd7fee0e64313631a2da42637fcc173672f3994cdda801f95baec486"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "53232a70cc58cf928e961497dafb364173f2ec2fda0f3a17cb93dd870d2bfb47"
+hash = "39df26768ec7539634b2b1d468766d2a7686fb42296666f2552fb603d8cc1f68"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "ec4de694480a2f00b66f6023e25849728afc96c91ad68b14655bda44f0534210"
+hash = "99e38d16a60d61be2e8e8a0293a58dd9931cdf723deffe64ac87c3354534c452"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"

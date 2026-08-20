@@ -1280,21 +1280,22 @@ no new pattern introduced. Amplifier left at `0`, unchanged from the
 open question above — no in-game verification yet on whether it does
 anything visually.
 
-**Also, per explicit instruction: fog is now wave-only, not
-peacetime-ambient.** `border_fog.js` (the peacetime proximity-fog
-script referenced throughout this section) has been **deleted
-entirely** — the user asked that the fog effect (distinct from the
-worldborder wall texture, which stays visible at all times regardless
-of day/night) only occur during a wave. Previously fog existed in two
-forms: `wave_spawner.js`'s fixed wave-time fog, and `border_fog.js`'s
-continuous peacetime proximity fog near the border edge — the latter
-directly contradicted this new constraint, so it's gone rather than
-adjusted. Its one non-fog side effect (silencing YetGamer's Custom
-Fog's chat-spam via `gamerule sendCommandFeedback false`) moved into
-`wave_spawner.js`, which is now the sole owner of `/fog` calls. This
-also resolves the "Day/Night Density Contrast" section's fog layer
-more cleanly than before — day is now genuinely fog-free rather than
-having its own (lighter) ambient fog layer.
+**Correction, same day: misread the fog instruction, then fixed it.**
+Initially read "make sure the fog effect only occurs during a wave" as
+"day should have zero fog" and deleted `border_fog.js` (the peacetime
+proximity-fog script) entirely. Directly corrected by the user: "i want
+some light fog on the border in the day and heavy fog in the night...
+trying to make it atmospheric" — the actual ask was day/night
+**contrast** (exactly what this section's "Day/Night Density Contrast"
+idea always described), not day going silent. Restored `border_fog.js`,
+and retuned its density in the process — its `NEAR_MAX_DISTANCE`
+(fog thickness right at the border edge) was actually denser (`20`)
+than wave-time's fixed fog (`32`) before, backwards from "light by day,
+heavy by night." Raised to `60` so daytime border fog stays clearly
+lighter than night's, even at its own densest point right at the edge.
+The worldborder wall texture is unaffected either way — it's a static
+resource-pack override, always visible regardless of day/night, never
+part of either fog discussion.
 
 ### Spawn Behavior (built 2026-08-20, was "locked concept, tuning TBD")
 - **Sound-first** — audio cues (growls, footsteps, ambience) play

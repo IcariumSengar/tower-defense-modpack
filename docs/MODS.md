@@ -474,16 +474,29 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       periodic top-up tick handler needed), cleared explicitly in
       `wave_status.js`'s "defeated" branch alongside the existing fog
       reset — same give/clear pairing already used for night-lock and
-      fog, no new pattern. **Also**: fog explicitly requested to be
-      wave-only, not ambient during peacetime — `border_fog.js` (the
-      continuous peacetime proximity-fog script from round 3 above)
-      **deleted entirely**, since its whole purpose directly contradicted
-      that constraint. Its one non-fog side effect (silencing YetGamer's
-      Custom Fog's chat spam via `gamerule sendCommandFeedback false`)
-      moved into `wave_spawner.js`, now the sole owner of `/fog` calls.
-      The worldborder wall texture (round 13 above) is unaffected — it's
-      a static resource-pack override, always visible regardless of
-      day/night, and was explicitly out of scope for this change.
+      fog, no new pattern.
+  15. **Misread "fog only during a wave" as "day gets zero fog" —
+      corrected same day.** Deleted `border_fog.js` entirely on the
+      assumption the user wanted fog eliminated outside waves. Actual
+      ask, per direct correction ("i want some light fog on the border
+      in the day and heavy fog in the night... trying to make it
+      atmospheric"): day/night **contrast**, not day going silent —
+      exactly what `border_fog.js` already provided and shouldn't have
+      been removed. Restored it, and retuned its density since the
+      original values were closer to the two states matching than
+      contrasting: `NEAR_MAX_DISTANCE` (fog thickness right at the
+      border edge) raised `20`→`60` so daytime border fog stays
+      meaningfully lighter than wave-time's fixed `MaxDistance 32`
+      everywhere, even at its densest point — previously the day-time
+      edge fog (`20`) was actually *denser* than night's uniform fog
+      (`32`), backwards from the intended contrast. `MIN_DISTANCE`
+      `6`→`10` for a touch more clarity right around the player. The
+      `gamerule sendCommandFeedback false` fix moved back to
+      `border_fog.js` (undoing round 14's move into `wave_spawner.js`,
+      now that `border_fog.js` owns `/fog` calls again too). The
+      worldborder wall texture (round 13 above) was never affected by
+      any of this — it's a static resource-pack override, always
+      visible regardless of day/night.
 
   None of the remaining fixes in this entry (staggered emergence, sound
   cues) have been re-tested in-game yet; the shader sub-thread is now

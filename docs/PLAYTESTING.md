@@ -51,8 +51,11 @@ Calling the horn also forces night and locks the day/night cycle (so
 zombies/skeletons don't burn on spawn or catch fire mid-fight), applies
 dense fog and the Warden's `minecraft:darkness` vision effect for
 atmosphere — it switches back to day, clears the fog and darkness, and
-lets the cycle run normally again once the wave is cleared. Fog and
-darkness are both wave-only; peacetime between waves has neither.
+lets the cycle run normally again once the wave is cleared. The
+darkness effect is wave-only; fog isn't — a lighter version keeps
+thickening near the worldborder edge during the peaceful gap too
+(`border_fog.js`), so night reads as a heavier version of an
+atmosphere that's already there, not fog appearing from nothing.
 
 Pure Suffering was removed 2026-08-20 as part of a footprint audit
 (was already dormant, `enableInvasions false`) — see `docs/MODS.md`'s
@@ -145,17 +148,20 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   close — verified with a tiled preview before deploying. See
   `docs/MODS.md`'s Worldborder Fog Wall entry. **Not yet re-tested
   in-game.**
-- **Darkness effect added, fog restricted to wave-only (2026-08-20).**
-  Waves now apply vanilla's `minecraft:darkness` status effect (the
-  Warden's vision-closing vignette) alongside the existing night-lock
-  and fog, cleared when the wave clears — a vanilla-command replacement
-  for the shader's atmosphere, per `docs/IDEAS.md`'s new proposal.
-  Separately, fog no longer runs during the peacetime gap between
-  waves at all — `border_fog.js`'s continuous proximity fog near the
-  border is gone; fog is wave-only now. The worldborder wall's texture
-  itself (separate from the fog effect) is unaffected and still always
-  visible. See `docs/MODS.md`'s Atmosphere & Wave Feel entry. **Not yet
-  re-tested in-game.**
+- **Darkness effect added (2026-08-20).** Waves now apply vanilla's
+  `minecraft:darkness` status effect (the Warden's vision-closing
+  vignette) alongside the existing night-lock and fog, cleared when the
+  wave clears — a vanilla-command replacement for the shader's
+  atmosphere, per `docs/IDEAS.md`'s new proposal.
+- **Fog day/night contrast corrected (2026-08-20).** First pass
+  misread "fog only during a wave" as "day should have zero fog" and
+  deleted `border_fog.js` — wrong; the actual ask was light fog near
+  the border by day, heavy fog during a wave, real contrast rather than
+  fog/no-fog. Restored `border_fog.js` and retuned it lighter than
+  wave-time fog (previously its near-border density was accidentally
+  *denser* than night's, backwards from the intent). See
+  `docs/MODS.md`'s Atmosphere & Wave Feel entry. **Not yet re-tested
+  in-game.**
 - **Darkness took three real fixes, not one** — first, a genuine bug:
   Spooklementary v2.0.4 threw `Unknown variable: BIOME_PALE_GARDEN`
   during shader pipeline creation (that biome doesn't exist until MC
