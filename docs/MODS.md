@@ -612,6 +612,31 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     work.
   - None of the three pieces above have been re-tested in-game yet.
 
+- **Fixed spawn + prebuilt starting building (2026-08-20)** —
+  `docs/IDEAS.md`'s "Fixed spawn + prebuilt starting building(s), every
+  world" idea, built into `playtest_starter_kit.js` on top of the
+  existing first-login gear/base logic rather than as a separate file.
+  `/setworldspawn` + `gamerule spawnRadius 0` + the existing one-shot
+  guard (`td_playtestKitGiven`) built exactly per the design doc's plan.
+  **One deliberate substitution**: the doc named `/place template` (a
+  hand-authored `.nbt` structure) for the building itself — building a
+  raw NBT file blind, with no way to test it in-game before committing
+  it, is real unverified risk for no benefit when the `/fill`+`/setblock`
+  code that builds the starter base is already proven working in real
+  playtests. Reused that code directly, just re-anchored to the fixed
+  point instead of the player's arbitrary spawn position — same
+  end-user outcome, lower-risk mechanism.
+  X/Z hardcoded to `(0, 0)`; Y deliberately *not* hardcoded — read from
+  the player's own natural spawn Y before any teleport happens, since
+  guessing a flat-world preset's layer height wrong risks spawning
+  underground or floating (the same class of "assumed it'd just work"
+  bug this codebase has hit before — see the Wave Horn debugging notes
+  further down). `worldborder center` moved to the same fixed point too,
+  for consistency. **Only affects brand-new worlds** — a world already
+  past its first login (including any world already being playtested) is
+  completely unaffected; needs a fresh world to test, not just a
+  relaunch.
+
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces
   "incoming!" / "defeated!" when the nearby hostile count rises from /

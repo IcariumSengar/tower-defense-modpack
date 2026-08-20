@@ -11,11 +11,15 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
   loot, base expansion), not your own combat skill.
 - **Full iron armor set** — given to inventory, not auto-equipped.
 - **Wave Horn**: right-click to summon the next wave — see below.
+- **Fixed spawn point**: every new world now spawns you at the same
+  exact spot (world coordinates 0, 0, on the flat surface) instead of
+  wherever vanilla happened to scatter you. `gamerule spawnRadius 0` is
+  also set, so future respawns land exactly there too, not nearby.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
-  brick floor, oak door) built around wherever you spawn.
-- **Worldborder set to 50**, centered on your actual spawn point (not
-  the world's default 0,0). Grows automatically by 5 blocks every 2
-  waves cleared after that (`base_expansion.js`).
+  brick floor, oak door) built around that fixed spawn point.
+- **Worldborder set to 50**, centered on the same fixed point. Grows
+  automatically by 5 blocks every 2 waves cleared after that
+  (`base_expansion.js`).
 - **Natural mob spawning disabled** (`doMobSpawning` gamerule) — the Wave
   Horn is the only mob source now. Note this also stops passive mobs
   (cows, etc.) since vanilla has no separate hostile-only toggle.
@@ -307,3 +311,15 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   without double-firing, and wave 5's gear-removal popup still fires
   correctly now that it's one step later in the sequence than before
   (after the choice, not inline with the other wave-clear effects).
+- **Fixed spawn point built (2026-08-20)** — every new world now spawns
+  at a pinned point (0,0 on the flat surface) instead of wherever
+  vanilla happened to scatter you, with `spawnRadius 0` so respawns land
+  exactly there too. See `docs/MODS.md`'s Fixed spawn entry for why the
+  building itself still uses `/fill`/`/setblock` rather than a `.nbt`
+  template. **Only affects brand-new worlds** — your current test world
+  already had its first login, so this needs a fresh world to check, not
+  a relaunch. Worth confirming on that fresh world: the player actually
+  lands standing on solid ground (not floating/underground — the Y comes
+  from reading vanilla's own natural spawn height, not a hardcoded
+  guess), and the starter base/worldborder are both correctly centered
+  on the new fixed point.

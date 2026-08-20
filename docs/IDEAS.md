@@ -529,7 +529,7 @@ Open questions:
   scrap/salvage aesthetic long-term — deferred, not blocking anything
   now.
 
-## Fixed spawn + prebuilt starting building(s), every world
+## Fixed spawn + prebuilt starting building(s), every world (fixed-spawn half built 2026-08-20)
 
 Core idea: every time a new world is created, the player spawns in the
 same fixed spot with the same prebuilt building(s) already there — the
@@ -560,6 +560,29 @@ build from scratch.
   to first spawn, and is explicitly marked "playtest convenience only,
   not real pack design." This idea is the actual fixed-spawn version of
   that, for whenever it's picked up for real.
+
+**Built (2026-08-20), with one deliberate substitution.** `setworldspawn`
++ `gamerule spawnRadius 0` + a one-shot guard (`td_playtestKitGiven`,
+already existing) built exactly as this plan describes. The structure
+half didn't use `/place template` as literally suggested — hand-
+authoring a raw `.nbt` structure file with no way to test it in-game
+before committing it is real unverified risk for zero benefit, when the
+`/fill`+`/setblock` code that builds the starter base is *already*
+proven working in real playtests. Reused that code directly, just
+re-anchored to the fixed point instead of the player's arbitrary spawn
+position. Same outcome (fixed spot, prebuilt building, every world),
+lower-risk mechanism — worth being explicit that this is a substitution
+made for risk reasons, not because `/place template` doesn't work.
+
+X/Z hardcoded to `(0, 0)` (vanilla's own default flat-world spawn
+already lands near there). Y deliberately *not* hardcoded — read from
+the player's own natural first-spawn Y (before any teleport), since
+flat-world layer height depends on whichever preset the player picked
+at world creation and guessing it wrong risks spawning underground or
+floating. Only affects **brand new worlds** — a world already past its
+first login is unaffected, same as every other `PlayerEvents.loggedIn`
+one-shot in this pack. Not yet confirmed in-game (needs a fresh world to
+test, not just a relaunch of an existing save).
 
 ### Seed research, for a real-terrain option
 
