@@ -124,3 +124,12 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   to hide or replace the worldborder's own rendering, checked four
   candidates directly. See `docs/MODS.md`'s Atmosphere & Wave Feel entry
   for the full detail on all three.
+- Performance audit (2026-08-20, requested explicitly): Spooklementary
+  shipped defaulting to its own `profile.HIGH` (real-time shadows at
+  192 blocks, entity shadows, world-space reflections) — downgraded to
+  `profile.MEDIUM` via a settings override, since shipping it unchanged
+  would've worked against the FPS-focused mods already in this pack.
+  Also found and fixed an unthrottled full-entity-list scan in
+  `wave_status.js` running every tick regardless of wave state (now
+  every 4 ticks, matching `mob_aggro.js`'s existing throttle pattern).
+  Not yet re-tested for actual FPS impact.

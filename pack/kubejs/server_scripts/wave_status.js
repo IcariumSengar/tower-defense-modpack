@@ -55,6 +55,15 @@ const STARTER_GEAR_TAG = 'td_starter_gear'
 PlayerEvents.tick((event) => {
   const player = event.player
   const level = player.getLevel()
+
+  // Throttled to every 4 ticks (5x/second), not every tick - this was
+  // scanning the entire entity list unthrottled, all game long,
+  // regardless of whether a wave was even active. mob_aggro.js already
+  // throttles its own entity scan for the same reason (setTarget is
+  // idempotent, no need to call it 20x/second) - this counter is a HUD
+  // display, not something that needs literal 20fps precision either.
+  if (level.getTime() % 4 !== 0) return
+
   const data = player.persistentData
 
   const hostileCount = level.getEntities().filter((e) => {

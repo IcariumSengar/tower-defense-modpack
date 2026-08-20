@@ -74,7 +74,7 @@ hash = "73b532c3e17ef0f0eeb47432bafec9f6566c39db01d407401a65df7094dfa1c7"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "7013b4259e04d82364b12e398848d8c0dd2bb58163908ae45659f62a16eb81c7"
+hash = "bfa606053e7d0ff037135e1665defc0fbf79e25ca2f4d9516ed468aab7321713"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -219,7 +219,7 @@ metafile = true
 
 [[files]]
 file = "shaderpacks/Spooklementary_v2.0.4.txt"
-hash = "52f50f3d72e5b0ebe3fc5336f53ad12cbd5b4974872a38c231fbb39c02afb273"
+hash = "31e9ddb5467b69030ce57da71607100518c9a8bb9c76b183a34f709317fb4374"
 
 [[files]]
 file = "shaderpacks/spooklementary.pw.toml"

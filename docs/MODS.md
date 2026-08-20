@@ -177,6 +177,29 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   Fixes for #1 and #2 not yet re-tested in-game after this round of
   changes.
 
+  **Performance audit (2026-08-20)** — user explicitly asked to check
+  this session's additions weren't costing performance without being
+  weighed against the pack's existing FPS-focused mod stack (Embeddium/
+  ModernFix/FerriteCore/Radium/EntityCulling). Checked, found one real
+  issue on the shader side:
+  - **Spooklementary ships defaulting to roughly its own `profile.HIGH`
+    tier** — checked its shader source directly (`shaders/lib/common.glsl`):
+    `SHADOW_QUALITY=2`, `shadowDistance=192.0`, entity shadows and
+    world-space reflections all on. That's the shader's shipped default,
+    not something this pack's install process set — but shipping it
+    unchanged would have meant "just chucking it in" without weighing it
+    against the performance mods already curated in. Downgraded to the
+    shader's own `profile.MEDIUM` values (`SHADOW_QUALITY=1`,
+    `shadowDistance=128.0`, entity shadows and world-space reflections
+    off) via the same settings-override file used for the brightness
+    fix above — real values from the shader's own profile table, not
+    arbitrary numbers.
+  - Oculus, YetGamer's Custom Fog, TFTH+GeckoLib: checked, no similar
+    concern. TFTH's autonomous spawn/spread systems are already disabled
+    (see its own config-hardening entry), so it carries registry/loading
+    weight but no continuous runtime cost. YetGamer's Custom Fog is a
+    lightweight rendering-parameter mod with no dependencies.
+
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces
   "incoming!" / "defeated!" when the nearby hostile count rises from /
@@ -186,6 +209,14 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   deeper unverified work, so this answers "how much danger is near me"
   rather than a precise invasion-only count. Confirmed working across
   multiple playtests (see Wave spawner's debugging log below).
+
+  **Unthrottled entity scan found in performance audit (2026-08-20)** —
+  this tick handler was scanning the entire entity list every single
+  tick (20x/second), all game long, regardless of whether a wave was
+  even active — `mob_aggro.js` already throttles its own equivalent scan
+  to every 10 ticks for the same reason, this one never got matching
+  treatment. Throttled to every 4 ticks (5x/second) — still reads as
+  instant for a HUD counter, cuts scan frequency 80%.
 
   **Storage-after-wave-1 request (2026-08-19)** — raised as "give the
   player a way to store loot in a chest after wave 1." First pass gave a
