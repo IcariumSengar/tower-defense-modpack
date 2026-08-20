@@ -17,6 +17,10 @@ file = "config/inventoryprofilesnext/inventoryprofiles.json"
 hash = "76fc67431aca16208e1d58212cabbaadc278ef2a8702f0ff0a085b23acf6aa83"
 
 [[files]]
+file = "config/oculus.properties"
+hash = "8b2e88924cee5b738de1140bdfcf19e017735658ff7e46b27f3ddec744907762"
+
+[[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
@@ -212,6 +216,10 @@ metafile = true
 file = "mods/yetgamers-custom-fog.pw.toml"
 hash = "ff5d6719b2bef7407291303f2213669d504ae1e6eff316e3b5d63df2f163e0ad"
 metafile = true
+
+[[files]]
+file = "shaderpacks/Spooklementary_v2.0.4.txt"
+hash = "52f50f3d72e5b0ebe3fc5336f53ad12cbd5b4974872a38c231fbb39c02afb273"
 
 [[files]]
 file = "shaderpacks/spooklementary.pw.toml"

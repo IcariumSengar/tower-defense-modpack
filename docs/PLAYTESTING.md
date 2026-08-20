@@ -114,8 +114,13 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   alongside the existing day restore; mobs now emerge staggered over a
   few seconds with a positioned "something's coming" sound cue just
   before each one appears, instead of all spawning in the same instant
-  — the gap between emergences shrinks at higher wave numbers. **Not
-  yet confirmed in-game** — needs the same full relaunch as the mods
-  above (new mod), then a real wave to actually watch it. See
-  `docs/MODS.md`'s Atmosphere & Wave Feel entry for what this does and
-  doesn't cover.
+  — the gap between emergences shrinks at higher wave numbers.
+  **First relaunch (2026-08-20) found three issues** — shader not
+  guaranteed active by default, too dark during the day, worldborder
+  still the vanilla blue line/vignette instead of fog. First two fixed
+  (shader auto-select pinned in `config/oculus.properties`; day-specific
+  shader sliders brightened via a settings override) but not yet
+  re-tested. Third is a confirmed dead end — no Forge 1.20.1 mod exists
+  to hide or replace the worldborder's own rendering, checked four
+  candidates directly. See `docs/MODS.md`'s Atmosphere & Wave Feel entry
+  for the full detail on all three.

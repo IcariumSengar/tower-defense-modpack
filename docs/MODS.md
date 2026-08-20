@@ -133,8 +133,49 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     function of fog density," which is now in place via the /fog
     command above, so likely already partially achieved without
     dedicated code — not separately verified).
-  - **Not yet tested in-game** — all of the above is config/script
-    changes only, needs a full relaunch (new mods) to actually see.
+
+  **First real relaunch, three issues found (2026-08-20)**:
+  1. **Shader wasn't guaranteed to be active by default.** `enableShaders`/
+     `shaderPack` in Iris/Oculus's `config/oculus.properties` weren't
+     pinned by the pack — left to whatever Oculus does on first launch
+     with exactly one shaderpack present (it did end up active, but
+     nothing guaranteed that for a fresh install). Fixed by tracking
+     `pack/config/oculus.properties` with `shaderPack=Spooklementary_v2.0.4.zip`
+     and `enableShaders=true` baked in, same pattern as the other
+     pre-seeded configs in this pack.
+  2. **Too dark during the day.** Checked Spooklementary's own shader
+     source (`shaders/lib/common.glsl`) rather than guessing — its
+     day-specific intensity sliders (`LIGHT_MORNING_I`, `ATM_MORNING_I`,
+     `LIGHT_NOON_I`, `ATM_NOON_I`) all default to a neutral `1.00`, and
+     general exposure/contrast (`TM_EXPOSURE`, `TM_CONTRAST`,
+     `OVERALL_COLOR_TONE`) are neutral too — nothing pathological in the
+     defaults, it's just that a PBR/tonemap-style horror shader reads
+     darker than vanilla's flat lighting even at "neutral." Fixed with a
+     standard Iris per-shaderpack settings override,
+     `shaderpacks/Spooklementary_v2.0.4.txt` (the same file Iris itself
+     writes when a player changes a slider in-game — this just pre-seeds
+     it), bumping those four day-specific sliders to `1.60` (a valid
+     value from the shader's own defined slider range, not an arbitrary
+     number) while leaving night's values untouched, matching the design
+     doc's "day pulls back, night ramps up" intent directly rather than
+     dimming the shader's whole identity.
+  3. **Worldborder still renders as vanilla's blue line/red vignette,
+     not fog — confirmed not fixable with current mod availability.**
+     Checked four candidate mods across Modrinth's API directly, not
+     just search results: Foggy Border (Fabric-only, already known),
+     Fog by IMB11 (Fabric/NeoForge-only, already known), **Worldborder
+     Tweaks** (its own description offers exactly this — "hide the
+     worldborder barrier" — but Fabric-only, no Forge build for any MC
+     version), **No Worldborder Tint** (does have Forge builds, but only
+     removes the red vignette tint, not the barrier texture itself, and
+     even that mod's Forge support skips straight from 1.8.9 to 1.20.6 —
+     no 1.20.1 build). No Forge 1.20.1 mod exists that can hide or
+     replace the worldborder's own rendering. Open gap, not a bug —
+     revisit if the ecosystem ever produces one, or if this pack ever
+     considers Fabric (a much bigger decision, not proposed here).
+
+  Fixes for #1 and #2 not yet re-tested in-game after this round of
+  changes.
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces
