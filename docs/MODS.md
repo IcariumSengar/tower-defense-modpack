@@ -34,7 +34,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
 | GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
 | Oculus | [Modrinth](https://modrinth.com/mod/oculus) | 1.20.1-1.8.0 (1.20.1 Forge) | Iris-for-Forge shader loader — added 2026-08-20 to run the shader pack below, first piece of the "Atmosphere & Wave Feel" design (`docs/IDEAS.md`) | Declares **Embeddium** as its own required dependency (confirmed via Modrinth API, "any compatible version") — built to work with our existing renderer, not fight it, despite some older/version-unspecific web chatter about Oculus/Embeddium friction | testing |
-| Spooklementary | [Modrinth](https://modrinth.com/shader/spooklementary) | v2.0.4 (1.20.1) | Shader pack — Complementary-based, moody/desaturated horror atmosphere. Picked 2026-08-20 over Hysteria Shaders (1.20.1 build ~1yr stale, heavier volumetric feature set) and Gravemist (couldn't confirm it's actually available for 1.20.1 — zero Modrinth results). Blood moon effect confirmed **visual-only**, no functional overlap with the separate "Boss waves tied to Blood Moon" idea | Not a mod — a shaderpack zip in `shaderpacks/`, loaded via Oculus. See its own writeup under Custom glue for what still needs building on top of just "installed" | testing |
+| Spooklementary | [Modrinth](https://modrinth.com/shader/spooklementary) | **v1.1** (1.20.1) | Shader pack — Complementary-based, moody/desaturated horror atmosphere. Picked 2026-08-20 over Hysteria Shaders (1.20.1 build ~1yr stale, heavier volumetric feature set) and Gravemist (couldn't confirm it's actually available for 1.20.1 — zero Modrinth results). Blood moon effect confirmed **visual-only**, no functional overlap with the separate "Boss waves tied to Blood Moon" idea | **Downgraded from v2.0.4 to v1.1 (2026-08-20)** — v2.0.4 throws `RuntimeException: Unknown variable: BIOME_PALE_GARDEN` during shader pipeline creation (confirmed in `logs/latest.log`, recurred 4x); that biome doesn't exist until MC 1.21.4, over a year after this pack's pinned 1.20.1. v1.1 (Oct 2023) predates the biome entirely — confirmed via source, no `BIOME_PALE_GARDEN` reference anywhere. Not a mod — a shaderpack zip in `shaderpacks/`, loaded via Oculus. See its own writeup under Custom glue | testing |
 | YetGamer's Custom Fog | [Modrinth](https://modrinth.com/mod/yetgamers-custom-fog) | 1.0.1 (1.20.1 Forge) | Added 2026-08-20 as a substitute for `docs/IDEAS.md`'s named Foggy Border/Fog (IMB11), **neither of which has any Forge build at all** (Foggy Border is Fabric-only; Fog/IMB11 is Fabric/NeoForge-only and starts at 1.21+ anyway — confirmed via Modrinth's version API directly, not search summaries). Ships a real runtime `/fog <targets> set\|reset <min> <max> <r> <g> <b> <sat> cylinder\|sphere` command — scriptable via the same `runCommandSilent` pattern as everything else in this pack, unlike a shader's own settings | No dependencies. Its fog is always player-relative, not tied to a fixed world coordinate — can't literally render fog "at the worldborder," see the Custom glue writeup for what it actually delivers instead | testing |
 
 ## Removed mods
@@ -143,22 +143,25 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      `pack/config/oculus.properties` with `shaderPack=Spooklementary_v2.0.4.zip`
      and `enableShaders=true` baked in, same pattern as the other
      pre-seeded configs in this pack.
-  2. **Too dark during the day.** Checked Spooklementary's own shader
-     source (`shaders/lib/common.glsl`) rather than guessing — its
-     day-specific intensity sliders (`LIGHT_MORNING_I`, `ATM_MORNING_I`,
-     `LIGHT_NOON_I`, `ATM_NOON_I`) all default to a neutral `1.00`, and
-     general exposure/contrast (`TM_EXPOSURE`, `TM_CONTRAST`,
-     `OVERALL_COLOR_TONE`) are neutral too — nothing pathological in the
-     defaults, it's just that a PBR/tonemap-style horror shader reads
-     darker than vanilla's flat lighting even at "neutral." Fixed with a
-     standard Iris per-shaderpack settings override,
-     `shaderpacks/Spooklementary_v2.0.4.txt` (the same file Iris itself
-     writes when a player changes a slider in-game — this just pre-seeds
-     it), bumping those four day-specific sliders to `1.60` (a valid
-     value from the shader's own defined slider range, not an arbitrary
-     number) while leaving night's values untouched, matching the design
-     doc's "day pulls back, night ramps up" intent directly rather than
-     dimming the shader's whole identity.
+  2. **Too dark during the day.** First pass checked Spooklementary's
+     shader source and found the day-specific intensity sliders
+     (`LIGHT_MORNING_I`, `ATM_MORNING_I`, `LIGHT_NOON_I`, `ATM_NOON_I`,
+     default neutral `1.00`) and bumped them to `1.60` via a settings
+     override — user reported still dark after relaunch. **Real root
+     cause found in `logs/latest.log` (2026-08-20)**: v2.0.4 throws
+     `java.lang.RuntimeException: Unknown variable: BIOME_PALE_GARDEN`
+     during `IrisRenderingPipeline`/`CustomUniforms` creation (recurred
+     4x in one session) — `BIOME_PALE_GARDEN` doesn't exist until MC
+     1.21.4, so this pack's 1.20.1 biome registry can't resolve it,
+     and the custom-uniforms pipeline (which computes the shader's
+     lighting/atmosphere values) fails to fully initialize. No amount of
+     slider tuning fixes a pipeline throwing on startup. **Downgraded to
+     Spooklementary v1.1** (Oct 2023, predates the Pale Garden biome
+     entirely — confirmed via source, zero `BIOME_PALE_GARDEN`
+     references) — same variable names and slider ranges, so the
+     brightness override carried over unchanged to
+     `shaderpacks/Spooklementary_1.1.txt` (renamed from the old
+     `_v2.0.4.txt`).
   3. **Worldborder still renders as vanilla's blue line/red vignette,
      not fog — confirmed not fixable with current mod availability.**
      Checked four candidate mods across Modrinth's API directly, not
@@ -180,20 +183,23 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   **Performance audit (2026-08-20)** — user explicitly asked to check
   this session's additions weren't costing performance without being
   weighed against the pack's existing FPS-focused mod stack (Embeddium/
-  ModernFix/FerriteCore/Radium/EntityCulling). Checked, found one real
-  issue on the shader side:
-  - **Spooklementary ships defaulting to roughly its own `profile.HIGH`
-    tier** — checked its shader source directly (`shaders/lib/common.glsl`):
-    `SHADOW_QUALITY=2`, `shadowDistance=192.0`, entity shadows and
-    world-space reflections all on. That's the shader's shipped default,
-    not something this pack's install process set — but shipping it
-    unchanged would have meant "just chucking it in" without weighing it
-    against the performance mods already curated in. Downgraded to the
-    shader's own `profile.MEDIUM` values (`SHADOW_QUALITY=1`,
-    `shadowDistance=128.0`, entity shadows and world-space reflections
-    off) via the same settings-override file used for the brightness
-    fix above — real values from the shader's own profile table, not
-    arbitrary numbers.
+  ModernFix/FerriteCore/Radium/EntityCulling).
+  - **Spooklementary shipped defaulting to roughly its own `profile.HIGH`
+    tier** — checked its shader source directly: `SHADOW_QUALITY=2`,
+    `shadowDistance=192.0`, entity shadows and world-space reflections
+    all on. First pass downgraded to `profile.MEDIUM`. **User asked for
+    more after the v1.1 downgrade (same day)** — went a further step to
+    `profile.LOW` (`SHADOW_QUALITY=0`, `shadowDistance=96.0`, lightshafts
+    and FXAA off, `WATER_QUALITY=1`) — real values from v1.1's own
+    profile table (its boolean toggles use `!REALTIME_SHADOWS`-style
+    syntax rather than v2.0.4's `=-1`/`=1` numeric syntax, confirmed by
+    reading v1.1's own `common.glsl` rather than assuming the old
+    override still applied unchanged).
+  - The v1.1 downgrade above (fixing the `BIOME_PALE_GARDEN` crash) is
+    also plausibly a performance win in its own right — a shader
+    pipeline throwing during `CustomUniforms` initialization isn't free
+    — though this wasn't directly measured/isolated from the profile
+    change.
   - Oculus, YetGamer's Custom Fog, TFTH+GeckoLib: checked, no similar
     concern. TFTH's autonomous spawn/spread systems are already disabled
     (see its own config-hardening entry), so it carries registry/loading

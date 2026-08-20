@@ -116,20 +116,26 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   before each one appears, instead of all spawning in the same instant
   — the gap between emergences shrinks at higher wave numbers.
   **First relaunch (2026-08-20) found three issues** — shader not
-  guaranteed active by default, too dark during the day, worldborder
-  still the vanilla blue line/vignette instead of fog. First two fixed
-  (shader auto-select pinned in `config/oculus.properties`; day-specific
-  shader sliders brightened via a settings override) but not yet
-  re-tested. Third is a confirmed dead end — no Forge 1.20.1 mod exists
-  to hide or replace the worldborder's own rendering, checked four
-  candidates directly. See `docs/MODS.md`'s Atmosphere & Wave Feel entry
-  for the full detail on all three.
-- Performance audit (2026-08-20, requested explicitly): Spooklementary
-  shipped defaulting to its own `profile.HIGH` (real-time shadows at
-  192 blocks, entity shadows, world-space reflections) — downgraded to
-  `profile.MEDIUM` via a settings override, since shipping it unchanged
-  would've worked against the FPS-focused mods already in this pack.
-  Also found and fixed an unthrottled full-entity-list scan in
+  guaranteed active by default (fixed, pinned in `config/oculus.properties`),
+  too dark during the day, worldborder still the vanilla blue
+  line/vignette instead of fog (confirmed dead end — no Forge 1.20.1 mod
+  exists to hide or replace the worldborder's own rendering, checked
+  four candidates directly).
+- **Darkness issue was a real bug, not just a tuning gap** — first pass
+  brightened Spooklementary's day-specific sliders, user reported still
+  dark after relaunch. Checked `logs/latest.log` directly and found
+  Spooklementary v2.0.4 throws `Unknown variable: BIOME_PALE_GARDEN`
+  during shader pipeline creation (that biome doesn't exist until MC
+  1.21.4) — the custom-uniforms lighting pipeline was failing to fully
+  initialize, no slider tuning could fix that. Downgraded to
+  Spooklementary **v1.1** (predates the biome entirely), brightness
+  override carried over.
+- Performance audit (2026-08-20, requested explicitly, twice): first
+  pass downgraded Spooklementary from its shipped `profile.HIGH` to
+  `profile.MEDIUM`. User asked for more after the v1.1 downgrade —
+  went a further step to `profile.LOW` (shadows/lightshafts/FXAA cut
+  further). Also fixed an unthrottled full-entity-list scan in
   `wave_status.js` running every tick regardless of wave state (now
   every 4 ticks, matching `mob_aggro.js`'s existing throttle pattern).
-  Not yet re-tested for actual FPS impact.
+  Not yet re-tested for actual FPS impact or confirmed the darkness fix
+  worked.

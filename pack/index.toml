@@ -18,7 +18,7 @@ hash = "76fc67431aca16208e1d58212cabbaadc278ef2a8702f0ff0a085b23acf6aa83"
 
 [[files]]
 file = "config/oculus.properties"
-hash = "8b2e88924cee5b738de1140bdfcf19e017735658ff7e46b27f3ddec744907762"
+hash = "8693b333918783ec1ded5c3312abf429f02897f1af0b0400d0fb752053aa1fb4"
 
 [[files]]
 file = "kubejs/README.md"
@@ -218,10 +218,10 @@ hash = "ff5d6719b2bef7407291303f2213669d504ae1e6eff316e3b5d63df2f163e0ad"
 metafile = true
 
 [[files]]
-file = "shaderpacks/Spooklementary_v2.0.4.txt"
-hash = "31e9ddb5467b69030ce57da71607100518c9a8bb9c76b183a34f709317fb4374"
+file = "shaderpacks/Spooklementary_1.1.txt"
+hash = "543123d34a7e93df0baf45ad71a45aa9dac659117f0a641ef535294956b12d6d"
 
 [[files]]
 file = "shaderpacks/spooklementary.pw.toml"
-hash = "98d266a803313736dee1d42d73779e8f50841a3d17f69b06dc2096f4c1b44ebe"
+hash = "c75e1bc3dcb88922308be5b31300be19ec1f04858af81818bcf123cb830d2395"
 metafile = true
