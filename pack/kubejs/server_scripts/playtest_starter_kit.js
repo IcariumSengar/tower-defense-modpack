@@ -91,7 +91,6 @@ PlayerEvents.loggedIn((event) => {
   const x = Math.floor(player.getX())
   const y = Math.floor(player.getY())
   const z = Math.floor(player.getZ())
-  const half = 5
 
   // Pin every future respawn to this exact point (docs/IDEAS.md's
   // "Fixed spawn" plan) - spawnRadius 0 removes vanilla's default ~10

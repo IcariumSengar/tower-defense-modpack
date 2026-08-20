@@ -786,8 +786,27 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       regardless of how far it continues below the fill's bottom layer
       — that deeper void just stays a hollow, invisible, unreachable
       cave underground, not a gap in the visible surface.
-
-- **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
+  - **Real crash found via first actual playtest of this batch**: the
+    wide-flatten edit above introduced a second `const half = 5` in the
+    same function scope (one left over from the earlier fixed-spawn
+    edit, one added fresh for the wide-flatten edit) — a genuine
+    duplicate-declaration syntax error, not the Rhino repeated-
+    invocation quirk documented elsewhere in this codebase. This failed
+    to *parse* entirely (`server.log`: "Loaded 8/9 KubeJS server
+    scripts... 1 errors"), meaning **none** of `playtest_starter_kit.js`
+    ran — no gear, no fixed spawn, no starter base, no worldborder/mob-
+    spawning setup, no wide flatten. Explains three symptoms reported
+    from one test as a single root cause, not three separate bugs: "wave
+    0" showing (natural mobs, never disabled, against an untouched
+    `td_waveNumber`), no starter structure (script never reached the
+    `/fill` calls), spawning near water (vanilla's own unmodified spawn
+    logic, none of the fixed-spawn/flatten code ran). Fixed by removing
+    the stale duplicate declaration. **New verification step adopted
+    after this**: `node --check <file>.js` catches this exact class of
+    error before deploying — cheap, real syntax validation via Node's
+    parser (close enough to Rhino's ES6 support for this), should have
+    been run before this file was last deployed and will be from now on
+    for every script edit.
   bar shows a live "Hostiles remaining: N" count, and chat announces
   "incoming!" / "defeated!" when the nearby hostile count rises from /
   falls to zero. Tracks all hostile mobs within 80 blocks, not
