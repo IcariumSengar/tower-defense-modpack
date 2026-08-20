@@ -17,10 +17,6 @@ file = "config/inventoryprofilesnext/inventoryprofiles.json"
 hash = "76fc67431aca16208e1d58212cabbaadc278ef2a8702f0ff0a085b23acf6aa83"
 
 [[files]]
-file = "config/oculus.properties"
-hash = "79b60f476e89061ac10e271d98885f389038dae9d1c5572468025ebc8e2da7fc"
-
-[[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
@@ -196,11 +192,6 @@ hash = "1588f074af0ca7a5145fd676faf3e14381bb96d1383a3dfbaac7398b1dc6e2fd"
 metafile = true
 
 [[files]]
-file = "mods/oculus.pw.toml"
-hash = "f83b253ca6a8e6f2f847952704da0e1fb00e65cbb10b7c9cb15d1a1780618da0"
-metafile = true
-
-[[files]]
 file = "mods/radium.pw.toml"
 hash = "ae4d739bbdb025651a884093de72addac0865525b39e603fb575031a59987763"
 metafile = true
@@ -224,7 +215,3 @@ metafile = true
 file = "mods/yetgamers-custom-fog.pw.toml"
 hash = "ff5d6719b2bef7407291303f2213669d504ae1e6eff316e3b5d63df2f163e0ad"
 metafile = true
-
-[[files]]
-file = "shaderpacks/Spooklementary_TDM_tuned.zip"
-hash = "42f66f5667a404a8284a3576bea85e2ad868e3c44825a5cb271d9ec17c312c31"

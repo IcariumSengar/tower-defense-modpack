@@ -1173,6 +1173,30 @@ aren't built yet as of this shader-pack commit (staggered
 emergence/sound-first were built in a separate, later pass — see
 below).
 
+**Reverted 2026-08-20: removed entirely, not just re-tuned.** Oculus +
+Spooklementary went through eleven real tuning rounds the same day —
+a version-crash bug, then a long brightness/shadow saga (confirmed via
+direct web research that Spooklementary is *intentionally* dark/moody
+by design, not misconfigured; isolating the fix to the shader's own
+single "General Brightness" lever; then removing real-time shadows
+outright once it became clear no post-lighting exposure control can
+lift a pixel the shadow map computes as near-zero). Even after all of
+that converged on a technically-defensible state, the user's actual
+verdict was about *feel*, not any remaining number: "im just not
+feeling the whole shader feel now." Removed completely — Oculus mod,
+the tuned shaderpack file, and `config/oculus.properties` all deleted
+from both the tracked pack and the live instance. **Kept**: the Fog
+Wall's worldborder texture override
+(`kubejs/assets/minecraft/textures/misc/forcefield.png`) and
+`border_fog.js`/the wave-state `/fog` calls — those run on YetGamer's
+Custom Fog, a separate mod with no dependency on Oculus/Iris, so they
+were never actually part of what got removed here. Atmosphere & Wave
+Feel now stands on Fog Wall + Day/Night Density Contrast (fog layer
+only) + Spawn Behavior — the Shaders sub-section of this locked
+section is closed out, not just paused; don't re-propose Spooklementary
+or another shaderpack here without a new, different signal from the
+user first.
+
 ### Spawn Behavior (built 2026-08-20, was "locked concept, tuning TBD")
 - **Sound-first** — audio cues (growls, footsteps, ambience) play
   before mobs are visible, via `/playsound` or KubeJS `.playSound()`

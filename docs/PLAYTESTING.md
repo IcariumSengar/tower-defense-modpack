@@ -104,10 +104,10 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   overlapping swipe-move/craft tweaks and hover highlight, kept Mouse
   Tweaks as-is) — see `docs/MODS.md`'s conflict write-up. **Needs a full
   relaunch and isn't yet confirmed fixed in-game.**
-- Shaders (Oculus + Spooklementary) added 2026-08-20 — **not yet
-  confirmed working in-game.** Needs a full relaunch. Shader
-  quality/options are set via Minecraft's own Video Settings → Shader
-  Pack Settings menu, not anything KubeJS-controlled.
+- Shaders (Oculus + Spooklementary) were added 2026-08-20, tuned
+  across eleven rounds the same day, then **removed entirely** later
+  that day — see the "Shaders removed entirely" bullet further down
+  for why. This pack does not use shaders.
 - Atmosphere & Wave Feel built out the same day: waves now set dense,
   close, desaturated fog (YetGamer's Custom Fog's `/fog` command)
   alongside the existing night lock, reset to normal on wave clear
@@ -224,6 +224,17 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   at once when shadows were last disabled — much less likely to repeat
   the "bright white light" blowout. See `docs/MODS.md`'s Spooklementary
   entry. **Not yet re-tested in-game.**
+- **Shaders removed entirely (2026-08-20).** After eleven rounds of
+  tuning converged on a defensible state, the verdict was about feel,
+  not any remaining number: "im just not feeling the whole shader feel
+  now." Oculus and the tuned Spooklementary shaderpack are gone from
+  both the tracked pack and the live instance — this pack no longer
+  uses shaders at all. **Kept**: the worldborder texture override and
+  `border_fog.js`'s `/fog`-based fog (wave-state and peacetime border
+  proximity) — both run on YetGamer's Custom Fog, unrelated to Oculus/
+  Iris, so they're unaffected. See `docs/MODS.md`'s Spooklementary entry
+  and `docs/IDEAS.md`'s Shaders sub-section for the full history — this
+  is closed, not paused.
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when

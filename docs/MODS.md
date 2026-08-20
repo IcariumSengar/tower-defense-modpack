@@ -424,7 +424,27 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       likely to recur. `SHADOW_QUALITY` left at its default `2` — inert
       with `REALTIME_SHADOWS` off, no need to also change it.
 
-  None of the fixes in this entry have been re-tested in-game yet.
+  12. **Removed entirely (2026-08-20) — not a tuning problem, a "not
+      feeling the shader feel" verdict.** After eleven rounds converging
+      on a technically-defensible state (real dark-by-design confirmed
+      via research, brightness isolated to `T_EXPOSURE`, shadows removed
+      at the source), the user's actual issue was the aesthetic itself,
+      not any remaining number: "im just not feeling the whole shader
+      feel now." **Oculus** (`mods/oculus.pw.toml`) and
+      **`shaderpacks/Spooklementary_TDM_tuned.zip`** deleted from both
+      the tracked pack and the live instance, along with
+      `config/oculus.properties`. `pack/index.toml`/`pack/pack.toml`
+      hashes updated to match. Confirmed no KubeJS script referenced
+      Oculus or shaders at all (`border_fog.js` and the wave-state
+      `/fog` calls run entirely on YetGamer's Custom Fog, a separate mod
+      with no Iris/Oculus dependency) — so nothing else needed touching.
+      See `docs/IDEAS.md`'s Shaders sub-section for the closing note:
+      this is a closed decision, not a paused one — don't re-propose a
+      shaderpack here without new signal from the user.
+
+  None of the remaining fixes in this entry (fog wall, staggered
+  emergence, sound cues) have been re-tested in-game yet; the shader
+  sub-thread is now moot.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check
   this session's additions weren't costing performance without being
