@@ -214,6 +214,16 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   cost of the spooky aesthetic — and chose to stay with Spooklementary.
   See `docs/MODS.md`'s Spooklementary entry. **Not yet re-tested
   in-game.**
+- **"Shadows are pitch black" — shadows removed entirely per explicit
+  direction, not more tuning.** `T_EXPOSURE` is applied after lighting,
+  so it can't lift a shadow-mapped pixel that's already computing
+  near-zero direct light — the only real fix was removing shadow
+  occlusion at the source. `REALTIME_SHADOWS` disabled again, but this
+  time with every other brightness lever at true default (only
+  `T_EXPOSURE` elevated), unlike round 8 where five levers were stacked
+  at once when shadows were last disabled — much less likely to repeat
+  the "bright white light" blowout. See `docs/MODS.md`'s Spooklementary
+  entry. **Not yet re-tested in-game.**
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when

@@ -407,6 +407,23 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   was picked over generic Complementary for the Atmosphere & Wave Feel
   design goal in the first place). User chose to stay with Spooklementary.
 
+  11. **"Still too dark, shadows are pitch black" — user explicitly
+      directed removing shadows entirely (2026-08-20), not more tuning.**
+      Technical reason `T_EXPOSURE` alone couldn't fix this:
+      `T_EXPOSURE` is a global exposure multiplier applied *after*
+      lighting — if the shadow map computes near-zero direct light in
+      an occluded pixel, multiplying that near-zero value by a higher
+      exposure still comes out near-zero. No single post-lighting
+      exposure lever can lift a true shadow-black pixel; the darkness
+      has to be removed at its source. **Fix**: disabled
+      `REALTIME_SHADOWS` again (`//#define REALTIME_SHADOWS`) — this is
+      the same toggle round 8 flipped, but this time every other
+      brightness lever is at true default (only `T_EXPOSURE` at `2.50`
+      is elevated, vs. round 8's five simultaneously-stacked levers),
+      so the "bright white light" blowout from round 8/9 is much less
+      likely to recur. `SHADOW_QUALITY` left at its default `2` — inert
+      with `REALTIME_SHADOWS` off, no need to also change it.
+
   None of the fixes in this entry have been re-tested in-game yet.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check
