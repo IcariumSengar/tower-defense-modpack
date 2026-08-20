@@ -759,6 +759,33 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     confirmed in-game. Manually picking Single Biome → Desert on the
     creation screen remains a working fallback if the override doesn't
     take effect for some reason.
+  - **Wide flatten around fixed spawn (2026-08-20).** The Desert
+    override only fixes the *biome* — terrain height, ravines, and
+    caves still generate under standard vanilla noise, so the ground
+    immediately around the starter base was still visibly uneven.
+    Seed-hunting for a naturally flat spot was considered and rejected —
+    same unverifiable-lead problem (Chunkbase again) that already pushed
+    this pack off a specific seed once before. Reused the existing
+    starter-base leveling technique, just wider: `WIDE_HALF = 25`
+    (matching the starting worldborder's 50-block diameter) instead of
+    the building's own `half = 5`, resurfaced as `minecraft:sand` rather
+    than exposed stone so it reads as open desert, not a quarry. Same
+    one-shot trigger as the rest of `playtest_starter_kit.js`. The
+    starter base's own narrow foundation-dig/headroom-clear became
+    redundant once the wide pass covers that same area first, so they
+    were removed rather than left as duplicate work.
+    - **`/fill`'s 32,768 block limit checked, not assumed**: width is
+      `2*25+1 = 51` blocks per side, `51*51 = 2601` per Y layer.
+      Foundation (4 layers) = 10,404 blocks; headroom clear (6 layers)
+      = 15,606 blocks — both comfortably under the limit as single
+      commands, no chunking needed.
+    - **Ravines deeper than the foundation's dig depth are still handled
+      correctly**, not just hoped to work out: `/fill` unconditionally
+      overwrites every block in its volume (not "fill only if air"), so
+      any ravine or cave *within* the filled range gets solidly capped
+      regardless of how far it continues below the fill's bottom layer
+      — that deeper void just stays a hollow, invisible, unreachable
+      cave underground, not a gap in the visible surface.
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces

@@ -113,10 +113,6 @@ PlayerEvents.loggedIn((event) => {
   // shrinking-zone mechanic.
   event.server.runCommandSilent('worldborder damage amount 0')
 
-  const x0 = x - half
-  const x1 = x + half
-  const z0 = z - half
-  const z1 = z + half
   const floorY = y - 1
   const wallY0 = y
   const wallY1 = y + 2
@@ -124,14 +120,51 @@ PlayerEvents.loggedIn((event) => {
 
   const run = (cmd) => event.server.runCommandSilent(cmd)
 
-  // Real terrain isn't flat under the footprint the way Superflat was -
-  // level it explicitly rather than assuming a single Y works
-  // everywhere across an 11x11 area: a solid stone foundation a few
-  // blocks down covers any local dips (small dunes), and clearing
-  // headroom well above the walls covers any local rises or stray
-  // foliage before the walls themselves go up.
-  run(`fill ${x0} ${floorY - 3} ${z0} ${x1} ${floorY} ${z1} minecraft:stone`)
-  run(`fill ${x0} ${wallY0} ${z0} ${x1} ${wallY1 + 3} ${z1} minecraft:air`)
+  // Flatten a wide yard around fixed spawn, not just the 11x11 starter-
+  // base footprint (2026-08-20) - the Desert world-type override only
+  // fixes the *biome*, terrain height/ravines/caves still generate under
+  // standard vanilla noise, so the ground immediately around the base
+  // was still visibly uneven. Seed-hunting for a naturally flat spot was
+  // considered and rejected - same unverifiable-lead problem that
+  // already pushed this pack off a specific seed once before (see
+  // docs/IDEAS.md's Seed research section). Reused the existing
+  // technique instead, just wider: WIDE_HALF (25) matches the starting
+  // worldborder's radius (set to 50 below), so the entire starting play
+  // area reads as flat desert, not just the building itself.
+  //
+  // /fill's block-count limit is 32,768 - confirmed under it, not
+  // assumed: width is 2*WIDE_HALF+1 = 51 blocks per side, so 51*51 =
+  // 2601 blocks per Y layer. The foundation fill is 4 layers deep
+  // (10,404 blocks) and the headroom clear is 6 layers tall (15,606
+  // blocks) - both comfortably under the limit as single commands, no
+  // chunking needed.
+  //
+  // Ravines/caves deeper than the foundation's dig depth are still
+  // handled correctly despite the shallow dig, because /fill
+  // unconditionally overwrites every block in its volume - it's not
+  // "fill only if air," so any ravine or cave void *within* the filled
+  // range gets solidly capped regardless of how deep it continues below
+  // the fill's bottom layer. That deeper void stays a hollow cave
+  // underground, invisible and unreachable from the surface - not a gap
+  // in the visible ground.
+  const WIDE_HALF = 25
+  const wx0 = x - WIDE_HALF
+  const wx1 = x + WIDE_HALF
+  const wz0 = z - WIDE_HALF
+  const wz1 = z + WIDE_HALF
+  run(`fill ${wx0} ${floorY - 3} ${wz0} ${wx1} ${floorY} ${wz1} minecraft:stone`)
+  run(`fill ${wx0} ${wallY0} ${wz0} ${wx1} ${wallY1 + 3} ${wz1} minecraft:air`)
+  run(`fill ${wx0} ${floorY} ${wz0} ${wx1} ${floorY} ${wz1} minecraft:sand`)
+
+  const half = 5
+  const x0 = x - half
+  const x1 = x + half
+  const z0 = z - half
+  const z1 = z + half
+
+  // Starter base footprint sits on ground the wide pass above already
+  // leveled and resurfaced as sand - just needs its own floor/walls/door
+  // on top now, no separate foundation dig or headroom clear here.
   run(`fill ${x0} ${floorY} ${z0} ${x1} ${floorY} ${z1} minecraft:stone_bricks`)
   run(`fill ${x0} ${wallY0} ${z0} ${x1} ${wallY1} ${z0} minecraft:cobblestone`)
   run(`fill ${x0} ${wallY0} ${z1} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)

@@ -12,9 +12,13 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
 - **Full iron armor set** — given to inventory, not auto-equipped.
 - **Wave Horn**: right-click to summon the next wave — see below.
 - **Fixed spawn point**: every new world now spawns you at the same
-  exact spot (world coordinates 0, 0, on the flat surface) instead of
-  wherever vanilla happened to scatter you. `gamerule spawnRadius 0` is
-  also set, so future respawns land exactly there too, not nearby.
+  exact spot (near world coordinates 0, 0) instead of wherever vanilla
+  happened to scatter you. `gamerule spawnRadius 0` is also set, so
+  future respawns land exactly there too, not nearby.
+- **A ~51x51 yard around spawn is flattened and resurfaced as sand** —
+  the world generates as real (non-flat) Desert terrain, so this covers
+  the dune/ravine unevenness that would otherwise be right at your
+  doorstep.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
   brick floor, oak door) built around that fixed spawn point.
 - **Worldborder set to 50**, centered on the same fixed point. Grows
@@ -48,6 +52,13 @@ injection (previously only used for recipes/textures/simpler datapack
 content); if a fresh world *doesn't* generate as Desert, that's the
 first thing to check, and manually picking Single Biome → Desert on the
 creation screen remains a working fallback either way.
+
+**A wide area around fixed spawn is flattened too, not just the 11x11
+starter base** — a ~51x51 yard (matching the starting worldborder's
+diameter) gets leveled and resurfaced as sand, so the ground you
+actually start in reads as flat open desert, not dunes/ravines right up
+against the walls. Same one-shot trigger, only affects brand-new
+worlds. **Not yet confirmed in-game.**
 
 ## The test loop
 
