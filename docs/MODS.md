@@ -625,6 +625,27 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   - The roguelike buff choice, countdown, and Blood Moon (this entry's
     actual three pieces) have not been re-tested in-game yet — the
     darkness-effect revert above is confirmed, the rest still isn't.
+  - **Roguelike buff choice removed entirely, same day, per direct
+    feedback** ("too buggy... make sure it doesn't block me from
+    summaning a wave... next wave timer... simply not working"). The
+    `/tellraw` chat-menu click detection (`player.hasTag(...)` watching
+    for the tag a `clickEvent` set) never reliably resolved — flagged as
+    the single biggest unconfirmed assumption in this feature when it
+    was built, and it turned out to be the actual failure. Left
+    `td_awaitingChoice` stuck `true` forever once a wave cleared, which
+    silently blocked the Wave Horn from working again *and* blocked the
+    countdown from ever starting (it only began once the choice
+    resolved) — one bug, three reported symptoms. Removed the whole
+    system (`BUFF_OPTIONS`, `sendChoicePrompt`, the tag-detection
+    handler) from `wave_status.js` rather than debugging the click
+    detection further, per explicit request. Starter-gear removal and
+    the countdown both moved back to firing directly off the wave-clear
+    edge, with no choice step gating either — `wave_spawner.js`'s
+    matching `td_awaitingChoice` horn-block guard removed too. Fixed a
+    missing closing brace introduced while removing the second tick
+    handler (caught by `node --check`, not a manual read) before
+    deploying. **Not yet re-tested — this is what should make the
+    countdown timer actually work for the first time.**
 
 - **Fixed spawn + prebuilt starting building (2026-08-20)** —
   `docs/IDEAS.md`'s "Fixed spawn + prebuilt starting building(s), every
@@ -824,6 +845,38 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     that isn't broken. Deliberately "for now," not a closed decision —
     see `docs/IDEAS.md`'s Seed research section if real terrain gets
     revisited.
+
+- **Watchtower — phase 1 of "expand the starter base into multiple
+  buildings" (2026-08-20).** New idea, not previously in `docs/IDEAS.md`
+  — user asked for "phase 1 of the initial buildings idea" with no
+  matching section on record, so scoped it via direct questions rather
+  than guessing: confirmed it meant growing the single starter box (the
+  existing "Fixed spawn + prebuilt starting building(s)" idea) into
+  several buildings, and that phase 1 specifically should be a
+  watchtower/lookout. Built into `playtest_starter_kit.js`, right after
+  the existing starter base commands, same one-shot trigger.
+  - **Placement**: north of the base, behind its back wall (the door
+    faces south/+Z, so the tower sits clear of the entrance) — a
+    3-wide, 10-tall solid cobblestone pillar with an external ladder on
+    its south face (the side facing the base, for a short walk from the
+    door), topped with a 5x5 stone-brick platform and a cobblestone-wall
+    parapet. Same material palette as the existing base (cobblestone/
+    stone brick), not a new one.
+  - **Open on all sides, not facing one direction** — a deliberate
+    design choice tied directly to this session's earlier work: since
+    `wave_spawner.js`'s `randomBorderEdgePosition()` spawns mobs at a
+    random point on any of the 4 border edges, a lookout facing only one
+    direction would miss three-quarters of what it's meant to watch for.
+    The parapet ring has a single gap, at the ladder-access point, not a
+    facing wall.
+  - **Ladder facing convention confirmed, not guessed**: `facing=south`
+    for a ladder mounted on a pillar to its north — vanilla's
+    wall-attached-block convention is that `facing` points *away* from
+    the block it's attached to (the direction the player faces while
+    climbing), not toward it.
+  - Syntax-checked with `node --check` before deploying (see the crash
+    entry above for why this is now a standing step). **Not yet
+    confirmed in-game.**
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`.
   Action bar shows a live "Hostiles remaining: N" count, and chat announces

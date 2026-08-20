@@ -52,70 +52,26 @@ const FINAL_WAVE = 5
 // crafted or looted since.
 const STARTER_GEAR_TAG = 'td_starter_gear'
 
-// Roguelike permanent buff choice (docs/IDEAS.md's "Roguelike choice
-// mechanics") - fires on every wave clear, not capped at FINAL_WAVE.
-// "Start small, scale later" per the design doc: repeat picks of the
-// same buff stack via amplifier (countKey tracks how many times picked),
-// rather than building real branching wave-composition choice yet (the
-// doc's second, deferred mechanic).
-//
-// ScreenJS was the design doc's planned mod for this popup - checked
-// directly (2026-08-20) and it's dead, 1.19.2 only, last released April
-// 2023. No actively-maintained alternative KubeJS GUI-screen addon
-// exists for 1.20.1 either (the two closest hits, "KubeJS GUI
-// Overhauled" and "KubeJS Studio," are a recipe-authoring tool and a dev
-// IDE respectively - neither is a player-facing in-game menu). Built as
-// a clickable /tellraw chat menu instead - zero new mod dependency, same
-// vanilla-scriptable approach as everything else built this session.
-const BUFF_OPTIONS = [
-  {
-    id: 'vitality',
-    label: 'Vitality',
-    desc: '+2 hearts, permanently',
-    effect: 'minecraft:health_boost',
-    countKey: 'td_buffVitalityCount',
-    color: 'red',
-  },
-  {
-    id: 'fortitude',
-    label: 'Fortitude',
-    desc: '10% less damage taken, permanently',
-    effect: 'minecraft:resistance',
-    countKey: 'td_buffFortitudeCount',
-    color: 'aqua',
-  },
-  {
-    id: 'ferocity',
-    label: 'Ferocity',
-    desc: 'hit harder, permanently',
-    effect: 'minecraft:strength',
-    countKey: 'td_buffFerocityCount',
-    color: 'light_purple',
-  },
-]
+// Roguelike permanent buff choice - built 2026-08-20, removed the same
+// day. The clickable /tellraw chat menu never reliably resolved (the
+// player.hasTag(...) detection in the tick handler that used to sit
+// below this comment apparently never caught the tag the chat click's
+// clickEvent set), which left td_awaitingChoice permanently true once a
+// wave cleared - silently blocking the Wave Horn from ever working
+// again, and blocking the countdown timer below from ever starting
+// (it only began once the choice resolved). One buggy feature caused
+// three reported symptoms at once ("too buggy," horn blocked, "timer
+// simply not working") - removed entirely per direct request rather
+// than debugged further. Gear removal and the countdown both moved back
+// to firing directly off the wave-clear edge, no choice step gating
+// them. See docs/MODS.md's Wave-clear orchestration entry for the full
+// post-mortem if this gets revisited.
 
 // 3 minutes, in ticks (docs/IDEAS.md's "On-screen countdown timer to the
 // next wave"). Countdown display + auto-trigger live in wave_spawner.js
-// (see there for why), started here once the choice popup resolves.
+// (see there for why), started here directly on wave-clear now that the
+// choice step that used to gate it is gone.
 const COUNTDOWN_TICKS = 3600
-
-// Click sets a vanilla entity tag as the clicking player (not routed
-// through player.getServer(), so @s correctly resolves to "whoever
-// clicked" here - unlike every other command in this file, which runs
-// via player.getServer().runCommandSilent() and must target @a instead,
-// since console command sources have no "self").
-function sendChoicePrompt(player) {
-  const components = [{ text: '\n=== Choose a permanent reward ===\n', color: 'gold', bold: true }]
-  BUFF_OPTIONS.forEach((opt, i) => {
-    components.push({
-      text: `[${i + 1}] ${opt.label} - ${opt.desc}\n`,
-      color: opt.color,
-      clickEvent: { action: 'run_command', value: `/tag @s add td_pick_${opt.id}` },
-      hoverEvent: { action: 'show_text', value: { text: `Click to choose ${opt.label}` } },
-    })
-  })
-  player.getServer().runCommandSilent(`tellraw @a ${JSON.stringify(components)}`)
-}
 
 PlayerEvents.tick((event) => {
   const player = event.player
@@ -175,90 +131,48 @@ PlayerEvents.tick((event) => {
     // contrast the design doc actually asks for.
     player.getServer().runCommandSilent('fog @a reset')
 
-    // Wave-clear orchestration ordering, per docs/IDEAS.md: wave-clear
-    // effects (above) -> choice popup (blocking) -> player chooses ->
-    // starter-gear removal (wave 5 specifically) -> countdown begins.
-    // Gear removal moved out of this branch into the tag-detection
-    // handler below, so it fires after the choice is answered, not
-    // simultaneously with it. td_pendingWaveNumber carries this branch's
-    // local waveNumber across to that later handler, since persistent
-    // data (not shared top-level scope) is this codebase's proven
-    // cross-tick-invocation channel.
-    data.putInt('td_pendingWaveNumber', waveNumber)
-    data.putBoolean('td_awaitingChoice', true)
-    sendChoicePrompt(player)
+    // Starter gear removal, once, the moment the curated campaign's
+    // final wave clears — waveNumber is capped at FINAL_WAVE, so every
+    // repeat/endless wave past this point also reads as FINAL_WAVE; the
+    // td_starterGearRemoved guard (same one-shot pattern as
+    // td_playtestKitGiven) is what keeps this to a single firing rather
+    // than re-running on every later wave clear. Fires directly here
+    // now, not gated behind the removed choice-popup step.
+    if (waveNumber === FINAL_WAVE && !data.getBoolean('td_starterGearRemoved')) {
+      data.putBoolean('td_starterGearRemoved', true)
+
+      // /clear reaches armor and offhand slots as well as the main
+      // inventory (long-standing vanilla behavior, not KubeJS-specific),
+      // and its item argument NBT-matches as a partial predicate in
+      // 1.20.1 (pre-1.20.5 components rework) - the tag alone is enough
+      // to match regardless of the Lore/Enchantments also present on the
+      // real item. One command per item type since /clear takes a single
+      // item argument, not a list. Targets @a rather than a specific
+      // name/UUID - this pack is single-player-focused (see
+      // base_expansion.js's notes), so it's equivalent here and avoids
+      // needing to resolve the player's name from console context.
+      player.getServer().runCommandSilent(`clear @a minecraft:netherite_sword{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_helmet{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_chestplate{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_leggings{${STARTER_GEAR_TAG}:1b}`)
+      player.getServer().runCommandSilent(`clear @a minecraft:iron_boots{${STARTER_GEAR_TAG}:1b}`)
+
+      // Same "big on-screen title, chat is easy to miss" reasoning as the
+      // wave-cleared title above, plus the fuller narrative beat in chat
+      // since a title can't carry more than a couple words legibly.
+      player.getServer().runCommandSilent(`title @a title {"text":"IT'S UP TO YOU NOW","color":"red","bold":true}`)
+      player.getServer().runCommandSilent(`title @a subtitle {"text":"The gear is gone. So is whoever wore it first.","color":"gray"}`)
+      player.tell('§8§o[The blade and armor crumble to rust and dust in your hands.]')
+      player.tell('§7Whoever carried this before you held the line for five waves before this place took them too. Their debt here is paid.')
+      player.tell('§c§lIt\'s up to you now.')
+    }
+
+    // Countdown to next wave (docs/IDEAS.md's "On-screen countdown
+    // timer") starts directly here now, right after wave-clear effects
+    // (and wave-5 gear removal, if this was that wave) - no more choice
+    // step to wait on. Display + auto-trigger live in wave_spawner.js,
+    // see there for why.
+    data.putInt('td_countdownEndTick', level.getTime() + COUNTDOWN_TICKS)
+    data.putBoolean('td_countdownActive', true)
   }
-})
-
-// Resolves the wave-clear choice popup once the player clicks an option
-// in chat (sendChoicePrompt above tags them via a vanilla /tag command).
-// Early-returns when no choice is pending (the common case) so this
-// costs nothing outside the brief wave-clear window - same "cheap early
-// exit" shape as wave_spawner.js's pendingSpawns handler.
-PlayerEvents.tick((event) => {
-  const player = event.player
-  const data = player.persistentData
-  if (!data.getBoolean('td_awaitingChoice')) return
-
-  const picked = BUFF_OPTIONS.find((opt) => player.hasTag(`td_pick_${opt.id}`))
-  if (!picked) return
-
-  BUFF_OPTIONS.forEach((opt) => player.removeTag(`td_pick_${opt.id}`))
-  data.putBoolean('td_awaitingChoice', false)
-
-  // Repeat picks stack via amplifier (0-indexed - first pick is
-  // amplifier 0, i.e. effect level I), not a fresh independent buff each
-  // time - "start small, scale later" per the design doc's own resolved
-  // note, real branching composition choice deferred to a later pass.
-  const newCount = data.getInt(picked.countKey) + 1
-  data.putInt(picked.countKey, newCount)
-  // @a, not @s - this runs via player.getServer(), the console command
-  // source, which has no "self" to resolve @s against (same reasoning
-  // as every other command in this file).
-  player.getServer().runCommandSilent(`effect give @a ${picked.effect} 1000000 ${newCount - 1} true`)
-  player.tell(`§a[Reward] §fYou chose ${picked.label}! (Rank ${newCount})`)
-
-  // Starter gear removal, once, the moment the curated campaign's final
-  // wave's choice is answered — td_pendingWaveNumber is capped at
-  // FINAL_WAVE the same way the live counter above is, so every
-  // repeat/endless wave past this point also reads as FINAL_WAVE; the
-  // td_starterGearRemoved guard (same one-shot pattern as
-  // td_playtestKitGiven) is what keeps this to a single firing rather
-  // than re-running on every later wave clear.
-  const waveNumber = data.getInt('td_pendingWaveNumber')
-  if (waveNumber === FINAL_WAVE && !data.getBoolean('td_starterGearRemoved')) {
-    data.putBoolean('td_starterGearRemoved', true)
-
-    // /clear reaches armor and offhand slots as well as the main
-    // inventory (long-standing vanilla behavior, not KubeJS-specific),
-    // and its item argument NBT-matches as a partial predicate in
-    // 1.20.1 (pre-1.20.5 components rework) - the tag alone is enough
-    // to match regardless of the Lore/Enchantments also present on the
-    // real item. One command per item type since /clear takes a single
-    // item argument, not a list. Targets @a rather than a specific
-    // name/UUID - this pack is single-player-focused (see
-    // base_expansion.js's notes), so it's equivalent here and avoids
-    // needing to resolve the player's name from console context.
-    player.getServer().runCommandSilent(`clear @a minecraft:netherite_sword{${STARTER_GEAR_TAG}:1b}`)
-    player.getServer().runCommandSilent(`clear @a minecraft:iron_helmet{${STARTER_GEAR_TAG}:1b}`)
-    player.getServer().runCommandSilent(`clear @a minecraft:iron_chestplate{${STARTER_GEAR_TAG}:1b}`)
-    player.getServer().runCommandSilent(`clear @a minecraft:iron_leggings{${STARTER_GEAR_TAG}:1b}`)
-    player.getServer().runCommandSilent(`clear @a minecraft:iron_boots{${STARTER_GEAR_TAG}:1b}`)
-
-    // Same "big on-screen title, chat is easy to miss" reasoning as the
-    // wave-cleared title above, plus the fuller narrative beat in chat
-    // since a title can't carry more than a couple words legibly.
-    player.getServer().runCommandSilent(`title @a title {"text":"IT'S UP TO YOU NOW","color":"red","bold":true}`)
-    player.getServer().runCommandSilent(`title @a subtitle {"text":"The gear is gone. So is whoever wore it first.","color":"gray"}`)
-    player.tell('§8§o[The blade and armor crumble to rust and dust in your hands.]')
-    player.tell('§7Whoever carried this before you held the line for five waves before this place took them too. Their debt here is paid.')
-    player.tell('§c§lIt\'s up to you now.')
-  }
-
-  // Countdown to next wave (docs/IDEAS.md's "On-screen countdown timer")
-  // starts only now, after the choice (and wave-5 gear removal, if this
-  // was that wave) is fully resolved - display + auto-trigger live in
-  // wave_spawner.js, see there for why.
-  data.putInt('td_countdownEndTick', player.getLevel().getTime() + COUNTDOWN_TICKS)
-  data.putBoolean('td_countdownActive', true)
 })

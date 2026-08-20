@@ -141,4 +141,51 @@ PlayerEvents.loggedIn((event) => {
   run(`fill ${x1} ${wallY0} ${z0} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)
   run(`setblock ${doorX} ${wallY0} ${z1} minecraft:oak_door[facing=south,half=lower]`)
   run(`setblock ${doorX} ${wallY0 + 1} ${z1} minecraft:oak_door[facing=south,half=upper]`)
+
+  // Watchtower (2026-08-20) - phase 1 of expanding the starter base
+  // into multiple buildings, per direct request. Placed north of the
+  // base (behind the back wall, clear of the door on the south/+Z
+  // side), a solid cobblestone pillar with an external ladder up to a
+  // platform - matches the base's own material palette rather than
+  // introducing a new one. Open on all sides at the top rather than
+  // facing one direction, since wave_spawner.js's
+  // randomBorderEdgePosition() spawns mobs at a random point on any of
+  // the 4 border edges - a lookout facing only one way would miss
+  // three-quarters of what it's meant to watch for.
+  const towerX0 = x - 1
+  const towerX1 = x + 1
+  const towerZ1 = z0 - 3
+  const towerZ0 = towerZ1 - 2
+  const platformY = wallY0 + 10
+
+  run(`fill ${towerX0} ${wallY0} ${towerZ0} ${towerX1} ${platformY - 1} ${towerZ1} minecraft:cobblestone`)
+
+  // Ladder on the south face (the side facing the base, for a short,
+  // convenient walk from the door). Placed in the air position just
+  // outside the pillar's south face; facing=south points away from the
+  // pillar (the block it's mounted against is to its north) - standard
+  // vanilla wall-attachment convention, same direction as the block it
+  // opens away from.
+  for (let ly = wallY0; ly < platformY; ly++) {
+    run(`setblock ${x} ${ly} ${towerZ1 + 1} minecraft:ladder[facing=south]`)
+  }
+
+  // 5x5 platform (one block wider than the pillar on each side), same
+  // stone brick as the base floor for visual consistency.
+  run(`fill ${towerX0 - 1} ${platformY} ${towerZ0 - 1} ${towerX1 + 1} ${platformY} ${towerZ1 + 1} minecraft:stone_bricks`)
+
+  // Parapet ring around the platform edge, one block above the floor -
+  // four separate fills for the four edges rather than a hollow-box
+  // trick, so the ladder-access gap (punched out after) is easy to
+  // reason about precisely.
+  run(`fill ${towerX0 - 1} ${platformY + 1} ${towerZ0 - 1} ${towerX1 + 1} ${platformY + 1} ${towerZ0 - 1} minecraft:cobblestone_wall`)
+  run(`fill ${towerX0 - 1} ${platformY + 1} ${towerZ1 + 1} ${towerX1 + 1} ${platformY + 1} ${towerZ1 + 1} minecraft:cobblestone_wall`)
+  run(`fill ${towerX0 - 1} ${platformY + 1} ${towerZ0 - 1} ${towerX0 - 1} ${platformY + 1} ${towerZ1 + 1} minecraft:cobblestone_wall`)
+  run(`fill ${towerX1 + 1} ${platformY + 1} ${towerZ0 - 1} ${towerX1 + 1} ${platformY + 1} ${towerZ1 + 1} minecraft:cobblestone_wall`)
+  run(`setblock ${x} ${platformY + 1} ${towerZ1 + 1} minecraft:air`)
+
+  // Two torches for a lit lookout point at night, placed on the
+  // platform floor near the north edge - clear of the ladder gap.
+  run(`setblock ${towerX0} ${platformY + 1} ${towerZ0} minecraft:torch`)
+  run(`setblock ${towerX1} ${platformY + 1} ${towerZ0} minecraft:torch`)
 })

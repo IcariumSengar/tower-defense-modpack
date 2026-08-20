@@ -17,6 +17,11 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
   future respawns land exactly there too, not nearby.
 - **Starter base**: a small walled box (11×11, cobblestone walls, stone
   brick floor, oak door) built around that fixed spawn point.
+- **Watchtower**: a 10-block cobblestone pillar just north of the base,
+  external ladder up to a 5×5 platform with a parapet — open on all
+  sides (mobs can approach from any side of the border), not facing one
+  direction. First of what's meant to grow into several starter
+  buildings over time.
 - **Worldborder set to 50**, centered on the same fixed point. Grows
   automatically by 5 blocks every 2 waves cleared after that
   (`base_expansion.js`).
@@ -87,17 +92,18 @@ and slightly denser fog than a normal wave. Atmosphere only, not a
 harder mob roster (wave 5's composition is reused as-is for every
 later call, same as before).
 
-**After every wave clears, a reward choice appears in chat** — three
-clickable lines offering a permanent buff (Vitality: +2 hearts,
-Fortitude: less damage taken, Ferocity: hit harder). Click one to pick
-it; picking the same buff again later stacks it stronger rather than
-wasting the pick. **The Wave Horn won't work again until you've
-chosen** — this is deliberate (docs/IDEAS.md's design), not a bug. Once
-you choose (and, at wave 5 specifically, once the starter gear popup
-finishes), a 3-minute countdown to the next wave starts, shown on the
-action bar. Right-clicking the horn manually at any point during the
+**After every wave clears, a 3-minute countdown to the next wave starts
+immediately**, shown on the action bar — no reward-choice step anymore
+(see below). Right-clicking the horn manually at any point during the
 countdown starts the next wave immediately and cancels the countdown —
 you're never forced to wait out the full 3 minutes.
+
+The roguelike permanent-buff choice popup (chat menu, pick one of three
+buffs after each wave) was built and removed the same day (2026-08-20)
+— its click detection never reliably worked, which silently blocked
+both the Wave Horn and the countdown timer. See the Wave-clear
+orchestration entry in `docs/MODS.md` for the full story if this gets
+rebuilt later.
 
 Pure Suffering was removed 2026-08-20 as part of a footprint audit
 (was already dormant, `enableInvasions false`) — see `docs/MODS.md`'s
@@ -322,18 +328,20 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
 - **Wave-clear orchestration built (2026-08-20)** — three features
   requested together: the roguelike permanent buff choice (clickable
   chat menu, three buffs, repeat picks stack via effect amplifier), a
-  3-minute countdown to the next wave (manual horn use always cancels
-  it), and Blood Moon boss waves (wave 5 onward — a distinct title and
-  denser fog, not a harder mob roster). The choice popup, gear removal
-  at wave 5, and countdown now fire in that exact order, not
-  simultaneously. See `docs/MODS.md`'s Wave-clear orchestration entry
-  for the full implementation writeup. **Entirely new, unconfirmed
-  in-game** — specifically worth checking: the chat-menu clicks actually
-  register (`player.hasTag(...)` detecting the `/tag` set by the
-  `clickEvent`), the countdown correctly cancels on manual horn use
-  without double-firing, and wave 5's gear-removal popup still fires
-  correctly now that it's one step later in the sequence than before
-  (after the choice, not inline with the other wave-clear effects).
+  3-minute countdown to the next wave, and Blood Moon boss waves (wave 5
+  onward — a distinct title and denser fog, not a harder mob roster).
+- **Buff choice removed, same day, after real playtesting (2026-08-20)**
+  — "too buggy... make sure it doesn't block me from summaning a wave...
+  next wave timer... simply not working." The chat-menu click detection
+  never actually worked (the exact risk flagged when it was built), which
+  left the choice permanently unanswered after every wave clear — this
+  silently blocked the Wave Horn *and* the countdown (which only started
+  once the choice resolved), so both other symptoms were downstream of
+  this one bug. Removed the whole system rather than debug the click
+  detection further; gear removal and the countdown now fire directly on
+  wave-clear again, no choice step in between. See `docs/MODS.md`'s
+  Wave-clear orchestration entry for the full story. **This should be
+  what makes the countdown actually work — not yet re-tested.**
 - **Fixed spawn point built (2026-08-20)** — every new world now spawns
   at a pinned point near world origin instead of wherever vanilla
   happened to scatter you, with `spawnRadius 0` so respawns land exactly

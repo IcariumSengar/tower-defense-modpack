@@ -74,15 +74,15 @@ hash = "dba3439cbe4a225e17e46a99cf72f7ed99faf70f7a16514f0f84f243d55e29b7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "f356e172a648f086836543bca970a23816bda95c2ab4260bdf0793e911600866"
+hash = "5caebcada58c04b472327a16c71ac249dcc124f8c1e9a58287ddd5c99a4b813d"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "9bb2484d93b23348c21cb8a2a60c83dd382dfe50c7cd470417db1df5344b245c"
+hash = "f035cb5b26b958c89615d1f6e29b581bac2d9545c5a749251dfd525d3087b1c4"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "f0260babd3906d93f2a82204d49bd1dd08280fc4a129198ac5a9d894950d4277"
+hash = "94ed5ff1035cfa4bcda8acfd3259eb008f66100daca37ac507cf1fac274dd7c9"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"

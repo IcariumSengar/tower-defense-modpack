@@ -158,15 +158,6 @@ function useWaveHorn(player) {
     return
   }
 
-  // Blocks re-use while the wave-clear reward choice (wave_status.js) is
-  // still unanswered - docs/IDEAS.md pins the ordering as wave-clear
-  // effects -> choice popup (blocking) -> countdown, so a manual horn
-  // click can't skip the choice by racing ahead of it.
-  if (data.getBoolean('td_awaitingChoice')) {
-    player.tell('§c[Wave Horn] §fChoose your reward before summoning the next wave.')
-    return
-  }
-
   // A manual horn use always takes priority over an in-progress countdown
   // (docs/IDEAS.md: "the manual Wave Horn presumably still works during
   // the countdown... the timer is a forcing function for players who
