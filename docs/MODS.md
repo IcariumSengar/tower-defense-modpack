@@ -370,6 +370,43 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   independent levers are all pushed toward one extreme, the fix is a
   full reset toward defaults, not one more offsetting nudge.
 
+  10. **Round 9's reset undid the day fix — "all too dark again"
+      (2026-08-20).** Confirmed via real research this time, not another
+      guess: multiple independent sources agree **Spooklementary is
+      dark by design** — "things are much darker as an intentional
+      design feature of Spooklementary, as it's meant to create a moody
+      and spooky atmosphere." Round 9's reset pulled nearly every
+      brightness value back to at-or-near Spooklementary's own defaults
+      to stop the blowout — which correctly stopped the blowout, but
+      also undid the day-darkness fix, because those defaults are
+      *intentionally* dark. The sources also confirm the shader's own
+      Shader Options UI exposes exactly one dedicated brightness control
+      for this — "General Brightness," i.e. `T_EXPOSURE` (matches the
+      `.lang` label found earlier). **Root mistake across rounds 2-9**:
+      spreading the brightness fix across five different levers
+      (`T_EXPOSURE`, `AMBIENT_MULT`, `MINIMUM_LIGHT_MODE`, day sliders,
+      night sliders) instead of using the one lever the shader is
+      actually designed around — stacking multiple mechanisms at once
+      is what caused every overcorrection. **Fix**: reset every other
+      lever to true default (`AMBIENT_MULT 100`, `MINIMUM_LIGHT_MODE 2`,
+      all day/night intensity sliders `1.00`, shadows on at default
+      quality `2`), and raise only `T_EXPOSURE` (`1.70`→`2.50`, near but
+      not at its `2.80` ceiling) as the single brightness lever for both
+      day and night, since it's a global post-lighting exposure that
+      isn't time-of-day-scoped. `T_LOWER_CURVE`/`T_UPPER_CURVE` (round
+      8's real community-referenced values) left alone — genuinely
+      separate from the brightness-stacking mistake.
+
+  **Design choice surfaced to the user directly** rather than deciding
+  unilaterally, since "the shader is dark on purpose" also meant there
+  was a real fork: keep Spooklementary's spooky identity and fight its
+  default brightness with the one intended lever (chosen), or drop the
+  "spooky" reskin for base Complementary Unbound (same Oculus loader,
+  same 1.20.1 compatibility, not built around deliberate darkness, but
+  loses the horror aesthetic that was the actual reason Spooklementary
+  was picked over generic Complementary for the Atmosphere & Wave Feel
+  design goal in the first place). User chose to stay with Spooklementary.
+
   None of the fixes in this entry have been re-tested in-game yet.
 
   **Performance audit (2026-08-20)** — user explicitly asked to check

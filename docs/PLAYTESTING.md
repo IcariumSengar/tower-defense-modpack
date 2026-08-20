@@ -200,6 +200,20 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   maxed `2.00`, night sliders to `1.40`). See `docs/MODS.md`'s
   Spooklementary entry for the full before/after values. **Not yet
   re-tested in-game.**
+- **"All too dark again" after that reset — confirmed Spooklementary is
+  dark by design, not misconfigured.** Multiple sources agree the
+  shader is deliberately moody/dark, and exposes exactly one intended
+  brightness control in its own UI ("General Brightness" = `T_EXPOSURE`).
+  The real mistake across the whole saga was spreading the brightness
+  fix across five different levers instead of using that one. Reset
+  every other lever to Spooklementary's true default and raised only
+  `T_EXPOSURE` (1.70→2.50) as the single day+night brightness fix.
+  User was given a real choice here — keep fighting Spooklementary's
+  dark-by-design defaults with this one lever, or drop it for base
+  Complementary Unbound (not built around darkness, same loader) at the
+  cost of the spooky aesthetic — and chose to stay with Spooklementary.
+  See `docs/MODS.md`'s Spooklementary entry. **Not yet re-tested
+  in-game.**
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when
