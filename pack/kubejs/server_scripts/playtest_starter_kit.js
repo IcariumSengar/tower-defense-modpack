@@ -25,16 +25,21 @@
 // `/setworldspawn` + `gamerule spawnRadius 0` are still used exactly as
 // the design doc describes — only the structure-placement half changed.
 //
-// X/Z are hardcoded to (0, 0) — vanilla's own default flat-world spawn
-// already lands within a few blocks of the origin, so this doesn't
-// relocate anything surprising. Y is deliberately NOT hardcoded: flat
-// worlds use whatever layer preset the player picked at world creation,
-// and guessing that height risks spawning underground or floating (the
-// same class of "assumed it'd just work" bug this codebase has hit
-// before). Instead, groundY is read from the player's own Y at the
-// moment of this first natural login — vanilla has already placed them
-// standing safely on the real flat surface for THIS world's preset, so
-// that's the ground truth, not an assumption.
+// World type switched from Superflat to Single Biome: Desert (2026-08-20,
+// docs/IDEAS.md's "creating a world that isn't entirely flat" ask) — see
+// docs/PLAYTESTING.md's manual setup step. This invalidated the original
+// "read the player's own natural spawn Y" ground-finding trick: that was
+// only safe because Superflat height is uniform everywhere, so wherever
+// vanilla's default ~10-block spawn scatter landed the player, the
+// height matched (0,0)'s height too. Real terrain varies within that
+// same scatter radius (dunes, small hills), so a Y read from a scattered
+// position can no longer be trusted for (0,0) specifically. Fixed with
+// `/spreadplayers` instead — the standard vanilla heightmap-aware
+// "place on solid ground near this X,Z" command (avoids voids/liquids,
+// used for exactly this class of problem) — then reads the player's
+// actual resulting position as the ground truth, rather than assuming a
+// height. maxRange kept small (8) so this still reads as "the same
+// fixed spot," not a materially different location each world.
 //
 // Uses event.server.runCommandSilent(...) with absolute coordinates (not
 // player-relative ~) since it executes from the server console, not "as"
@@ -74,12 +79,18 @@ PlayerEvents.loggedIn((event) => {
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
-  // Ground truth read BEFORE any teleport — vanilla's own natural
-  // first-spawn Y for this world's flat preset, not a hardcoded guess.
-  const groundY = Math.floor(player.getY())
-  const x = 0
-  const y = groundY
-  const z = 0
+  // Snap onto solid ground near world origin (0,0) — heightmap-aware,
+  // avoids voids/liquids, unlike a raw teleport to a guessed Y. Small
+  // maxRange (8) keeps this close enough to true origin to still read
+  // as "the same fixed spot" every world, while giving the command room
+  // to find a valid column if (0,0) exactly happens to be an edge case.
+  event.server.runCommandSilent('spreadplayers 0 0 1 8 false @a')
+
+  // Ground truth read AFTER spreadplayers — this is where the player is
+  // actually now standing, on real terrain, not a guess.
+  const x = Math.floor(player.getX())
+  const y = Math.floor(player.getY())
+  const z = Math.floor(player.getZ())
   const half = 5
 
   // Pin every future respawn to this exact point (docs/IDEAS.md's
@@ -88,14 +99,6 @@ PlayerEvents.loggedIn((event) => {
   // just a nearby nudge target.
   event.server.runCommandSilent(`setworldspawn ${x} ${y} ${z}`)
   event.server.runCommandSilent('gamerule spawnRadius 0')
-  // Move the player here too, for this first login specifically -
-  // setworldspawn only affects *future* respawns, not where vanilla
-  // already placed them just now. @a, not @s - this runs from the
-  // server console command source (event.server), which has no "self"
-  // for @s to resolve against (same reasoning as every command below
-  // and throughout wave_status.js/wave_spawner.js); @a is equivalent
-  // here since this pack is single-player-focused.
-  event.server.runCommandSilent(`tp @a ${x + 0.5} ${y} ${z + 0.5}`)
 
   // Center the border on the same fixed point, not wherever the player
   // happened to be standing — matches the manual setup step from
@@ -114,12 +117,19 @@ PlayerEvents.loggedIn((event) => {
 
   const run = (cmd) => event.server.runCommandSilent(cmd)
 
+  // Real terrain isn't flat under the footprint the way Superflat was -
+  // level it explicitly rather than assuming a single Y works
+  // everywhere across an 11x11 area: a solid stone foundation a few
+  // blocks down covers any local dips (small dunes), and clearing
+  // headroom well above the walls covers any local rises or stray
+  // foliage before the walls themselves go up.
+  run(`fill ${x0} ${floorY - 3} ${z0} ${x1} ${floorY} ${z1} minecraft:stone`)
+  run(`fill ${x0} ${wallY0} ${z0} ${x1} ${wallY1 + 3} ${z1} minecraft:air`)
   run(`fill ${x0} ${floorY} ${z0} ${x1} ${floorY} ${z1} minecraft:stone_bricks`)
   run(`fill ${x0} ${wallY0} ${z0} ${x1} ${wallY1} ${z0} minecraft:cobblestone`)
   run(`fill ${x0} ${wallY0} ${z1} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)
   run(`fill ${x0} ${wallY0} ${z0} ${x0} ${wallY1} ${z1} minecraft:cobblestone`)
   run(`fill ${x1} ${wallY0} ${z0} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)
-  run(`fill ${x0 + 1} ${wallY0} ${z0 + 1} ${x1 - 1} ${wallY1} ${z1 - 1} minecraft:air`)
   run(`setblock ${doorX} ${wallY0} ${z1} minecraft:oak_door[facing=south,half=lower]`)
   run(`setblock ${doorX} ${wallY0 + 1} ${z1} minecraft:oak_door[facing=south,half=upper]`)
 })

@@ -81,12 +81,14 @@ references found for any of these) before removing, not just guessed:
   user's actual verdict was about the shader's whole aesthetic, not any
   remaining number ("im just not feeling the whole shader feel now").
   Removed entirely the same day, replaced with vanilla's own
-  `minecraft:darkness` status effect (see the Wave-clear orchestration
-  entry below) for the atmosphere piece instead. Revisit only with a
-  genuinely new signal from the user — this isn't an "unused, never
-  integrated" removal like the others above, it's a "built, tuned
-  extensively, and explicitly rejected on feel" one; don't re-propose a
-  shaderpack here without that new signal.
+  `minecraft:darkness` status effect for the atmosphere piece instead —
+  **that also didn't work, per direct playtest feedback, and was
+  dropped the same day** (see the Wave-clear orchestration entry below).
+  Fog + night-lock are the only atmosphere layers currently standing.
+  Revisit shaders only with a genuinely new signal from the user — this
+  isn't an "unused, never integrated" removal like the others above,
+  it's a "built, tuned extensively, and explicitly rejected on feel"
+  one; don't re-propose a shaderpack here without that new signal.
 
 None of these were hard blockers or bugs — all were clean removals of
 mods sitting parallel to, not part of, the pack's actual built systems.
@@ -487,7 +489,16 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       periodic top-up tick handler needed), cleared explicitly in
       `wave_status.js`'s "defeated" branch alongside the existing fog
       reset — same give/clear pairing already used for night-lock and
-      fog, no new pattern.
+      fog, no new pattern. **Reverted the same day** — confirmed not
+      working via direct playtest feedback (the user edited
+      `docs/IDEAS.md` directly: "proposed and built... but didn't work
+      per direct feedback — dropped"). Both the `effect give` and
+      `effect clear` calls removed entirely from `wave_spawner.js`/
+      `wave_status.js`; fog + night-lock are the only atmosphere layers
+      a wave applies now. No specific reason given for *why* it didn't
+      work (visually unconvincing? too subtle? read as a bug rather than
+      atmosphere?) — worth asking directly if this comes up again, rather
+      than guessing at another vanilla-effect substitute blind.
   15. **Misread "fog only during a wave" as "day gets zero fog" —
       corrected same day.** Deleted `border_fog.js` entirely on the
       assumption the user wanted fog eliminated outside waves. Actual
@@ -607,10 +618,13 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     from this session's shader-tuning saga about compounding brightness/
     intensity changes without re-examining the total.
   - **Darkness effect** (built earlier the same day as a shader
-    replacement) already covered under Atmosphere & Wave Feel above — not
+    replacement, then reverted the same day per direct playtest
+    feedback) already covered under Atmosphere & Wave Feel above — not
     duplicated here, just noted as part of the same wave-clear-adjacent
     work.
-  - None of the three pieces above have been re-tested in-game yet.
+  - The roguelike buff choice, countdown, and Blood Moon (this entry's
+    actual three pieces) have not been re-tested in-game yet — the
+    darkness-effect revert above is confirmed, the rest still isn't.
 
 - **Fixed spawn + prebuilt starting building (2026-08-20)** —
   `docs/IDEAS.md`'s "Fixed spawn + prebuilt starting building(s), every
@@ -626,16 +640,63 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   playtests. Reused that code directly, just re-anchored to the fixed
   point instead of the player's arbitrary spawn position — same
   end-user outcome, lower-risk mechanism.
-  X/Z hardcoded to `(0, 0)`; Y deliberately *not* hardcoded — read from
-  the player's own natural spawn Y before any teleport happens, since
-  guessing a flat-world preset's layer height wrong risks spawning
-  underground or floating (the same class of "assumed it'd just work"
-  bug this codebase has hit before — see the Wave Horn debugging notes
-  further down). `worldborder center` moved to the same fixed point too,
-  for consistency. **Only affects brand-new worlds** — a world already
-  past its first login (including any world already being playtested) is
-  completely unaffected; needs a fresh world to test, not just a
-  relaunch.
+  X/Z originally hardcoded to `(0, 0)` with Y read from the player's own
+  natural spawn position; `worldborder center` moved to the same fixed
+  point too, for consistency. **Only affects brand-new worlds** — a
+  world already past its first login (including any world already being
+  playtested) is completely unaffected; needs a fresh world to test, not
+  just a relaunch.
+  - **Superseded same day by the switch to real terrain** — "reading the
+    player's own natural spawn Y" was only ever safe because Superflat
+    height is uniform everywhere; real terrain varies within vanilla's
+    default spawn-scatter radius, so a Y read there can't be trusted for
+    world origin specifically anymore. Replaced with `/spreadplayers 0 0
+    1 8 false @a` (vanilla's real heightmap-aware "place on solid ground
+    near this X,Z" command, avoids voids/liquids) run first, then the
+    player's *actual resulting* position is read as ground truth instead
+    of assumed. The starter base's `/fill` logic also needed a real
+    change beyond just re-anchoring: added a stone foundation 3 blocks
+    down (covers local dips/dunes) and headroom clearing 3 blocks above
+    the walls (covers local rises/foliage) before building, since a
+    single flat Y across an 11x11 footprint no longer holds on uneven
+    ground.
+  - **`wave_spawner.js` needed the same class of fix.** Its mob-spawn
+    logic reused the player's own Y for every summoned mob regardless of
+    that specific mob's X/Z — harmless on flat Superflat, but on real
+    terrain a mob 15-25 blocks away can be several blocks off the
+    player's height, spawning embedded in terrain or floating. Fixed by
+    summoning 15 blocks (`SPAWN_HEIGHT_BUFFER`) above the estimated
+    ground height and letting vanilla gravity drop the mob onto the real
+    surface, rather than a per-mob heightmap query — simpler, lower risk,
+    costs only a brief harmless fall. The sound cue keeps using the
+    original (non-elevated) height so it still reads as coming from
+    ground level. **Not confirmed in-game for TFTH's GeckoLib-animated
+    mobs specifically** — only vanilla mob fall behavior is
+    well-established.
+
+- **World type switched from Superflat to Single Biome: Desert
+  (2026-08-20)** — per the direct request "creating a world that isn't
+  entirely flat, and have some other structures been spawned around the
+  player." Checked whether any of `docs/IDEAS.md`'s previously-logged
+  candidate seeds (for real desert/badlands terrain) could be verified
+  before committing to one — Chunkbase's seed map is a JS-rendered
+  interactive tool, not fetchable/verifiable without actually running
+  the game, so none of those unverified leads could be confirmed. Picked
+  **Single Biome: Desert** instead of gambling on an unverified seed:
+  deterministic (guaranteed desert terrain everywhere, no seed-hunting
+  needed) and vanilla structure generation still runs normally within
+  it — desert temples, wells, ruined portals, villages all still
+  generate — so "structures spawn around the player" is satisfied by
+  vanilla's own world generator, zero custom placement code needed. This
+  also directly serves the border-expansion idea from `docs/IDEAS.md`'s
+  "lootable buildings + distance-based risk" addendum (structures
+  becoming reachable as the border grows) without building any of that
+  addendum's more involved distance-based loot/difficulty systems yet —
+  those stay a separate, later step. Badlands considered as an
+  alternative (more dramatic canyon/mesa terrain) but Desert has more
+  guaranteed structure variety. This is a manual world-creation-screen
+  choice (see `docs/PLAYTESTING.md`), same category as the Allow Cheats
+  setting — nothing KubeJS can automate about it.
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces

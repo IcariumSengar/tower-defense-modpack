@@ -211,21 +211,6 @@ function useWaveHorn(player) {
   var fogMaxDistance = isBloodMoon ? 24 : 32
   server.runCommandSilent('fog @a set 8 ' + fogMaxDistance + ' 25 25 30 0.3 cylinder')
 
-  // Darkness effect layer (docs/IDEAS.md's "Darkness effect as the shader
-  // replacement") - the Warden's pulsing vision-closing vignette, applied
-  // as a plain vanilla status effect rather than any shader. Fog controls
-  // how far you can see; darkness controls how much of your peripheral
-  // vision is obscured - a different rendering mechanism, so the two
-  // layer together instead of competing. 1000000 is seconds, not ticks,
-  // and is /effect give's own max duration (~11.6 days) - comfortably
-  // longer than any wave, so no periodic top-up tick handler is needed;
-  // wave_status.js's "defeated" branch clears it explicitly, same
-  // give/clear pairing as the night lock and fog above. Amplifier fixed
-  // at 0 - unconfirmed whether a higher amplifier does anything visually
-  // for this effect (see docs/IDEAS.md's open risk on this), so not worth
-  // guessing at a number with no verified effect.
-  server.runCommandSilent('effect give @a minecraft:darkness 1000000 0 true')
-
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
@@ -268,6 +253,10 @@ function useWaveHorn(player) {
       pendingSpawns.push({
         mobType: mobType,
         x: x,
+        // Ground-ish estimate, reused for the sound cue's position
+        // below (kept at the player's own height rather than the
+        // elevated summon height, so the audio still reads as coming
+        // from roughly ground level, not from up in the air).
         y: Math.floor(player.getY()),
         z: z,
         spawnTick: spawnTick,
@@ -319,6 +308,20 @@ BlockEvents.rightClicked(function (event) {
 // minecraft:ambient.cave is a generic eerie one-shot, not tied to any
 // specific mob type, since TFTH's own sound event registry names
 // weren't verified.
+//
+// SPAWN_HEIGHT_BUFFER (2026-08-20, real-terrain switch): summoning
+// exactly at spawn.y (the player's own height) only worked on flat
+// Superflat ground, where every column shared the same height. Real
+// Desert terrain varies within the 15-25 block spawn radius (dunes,
+// small dips), so a mob could summon embedded in terrain or floating
+// above it. Fixed by summoning well above spawn.y and letting vanilla
+// gravity drop the mob onto whatever the real ground height is at its
+// specific X/Z - simpler and lower-risk than a per-mob heightmap query,
+// at the cost of a brief, harmless fall (most hordes here are meant to
+// be killed anyway). Not yet confirmed in-game for TFTH's GeckoLib-
+// animated mobs specifically - flagged as a playtest check.
+var SPAWN_HEIGHT_BUFFER = 15
+
 PlayerEvents.tick(function (event) {
   if (pendingSpawns.length === 0) return
 
@@ -337,7 +340,7 @@ PlayerEvents.tick(function (event) {
     }
     if (currentTick >= spawn.spawnTick) {
       server.runCommandSilent(
-        `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
+        `summon ${spawn.mobType} ${spawn.x} ${spawn.y + SPAWN_HEIGHT_BUFFER} ${spawn.z} {Attributes:[{Name:"generic.follow_range",Base:128}]}`
       )
     } else {
       stillPending.push(spawn)

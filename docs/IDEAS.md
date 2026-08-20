@@ -608,6 +608,22 @@ rest natural so `/worldborder` reveals real desert terrain" middle path)
 stays noted here as the later upgrade to revisit once the pack is more
 stable — not blocking anything now.
 
+**Superseded (2026-08-20): moved off Superflat, and off seed-hunting
+entirely.** Direct request: "creating a world that isn't entirely flat,
+and have some other structures been spawned around the player." None of
+the candidate seeds above could actually be verified — Chunkbase's seed
+map is a JS-rendered interactive tool, not fetchable without running the
+game, so they stayed unverified leads exactly as flagged. Rather than
+gambling on one, switched to vanilla's **Single Biome: Desert** world
+type — deterministic (desert terrain everywhere, no seed needed) and
+still runs normal structure generation within that biome (temples,
+wells, ruined portals, villages), satisfying both "not flat" and
+"structures around the player" without needing a specific seed at all.
+The "flatten only the footprint" middle path this section already
+proposed is exactly what got built — see `docs/MODS.md`'s Fixed spawn
+entry. Seed-hunting for a specific desert seed is now moot; leaving the
+leads above as historical record, not a live open question.
+
 ## Confirmed working: right-click-item + mob-summon pattern (Wave Horn, 2026-08-19)
 
 Good news worth recording here, not just in conversation: the Wave Horn
@@ -1289,80 +1305,9 @@ commit note above (the issue was the shader's whole aesthetic, not any
 remaining number) — worth actually changing approach, not re-running
 the same eleven-round tuning process against a different pack.
 
-### Darkness effect as the shader replacement (built 2026-08-20)
-
-Core idea: use vanilla's own `minecraft:darkness` status effect (the
-Warden's ability — a pulsing vignette that closes in around the edges
-of vision, not just a color tint) during waves, layered on top of the
-fog that already works, instead of any shader pack.
-
-**Why this is the right category of tool, based on what's actually
-failed vs. succeeded twice now in this exact pack:** every atmosphere
-piece that's worked reliably — night-lock, wave-state fog,
-`border_fog.js`'s proximity fog, on-screen titles, the staggered
-spawn/sound cues — is a plain vanilla command, fully scriptable from
-KubeJS. The one piece that failed, twice, across two separate sessions,
-is the one piece that wasn't: Oculus/Iris shaders have no live API at
-all, so eleven rounds of tuning were fighting a static config file, not
-a responsive system. `minecraft:darkness` is a vanilla effect, applied
-via `/effect give`, ships with the base game — zero new mod, zero
-compatibility risk, and genuinely scriptable rather than fought.
-
-**How it'd layer, not replace:** fog (existing) controls *how far you
-can see*; darkness would control *how much of your peripheral vision is
-obscured*, a different visual mechanism that doesn't compete with fog
-for the same rendering budget. Proposed stack during a wave: night-lock
-(real time) + combat fog (existing) + darkness effect (new) + staggered
-spawn/sound cues (existing) — five vanilla-command layers working
-together, none of them a shader.
-
-**Proposed technical shape, following patterns already proven in this
-codebase rather than inventing new ones:**
-- Apply `/effect give @a minecraft:darkness <duration> 0 true` inside
-  `useWaveHorn`, alongside the existing `time set night` and `/fog`
-  calls — same trigger point, same pairing pattern.
-- Vanilla effects expire on their own duration, so either give a
-  generously long duration up front, or top it up periodically via a
-  tick handler gated on `td_inWave` — same structure `border_fog.js`
-  already uses (check a flag, only re-issue the command when actually
-  needed, not every tick, to avoid spamming/flicker the same way that
-  script was careful not to spam `/fog`).
-- Clear it explicitly in `wave_status.js`'s "defeated" branch
-  (`/effect clear @a minecraft:darkness`), the same reset pairing
-  already used for fog and daylight.
-- Escalation lever: unclear yet whether the effect's `amplifier`
-  argument actually changes visual intensity in this MC version (it
-  might just affect transition timing, not strength) — needs in-game
-  verification before assuming it's a usable escalation dial, same
-  "verify before asserting" discipline this pack has needed repeatedly
-  (Math.PI, bare `.x/.y/.z`, `isClientSide`, all "should be fine"
-  assumptions that weren't). If amplifier doesn't help, escalate via
-  frequency/persistence instead (e.g. only active during combat at low
-  waves, always-on including peacetime approach-to-border at high
-  waves) rather than a stat that may not do anything.
-
-**Open risks, not yet resolved:**
-- Divorced from its normal Warden/sculk-shrieker context, players might
-  read the effect as "screen randomly dimming" without understanding
-  why — this pack already communicates well via titles/chat, so pairing
-  the effect with the existing "Wave incoming!" title is probably enough,
-  but worth watching for in an actual playtest.
-- Whether `hideParticles:true` actually suppresses anything relevant
-  here (it may only affect an inventory icon/particle overlay, not the
-  screen-darkening render itself) — another one to confirm in-game
-  rather than assume.
-
-**Built (2026-08-20), same-day as this proposal.** Implemented almost
-exactly as proposed, with one simplification: skipped the periodic
-tick-handler top-up entirely and just gave a single long-duration
-`/effect give @a minecraft:darkness 1000000 0 true` (1000000 is
-seconds, not ticks — `/effect give`'s own max, ~11.6 days) inside
-`useWaveHorn` right after the existing fog command, cleared explicitly
-in `wave_status.js`'s "defeated" branch alongside the existing fog
-reset — same give/clear pairing already used for night-lock and fog,
-no new pattern introduced. Amplifier left at `0`, unchanged from the
-open question above — no in-game verification yet on whether it does
-anything visually.
+A `minecraft:darkness`-effect approach was proposed and built the same
+day as an alternative to shaders, but **didn't work** per direct
+feedback — dropped. Not detailed further here.
 
 **Correction, same day: misread the fog instruction, then fixed it.**
 Initially read "make sure the fog effect only occurs during a wave" as

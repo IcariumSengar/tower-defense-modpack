@@ -30,8 +30,20 @@ on a world you've already joined once.
 ## Manual setup (once per new world)
 
 Only the world-creation screen itself, which nothing can automate:
-**World Type: Superflat**, **Allow Cheats: ON** — flat terrain means no
-generation lag and clear sightlines to see hordes coming.
+**World Type: Single Biome → Desert** (under "Customize" — not the
+default "Default" world type), **Allow Cheats: ON**.
+
+Changed from Superflat (2026-08-20) — real, non-flat terrain now, so the
+worldborder expanding actually reveals new terrain/structures to
+explore instead of more identical flat ground. Desert was picked over a
+specific real seed: Single Biome mode is deterministic (guaranteed
+desert everywhere, no seed-hunting/verification needed) and still
+generates real vanilla structures normally within that biome (desert
+temples, wells, ruined portals, villages) — satisfies both "not flat"
+and "structures around the player" with zero custom placement code.
+Badlands is a reasonable alternative if you want more dramatic
+canyon/mesa terrain instead of desert dunes, at the cost of fewer
+guaranteed structure types.
 
 ## The test loop
 
@@ -53,14 +65,16 @@ still alive nearby — clear the wave first. Action bar shows a live
 count) and when it clears.
 
 Calling the horn also forces night and locks the day/night cycle (so
-zombies/skeletons don't burn on spawn or catch fire mid-fight), applies
-dense fog and the Warden's `minecraft:darkness` vision effect for
-atmosphere — it switches back to day, clears the fog and darkness, and
-lets the cycle run normally again once the wave is cleared. The
-darkness effect is wave-only; fog isn't — a lighter version keeps
-thickening near the worldborder edge during the peaceful gap too
-(`border_fog.js`), so night reads as a heavier version of an
-atmosphere that's already there, not fog appearing from nothing.
+zombies/skeletons don't burn on spawn or catch fire mid-fight) and
+applies dense fog for atmosphere — it switches back to day, clears the
+fog, and lets the cycle run normally again once the wave is cleared.
+Fog isn't wave-only — a lighter version keeps thickening near the
+worldborder edge during the peaceful gap too (`border_fog.js`), so
+night reads as a heavier version of an atmosphere that's already there,
+not fog appearing from nothing. (A `minecraft:darkness` vision effect
+was also tried alongside the fog, but confirmed not working in
+playtesting and dropped the same day — fog + night-lock are the
+atmosphere layers now.)
 
 **Wave 5 onward is a Blood Moon** — a distinct "BLOOD MOON RISES" title
 and slightly denser fog than a normal wave. Atmosphere only, not a
@@ -170,11 +184,14 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   close — verified with a tiled preview before deploying. See
   `docs/MODS.md`'s Worldborder Fog Wall entry. **Not yet re-tested
   in-game.**
-- **Darkness effect added (2026-08-20).** Waves now apply vanilla's
-  `minecraft:darkness` status effect (the Warden's vision-closing
-  vignette) alongside the existing night-lock and fog, cleared when the
-  wave clears — a vanilla-command replacement for the shader's
-  atmosphere, per `docs/IDEAS.md`'s new proposal.
+- **Darkness effect added, then reverted the same day (2026-08-20).**
+  Waves briefly also applied vanilla's `minecraft:darkness` status
+  effect (the Warden's vision-closing vignette) alongside the existing
+  night-lock and fog — a vanilla-command replacement for the shader's
+  atmosphere, per `docs/IDEAS.md`'s proposal. **Confirmed not working in
+  playtesting and dropped** the same day (no specific reason given for
+  why). Both the give and clear calls are removed; fog + night-lock are
+  the only atmosphere layers a wave applies now.
 - **Fog day/night contrast corrected (2026-08-20).** First pass
   misread "fog only during a wave" as "day should have zero fog" and
   deleted `border_fog.js` — wrong; the actual ask was light fog near
@@ -312,14 +329,29 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   correctly now that it's one step later in the sequence than before
   (after the choice, not inline with the other wave-clear effects).
 - **Fixed spawn point built (2026-08-20)** — every new world now spawns
-  at a pinned point (0,0 on the flat surface) instead of wherever
-  vanilla happened to scatter you, with `spawnRadius 0` so respawns land
-  exactly there too. See `docs/MODS.md`'s Fixed spawn entry for why the
-  building itself still uses `/fill`/`/setblock` rather than a `.nbt`
-  template. **Only affects brand-new worlds** — your current test world
-  already had its first login, so this needs a fresh world to check, not
-  a relaunch. Worth confirming on that fresh world: the player actually
-  lands standing on solid ground (not floating/underground — the Y comes
-  from reading vanilla's own natural spawn height, not a hardcoded
-  guess), and the starter base/worldborder are both correctly centered
-  on the new fixed point.
+  at a pinned point near world origin instead of wherever vanilla
+  happened to scatter you, with `spawnRadius 0` so respawns land exactly
+  there too. See `docs/MODS.md`'s Fixed spawn entry for why the building
+  itself still uses `/fill`/`/setblock` rather than a `.nbt` template.
+  **Only affects brand-new worlds** — your current test world already
+  had its first login, so this needs a fresh world to check, not a
+  relaunch. Worth confirming on that fresh world: the player actually
+  lands standing on solid ground (not floating/underground), and the
+  starter base/worldborder are both correctly centered on the new fixed
+  point.
+- **Switched to real (non-flat) terrain, same day — this changes the
+  ground-finding mechanism.** The original version above read the
+  player's own natural spawn Y directly, which only worked because
+  Superflat height is uniform everywhere. Real Desert terrain varies
+  within vanilla's default spawn-scatter radius, so that reasoning no
+  longer holds — replaced with `/spreadplayers` (vanilla's real
+  heightmap-aware "place on solid ground here" command) before reading
+  position. Also fixed `wave_spawner.js`'s mob spawning, which reused
+  the player's own Y for every mob regardless of that mob's actual
+  terrain height — summons now happen 15 blocks up and fall via gravity
+  onto the real ground. **Neither fix confirmed in-game yet** —
+  specifically worth checking: the starter base sits on a clean,
+  correctly-leveled pad rather than a lumpy/dune-clipped one, and TFTH's
+  GeckoLib-animated mobs fall and land normally rather than glitching
+  out (only vanilla mob fall behavior is well-established; TFTH's isn't
+  yet).

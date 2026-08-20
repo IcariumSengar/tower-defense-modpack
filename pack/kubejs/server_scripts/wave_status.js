@@ -174,9 +174,6 @@ PlayerEvents.tick((event) => {
     // flip), giving the "day pulls back significantly, doesn't go silent"
     // contrast the design doc actually asks for.
     player.getServer().runCommandSilent('fog @a reset')
-    // Undo wave_spawner.js's darkness effect — same give/clear pairing as
-    // the fog and night lock above.
-    player.getServer().runCommandSilent('effect clear @a minecraft:darkness')
 
     // Wave-clear orchestration ordering, per docs/IDEAS.md: wave-clear
     // effects (above) -> choice popup (blocking) -> player chooses ->
