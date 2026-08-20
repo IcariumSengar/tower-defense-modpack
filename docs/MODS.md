@@ -735,9 +735,30 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   addendum's more involved distance-based loot/difficulty systems yet —
   those stay a separate, later step. Badlands considered as an
   alternative (more dramatic canyon/mesa terrain) but Desert has more
-  guaranteed structure variety. This is a manual world-creation-screen
-  choice (see `docs/PLAYTESTING.md`), same category as the Allow Cheats
-  setting — nothing KubeJS can automate about it.
+  guaranteed structure variety.
+  - **Automated (2026-08-20), same day — no longer a manual
+    world-creation-screen step.** User asked directly not to need
+    "Customize" at all. Real vanilla mechanism used: KubeJS's `data/`
+    injection (already used elsewhere for recipes/tags/loot tables) can
+    ship *any* datapack JSON, including a dimension override —
+    `pack/kubejs/data/minecraft/dimension/overworld.json` replaces the
+    vanilla `overworld` dimension's generator with
+    `{"type": "minecraft:noise", "settings": "minecraft:overworld",
+    "biome_source": {"type": "minecraft:fixed", "biome":
+    "minecraft:desert"}}` — the exact same generator "Single Biome:
+    Desert" produces manually (standard terrain-shape noise settings,
+    just a fixed biome source instead of the normal biome-placement
+    noise), now baked into every world automatically regardless of
+    which World Type button gets clicked on the creation screen. Since
+    this overrides vanilla's own `overworld` dimension definition
+    directly, "Default" world type (what most players leave selected)
+    picks it up with zero customization. **First time this pack has
+    shipped a dimension-generator override via KubeJS** — previously
+    `data/` was only used for simpler content (recipes, loot, tags), so
+    this is a step further into that mechanism's range; not yet
+    confirmed in-game. Manually picking Single Biome → Desert on the
+    creation screen remains a working fallback if the override doesn't
+    take effect for some reason.
 
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`. Action
   bar shows a live "Hostiles remaining: N" count, and chat announces

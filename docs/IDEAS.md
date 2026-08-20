@@ -624,6 +624,15 @@ proposed is exactly what got built — see `docs/MODS.md`'s Fixed spawn
 entry. Seed-hunting for a specific desert seed is now moot; leaving the
 leads above as historical record, not a live open question.
 
+**Automated the same day** — initially required manually picking
+"Single Biome: Desert" via Customize on the world-creation screen; user
+asked not to need that at all. Shipped as a datapack override instead
+(`kubejs/data/minecraft/dimension/overworld.json`, via KubeJS's `data/`
+injection), replacing the vanilla `overworld` dimension's generator
+directly — every world generates as Desert automatically now,
+regardless of what's clicked on the creation screen. See
+`docs/MODS.md`'s Fixed spawn entry for the exact mechanism.
+
 ## Confirmed working: right-click-item + mob-summon pattern (Wave Horn, 2026-08-19)
 
 Good news worth recording here, not just in conversation: the Wave Horn

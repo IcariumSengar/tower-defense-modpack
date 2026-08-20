@@ -29,21 +29,25 @@ on a world you've already joined once.
 
 ## Manual setup (once per new world)
 
-Only the world-creation screen itself, which nothing can automate:
-**World Type: Single Biome → Desert** (under "Customize" — not the
-default "Default" world type), **Allow Cheats: ON**.
-
-Changed from Superflat (2026-08-20) — real, non-flat terrain now, so the
-worldborder expanding actually reveals new terrain/structures to
-explore instead of more identical flat ground. Desert was picked over a
-specific real seed: Single Biome mode is deterministic (guaranteed
-desert everywhere, no seed-hunting/verification needed) and still
-generates real vanilla structures normally within that biome (desert
-temples, wells, ruined portals, villages) — satisfies both "not flat"
-and "structures around the player" with zero custom placement code.
-Badlands is a reasonable alternative if you want more dramatic
-canyon/mesa terrain instead of desert dunes, at the cost of fewer
-guaranteed structure types.
+Just **Allow Cheats: ON** — pick whatever World Type you want on the
+creation screen (including leaving it on "Default"), no customization
+needed. **World Type: Single Biome → Desert is no longer a manual
+step** (2026-08-20) — the pack ships a datapack override
+(`kubejs/data/minecraft/dimension/overworld.json`) that replaces the
+Overworld's generator with a fixed Desert biome source automatically,
+the same generator "Single Biome → Desert" produces manually, just
+baked into every world regardless of what's clicked on the creation
+screen. Real, non-flat terrain (desert dunes/mesas via the standard
+`minecraft:overworld` noise settings, just painted entirely as Desert)
+plus real vanilla structures (temples, wells, ruined portals, villages)
+generate normally within it — satisfies both "not flat" and "structures
+around the player" with zero custom placement code, and now zero manual
+setup too. **Not yet confirmed in-game** — this is the first time this
+pack has shipped a dimension-generator override via KubeJS's `data/`
+injection (previously only used for recipes/textures/simpler datapack
+content); if a fresh world *doesn't* generate as Desert, that's the
+first thing to check, and manually picking Single Biome → Desert on the
+creation screen remains a working fallback either way.
 
 ## The test loop
 

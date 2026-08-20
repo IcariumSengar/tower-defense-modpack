@@ -45,6 +45,10 @@ file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "kubejs/data/minecraft/dimension/overworld.json"
+hash = "f98e4a91060cfc80a4a4683ffe009d7fe200ac06931eee111160a0f887d1997b"
+
+[[files]]
 file = "kubejs/server_scripts/base_expansion.js"
 hash = "fc2e8a5a3d7e0267796c27ae671baa00a2320aaa25b32df0d35751e264227a4e"
 
