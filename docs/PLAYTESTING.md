@@ -158,6 +158,17 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   mechanism for this), set once per server start in `border_fog.js` via
   `ServerEvents.loaded` — takes effect on the next relaunch even for an
   already-started save.
+- **Day confirmed fixed. Shadows far too dark, night still way too
+  dark** — two more specific rounds. Shadows: the shader's own docs warn
+  `SHADOW_QUALITY`'s lowest tier (set for performance) "significantly
+  downgrades shadows in multiple ways" — raised one tier, a real
+  tradeoff against the performance ask, not free. Also raised
+  `MINIMUM_LIGHT_MODE` ("Cave Lighting") so shadow-starved areas get
+  fill light regardless of the player's own Brightness slider. Night:
+  `LIGHT_NIGHT_I`/`ATM_NIGHT_I` had been deliberately left alone every
+  round on the assumption night should stay moody — two explicit "too
+  dark" reports specifically naming night made clear that assumption
+  was wrong, bumped both to max, same as day's sliders.
 - Performance audit (2026-08-20, requested explicitly, twice): first
   pass downgraded Spooklementary from its shipped `profile.HIGH` to
   `profile.MEDIUM` via a settings override, then to `profile.LOW` when

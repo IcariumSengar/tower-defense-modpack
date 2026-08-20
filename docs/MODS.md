@@ -267,6 +267,28 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      Harmless for every other command in this pack too, since they're
      all run via `runCommandSilent` and never relied on seeing vanilla
      feedback.
+  6. **Day confirmed fixed (2026-08-20) — but shadows far too dark and
+     night still way too dark.** Two more, more specific findings:
+     - **Shadows**: the shader's own `.lang` file directly warns that
+       `SHADOW_QUALITY`'s lowest tier ("Very Low", `0` — what the
+       performance pass had set it to) "significantly downgrades
+       shadows in multiple ways," not just resolution. Raised one tier
+       to `1` ("Low") — a real, documented tradeoff between the
+       performance ask and the shadow-harshness complaint, not a free
+       fix. Also raised `MINIMUM_LIGHT_MODE` ("Cave Lighting" per its
+       `.lang` entry — fill light for shadow-starved/no-skylight areas)
+       from `2` (Default, which the shader's own comment says defers to
+       the player's personal in-game Brightness slider) to `4` ("Very
+       Bright") so shadow relief doesn't depend on a setting the pack
+       can't control.
+     - **Night**: `LIGHT_NIGHT_I`/`ATM_NIGHT_I` had been deliberately
+       left untouched through every previous round, on the assumption
+       night should stay moody by design. Two explicit "too dark"
+       reports specifically calling out night (not just day) made clear
+       that assumption was wrong — bumped both to their defined max
+       `2.00`, same as morning/noon.
+     All three baked into `Spooklementary_TDM_tuned.zip` alongside the
+     earlier fixes.
 
   None of the fixes in this entry have been re-tested in-game yet.
 
