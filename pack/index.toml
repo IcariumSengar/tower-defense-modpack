@@ -98,7 +98,7 @@ hash = "b601fa13e6176846a090ff91747623f2ff8ffb6fd431f2744331ed7ef2e7ecd1"
 
 [[files]]
 file = "kubejs/startup_scripts/machines.js"
-hash = "5597ae9dc3228254032f36b0e0cb04a73fb43866622e131b5e59fe9bc0eaa948"
+hash = "476b4a4e430795dd2ac42b316e61474059db9bfaacc920481fea12745151cc5b"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"

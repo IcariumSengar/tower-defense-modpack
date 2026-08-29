@@ -165,7 +165,13 @@ The first defensive machines in the pack — craft, don't just melee:
   hearts of damage the moment anything living — you or a mob — steps
   onto it, and breaks entirely after 4 total triggers (rebuilt
   2026-08-29 to actually detect mobs, not just the player; see
-  `docs/MODS.md`).
+  `docs/MODS.md`). Given an actual low spiky shape the same day
+  (short prongs, not a plain cube) — **genuinely unconfirmed whether
+  it renders as spikes at all**; the KubeJS mechanism used
+  (`.box()`) might only affect collision, not the visual, per a real
+  disagreement between the mod's own bytecode and its wiki docs. If it
+  still looks like a plain block in-game, that's useful to know, not a
+  failure to check for first.
 
 **Specifically worth checking on first test**: all three recipes
 actually show up/craft correctly, the Palisade visually connects like a
@@ -173,9 +179,10 @@ fence and actually blocks a mob's path, the Snare Trap slows movement on
 contact, and the Spike Trap deals damage + visibly changes/breaks across
 repeated hits — **specifically test it against a summoned mob, not just
 by walking onto it yourself** — rather than either doing nothing or
-breaking on the very first hit. See `docs/MODS.md`'s Tier 1 machines
-entry for exactly which pieces are lowest vs. highest risk if something
-doesn't work.
+breaking on the very first hit. Also just look at the Spike Trap once
+placed — does it actually show low spikes, or still render as a plain
+textured cube? See `docs/MODS.md`'s Tier 1 machines entry for exactly
+which pieces are lowest vs. highest risk if something doesn't work.
 
 ## FTB Quests (new, entirely unconfirmed in-game)
 

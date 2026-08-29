@@ -288,6 +288,47 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     `docs/IDEAS.md`'s Machine Progression section for the recorded
     decision.
 
+  **Actual spike shape added (2026-08-29)**, direct follow-up feedback
+  right after the mod-replacement check — the kept custom block was
+  still visually just a plain textured cube, not spikes. True pointed
+  geometry isn't achievable (Minecraft block models are rectangular
+  boxes only, no real cone/pyramid tip), so this is a thin base plate
+  plus 5 short square prongs of varying height clustered on top — reads
+  as a "bed of nails"/caltrop rather than tall dramatic pikes.
+  Deliberately kept short (max height 0.5 blocks): vanilla mobs only
+  auto-step onto terrain shorter than 0.6 blocks without jumping, so
+  taller spikes risked physically blocking mobs from ever walking onto
+  the trap at all — turning a "step on it, take damage" mechanic into
+  an accidental wall, the opposite of what Tier 1 needs. A taller,
+  more dramatic version stays available for a possible future Tier 2
+  "Reinforced Spikes" upgrade (already named in the Machine Progression
+  notes) without this block needing to change.
+  - Built via `BlockBuilder.box(x0,y0,z0,x1,y1,z1,true)` (0-16 unit
+    scale), called repeatedly — confirmed from both
+    `kubejs.com/wiki/ref/BlockBuilder` and `BlockBuilder.class` itself
+    that each call adds one box to the shape (unioned via
+    `Shapes.or(...)` for the final collision) rather than replacing the
+    previous one. Existing `.texture()`/`.textureAll()` calls apply per
+    face *direction* across every generated box, not per-box, so the
+    spikes automatically pick up the same cobblestone/iron_block
+    theming as the base with no extra texture work needed.
+    `.fullBlock(false)` is set alongside — required per the wiki's own
+    custom-shape guidance, otherwise the engine's light/face-culling
+    against neighboring blocks assumes a full cube that no longer
+    matches the real shape.
+  - **Genuinely unconfirmed until an actual playtest, a real
+    disagreement in the sources**: whether `.box()` alone drives both
+    the collision shape *and* the visual model the way `BlockBuilder`'s
+    bytecode suggests (it shares its `generateBlockModelJsons` method
+    with block types that definitely auto-generate a matching visual),
+    or whether KubeJS's own wiki text is right that `.box()` sets
+    collision only and a hand-authored model JSON file is still needed
+    for the block to actually *look* different from a cube. If the
+    block still renders as a plain textured cube in-game despite this
+    change, that's the wiki's claim confirmed correct, and a real
+    custom model file is the next step — not more guessing at `.box()`
+    alone.
+
 - **FTB Quests — "Fortify," one quest telling the player traps exist
   (2026-08-29)** — `docs/IDEAS.md`'s "Decided: bring FTB Quests in now"
   brief. Tier 1 machines existed but nothing in the pack told the

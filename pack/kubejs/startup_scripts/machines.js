@@ -100,6 +100,48 @@ StartupEvents.registry('block', (event) => {
   const SPIKE_TRAP_COOLDOWN_TICKS = 20 // 1 second
   const spikeTrapLastTrigger = {}
 
+  // Actual spike shape added 2026-08-29 - direct feedback that the
+  // block just looked like a plain textured cube, not spikes. Real
+  // pointed geometry isn't possible (Minecraft block models are only
+  // ever rectangular boxes, no true cone/pyramid tip), so this is a
+  // low, thin base plate plus 5 short square prongs of varying height
+  // clustered on top - a "bed of nails"/caltrop read rather than tall
+  // dramatic pikes. Kept deliberately short (max height 8/16 = 0.5
+  // blocks): vanilla mobs only auto-step up terrain shorter than 0.6
+  // blocks without jumping, so anything taller risked the spikes
+  // physically blocking mobs from walking onto the trap at all -
+  // turning a "step on it, take damage" trap into an accidental wall,
+  // exactly the opposite of Tier 1's purpose. A taller, more dramatic
+  // spike shape stays available for a possible future Tier 2
+  // "Reinforced Spikes" upgrade (already named in docs/IDEAS.md's
+  // Machine Progression notes) without this one needing to change.
+  //
+  // .box(x0,y0,z0, x1,y1,z1, true) sets a cuboid in 0-16 units: called
+  // repeatedly, each call adds one box to the block's shape rather than
+  // replacing the last (confirmed from kubejs.com/wiki/ref/BlockBuilder
+  // and cross-checked against BlockBuilder.class itself, which unions
+  // every box together via Shapes.or(...) for the final collision
+  // shape). Existing .texture()/.textureAll() calls below still apply
+  // per face DIRECTION across every generated box, not per-box, so the
+  // spikes automatically pick up the same cobblestone/iron_block
+  // theming as the base without extra texture work.
+  //
+  // .fullBlock(false) is required alongside custom .box() shapes -
+  // confirmed necessary from the wiki's own custom-block guidance (a
+  // block still flagged "full cube" internally after its actual shape
+  // stops being one causes wrong light/face-culling behavior against
+  // neighboring blocks).
+  //
+  // Genuinely unconfirmed until an actual playtest: whether .box()
+  // alone really does drive BOTH the visual model and the collision
+  // shape the way the bytecode suggests (BlockBuilder's own
+  // generateBlockModelJsons method, shared with the block types that
+  // definitely do this), since KubeJS's own wiki text claims the
+  // opposite - that .box() sets collision only and a hand-authored
+  // model JSON is still needed for the visual. If the block renders as
+  // a plain cube in-game despite this, that wiki claim was the
+  // accurate one and a real custom model file is the next step, not
+  // more guessing at box() alone.
   event.create('spike_trap', 'basic')
     .displayName('Spike Trap')
     .textureAll('minecraft:block/cobblestone')
@@ -107,6 +149,13 @@ StartupEvents.registry('block', (event) => {
     .tagBlock('minecraft:mineable/pickaxe')
     .hardness(2.5)
     .resistance(4.0)
+    .fullBlock(false)
+    .box(0, 0, 0, 16, 1, 16, true)
+    .box(2, 1, 2, 5, 5, 5, true)
+    .box(11, 1, 2, 14, 6, 5, true)
+    .box(2, 1, 11, 5, 5, 14, true)
+    .box(11, 1, 11, 14, 7, 14, true)
+    .box(6, 1, 6, 10, 8, 10, true)
     .property($IntegerProperty.create('hits', 0, 3))
     .steppedOn((stepEvent) => {
       var entity = stepEvent.getEntity()
