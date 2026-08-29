@@ -1273,6 +1273,17 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   `TFTH.toml`) at their existing floor of 1 each, since they're the
   designed finale and weren't what was called out. New total: 7 mobs.
 
+  **Follow-up (same day): the ravager itself was the actual OP part**,
+  not the regular-mob dogpile the count-halving above addressed. Nerfed
+  via the same Attributes-NBT override pattern already used for
+  `generic.follow_range` on every mob's `/summon` in the pendingSpawns
+  tick handler — added a ravager-only branch overriding
+  `generic.attack_damage` (vanilla 12 → 8) and `generic.max_health`
+  (vanilla 100 → 60, with a matching `Health:60` tag so it actually
+  spawns at that reduced health rather than full). Every other mob's
+  summon NBT is unchanged. `flesh_suffer` (25 attack damage) is
+  untouched too — the report was specifically about the ravager.
+
 - **Loot bag drop system** — the base-building resource loop: mobs drop
   tiered loot bags on death, opened by right-clicking to receive a
   randomized set of vanilla materials. Deliberately vanilla-materials-only

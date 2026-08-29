@@ -328,11 +328,20 @@ PlayerEvents.tick(function (event) {
       spawn.soundPlayed = true
     }
     if (currentTick >= spawn.spawnTick) {
+      // Ravager-specific nerf (2026-08-29 feedback: the halved regular-
+      // mob dogpile wasn't the OP part of wave 5, the ravager itself
+      // was) - vanilla's 12 attack damage / 100 health cut down via the
+      // same Attributes-NBT override already used for follow_range
+      // below, rather than touching every other mob's stats.
+      var isRavager = spawn.mobType === 'minecraft:ravager'
+      var summonNbt = isRavager
+        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:8},{Name:"generic.max_health",Base:60}],Health:60,Tags:["td_justSpawned"]}'
+        : '{Attributes:[{Name:"generic.follow_range",Base:128}],Tags:["td_justSpawned"]}'
       // Tag added and removed within this same synchronous block, so
       // the very next spawn processed (even same tick, even same mob
       // type) can never see a stale tag from this one.
       server.runCommandSilent(
-        `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} {Attributes:[{Name:"generic.follow_range",Base:128}],Tags:["td_justSpawned"]}`
+        `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} ${summonNbt}`
       )
       server.runCommandSilent(
         `spreadplayers ${spawn.x} ${spawn.z} 0 4 false @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest]`

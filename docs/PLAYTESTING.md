@@ -63,9 +63,10 @@ before re-adding it):
 5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage)
    — repeats for calls beyond wave 5, same composition each time.
    Scaled down 2026-08-29: regular-mob counts halved to 1 each (was 2
-   each), ravager/flesh_suffer stay at 1 each — feedback was the
-   dogpile of regular mobs alongside the two hard hitters was too much,
-   not the hard hitters themselves.
+   each). Follow-up feedback the same day: the ravager itself (not the
+   regular-mob dogpile) was the actual OP part — its attack damage
+   (12→8) and max health (100→60) are now cut on spawn, `flesh_suffer`
+   is unchanged.
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
