@@ -153,10 +153,13 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   entry for the implementation.
 - Mouse Tweaks and Inventory Profiles Next were fighting over the same
   swipe/hover gestures — green flashing on inventory hover, occasional
-  accidental multi-crafting. Fixed via IPN's own config (disabled its
-  overlapping swipe-move/craft tweaks and hover highlight, kept Mouse
-  Tweaks as-is) — see `docs/MODS.md`'s conflict write-up. **Needs a full
-  relaunch and isn't yet confirmed fixed in-game.**
+  accidental multi-crafting. A config fix was applied but never
+  confirmed working, and the green-flash symptom recurred in a later
+  session. **Resolved by removing Inventory Profiles Next entirely**
+  (2026-08-20, "strip down the prototype" audit) rather than chasing the
+  bug a third time — see `docs/MODS.md`'s Removed mods section. Mouse
+  Tweaks alone now owns drag-to-move inventory gestures, no conflict
+  possible.
 - Shaders (Oculus + Spooklementary) were added 2026-08-20, tuned
   across eleven rounds the same day, then **removed entirely** later
   that day — see the "Shaders removed entirely" bullet further down

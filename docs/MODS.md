@@ -25,10 +25,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | Jade | [Modrinth](https://modrinth.com/mod/jade) | 11.13.3 (1.20.1 Forge) | Hover-over info for blocks/entities | None known yet | testing |
 | Xaero's Minimap | [Modrinth](https://modrinth.com/mod/xaeros-minimap) | 26.4.2 (1.20.1 Forge) | Minimap navigation | None known yet | testing |
 | AppleSkin | [Modrinth](https://modrinth.com/mod/appleskin) | 2.5.1 (1.20.1 Forge) | Exact hunger/saturation values on food | None known yet | testing |
-| Mouse Tweaks | [Modrinth](https://modrinth.com/mod/mouse-tweaks) | 2.25.1 (1.20.1 Forge) | Faster inventory management (shift/right-click-drag) | None known yet | testing |
-| Inventory Profiles Next | [Modrinth](https://modrinth.com/mod/inventory-profiles-next) | 1.10.20 (1.20.1 Forge) | One-key inventory sort | Pulls in libIPN + Kotlin for Forge automatically. **Real conflict with Mouse Tweaks found 2026-08-19** — both mods implement their own swipe-to-move/craft gestures over the same slots; see the Inventory conflict entry under Custom glue for the fix | testing |
-| libIPN | [Modrinth](https://modrinth.com/mod/libipn) | 4.0.2 | Hard dependency of Inventory Profiles Next | — | required |
-| Kotlin for Forge | [Modrinth](https://modrinth.com/mod/kotlin-for-forge) | 4.12.0 | Hard dependency of Inventory Profiles Next | — | required |
+| Mouse Tweaks | [Modrinth](https://modrinth.com/mod/mouse-tweaks) | 2.25.1 (1.20.1 Forge) | Faster inventory management (shift/right-click-drag) | Was in a real swipe-gesture conflict with Inventory Profiles Next — moot now that IPN is removed (see Removed mods below) | testing |
 | Corpse | [Modrinth](https://modrinth.com/mod/corpse) | 1.0.23 (1.20.1 Forge) | Death drops become a recoverable corpse instead of scattering — chosen over GraveStone Mod (same niche, picked one) | None known yet | testing |
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
@@ -89,6 +86,22 @@ references found for any of these) before removing, not just guessed:
   isn't an "unused, never integrated" removal like the others above,
   it's a "built, tuned extensively, and explicitly rejected on feel"
   one; don't re-propose a shaderpack here without that new signal.
+- **Inventory Profiles Next** + its two hard dependencies **libIPN** and
+  **Kotlin for Forge** (2026-08-20) — a stripped-down-prototype audit
+  ("no extraneous code/config... based on the design premise, do it
+  small first"). Different removal category than the others above: not
+  unused (it worked, one-key inventory sort), but pure QoL with real,
+  never-fully-resolved cost — a genuine swipe-gesture conflict with
+  Mouse Tweaks (fixed via IPN config, but that fix was never confirmed
+  in-game) and a separate green hover-highlight bug reported later that
+  was still unresolved when this audit happened. Three mods total for
+  one QoL feature, against the pack's own "keep footprint small, no
+  200-mod kitchen-sink" guiding principle (`docs/ROADMAP.md`) and not
+  load-bearing for the tower-defense premise itself. Mouse Tweaks alone
+  still covers drag/scroll item movement. Revisit if inventory
+  management becomes a real pain point without it — re-add is a
+  single `packwiz` command away, no design decision got harder to
+  reverse by cutting it now.
 
 None of these were hard blockers or bugs — all were clean removals of
 mods sitting parallel to, not part of, the pack's actual built systems.
@@ -1350,6 +1363,19 @@ Disabled in `config/inventoryprofilesnext/inventoryprofiles.json`
 
 Needs a full relaunch to take effect (config file, read at startup, not
 a `server_scripts` hot-reload) — not yet confirmed fixed in-game.
+
+**Never actually confirmed fixed, and it recurred (2026-08-20).** The
+user reported the same "green fill on items when I hover them" symptom
+again in a later session — the config above was already correctly set
+to `false` in both the tracked pack and the live instance, so either
+the required full relaunch never happened between the original fix and
+this report, or the derived (not bytecode-confirmed) key names for
+`highlight_focused_items`/`highlight_clicking_slot` weren't actually
+the right ones after all — genuinely unresolved either way. **Moot now
+— Inventory Profiles Next removed entirely** (see the Removed mods
+section) as part of a "strip down the prototype" audit; this recurring,
+never-fully-diagnosed bug was itself part of the case for cutting it
+rather than chasing it a third time.
 
 ## Adding a mod
 
