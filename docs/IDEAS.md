@@ -483,6 +483,33 @@ mirroring loot tiers.
   pressure) — keeps both early and late game resource-tense via
   different mechanisms.
 
+### Mod-replacement check: Spike Trap (2026-08-29) — checked, none found, stays custom
+
+Per the standing "prefer mods over custom code" preference, checked
+whether the custom Spike Trap (the one genuinely novel custom block in
+this pack) could be replaced by an existing mod, in priority order:
+**Spiky Spikes** (real 1.20.1 build, but decompiled and confirmed zero
+durability/break/degrade mechanic anywhere — purely tiered by damage
+output, built for permanent mob-farm fixtures, netherite tier
+explicitly explosion/wither-proof), **Simple Spikes** (Balm-based, but
+confirmed via CurseForge's own files list that no 1.20.1 build exists
+at all — skips straight from 1.19.2 to 1.21.1), **Blade & Bastion**
+(real 1.20.1 build, but decompiled and confirmed it has no spike/trap
+block of any kind — its actual scope is turrets and material
+generators), and **Defended Bases** (checked last as instructed, only
+264 downloads — real 1.20.1 build, but its full block list has no
+spike and none of its MCreator procedures implement a durability
+mechanic).
+
+**None of the four has the degrade-and-break mechanic Tier 1 actually
+needs** — three don't have a spike-equivalent block at all, and the one
+that does isn't available for 1.20.1. Full research writeup in
+`docs/MODS.md`'s Tier 1 machines entry. Custom Spike Trap
+(`startup_scripts/machines.js`) stays as the pack's implementation —
+same precedent as the Wave Horn being custom out of necessity, not a
+failure to look. Don't re-check this again without a new mod release or
+a new signal from the user.
+
 ### Mob roster exclusions (2026-08-29)
 
 Standing rule, not a one-off tweak: **witches are excluded from this

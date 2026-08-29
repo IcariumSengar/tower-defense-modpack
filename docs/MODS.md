@@ -238,6 +238,56 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     this rebuild), and that it doesn't fire a second time client-side
     in some way the `getServer()` null-check doesn't catch.
 
+  **Mod-replacement check (2026-08-29) — none found, custom Spike Trap
+  stays.** Direct request, per this pack's standing preference for mods
+  over custom code: checked whether an existing mod could replace the
+  custom Spike Trap specifically (Palisade is just a themed fence,
+  Snare Trap is already vanilla cobweb — neither needed checking). The
+  actual bar was the Tier 1 design requirement itself — degrades and
+  breaks after N hits — not just "deals damage," so a permanent spike
+  block would be a mismatch, not a fit. Checked in the requested
+  priority order, downloading and decompiling each mod's own jar rather
+  than trusting marketing copy (same discipline as every other mod
+  evaluated in this pack):
+  - **Spiky Spikes** (real 1.20.1 Forge build, `v8.0.2`) — confirmed
+    from its own `ServerConfig.class` and block/block-entity classes
+    that its only configurable/tiered property is *damage per tier*
+    (wooden through netherite). Zero durability, break, or degrade
+    mechanic anywhere in the mod — it's built for permanent mob-farm
+    fixtures (netherite tier is explicitly explosion-proof and
+    wither-proof, the opposite of Tier 1's "cheap and breakable"
+    intent). **Mismatch, not a fit**, exactly the failure mode the
+    brief named as a real possibility.
+  - **Simple Spikes** (Balm-based) — confirmed via CurseForge's own
+    files list, filtered to 1.20.1, that **no 1.20.1 build exists at
+    all** (only 1.18.2, 1.19.2, 1.21.1, 1.21.5 — it skips 1.20.1
+    entirely). Ruled out on version availability alone, per the brief's
+    explicit instruction to confirm this directly rather than assume
+    it.
+  - **Blade & Bastion** (CurseForge slug `base-defense`, real 1.20.1
+    Forge build) — confirmed from its own class list and lang file
+    that it has **no spike or trap block of any kind** — its actual
+    scope is turrets and material generators, a bigger and differently-
+    scoped base-defense system than what was being looked for.
+  - **Defended Bases** (checked last, as instructed — 264 downloads,
+    confirming the brief's "much less tested" characterization) — real
+    1.20.1 Forge build, but its own lang file lists every block it adds
+    (Barbed Wire, Damage Block, Landmine, Fire Trap, Electric Fence,
+    etc.) and **none of them is a spike, nor does any of their
+    MCreator-generated procedures implement a durability/break
+    mechanic**. No darkness-effect content was found in this build
+    either (the brief's other stated concern), but that's moot given
+    there's no spike-equivalent block to weigh it against in the first
+    place.
+  - **Verdict: keep the custom Spike Trap as-is.** None of the four
+    candidates has the degrade-and-break mechanic Tier 1 actually
+    requires — three of the four don't have a spike-equivalent block at
+    all, and the one that does (Simple Spikes) isn't available for this
+    Minecraft version. Same precedent as the Wave Horn being custom
+    mod-free out of necessity, not a failure to look — see
+    `docs/IDEAS.md`'s Machine Progression section for the recorded
+    decision.
+
 - **FTB Quests — "Fortify," one quest telling the player traps exist
   (2026-08-29)** — `docs/IDEAS.md`'s "Decided: bring FTB Quests in now"
   brief. Tier 1 machines existed but nothing in the pack told the
