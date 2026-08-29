@@ -3,7 +3,7 @@
 	default_quest_shape: ""
 	filename: "tier1_machines"
 	group: ""
-	icon: "kubejs:spike_trap"
+	icon: "trapcraft:spikes"
 	id: "E0FD1EE720089BB3"
 	order_index: 0
 	progression_mode: "flexible"
@@ -13,9 +13,9 @@
 			description: [
 				"Scrap and loot do not have to just be consumed for gear."
 				""
-				"The same Common-tier materials already turning up in loot bags can be turned into defenses instead - a wall, a snare, or a trap."
+				"The same Common-tier materials already turning up in loot bags can be turned into defenses instead - a fence, a bear trap, or spikes."
 			]
-			icon: "kubejs:spike_trap"
+			icon: "trapcraft:spikes"
 			id: "1454951A7FB14A26"
 			rewards: [{
 				id: "0892955D880F0E2C"

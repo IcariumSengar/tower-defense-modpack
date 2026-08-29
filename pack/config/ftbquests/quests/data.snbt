@@ -10,7 +10,7 @@
 	emergency_items_cooldown: 300
 	grid_scale: 0.5d
 	icon: {
-		id: "kubejs:spike_trap"
+		id: "trapcraft:spikes"
 	}
 	lock_message: ""
 	loot_crate_no_drop: {

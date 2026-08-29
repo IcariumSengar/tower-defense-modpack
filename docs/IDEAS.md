@@ -169,20 +169,32 @@ Biome: Desert** with standard vanilla terrain noise (see the Seed
 research section above) — real terrain exists now, so this class of mod
 is actually installable.
 
+**Correction (2026-08-20, caught by the other session): the blocker is
+back.** Desert was reverted the same day it was adopted — "wonky,
+doesn't suit the gameplay" per direct feedback — and the world has been
+Superflat again since (confirmed against `overworld.json` and
+`docs/PLAYTESTING.md`). Structure-generation mods need real terrain to
+place naturally, which Superflat doesn't have — the original blocker
+from the first mod-list research pass applies again. This entire
+addendum (candidates, the biome-tag filter below) was written assuming
+Desert was still current; kept as-is below since it's accurate research
+that'll matter again if/when real terrain gets revisited, not
+description of what's usable right now.
+
 **New standing filter to apply to any exploration/structure mod from
-here on, specific to this pack's world-gen setup:** the desert-forced
-override (`kubejs/data/minecraft/dimension/overworld.json`) only fixes
-the *biome*, everything else about placement still runs through
-biome-tag rules — so a candidate mod's structures need to actually be
-tagged for desert (or a broad/overworld-wide tag) to ever appear at
-all, and a mod that adds its **own new biome** (its structures usually
-gated to that biome specifically) will likely never generate anything
-here, since `biome_source: fixed` means no other biome can ever place.
-And a mod that replaces/generates via its **own world/dimension
-generator** (not just structure placement within the existing one) is a
-real conflict risk against this pack's own custom `overworld.json`
-override — needs explicit compatibility verification, not an
-install-and-hope.
+here on, specific to this pack's world-gen setup — only relevant again
+if/when real terrain comes back:** the desert-forced override
+(`kubejs/data/minecraft/dimension/overworld.json`) only fixes the
+*biome*, everything else about placement still runs through biome-tag
+rules — so a candidate mod's structures need to actually be tagged for
+desert (or a broad/overworld-wide tag) to ever appear at all, and a mod
+that adds its **own new biome** (its structures usually gated to that
+biome specifically) will likely never generate anything here, since
+`biome_source: fixed` means no other biome can ever place. And a mod
+that replaces/generates via its **own world/dimension generator** (not
+just structure placement within the existing one) is a real conflict
+risk against this pack's own custom `overworld.json` override — needs
+explicit compatibility verification, not an install-and-hope.
 
 **Candidates found, evaluated against that filter:**
 - **YUNG's Better Desert Temples** (Forge 1.20.1, 60.4M downloads,
@@ -242,6 +254,21 @@ compatibility check.
 Follow-up: doesn't need to be locked to vanilla's exact `minecraft:desert`
 biome specifically — open to something like **Biomes O' Plenty** for
 biomes that feel deserty without being that one literal tag.
+
+**Correction (2026-08-20, caught by the other session): this whole
+addendum, and the "swap the fixed biome" decision/build brief further
+below, assumed the world was still on the `biome_source: fixed` Desert
+override.** It isn't — Desert was reverted the same day, the world has
+been back on Superflat since (see the correction under "Seed research"
+above). The plain vanilla `flat` generator currently in `overworld.json`
+has no `biome_source` to swap a biome ID on in the first place, so the
+build brief below (change `"minecraft:desert"` to
+`"biomesoplenty:wasteland"`) doesn't apply to the file as it currently
+exists — it described a real edit to a config that's since been
+replaced with a different one. **Not acted on** — kept below as
+research that's still valid if/when real terrain gets revisited, since
+the actual finding (Wasteland fits this pack's aesthetic better than
+vanilla desert) doesn't depend on which generator is active.
 
 **Confirmed real and relevant:** BOP is available for Forge 1.20.1
 (requires **TerraBlender** as a hard dependency — how BOP and most
@@ -604,7 +631,15 @@ yet** — Wooden Palisade is the safest bet (built-in vanilla block type),
 Spike Trap the least certain (custom property + block-position reading,
 neither directly confirmed against this exact KubeJS version).
 
-### Decided (2026-08-20): swap the custom Spike Trap for a mod, per the standing "prefer a mod" rule
+### Superseded (2026-08-20): see the full Tier 1 replacement decision after this section
+
+The Spike-Trap-only swap below was overtaken by real playtest feedback
+("the Tier 1 traps are rubbish... they sucked") — kept as the research
+trail, but the actual decision is now to replace all three Tier 1
+pieces, not just the Spike Trap. See "Decided: replace Tier 1
+altogether with Trapcraft" after this section.
+
+### Original: swap the custom Spike Trap for a mod, per the standing "prefer a mod" rule
 
 Direct request, restated explicitly as a repeated preference: use mods
 over custom code for this pack wherever one genuinely fits, and this
@@ -659,6 +694,85 @@ candidates actually has the degrade behavior, the custom Spike Trap
 built above may genuinely be the only way to get this specific
 requirement, the same way the Wave Horn was. Worth checking honestly
 rather than forcing a mod fit that doesn't actually match the design.
+
+### Decided (2026-08-20): replace Tier 1 altogether with Trapcraft (built 2026-08-29)
+
+Real playtest feedback, not a hypothetical: "the Tier 1 traps are
+rubbish... they sucked." Direct instruction: ditch the custom
+breakable-trap design entirely and use a mod with fun traps instead —
+**all three** Tier 1 pieces (Wooden Palisade, Snare Trap, Spike Trap),
+not just the Spike Trap the research above was scoped to. Confirmed
+explicitly: "these are better anyway."
+
+**Picked Trapcraft over MineTraps.** MineTraps has the bigger download
+count (6.1M+) but its confirmed recent releases are 1.21.x/NeoForge —
+a Forge 1.20.1 build wasn't confirmed from research, don't trust it
+blind. **Trapcraft has a confirmed real Forge 1.20.1 build**
+(`Trapcraft-1.20.1-2.10.2.jar`) and a genuinely varied, characterful
+trap set: a trap that holds mobs in place with periodic damage, spikes
+that hit hard on contact, a magnet chest that auto-collects loot, a fan
+that repels mobs at range, and a grass cover that masks pits until
+triggered — real personality, not just another damage block.
+
+**Build brief:**
+
+> **Feature: remove the custom Tier 1 machines, install Trapcraft as their replacement**
+>
+> 1. **Grep for references before removing anything** — same discipline
+>    already used for the mod-footprint audits. Check for
+>    `kubejs:wooden_palisade`, `kubejs:spike_trap`, and the snare-trap
+>    cobweb recipe/item across the whole `pack/kubejs/` tree, not just
+>    `machines.js`/`machine_recipes.js` themselves. **The FTB Quest
+>    ("Fortify") is a known dependent** — it currently checks for
+>    crafting one of these three items, and will never complete once
+>    they're gone unless it's updated to point at a Trapcraft item
+>    instead.
+> 2. Remove the Tier 1 block registrations (`startup_scripts/machines.js`)
+>    and recipes (`server_scripts/machine_recipes.js`) — or gut them
+>    down to nothing if other pack content ends up depending on the
+>    file's existence.
+> 3. Install **Trapcraft** (Forge 1.20.1).
+> 4. **Check Trapcraft's own default recipes before assuming they need
+>    changing** — if they already use plain vanilla materials, no
+>    KubeJS glue is needed at all. If they use invented/modded
+>    materials, re-recipe via `ServerEvents.recipes` (the same pattern
+>    already used for the removed Tier 1 recipes) to pull from
+>    Common-tier loot materials instead, keeping the vanilla-materials-
+>    only loot economy intact.
+> 5. **Check whether any of Trapcraft's traps need power/redstone**
+>    before calling the whole set "Tier 1" — the Machine Progression
+>    design's Tier 1 is specifically "no power, no fuel." If some of
+>    Trapcraft's traps are power-gated, they may actually belong at
+>    Tier 2/3 instead, not all lumped into Tier 1 by default.
+> 6. Update the FTB Quest to reference whichever Trapcraft item(s)
+>    replace the crafting-task target.
+> 7. Playtest — this replaces content that was *just* found unfun in a
+>    real playtest, so confirming Trapcraft's traps actually feel better
+>    matters more than confirming they merely function.
+
+**Built (2026-08-29), same order as the brief.** `startup_scripts/machines.js`
+and the original `machine_recipes.js` deleted entirely. Checked
+Trapcraft's own bundled recipe JSONs directly rather than assuming:
+`spikes` (5x iron_ingot) and `bear_trap` (iron_ingot + stone_pressure_plate)
+are both 100% vanilla materials already in the Common-tier loot pool,
+so no KubeJS re-recipe was needed at all. `fan`/`igniter`/`magnetic_chest`
+all need redstone (either as a crafting ingredient or, for `fan`, to
+function) — left out of Tier 1 for exactly the reason the brief
+flagged, real Tier 2/3 candidates later. **One real gap the brief
+didn't cover**: Trapcraft has no wall/fence-shaping block, so nothing
+replaces the Wooden Palisade's specific role. Went with plain vanilla
+`minecraft:oak_fence` instead (already craftable from Common-tier
+oak_log with zero new code) rather than force a mismatched Trapcraft
+substitute — arguably a more complete "ditch the custom design" outcome
+for that piece than a mod would have been. The FTB Quest's item task
+already checked a KubeJS item tag rather than hardcoded item IDs, so it
+didn't need restructuring — just updated what's tagged
+(`server_scripts/machine_tags.js`, renamed from `machine_recipes.js`
+since nothing it contains is a recipe anymore) and the quest's
+icon/flavor text. See `docs/MODS.md`'s "Tier 1 replaced with Trapcraft"
+entry for the full writeup. **Not yet playtested** — per the brief's
+own point 7, feel is the actual thing being tested here, not just
+function.
 
 ### Power system
 - Wireless power — no cables, place a machine and it draws power
@@ -1062,6 +1176,24 @@ injection), replacing the vanilla `overworld` dimension's generator
 directly — every world generates as Desert automatically now,
 regardless of what's clicked on the creation screen. See
 `docs/MODS.md`'s Fixed spawn entry for the exact mechanism.
+
+**Reverted the same day (2026-08-20), confirmed by the other session
+against the live files:** Desert read as "wonky, doesn't suit the
+gameplay" in actual play. `overworld.json` now forces vanilla's plain
+flat generator again (bedrock + 2 dirt + grass, plains biome) — the
+world has been back on **Superflat** since, per `docs/PLAYTESTING.md`'s
+"Back on Superflat" section. Deliberately "for now," not closed. This
+means the two sub-notes immediately below (seed-hunting reopened for
+"flat, no caves," and the biome-tag technical detail they reason from)
+were analyzing a Desert world that no longer exists by the time they
+were written into this file — kept below as historical record of that
+reasoning, not a description of current reality. **Practical effect of
+being back on Superflat: the original "flat, no caves" concern is
+moot again** (Superflat has neither), but so is the reason a real seed
+or Biomes O' Plenty biome swap would matter at all right now — see the
+corrections on the "exploration feel" mod research and Biomes O' Plenty
+addendum further below, both of which assumed Desert/real-terrain was
+still current.
 
 **Seed-hunting reopened, then reconsidered again (2026-08-20).** Asked
 in this session for seeds that are "relatively flat and not caves,"
@@ -2486,4 +2618,76 @@ campaign more fun, now that it's grown from 5 to 8 waves:
 Not built — findings + a fix instruction for the two real bugs, and a
 set of fresh ideas for the fun-factor ask, not decided or prioritized
 against each other yet.
+
+## Full status review (2026-08-20/29) + playtest checklist
+
+Reviewed ROADMAP.md, MODS.md, and this file together to see what's
+actually built vs. still idea-stage, since a lot has happened without a
+consolidated check-in.
+
+**Built and standing:** 8-wave campaign (grew from 5), vanilla + TFTH
+mobs, staggered spawning/sound cues, forced mob targeting, mobs
+genuinely spawn beyond the border and walk in, real balance fixes from
+live feedback (zombie TNT-drop disabled, wave 5 and the ravager both
+nerfed after playtesting showed them too strong), loot bags (3 tiers,
+correct rates, real textures), base expansion, Tier 1 machines (Wooden
+Palisade, Snare Trap, Spike Trap), a watchtower + SecurityCraft-reinforced
+chokepoint perimeter on the starting base, FTB Quests with one quest
+pointing at the Tier 1 machines, the gear-removal-at-wave-5 fix.
+
+**Correction (2026-08-20, caught by the other session):** the "Single
+Biome: Desert world" claim above was wrong — the world is **Superflat**,
+and has been since the same day Desert was tried. Real terrain was
+briefly adopted, played, and reverted within 2026-08-20 itself ("wonky,
+doesn't suit the gameplay" per direct feedback) — `overworld.json`
+currently forces vanilla's plain flat generator (bedrock + 2 dirt +
+grass, plains biome), confirmed directly against the file and against
+`docs/PLAYTESTING.md`'s own "Back on Superflat" section. This was
+missed here because the review that produced this section read
+MODS.md's Desert-switch entry without checking whether anything later
+reverted it. **This invalidates the premise several other entries in
+this file were built on** — see the corrections added to "Seed
+research," the "exploration feel" mod research, and the Biomes O'
+Plenty addendum below, all of which assumed Desert/real-terrain was
+still current. Deliberately "for now," not closed — real terrain can
+be revisited later per PLAYTESTING.md's own note.
+
+**Built, then deliberately rolled back per direct request, not bugs:**
+shaders (twice — Oculus/Spooklementary, then a darkness-effect
+alternative), all fog (border proximity + combat fog, taking Blood
+Moon's only real features down with it — "go back to basics" direct
+request), the roguelike buff-choice popup (deadlocked the whole
+wave-clear sequence), Inventory Profiles Next (twice, footprint/bugs).
+Atmosphere right now is just night-lock, nothing else — a deliberate
+current state, not a gap to fill without new signal.
+
+**Still pure idea, nothing built:** the amulet, Tier 2-4 machines, the
+power system, Schematicannon-based room expansion (only the hand-built
+watchtower exists), the Biomes O' Plenty swap, the exploration mods,
+the aesthetic decoration mods, the Spiky Spikes mod-swap.
+
+**ROADMAP.md is stale** — still describes Superflat and a 5-wave
+campaign. Refresh instruction sent to the other session (not applied
+here, that file isn't this session's to edit).
+
+### Playtest checklist sent to the other session, with one item resolved
+
+1. ~~Chokepoint pillaring~~ — **not a bug, accepted as-is.** Direct
+   response: a zombie climbing its own placed blocks over the 3-block
+   reinforced wall "just makes the game harder" — fine as a difficulty
+   factor, not something to fix. Removed from the checklist; the wall
+   height stays at 3 blocks, unchanged.
+2. Tier 1 machines — confirm Palisade blocks/shapes pathing, Snare
+   Trap slows entities, Spike Trap damages on contact and breaks after
+   the 4th hit specifically (not before, not never).
+3. Watchtower — confirm it generates correctly at all (ladder
+   placement, open parapet) — not yet confirmed in any form.
+4. FTB Quest — confirm auto-given on a fresh world and completes on
+   crafting a Tier 1 machine.
+5. Gear removal at wave 5 — confirm the just-applied fix fires at wave
+   5, not wave 8.
+6. SecurityCraft wall ownership — check
+   `config/securitycraft-common.toml` after first launch for
+   `allow_breaking_non_owned_blocks`, since the walls were placed via
+   console with no owner.
 

@@ -14,11 +14,11 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
-hash = "35a51b10c15e6d74056e70caa0e9b7e9c5fe4ecc4179770eedb5c9462746c418"
+hash = "6f39bf5e593266e7fabc3bd2ae6af283ad8892a384f0aee472bd4ed897118d8c"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
-hash = "1435be653ec5ee7d0053ef98a7882680f680f2d8c6e75368d08a140942732a17"
+hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
 
 [[files]]
 file = "config/TFTH-Data.toml"
@@ -69,8 +69,8 @@ file = "kubejs/server_scripts/loot_bag_open.js"
 hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
 
 [[files]]
-file = "kubejs/server_scripts/machine_recipes.js"
-hash = "9a13de75fa163808e1e1fe18a3b52999fc4ec1ceef74e8059a54f7ff48041dbb"
+file = "kubejs/server_scripts/machine_tags.js"
+hash = "34960e547f0101c11f89a032778cdd13a27ae22d931839c467c66465cf077f20"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -95,10 +95,6 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 [[files]]
 file = "kubejs/startup_scripts/loot_bags.js"
 hash = "b601fa13e6176846a090ff91747623f2ff8ffb6fd431f2744331ed7ef2e7ecd1"
-
-[[files]]
-file = "kubejs/startup_scripts/machines.js"
-hash = "476b4a4e430795dd2ac42b316e61474059db9bfaacc920481fea12745151cc5b"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"
@@ -221,6 +217,11 @@ metafile = true
 [[files]]
 file = "mods/tfth.pw.toml"
 hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
+metafile = true
+
+[[files]]
+file = "mods/trapcraft.pw.toml"
+hash = "69b6ab59ddf2325278735aa5bf1b5be68a436b6327dd68d00516071b387f92ae"
 metafile = true
 
 [[files]]

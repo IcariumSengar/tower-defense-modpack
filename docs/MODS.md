@@ -34,6 +34,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | FTB Quests | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge) | 2001.4.22 (1.20.1 Forge) | Added 2026-08-29 for one quest ("Fortify") telling the player Tier 1 machines can be crafted — see the FTB Quests entry under Custom glue below | Requires FTB Library + FTB Teams (both added alongside it) | testing |
 | FTB Library | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge) | 2001.2.13 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 | FTB Teams | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | 2001.3.2 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
+| Trapcraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trapcraft) | 2.10.2 (1.20.1 Forge) | Added 2026-08-29 to replace the custom Tier 1 machines (Spikes, Bear Trap) after direct playtest feedback that the custom design "sucked" — see the "Tier 1 replaced with Trapcraft" entry under Custom glue below | Standalone, no hard dependency beyond Forge/Minecraft | testing |
 
 ## Removed mods
 
@@ -131,10 +132,18 @@ mods sitting parallel to, not part of, the pack's actual built systems.
 ## Custom glue
 
 - **Tier 1 machines — Spike Trap, Wooden Palisade, Simple Snare Trap
-  (2026-08-29)** — `docs/IDEAS.md`'s Machine Progression "Recommended
-  next step" brief: no machines existed anywhere in the pack before
-  this, despite being the actual "loot → craft machines → survive" loop
-  the pack is named for. Built in the requested easiest-first order.
+  (2026-08-29). ⚠ REPLACED THE SAME DAY — see "Tier 1 replaced with
+  Trapcraft" below, this whole entry is history, not current state.**
+  Direct playtest feedback on this custom design was "rubbish... they
+  sucked"; `startup_scripts/machines.js` and the original
+  `server_scripts/machine_recipes.js` were deleted entirely. Kept
+  below for the research trail (the mod-replacement check in
+  particular is still relevant — it's *why* a custom Spike Trap was
+  ever built, not just how) — `docs/IDEAS.md`'s Machine Progression
+  "Recommended next step" brief: no machines existed anywhere in the
+  pack before this, despite being the actual "loot → craft machines →
+  survive" loop the pack is named for. Built in the requested
+  easiest-first order.
   **First time this pack has registered a custom block** — every prior
   piece of custom content (loot bags, Wave Horn) was an item. Researched
   KubeJS's real 1.20.1 block-registration API directly before writing
@@ -402,6 +411,66 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   - **Not yet confirmed in-game at all** — needs a fresh world to check
     the book is actually received, and crafting each of the three
     machines to check which (if any) actually completes the quest.
+
+- **Tier 1 replaced with Trapcraft (2026-08-29)** — real playtest
+  feedback on the custom Wooden Palisade/Snare Trap/Spike Trap was
+  "rubbish... they sucked," a verdict on the whole custom
+  craft-something-that-degrades-and-breaks design, not just the Spike
+  Trap specifically. Relayed via the parallel "ideas hub" session
+  (`docs/IDEAS.md`'s "Decided: replace Tier 1 altogether with
+  Trapcraft" entry has the full mod-comparison reasoning); this side
+  executed the actual removal/install/rewire.
+  - **Deleted**: `startup_scripts/machines.js` (both custom block
+    registrations) and the original `server_scripts/machine_recipes.js`
+    entirely — no custom Tier 1 blocks exist in this pack anymore.
+  - **Installed Trapcraft** (`2.10.2`, real Forge 1.20.1 build,
+    standalone — no hard dependency beyond Forge/Minecraft, confirmed
+    from its own `mods.toml`). Picked over **MineTraps** per the ideas
+    hub's research: MineTraps' confirmed recent releases are
+    1.21.x/NeoForge, no confirmed Forge 1.20.1 build.
+  - **Which Trapcraft blocks actually count as Tier 1, and why the
+    others don't** — checked every one of Trapcraft's own bundled
+    recipe JSONs directly (`data/trapcraft/recipes/*.json` inside the
+    jar) rather than trusting the store description, specifically for
+    the thing that matters most for Tier 1: does it need power/fuel.
+    - `trapcraft:spikes` (5x iron_ingot) and `trapcraft:bear_trap`
+      (iron_ingot + stone_pressure_plate) — both 100% vanilla materials,
+      no redstone anywhere in the recipe or in how the block operates.
+      Real Tier 1 fits, used as-is with no KubeJS re-recipe — the
+      brief's own instruction was to only re-recipe if defaults use
+      non-vanilla materials, and these don't.
+    - `trapcraft:fan`, `trapcraft:igniter`, `trapcraft:magnetic_chest`
+      — `igniter` and `magnetic_chest` both have redstone as a crafting
+      ingredient; `fan` has no redstone in its recipe but (per the
+      mod's own description) needs a redstone *signal* to actually
+      function. All three fail Tier 1's no-power/no-fuel rule and were
+      deliberately left out of the `kubejs:tier1_machines` tag and out
+      of this pack entirely for now — real Trapcraft content, just not
+      wired into anything yet, a natural Tier 2/3 candidate later.
+  - **No mod replaces the Wooden Palisade's role** — Trapcraft has no
+    wall/fence-shaping block at all, and neither of the other two
+    candidates checked in the earlier mod-replacement pass did either.
+    Rather than force a mismatched substitute, the Palisade's function
+    is now just plain vanilla `minecraft:oak_fence` — already
+    100%-vanilla-craftable from `oak_log` (Common-tier loot) via real
+    vanilla recipes (`oak_planks` → `oak_fence`), needing zero new code
+    at all. This is arguably a *more* complete "ditch the custom
+    design" outcome for that piece than installing a mod would have
+    been.
+  - **`kubejs:tier1_machines` item tag** (now in
+    `server_scripts/machine_tags.js`, replacing the old
+    `machine_recipes.js`'s tag block) updated to
+    `trapcraft:spikes`/`trapcraft:bear_trap`/`minecraft:oak_fence` —
+    the FTB Quests "Fortify" quest's item task already checked this tag
+    rather than hardcoded item IDs, so the quest itself didn't need
+    restructuring, just the tag contents and its icon/flavor text
+    (`config/ftbquests/quests/chapters/tier1_machines.snbt`,
+    `data.snbt`) swapped from `kubejs:spike_trap` to
+    `trapcraft:spikes`.
+  - **Not yet confirmed in-game** — needs a real playtest, and per the
+    brief's own framing, specifically for *feel*, not just whether the
+    quest completes — this is replacing something that already failed
+    on feel once.
 
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same

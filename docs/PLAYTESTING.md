@@ -152,37 +152,41 @@ test:
   `allow_breaking_non_owned_blocks` set to `true` after your first
   launch generates that file. See `docs/MODS.md` for the exact key.
 
-## Tier 1 machines (new, entirely unconfirmed in-game)
+## Tier 1 machines (Trapcraft, replacing the custom design — entirely unconfirmed in-game)
 
-The first defensive machines in the pack — craft, don't just melee:
+The custom Wooden Palisade/Snare Trap/Spike Trap from earlier
+2026-08-29 got direct playtest feedback of "rubbish... they sucked"
+and were removed the same day — this is the replacement, craft, don't
+just melee:
 
-- **Wooden Palisade**: 4 oak_log + 2 cobblestone (fence-shaped recipe) →
-  6. Places/connects like a vanilla fence — should block/shape mob
-  pathing, most mobs can't hop it, spiders/flying mobs still can.
-- **Snare Trap**: 4 string (shapeless) → 1. Real vanilla cobweb under a
-  different name — slows/holds anything that walks into it.
-- **Spike Trap**: 2 iron_nugget + 6 cobblestone (shaped) → 4. Deals 2
-  hearts of damage the moment anything living — you or a mob — steps
-  onto it, and breaks entirely after 4 total triggers (rebuilt
-  2026-08-29 to actually detect mobs, not just the player; see
-  `docs/MODS.md`). Given an actual low spiky shape the same day
-  (short prongs, not a plain cube) — **genuinely unconfirmed whether
-  it renders as spikes at all**; the KubeJS mechanism used
-  (`.box()`) might only affect collision, not the visual, per a real
-  disagreement between the mod's own bytecode and its wiki docs. If it
-  still looks like a plain block in-game, that's useful to know, not a
-  failure to check for first.
+- **Fence** (wall/pathing role): plain vanilla `minecraft:oak_fence` —
+  craft `oak_planks` from your `oak_log` loot, then the real vanilla
+  fence recipe. No custom block anymore, no mod either — nothing in
+  Trapcraft covers this role, so it's just base-game.
+- **Bear Trap** (`trapcraft:bear_trap`): iron_ingot + stone_pressure_plate
+  (shaped, from the Trapcraft mod's own default recipe). Triggers on
+  contact with any non-player creature, holds it in place while it
+  bleeds out — can be reset once triggered, not consumed/broken like
+  the old design.
+- **Spikes** (`trapcraft:spikes`): 5x iron_ingot (shaped, Trapcraft's
+  own default recipe). Deals damage to anything that contacts it.
 
-**Specifically worth checking on first test**: all three recipes
-actually show up/craft correctly, the Palisade visually connects like a
-fence and actually blocks a mob's path, the Snare Trap slows movement on
-contact, and the Spike Trap deals damage + visibly changes/breaks across
-repeated hits — **specifically test it against a summoned mob, not just
-by walking onto it yourself** — rather than either doing nothing or
-breaking on the very first hit. Also just look at the Spike Trap once
-placed — does it actually show low spikes, or still render as a plain
-textured cube? See `docs/MODS.md`'s Tier 1 machines entry for exactly
-which pieces are lowest vs. highest risk if something doesn't work.
+Both Bear Trap and Spikes recipes use only iron_ingot/cobblestone-based
+vanilla materials, both already reachable from the Scavenger's Bag
+(Common tier) loot pool — no KubeJS recipe changes were needed.
+
+Trapcraft also adds a Fan, Igniter, and Magnetic Chest — all three need
+a redstone signal or redstone as a crafting ingredient, so none of them
+are wired into this pack's Tier 1 (no-power/no-fuel by design). They're
+installed as part of the mod but not otherwise used yet.
+
+**Specifically worth checking on first test**: the fence/bear
+trap/spikes all actually craft, the Bear Trap holds a mob in place on
+contact and can be reset after triggering, Spikes damage on contact.
+Since this replaces something that failed specifically on *feel*, not
+function — **the real test here is whether it feels good, not just
+whether it works**. See `docs/MODS.md`'s "Tier 1 replaced with
+Trapcraft" entry for the full reasoning and what's still unconfirmed.
 
 ## FTB Quests (new, entirely unconfirmed in-game)
 
@@ -196,9 +200,11 @@ behavior on first login, confirmed from research rather than assumed.
   needing to be given via `playtest_starter_kit.js`.
 - Opening it shows one chapter ("Defenses") with one quest ("Fortify"),
   description explaining scrap can become defenses.
-- Craft **any one** of the three Tier 1 machines (Wooden Palisade,
-  Snare Trap, or Spike Trap) and confirm the quest actually marks
-  complete. **This is the single highest-risk thing to test here** —
+- Craft **any one** of the three Tier 1 items (vanilla oak_fence,
+  Trapcraft's Bear Trap, or Trapcraft's Spikes — see the Tier 1
+  machines section above, updated 2026-08-29 when the custom design was
+  replaced) and confirm the quest actually marks complete. **This is
+  the single highest-risk thing to test here** —
   the quest's item task checks a custom item tag
   (`#kubejs:tier1_machines`) rather than the item natively supporting
   "any of 3," since the documented official way to do that needs two
