@@ -61,8 +61,7 @@ before re-adding it):
 3. + witch + flesh_villager
 4. + wither skeleton + flesh_hunter_i (tougher — TFTH's Awareness stage)
 5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage)
-   — repeats for calls beyond wave 5, and every repeat is a **Blood
-   Moon** (see below)
+   — repeats for calls beyond wave 5, same composition each time
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
@@ -76,21 +75,14 @@ reaching you (staggered emergence + sound cues still apply on top of
 this).
 
 Calling the horn also forces night and locks the day/night cycle (so
-zombies/skeletons don't burn on spawn or catch fire mid-fight) and
-applies dense fog for atmosphere — it switches back to day, clears the
-fog, and lets the cycle run normally again once the wave is cleared.
-Fog isn't wave-only — a lighter version keeps thickening near the
-worldborder edge during the peaceful gap too (`border_fog.js`), so
-night reads as a heavier version of an atmosphere that's already there,
-not fog appearing from nothing. (A `minecraft:darkness` vision effect
-was also tried alongside the fog, but confirmed not working in
-playtesting and dropped the same day — fog + night-lock are the
-atmosphere layers now.)
-
-**Wave 5 onward is a Blood Moon** — a distinct "BLOOD MOON RISES" title
-and slightly denser fog than a normal wave. Atmosphere only, not a
-harder mob roster (wave 5's composition is reused as-is for every
-later call, same as before).
+zombies/skeletons don't burn on spawn or catch fire mid-fight) — it
+switches back to day and lets the cycle run normally again once the
+wave is cleared. That's the only atmosphere effect left — fog (wave-time
+and peacetime border fog), the worldborder wall's reskinned texture, a
+`minecraft:darkness` vision effect, and Blood Moon's distinct title were
+all tried across this pack's history and removed entirely (2026-08-29,
+"remove any visual effects work... go back to basics") — see
+`docs/MODS.md` for the full history if any of this gets revisited.
 
 **After every wave clears, a 3-minute countdown to the next wave starts
 immediately**, shown on the action bar — no reward-choice step anymore
@@ -156,7 +148,7 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   accidental multi-crafting. A config fix was applied but never
   confirmed working, and the green-flash symptom recurred in a later
   session. **Resolved by removing Inventory Profiles Next entirely**
-  (2026-08-20, "strip down the prototype" audit) rather than chasing the
+  (2026-08-29, "strip down the prototype" audit) rather than chasing the
   bug a third time — see `docs/MODS.md`'s Removed mods section. Mouse
   Tweaks alone now owns drag-to-move inventory gestures, no conflict
   possible.
@@ -414,3 +406,16 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
   wide-flatten pass were reverted. Deliberately "for now," not closed —
   see `docs/IDEAS.md`'s Seed research section if real terrain comes back
   up. **Not yet re-tested in-game.**
+- **All visual effects work removed, "go back to basics" (2026-08-29).**
+  Closes out everything logged above about fog, the worldborder texture,
+  and Blood Moon — all of it is gone now: `border_fog.js` deleted,
+  wave-time fog and its reset removed from `wave_spawner.js`/
+  `wave_status.js`, YetGamer's Custom Fog uninstalled, the worldborder
+  texture override deleted (vanilla's default shows again), Blood Moon
+  removed entirely (wave 5+ is a plain repeat again, no special title or
+  denser fog). **Kept**: night-lock (gameplay necessity — undead mobs
+  burn without it, not decoration), staggered emergence, and sound-first
+  cues (spawn timing/audio, not visual effects, outside what was asked
+  to be cut). See `docs/MODS.md`'s Removed mods and Wave spawner entries
+  for the full mechanism-by-mechanism breakdown. **Not yet re-tested
+  in-game.**

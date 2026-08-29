@@ -123,13 +123,6 @@ PlayerEvents.tick((event) => {
     // advancing clock during the peaceful gap before the next horn use.
     player.getServer().runCommandSilent('time set day')
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
-    // Undo wave_spawner.js's dense wave-fog — resets to vanilla fog for
-    // one tick; border_fog.js's own tick handler immediately takes back
-    // over with its lighter peacetime proximity fog (its
-    // lastAppliedMaxDistance cache reset happens on the same td_inWave
-    // flip), giving the "day pulls back significantly, doesn't go silent"
-    // contrast the design doc actually asks for.
-    player.getServer().runCommandSilent('fog @a reset')
 
     // Starter gear removal, once, the moment the curated campaign's
     // final wave clears — waveNumber is capped at FINAL_WAVE, so every

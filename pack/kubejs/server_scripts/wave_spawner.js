@@ -169,16 +169,6 @@ function useWaveHorn(player) {
   var waveNumber = data.getInt('td_waveNumber') + 1
   data.putInt('td_waveNumber', waveNumber)
 
-  // Boss wave tied to a Blood Moon event (docs/IDEAS.md, built custom -
-  // no Forge 1.20.1 Blood Moon mod was vetted, and the design doc itself
-  // frames this as atmosphere/presentation, "rather than just a stat-
-  // scaling bump," so no mob-count/stat changes here). Every wave from
-  // the designed campaign's end onward is a Blood Moon - the same
-  // WAVES.length threshold wave_status.js's FINAL_WAVE already caps
-  // display at and removes starter gear on, so the moment training-
-  // wheels gear disappears is also the first Blood Moon.
-  var isBloodMoon = waveNumber >= WAVES.length
-
   // Force night before spawning so undead mobs (zombie, skeleton,
   // wither_skeleton) don't immediately catch fire from spawning into
   // daylight. doDaylightCycle is also disabled so time can't drift back
@@ -186,21 +176,6 @@ function useWaveHorn(player) {
   // and sets time back to day once the wave is cleared.
   server.runCommandSilent('time set night')
   server.runCommandSilent('gamerule doDaylightCycle false')
-
-  // Day/Night Density Contrast (docs/IDEAS.md's "Atmosphere & Wave
-  // Feel") - dense, close, desaturated fog for the wave's duration via
-  // YetGamer's Custom Fog's /fog command. wave_status.js's "defeated"
-  // branch resets this back to vanilla fog, same pairing as the night
-  // lock above. Cylinder (not sphere) to roughly match the worldborder's
-  // own shape - this fog is always player-relative, not tied to the
-  // border's actual position (no Forge 1.20.1 mod found that renders
-  // fog at a fixed world coordinate), so it reads as "the horde's out
-  // there in the dark" tension rather than a literal border wall.
-  // Blood Moon waves get a single denser lever (lower MaxDistance) on
-  // top of the normal wave fog - deliberately one number, not a stack of
-  // new levers, per the lesson from this session's shader-tuning saga.
-  var fogMaxDistance = isBloodMoon ? 24 : 32
-  server.runCommandSilent('fog @a set 8 ' + fogMaxDistance + ' 25 25 30 0.3 cylinder')
 
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
@@ -211,9 +186,7 @@ function useWaveHorn(player) {
   // ALL entity movement across it the way it blocks players. It
   // doesn't - the border only clamps *player* movement; mobs path
   // across it under normal AI/movement with no special resistance. The
-  // pack's own docs/IDEAS.md Fog Wall design says exactly this:
-  // "enemies spawn from beyond the fog line, not inside the play area."
-  // The original 2026-08-19 bug this used to guard against ("mobs
+  // original 2026-08-19 bug this used to guard against ("mobs
   // spawning outside the border become permanently unreachable") predates
   // mob_aggro.js's unconditional, no-distance-limit setTarget entirely -
   // that's what actually makes the long walk-in reliable now, not
@@ -280,13 +253,8 @@ function useWaveHorn(player) {
   // chat is easy to miss mid-fight. Uses vanilla /title via
   // runCommandSilent, consistent with every other command in this pack
   // rather than an unverified KubeJS-specific title API.
-  if (isBloodMoon) {
-    server.runCommandSilent(`title @a title {"text":"BLOOD MOON RISES","color":"dark_red","bold":true}`)
-    server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"red"}`)
-  } else {
-    server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
-    server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
-  }
+  server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
+  server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
 }
 
 // Covers right-clicking with nothing targeted (rare on Superflat, but
@@ -377,15 +345,14 @@ PlayerEvents.tick(function (event) {
 
 // On-screen countdown to the next wave (docs/IDEAS.md's "On-screen
 // countdown timer to the next wave"). wave_status.js starts this
-// (td_countdownActive/td_countdownEndTick) once the wave-clear choice
-// popup is resolved - the auto-trigger has to live here rather than
-// there so it can call useWaveHorn() directly; server_scripts don't
-// reliably share top-level scope/functions across files (same
-// constraint noted throughout this codebase, e.g. HOSTILE_TYPES/WAVES
-// being redeclared per-file rather than imported), so cross-file
-// coordination goes through player.persistentData flags instead, same
-// as td_inWave already does between wave_status.js/base_expansion.js/
-// border_fog.js.
+// (td_countdownActive/td_countdownEndTick) directly on wave-clear - the
+// auto-trigger has to live here rather than there so it can call
+// useWaveHorn() directly; server_scripts don't reliably share top-level
+// scope/functions across files (same constraint noted throughout this
+// codebase, e.g. HOSTILE_TYPES/WAVES being redeclared per-file rather
+// than imported), so cross-file coordination goes through
+// player.persistentData flags instead, same as td_inWave already does
+// between wave_status.js/base_expansion.js.
 var COUNTDOWN_DISPLAY_THROTTLE = 20 // once/second is plenty for a countdown display
 
 PlayerEvents.tick(function (event) {

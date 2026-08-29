@@ -1,4 +1,4 @@
-# Mod List
+﻿# Mod List
 
 Tracks every mod going into the pack, why it's in, and any compatibility
 notes/conflicts found while adding it. Update this whenever a mod is
@@ -30,7 +30,6 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
 | GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
-| YetGamer's Custom Fog | [Modrinth](https://modrinth.com/mod/yetgamers-custom-fog) | 1.0.1 (1.20.1 Forge) | Added 2026-08-20 as a substitute for `docs/IDEAS.md`'s named Foggy Border/Fog (IMB11), **neither of which has any Forge build at all** (Foggy Border is Fabric-only; Fog/IMB11 is Fabric/NeoForge-only and starts at 1.21+ anyway — confirmed via Modrinth's version API directly, not search summaries). Ships a real runtime `/fog <targets> set\|reset <min> <max> <r> <g> <b> <sat> cylinder\|sphere` command — scriptable via the same `runCommandSilent` pattern as everything else in this pack, unlike a shader's own settings | No dependencies. Its fog is always player-relative, not tied to a fixed world coordinate — can't literally render fog "at the worldborder," see the Custom glue writeup for what it actually delivers instead | testing |
 
 ## Removed mods
 
@@ -81,13 +80,14 @@ references found for any of these) before removing, not just guessed:
   `minecraft:darkness` status effect for the atmosphere piece instead —
   **that also didn't work, per direct playtest feedback, and was
   dropped the same day** (see the Wave-clear orchestration entry below).
-  Fog + night-lock are the only atmosphere layers currently standing.
+  Fog was removed too, later the same day (see the YetGamer's Custom Fog
+  entry below) — night-lock is the only atmosphere layer left standing.
   Revisit shaders only with a genuinely new signal from the user — this
   isn't an "unused, never integrated" removal like the others above,
   it's a "built, tuned extensively, and explicitly rejected on feel"
   one; don't re-propose a shaderpack here without that new signal.
 - **Inventory Profiles Next** + its two hard dependencies **libIPN** and
-  **Kotlin for Forge** (2026-08-20) — a stripped-down-prototype audit
+  **Kotlin for Forge** (2026-08-29) — a stripped-down-prototype audit
   ("no extraneous code/config... based on the design premise, do it
   small first"). Different removal category than the others above: not
   unused (it worked, one-key inventory sort), but pure QoL with real,
@@ -102,6 +102,22 @@ references found for any of these) before removing, not just guessed:
   management becomes a real pain point without it — re-add is a
   single `packwiz` command away, no design decision got harder to
   reverse by cutting it now.
+- **YetGamer's Custom Fog** (2026-08-29) — direct request: "remove any
+  visual effects work, like fog etc, and go back to basics." Removed
+  along with everything it powered: `border_fog.js` (peacetime
+  proximity fog), the wave-time combat fog and its reset, and Blood
+  Moon's denser-fog lever and distinct title (Blood Moon's only two
+  pieces, both fog-adjacent — removed entirely, wave 5+ is a plain
+  repeat of wave 5 again). Same pass also reverted the worldborder wall
+  texture back to vanilla's default (see the Fog Wall entry below).
+  Night-lock (forced night + frozen daylight cycle during a wave) is
+  kept — that's a gameplay necessity (undead mobs would burn on spawn
+  otherwise), not a visual effect. Mob spawn-beyond-the-border and the
+  `/spreadplayers` height corrections are also kept — those are spawn-
+  position/gameplay fixes, not atmosphere. This closes out the entire
+  "Atmosphere & Wave Feel" locked section from `docs/IDEAS.md` back to
+  nothing — see that doc's own entries for the full eleven-plus-round
+  history if this ever gets revisited.
 
 None of these were hard blockers or bugs — all were clean removals of
 mods sitting parallel to, not part of, the pack's actual built systems.
@@ -281,7 +297,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      is exactly why earlier searches for the v2.0.4 variable name missed
      it in v1.1's source. Bumped to `2.60` (near its defined max `2.80`)
      plus `AMBIENT_MULT` (ambient light, also day/night-agnostic) `100`
-     → `170`, both baked directly into `Spooklementary_TDM_tuned.zip`
+     â†’ `170`, both baked directly into `Spooklementary_TDM_tuned.zip`
      alongside the earlier fixes.
   5. **Fog command was spamming chat** — YetGamer's Custom Fog prints
      its own confirmation message on every `/fog` call by default; fine
@@ -324,14 +340,14 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      specifically (as opposed to overall scene exposure, which is
      `T_EXPOSURE` and confirmed correct for day — left alone):
      `AMBIENT_MULT` (ambient fill light, which by definition reaches
-     areas not hit by direct light — i.e. shadows) `170` → `110`, and
+     areas not hit by direct light — i.e. shadows) `170` â†’ `110`, and
      `MINIMUM_LIGHT_MODE` (added in round 6 at its most aggressive tier
-     the same round this broke) `4` → `3`. Both still baked into
+     the same round this broke) `4` â†’ `3`. Both still baked into
      `Spooklementary_TDM_tuned.zip`.
 
   **Lesson for this specific shader-tuning saga**: stop pushing
   individual sliders further without reconsidering earlier ones in the
-  same pass — the "still dark" → "now too bright" whiplash across
+  same pass — the "still dark" â†’ "now too bright" whiplash across
   rounds 4-7 came from treating each report as isolated instead of
   looking at the cumulative effect of every change made so far.
 
@@ -343,7 +359,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
        uses different variable names/scales entirely depending on
        branch (`TONEMAP_EXPOSURE=5.6` in one official repo, a
        completely different numeric scale than Spooklementary's
-       `T_EXPOSURE` 0.4–2.8 range) — confirms these can't be copied
+       `T_EXPOSURE` 0.4â€“2.8 range) — confirms these can't be copied
        across shader forks directly, only within the exact fork being
        used.
      - Found genuine, shader-specific community guidance instead:
@@ -359,8 +375,8 @@ mods sitting parallel to, not part of, the pack's actual built systems.
        Also found a community-sourced reference pair for Complementary's
        tonemap curve (`Lower:1.3, Upper:1.5`) specifically for
        brightening dark/shadowed areas without blowing out highlights —
-       applied directly (`T_LOWER_CURVE` `1.20`→`1.30`,
-       `T_UPPER_CURVE` `1.30`→`1.50`), real numbers from an actual
+       applied directly (`T_LOWER_CURVE` `1.20`â†’`1.30`,
+       `T_UPPER_CURVE` `1.30`â†’`1.50`), real numbers from an actual
        guide, not another blind guess.
 
   9. **Round 8 made it worse, not better — "absolutely garbage...
@@ -381,11 +397,11 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      back to its `2` default) so occlusion darkening exists again, and
      pulled every stacked multiplier back to at-or-near default instead
      of trying to find one more offsetting value: `MINIMUM_LIGHT_MODE`
-     `3`→`2` (default), `AMBIENT_MULT` `110`→`100` (default),
-     `T_EXPOSURE` `2.60`→`1.70` (a modest bump over default `1.40`, not
-     a near-max one), all four day sliders `2.00`→`1.20` (day brightness
+     `3`â†’`2` (default), `AMBIENT_MULT` `110`â†’`100` (default),
+     `T_EXPOSURE` `2.60`â†’`1.70` (a modest bump over default `1.40`, not
+     a near-max one), all four day sliders `2.00`â†’`1.20` (day brightness
      is `T_EXPOSURE`'s job, confirmed correct earlier — these were pure
-     redundant stacking), night sliders `2.00`→`1.40`. Left the round-8
+     redundant stacking), night sliders `2.00`â†’`1.40`. Left the round-8
      tonemap curve (`T_LOWER_CURVE`/`T_UPPER_CURVE` `1.30`/`1.50`) alone
      — real reference values, not part of the stack that caused this.
      All baked into `Spooklementary_TDM_tuned.zip`.
@@ -418,7 +434,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       is what caused every overcorrection. **Fix**: reset every other
       lever to true default (`AMBIENT_MULT 100`, `MINIMUM_LIGHT_MODE 2`,
       all day/night intensity sliders `1.00`, shadows on at default
-      quality `2`), and raise only `T_EXPOSURE` (`1.70`→`2.50`, near but
+      quality `2`), and raise only `T_EXPOSURE` (`1.70`â†’`2.50`, near but
       not at its `2.80` ceiling) as the single brightness lever for both
       day and night, since it's a global post-lighting exposure that
       isn't time-of-day-scoped. `T_LOWER_CURVE`/`T_UPPER_CURVE` (round
@@ -522,18 +538,33 @@ mods sitting parallel to, not part of, the pack's actual built systems.
       been removed. Restored it, and retuned its density since the
       original values were closer to the two states matching than
       contrasting: `NEAR_MAX_DISTANCE` (fog thickness right at the
-      border edge) raised `20`→`60` so daytime border fog stays
+      border edge) raised `20`â†’`60` so daytime border fog stays
       meaningfully lighter than wave-time's fixed `MaxDistance 32`
       everywhere, even at its densest point — previously the day-time
       edge fog (`20`) was actually *denser* than night's uniform fog
       (`32`), backwards from the intended contrast. `MIN_DISTANCE`
-      `6`→`10` for a touch more clarity right around the player. The
+      `6`â†’`10` for a touch more clarity right around the player. The
       `gamerule sendCommandFeedback false` fix moved back to
       `border_fog.js` (undoing round 14's move into `wave_spawner.js`,
       now that `border_fog.js` owns `/fog` calls again too). The
       worldborder wall texture (round 13 above) was never affected by
       any of this — it's a static resource-pack override, always
       visible regardless of day/night.
+
+  16. **Removed entirely — fog, the worldborder texture, and Blood Moon
+      (2026-08-29)** — direct request: "remove any visual effects work,
+      like fog etc, and go back to basics." Closes out this whole
+      section's real implementation: `border_fog.js` deleted (peacetime
+      proximity fog), `wave_spawner.js`'s wave-time fog command and
+      `wave_status.js`'s reset removed, YetGamer's Custom Fog uninstalled
+      (nothing left to use its `/fog` command), and the worldborder wall
+      texture override (`forcefield.png`) deleted so vanilla's own
+      default texture shows again. Night-lock — forced night, frozen
+      daylight cycle during a wave — is **kept**, since it's a gameplay
+      necessity (undead mobs would burn on spawn otherwise), not
+      decoration. Staggered emergence and the sound-first cues are also
+      **kept** — spawn timing and audio, not visual effects, and outside
+      what was actually asked to be cut.
 
   None of the remaining fixes in this entry (staggered emergence, sound
   cues) have been re-tested in-game yet; the shader sub-thread is now
@@ -569,10 +600,10 @@ mods sitting parallel to, not part of, the pack's actual built systems.
 
 - **Wave-clear orchestration (2026-08-20)** — three `docs/IDEAS.md` ideas
   built together, since the doc itself pins down a real ordering
-  requirement between them: wave-clear effects → choice popup (blocking)
-  → player chooses → starter-gear removal (wave 5 specifically) →
+  requirement between them: wave-clear effects â†’ choice popup (blocking)
+  â†’ player chooses â†’ starter-gear removal (wave 5 specifically) â†’
   countdown to next wave. All three reuse the wave-clear trigger point
-  (`wave_status.js`'s `td_inWave` true→false transition) that base
+  (`wave_status.js`'s `td_inWave` trueâ†’false transition) that base
   expansion and starter-gear removal already hooked into — now five
   things share it, exactly the "orchestration moment, not five
   independent hooks" the design doc flagged as worth treating deliberately
@@ -624,12 +655,18 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     from the designed campaign's end onward (`waveNumber >= WAVES.length`,
     the same threshold `wave_status.js`'s `FINAL_WAVE` caps display at and
     removes starter gear on) is a Blood Moon — a distinct "BLOOD MOON
-    RISES" title and one denser fog lever (`MaxDistance` 32→24), no
+    RISES" title and one denser fog lever (`MaxDistance` 32â†’24), no
     mob-count/stat changes, matching the design doc's own framing ("feels
     extra scary via atmosphere... rather than just a stat-scaling bump").
     Deliberately a single new lever, not a stack of them, per the lesson
     from this session's shader-tuning saga about compounding brightness/
     intensity changes without re-examining the total.
+    - **Removed entirely, same day** ("remove any visual effects work,
+      like fog etc, and go back to basics") — both of Blood Moon's
+      pieces (the denser fog lever, the distinct title) were atmosphere,
+      not mechanics; with fog gone this feature had nothing load-bearing
+      left. Wave 5+ is back to a plain repeat of wave 5's composition,
+      no special treatment.
   - **Darkness effect** (built earlier the same day as a shader
     replacement, then reverted the same day per direct playtest
     feedback) already covered under Atmosphere & Wave Feel above — not
@@ -790,7 +827,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     shipped a dimension-generator override via KubeJS** — previously
     `data/` was only used for simpler content (recipes, loot, tags), so
     this is a step further into that mechanism's range; not yet
-    confirmed in-game. Manually picking Single Biome → Desert on the
+    confirmed in-game. Manually picking Single Biome â†’ Desert on the
     creation screen remains a working fallback if the override doesn't
     take effect for some reason.
   - **Wide flatten around fixed spawn (2026-08-20).** The Desert
@@ -924,7 +961,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   (same "diary from a previous soul" device planned for the quest book,
   `docs/IDEAS.md`'s Pack Aesthetic idea). Mechanically, the gear
   disappears the moment the curated campaign's final wave clears —
-  reuses this same wave-clear detection edge (`td_inWave` true→false)
+  reuses this same wave-clear detection edge (`td_inWave` trueâ†’false)
   rather than adding a new one. Implementation:
   - `FINAL_WAVE` constant (currently `5`) replaces what was a magic
     number already present in the `waveNumber` cap logic — must be kept
@@ -1023,7 +1060,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      fire for the same physical click** — contrary to Forge's own
      documented "`RightClickItem` only fires when not targeting a
      block" rule, which didn't hold in practice here. Without a guard
-     this double-processed every click (e.g. wave 1→2, 3→4). Fixed with
+     this double-processed every click (e.g. wave 1â†’2, 3â†’4). Fixed with
      a 20-tick (1 second) cooldown guard in `useWaveHorn` — also
      necessary since holding right-click generates repeated events
      across many ticks, not just one per physical click.
@@ -1039,7 +1076,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
      `Math.cos()`, `Math.sin()`, `Math.floor()` all worked individually,
      but any expression multiplying by `Math.PI` came out `NaN`. Root
      cause not understood; fixed by using the literal
-     `6.283185307179586` (2π) instead of `Math.PI * 2`.
+     `6.283185307179586` (2Ï€) instead of `Math.PI * 2`.
 
   Confirmed working in-game after all nine fixes: wave spawning, the
   hostile counter, and the wave-complete/incoming messages.

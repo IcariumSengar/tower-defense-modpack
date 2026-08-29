@@ -33,10 +33,6 @@ file = "kubejs/assets/kubejs/textures/item/wave_horn.png"
 hash = "fc4ceb66506bc37f9f3803248016df4b8b664ae002bfa1faa062d9b371ef65c5"
 
 [[files]]
-file = "kubejs/assets/minecraft/textures/misc/forcefield.png"
-hash = "52d37819b74e4b8ef2a2026bab8be0988ca6d09ced9e799dc83bbce003cdbe3a"
-
-[[files]]
 file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
@@ -47,10 +43,6 @@ hash = "984e221836b7cb16805718063e8f45dbe549fa119eca3c4bf2cdd9962c69a37a"
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
 hash = "fc2e8a5a3d7e0267796c27ae671baa00a2320aaa25b32df0d35751e264227a4e"
-
-[[files]]
-file = "kubejs/server_scripts/border_fog.js"
-hash = "0e23b169782ea8c982e0f4948e22d03d13e494d60eb0b7697032b5ece3058b12"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
@@ -66,15 +58,15 @@ hash = "dba3439cbe4a225e17e46a99cf72f7ed99faf70f7a16514f0f84f243d55e29b7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "5caebcada58c04b472327a16c71ac249dcc124f8c1e9a58287ddd5c99a4b813d"
+hash = "8068b40498044791d89e9a40b3509f93dfff8a4b2af2bfd2c897b6d9b9078a90"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "f035cb5b26b958c89615d1f6e29b581bac2d9545c5a749251dfd525d3087b1c4"
+hash = "cb82ffec5726d22334823e51271d28b39833311b8a432ac8783ba92cc2ad497f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "94ed5ff1035cfa4bcda8acfd3259eb008f66100daca37ac507cf1fac274dd7c9"
+hash = "694cf7a424c87065f7842855ecbf3aa3b78bc16a3d0b369c98427ad4ca17e2b5"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -190,9 +182,4 @@ metafile = true
 [[files]]
 file = "mods/xaeros-minimap.pw.toml"
 hash = "20beda5f9b049a2352334a0f8dd8de122e7399f8a446d8f78aeecba85d99bbdc"
-metafile = true
-
-[[files]]
-file = "mods/yetgamers-custom-fog.pw.toml"
-hash = "ff5d6719b2bef7407291303f2213669d504ae1e6eff316e3b5d63df2f163e0ad"
 metafile = true
