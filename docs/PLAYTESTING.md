@@ -61,7 +61,11 @@ before re-adding it):
 3. + witch + flesh_villager
 4. + wither skeleton + flesh_hunter_i (tougher — TFTH's Awareness stage)
 5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage)
-   — repeats for calls beyond wave 5, same composition each time
+   — repeats for calls beyond wave 5, same composition each time.
+   Scaled down 2026-08-29: regular-mob counts halved to 1 each (was 2
+   each), ravager/flesh_suffer stay at 1 each — feedback was the
+   dogpile of regular mobs alongside the two hard hitters was too much,
+   not the hard hitters themselves.
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
@@ -103,6 +107,9 @@ Removed mods section if you want the re-add path later.
 
 Epic Siege Mod's AI behavior (zombies dig/pillar, creepers breach walls,
 etc.) is ambient/always-on and applies to whatever the horn spawns.
+Zombies dropping live TNT specifically was disabled 2026-08-29 (felt too
+OP that early) — see `docs/MODS.md`'s 2026-08-29 entry for the config
+fix. Digging/pillaring/breaching are unaffected.
 
 ## Tier 1 machines (new, entirely unconfirmed in-game)
 

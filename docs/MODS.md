@@ -1248,6 +1248,31 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   alongside `"minecraft:zombie"` — unclear what that does or whether it
   can affect the player directly.
 
+- **Zombies dropping live TNT disabled, wave 5 scaled down (2026-08-29)**
+  — direct playtest feedback: zombies (present from wave 1 onward, every
+  wave) were dropping live TNT and it felt too OP that early. Root cause
+  wasn't a KubeJS script at all — **Epic Siege Mod**'s own "demolition"
+  behavior, auto-generated at
+  `config/epicsiegemod-common.toml` (`[Advanced]` block) with
+  `demolitionMobs = ["minecraft:zombie"]` by default (the mod's own
+  comment: "List of mobs that can drop live TNT"). This config had never
+  been tracked in `pack/config/` before — it only existed as a
+  live-instance default. Fixed by setting `demolitionMobs = []` and
+  tracking the full file at `pack/config/epicsiegemod-common.toml` (same
+  pattern as `TFTH.toml`) so the fix ships with the pack. Left every
+  other Epic Siege behavior (digging, pillaring, creeper breaching)
+  untouched — the complaint was specifically about TNT, not the mod's
+  broader siege AI.
+
+  Also scaled down wave 5's composition in `wave_spawner.js`'s `WAVES`
+  table — was `zombie x2, skeleton x2, spider x2, witch x2,
+  wither_skeleton x2, ravager x1, flesh_suffer x1` (12 mobs total, the
+  regular-mob dogpile stacked on top of two hard hitters). Halved every
+  regular-mob count to `x1`, left `ravager` (mini boss) and
+  `flesh_suffer` (25 attack damage, TFTH's hardest hitter per
+  `TFTH.toml`) at their existing floor of 1 each, since they're the
+  designed finale and weren't what was called out. New total: 7 mobs.
+
 - **Loot bag drop system** — the base-building resource loop: mobs drop
   tiered loot bags on death, opened by right-clicking to receive a
   randomized set of vanilla materials. Deliberately vanilla-materials-only

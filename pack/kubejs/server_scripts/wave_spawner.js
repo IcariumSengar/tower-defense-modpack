@@ -80,7 +80,12 @@ var WAVES = [
   [['minecraft:zombie', 4], ['minecraft:skeleton', 4], ['minecraft:spider', 4], ['the_flesh_that_hates:flesh_human', 2]],
   [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 3], ['minecraft:witch', 3], ['the_flesh_that_hates:flesh_villager', 2]],
   [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 2], ['minecraft:witch', 2], ['minecraft:wither_skeleton', 3], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
-  [['minecraft:zombie', 2], ['minecraft:skeleton', 2], ['minecraft:spider', 2], ['minecraft:witch', 2], ['minecraft:wither_skeleton', 2], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
+  // Scaled down 2026-08-29 (was 2/2/2/2/2/1/1 = 12 mobs, felt too OP) -
+  // halved every regular-mob count to 1, kept the ravager (mini boss)
+  // and flesh_suffer (25 attack damage, TFTH's hardest hitter) at their
+  // existing floor of 1 each - they're the designed finale, the
+  // dogpile of regular mobs alongside them was the actual problem.
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
 ]
 
 var WAVE_MOB_TYPES = [

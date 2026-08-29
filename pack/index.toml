@@ -5,6 +5,10 @@ file = "config/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "config/epicsiegemod-common.toml"
+hash = "7d422f9f963840830a8eac008e5d157b4479b2b27b5e63fec567252660230ff4"
+
+[[files]]
 file = "config/TFTH-Data.toml"
 hash = "cea608bbe07dc6a3bcdaf2148a57172e83f604c10a2ee28ac928d866a043a0af"
 
@@ -70,7 +74,7 @@ hash = "89728c65870bd909b140d87a41734a23adcc47c3e47bb9f14d38c398f43f69ae"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "cb82ffec5726d22334823e51271d28b39833311b8a432ac8783ba92cc2ad497f"
+hash = "e09fc91c6a25c9885ee54f7c89995385c9e5b360f8e0489e81972769115cca0c"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
