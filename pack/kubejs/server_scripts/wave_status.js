@@ -26,7 +26,6 @@ const HOSTILE_TYPES = [
   'minecraft:spider',
   'minecraft:creeper',
   'minecraft:zombie_villager',
-  'minecraft:witch',
   'minecraft:wither_skeleton',
   'minecraft:ravager',
   'the_flesh_that_hates:flesh_human',

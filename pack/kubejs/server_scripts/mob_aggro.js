@@ -28,7 +28,6 @@ var WAVE_MOB_TYPES = [
   'minecraft:zombie',
   'minecraft:skeleton',
   'minecraft:spider',
-  'minecraft:witch',
   'minecraft:wither_skeleton',
   'minecraft:ravager',
   'the_flesh_that_hates:flesh_human',

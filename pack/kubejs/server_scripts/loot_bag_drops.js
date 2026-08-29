@@ -1,8 +1,10 @@
 // Which mob kills drop which loot bag tier. Tier tracks wave-composition
 // tier:
 //   - Wave 1 mobs (zombie, skeleton) -> Scavenger's Bag (Common)
-//   - Wave 2-3 additions (spider, witch, flesh_human, flesh_villager)
-//     -> Fortified Cache (Uncommon)
+//   - Wave 2-3 additions (spider, flesh_human, flesh_villager)
+//     -> Fortified Cache (Uncommon). Witch was here too until removed
+//     from the roster entirely 2026-08-29 (see docs/IDEAS.md's "Mob
+//     roster exclusions" note).
 //   - Wave 4-8 additions (wither skeleton, ravager, plaquecreaturetwo,
 //     flesh_suffer, bruteplaquecreatureone, flesh_hunter_two,
 //     flesh_boomer, plaquethreelegcreature) -> Warlord's Hoard (Rare) -
@@ -30,7 +32,7 @@
 // one that's genuinely a rare event even from a mini-boss kill.
 
 const COMMON_MOBS = ['minecraft:zombie', 'minecraft:skeleton', 'minecraft:husk', 'minecraft:drowned', 'minecraft:creeper']
-const UNCOMMON_MOBS = ['minecraft:spider', 'minecraft:witch', 'the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager']
+const UNCOMMON_MOBS = ['minecraft:spider', 'the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager']
 const RARE_MOBS = ['minecraft:wither_skeleton', 'minecraft:ravager', 'the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_suffer', 'the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:flesh_boomer', 'the_flesh_that_hates:plaquethreelegcreature']
 
 // `LootJS.modifiers(...)` is the correct, current outer syntax —

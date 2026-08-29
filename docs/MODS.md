@@ -1360,7 +1360,8 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   from `TFTH.toml`'s per-mob `Attributes` lines
   (`MaxHealth|AttackDamage|Armor`), not guessed:
   - **Wave 6**: the wave 1-5 "trash" roster held at its wave-5 floor
-    (zombie/skeleton/spider/witch/wither_skeleton, 1 each) plus
+    (zombie/skeleton/spider/wither_skeleton, 1 each — witch has since
+    been removed, see the "Witches removed" entry below) plus
     `bruteplaquecreatureone` x1 ("Flesh Brute I", 45/4/5 — a tank
     archetype, nothing else in the roster has that health/armor
     combination with comparatively low attack).
@@ -1404,6 +1405,23 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     affects.
   - **Not yet confirmed in-game** — same caveat as every other roster
     change in this file until actually played.
+
+  **Witches removed entirely (2026-08-29)** — direct request
+  ("completely remove witches as a mob type"), no reason recorded.
+  Witch was in waves 3-8 (introduced wave 3, carried forward as part of
+  the "trash" floor through wave 8); every occurrence removed outright
+  rather than backfilled with more of another mob — a clean removal,
+  not a rebalance, so total mob counts per wave drop by exactly one
+  where witch used to be. Removed from all four roster-tracking files
+  (`WAVES`/`WAVE_MOB_TYPES` in `wave_spawner.js`, `HOSTILE_TYPES` in
+  `wave_status.js`, `WAVE_MOB_TYPES` in `mob_aggro.js`, `UNCOMMON_MOBS`
+  in `loot_bag_drops.js`) — same four-file-sync pattern as every prior
+  roster change. Also logged as a standing design decision in
+  `docs/IDEAS.md`'s "Mob roster exclusions" note, per direct request,
+  so a future session doesn't reintroduce it without a new signal from
+  the user. Epic Siege Mod's `witchPotions` config entry (which potions
+  a witch throws) is now dead/unused config — left alone rather than
+  removed, since it's a harmless default with nothing left to apply to.
 
   **TFTH config hardening (2026-08-19)** — before re-adding, checked
   what TFTH actually does beyond supplying mob types, since research

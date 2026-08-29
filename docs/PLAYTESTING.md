@@ -62,15 +62,15 @@ mobs starting wave 2 (see `docs/MODS.md` for exact TFTH mob stats and
 the config changes made before re-adding it):
 1. zombie + skeleton
 2. + spider + flesh_human
-3. + witch + flesh_villager
+3. + flesh_villager
 4. + wither skeleton + flesh_hunter_i (tougher — TFTH's Awareness stage)
 5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage).
    Scaled down 2026-08-29: regular-mob counts halved to 1 each (was 2
    each), and the ravager itself was separately nerfed after follow-up
    feedback — attack damage 12→8, max health 100→60 on spawn.
    `flesh_suffer` is unchanged.
-6. same 5 "trash" mobs (zombie/skeleton/spider/witch/wither_skeleton)
-   at 1 each + `bruteplaquecreatureone` ("Flesh Brute I", a tank —
+6. same trash mobs (zombie/skeleton/spider/wither_skeleton) at 1 each
+   + `bruteplaquecreatureone` ("Flesh Brute I", a tank —
    45 health/4 attack/5 armor)
 7. same trash floor + `flesh_hunter_two` ("Flesh Hunter II", balanced
    bruiser — 45/6/4) + `flesh_boomer` ("Flesh Boomer" — 20/0/0, zero
@@ -78,6 +78,10 @@ the config changes made before re-adding it):
 8. same trash floor + the ravager (returns) + `plaquethreelegcreature`
    ("Flesh Hysterizer", the tankiest new addition — 55/7/4) — repeats
    for calls beyond wave 8, same composition each time
+
+**Witches removed from the roster entirely (2026-08-29)**, direct
+request — no longer spawn in any wave. See `docs/IDEAS.md`'s "Mob
+roster exclusions" note for the standing design decision.
 
 Waves 6-8 (2026-08-29) reuse TFTH mobs that were never actually used in
 any wave rather than adding a new mod — see `docs/MODS.md`'s Wave

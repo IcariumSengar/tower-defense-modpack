@@ -483,6 +483,27 @@ mirroring loot tiers.
   pressure) — keeps both early and late game resource-tense via
   different mechanisms.
 
+### Mob roster exclusions (2026-08-29)
+
+Standing rule, not a one-off tweak: **witches are excluded from this
+pack's mob roster entirely.** Direct request ("completely remove
+witches as a mob type"), no reason recorded — logged here specifically
+so a future session checking this doc before touching the wave roster
+doesn't reintroduce them without a new signal from the user.
+
+Witch had been part of the curated wave campaign since wave 3 (added
+alongside `flesh_villager`), carried forward as part of the "trash"
+floor through wave 8. Removed outright from every roster-tracking file
+(`wave_spawner.js`'s `WAVES`/`WAVE_MOB_TYPES`, `wave_status.js`'s
+`HOSTILE_TYPES`, `mob_aggro.js`'s `WAVE_MOB_TYPES`,
+`loot_bag_drops.js`'s `UNCOMMON_MOBS`) rather than backfilled with more
+of another mob — a clean removal, not a rebalance. See `docs/MODS.md`'s
+"Witches removed entirely" entry for the full implementation writeup.
+
+If this exclusion list grows to cover other mob types later, this is
+the section to extend rather than scattering per-mob removal notes
+across the doc.
+
 ### Recommended next step (2026-08-20): build Tier 1, nothing exists to defend with yet (built 2026-08-29)
 
 Flagged as the single biggest gap between what's built and the pack's
@@ -1990,4 +2011,332 @@ would justify bringing it back. Sent as a build brief:
 >    reinforced frame may be simpler and sufficient for a singleplayer
 >    pack with no real intrusion to defend against. Pick whichever is
 >    less complexity for the same functional result.
+
+## Base expansion into new rooms/corridors, triggered by activating something with the right materials
+
+Core idea: gather the right materials, then activate something (an item
+or block) that automatically builds an extension onto the starting
+structure — new rooms and corridors, not hand-placed by the player.
+
+**This is Implementation Cluster #1 again** (see "Structure placement
+at a triggered location" above) — same underlying operation as the
+fixed spawn building, the wave-clear reward, and lootable buildings:
+stamp a structure at a position, gated by some condition. Here the
+condition is "player activated X while holding/having Y materials,"
+not a wave-clear or border-growth tick, but the placement mechanism is
+the same question this file keeps coming back to.
+
+**Mod research, since that's what was asked:**
+
+- **Litematica / Forgematica — ruled out.** These are building *aids*,
+  not auto-builders: they show a holographic overlay of where blocks go
+  and calculate a material list, but the player still places every
+  block by hand. That's the opposite of "activate something and it
+  builds itself" — wrong tool, not a lesser version of the right one.
+- **Pre-packaged "instant structure" mods (Instant Blocks, Instant
+  Massive Structures, BuildPaste)** — closest in *feel* to what was
+  described: craft/loot an item, right-click, a structure appears.
+  **Real limitation**: these ship their own fixed catalog of generic
+  structures (farms, houses), not built for a pack author to plug in
+  fully custom, pack-specific room designs — would need checking
+  whether custom structure injection is even supported before relying
+  on one, and that's not confirmed.
+- **Structurize — strongest actual fit, and solves a problem this pack
+  already has real scar tissue from.** Confirmed usable standalone,
+  without the full MineColonies suite, specifically for scanning and
+  placing custom schematics. Its workflow: build the room for real
+  in-game (testable, WYSIWYG, verify it looks right before committing),
+  **scan** it into a blueprint file via its Scan Tool, then place it
+  elsewhere via its Build Tool. That directly answers the exact risk
+  this pack already flagged and avoided once — the Fixed Spawn entry in
+  MODS.md explicitly chose `/fill`/`/setblock` over hand-authoring a
+  raw `.nbt` file specifically because "building a raw NBT file blind,
+  with no way to test it in-game before committing it, is real
+  unverified risk for no benefit." Structurize's scan-then-build
+  workflow is the general-purpose version of exactly the safer pattern
+  already chosen once — genuinely worth it for this specific reason,
+  not just "a mod exists."
+
+**Honest tradeoffs, not a clean win either way:**
+- Structurize is a real, non-trivial mod even used standalone — it's
+  the engine MineColonies itself is built on, not a tiny utility. Worth
+  weighing against the pack's "keep footprint small" principle, even
+  though it's much lighter than installing full MineColonies.
+- **No mod here does the "check materials, consume them, then build"
+  gate on its own** — that's pack-specific economy logic (this pack's
+  own materials/recipes), and would need custom KubeJS glue regardless
+  of which placement mechanism (`/place template`, Structurize's Build
+  Tool, or an instant-structure mod) actually stamps the room down.
+  Choosing a mod doesn't remove this piece of work, only changes what
+  it's placing.
+- The zero-new-mod option (plain vanilla `/place template`, driven by a
+  custom right-click item checking inventory via KubeJS — same category
+  of build as the Wave Horn) stays on the table too, re-inheriting the
+  same blind-NBT-authoring risk Structurize specifically avoids. Cheaper
+  dependency-wise, more authoring risk.
+
+Not decided or built — research only, per what was actually asked.
+
+### Superseded (2026-08-20): Structurize plan below replaced by Create's Schematicannon
+
+Not pursued — see the addendum after this whole section for what
+replaced it and why. Kept here as the historical record of the
+research that led there, per this file's usual practice.
+
+### Original decision: go with Structurize. Plan below (2026-08-20)
+
+**One real risk surfaced while planning this, worth confirming before
+anything else is built on top of it.** Structurize's own Build Tool
+appears to have two placement modes: an instant "paste" button that
+multiple sources describe as **creative-mode only**, and survival-mode
+placement that's normally carried out by a **MineColonies Builder NPC**
+— which this pack explicitly isn't installing (that's the whole reason
+"standalone Structurize" was the pick over full MineColonies). Whether
+Structurize alone exposes any survival-safe, scriptable way to place a
+blueprint instantly (a command, or an API KubeJS can call) **isn't
+confirmed from research** — sources mention "a paste command was
+added" at some point, but not enough detail to trust blind. This is
+the load-bearing assumption for the whole feature and needs a direct
+check, not an assumption, given how many "should be fine per the docs"
+moments this pack has already been burned by.
+
+**Plan, structured so the risk above doesn't block starting:**
+
+1. **Verify first.** Install Structurize, check its actual current
+   command list/API directly (in-game or in its source), specifically
+   for any instant-placement path that works in survival without a
+   MineColonies colonist. This is a go/no-go fork for step 3 below —
+   everything else in this plan is useful regardless of the answer.
+2. **Author each room/corridor for real, safely.** Build each design
+   in-game (testable, WYSIWYG — the whole reason Structurize was picked
+   over hand-authoring NBT), then scan it with Structurize's Scan Tool
+   into a blueprint file. Do this for every planned room/corridor
+   before touching any trigger logic.
+3. **Deployment, forked on step 1's answer:**
+   - **If Structurize can instant-place from survival via a scriptable
+     path**: call that directly from the KubeJS trigger in step 4.
+   - **If not (the likelier outcome based on research)**: use
+     Structurize purely as the **authoring tool**, not a runtime
+     dependency. Load the scanned blueprint once in a test world, then
+     use vanilla's own **Structure Block** to re-save it as a real
+     `.nbt` structure file, and deploy via `/place template` — the same
+     vanilla mechanism already planned for the fixed spawn building and
+     wave-clear rewards (Implementation Cluster #1). Conversion tooling
+     for blueprint-format-to-`.nbt` exists in the wider community
+     (e.g. Bloxelizer), though the exact fit for Structurize's specific
+     format isn't confirmed either — worth checking, but the Structure
+     Block re-save path is the safer bet since it stays entirely
+     in-game. **This path means Structurize might not need to ship in
+     the final pack at all** — just used once, during authoring, then
+     the actual feature runs on vanilla commands like everything else
+     that's worked reliably so far.
+4. **The trigger + material-gate mechanic (needed regardless of step 3's
+   outcome — no mod does this part):**
+   - A custom item per room type (e.g. "Corridor Blueprint," "Storage
+     Room Blueprint"), crafted from existing loot-tier materials, not
+     invented ones.
+   - A marked "expansion socket" — a specific, reserved spot on the
+     Watchpost's perimeter (see "The Watchpost" and its chokepoint
+     addendum above) — right-clicked with the correct blueprint item.
+   - On right-click: check the player's inventory for the required
+     materials, tell them what's missing if short (reuse the
+     established `player.tell` feedback pattern), consume the
+     materials + blueprint item if sufficient, then trigger placement.
+   - **Same category of build as the Wave Horn — check its full
+     nine-point gotcha list first** (`var` not `const`/`let` in
+     repeated callbacks, `.entity` not `.player`, `getX()/getY()/getZ()`
+     not bare properties, never touch `event.level.isClientSide`, both
+     `ItemEvents.rightClicked` and `BlockEvents.rightClicked` fire for
+     one click and need a dedup guard) — this is squarely the same
+     custom-right-click-item territory, not new ground.
+   - One-shot per specific room via a persistent-data flag (same
+     `td_*` pattern used everywhere else in this pack), so a room can't
+     be built twice.
+5. **Positioning.** Each room's placement position/rotation is fixed
+   relative to its socket, hardcoded per room design — the base itself
+   sits at a known, fixed world position (per the Fixed Spawn system),
+   so this doesn't need to be computed dynamically.
+
+Not built yet — this is the plan, step 1 (verification) is the actual
+next action, not a detail to skip past.
+
+### Superseding decision (2026-08-20): Create's Schematicannon instead, found schematics in the world
+
+Asked directly to look into Create's building cannons. This turned out
+to be a genuinely better fit than Structurize, not just an alternative
+— it resolves the one real risk the Structurize plan was built around.
+
+**Found a standalone extraction, not the full Create mod.** A separate
+mod called simply **Schematicannon** (Forge 1.20.1) pulls out just the
+Schematicannon, Schematic and Quill, Schematic Table, and clipboard —
+"works literally exactly the same except without all of the other
+create stuff." Solves the footprint concern a full Create install would
+have raised (Create is a huge mod, mostly mechanical/rotational-power
+content irrelevant to this pack) without giving up the feature.
+
+**Directly survival-native — the exact gap Structurize had.** Workflow:
+scan a real, already-built structure with Schematic and Quill (same
+safe, testable authoring benefit as Structurize's Scan Tool), finalize
+it at a Schematic Table, load it into the Schematicannon alongside
+gunpowder (ammo) and building materials in an adjacent chest, then
+activate it — it fires blocks through the air into place over time,
+consuming the materials as it builds, and can report what's missing.
+No creative-mode restriction, no MineColonies colonist dependency. This
+is close to a literal match for "gather materials, activate something,
+it builds itself," not an approximation of it.
+
+**Direction chosen: curated schematics found while exploring, not
+player-designed freeform.** This connects several already-logged ideas
+into one payoff rather than needing new content:
+- **Same delivery mechanism as the "exploration feel" research above**
+  — finished schematic items go into the loot tables of structures
+  already planned there (vanilla desert temples/wells, and whichever of
+  YUNG's Better Desert Temples / Abandoned Structures / Treasure2 end
+  up picked). Technically the same tool already proven for this exact
+  job — **LootJS**, which already powers the mob-drop loot bag system.
+  Structure/chest loot tables are a different modifier type than the
+  entity-kill modifier already used (`addEntityLootModifier`) — the
+  exact method name for loot-table-keyed modifiers needs confirming
+  against LootJS's own source before writing it, same discipline as
+  every other LootJS integration in this pack so far, not assumed from
+  memory.
+- **Real payoff for the distance-based risk idea** (lootable buildings
+  addendum, under Base Expansion above) — rarer/richer room schematics
+  can gate to riskier, further-out or higher-tier finds (a plain
+  corridor from a common structure, a proper workshop room from
+  something rarer), mirroring the same tiered-rarity language already
+  used for loot bags and machine tiers.
+- **Real payoff for the amulet's border-crossing mechanic** — "go get a
+  schematic before the border naturally reaches that building" is now
+  a concrete, tangible reason to spend the amulet's cost early, not
+  just an abstract "better gear" one.
+- **Simplifies the player-facing flow** — since schematics are found
+  pre-made rather than player-scanned, players never touch Schematic
+  and Quill or the Schematic Table at all. The pack author does that
+  once, during content creation, and ships the finished schematic as a
+  lootable item. Less crafting-chain complexity for the player than the
+  full Create workflow implies.
+
+**Confirmed (2026-08-20): yes, it's a finished schematic** — once a
+schematic is finalized at the Schematic Table it exists as a plain
+item, so it can sit in a loot table like any other item. The exact NBT
+shape identifying which file it is still needs confirming against the
+mod directly when this gets built (not assumed from memory), but the
+underlying "is this even an item" question is settled.
+
+Not built yet — this is the current plan of record for this feature,
+replacing the Structurize plan above.
+
+## Starter gear removal "regression" — diagnosed, plus wave-campaign fun ideas
+
+Reported (2026-08-20/29 session): the wave-5 gear removal + flavor
+popup appears to have stopped working in the latest playtest. Actually
+read the current `wave_status.js` rather than guessing before
+responding — two separate, real findings:
+
+**Likely explanation, not a bug:** the curated campaign grew from 5 to
+8 waves (dated 2026-08-29 in the file's own comments — waves 6-8 were
+added), and `FINAL_WAVE` was deliberately bumped from 5 to 8 so the
+gear-removal narrative beat fires at the actual end of the campaign,
+not partway through. If the playtest that prompted this only ran
+through wave 5, that fully explains "it stopped working" — it's not
+broken, it fires later now.
+
+**A separate, already-fixed bug that may be the real explanation
+instead:** the roguelike permanent-buff choice popup (built, then found
+buggy, per its own removal comment in `wave_status.js`) left
+`td_awaitingChoice` stuck `true` forever once a wave cleared — this
+silently blocked the Wave Horn from re-firing *and* blocked gear
+removal *and* the countdown timer, all three, since all of them used to
+wait on the choice step resolving. Already fixed by removing the choice
+popup entirely and having gear removal + the countdown fire directly
+off the wave-clear edge again. If the reported playtest predates this
+fix, this — not the wave-count change — was the actual cause.
+
+**A third, still-live bug found in the same read, independent of the
+above:** the flavor text hardcodes **"held the line for five waves"**
+(`wave_status.js` line ~168), but the actual trigger now fires at wave
+8. Nobody updated the narrative line when `FINAL_WAVE` moved from 5 to
+8. Small, but it's exactly the flavor text being asked about, and it's
+currently factually wrong against the pack's own current design.
+
+**Decided (2026-08-20): gear removal stays pinned to wave 5, always —
+not tied to `FINAL_WAVE`.** `FINAL_WAVE` now means "length of the
+designed campaign" (8) — a different concept from "which wave the
+gear-removal narrative beat fires on" (5, by design, permanently). They
+were only ever the same number by coincidence, back when the campaign
+itself was 5 waves long; the campaign growing to 8 exposed that they'd
+been conflated. Framed as possibly the first of several **fixed wave
+events** — specific beats pinned to specific wave numbers regardless of
+overall campaign length — so worth building as a reusable pattern, not
+another one-off `if (waveNumber === X)` block.
+
+**Fix instruction for the other implementation session:**
+
+> **Fix: decouple gear removal from `FINAL_WAVE`, pin it to a fixed wave 5**
+>
+> `wave_status.js` currently gates starter-gear removal on
+> `waveNumber === FINAL_WAVE`, which drifted from 5 to 8 when the
+> campaign grew — wrong condition now, since gear removal is a fixed
+> wave 5 narrative beat, not "whenever the campaign happens to end."
+>
+> 1. Introduce a separate constant, e.g. `GEAR_REMOVAL_WAVE = 5`,
+>    decoupled from `FINAL_WAVE` entirely. Change the trigger condition
+>    to `waveNumber === GEAR_REMOVAL_WAVE`, not `FINAL_WAVE`.
+> 2. Fix the flavor text to interpolate the constant
+>    (`` `held the line for ${GEAR_REMOVAL_WAVE} waves` ``) rather than
+>    a hardcoded "five" — it happens to read correctly again right now,
+>    but hardcoding it is exactly how it went wrong the first time.
+> 3. **Structure this as the first of a small, reusable "fixed wave
+>    event" pattern**, per direct request — not sure yet how many more
+>    of these there'll be, but worth avoiding a second bespoke
+>    `if (waveNumber === X && !data.getBoolean('td_flagY'))` block
+>    copy-pasted per event. Something like a small array of
+>    `{ wave, flagKey, action }` entries checked once in the existing
+>    wave-clear branch would let future fixed-wave events (a wave 3
+>    diary beat, a distinct wave 8 finale — see the campaign-fun ideas
+>    below) slot in as data, not each needing their own hand-rolled
+>    conditional. Not over-engineering this upfront — just don't
+>    hardcode the assumption that gear removal is the *only* one.
+> 4. Playtest through wave 5 specifically (not just to 8) to confirm
+>    this fires at the right point now, given two different explanations
+>    were found for the original "stopped working" report and only
+>    testing distinguishes them.
+
+### Ideas for keeping the (now 8-wave) campaign interesting
+
+Asked directly to think about other events that could make the wave
+campaign more fun, now that it's grown from 5 to 8 waves:
+
+1. **Smaller narrative beats along the way, not just at the wave 8
+   finale** — a diary page, a distant explosion, a radio crackle at
+   wave 3 or 4, building the "previous occupant" story incrementally
+   rather than saving all of it for one closing line. Ties directly
+   into the diary/quest-book narrative device already planned under
+   Pack Aesthetic above.
+2. **A genuine, distinct wave 8 finale beat, separate from gear
+   removal** — wave 8 is now the real end of the designed campaign, a
+   role that used to belong to wave 5 before the expansion. Worth
+   asking whether it deserves its own true boss/mechanic rather than
+   just "the same wave 5 composition, scaled up."
+3. **A supply-drop event during the peacetime countdown gap** — a
+   container of useful materials appears somewhere nearby every few
+   waves, giving the gap between waves (already has a 3-minute
+   countdown, see "On-screen countdown timer" above) a reason to move
+   around, not just wait it out.
+4. **Revisit the roguelike choice popup, properly, not re-abandon it.**
+   It was pulled for being buggy (the `td_awaitingChoice` deadlock
+   above), not because the concept itself was rejected — see the
+   "revisiting the popup" addendum under Roguelike choice mechanics
+   above for the villager-trade-GUI and custom-Menu research that's
+   still sitting there unused. Three more waves of campaign length than
+   when that idea was first parked is more room for it to matter.
+5. **A rotating wave modifier** — "faster mobs this wave," "no
+   sound-first cue this wave" — cheap variety layered on the existing
+   roster/stagger-gap systems rather than needing new mob content per
+   wave.
+
+Not built — findings + a fix instruction for the two real bugs, and a
+set of fresh ideas for the fun-factor ask, not decided or prioritized
+against each other yet.
 

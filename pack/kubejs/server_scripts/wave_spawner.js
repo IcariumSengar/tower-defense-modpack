@@ -5,10 +5,13 @@
 // variety is still there to re-enable later.
 //
 // Each wave adds a mob type on top of the previous wave's roster, per
-// design: 1) zombie+skeleton, 2) +spider+flesh_human, 3) +witch+
-// flesh_villager, 4) +wither_skeleton+flesh_hunter_i, 5) +ravager (mini
+// design: 1) zombie+skeleton, 2) +spider+flesh_human, 3) +flesh_villager,
+// 4) +wither_skeleton+flesh_hunter_i, 5) +ravager (mini
 // boss)+flesh_suffer. Calling the horn again past wave 8 repeats wave
-// 8's composition — no waves designed beyond that yet.
+// 8's composition — no waves designed beyond that yet. Witches were
+// removed from the roster entirely 2026-08-29 (see docs/IDEAS.md's
+// "Mob roster exclusions" note) - wave 3 originally also added witch
+// alongside flesh_villager.
 //
 // Waves 6-8 added 2026-08-29 (direct request: "more waves, scaled
 // accordingly, keep the loot philosophy, use mob types from other mods
@@ -33,9 +36,10 @@
 // Scaled per the wave 5 rebalance precedent earlier this session (that
 // wave went from 12 mobs down to 7 - "too many regular mobs stacked
 // on hard hitters was the problem, not variety or toughness") - waves
-// 6-8 hold the same 5-mob trash floor (zombie/skeleton/spider/witch/
-// wither_skeleton @1 each) as wave 5 and add 1-2 new elites on top
-// (6/7/7 total mobs) rather than scaling raw counts back up.
+// 6-8 hold the same trash floor (zombie/skeleton/spider/wither_skeleton
+// @1 each - was 5 mobs including witch, now 4 since witch's removal) as
+// wave 5 and add 1-2 new elites on top rather than scaling raw counts
+// back up.
 //
 // Was vanilla-only from 2026-08-19 (TFTH removed for the first wave
 // debugging pass) until TFTH mobs were folded back in starting wave 2 —
@@ -102,27 +106,31 @@
 // spread systems are disabled via config (see pack/config/TFTH.toml) -
 // these are summoned directly, same as every vanilla mob here, not
 // spawned by the mod's own logic.
+// Witches removed entirely from the roster (2026-08-29, direct
+// request - "completely remove witches as a mob type," no reason
+// recorded). Was in waves 3-8; those rows just drop the witch entry
+// rather than backfilling with more of another mob - a clean removal,
+// not a rebalance. See docs/IDEAS.md's "Mob roster exclusions" note.
 var WAVES = [
   [['minecraft:zombie', 4], ['minecraft:skeleton', 4]],
   [['minecraft:zombie', 4], ['minecraft:skeleton', 4], ['minecraft:spider', 4], ['the_flesh_that_hates:flesh_human', 2]],
-  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 3], ['minecraft:witch', 3], ['the_flesh_that_hates:flesh_villager', 2]],
-  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 2], ['minecraft:witch', 2], ['minecraft:wither_skeleton', 3], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
+  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 3], ['the_flesh_that_hates:flesh_villager', 2]],
+  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 2], ['minecraft:wither_skeleton', 3], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
   // Scaled down 2026-08-29 (was 2/2/2/2/2/1/1 = 12 mobs, felt too OP) -
   // halved every regular-mob count to 1, kept the ravager (mini boss)
   // and flesh_suffer (25 attack damage, TFTH's hardest hitter) at their
   // existing floor of 1 each - they're the designed finale, the
   // dogpile of regular mobs alongside them was the actual problem.
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:bruteplaquecreatureone', 1]],
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:flesh_hunter_two', 1], ['the_flesh_that_hates:flesh_boomer', 1]],
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:plaquethreelegcreature', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:bruteplaquecreatureone', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:flesh_hunter_two', 1], ['the_flesh_that_hates:flesh_boomer', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:plaquethreelegcreature', 1]],
 ]
 
 var WAVE_MOB_TYPES = [
   'minecraft:zombie',
   'minecraft:skeleton',
   'minecraft:spider',
-  'minecraft:witch',
   'minecraft:wither_skeleton',
   'minecraft:ravager',
   'the_flesh_that_hates:flesh_human',
