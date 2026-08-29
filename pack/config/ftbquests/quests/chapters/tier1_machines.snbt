@@ -5,11 +5,12 @@
 	group: ""
 	icon: "trapcraft:spikes"
 	id: "E0FD1EE720089BB3"
-	order_index: 0
+	order_index: 1
 	progression_mode: "flexible"
 	quest_links: [ ]
 	quests: [
 		{
+			dependencies: ["538A1BBC9A1B8EAC"]
 			description: [
 				"Scrap and loot do not have to just be consumed for gear."
 				""

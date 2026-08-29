@@ -1,0 +1,191 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "basics"
+	group: ""
+	icon: "minecraft:book"
+	id: "1178FD42CF9984A2"
+	order_index: 0
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				"Whoever held this ground before you is gone. Their gear is yours now, for as long as it lasts. Get moving."
+			]
+			icon: "minecraft:netherite_sword"
+			id: "88C119F4CDC56F93"
+			rewards: [{
+				id: "EDAC534B628CB587"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				id: "3BF8DCAF2F4960C2"
+				type: "checkmark"
+			}]
+			title: "You're On Your Own"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["88C119F4CDC56F93"]
+			description: [
+				"The netherite blade and the iron plate weren't yours to start with. They belonged to whoever was here before you - and they didn't make it past wave five. This gear won't last that long either. Use it while you have it."
+			]
+			icon: "minecraft:clock"
+			id: "CF982E95B58602E4"
+			rewards: [{
+				id: "8C278819A2A642BF"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				id: "42E75310C2F28FF9"
+				type: "checkmark"
+			}]
+			title: "Borrowed Time"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["CF982E95B58602E4"]
+			description: [
+				"Right-click the horn to call the next wave in on your own terms, rather than waiting for one to find you."
+			]
+			icon: "kubejs:wave_horn"
+			id: "42E42312C8B61976"
+			rewards: [
+				{
+					count: 4
+					id: "24A66E75C30766A0"
+					item: "minecraft:cobblestone"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "84CF875D5FB0CB77"
+					item: "minecraft:oak_log"
+					type: "item"
+				}
+			]
+			tasks: [{
+				id: "581F189F7A4A833B"
+				type: "checkmark"
+			}]
+			title: "Sound the Horn"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["42E42312C8B61976"]
+			description: [
+				"They keep coming. Make sure more of them stop than start."
+			]
+			icon: "minecraft:zombie_head"
+			id: "B62C5B2A7651E4C8"
+			rewards: [{
+				id: "351F6384CED5BB12"
+				type: "xp_levels"
+				xp_levels: 3
+			}]
+			tasks: [{
+				entity: "minecraft:zombie"
+				id: "9F8B3C1D63CEAE9C"
+				type: "kill"
+				value: 5L
+			}]
+			title: "Thin the Horde"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["B62C5B2A7651E4C8"]
+			description: [
+				"Nothing goes to waste out here - not even the dead. Kills leave something behind."
+			]
+			icon: "kubejs:scavengers_bag"
+			id: "908B8B3AE8327895"
+			tasks: [{
+				consume_items: false
+				id: "24986BBE1C6FBBCF"
+				item: "kubejs:scavengers_bag"
+				type: "item"
+			}]
+			title: "Spoils of War"
+			x: 8.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["908B8B3AE8327895"]
+			description: [
+				"A bag does nothing shut. Right-click it."
+			]
+			icon: "minecraft:chest"
+			id: "538A1BBC9A1B8EAC"
+			rewards: [{
+				id: "0532F9400886F2D7"
+				type: "xp_levels"
+				xp_levels: 3
+			}]
+			tasks: [{
+				id: "EB785BCEF53397C3"
+				type: "checkmark"
+			}]
+			title: "Open It"
+			x: 10.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: [
+				"The border isn't fixed. Every wave you clear pushes it further out - more ground, more to find, more to defend."
+			]
+			icon: "minecraft:map"
+			id: "BE3E01220D23C31D"
+			rewards: [{
+				id: "1C41A9C1424FE8A4"
+				type: "xp_levels"
+				xp_levels: 3
+			}]
+			tasks: [{
+				id: "89DA3283FBE7FFDA"
+				type: "checkmark"
+			}]
+			title: "Watch the Walls Grow"
+			x: 12.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["BE3E01220D23C31D"]
+			description: [
+				"Five waves. That's as far as the last one got. The gear is gone now - it was never really yours. Whatever happens from here is on you."
+			]
+			icon: "minecraft:wither_skeleton_skull"
+			id: "E5587D743FF3F653"
+			tasks: [{
+				id: "F52E626FCE12BEB0"
+				type: "checkmark"
+			}]
+			title: "The Reckoning"
+			x: 14.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["E5587D743FF3F653"]
+			description: [
+				"Wave eight is as far as anyone's mapped this out. Past that, it's the same fight again, and again, for as long as you can hold. That's the whole point."
+			]
+			icon: "minecraft:totem_of_undying"
+			id: "0AA7EE28701688CA"
+			tasks: [{
+				id: "AD978B89F7FE38E7"
+				type: "checkmark"
+			}]
+			title: "No Turning Back"
+			x: 16.0d
+			y: 0.0d
+		}
+	]
+	title: "Basics"
+}

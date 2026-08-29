@@ -190,10 +190,30 @@ Trapcraft" entry for the full reasoning and what's still unconfirmed.
 
 ## FTB Quests (new, entirely unconfirmed in-game)
 
-One quest, "Fortify" (chapter "Defenses"), added 2026-08-29 to tell the
-player the Tier 1 machines above can be crafted. No config was set up
-to give the quest book — that's FTB Quests' unconditional default
-behavior on first login, confirmed from research rather than assumed.
+Two chapters as of 2026-08-29: **"Basics"** (10-quest linear intro
+chain — starter gear, the Wave Horn, a kill task, looting/opening a
+bag, base expansion, closing on the wave-8 endurance framing) and
+**"Defenses"** (the single "Fortify" quest from earlier, now slotted in
+as step 7 of that chain via a cross-chapter dependency rather than
+rebuilt). No config was set up to give the quest book — that's FTB
+Quests' unconditional default behavior on first login, confirmed from
+research rather than assumed.
+
+**On a fresh world, also check** (Basics chapter, all new 2026-08-29):
+- The chapter list shows "Basics" before "Defenses".
+- Quests 2-10 all show locked until the previous one in the chain
+  completes — the dependency chain actually gates progress, not just
+  sits there as inert data.
+- Quest 4 ("Thin the Horde") actually completes after killing 5
+  zombies — the first "kill" task type used anywhere in this pack.
+- Quest 7 ("Fortify") unlocks once quest 6 ("Open It") completes, and
+  completing Fortify itself unlocks quest 8 ("Watch the Walls Grow") —
+  the cross-chapter dependency in both directions.
+- Quest 9 ("The Reckoning") does NOT auto-complete at wave 5 — it's
+  deliberately a plain manual checkmark (no native "wave reached"
+  trigger exists), so you mark it yourself after experiencing the gear
+  removal. If it somehow auto-completes, something unexpected is going
+  on.
 
 **On a fresh world, check:**
 - You actually receive the quest book automatically, without anything

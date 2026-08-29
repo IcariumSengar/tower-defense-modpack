@@ -750,6 +750,35 @@ triggered — real personality, not just another damage block.
 >    real playtest, so confirming Trapcraft's traps actually feel better
 >    matters more than confirming they merely function.
 
+**Built (2026-08-29).** `machines.js` and the original `machine_recipes.js`
+deleted, Trapcraft 2.10.2 installed (confirmed real Forge 1.20.1 build).
+Checked Trapcraft's actual bundled recipe JSONs directly rather than
+assuming: spikes (5x iron_ingot) and bear_trap (iron_ingot +
+stone_pressure_plate) are both already 100% vanilla Common-tier
+materials — no KubeJS re-recipe needed. fan/igniter/magnetic_chest all
+need redstone (per point 5 above) — left out of Tier 1, unwired for
+now. FTB Quest didn't need restructuring — its item task already
+checked a tag rather than hardcoded IDs, so just retagged and renamed
+the now-recipe-less file to `machine_tags.js`.
+
+**One real gap, resolved sensibly:** Trapcraft has no wall/fence-shaping
+block at all, so nothing in it covers the Wooden Palisade's specific
+role. Substituted **plain vanilla `minecraft:oak_fence`** instead of
+forcing a mismatched Trapcraft item into that slot — zero new code,
+already craftable from Common-tier oak_log via a real vanilla recipe.
+**Confirmed this is the right call, not a gap to revisit**: the actual
+ask was "ditch the custom breakable-trap design, use a mod with fun
+traps" — that was about the traps specifically (the things that were
+"rubbish"), not a rule that literally every Tier 1 piece must carry the
+Trapcraft brand specifically. Plain vanilla fence for a plain wall is
+squarely in the spirit of "prefer what already exists over
+custom/forced-fit," not a deviation from it.
+
+**Not yet playtested** — confirming Trapcraft's traps actually feel
+better is the real bar here, not just that they function, given what
+they're replacing was found unfun in an actual playtest, not just
+theoretically risky.
+
 **Built (2026-08-29), same order as the brief.** `startup_scripts/machines.js`
 and the original `machine_recipes.js` deleted entirely. Checked
 Trapcraft's own bundled recipe JSONs directly rather than assuming:
@@ -2690,4 +2719,102 @@ here, that file isn't this session's to edit).
    `config/securitycraft-common.toml` after first launch for
    `allow_breaking_non_owned_blocks`, since the walls were placed via
    console with no owner.
+
+## Basics quest chapter — full build brief (2026-08-20, built 2026-08-29)
+
+Drafted per direct request, style-checked against ATM10 and similar
+progression-modpack quest books: chapters by theme, most quests reward
+a small "helpful boost" (often just XP levels for informative ones),
+dependencies chain into one obvious path rather than opening everything
+at once. Scaled down to fit this pack's actual size, not ATM10's.
+
+**One existing quest folds in rather than duplicating**: FTB Quests
+already has "Fortify" (retagged 2026-08-29 to check for a Trapcraft
+item — see the Tier 1/Trapcraft entry above). It becomes quest 7 in the
+chain below, not rebuilt from scratch — just re-slotted into the
+dependency order with the others built around it.
+
+Linear chain, 1→10, each depending on the previous one unlocking:
+
+1. **"You're On Your Own"** — Checkmark.
+   > *Whoever held this ground before you is gone. Their gear is
+   > yours now, for as long as it lasts. Get moving.*
+   Reward: 2 XP levels.
+
+2. **"Borrowed Time"** — Checkmark. Depends on 1.
+   > *The netherite blade and the iron plate weren't yours to start
+   > with. They belonged to whoever was here before you — and they
+   > didn't make it past wave five. This gear won't last that long
+   > either. Use it while you have it.*
+   Reward: 2 XP levels.
+
+3. **"Sound the Horn"** — Checkmark. Depends on 2.
+   > *Right-click the horn to call the next wave in on your own
+   > terms, rather than waiting for one to find you.*
+   Reward: 4x `minecraft:cobblestone` + 4x `minecraft:oak_log` (a
+   taste of what building actually costs).
+
+4. **"Thin the Horde"** — Kill task, 5x `minecraft:zombie`. Depends on 3.
+   > *They keep coming. Make sure more of them stop than start.*
+   Reward: 3 XP levels.
+
+5. **"Spoils of War"** — Item task, hold 1x `kubejs:scavengers_bag`.
+   Depends on 4.
+   > *Nothing goes to waste out here — not even the dead. Kills leave
+   > something behind.*
+   Reward: none (the bag itself is the payoff already earned).
+
+6. **"Open It"** — Checkmark. Depends on 5.
+   > *A bag does nothing shut. Right-click it.*
+   Reward: 3 XP levels.
+
+7. **"Fortify"** *(existing quest, re-slotted here)* — Item task,
+   craft a Trapcraft trap. Depends on 6.
+   > *(existing flavor text/reward, untouched — just given a place in
+   > the actual dependency chain instead of standing alone.)*
+
+8. **"Watch the Walls Grow"** — Checkmark. Depends on 7.
+   > *The border isn't fixed. Every wave you clear pushes it further
+   > out — more ground, more to find, more to defend.*
+   Reward: 3 XP levels.
+
+9. **"The Reckoning"** — Checkmark, marked manually after experiencing
+   the wave 5 gear-removal moment. Depends on 8.
+   > *Five waves. That's as far as the last one got. The gear is
+   > gone now — it was never really yours. Whatever happens from here
+   > is on you.*
+   Reward: none — pure narrative closure, callback to quest 2.
+   **Note carried over from the original draft**: FTB Quests has no
+   native "wave number reached" trigger, so this stays a manually-marked
+   checkmark rather than an auto-completing one unless someone wants to
+   wire KubeJS into FTB Quests' API to auto-complete it the moment gear
+   removal fires — real extra integration work, not assumed here.
+
+10. **"No Turning Back"** — Checkmark. Depends on 9.
+    > *Wave eight is as far as anyone's mapped this out. Past that,
+    > it's the same fight again, and again, for as long as you can
+    > hold. That's the whole point.*
+    Reward: none — closes the chapter, sets the endurance-run
+    expectation directly.
+
+**Authoring note**: use the dedicated FTB Quests SNBT-authoring
+tool/skill already referenced under the Quest Book design notes above
+for the actual chapter file — don't hand-write the SNBT blind.
+
+**Built (2026-08-29).** Same "no such tool/skill actually exists here"
+finding as the original Fortify quest (see `docs/MODS.md`'s FTB Quests
+entry, and [[feedback_verify_referenced_tools]] if this note is being
+read from memory) — the user already resolved this once this session in
+favor of careful hand-authoring, so it wasn't re-litigated a second
+time. SNBT written from the same verified sources as before (the mod's
+own decompiled task classes, real shipped quest files from
+GitHub-hosted modpacks) plus the reference doc's own `"kill"` task and
+`"xp_levels"` reward examples, both new task/reward types beyond what
+Fortify already used. Fortify itself wasn't rebuilt, just given
+`dependencies: ["538A1BBC9A1B8EAC"]` (quest 6's ID) to slot into the
+chain as step 7, and quest 8 depends on Fortify's own existing ID in
+turn — a cross-chapter dependency, which FTB Quests supports natively
+by ID regardless of which chapter a quest's `quests` array it's
+declared in. Full writeup in `docs/MODS.md`. **Not yet confirmed
+in-game** — same caveat as everything else in this quest book so far.
 

@@ -472,6 +472,48 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     quest completes — this is replacing something that already failed
     on feel once.
 
+- **FTB Quests "Basics" chapter — 10-quest intro chain (2026-08-29)**,
+  drafted by the parallel "ideas hub" session (full brief with exact
+  flavor text in `docs/IDEAS.md`'s "Basics quest chapter" entry) and
+  built here. `config/ftbquests/quests/chapters/basics.snbt`, a linear
+  1→10 dependency chain (each quest's `dependencies` points at the
+  previous quest's ID) covering the starter-gear narrative, the Wave
+  Horn, a kill task, opening a loot bag, and closing with the wave-8
+  endurance-run framing.
+  - **"Fortify" folds in as step 7, not rebuilt** — added
+    `dependencies: ["538A1BBC9A1B8EAC"]` (quest 6, "Open It") to the
+    existing quest in `tier1_machines.snbt` rather than moving or
+    recreating it. FTB Quests dependencies reference a quest by ID
+    regardless of which chapter it physically lives in — confirmed real
+    or standard practice, not assumed, from decompiling
+    `Quest.class`/`Chapter.class` earlier and cross-checking against
+    real cross-chapter-dependency modpacks. Quest 8 ("Watch the Walls
+    Grow") depends on Fortify's own existing ID the same way.
+    `tier1_machines.snbt`'s `order_index` bumped from 0 to 1 so
+    "Basics" (now `order_index: 0`) shows first in the chapter list.
+  - **Task types used beyond the ones "Fortify" already proved**: a
+    `"kill"` task (quest 4, `entity: "minecraft:zombie", value: 5L`)
+    and an `"xp_levels"` reward type (distinct from the plain `"xp"`
+    raw-points reward Fortify itself uses) — both confirmed from the
+    same real-source research as Fortify's own SNBT (the mod's actual
+    task classes plus real shipped quest examples), not guessed fresh.
+  - **Quest 9 ("The Reckoning") is deliberately just a plain checkmark
+    task**, per the brief's own explicit note: FTB Quests has no
+    native "wave number reached" trigger, and wiring KubeJS to
+    auto-complete it the moment wave-5 gear removal fires would be real
+    additional integration work, not assumed as in scope here. The
+    player marks it manually after experiencing that moment in-game.
+  - **Icons** reuse existing vanilla items (`netherite_sword`, `clock`,
+    `zombie_head`, `chest`, `map`, `wither_skeleton_skull`,
+    `totem_of_undying`) or the pack's own existing custom items
+    (`kubejs:wave_horn`, `kubejs:scavengers_bag`) — no new art, same
+    discipline as every other custom content this session.
+  - **Not yet confirmed in-game** — same caveat as the rest of this
+    quest book; specifically worth checking that the dependency chain
+    actually locks/unlocks in order, and that the cross-chapter
+    dependency into "Fortify" (and out of it, to quest 8) actually
+    displays/functions correctly rather than just being inert SNBT.
+
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same
   day it was picked up.
