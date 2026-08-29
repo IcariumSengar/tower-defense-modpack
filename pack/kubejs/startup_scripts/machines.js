@@ -12,6 +12,22 @@
 // custom BLOCK (only items so far: loot bags, Wave Horn), but texture
 // reuse keeps the actual new-content risk to block registration itself,
 // not art production too.
+//
+// Spike Trap's trigger logic rebuilt 2026-08-19->2026-08-29's original
+// implementation (formerly a separate server_scripts/spike_trap.js,
+// deleted) only ever checked the PLAYER's own position via
+// PlayerEvents.tick - a real implementation gap, not a design-doc
+// ambiguity (docs/IDEAS.md's Machine Progression list is unambiguous:
+// every Tier 1 entry, Palisade/Funnel Walls/Snare Trap included, is
+// about shaping/hurting the ATTACKER). Rebuilt using KubeJS's own
+// purpose-built block callback instead of a tick-poll: BlockBuilder
+// has a real .steppedOn(callback) method ("Set what happens when an
+// entity steps on the block", confirmed by extracting and reading
+// dev/latvian/mods/kubejs/block/BlockBuilder.class directly from the
+// installed KubeJS jar, not guessed or assumed from docs) that fires
+// for ANY entity - player or mob - stepping on this specific block,
+// no separate block-ID check needed since it's registered directly on
+// the block itself.
 
 StartupEvents.registry('block', (event) => {
   // Wooden Palisade - a themed fence block, not vanilla oak_fence
@@ -30,19 +46,60 @@ StartupEvents.registry('block', (event) => {
     .hardness(2.0)
     .resistance(3.0)
 
-  // Spike Trap - the genuinely novel one. Damage-on-contact and a
-  // hit-counter that degrades the block are both handled in
-  // server_scripts/spike_trap.js, not here - this only registers the
-  // block shape/look/property. "hits" is a custom integer blockstate
-  // (0-3), read and incremented via /execute commands in that script,
-  // the same command-based state-management style this pack already
-  // uses everywhere else (no block-entity/NBT persistence attempted -
-  // per-block NBT state is unverified territory for this pack, a plain
-  // blockstate property is the lower-risk equivalent). Java.loadClass
-  // is a real, standard Rhino/KubeJS capability for reaching arbitrary
-  // Minecraft/Forge classes - first time this pack has used it, but
-  // well-documented, not a guess.
+  // Spike Trap - the genuinely novel one. "hits" is a custom integer
+  // blockstate (0-3) - Java.loadClass is a real, standard Rhino/KubeJS
+  // capability for reaching arbitrary Minecraft/Forge classes, first
+  // time this pack has used it, but well-documented, not a guess.
+  //
+  // Damage-on-contact + the hit-counter degrade are both handled right
+  // here via .steppedOn(...), chained onto the same builder that
+  // creates the block - KubeJS invokes this callback later, during
+  // real gameplay, every time it later fires; this isn't run at
+  // registration time despite being written inside StartupEvents.
+  //
+  // Deliberately still avoids READING the "hits" property's current
+  // value from script code - genuinely unconfirmed whether/how that's
+  // possible, and unnecessary either way: the degrade sequence runs as
+  // a chain of `/execute if block ... [hits=N] run setblock ...
+  // [hits=N+1]` commands, standard vanilla conditional-command syntax
+  // with zero KubeJS-specific uncertainty on that part. Only one
+  // command in the chain can ever match the block's true state, so
+  // running all of them every trigger is harmless, not a bug.
+  //
+  // Per-trigger cooldown is tracked by BLOCK POSITION, not by which
+  // specific entity stepped on it - deliberate choice, not a shortcut.
+  // KubeJS's own persistentData is confirmed players/levels/servers
+  // only (kubejs.com/wiki/tips/persistent-data), not available on a
+  // generic mob; reliably identifying "is this the same specific mob
+  // as last tick" would need an entity UUID accessor never used or
+  // confirmed anywhere in this pack. spikeTrapLastTrigger (below) is a
+  // plain module-scope object, same persists-for-the-server-session
+  // pattern already proven by wave_spawner.js's pendingSpawns array.
+  // The tradeoff: two different entities stepping on the same trap
+  // within the same second only count as one trigger - a reasonable
+  // read for a physical trap that just went off, not a real gap.
+  //
+  // Guards on `!entity.getServer()` rather than checking
+  // `level.isClientSide` - confirmed elsewhere in this pack that merely
+  // *accessing* isClientSide throws a NullPointerException in this
+  // environment, independent of how it's used. getServer() returns
+  // null client-side (a server only exists server-side) without that
+  // problem, so a plain null-check gets the same "server-only" guard
+  // through a path already known to be safe.
+  //
+  // Uses `var`, not `const`/`let`, inside the callback body - this is a
+  // new-to-this-pack callback type, never confirmed safe with
+  // block-scoped declarations the way PlayerEvents.tick has been;
+  // ItemEvents.rightClicked/BlockEvents.rightClicked both threw
+  // "redeclaration of var X" with const/let on repeat invocations
+  // elsewhere in this pack, so `var` is the safe default until proven
+  // otherwise here specifically.
   const $IntegerProperty = Java.loadClass('net.minecraft.world.level.block.state.properties.IntegerProperty')
+  const SPIKE_TRAP_DAMAGE = 4 // 2 hearts - Tier 1, meant to deter/chip, not one-shot
+  const SPIKE_TRAP_MAX_HITS = 3 // block breaks on the 4th trigger (hits 0->1->2->3->broken)
+  const SPIKE_TRAP_COOLDOWN_TICKS = 20 // 1 second
+  const spikeTrapLastTrigger = {}
+
   event.create('spike_trap', 'basic')
     .displayName('Spike Trap')
     .textureAll('minecraft:block/cobblestone')
@@ -51,4 +108,28 @@ StartupEvents.registry('block', (event) => {
     .hardness(2.5)
     .resistance(4.0)
     .property($IntegerProperty.create('hits', 0, 3))
+    .steppedOn((stepEvent) => {
+      var entity = stepEvent.getEntity()
+      var server = entity.getServer()
+      if (!server || !entity.isLiving()) return
+
+      var pos = stepEvent.getPos()
+      var key = `${pos.getX()},${pos.getY()},${pos.getZ()}`
+      var currentTick = stepEvent.getLevel().getTime()
+
+      if (spikeTrapLastTrigger[key] !== undefined && currentTick - spikeTrapLastTrigger[key] < SPIKE_TRAP_COOLDOWN_TICKS) return
+      spikeTrapLastTrigger[key] = currentTick
+
+      entity.setHealth(Math.max(0, entity.getHealth() - SPIKE_TRAP_DAMAGE))
+
+      var posStr = `${pos.getX()} ${pos.getY()} ${pos.getZ()}`
+      for (var h = 0; h < SPIKE_TRAP_MAX_HITS; h++) {
+        server.runCommandSilent(`execute if block ${posStr} kubejs:spike_trap[hits=${h}] run setblock ${posStr} kubejs:spike_trap[hits=${h + 1}]`)
+      }
+      // The (SPIKE_TRAP_MAX_HITS)th hit breaks the trap entirely rather
+      // than advancing to one final blockstate - a broken trap should
+      // actually be gone, not just visually maxed-out with no further
+      // effect.
+      server.runCommandSilent(`execute if block ${posStr} kubejs:spike_trap[hits=${SPIKE_TRAP_MAX_HITS}] run setblock ${posStr} minecraft:air`)
+    })
 })

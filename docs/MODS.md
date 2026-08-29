@@ -162,7 +162,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     Lore line in `playtest_starter_kit.js`. Guarantees cobweb's actual
     slow/walk-through behavior exactly, zero risk of a reskinned
     version behaving subtly differently.
-  - **Spike Trap** (`server_scripts/spike_trap.js`) — the genuinely
+  - **Spike Trap** (`startup_scripts/machines.js`) — the genuinely
     novel piece, exactly as the brief predicted. Every other stateful
     mechanic in this pack lives on player `persistentData`; a block
     needing its *own* state (hit count, broken/intact) is new territory.
@@ -177,27 +177,63 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     threshold, breaking the block entirely on the 4th hit) — standard
     vanilla conditional-command syntax, only one command in the chain
     can ever match the block's true state, so running all of them every
-    trigger is harmless. Detection itself (`PlayerEvents.tick`,
-    throttled every 4 ticks matching `wave_status.js`'s pattern) only
-    needs `level.getBlock(x, y, z).id` — a basic block-type lookup, much
-    more standard KubeJS surface than property-reading. Damage via
-    `player.setHealth(player.getHealth() - 4)` (2 hearts) — reuses
-    `getHealth()`, already proven working in this codebase, rather than
-    an unverified `attack()`-style method. A `td_onSpikeTrap` persistent-
-    data boolean gates it to the false→true transition only, so standing
-    still on one doesn't deal damage every tick. Recipe: 2 iron_nugget +
-    6 cobblestone → 4 (the brief also suggested bone; iron_nugget alone
-    made a clean "metal spikes" theme, bone left open for a future
-    machine).
+    trigger is harmless. Recipe: 2 iron_nugget + 6 cobblestone → 4 (the
+    brief also suggested bone; iron_nugget alone made a clean "metal
+    spikes" theme, bone left open for a future machine).
+
+    **Trigger detection rebuilt (2026-08-29)** — direct pushback after
+    the first writeup: "obviously it is meant to kill/harm mobs, is the
+    design doc not clear enough?" The doc (`docs/IDEAS.md`'s Machine
+    Progression list — Palisade "shape enemy pathing," Snare Trap
+    "slow/briefly hold," Spike Traps right alongside them) was never
+    ambiguous; the original implementation genuinely only checked the
+    player (`PlayerEvents.tick` polling `player.getX/Y/Z()` against the
+    block under their feet) — an implementation gap, not a docs
+    problem. Rebuilt using a real KubeJS mechanism instead of a tick
+    poll: `BlockBuilder` has a `.steppedOn(callback)` method ("Set what
+    happens when an entity steps on the block" — confirmed by
+    extracting and reading `BlockBuilder.class` directly out of the
+    installed KubeJS jar, not assumed), chained onto the same builder
+    that creates the block. It fires for *any* entity — player or mob —
+    that steps on this specific block, with zero separate block-ID
+    check needed since the callback is registered on the block itself.
+    Old `server_scripts/spike_trap.js` deleted; everything now lives in
+    `startup_scripts/machines.js`'s block registration.
+    - **Per-trigger cooldown tracks BLOCK POSITION, not entity
+      identity** — deliberate, not a shortcut. KubeJS's own
+      `persistentData` is confirmed players/levels/servers only (its
+      own wiki: kubejs.com/wiki/tips/persistent-data), not available on
+      a generic mob; reliably telling "is this the same specific mob as
+      last tick" apart from another of the same type standing nearby
+      would need an entity UUID accessor never used or confirmed
+      anywhere in this pack. A plain module-scope object keyed by
+      `"x,y,z"` (same persists-for-the-server-session pattern already
+      proven by `wave_spawner.js`'s `pendingSpawns` array) sidesteps
+      that with only already-proven techniques. Tradeoff: two different
+      entities stepping on the same trap within the same second only
+      count as one trigger — a reasonable read for a trap that just
+      went off, not a real gap.
+    - Guards on `!entity.getServer()` (returns `null` client-side, since
+      only the server has a `MinecraftServer`) rather than checking
+      `level.isClientSide` — merely *accessing* that property is
+      confirmed elsewhere in this pack to throw a `NullPointerException`
+      outright, independent of how it's used.
+    - Uses `var`, not `const`/`let`, inside the callback body — a
+      never-before-used-in-this-pack callback type, and
+      `ItemEvents.rightClicked`/`BlockEvents.rightClicked` both threw
+      `"redeclaration of var X"` with block-scoped declarations on
+      repeat invocations elsewhere in this pack. `var` until this
+      callback type is specifically proven safe otherwise.
   - **Not confirmed in-game for any of the three.** Palisade is the
     safest bet (built-in vanilla block type, real behavior). Spike Trap
     is the least certain piece — specifically worth checking: the
     `IntegerProperty` blockstate actually registers and defaults to
     `hits=0` on placement (not assumed, KubeJS didn't document an
     explicit default-state setter), the `/execute if block` chain
-    correctly advances/breaks the block across real hits, and whether
-    `level.getBlock(x,y,z).id` returns the exact expected
-    `"kubejs:spike_trap"` string format.
+    correctly advances/breaks the block across real hits, `.steppedOn`
+    actually fires for a mob (not just the player, the entire point of
+    this rebuild), and that it doesn't fire a second time client-side
+    in some way the `getServer()` null-check doesn't catch.
 
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same

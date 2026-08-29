@@ -69,10 +69,6 @@ file = "kubejs/server_scripts/playtest_starter_kit.js"
 hash = "9c7d1e913244f95bf9cdcb7af47038e6ce15cb3e52ed47f94a90d9e2deec2e97"
 
 [[files]]
-file = "kubejs/server_scripts/spike_trap.js"
-hash = "89728c65870bd909b140d87a41734a23adcc47c3e47bb9f14d38c398f43f69ae"
-
-[[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
 hash = "cc7c55381c21cce6dfb583ef98f7f31849865b453d61938137eea8a570a320b9"
 
@@ -90,7 +86,7 @@ hash = "b601fa13e6176846a090ff91747623f2ff8ffb6fd431f2744331ed7ef2e7ecd1"
 
 [[files]]
 file = "kubejs/startup_scripts/machines.js"
-hash = "9e7dd1c27b9ab1ecdf57c30f35de967d8e16dce57e4fbe9bec178206c95d0270"
+hash = "5597ae9dc3228254032f36b0e0cb04a73fb43866622e131b5e59fe9bc0eaa948"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"

@@ -158,16 +158,20 @@ The first defensive machines in the pack — craft, don't just melee:
 - **Snare Trap**: 4 string (shapeless) → 1. Real vanilla cobweb under a
   different name — slows/holds anything that walks into it.
 - **Spike Trap**: 2 iron_nugget + 6 cobblestone (shaped) → 4. Deals 2
-  hearts of damage the moment you (or presumably a mob — not separately
-  confirmed) step onto it, and breaks entirely after 4 total triggers.
+  hearts of damage the moment anything living — you or a mob — steps
+  onto it, and breaks entirely after 4 total triggers (rebuilt
+  2026-08-29 to actually detect mobs, not just the player; see
+  `docs/MODS.md`).
 
 **Specifically worth checking on first test**: all three recipes
 actually show up/craft correctly, the Palisade visually connects like a
 fence and actually blocks a mob's path, the Snare Trap slows movement on
 contact, and the Spike Trap deals damage + visibly changes/breaks across
-repeated hits rather than either doing nothing or breaking on the very
-first hit. See `docs/MODS.md`'s Tier 1 machines entry for exactly which
-pieces are lowest vs. highest risk if something doesn't work.
+repeated hits — **specifically test it against a summoned mob, not just
+by walking onto it yourself** — rather than either doing nothing or
+breaking on the very first hit. See `docs/MODS.md`'s Tier 1 machines
+entry for exactly which pieces are lowest vs. highest risk if something
+doesn't work.
 
 ## Known caveats
 
