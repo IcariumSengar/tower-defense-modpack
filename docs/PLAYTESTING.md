@@ -104,6 +104,27 @@ Removed mods section if you want the re-add path later.
 Epic Siege Mod's AI behavior (zombies dig/pillar, creepers breach walls,
 etc.) is ambient/always-on and applies to whatever the horn spawns.
 
+## Tier 1 machines (new, entirely unconfirmed in-game)
+
+The first defensive machines in the pack — craft, don't just melee:
+
+- **Wooden Palisade**: 4 oak_log + 2 cobblestone (fence-shaped recipe) →
+  6. Places/connects like a vanilla fence — should block/shape mob
+  pathing, most mobs can't hop it, spiders/flying mobs still can.
+- **Snare Trap**: 4 string (shapeless) → 1. Real vanilla cobweb under a
+  different name — slows/holds anything that walks into it.
+- **Spike Trap**: 2 iron_nugget + 6 cobblestone (shaped) → 4. Deals 2
+  hearts of damage the moment you (or presumably a mob — not separately
+  confirmed) step onto it, and breaks entirely after 4 total triggers.
+
+**Specifically worth checking on first test**: all three recipes
+actually show up/craft correctly, the Palisade visually connects like a
+fence and actually blocks a mob's path, the Snare Trap slows movement on
+contact, and the Spike Trap deals damage + visibly changes/breaks across
+repeated hits rather than either doing nothing or breaking on the very
+first hit. See `docs/MODS.md`'s Tier 1 machines entry for exactly which
+pieces are lowest vs. highest risk if something doesn't work.
+
 ## Known caveats
 
 - `playtest_starter_kit.js`, `wave_spawner.js`, `wave_status.js`, and

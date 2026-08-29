@@ -149,6 +149,195 @@ Cross-links:
 Not decided or built — just how the pieces connect if this gets picked
 up.
 
+### Addendum (2026-08-20): "exploration feel" mod research — the earlier blocker is gone
+
+Asked directly: research what an "exploration feel" would look like and
+what mods could deliver it — named abandoned cities, settlements, and
+rare/valuable loot chests specifically, with expanding outward meant to
+feel like uncovering more of the map, and the amulet's border-crossing
+letting players push into that further and earlier than the border
+alone would allow.
+
+**The earlier blocker on this is gone.** Back in the first mod-list
+research pass (see "Mod-list research" under Pack Aesthetic above),
+structure-generation mods for this exact purpose (Abandoned Structures,
+Massive Ruined City, Apocalypse Structures) were found and flagged as
+"blocked by the Superflat decision" — structure-gen mods need real
+terrain to place naturally, and the pack was still on Superflat then.
+That's no longer true: the pack now generates every world as **Single
+Biome: Desert** with standard vanilla terrain noise (see the Seed
+research section above) — real terrain exists now, so this class of mod
+is actually installable.
+
+**New standing filter to apply to any exploration/structure mod from
+here on, specific to this pack's world-gen setup:** the desert-forced
+override (`kubejs/data/minecraft/dimension/overworld.json`) only fixes
+the *biome*, everything else about placement still runs through
+biome-tag rules — so a candidate mod's structures need to actually be
+tagged for desert (or a broad/overworld-wide tag) to ever appear at
+all, and a mod that adds its **own new biome** (its structures usually
+gated to that biome specifically) will likely never generate anything
+here, since `biome_source: fixed` means no other biome can ever place.
+And a mod that replaces/generates via its **own world/dimension
+generator** (not just structure placement within the existing one) is a
+real conflict risk against this pack's own custom `overworld.json`
+override — needs explicit compatibility verification, not an
+install-and-hope.
+
+**Candidates found, evaluated against that filter:**
+- **YUNG's Better Desert Temples** (Forge 1.20.1, 60.4M downloads,
+  needs YUNG's API) — redesigns vanilla's own Desert Temple with
+  puzzles/traps/parkour and a boss (60 HP "Pharaoh"), much better loot.
+  **Lowest risk of all candidates** — it enhances a structure already
+  confirmed generating in this exact pack (MODS.md: "desert temples...
+  still generate"), not a new biome-gated structure.
+- **Repurposed Structures** (Forge 1.20.1) — reskins vanilla structures
+  per-biome (desert dungeons get Husk spawners instead of Zombie,
+  Badlands get their own Desert Temple/Well variants) using only
+  vanilla blocks. Doesn't need its own biome — it retextures whatever
+  vanilla structure actually generates, which under this pack will
+  always be the desert variant. Good complementary, low-risk fit.
+- **Abandoned Structures** (Forge 1.20.1) — ruined houses, towers,
+  dungeons with loot/mob spawns, described as spawning "across multiple
+  biomes." Matches "settlements" directly — needs checking whether
+  desert is actually one of its tagged biomes before assuming it'll
+  appear here.
+- **The Lost Cities** (Forge 1.20.1) — the strongest match for
+  "abandoned cities" by far: ruined skyscrapers, apartment blocks,
+  factories, roads, subways, flooded areas, loot-filled underground
+  rooms. **Real conflict risk, flagged explicitly**: Lost Cities is
+  historically known to work by supplying its own world/chunk
+  generator layered onto terrain, which is exactly the category of mod
+  that risks fighting this pack's own `overworld.json` override rather
+  than just adding structures within it. Its own docs claim it "can be
+  combined with other biome and terrain mods," but that needs verifying
+  against this pack's specific *datapack-injected* override
+  specifically, not taken on faith — highest-reward, highest-risk
+  candidate here.
+- **Treasure2** (Forge 1.20.1) — the closest match to "loot chests like
+  those gold ones": 18+ chest types across rarity tiers, locked with
+  keys/charms, plus Mimic Chests (hostile creatures disguised as
+  chests). Adds its own buildings too, so it inherits the same
+  desert-tag question as Abandoned Structures — needs checking.
+- Considered and set aside: **Mine Treasure** (mining-triggered loot,
+  not exploration/structure-based — different mechanic than what was
+  asked for) and **Craftable Loot Chests** (lets the player craft their
+  own themed chests — the opposite of a discovery mechanic, doesn't fit
+  "uncover more of the map" at all).
+
+**Direct tie to the amulet mechanic, as asked:** this is exactly what
+gives the amulet's border-crossing (see the "solidifying" addendum
+under the Amulet idea below) something concrete to be *for* — pushing
+past the current border early to reach one of these richer structures
+before it's "officially" opened by the border's own growth, at the
+cost of giving up the amulet's buffs. Ties the two ideas together with
+real content, not just an abstract mechanic.
+
+Nothing installed — all research, pending a call on which candidates
+(especially Lost Cities, given its conflict risk) are worth the actual
+compatibility check.
+
+### Addendum (2026-08-20): relaxing "literal desert" — Biomes O' Plenty researched
+
+Follow-up: doesn't need to be locked to vanilla's exact `minecraft:desert`
+biome specifically — open to something like **Biomes O' Plenty** for
+biomes that feel deserty without being that one literal tag.
+
+**Confirmed real and relevant:** BOP is available for Forge 1.20.1
+(requires **TerraBlender** as a hard dependency — how BOP and most
+biome mods inject themselves into world gen). Of its 50+ biomes, the
+standout arid-themed one is **Wasteland**: ground made of Dried Salt,
+dead leafless trees, only scattered Dead Grass/Desert Grass, dust
+particles drifting through fog, no passive/neutral mobs, Husks spawn
+instead of Zombies. That's arguably a **closer match to this pack's
+Fallout-post-apocalyptic aesthetic than plain vanilla desert** — it's
+already "desolate wasteland" by design, not just "sandy." Also has
+**Lush Desert** and **Cold Desert** (cold desert is likely off-theme
+for this pack specifically). Couldn't confirm whether BOP's classic
+Outback/Mesa-style biomes are still in the current 1.20.1 build without
+checking the wiki directly — flagged, not assumed.
+
+**Real technical complexity, worth being honest about rather than
+implying "just install it":** BOP by default adds *all* 50+ of its
+biomes into world generation, not just the arid ones — getting "several
+deserty biomes, nothing else" needs actively curating that down, and
+this pack's current world-gen override (`biome_source: fixed`, locked
+to one literal biome ID) can't express "a themed subset" at all as
+currently written. Two real paths, meaningfully different effort:
+- **Simple path (matches this pack's established pattern of staying
+  small first):** keep the exact same `fixed` mechanism already
+  working — just point it at `biomesoplenty:wasteland` instead of
+  `minecraft:desert`. Zero new technical risk, same one-file override,
+  same proven pattern, immediate aesthetic upgrade toward the actual
+  Fallout brief. Adds one new hard dependency (TerraBlender) but no new
+  world-gen complexity.
+- **Richer path (real biome variety, real cost):** replace the `fixed`
+  biome source with a proper `multi_noise` one carrying a curated
+  parameter list of just the chosen arid biomes. Directly researched
+  this is hard to hand-author — "making a biome source that places
+  biomes according to terrain by hand is borderline impossible" — but a
+  purpose-built community tool exists specifically for this
+  (**Whitelist-Minecraft-Biomes**, a Python generator that produces the
+  parameter-list JSON for a chosen biome subset), which meaningfully
+  de-risks it. Also intersects with TerraBlender's own region-weighting
+  config (`terrablender.toml`), which doesn't currently seem to have
+  mature support for "only include these specific biomes" — another
+  real unknown to resolve before committing to this path.
+
+**Recommendation, following the same small-first pattern already used
+elsewhere in this file:** the simple path (swap the fixed biome ID to
+Wasteland) gets a real, better-fitting aesthetic win for near-zero
+technical risk, and doesn't foreclose the richer multi-biome version
+later — it's the same override mechanism either way, just a bigger
+rewrite of one file when that's actually wanted. Not decided or built —
+a recommendation, not a decision made here.
+
+**Decided (2026-08-20): go with the simple path now, richer multi-biome
+version stays recorded above as the explicit future upgrade** — same
+"small scope first" pattern as everything else in this file. Sent as a
+build instruction to the other implementation session:
+
+> **Feature: swap the forced world biome from vanilla desert to Biomes O' Plenty's Wasteland**
+>
+> Context: the pack currently forces every world to generate as one
+> fixed biome via a datapack override
+> (`kubejs/data/minecraft/dimension/overworld.json`,
+> `biome_source: {"type": "minecraft:fixed", "biome": "minecraft:desert"}`).
+> Biomes O' Plenty's **Wasteland** biome (Dried Salt ground, dead
+> leafless trees, dust-through-fog, Husks instead of Zombies) is a
+> closer fit for this pack's Fallout-post-apocalyptic aesthetic than
+> plain vanilla desert. Keep the exact same override mechanism — this
+> is a one-value swap, not a world-gen rewrite.
+>
+> Build:
+> 1. Add **Biomes O' Plenty** and its hard dependency **TerraBlender**
+>    to the mod list (Forge 1.20.1 builds of both confirmed available).
+> 2. In `overworld.json`, change the `biome` value from
+>    `"minecraft:desert"` to `"biomesoplenty:wasteland"` — same
+>    `fixed` biome-source structure, just a different biome ID.
+> 3. **Verify structure compatibility didn't just break.** The
+>    already-confirmed-working vanilla desert temples/wells/villages
+>    (see MODS.md's Fixed spawn entry) generate because they're tagged
+>    for desert-like biomes — Wasteland may or may not carry the same
+>    structure-placement tags. Check in-game whether those structures
+>    still appear, since this pack's whole "structures spawn around the
+>    player" satisfaction depends on it, not just the ground texture
+>    changing. If structures stop generating, that's the first thing to
+>    debug, not a surprise to work around blindly.
+> 4. Sand-resurfacing work already planned/built for the
+>    flatten-a-wider-radius-around-spawn feature (see above) should
+>    reconsider its resurface block choice too — Dried Salt might read
+>    better than sand once the biome itself is Wasteland, worth a call
+>    once both land.
+>
+> **Recorded, not building now:** a richer multi-biome version (several
+> curated BOP arid biomes together, not just one) is a real future
+> upgrade — needs a proper `multi_noise` biome source with a curated
+> parameter list, hard to hand-author but de-risked by an existing
+> community tool (Whitelist-Minecraft-Biomes). See the research above
+> for the full tradeoff. Don't build this now — the single-biome swap
+> is the whole scope for this pass.
+
 ## Amulet as mob-attraction object (instead of motes/player/location)
 
 Core idea: an amulet item, wearable by the player or placeable on a
@@ -293,6 +482,79 @@ mirroring loot tiers.
   sink); Tier 3–4 need active power/fuel (different maintenance
   pressure) — keeps both early and late game resource-tense via
   different mechanisms.
+
+### Recommended next step (2026-08-20): build Tier 1, nothing exists to defend with yet (built 2026-08-29)
+
+Flagged as the single biggest gap between what's built and the pack's
+actual premise: waves, loot, mob-targeting, and atmosphere all work,
+but there is currently **zero way to craft a defense** — the player
+just melees everything with the starter sword. This also directly
+undercuts the "Starter gear as a dead soul's leftovers" idea above —
+that gear disappears at wave 5 with "it's up to you now," but right
+now there's genuinely nothing built to have leaned on by then. Sent as
+a build brief:
+
+> **Feature: Tier 1 machines — Spike Trap, Palisade, Snare Trap**
+>
+> Context: no machines exist in the pack yet. This is the first slice
+> of the "loot → craft machines → survive" loop the pack is actually
+> named for. Build in this order — easiest/lowest-risk first, to bank a
+> working win before the harder one:
+>
+> 1. **Wooden Palisade / Funnel Walls — build first, near-zero risk.**
+>    This likely needs no custom logic at all: register a themed
+>    wall/fence block, craft it from Common-tier loot materials (oak
+>    logs, cobblestone — already in the Scavenger's Bag pool, see
+>    `loot_bag_open.js`), and let vanilla pathfinding do the rest.
+>    `mob_aggro.js`'s `setTarget()` only forces *who* a mob targets, not
+>    *how* it paths there — normal pathfinding already routes around
+>    solid blocks, so a placed wall should shape approach lanes for
+>    free. Verify this assumption in-game before assuming it "just
+>    works," same discipline as everything else in this pack.
+> 2. **Simple Snare Trap — build second.** Vanilla cobwebs already do
+>    almost exactly this (heavy movement slow on contact) — check
+>    whether a reskinned cobweb-behavior block gets most of the way
+>    there before building custom entity-collision detection from
+>    scratch. Craft from Common-tier materials (string is already in
+>    the loot pool for exactly this reason).
+> 3. **Spike Trap — build last, most novel, most likely to need real
+>    debugging.** Needs new territory for this codebase: damage-on-contact
+>    plus a hit-counter that degrades/breaks the block after N hits.
+>    Every other stateful mechanic in this pack so far has lived on
+>    *player* persistent data (`td_*` flags) — per-block state (hit
+>    count, broken/intact) is a genuinely new pattern, not something to
+>    assume works the same way without checking. Craft from Common-tier
+>    materials (iron nugget/ingot, bone already in the pool).
+>
+> All three should be **Tier 1 = no power, no fuel, breakable/cheap**
+> per the existing Machine Progression design — don't reach for the
+> Power System section below yet, that's Tier 3+ scope. Recipes should
+> pull from materials already in the Scavenger's Bag (Common tier) loot
+> pool specifically, not invented materials — keeps this consistent
+> with the standing vanilla-materials-only loot decision.
+
+**Built (2026-08-29), same order as the brief.** First time this pack
+has registered a custom *block* (only items before now) — researched
+KubeJS's actual 1.20.1 block-registration capabilities directly rather
+than assuming (`.textureAll()`/`.texture()` for reusing vanilla textures
+with zero new art, the built-in `fence` block type for real vanilla
+fence behavior, `Java.loadClass(...IntegerProperty)` for a custom
+blockstate). See `docs/MODS.md`'s Tier 1 machines entry for the full
+implementation and the risk-reduction calls made for Spike Trap
+specifically (avoided reading the custom blockstate property from
+script code at all — genuinely unconfirmed whether that's even
+possible — by running the whole hit/degrade sequence as a chain of
+`/execute if block` commands instead, standard vanilla syntax with zero
+KubeJS-specific uncertainty). Palisade uses oak_log's texture (not
+planks) for a "raw stakes" look; Snare Trap crafts real vanilla cobweb
+from string with a custom display name via NBT rather than reskinning
+cobweb's collision/slow behavior from scratch; Spike Trap's recipe uses
+cobblestone + iron_nugget (the brief also suggested bone — iron_nugget
+alone was enough for a themed "metal spikes" recipe, bone left for a
+future machine if one wants it). **None of the three confirmed in-game
+yet** — Wooden Palisade is the safest bet (built-in vanilla block type),
+Spike Trap the least certain (custom property + block-position reading,
+neither directly confirmed against this exact KubeJS version).
 
 ### Power system
 - Wireless power — no cables, place a machine and it draws power
@@ -632,6 +894,94 @@ injection), replacing the vanilla `overworld` dimension's generator
 directly — every world generates as Desert automatically now,
 regardless of what's clicked on the creation screen. See
 `docs/MODS.md`'s Fixed spawn entry for the exact mechanism.
+
+**Seed-hunting reopened, then reconsidered again (2026-08-20).** Asked
+in this session for seeds that are "relatively flat and not caves,"
+since enemies will spawn there, with the spawn area meant to reflect
+that starting feel. Worth being precise about what the override above
+actually does before chasing this further: it only forces the
+**biome** to desert (`biome_source: fixed`) — the generator is still
+plain `minecraft:noise` with vanilla's standard `overworld` settings,
+so terrain height, ravines, and caves all still generate exactly as
+normal, just always tagged desert. So "flat, no caves" is a real,
+separate concern from the biome decision, not something already solved
+by it.
+
+**But: this is the exact same unverifiable-seed trap the pack already
+hit and deliberately avoided once.** The reason Single Biome: Desert
+got picked over a specific seed in the first place was that none of the
+candidate seeds above could be verified — Chunkbase's seed map is
+JS-rendered, not fetchable without actually running the game. That
+limitation hasn't changed. Chunkbase's **Seed Finder** app does support
+searching by terrain condition (not just biome/structure), which is the
+right *tool*, but any specific seed it or a search turns up still can't
+be confirmed flat-near-spawn without opening it in-game — same
+unverified-lead problem, just with a better search tool underneath it.
+
+**Recommendation: don't gamble on a seed a second time — extend the
+approach that's already worked twice instead.** The starter base's own
+footprint already handles uneven terrain deterministically, regardless
+of seed — a stone foundation dug 3 blocks down plus headroom cleared 3
+blocks up, built via `/fill`, per `docs/MODS.md`'s Fixed spawn entry.
+The same technique (flatten a wider radius via command, not by hoping
+the seed cooperates) would guarantee a flat, cave-free spawn area no
+matter what seed the world uses — deterministic, testable, and doesn't
+depend on trusting an unverified web-search lead a second time. Not
+built — a recommendation to weigh against actually seed-hunting, not a
+decision made here.
+
+**Sent as a build instruction to the other implementation session
+(2026-08-20):**
+
+> **Feature: flatten a wider radius around fixed spawn, deterministically, seed-independent**
+>
+> Context: the pack now generates every world as Single Biome: Desert
+> (`kubejs/data/minecraft/dimension/overworld.json`), but that override
+> only fixes the *biome* — terrain height, ravines, and caves still
+> generate under standard vanilla `overworld` noise, so the area around
+> the fixed spawn point isn't guaranteed flat or cave-free. Seed-hunting
+> for a naturally flat spot was considered and rejected — it's the exact
+> unverifiable-lead problem that already caused the earlier move away
+> from a specific seed toward Single Biome: Desert in the first place
+> (Chunkbase's seed map can't be checked without actually running the
+> game). Building this deterministically is the more reliable path,
+> consistent with what's actually worked in this pack so far.
+>
+> Build:
+> 1. **Reuse the existing technique, wider.** The starter base's own
+>    footprint already handles uneven terrain deterministically — a
+>    stone foundation dug 3 blocks down (covers local dips/dunes) plus
+>    headroom cleared 3 blocks up (covers local rises), via `/fill` (see
+>    `playtest_starter_kit.js`, per `docs/MODS.md`'s Fixed spawn entry).
+>    Apply the same foundation-dig + headroom-clear pattern over a wider
+>    radius — matching the starting worldborder size (`base_expansion.js`
+>    auto-sets this to **50, the border's diameter**, so roughly ±25
+>    blocks from the fixed spawn point on each axis, not ±50).
+> 2. **Resurface the top layer as sand**, not exposed stone — the
+>    starter base building itself already has its own floor
+>    (stone_bricks per the existing kit), but the open ground around it
+>    should read as flat desert, not a stone quarry. Set the surface
+>    layer explicitly to `minecraft:sand` (or a sand/sandstone mix) after
+>    leveling.
+> 3. **One-shot, same trigger as everything else in this flow** — gate
+>    on the same one-time guard already used for the starter kit/fixed
+>    spawn (`td_playtestKitGiven`-style flag), so this only runs once on
+>    a brand-new world, not every login.
+> 4. **Watch vanilla's `/fill` block-count limit** (default 32,768 blocks
+>    per command, via the `commandModificationBlockLimit` gamerule) — a
+>    ~50x50 area across several Y-layers (foundation + headroom) should
+>    stay under that per layer, but confirm the actual math before
+>    assuming one `/fill` call covers the whole volume; chunk into
+>    per-layer or per-quadrant `/fill` calls if not. This is exactly the
+>    kind of "should be fine" assumption that's been wrong before in this
+>    codebase (Math.PI, bare `.x/.y/.z`) — verify, don't assume.
+> 5. **Don't forget the vertical extent of caves/ravines** — a ravine
+>    deeper than the 3-block foundation dig would still leave a gap
+>    underneath. Consider filling solid stone down further (or checking
+>    for air below the foundation layer and back-filling it) rather than
+>    assuming 3 blocks is always enough, since this is now covering a
+>    much larger area than the original 11x11 footprint it was designed
+>    for.
 
 ## Confirmed working: right-click-item + mob-summon pattern (Wave Horn, 2026-08-19)
 
@@ -1018,6 +1368,66 @@ past the choice step until a pick is registered (`td_awaitingChoice`),
 and the Wave Horn itself refuses manual re-use while a choice is
 pending — functionally blocking, without needing to freeze the server.
 
+### Addendum (2026-08-20): revisiting the popup — chat-based feels wrong, want a real GUI
+
+Direct feedback: the current `/tellraw`-clickable-text implementation is
+buggy and doesn't feel right. Asked to look again at building an actual
+GUI with buttons, closer to a Vampire-Survivors-style level-up screen.
+
+**Re-checked ScreenJS's death and the "no maintained alternative"
+finding — both hold up.** Searched again specifically for anything
+resembling a player-facing custom-menu addon: **"KubeJS GUI"** looked
+promising at first (a distinct project from "KubeJS GUI Overhauled,"
+confirmed Forge 1.20.1, actively updated) but turned out to be a
+recipe-authoring tool for modpack developers — a template system for
+visually building KubeJS *recipes*, not an in-game player-facing
+screen. Not a substitute, same category miss as "KubeJS GUI Overhauled"
+already was. No real find here beyond what was already known.
+
+**Two real candidate directions, neither built, honestly different
+confidence levels:**
+
+- **Villager-trade-GUI reuse (more confident, lower risk).** Vanilla's
+  actual trading screen can be given fully custom offers via NBT
+  (`Offers:{Recipes:[{buy:{id:...},sell:{id:...},...}]}` on a summoned
+  villager) — real icon-based, clickable slots, much closer to
+  "buttons" than clickable chat text, and zero new mod dependency,
+  same "reuse a real vanilla mechanic via commands" pattern as
+  everything else that's actually worked in this pack. **Real gap, not
+  yet verified**: whether KubeJS exposes a reliable server-side event
+  for "which trade did this player just complete," which is the actual
+  mechanism needed to apply the corresponding buff — this needs
+  checking directly (against KubeJS's real entity/villager event API,
+  the same way ScreenJS's death was confirmed directly rather than
+  assumed) before treating this as a real plan rather than a lead.
+- **A genuine custom Container/Menu via KubeJS's own `StartupEvents.registry('menu', ...)`
+  (higher risk, closer to what was actually asked for).** Search
+  results couldn't cleanly separate whether this registry event is
+  KubeJS *core* functionality (available regardless of ScreenJS) or
+  something ScreenJS itself provided — every source found mixes the
+  two together. Needs a direct in-game check, not a search-engine
+  answer, given how often "should be fine per the docs" has been wrong
+  in this exact codebase (Forge's own docs were wrong about
+  `RightClickItem`/`RightClickBlock`, LootJS's README named a method
+  that doesn't exist). If it does work standalone, this is the more
+  literal answer to "a real GUI with buttons" — actual custom-drawn
+  choice buttons, not a reused vanilla screen — but building a working
+  Container/Menu from scratch is a meaningfully bigger, riskier task
+  than anything else built in this pack so far; nothing existing to
+  pattern-match against the way the Wave Horn's bugs at least all had
+  precedent by the time loot bags hit similar ones.
+
+**Recommendation:** verify the villager-trade approach's trade-detection
+gap first — it's the cheaper, more vanilla-aligned path, and confirming
+or ruling it out is quick. Only chase the real custom-Menu route if that
+gap turns out to be a dead end, given its higher build risk.
+
+**Parked (2026-08-20):** not being pursued right now. The current
+`/tellraw` chat-menu implementation stays as-is, bugs and all, rather
+than investing in either candidate direction above at this time. Both
+directions stay recorded here for whenever this gets picked back up —
+not decided against, just not now.
+
 ## Starter gear as a dead soul's leftovers, taken away after wave 5
 
 Core idea: the sword and armor the player currently starts with
@@ -1402,4 +1812,86 @@ part of either fog discussion.
   trigger points (wave beginning vs. wave ending) that happen to both be
   "timed sequences around a wave," not the same mechanism. No shared
   machinery was needed or used between them.
+
+## "The Watchpost" — a better starting structure
+
+Core idea: replace the current starting structure (plain
+stone_bricks/cobblestone box, explicitly marked "playtest convenience
+only, not real pack design" in `playtest_starter_kit.js`) with something
+that actually earns its place in the fiction — a small, fortified
+homestead the previous, unfortunate occupant clearly built up before
+they died, not a blank field the player starts fresh on.
+
+**Layout:**
+- A single-room shack at the center — where they lived, and where the
+  starting gear/corpse narrative comes from (see "Starter gear as a
+  dead soul's leftovers" above). Weathered cobblestone/stone brick
+  walls (mix in mossy/cracked variants for age), a couple of boarded
+  windows (iron bars behind trapdoors, reading as "boarded up"), one
+  door.
+- A short watchtower at one corner, 2-3 blocks above the rest, reachable
+  by ladder — real sightlines over the desert. Not just flavor: a
+  natural home for a Tier 2/3 turret later (Machine Progression notes
+  above), and it makes "tower defense" a literal, physical feature of
+  the base rather than just the pack's name.
+- A low perimeter wall around a small courtyard. **Doubles as a rough
+  version of the Tier 1 "Wooden Palisade" defense** already in the
+  Machine Progression notes — the starting structure and the first
+  line of defense become the same object. The player didn't spawn in a
+  field and build a wall; they inherited one, already half-built by
+  someone who didn't make it.
+- A small, visually distinct pedestal just inside the entrance —
+  reserved for the amulet mechanic (see the Amulet idea above). A worn
+  stone pillar or lectern-style block, deliberately reading as "this
+  matters" against the rest of the base.
+- A well built into one side of the perimeter, styled to match
+  vanilla's own desert-well structure (which already generates
+  naturally around the map, per MODS.md's Fixed spawn entry) — so the
+  hand-built base visually rhymes with what the world generates on its
+  own, rather than looking like an obviously separate prefab dropped in.
+
+**Fits the standing vanilla-materials-only decision as-is** — nothing
+above needs a mod to work; it's buildable today with the same
+`/fill`/`/setblock` technique already proven for the current starter
+base.
+
+### Decoration incorporation (once ZCraft: Zone Decor / Doomsday Decoration land)
+
+The two decoration mods already researched under Pack Aesthetic above
+(both decoration-only, no mechanics, already flagged as candidates —
+not installed yet) have specific, obvious homes in this structure
+rather than being generic set-dressing:
+
+- **Inside the shack**: Doomsday Decoration's worn furniture and
+  discarded daily necessities, scattered like someone left in a hurry
+  or didn't get the chance to tidy — plus its human remains prop
+  somewhere near the bed, making the "looted from a corpse" narrative
+  literal and visible, not just implied by a tooltip.
+- **Watchtower base and perimeter**: ZCraft's fuel barrels and tires
+  stacked as improvised barricade reinforcement — the palisade reading
+  as scavenged industrial junk, not just wood, which fits a
+  scrap-and-salvage aesthetic even while the actual loot economy stays
+  vanilla-materials-only underneath it (visual theme and mechanical
+  materials don't have to match one-for-one).
+- **Courtyard**: ZCraft's military crates/supply boxes near the well or
+  shack wall — visually implies stockpiling, reinforcing the
+  scavenging/loot theme without adding any new mechanic.
+- **Pedestal area kept comparatively clean** — deliberately less
+  cluttered than the rest of the base, so it visually stands out as the
+  one place that matters against everywhere else's mess. A compositional
+  choice, not just a prop-placement one.
+- **Just outside the walls**: ZCraft's general waste/rusted structures
+  scattered as a debris trail leading up to the perimeter — implies the
+  base has weathered attacks before the player ever arrived, extending
+  the "previous occupant" story into the environment itself with zero
+  extra text needed.
+
+**Two-phase build, matching the established small-scope-first pattern**:
+build the structure in plain vanilla now (works today, no new
+dependency), add the decoration pass as a second, separate step once
+ZCraft/Doomsday Decoration actually get installed — not blocked on each
+other.
+
+Not built — a concept, logged for whenever the current placeholder
+starter base gets picked up for real.
 

@@ -124,6 +124,78 @@ mods sitting parallel to, not part of, the pack's actual built systems.
 
 ## Custom glue
 
+- **Tier 1 machines — Spike Trap, Wooden Palisade, Simple Snare Trap
+  (2026-08-29)** — `docs/IDEAS.md`'s Machine Progression "Recommended
+  next step" brief: no machines existed anywhere in the pack before
+  this, despite being the actual "loot → craft machines → survive" loop
+  the pack is named for. Built in the requested easiest-first order.
+  **First time this pack has registered a custom block** — every prior
+  piece of custom content (loot bags, Wave Horn) was an item. Researched
+  KubeJS's real 1.20.1 block-registration API directly before writing
+  anything (`.textureAll()`/`.texture()` reuse existing vanilla textures
+  with zero new art needed, built-in block *types* like `fence` give
+  real vanilla behavior for free, `Java.loadClass(...)` reaches
+  arbitrary Minecraft/Forge classes for a custom blockstate property) —
+  same "verify the mechanism, don't guess" discipline this pack has
+  needed repeatedly (`/spreadplayers` on mobs, IPN's config keys, the
+  worldborder blocking assumption).
+  - **Wooden Palisade** (`startup_scripts/machines.js`) — KubeJS's
+    built-in `fence` block type, textured with oak_log's own texture
+    (not planks, for a "raw stakes" look) rather than reused vanilla
+    `oak_fence` directly, so it has its own identity for future Tier
+    1/2 balance work ("degrades from overuse" per the design notes).
+    Gets real vanilla fence pathing-blocking/connecting behavior with
+    zero custom logic — the lowest-risk piece, matching the brief's own
+    assessment. Recipe: 4 oak_log + 2 cobblestone → 6
+    (`server_scripts/machine_recipes.js`), both Common-tier
+    (`loot_bag_open.js`'s two highest-weight rolls).
+  - **Simple Snare Trap** — not a new block. The brief's own hedge
+    ("check whether reskinned cobweb behavior gets most of the way
+    there before building custom collision detection from scratch")
+    resolved to: don't reskin it at all, just craft real vanilla
+    `minecraft:cobweb` from string (4 string → 1), with a custom
+    display name ("Snare Trap") via `Item.of(id, count, nbt)` recipe
+    output NBT — the same technique already used for the starter gear's
+    Lore line in `playtest_starter_kit.js`. Guarantees cobweb's actual
+    slow/walk-through behavior exactly, zero risk of a reskinned
+    version behaving subtly differently.
+  - **Spike Trap** (`server_scripts/spike_trap.js`) — the genuinely
+    novel piece, exactly as the brief predicted. Every other stateful
+    mechanic in this pack lives on player `persistentData`; a block
+    needing its *own* state (hit count, broken/intact) is new territory.
+    Custom blockstate property `hits` (0-3) added via
+    `IntegerProperty.create('hits', 0, 3)` (Java interop, not a KubeJS-
+    specific helper). **Deliberately avoided reading that property's
+    current value from script code at all** — genuinely unconfirmed
+    whether/how that's possible in this KubeJS version, and the whole
+    feature doesn't actually need it: the degrade sequence runs as a
+    chain of `execute if block <pos> kubejs:spike_trap[hits=N] run
+    setblock <pos> kubejs:spike_trap[hits=N+1]` commands (one per
+    threshold, breaking the block entirely on the 4th hit) — standard
+    vanilla conditional-command syntax, only one command in the chain
+    can ever match the block's true state, so running all of them every
+    trigger is harmless. Detection itself (`PlayerEvents.tick`,
+    throttled every 4 ticks matching `wave_status.js`'s pattern) only
+    needs `level.getBlock(x, y, z).id` — a basic block-type lookup, much
+    more standard KubeJS surface than property-reading. Damage via
+    `player.setHealth(player.getHealth() - 4)` (2 hearts) — reuses
+    `getHealth()`, already proven working in this codebase, rather than
+    an unverified `attack()`-style method. A `td_onSpikeTrap` persistent-
+    data boolean gates it to the false→true transition only, so standing
+    still on one doesn't deal damage every tick. Recipe: 2 iron_nugget +
+    6 cobblestone → 4 (the brief also suggested bone; iron_nugget alone
+    made a clean "metal spikes" theme, bone left open for a future
+    machine).
+  - **Not confirmed in-game for any of the three.** Palisade is the
+    safest bet (built-in vanilla block type, real behavior). Spike Trap
+    is the least certain piece — specifically worth checking: the
+    `IntegerProperty` blockstate actually registers and defaults to
+    `hits=0` on placement (not assumed, KubeJS didn't document an
+    explicit default-state setter), the `/execute if block` chain
+    correctly advances/breaks the block across real hits, and whether
+    `level.getBlock(x,y,z).id` returns the exact expected
+    `"kubejs:spike_trap"` string format.
+
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same
   day it was picked up.

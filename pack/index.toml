@@ -53,12 +53,20 @@ file = "kubejs/server_scripts/loot_bag_open.js"
 hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
 
 [[files]]
+file = "kubejs/server_scripts/machine_recipes.js"
+hash = "c0b20a3f8a721f26123a46abb43af0989e8c383c2f26129d4d579b74fbbdbf5d"
+
+[[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
 hash = "dba3439cbe4a225e17e46a99cf72f7ed99faf70f7a16514f0f84f243d55e29b7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
 hash = "8068b40498044791d89e9a40b3509f93dfff8a4b2af2bfd2c897b6d9b9078a90"
+
+[[files]]
+file = "kubejs/server_scripts/spike_trap.js"
+hash = "89728c65870bd909b140d87a41734a23adcc47c3e47bb9f14d38c398f43f69ae"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
@@ -75,6 +83,10 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 [[files]]
 file = "kubejs/startup_scripts/loot_bags.js"
 hash = "b601fa13e6176846a090ff91747623f2ff8ffb6fd431f2744331ed7ef2e7ecd1"
+
+[[files]]
+file = "kubejs/startup_scripts/machines.js"
+hash = "9e7dd1c27b9ab1ecdf57c30f35de967d8e16dce57e4fbe9bec178206c95d0270"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"
