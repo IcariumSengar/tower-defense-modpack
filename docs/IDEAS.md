@@ -577,6 +577,62 @@ yet** — Wooden Palisade is the safest bet (built-in vanilla block type),
 Spike Trap the least certain (custom property + block-position reading,
 neither directly confirmed against this exact KubeJS version).
 
+### Decided (2026-08-20): swap the custom Spike Trap for a mod, per the standing "prefer a mod" rule
+
+Direct request, restated explicitly as a repeated preference: use mods
+over custom code for this pack wherever one genuinely fits, and this
+was flagged as an unresolved case. Fair callback — this exact question
+("Spike trap / hazard block source mod — needs research") was logged as
+a TBD open question in the original design notes and never actually
+researched before the custom version got built. Closing that loop now.
+
+Of the three Tier 1 machines, only **Spike Trap actually needs this
+conversation** — the Wooden Palisade is already just a themed vanilla
+fence (near-zero custom logic), and the Snare Trap is already literal
+vanilla cobweb with a renamed recipe (no custom block at all). Spike
+Trap is the one genuinely novel custom implementation (custom block,
+custom blockstate, damage-on-contact + degrade logic).
+
+**Candidates found, Forge 1.20.1:**
+- **Spiky Spikes** — confirmed real 1.20.1 Forge build exists (found a
+  specific versioned file, not just a general mod page). Most
+  confirmed-available of the shortlist.
+- **Simple Spikes** — built on **Balm**, the same dependency library
+  already proven safe elsewhere in this pack's mod-compatibility
+  history (previously via Waystones, since removed in the footprint
+  audit — Balm itself would be a re-add if not already present).
+  Active GitHub project, multi-loader. **1.20.1 build not directly
+  confirmed from research** — don't conflate this with Spiky Spikes
+  above, they're different mods.
+- **Base Defense / "Blade & Bastion"** — confirmed 1.20.1 filename,
+  explicit base-defense theming.
+- **Defended Bases** — actively maintained (recent update) but only
+  236 total downloads, much less community-tested than the others.
+  Feature set (slow floors, darkness-effect vision distortion) also
+  overlaps with things already tried in this pack — the darkness-effect
+  atmosphere attempt specifically already didn't work out (see
+  Atmosphere & Wave Feel above) — worth being cautious about a mod
+  leaning on the same idea.
+
+**The actual go/no-go, not the Forge-version question:** none of these
+were confirmed, one way or the other, to have a **degrade-and-break-
+after-N-hits** mechanic — the load-bearing part of this pack's Tier 1
+design ("cheap, breakable"), not just "deals damage." If a candidate
+turns out to be a one-shot-permanent spike with no durability/decay,
+that's a real design mismatch to catch before installing, not
+something to paper over after. Verify this in-game (or from the mod's
+own documented mechanics) before swapping, starting with **Spiky
+Spikes** as the lead candidate given its confirmed availability.
+
+**Not a reason to distrust the custom version if the mod search comes
+up empty** — per the standing "prefer a mod" discussion's own
+precedent (the Wave Horn was custom by necessity, not oversight, when
+nothing else fit its exact deterministic requirement): if none of these
+candidates actually has the degrade behavior, the custom Spike Trap
+built above may genuinely be the only way to get this specific
+requirement, the same way the Wave Horn was. Worth checking honestly
+rather than forcing a mod fit that doesn't actually match the design.
+
 ### Power system
 - Wireless power — no cables, place a machine and it draws power
   automatically.
@@ -606,6 +662,70 @@ neither directly confirmed against this exact KubeJS version).
   worth using directly once the actual quest list and shop rates are
   settled. Not written yet — depends on final loot tiers, machine list,
   and map-expansion milestones being locked in first.
+
+### Decided (2026-08-20): bring FTB Quests in now, for one concrete job — telling the player traps exist (built 2026-08-29)
+
+Direct need: a way to tell the player they can craft traps, now that
+Tier 1 machines are real (`machines.js`/`machine_recipes.js` — Wooden
+Palisade, Snare Trap, Spike Trap all built and craftable from
+Common-tier loot materials, per the earlier build brief). Asked
+specifically to bring in the quest book idea for this.
+
+**Worth dropping the old blocking condition rather than honoring it.**
+This section's own note says quest content was "not written yet —
+depends on final loot tiers, machine list, and map-expansion milestones
+being locked in first." Nothing in this pack has ever actually waited
+for "final" — every system so far (waves, loot bags, base expansion,
+the biome swap) shipped small and got iterated on afterward. Waiting
+for a "final" machine list before writing a single quest would be the
+first time this pack broke its own pattern. Tier 1 existing is enough
+to start.
+
+**Scope for this pass: one quest, not a chapter.** Per the same
+small-first pattern used everywhere else in this file — a single quest
+that solves the actual stated problem ("tell the player traps exist"),
+not the full Basics/Loot Tiers/Machines/Map Expansion/Shop chapter
+structure from the original plan. That fuller structure stays exactly
+as already planned above, for whenever there's enough settled content
+to fill it out.
+
+**Plan:**
+1. Install FTB Quests (Forge 1.20.1).
+2. One quest: something like "Fortify" — task type `item`, checking for
+   any one of the three Tier 1 machines (`kubejs:wooden_palisade`,
+   `kubejs:spike_trap`, or the renamed cobweb snare trap), with quest
+   text explaining that scrap materials can be turned into defenses,
+   not just consumed. No dependencies, no chapter structure beyond
+   whatever FTB Quests needs as a minimum container for one quest.
+3. Give the player the quest book automatically on first join — FTB
+   Quests has a config option for this, which matches normal modpack
+   convention better than bolting another item onto
+   `playtest_starter_kit.js`'s existing give-list.
+4. Use the dedicated FTB Quests SNBT-authoring tool/skill already noted
+   above for the actual file, rather than hand-writing SNBT blind — the
+   tool exists specifically so this doesn't need to be guessed.
+5. Not blocked on this, but worth flagging: this is the first real
+   content in what was originally envisioned as a much bigger quest
+   book — the fuller chapter structure, the shop, and gating other
+   progression behind quests all stay exactly as already planned in
+   this section, this is just the first single brick, not a redesign.
+
+**Built (2026-08-29), same order as the plan above, with two real
+surprises along the way.** See `docs/MODS.md`'s FTB Quests entry for
+the full writeup. Short version: (1) the "dedicated tool/skill" this
+section pointed at genuinely wasn't available anywhere in this
+environment — asked the user directly rather than guess, who chose
+hand-authoring over installing an unverified third-party skill that
+turned out to target FTB Quests 1.21+, not this pack's 1.20.1. SNBT was
+instead hand-written from the mod's own decompiled class files plus
+real shipped quest files from ATM-10/Enigmatica6 on GitHub, not
+guessed. (2) "Auto-give the book on first join" turned out to need no
+config at all — it's unconditional default FTB Quests behavior, not a
+toggle, confirmed via an open upstream feature request asking for a way
+to *disable* it. The real remaining risk is the "any one of three items
+completes it" task — implemented via a custom KubeJS item tag rather
+than FTB's own tag-filter feature (which needs two more mods this pack
+doesn't have), not yet confirmed to actually work in-game.
 
 ### Reference mods (for pulling mechanics/blocks, not modding from scratch)
 | Category | Mod | Notes |

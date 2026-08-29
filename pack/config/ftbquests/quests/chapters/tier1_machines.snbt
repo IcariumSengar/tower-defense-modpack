@@ -1,0 +1,40 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "tier1_machines"
+	group: ""
+	icon: "kubejs:spike_trap"
+	id: "E0FD1EE720089BB3"
+	order_index: 0
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				"Scrap and loot do not have to just be consumed for gear."
+				""
+				"The same Common-tier materials already turning up in loot bags can be turned into defenses instead - a wall, a snare, or a trap."
+			]
+			icon: "kubejs:spike_trap"
+			id: "1454951A7FB14A26"
+			rewards: [{
+				id: "0892955D880F0E2C"
+				type: "xp"
+				xp: 10
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "8932A33D33981462"
+				item: "#kubejs:tier1_machines"
+				type: "item"
+			}]
+			title: "Fortify"
+			x: 0.0d
+			y: 0.0d
+		}
+	]
+	title: "Defenses"
+}

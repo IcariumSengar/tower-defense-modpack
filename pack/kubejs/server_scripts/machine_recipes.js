@@ -42,3 +42,30 @@ ServerEvents.recipes((event) => {
     C: 'minecraft:cobblestone',
   })
 })
+
+// Tags every Tier 1 machine's output under one item tag (2026-08-29,
+// for the "Fortify" FTB Quests quest - see
+// config/ftbquests/quests/chapters/tier1_machines.snbt). The quest's
+// single item task checks `#kubejs:tier1_machines` rather than three
+// separate tasks, so having crafted ANY ONE of the three completes it.
+//
+// The renamed Snare Trap is plain minecraft:cobweb under the hood (see
+// the shapeless recipe above) - tagging the bare vanilla item is fine
+// specifically because this pack's world never generates dungeons
+// (Superflat, no structures), so crafting this recipe is the only real
+// way to ever obtain a cobweb here.
+//
+// Real risk, not fully confirmed: FTB Quests' official docs describe
+// converting an item task to a tag-based filter as requiring the "FTB
+// Filter System" + "FTB XMod Compat" mods, which aren't installed here
+// (deliberately, to avoid extra mod footprint for one quest) - betting
+// instead on the base item task's own ingredient parsing accepting a
+// plain "#namespace:tag" string directly, the same way vanilla recipe
+// ingredients do, without needing that GUI-driven conversion feature.
+// If the quest task shows "No valid items!" in-game, that confirms the
+// bet was wrong and either those two mods or a different task
+// structure (e.g. three separate tasks) are actually needed - see
+// docs/MODS.md's FTB Quests entry.
+ServerEvents.tags('item', (event) => {
+  event.add('kubejs:tier1_machines', 'kubejs:wooden_palisade', 'kubejs:spike_trap', 'minecraft:cobweb')
+})

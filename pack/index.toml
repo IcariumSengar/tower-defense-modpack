@@ -9,6 +9,18 @@ file = "config/epicsiegemod-common.toml"
 hash = "7d422f9f963840830a8eac008e5d157b4479b2b27b5e63fec567252660230ff4"
 
 [[files]]
+file = "config/ftbquests/quests/chapter_groups.snbt"
+hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
+
+[[files]]
+file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
+hash = "35a51b10c15e6d74056e70caa0e9b7e9c5fe4ecc4179770eedb5c9462746c418"
+
+[[files]]
+file = "config/ftbquests/quests/data.snbt"
+hash = "1435be653ec5ee7d0053ef98a7882680f680f2d8c6e75368d08a140942732a17"
+
+[[files]]
 file = "config/TFTH-Data.toml"
 hash = "cea608bbe07dc6a3bcdaf2148a57172e83f604c10a2ee28ac928d866a043a0af"
 
@@ -58,7 +70,7 @@ hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
 
 [[files]]
 file = "kubejs/server_scripts/machine_recipes.js"
-hash = "c0b20a3f8a721f26123a46abb43af0989e8c383c2f26129d4d579b74fbbdbf5d"
+hash = "9a13de75fa163808e1e1fe18a3b52999fc4ec1ceef74e8059a54f7ff48041dbb"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -134,6 +146,21 @@ metafile = true
 [[files]]
 file = "mods/ferrite-core.pw.toml"
 hash = "902bac905b93271f02bd0951a22bac06a3da24f5c237fcaeb469e14a7679e508"
+metafile = true
+
+[[files]]
+file = "mods/ftblibrary.pw.toml"
+hash = "5269d11649a65f8f235c344f9d1728d6b851e07dce47024f06f9455a9f02f2b4"
+metafile = true
+
+[[files]]
+file = "mods/ftbquests.pw.toml"
+hash = "b3c265cb69c610d2db674d1db8c0f6acb28f65e8e6b6cdccf4c3e7040be70518"
+metafile = true
+
+[[files]]
+file = "mods/ftbteams.pw.toml"
+hash = "9431efe84c183e51c3180c9806450ff799be884895bc87606138f6ac0c228141"
 metafile = true
 
 [[files]]

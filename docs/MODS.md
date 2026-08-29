@@ -31,6 +31,9 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
 | GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
 | SecurityCraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/security-craft) | 1.10.2.1 (1.20.1 Forge) | Re-added 2026-08-29 to build the starting base's perimeter walls from reinforced (undiggable, explosion-proof) blocks — see the "Chokepoint walls" entry under Custom glue below for the full build and the dig/pillar-resistance reasoning | Removed 2026-08-20 (footprint audit, never integrated at the time), re-added same as TFTH was — this time actually wired into a built system, not just installed | testing |
+| FTB Quests | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge) | 2001.4.22 (1.20.1 Forge) | Added 2026-08-29 for one quest ("Fortify") telling the player Tier 1 machines can be crafted — see the FTB Quests entry under Custom glue below | Requires FTB Library + FTB Teams (both added alongside it) | testing |
+| FTB Library | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge) | 2001.2.13 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
+| FTB Teams | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | 2001.3.2 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 
 ## Removed mods
 
@@ -234,6 +237,80 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     actually fires for a mob (not just the player, the entire point of
     this rebuild), and that it doesn't fire a second time client-side
     in some way the `getServer()` null-check doesn't catch.
+
+- **FTB Quests — "Fortify," one quest telling the player traps exist
+  (2026-08-29)** — `docs/IDEAS.md`'s "Decided: bring FTB Quests in now"
+  brief. Tier 1 machines existed but nothing in the pack told the
+  player they could be crafted; rather than waiting for the fuller
+  Basics/Loot Tiers/Machines/Map Expansion/Shop chapter structure
+  already planned in the "Quest book (FTB Quests) implementation plan"
+  section (which stays exactly as-is), this ships the smallest possible
+  slice that solves the actual problem — one quest, no dependencies, no
+  chapter structure beyond what FTB Quests needs as a container.
+  - **Mods installed**: FTB Quests (`2001.4.22`) plus its two mandatory
+    dependencies, FTB Library (`2001.2.13`) and FTB Teams (`2001.3.2`) —
+    confirmed directly from FTB Quests' own `mods.toml`, not guessed.
+    Both satisfy the pack's existing Architectury API version.
+  - **No dedicated SNBT-authoring tool/skill was actually available in
+    this environment** — `docs/IDEAS.md` referenced one repeatedly but
+    it couldn't be located anywhere (no project or user-level Claude
+    Skill, nothing via tool search). Asked the user directly rather than
+    guessing or silently hand-writing blind against the brief's own
+    warning; a real public skill for this does exist
+    (`github.com/ParticleG/ftb-quests`) but targets FTB Quests 1.21+, a
+    real version mismatch against this pack's 1.20.1, and the user opted
+    to hand-write it carefully instead of installing an unverified-fit
+    third-party skill mid-task.
+  - **SNBT hand-authored from real, verified sources, not guessed**:
+    the mod's own `Quest`/`Chapter`/`ItemTask`/`QuestObjectBase` class
+    files (extracted from the installed FTB Quests jar) confirmed real
+    field names (`id`, `title`, `subtitle`, `description`, `icon`, `x`,
+    `y`, `shape`, `size`, `tasks`, `rewards`, `dependencies`); actual
+    shipped SNBT from a real, current modpack (`AllTheMods/ATM-10` and
+    `EnigmaticaModpacks/Enigmatica6` on GitHub) confirmed the real
+    syntax (no commas between same-level fields in the standard
+    multi-line style, `d`-suffixed doubles, `description` as a string
+    array, `icon`/`item` accepted as bare strings).
+  - **Structure**: `config/ftbquests/quests/chapter_groups.snbt` (empty
+    — no groups needed for one chapter), `data.snbt` (base file config,
+    cloned from ATM-10's real defaults with the icon swapped),
+    `chapters/tier1_machines.snbt` (one chapter, "Defenses," containing
+    the single "Fortify" quest).
+  - **The "any one of three items" requirement was the genuinely risky
+    part.** FTB Quests' `ItemTask` checks exactly one item predicate per
+    task (confirmed from the class file — no plural `items` array field
+    exists there); the *official* documented way to let several
+    alternative items satisfy one task is right-clicking it in-game and
+    converting it to an **FTB Filter System tag filter**, which FTB's
+    own docs say requires installing the separate FTB Filter System and
+    FTB XMod Compat mods. Didn't want two more mods just for one quest
+    (this pack's own standing "keep it lightweight" preference), so
+    instead: tagged all three machines under one custom KubeJS item tag
+    (`kubejs:tier1_machines`, added in `machine_recipes.js` — includes
+    `minecraft:cobweb` since the Snare Trap is a renamed vanilla cobweb,
+    safe here specifically because this Superflat world never generates
+    the dungeons that are cobweb's only other vanilla source) and set
+    the task's `item` field to the bare string `"#kubejs:tier1_machines"`,
+    betting that FTB Quests' base ingredient parsing accepts a plain tag
+    reference the same way vanilla recipe ingredients do, independent of
+    the Filter System's GUI-driven conversion feature. **Not confirmed —
+    the single highest-risk piece of this whole feature.** If the task
+    shows "No valid items!" in-game, that's confirmation the bet was
+    wrong; the fallback is either installing FTB Filter System + FTB
+    XMod Compat, or restructuring as three separate quests (one per
+    machine) instead of one quest with an any-of task.
+  - **Auto-give-book: turned out to need zero configuration.** The
+    brief assumed "a standard FTB Quests config option" for this exists
+    — real research found the opposite: giving the book on first login
+    is FTB Quests' unconditional default behavior with no toggle at all
+    (confirmed both by an open, unresolved upstream feature request
+    explicitly asking for a way to *disable* it, and by the complete
+    absence of any book/login-related key anywhere in `data.snbt`'s
+    real schema or the mod's own event-handler bytecode). Installing
+    the three mods is the whole "config."
+  - **Not yet confirmed in-game at all** — needs a fresh world to check
+    the book is actually received, and crafting each of the three
+    machines to check which (if any) actually completes the quest.
 
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same

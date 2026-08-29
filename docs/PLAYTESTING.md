@@ -177,6 +177,29 @@ breaking on the very first hit. See `docs/MODS.md`'s Tier 1 machines
 entry for exactly which pieces are lowest vs. highest risk if something
 doesn't work.
 
+## FTB Quests (new, entirely unconfirmed in-game)
+
+One quest, "Fortify" (chapter "Defenses"), added 2026-08-29 to tell the
+player the Tier 1 machines above can be crafted. No config was set up
+to give the quest book — that's FTB Quests' unconditional default
+behavior on first login, confirmed from research rather than assumed.
+
+**On a fresh world, check:**
+- You actually receive the quest book automatically, without anything
+  needing to be given via `playtest_starter_kit.js`.
+- Opening it shows one chapter ("Defenses") with one quest ("Fortify"),
+  description explaining scrap can become defenses.
+- Craft **any one** of the three Tier 1 machines (Wooden Palisade,
+  Snare Trap, or Spike Trap) and confirm the quest actually marks
+  complete. **This is the single highest-risk thing to test here** —
+  the quest's item task checks a custom item tag
+  (`#kubejs:tier1_machines`) rather than the item natively supporting
+  "any of 3," since the documented official way to do that needs two
+  extra mods (FTB Filter System + FTB XMod Compat) this pack doesn't
+  have installed. If the task shows "No valid items!" in the quest GUI,
+  that confirms the tag approach didn't work — see `docs/MODS.md`'s FTB
+  Quests entry for the fallback options.
+
 ## Known caveats
 
 - `playtest_starter_kit.js`, `wave_spawner.js`, `wave_status.js`, and
