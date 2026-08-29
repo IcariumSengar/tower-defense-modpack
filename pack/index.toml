@@ -74,7 +74,7 @@ hash = "4a7121efc4712af13c51f9922aebbdc1710bfcfdc9e61f656be12e0d8c6a61da"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "50c0e9ab6f19f317e8753f924c5ad52a2ca2780b78e094a889c771e2aab63330"
+hash = "5b50f488bf08e5792839b09a897fd3ad698739f9d39b2b5391f9f0d1abaa1415"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"

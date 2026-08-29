@@ -211,14 +211,21 @@ doesn't work.
   also backwards (Rare more likely than Common) until the same day —
   now Common 50% / Uncommon 25% / Rare 10%. Common's loot pool gained
   stone/wood/food staples on top of its scrap materials.
-- The starter sword/armor disappear once the campaign's final wave
-  clears, with an "IT'S UP TO YOU NOW" popup — **confirmed working**
-  (2026-08-19 playtest, verified at a temporarily-lowered wave 2, then
-  reset back to the real final wave). See `docs/MODS.md`'s Wave status
-  HUD entry for the implementation. Final wave moved from 5 to 8
-  (2026-08-29, waves 6-8 added) — the trigger logic itself wasn't
-  retouched, only which wave number it fires on, and that hasn't been
-  re-verified since.
+- The starter sword/armor disappear at **wave 5 specifically, always**
+  (a fixed, permanent story beat — `GEAR_REMOVAL_WAVE`), with an "IT'S
+  UP TO YOU NOW" popup — **confirmed working** (2026-08-19 playtest,
+  verified at a temporarily-lowered wave 2, then reset back to the real
+  wave 5). See `docs/MODS.md`'s Wave status HUD entry for the
+  implementation. When waves 6-8 were added (2026-08-29), gear removal
+  briefly got dragged along to wave 8 because it was gated on
+  `FINAL_WAVE` (campaign length) instead of its own fixed wave number —
+  fixed the same day with a separate `GEAR_REMOVAL_WAVE = 5` constant,
+  decoupled from `FINAL_WAVE`. **Not re-verified in-game since either
+  change** — specifically needs a real wave-5 clear, not just a clear
+  to wave 8, since two different candidate bugs existed for the
+  original "stopped working" report (this drift, and an already-fixed
+  `td_awaitingChoice` deadlock from the removed choice-popup feature)
+  and only playing it through tells you which applied.
 - Mouse Tweaks and Inventory Profiles Next were fighting over the same
   swipe/hover gestures — green flashing on inventory hover, occasional
   accidental multi-crafting. A config fix was applied but never

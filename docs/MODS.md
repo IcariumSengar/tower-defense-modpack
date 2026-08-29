@@ -1199,12 +1199,40 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   just the wave number it fires on.
 
   **`FINAL_WAVE` moved from `5` to `8` (2026-08-29)** when waves 6-8
-  were added (see the Wave spawner entry below) — the gear-removal
-  narrative beat is defined as firing when the *curated campaign*
-  actually ends, and that endpoint moved. Not re-verified with the
-  temporary-constant trick above; low risk since the trigger logic
-  itself is untouched, only which wave number it compares against, but
-  genuinely not re-tested.
+  were added (see the Wave spawner entry below) — at the time, gear
+  removal was gated directly on `waveNumber === FINAL_WAVE`, so this
+  silently dragged the gear-removal narrative beat along with it.
+
+  **Decoupled the same day, second fix**: direct pushback caught that
+  `FINAL_WAVE` (campaign length, expected to keep changing) and "wave 5,
+  permanently" are two different concepts that only shared a number by
+  coincidence — bumping one shouldn't have moved the other. Added a
+  separate `GEAR_REMOVAL_WAVE = 5` constant, independent of
+  `FINAL_WAVE`, and the trigger now checks `waveNumber ===
+  GEAR_REMOVAL_WAVE`. Also fixed the flavor text, which had "held the
+  line for five waves" hardcoded as a literal string — it happened to
+  still read correctly by coincidence once `FINAL_WAVE` drifted to 8,
+  which is exactly how that class of bug hides until it doesn't; now
+  interpolates `${GEAR_REMOVAL_WAVE}` instead.
+
+  **Structured as a small, reusable "fixed wave event" pattern**, not a
+  one-off fix — a `FIXED_WAVE_EVENTS` array of `{wave, flagKey, action}`
+  entries, checked once in the existing wave-clear branch, rather than
+  a bespoke `if (waveNumber === X && !flag)` block per event. Gear
+  removal is currently the only entry; the array shape exists so a
+  future fixed-wave beat (a wave 3 diary moment, a distinct wave 8
+  finale, etc.) can slot in as data instead of needing its own
+  hand-copied conditional. Not over-built beyond that — no scheduling,
+  no priority ordering, just a list checked in order.
+
+  **Not yet confirmed in-game** — specifically needs a playtest through
+  wave 5 itself (not just to wave 8), since the original "gear removal
+  stopped working" report actually had two independent candidate causes
+  once investigated: this `FINAL_WAVE`/`GEAR_REMOVAL_WAVE` drift, and
+  an already-fixed `td_awaitingChoice` deadlock left over from the
+  removed roguelike choice-popup feature (see the Wave-clear
+  orchestration entry below). Only an actual wave-5 clear tells you
+  which one actually applied here.
 
 - **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
   `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
@@ -1401,8 +1429,9 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     `WAVE_MOB_TYPES`, and `wave_spawner.js`'s own `WAVE_MOB_TYPES` were
     all updated to match (same four-file-sync pattern as every prior
     roster change). `wave_status.js`'s `FINAL_WAVE` moved from `5` to
-    `8` — see the Starter gear removal entry above for what that
-    affects.
+    `8` (display cap only, as of a later fix the same day that
+    decoupled it from starter gear removal — see the Starter gear
+    removal entry above).
   - **Not yet confirmed in-game** — same caveat as every other roster
     change in this file until actually played.
 

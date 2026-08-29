@@ -43,15 +43,11 @@ const RADIUS = 80
 // Must match wave_spawner.js's WAVES.length — server_scripts don't
 // reliably share top-level scope across files (same duplication pattern
 // as HOSTILE_TYPES above), so this is redeclared here rather than
-// imported. Drives both the wave-number display cap below and the
-// starter gear removal trigger (was briefly split into its own
-// GEAR_REMOVAL_WAVE = 2 for faster playtest iteration - confirmed
-// working 2026-08-19, reset to the real wave 5 here).
-//
-// Moved from 5 to 8 (2026-08-29) when waves 6-8 were added - the
-// starter-gear-removal narrative beat ("the campaign you inherited
-// ends, now you're on your own") should fire at the new true end of
-// the curated campaign, not partway through it.
+// imported. Drives ONLY the wave-number display cap below (td_waveNumber
+// is an uncapped raw click-count, would otherwise show numbers higher
+// than any wave that's actually been designed) - does NOT drive starter
+// gear removal, see GEAR_REMOVAL_WAVE below for why those were split
+// apart 2026-08-29.
 const FINAL_WAVE = 8
 
 // Tag set on the sword/armor in playtest_starter_kit.js — matching on
@@ -59,6 +55,73 @@ const FINAL_WAVE = 8
 // starter gear, not any netherite sword/iron armor legitimately
 // crafted or looted since.
 const STARTER_GEAR_TAG = 'td_starter_gear'
+
+// Fixed-wave narrative beats - events tied to a SPECIFIC wave number
+// that stays constant regardless of how long the designed campaign
+// grows or shrinks, as opposed to FINAL_WAVE which tracks campaign
+// length and is expected to change over time (5 -> 8 already, when
+// waves 6-8 were added).
+//
+// Decoupled 2026-08-29: starter gear removal used to gate on
+// `waveNumber === FINAL_WAVE` directly - fine back when the campaign
+// was exactly 5 waves, since "final wave" and "wave 5" happened to be
+// the same number. Bumping FINAL_WAVE to 8 silently dragged the
+// gear-removal narrative beat along with it, even though "the campaign
+// you inherited ends" and "wave 5, permanently" are two different
+// concepts that only ever shared a number by coincidence.
+// GEAR_REMOVAL_WAVE is that fixed wave 5, independent of FINAL_WAVE now.
+//
+// Structured as a small array of {wave, flagKey, action} entries,
+// checked once in the wave-clear branch below, rather than a bespoke
+// `if (waveNumber === X && !data.getBoolean('td_flagY'))` block
+// hand-copied per event - not because more of these are confirmed
+// coming, but because nothing about gear removal is actually special
+// among "things that should happen exactly once, at a specific fixed
+// wave" (a wave 3 diary moment, a distinct wave 8 finale, etc. would
+// slot in the same way). Each entry's flagKey is the one-shot guard
+// (same pattern as td_playtestKitGiven/td_starterGearRemoved
+// elsewhere), set true before the action runs so a re-entrant call
+// within the same check can't double-fire it.
+const GEAR_REMOVAL_WAVE = 5
+
+const FIXED_WAVE_EVENTS = [
+  {
+    wave: GEAR_REMOVAL_WAVE,
+    flagKey: 'td_starterGearRemoved',
+    action: (player) => {
+      const server = player.getServer()
+
+      // /clear reaches armor and offhand slots as well as the main
+      // inventory (long-standing vanilla behavior, not KubeJS-specific),
+      // and its item argument NBT-matches as a partial predicate in
+      // 1.20.1 (pre-1.20.5 components rework) - the tag alone is enough
+      // to match regardless of the Lore/Enchantments also present on
+      // the real item. One command per item type since /clear takes a
+      // single item argument, not a list. Targets @a rather than a
+      // specific name/UUID - this pack is single-player-focused (see
+      // base_expansion.js's notes), so it's equivalent here and avoids
+      // needing to resolve the player's name from console context.
+      server.runCommandSilent(`clear @a minecraft:netherite_sword{${STARTER_GEAR_TAG}:1b}`)
+      server.runCommandSilent(`clear @a minecraft:iron_helmet{${STARTER_GEAR_TAG}:1b}`)
+      server.runCommandSilent(`clear @a minecraft:iron_chestplate{${STARTER_GEAR_TAG}:1b}`)
+      server.runCommandSilent(`clear @a minecraft:iron_leggings{${STARTER_GEAR_TAG}:1b}`)
+      server.runCommandSilent(`clear @a minecraft:iron_boots{${STARTER_GEAR_TAG}:1b}`)
+
+      // Same "big on-screen title, chat is easy to miss" reasoning as
+      // the wave-cleared title below, plus the fuller narrative beat in
+      // chat since a title can't carry more than a couple words legibly.
+      // Interpolates GEAR_REMOVAL_WAVE rather than a hardcoded "five" -
+      // it happened to still read correctly by coincidence when
+      // FINAL_WAVE drifted to 8, which is exactly how that kind of bug
+      // hides until it doesn't.
+      server.runCommandSilent(`title @a title {"text":"IT'S UP TO YOU NOW","color":"red","bold":true}`)
+      server.runCommandSilent(`title @a subtitle {"text":"The gear is gone. So is whoever wore it first.","color":"gray"}`)
+      player.tell('§8§o[The blade and armor crumble to rust and dust in your hands.]')
+      player.tell(`§7Whoever carried this before you held the line for ${GEAR_REMOVAL_WAVE} waves before this place took them too. Their debt here is paid.`)
+      player.tell('§c§lIt\'s up to you now.')
+    },
+  },
+]
 
 // Roguelike permanent buff choice - built 2026-08-20, removed the same
 // day. The clickable /tellraw chat menu never reliably resolved (the
@@ -132,41 +195,15 @@ PlayerEvents.tick((event) => {
     player.getServer().runCommandSilent('time set day')
     player.getServer().runCommandSilent('gamerule doDaylightCycle true')
 
-    // Starter gear removal, once, the moment the curated campaign's
-    // final wave clears — waveNumber is capped at FINAL_WAVE, so every
-    // repeat/endless wave past this point also reads as FINAL_WAVE; the
-    // td_starterGearRemoved guard (same one-shot pattern as
-    // td_playtestKitGiven) is what keeps this to a single firing rather
-    // than re-running on every later wave clear. Fires directly here
-    // now, not gated behind the removed choice-popup step.
-    if (waveNumber === FINAL_WAVE && !data.getBoolean('td_starterGearRemoved')) {
-      data.putBoolean('td_starterGearRemoved', true)
-
-      // /clear reaches armor and offhand slots as well as the main
-      // inventory (long-standing vanilla behavior, not KubeJS-specific),
-      // and its item argument NBT-matches as a partial predicate in
-      // 1.20.1 (pre-1.20.5 components rework) - the tag alone is enough
-      // to match regardless of the Lore/Enchantments also present on the
-      // real item. One command per item type since /clear takes a single
-      // item argument, not a list. Targets @a rather than a specific
-      // name/UUID - this pack is single-player-focused (see
-      // base_expansion.js's notes), so it's equivalent here and avoids
-      // needing to resolve the player's name from console context.
-      player.getServer().runCommandSilent(`clear @a minecraft:netherite_sword{${STARTER_GEAR_TAG}:1b}`)
-      player.getServer().runCommandSilent(`clear @a minecraft:iron_helmet{${STARTER_GEAR_TAG}:1b}`)
-      player.getServer().runCommandSilent(`clear @a minecraft:iron_chestplate{${STARTER_GEAR_TAG}:1b}`)
-      player.getServer().runCommandSilent(`clear @a minecraft:iron_leggings{${STARTER_GEAR_TAG}:1b}`)
-      player.getServer().runCommandSilent(`clear @a minecraft:iron_boots{${STARTER_GEAR_TAG}:1b}`)
-
-      // Same "big on-screen title, chat is easy to miss" reasoning as the
-      // wave-cleared title above, plus the fuller narrative beat in chat
-      // since a title can't carry more than a couple words legibly.
-      player.getServer().runCommandSilent(`title @a title {"text":"IT'S UP TO YOU NOW","color":"red","bold":true}`)
-      player.getServer().runCommandSilent(`title @a subtitle {"text":"The gear is gone. So is whoever wore it first.","color":"gray"}`)
-      player.tell('§8§o[The blade and armor crumble to rust and dust in your hands.]')
-      player.tell('§7Whoever carried this before you held the line for five waves before this place took them too. Their debt here is paid.')
-      player.tell('§c§lIt\'s up to you now.')
-    }
+    // Fixed-wave narrative beats (see FIXED_WAVE_EVENTS above) - each
+    // entry's own flagKey is the one-shot guard, same pattern as
+    // td_playtestKitGiven elsewhere, so a beat can't re-fire on a later
+    // wave clear even though waveNumber keeps getting checked every time.
+    FIXED_WAVE_EVENTS.forEach((fixedEvent) => {
+      if (waveNumber !== fixedEvent.wave || data.getBoolean(fixedEvent.flagKey)) return
+      data.putBoolean(fixedEvent.flagKey, true)
+      fixedEvent.action(player)
+    })
 
     // Countdown to next wave (docs/IDEAS.md's "On-screen countdown
     // timer") starts directly here now, right after wave-clear effects
