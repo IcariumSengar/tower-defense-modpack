@@ -220,18 +220,16 @@ research rather than assumed.
   needing to be given via `playtest_starter_kit.js`.
 - Opening it shows one chapter ("Defenses") with one quest ("Fortify"),
   description explaining scrap can become defenses.
-- Craft **any one** of the three Tier 1 items (vanilla oak_fence,
-  Trapcraft's Bear Trap, or Trapcraft's Spikes — see the Tier 1
-  machines section above, updated 2026-08-29 when the custom design was
-  replaced) and confirm the quest actually marks complete. **This is
-  the single highest-risk thing to test here** —
-  the quest's item task checks a custom item tag
-  (`#kubejs:tier1_machines`) rather than the item natively supporting
-  "any of 3," since the documented official way to do that needs two
-  extra mods (FTB Filter System + FTB XMod Compat) this pack doesn't
-  have installed. If the task shows "No valid items!" in the quest GUI,
-  that confirms the tag approach didn't work — see `docs/MODS.md`'s FTB
-  Quests entry for the fallback options.
+- Craft **`trapcraft:spikes` specifically** and confirm the quest marks
+  complete. No longer "any one of three" — the original tag-based
+  approach (`#kubejs:tier1_machines`) actually **crashed the server on
+  every launch** (confirmed from two real crash reports: FTB Quests'
+  item task parses `item` as a literal item ID, `#` isn't legal there
+  at all, not even a soft "no valid items" failure). Fixed 2026-08-29
+  by pointing the task at Spikes specifically — see `docs/MODS.md`'s
+  FTB Quests entry for the full crash/fix writeup. Crafting the Bear
+  Trap or a plain oak_fence instead will *not* complete this quest
+  anymore, that's expected now, not a bug.
 
 ## Known caveats
 

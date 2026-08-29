@@ -892,10 +892,15 @@ real shipped quest files from ATM-10/Enigmatica6 on GitHub, not
 guessed. (2) "Auto-give the book on first join" turned out to need no
 config at all — it's unconditional default FTB Quests behavior, not a
 toggle, confirmed via an open upstream feature request asking for a way
-to *disable* it. The real remaining risk is the "any one of three items
-completes it" task — implemented via a custom KubeJS item tag rather
-than FTB's own tag-filter feature (which needs two more mods this pack
-doesn't have), not yet confirmed to actually work in-game.
+to *disable* it. The "any one of three items completes it" task —
+implemented via a custom KubeJS item tag rather than FTB's own
+tag-filter feature (which needs two more mods this pack doesn't have)
+— turned out to be wrong, and not gently: **it crashed the server on
+every launch** (2026-08-29, confirmed from two real crash reports).
+FTB Quests' item task parses that field as a literal item ID; `#` isn't
+legal there. Fixed by dropping "any of 3" and checking
+`trapcraft:spikes` specifically — full writeup in `docs/MODS.md`'s FTB
+Quests entry.
 
 ### Reference mods (for pulling mechanics/blocks, not modding from scratch)
 | Category | Mod | Notes |

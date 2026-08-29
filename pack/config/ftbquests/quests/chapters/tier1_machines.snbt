@@ -29,7 +29,7 @@
 			tasks: [{
 				consume_items: false
 				id: "8932A33D33981462"
-				item: "#kubejs:tier1_machines"
+				item: "trapcraft:spikes"
 				type: "item"
 			}]
 			title: "Fortify"

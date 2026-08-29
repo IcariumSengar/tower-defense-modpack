@@ -18,7 +18,7 @@ hash = "8b75a91eba499bfc461886e7efe87c6c463118b4b041441dacd7cfe57a7f7cd2"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
-hash = "fea339d9e25046434f19365b13796b1b27c7233d245e058b1432ed03520e1ee0"
+hash = "f58ef4f091668ad93eb287a3f74c78b4c2482c3876b284c3f5a445c76d86bddd"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
@@ -71,10 +71,6 @@ hash = "6bc4b766ee855fa49afab3f244fa0d91300ac75ec1277e1ddd4c4ba691cfba5a"
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
 hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
-
-[[files]]
-file = "kubejs/server_scripts/machine_tags.js"
-hash = "34960e547f0101c11f89a032778cdd13a27ae22d931839c467c66465cf077f20"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"

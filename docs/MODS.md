@@ -393,12 +393,28 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     the task's `item` field to the bare string `"#kubejs:tier1_machines"`,
     betting that FTB Quests' base ingredient parsing accepts a plain tag
     reference the same way vanilla recipe ingredients do, independent of
-    the Filter System's GUI-driven conversion feature. **Not confirmed —
-    the single highest-risk piece of this whole feature.** If the task
-    shows "No valid items!" in-game, that's confirmation the bet was
-    wrong; the fallback is either installing FTB Filter System + FTB
-    XMod Compat, or restructuring as three separate quests (one per
-    machine) instead of one quest with an any-of task.
+    the Filter System's GUI-driven conversion feature.
+
+    **Bet confirmed wrong (2026-08-29) — and worse than "No valid
+    items!", it hard-crashed the server on every launch.**
+    `ItemTask.readData()` parses the `item` string directly into a
+    `net.minecraft.resources.ResourceLocation`, which throws
+    `ResourceLocationException` on the `#` character outright —
+    `net.minecraft.ResourceLocationException: Non [a-z0-9_.-] character
+    in namespace of location: #kubejs:tier1_machines`, thrown while FTB
+    Quests loads its quest file on server start, before any world can
+    load at all. Confirmed from two real crash reports, same stack
+    trace both times. There genuinely is no plain-string tag syntax for
+    an item task in this FTB Quests version — the GUI-driven Filter
+    System conversion really is the only path, exactly as the official
+    docs said and this bet doubted. **Fixed** by dropping the "any of
+    three" idea entirely: the task now checks a single concrete item
+    (`trapcraft:spikes`) via the same bare-ResourceLocation-string form
+    already proven safe elsewhere in this pack's own quests. The now
+    ex-unused `kubejs:tier1_machines` tag and `machine_tags.js` were
+    deleted rather than left as dead code. If "any of N items" is
+    wanted again later, the real options are unchanged: FTB Filter
+    System + FTB XMod Compat, or N separate quests.
   - **Auto-give-book: turned out to need zero configuration.** The
     brief assumed "a standard FTB Quests config option" for this exists
     — real research found the opposite: giving the book on first login
@@ -457,7 +473,7 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     at all. This is arguably a *more* complete "ditch the custom
     design" outcome for that piece than installing a mod would have
     been.
-  - **`kubejs:tier1_machines` item tag** (now in
+  - **`kubejs:tier1_machines` item tag** (was in
     `server_scripts/machine_tags.js`, replacing the old
     `machine_recipes.js`'s tag block) updated to
     `trapcraft:spikes`/`trapcraft:bear_trap`/`minecraft:oak_fence` —
@@ -467,6 +483,15 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     (`config/ftbquests/quests/chapters/tier1_machines.snbt`,
     `data.snbt`) swapped from `kubejs:spike_trap` to
     `trapcraft:spikes`.
+
+    **This crashed the server on every launch (2026-08-29, caught from
+    real crash reports, not a playtest)** — see the original Fortify
+    entry above for the full stack trace and root cause
+    (`ItemTask.readData()` rejects `#` in the `item` string outright,
+    it's not valid tag syntax for this task type at all). Fixed by
+    dropping "any of 3" and checking `trapcraft:spikes` specifically;
+    `machine_tags.js` and the tag itself were deleted since nothing
+    else used them.
   - **Not yet confirmed in-game** — needs a real playtest, and per the
     brief's own framing, specifically for *feel*, not just whether the
     quest completes — this is replacing something that already failed
