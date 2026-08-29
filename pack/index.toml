@@ -66,7 +66,7 @@ hash = "dba3439cbe4a225e17e46a99cf72f7ed99faf70f7a16514f0f84f243d55e29b7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "8068b40498044791d89e9a40b3509f93dfff8a4b2af2bfd2c897b6d9b9078a90"
+hash = "9c7d1e913244f95bf9cdcb7af47038e6ce15cb3e52ed47f94a90d9e2deec2e97"
 
 [[files]]
 file = "kubejs/server_scripts/spike_trap.js"
@@ -188,6 +188,11 @@ metafile = true
 [[files]]
 file = "mods/rhino.pw.toml"
 hash = "5b92406160d9ea8a61ddf111caaecb7f6283678e2c40b08b72dce3eeaf20dc96"
+metafile = true
+
+[[files]]
+file = "mods/securitycraft.pw.toml"
+hash = "9af1c3705dee1576d6691a814eece2b5f4f2548533f037fc9e848fc1eff3edcf"
 metafile = true
 
 [[files]]

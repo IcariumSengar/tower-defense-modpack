@@ -1895,3 +1895,99 @@ other.
 Not built — a concept, logged for whenever the current placeholder
 starter base gets picked up for real.
 
+### Addendum (2026-08-20): redesigned as a single chokepoint from the start
+
+Direct request: a starting structure/map with a real chokepoint baked
+in from the beginning — enemies should only be able to approach from
+one direction, not surround the base on all sides.
+
+**Real technical requirement found before designing this, not assumed:**
+checked whether Epic Siege Mod is still active — it is (`testing`
+status, still in `pack/index.toml`, never disabled the way Pure
+Suffering was). Its whole point is rewriting mob AI so **zombies
+dig/pillar to reach the player and creepers breach walls** — MODS.md's
+own existing compatibility note already flags this exact problem for
+mob-farm designs and recommends **SecurityCraft's reinforced blocks**
+(already in the mod list, chosen specifically for "escape-proof"
+purposes) as the fix. A chokepoint built from plain cobblestone/wood
+walls would likely get dug through or pillared over by the zombies that
+make up most of every wave — **the enclosing walls need to be
+SecurityCraft reinforced blocks, not vanilla ones, or the whole
+chokepoint doesn't actually hold.** Ravager's own block-breaking
+capability (wave 5) isn't confirmed either way — worth verifying
+directly rather than assuming reinforced blocks cover it too.
+
+**Redesign, building on "The Watchpost" above rather than replacing it:**
+- The perimeter becomes a **full enclosure**, not the low ornamental
+  wall originally described — tall enough that mobs can't just walk
+  over it, built from SecurityCraft reinforced blocks specifically for
+  the dig/pillar/breach resistance above.
+- **One deliberate gate** on a single side is the only opening.
+  Mobs still spawn at a random edge of the worldborder (unchanged —
+  see `randomBorderEdgePosition()` in `wave_spawner.js`, per MODS.md's
+  Fixed spawn entry) and still path toward the player via
+  `mob_aggro.js`'s forced `setTarget()`; with the rest of the perimeter
+  solid and unbreakable, ordinary pathfinding does the funneling on its
+  own. **No changes needed to the wave-spawning code at all** — this is
+  a pure structure/geometry change plus one new mod dependency, not a
+  logic change to already-tested systems. A nice side effect: a mob
+  spawning on the far side of the border has to walk the long way
+  around the walls to reach the gate, which reads as a feature (a
+  visible flanking approach), not a bug.
+- **The gate is the kill zone** — and directly the placement target for
+  the Tier 1 machines just handed off above (Spike Traps at the
+  threshold, Palisade/Funnel Walls narrowing the approach into it,
+  Snare Traps just outside to slow mobs before they arrive). This gives
+  that build brief a concrete "where" it didn't have before.
+- **Watchtower now overlooks the gate specifically**, not the desert in
+  general — a real sightline down the one approach, not a vague lookout
+  spot. Natural home for a Tier 2/3 turret once those exist, aimed
+  straight down the chokepoint.
+- **Amulet pedestal and diary/quest-book placement move to the point
+  furthest from the gate** — the deepest part of the compound, so the
+  layout itself reads as "this is what's being protected," reinforcing
+  the amulet's own narrative role without needing any new text.
+
+Not built — a refinement of the existing Watchpost concept, not a
+replacement, logged for the same "whenever the placeholder starter base
+gets picked up for real" moment.
+
+**Decided (2026-08-20): re-add SecurityCraft now, build the chokepoint
+walls from it.** Worth noting: SecurityCraft isn't currently in the
+pack — it was removed in this same day's mod-footprint audit
+specifically for never having been wired into anything real. This
+chokepoint is exactly the concrete use case that removal note said
+would justify bringing it back. Sent as a build brief:
+
+> **Feature: re-add SecurityCraft, build the starting base's chokepoint walls from its reinforced blocks**
+>
+> Context: the chokepoint design above needs walls Epic Siege Mod's
+> zombies can't dig/pillar through. SecurityCraft's reinforced blocks
+> were already identified for this in an existing MODS.md compatibility
+> note, but that note is a **design assumption, not something verified
+> in-game** — confirm it actually holds once this is built, don't just
+> trust the note.
+>
+> Build:
+> 1. Re-add SecurityCraft to the pack (Forge 1.20.1, was previously
+>    installed and removed only for being unused — no known
+>    compatibility issues on record from before).
+> 2. Use its reinforced stone/cobblestone variants for the full
+>    perimeter enclosure — matches the weathered-stone aesthetic already
+>    chosen for the shack itself, so the reinforced walls don't look out
+>    of place next to it. Confirm the exact block IDs directly from the
+>    mod (it ships its own in-game guide book) rather than guessing from
+>    search results.
+> 3. **Verify the dig/pillar/breach resistance directly, in-game,
+>    against this pack's actual summoned mobs** (zombie via Wave Horn,
+>    specifically) before treating the chokepoint as solved. If Epic
+>    Siege's mobs *can* still get through some way SecurityCraft doesn't
+>    cover, that's a real finding to record, not a surprise to patch
+>    around silently.
+> 4. Gate mechanism is an open call for whoever builds this — SecurityCraft
+>    has its own reinforced doors with lock/key mechanics, which could
+>    be used for the single gate, or a plain vanilla door inside a
+>    reinforced frame may be simpler and sufficient for a singleplayer
+>    pack with no real intrusion to defend against. Pick whichever is
+>    less complexity for the same functional result.
+

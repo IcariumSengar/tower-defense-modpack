@@ -30,6 +30,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | LootJS | [Modrinth](https://modrinth.com/mod/lootjs) | 2.13.1 (1.20.1 Forge) | KubeJS addon for editing loot tables — powers the loot-bag drop system (see Custom glue below). Small, purpose-built companion to KubeJS, not a standalone content mod | Server-side | testing |
 | TFTH (The Flesh That Hates) | [Modrinth](https://modrinth.com/mod/tfth) | 1.1b (1.20.1 Forge) | Re-added 2026-08-19 to supply modded mob types for wave_spawner.js starting wave 2 — see the Wave spawner entry under Custom glue for exactly which mobs, and the "TFTH config hardening" entry there for why most of its own default behavior is disabled | Removed 2026-08-19 (first playtest, vanilla-only decision), re-added same day once the wave campaign was ready for modded mobs. TFTH is not just a mob roster — see the config hardening entry, this needed real care, not a blind re-add | testing |
 | GeckoLib | [Modrinth](https://modrinth.com/mod/geckolib) | 4.8.4 (1.20.1 Forge) | Hard dependency of TFTH (animation library) | — | required |
+| SecurityCraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/security-craft) | 1.10.2.1 (1.20.1 Forge) | Re-added 2026-08-29 to build the starting base's perimeter walls from reinforced (undiggable, explosion-proof) blocks — see the "Chokepoint walls" entry under Custom glue below for the full build and the dig/pillar-resistance reasoning | Removed 2026-08-20 (footprint audit, never integrated at the time), re-added same as TFTH was — this time actually wired into a built system, not just installed | testing |
 
 ## Removed mods
 
@@ -43,7 +44,9 @@ references found for any of these) before removing, not just guessed:
   "real mechanical teeth" but nothing in the pack ever gave/referenced
   any of its items or directed the player toward it. Revisit if
   base-building ever gets its own dedicated defense layer beyond the
-  worldborder + starter base.
+  worldborder + starter base. **Re-added 2026-08-29** — see the main
+  mod table above and the "Chokepoint walls" entry under Custom glue
+  below; this note stays for the removal history.
 - **Mob Grinding Utils** — never integrated. Was meant to be the
   "payoff for surviving a wave" reward loop, but the loot bag system
   ended up filling that role instead. Revisit only if the loot bag
@@ -1000,6 +1003,90 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     entry above for why this is now a standing step). **Not yet
     confirmed in-game.**
 
+- **Chokepoint walls — starter base perimeter rebuilt from SecurityCraft
+  reinforced blocks (2026-08-29).** Direct request, following on from
+  `docs/IDEAS.md`'s "redesigned as a single chokepoint" addendum (a
+  parallel session's concurrent edit, not this one's) which had already
+  flagged that plain cobblestone walls would just get dug/pillared
+  through by Epic Siege Mod's zombies. Built into
+  `playtest_starter_kit.js`, replacing the previous 4 `/fill` wall
+  calls with a per-block loop (SecurityCraft's `/fill`-friendly reinforced
+  blocks don't support percentage-random material mixing any other way).
+  - **Block IDs confirmed directly from the mod jar's own lang file**
+    (`assets/securitycraft/lang/en_us.json`, extracted and grepped, not
+    guessed or taken from the in-game guide book — the guide book and
+    the lang file describe the same registry names, this was just the
+    faster way to get them precisely): `securitycraft:reinforced_cobblestone`
+    (primary, 83%), `securitycraft:reinforced_mossy_cobblestone` (12%),
+    `securitycraft:reinforced_cracked_stone_bricks` (5%) — the mossy/
+    cracked scatter matches the weathered-stone look from `docs/IDEAS.md`'s
+    "Watchpost" concept ("mix in mossy/cracked variants for age").
+    SecurityCraft ships a `reinforced_<vanilla name>` variant of nearly
+    every vanilla block, confirmed by the same lang-file scan.
+  - **Gate**: stayed a plain vanilla `oak_door` (unchanged from the
+    original build) sitting in the wall's one opening, not
+    SecurityCraft's own lockable Reinforced Door. Decided against the
+    lockable door specifically because its owner/whitelist system exists
+    to keep *other players* out, which a singleplayer pack has no use
+    for, and because placing one via console `/setblock` has no
+    real-player context to assign an owner from at all — a plain door
+    in a reinforced frame gets the identical practical result (walls
+    can't be dug/breached, the door is just an opening) for zero added
+    complexity. This was the explicit "whichever is less complexity for
+    the same result" call from the brief.
+  - **Dig/pillar resistance — reasoned from decompiled bytecode of both
+    mods, genuinely not the same as confirmed in-game, and the request
+    was explicit that this distinction matters.** Downloaded and
+    inspected both jars directly (`EpicSiegeMod-14.171.jar`,
+    `[1.20.1] SecurityCraft v1.10.2.1.jar`) rather than trusting the old
+    "should be fine" compat note from before SecurityCraft was even
+    re-added:
+    - Epic Siege's digging AI (`ESM_EntityAIDigging.class`) breaks
+      blocks by spawning a real Forge `FakePlayer` (via
+      `FakePlayerFactory.getMinecraft(...)`) and running it through the
+      **standard block-breaking pipeline** —
+      not a raw block-removal bypass. SecurityCraft's protection is an
+      ownership check on that exact pipeline (confirmed separately:
+      "to non-Owners, the block is unbreakable and explosion-proof").
+      A FakePlayer can never be a wall's owner, so on paper this should
+      block digging exactly like it blocks a real non-owner player.
+      Creeper breaching should be blocked too, independent of
+      ownership, since reinforced blocks are unconditionally
+      explosion-proof.
+    - **Under this pack's actual config, zombie is the only mob this
+      even applies to** — `epicsiegemod-common.toml`'s `diggerMobs`,
+      `buildingMobs` (pillaring), and `targetingMobs` all default to
+      `["minecraft:zombie"]` only, nothing else in the wave roster has
+      dig/pillar/block-targeting behavior at all. Matches the brief's
+      own framing ("against this pack's real summoned zombies").
+    - **NOT solved by any of this**: pillaring is the mob placing its
+      *own* blocks outside the wall to climb over the top — a
+      height/coverage problem, not a material one. This wall's height
+      (3 blocks, unchanged from the original build) wasn't reconsidered
+      here. A zombie could plausibly still get over the top even though
+      it can no longer dig through or get blown through the sides.
+    - **Bottom line: needs a real playtest to confirm, not assume** —
+      the bytecode reasoning is much stronger evidence than the old
+      pre-removal compat note ever had, but it's still reasoning, not
+      an observed result. If a zombie gets through some way this
+      analysis didn't predict, that's exactly the kind of finding worth
+      recording here, not quietly patching around.
+  - **Known follow-up, not yet done**: walls were placed via console
+    `/setblock` (no player context), so they come out ownerless. This
+    doesn't weaken mob resistance (mobs can never be an "owner" either
+    way) but does mean the player themself can't casually break/modify
+    their own walls later without SecurityCraft's
+    `allow_breaking_non_owned_blocks` config option (confirmed as a
+    real key via the mod jar's own bytecode strings, exact default
+    unknown) enabled first. Unlike Epic Siege Mod and TFTH, no
+    SecurityCraft config was hand-authored ahead of time — this project's
+    established pattern is pulling real generated config files, not
+    guessing their structure, and SecurityCraft has never actually run
+    in this instance before now. **After the first real launch**, check
+    `config/securitycraft-common.toml` (auto-generated on first world
+    load) for this key and flip it to `true` if wall edits are ever
+    wanted without switching to creative mode.
+
 - **Wave status HUD** — `pack/kubejs/server_scripts/wave_status.js`.
   Action bar shows a live "Hostiles remaining: N" count, and chat announces
   "incoming!" / "defeated!" when the nearby hostile count rises from /
@@ -1449,7 +1536,12 @@ against each other:
 - **Design note, not a conflict**: Epic Siege Mod's zombies dig/pillar to
   reach targets, which can break vanilla-style mob-farm designs used with
   Mob Grinding Utils. Build farms out of SecurityCraft reinforced blocks
-  (which Epic Siege's mobs can't break) to keep them escape-proof.
+  (which Epic Siege's mobs can't break) to keep them escape-proof. Mob
+  Grinding Utils was removed in the 2026-08-20 footprint audit, so this
+  specific farm-escape scenario no longer applies, but the same
+  reasoning is exactly what the 2026-08-29 chokepoint-wall build (see
+  the Custom glue entry above) is actually built on now, for the
+  starter base's perimeter instead of a farm.
 
 No blockers found — this list is a solid base to build the pack around.
 

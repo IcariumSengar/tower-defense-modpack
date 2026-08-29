@@ -15,8 +15,12 @@ automatic (via `pack/kubejs/server_scripts/playtest_starter_kit.js`).
   exact spot (near world coordinates 0, 0) instead of wherever vanilla
   happened to scatter you. `gamerule spawnRadius 0` is also set, so
   future respawns land exactly there too, not nearby.
-- **Starter base**: a small walled box (11×11, cobblestone walls, stone
-  brick floor, oak door) built around that fixed spawn point.
+- **Starter base**: a small walled box (11×11, stone brick floor, oak
+  door) built around that fixed spawn point. Walls are SecurityCraft
+  reinforced blocks as of 2026-08-29 (mostly `reinforced_cobblestone`,
+  scattered `reinforced_mossy_cobblestone`/`reinforced_cracked_stone_bricks`
+  for a weathered look), not plain cobblestone — see below and
+  `docs/MODS.md`'s "Chokepoint walls" entry for why.
 - **Watchtower**: a 10-block cobblestone pillar just north of the base,
   external ladder up to a 5×5 platform with a parapet — open on all
   sides (mobs can approach from any side of the border), not facing one
@@ -111,6 +115,24 @@ etc.) is ambient/always-on and applies to whatever the horn spawns.
 Zombies dropping live TNT specifically was disabled 2026-08-29 (felt too
 OP that early) — see `docs/MODS.md`'s 2026-08-29 entry for the config
 fix. Digging/pillaring/breaching are unaffected.
+
+**SecurityCraft re-added 2026-08-29, genuinely unconfirmed in-game** —
+the starter base's walls are now reinforced blocks specifically so
+zombies can't dig/blast through them. This is reasoned from both mods'
+actual code (see `docs/MODS.md`'s "Chokepoint walls" entry), not
+observed in a real fight yet. Specifically worth checking on first
+test:
+- A summoned zombie actually can't dig through a wall segment (try
+  standing on the far side and letting one path to you).
+- A creeper exploding against the wall doesn't blow a hole in it.
+- Whether a zombie can still get **over** the top by pillaring —
+  reasoned as a real, unaddressed gap (wall height wasn't changed),
+  not something the reinforced material fixes.
+- Whether you (the actual player, not a mob) can still break/place
+  wall blocks normally — they were placed via console command with no
+  owner, so this may need `config/securitycraft-common.toml`'s
+  `allow_breaking_non_owned_blocks` set to `true` after your first
+  launch generates that file. See `docs/MODS.md` for the exact key.
 
 ## Tier 1 machines (new, entirely unconfirmed in-game)
 

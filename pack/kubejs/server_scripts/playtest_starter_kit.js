@@ -134,10 +134,74 @@ PlayerEvents.loggedIn((event) => {
   // history if real terrain gets revisited later - this is deliberately
   // "for now," not a closed decision.
   run(`fill ${x0} ${floorY} ${z0} ${x1} ${floorY} ${z1} minecraft:stone_bricks`)
-  run(`fill ${x0} ${wallY0} ${z0} ${x1} ${wallY1} ${z0} minecraft:cobblestone`)
-  run(`fill ${x0} ${wallY0} ${z1} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)
-  run(`fill ${x0} ${wallY0} ${z0} ${x0} ${wallY1} ${z1} minecraft:cobblestone`)
-  run(`fill ${x1} ${wallY0} ${z0} ${x1} ${wallY1} ${z1} minecraft:cobblestone`)
+
+  // Perimeter walls rebuilt from SecurityCraft reinforced blocks
+  // (2026-08-29, direct request) - the previous plain cobblestone walls
+  // gave Epic Siege Mod's zombies (this pack's only digger/pillar/
+  // block-targeting mob under the current config - diggerMobs/
+  // buildingMobs/targetingMobs all default to just minecraft:zombie,
+  // see epicsiegemod-common.toml) nothing to actually push against.
+  // Registry names confirmed directly from the mod jar's own lang file
+  // (assets/securitycraft/lang/en_us.json) rather than guessed -
+  // securitycraft ships a reinforced_<vanilla name> variant of nearly
+  // every vanilla block.
+  //
+  // Dig resistance, reasoned from both mods' actual decompiled
+  // bytecode (not yet confirmed in-game): Epic Siege's digging AI
+  // (ESM_EntityAIDigging.class) breaks blocks through a real Forge
+  // FakePlayer via the standard block-breaking pipeline, not a raw
+  // bypass - SecurityCraft's protection is an ownership check on that
+  // same pipeline (a FakePlayer is never the wall's owner), so it
+  // should apply exactly like it would to a real non-owner player.
+  // Reinforced blocks are also unconditionally explosion-proof, so
+  // creeper breaching (Creepers.breaching=true) should be blocked
+  // regardless. NOT solved by material alone: pillaring is the mob
+  // placing its OWN blocks outside the wall to climb over the top, a
+  // height/coverage problem no wall material addresses - this wall's
+  // height (3 blocks, unchanged from before) wasn't re-examined here.
+  // Genuinely needs a real playtest against this pack's summoned
+  // zombies to confirm either way - see docs/MODS.md's SecurityCraft
+  // entry.
+  //
+  // Gate stays a plain vanilla oak_door (unchanged) sitting in the
+  // reinforced wall's one opening, rather than SecurityCraft's own
+  // lockable Reinforced Door - that door's owner/whitelist system is
+  // built for keeping OTHER PLAYERS out, which this singleplayer pack
+  // has no use for, and placing it via console command has no player
+  // context to set an owner from anyway. A plain door in a reinforced
+  // frame gets the same practical result for zero extra complexity.
+  //
+  // Placed via /setblock (console, no player context) rather than a
+  // real player placing them, so these walls come out ownerless -
+  // doesn't weaken mob resistance (mobs can never be an "owner"
+  // either way) but does mean the player themself can't casually break
+  // their own walls later without SecurityCraft's
+  // allow_breaking_non_owned_blocks config option enabled. That config
+  // file doesn't exist yet (SecurityCraft has never actually run in
+  // this instance before now) - check config/securitycraft-common.toml
+  // after the first launch, see docs/MODS.md for the exact key.
+  const WALL_MOSSY_CHANCE = 0.12
+  const WALL_CRACKED_CHANCE = 0.05
+
+  function reinforcedWallBlock() {
+    const roll = Math.random()
+    if (roll < WALL_CRACKED_CHANCE) return 'securitycraft:reinforced_cracked_stone_bricks'
+    if (roll < WALL_CRACKED_CHANCE + WALL_MOSSY_CHANCE) return 'securitycraft:reinforced_mossy_cobblestone'
+    return 'securitycraft:reinforced_cobblestone'
+  }
+
+  for (let wx = x0; wx <= x1; wx++) {
+    for (let wy = wallY0; wy <= wallY1; wy++) {
+      run(`setblock ${wx} ${wy} ${z0} ${reinforcedWallBlock()}`)
+      run(`setblock ${wx} ${wy} ${z1} ${reinforcedWallBlock()}`)
+    }
+  }
+  for (let wz = z0; wz <= z1; wz++) {
+    for (let wy = wallY0; wy <= wallY1; wy++) {
+      run(`setblock ${x0} ${wy} ${wz} ${reinforcedWallBlock()}`)
+      run(`setblock ${x1} ${wy} ${wz} ${reinforcedWallBlock()}`)
+    }
+  }
   run(`setblock ${doorX} ${wallY0} ${z1} minecraft:oak_door[facing=south,half=lower]`)
   run(`setblock ${doorX} ${wallY0 + 1} ${z1} minecraft:oak_door[facing=south,half=upper]`)
 
