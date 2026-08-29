@@ -57,10 +57,6 @@ file = "kubejs/server_scripts/border_fog.js"
 hash = "0e23b169782ea8c982e0f4948e22d03d13e494d60eb0b7697032b5ece3058b12"
 
 [[files]]
-file = "kubejs/server_scripts/example_glue.js"
-hash = "dd3415896f56018676b88e04f788d95abf04399d7ab56b69bd1c59a3135a020b"
-
-[[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
 hash = "48d42e00483ee5f8c4702bacea19a607bb72e6ab7cb55a1abe67da43db62c85d"
 
