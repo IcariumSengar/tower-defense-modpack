@@ -35,6 +35,10 @@ var WAVE_MOB_TYPES = [
   'the_flesh_that_hates:flesh_villager',
   'the_flesh_that_hates:plaquecreaturetwo',
   'the_flesh_that_hates:flesh_suffer',
+  'the_flesh_that_hates:bruteplaquecreatureone',
+  'the_flesh_that_hates:flesh_hunter_two',
+  'the_flesh_that_hates:flesh_boomer',
+  'the_flesh_that_hates:plaquethreelegcreature',
 ]
 
 PlayerEvents.tick(function (event) {

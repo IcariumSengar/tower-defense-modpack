@@ -33,6 +33,10 @@ const HOSTILE_TYPES = [
   'the_flesh_that_hates:flesh_villager',
   'the_flesh_that_hates:plaquecreaturetwo',
   'the_flesh_that_hates:flesh_suffer',
+  'the_flesh_that_hates:bruteplaquecreatureone',
+  'the_flesh_that_hates:flesh_hunter_two',
+  'the_flesh_that_hates:flesh_boomer',
+  'the_flesh_that_hates:plaquethreelegcreature',
 ]
 
 const RADIUS = 80
@@ -44,7 +48,12 @@ const RADIUS = 80
 // starter gear removal trigger (was briefly split into its own
 // GEAR_REMOVAL_WAVE = 2 for faster playtest iteration - confirmed
 // working 2026-08-19, reset to the real wave 5 here).
-const FINAL_WAVE = 5
+//
+// Moved from 5 to 8 (2026-08-29) when waves 6-8 were added - the
+// starter-gear-removal narrative beat ("the campaign you inherited
+// ends, now you're on your own") should fire at the new true end of
+// the curated campaign, not partway through it.
+const FINAL_WAVE = 8
 
 // Tag set on the sword/armor in playtest_starter_kit.js — matching on
 // this instead of item type is what lets removal target exactly the

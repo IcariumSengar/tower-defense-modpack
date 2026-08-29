@@ -1162,6 +1162,14 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   `FINAL_WAVE` (real wave 5) immediately after — same trigger logic,
   just the wave number it fires on.
 
+  **`FINAL_WAVE` moved from `5` to `8` (2026-08-29)** when waves 6-8
+  were added (see the Wave spawner entry below) — the gear-removal
+  narrative beat is defined as firing when the *curated campaign*
+  actually ends, and that endpoint moved. Not re-verified with the
+  temporary-constant trick above; low risk since the trigger logic
+  itself is untouched, only which wave number it compares against, but
+  genuinely not re-tested.
+
 - **Wave spawner** — `pack/kubejs/server_scripts/wave_spawner.js` +
   `pack/kubejs/startup_scripts/wave_horn.js`. Replaces relying on
   `/puresuffering add` for testing (that command turned out to work, but
@@ -1305,6 +1313,61 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   `wave_status.js`'s `HOSTILE_TYPES`, `mob_aggro.js`'s `WAVE_MOB_TYPES`,
   and `loot_bag_drops.js`'s tier lists were all updated to match (same
   four-file-sync pattern already documented for the vanilla roster).
+
+  **Waves 6-8 added (2026-08-29)**, direct request: "add some more
+  waves ... scale accordingly ... keep the loot philosophy ... feel
+  free to use some mob types from other mods that have been talked
+  about." Rather than installing a new mob mod, drew from TFTH's own
+  `germsStageMobList`/`awarenessStageMobList` entries that had never
+  actually been used in any wave — TFTH is already integrated, already
+  config-hardened (see below), zero new mod risk. Stats pulled directly
+  from `TFTH.toml`'s per-mob `Attributes` lines
+  (`MaxHealth|AttackDamage|Armor`), not guessed:
+  - **Wave 6**: the wave 1-5 "trash" roster held at its wave-5 floor
+    (zombie/skeleton/spider/witch/wither_skeleton, 1 each) plus
+    `bruteplaquecreatureone` x1 ("Flesh Brute I", 45/4/5 — a tank
+    archetype, nothing else in the roster has that health/armor
+    combination with comparatively low attack).
+  - **Wave 7**: same trash floor plus `flesh_hunter_two` x1 ("Flesh
+    Hunter II", 45/6/4 — a balanced bruiser) and `flesh_boomer` x1
+    ("Flesh Boomer", 20/0/0 — zero melee attack damage in its own
+    attributes, presumably an explosion-based attack given the name;
+    the starter base's walls are explosion-proof reinforced blocks
+    regardless, see the Chokepoint walls entry above).
+  - **Wave 8**: same trash floor, the ravager mini-boss returns
+    (unchanged from its wave-5 nerf), plus `plaquethreelegcreature` x1
+    ("Flesh Hysterizer", 55/7/4 — the tankiest of the four new
+    additions), closing out the campaign.
+  - **`flesh_howler` deliberately left out** — its own class
+    (`FleshHowlerEntity$CallForHelpGoal.class`, confirmed by extracting
+    and inspecting the actual TFTH jar) suggests it can summon
+    reinforcements on its own, which would break this pack's
+    deterministic per-wave mob count (the whole reason TFTH's own
+    autonomous spawn systems were disabled in the first place). Not
+    worth the unconfirmed risk when better-understood alternatives
+    already covered the variety goal.
+  - **Scaling followed the wave 5 rebalance precedent from earlier this
+    same session** (12 mobs → 7, because "the dogpile of regular mobs
+    stacked on hard hitters was the problem, not variety or
+    toughness") — waves 6-8 total 6, 7, and 7 mobs respectively, in
+    the same range as wave 5's 7, not a return to the old waves 2-4's
+    12-14. Escalation comes from new tougher/varied unit types, not
+    raw headcount.
+  - **Loot tier**: all four new mobs went into `RARE_MOBS` in
+    `loot_bag_drops.js`, continuing the pack's existing convention of
+    tiering TFTH mobs by *which wave they're introduced in*, not by
+    TFTH's own germ/awareness stage split (`bruteplaquecreatureone` is
+    technically germ-stage per TFTH's own list despite fairly high
+    stats — wave-number tiering already overrode TFTH's stage split
+    for wave 4's `plaquecreaturetwo`, so this just continues that).
+  - `wave_status.js`'s `HOSTILE_TYPES`, `mob_aggro.js`'s
+    `WAVE_MOB_TYPES`, and `wave_spawner.js`'s own `WAVE_MOB_TYPES` were
+    all updated to match (same four-file-sync pattern as every prior
+    roster change). `wave_status.js`'s `FINAL_WAVE` moved from `5` to
+    `8` — see the Starter gear removal entry above for what that
+    affects.
+  - **Not yet confirmed in-game** — same caveat as every other roster
+    change in this file until actually played.
 
   **TFTH config hardening (2026-08-19)** — before re-adding, checked
   what TFTH actually does beyond supplying mob types, since research

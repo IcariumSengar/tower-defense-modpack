@@ -3,8 +3,12 @@
 //   - Wave 1 mobs (zombie, skeleton) -> Scavenger's Bag (Common)
 //   - Wave 2-3 additions (spider, witch, flesh_human, flesh_villager)
 //     -> Fortified Cache (Uncommon)
-//   - Wave 4-5 additions (wither skeleton, ravager, plaquecreaturetwo,
-//     flesh_suffer) -> Warlord's Hoard (Rare)
+//   - Wave 4-8 additions (wither skeleton, ravager, plaquecreaturetwo,
+//     flesh_suffer, bruteplaquecreatureone, flesh_hunter_two,
+//     flesh_boomer, plaquethreelegcreature) -> Warlord's Hoard (Rare) -
+//     waves 6-8 (2026-08-29) kept the same tier-by-wave-number
+//     convention as wave 4-5's TFTH additions, rather than sorting by
+//     TFTH's own germ/awareness stage split
 // Also covers husk/drowned/creeper under Common even though they're not
 // part of the curated wave roster, in case they show up some other way
 // (Epic Siege Mod, a future wave, etc.) — cheap to leave in.
@@ -27,7 +31,7 @@
 
 const COMMON_MOBS = ['minecraft:zombie', 'minecraft:skeleton', 'minecraft:husk', 'minecraft:drowned', 'minecraft:creeper']
 const UNCOMMON_MOBS = ['minecraft:spider', 'minecraft:witch', 'the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager']
-const RARE_MOBS = ['minecraft:wither_skeleton', 'minecraft:ravager', 'the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_suffer']
+const RARE_MOBS = ['minecraft:wither_skeleton', 'minecraft:ravager', 'the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_suffer', 'the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:flesh_boomer', 'the_flesh_that_hates:plaquethreelegcreature']
 
 // `LootJS.modifiers(...)` is the correct, current outer syntax —
 // confirmed directly from LootJS's own source (LootJSEvent.java

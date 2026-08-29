@@ -57,20 +57,34 @@ gets revisited later.
 ## The test loop
 
 Right-click the **Wave Horn** to summon the next wave. Deterministic
-5-wave campaign, vanilla mobs plus TFTH mobs starting wave 2 (see
-`docs/MODS.md` for exact TFTH mob stats and the config changes made
-before re-adding it):
+8-wave campaign (was 5, extended 2026-08-29), vanilla mobs plus TFTH
+mobs starting wave 2 (see `docs/MODS.md` for exact TFTH mob stats and
+the config changes made before re-adding it):
 1. zombie + skeleton
 2. + spider + flesh_human
 3. + witch + flesh_villager
 4. + wither skeleton + flesh_hunter_i (tougher — TFTH's Awareness stage)
-5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage)
-   — repeats for calls beyond wave 5, same composition each time.
+5. + ravager (mini boss) + flesh_suffer (hits hard — 25 attack damage).
    Scaled down 2026-08-29: regular-mob counts halved to 1 each (was 2
-   each). Follow-up feedback the same day: the ravager itself (not the
-   regular-mob dogpile) was the actual OP part — its attack damage
-   (12→8) and max health (100→60) are now cut on spawn, `flesh_suffer`
-   is unchanged.
+   each), and the ravager itself was separately nerfed after follow-up
+   feedback — attack damage 12→8, max health 100→60 on spawn.
+   `flesh_suffer` is unchanged.
+6. same 5 "trash" mobs (zombie/skeleton/spider/witch/wither_skeleton)
+   at 1 each + `bruteplaquecreatureone` ("Flesh Brute I", a tank —
+   45 health/4 attack/5 armor)
+7. same trash floor + `flesh_hunter_two` ("Flesh Hunter II", balanced
+   bruiser — 45/6/4) + `flesh_boomer` ("Flesh Boomer" — 20/0/0, zero
+   melee damage in its own stats, presumably explosion-based)
+8. same trash floor + the ravager (returns) + `plaquethreelegcreature`
+   ("Flesh Hysterizer", the tankiest new addition — 55/7/4) — repeats
+   for calls beyond wave 8, same composition each time
+
+Waves 6-8 (2026-08-29) reuse TFTH mobs that were never actually used in
+any wave rather than adding a new mod — see `docs/MODS.md`'s Wave
+spawner entry for exactly why each one was picked (and why
+`flesh_howler` specifically wasn't — possible "summons more mobs"
+behavior that would break the deterministic mob count). **Not yet
+confirmed in-game.**
 
 The horn refuses to summon again while mobs from the current wave are
 still alive nearby — clear the wave first. Action bar shows a live
@@ -189,11 +203,14 @@ pieces are lowest vs. highest risk if something doesn't work.
   also backwards (Rare more likely than Common) until the same day —
   now Common 50% / Uncommon 25% / Rare 10%. Common's loot pool gained
   stone/wood/food staples on top of its scrap materials.
-- The starter sword/armor disappear once the campaign's final wave (5)
+- The starter sword/armor disappear once the campaign's final wave
   clears, with an "IT'S UP TO YOU NOW" popup — **confirmed working**
   (2026-08-19 playtest, verified at a temporarily-lowered wave 2, then
-  reset back to the real wave 5). See `docs/MODS.md`'s Wave status HUD
-  entry for the implementation.
+  reset back to the real final wave). See `docs/MODS.md`'s Wave status
+  HUD entry for the implementation. Final wave moved from 5 to 8
+  (2026-08-29, waves 6-8 added) — the trigger logic itself wasn't
+  retouched, only which wave number it fires on, and that hasn't been
+  re-verified since.
 - Mouse Tweaks and Inventory Profiles Next were fighting over the same
   swipe/hover gestures — green flashing on inventory hover, occasional
   accidental multi-crafting. A config fix was applied but never

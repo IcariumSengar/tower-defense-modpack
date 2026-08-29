@@ -7,8 +7,35 @@
 // Each wave adds a mob type on top of the previous wave's roster, per
 // design: 1) zombie+skeleton, 2) +spider+flesh_human, 3) +witch+
 // flesh_villager, 4) +wither_skeleton+flesh_hunter_i, 5) +ravager (mini
-// boss)+flesh_suffer. Calling the horn again past wave 5 repeats wave
-// 5's composition — no waves designed beyond that yet.
+// boss)+flesh_suffer. Calling the horn again past wave 8 repeats wave
+// 8's composition — no waves designed beyond that yet.
+//
+// Waves 6-8 added 2026-08-29 (direct request: "more waves, scaled
+// accordingly, keep the loot philosophy, use mob types from other mods
+// talked about for variety"). Rather than a new mod, drew from TFTH's
+// own germsStageMobList/awarenessStageMobList entries that were never
+// actually used in any wave - TFTH.toml's own per-mob Attributes lines
+// (MaxHealth|AttackDamage|Armor, confirmed directly from the config,
+// not guessed) picked which ones: bruteplaquecreatureone ("Flesh Brute
+// I", 45/4/5 - a tank archetype distinct from anything already in the
+// roster), flesh_hunter_two ("Flesh Hunter II", 45/6/4 - balanced
+// bruiser), flesh_boomer ("Flesh Boomer", 20/0/0 - zero melee attack
+// damage in its own attributes, presumably an explosion-based attack
+// like a creeper; reinforced walls are explosion-proof either way, see
+// docs/MODS.md's chokepoint-walls entry), plaquethreelegcreature
+// ("Flesh Hysterizer", 55/7/4 - the tankiest of the four, closes out
+// wave 8 alongside the returning ravager). flesh_howler was
+// deliberately left out - its own class has a CallForHelpGoal, an
+// unconfirmed "summons more mobs" risk that would break this pack's
+// deterministic per-wave mob count, and better-understood alternatives
+// already covered the variety goal without it.
+//
+// Scaled per the wave 5 rebalance precedent earlier this session (that
+// wave went from 12 mobs down to 7 - "too many regular mobs stacked
+// on hard hitters was the problem, not variety or toughness") - waves
+// 6-8 hold the same 5-mob trash floor (zombie/skeleton/spider/witch/
+// wither_skeleton @1 each) as wave 5 and add 1-2 new elites on top
+// (6/7/7 total mobs) rather than scaling raw counts back up.
 //
 // Was vanilla-only from 2026-08-19 (TFTH removed for the first wave
 // debugging pass) until TFTH mobs were folded back in starting wave 2 —
@@ -86,6 +113,9 @@ var WAVES = [
   // existing floor of 1 each - they're the designed finale, the
   // dogpile of regular mobs alongside them was the actual problem.
   [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:bruteplaquecreatureone', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:flesh_hunter_two', 1], ['the_flesh_that_hates:flesh_boomer', 1]],
+  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:witch', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:plaquethreelegcreature', 1]],
 ]
 
 var WAVE_MOB_TYPES = [
@@ -99,6 +129,10 @@ var WAVE_MOB_TYPES = [
   'the_flesh_that_hates:flesh_villager',
   'the_flesh_that_hates:plaquecreaturetwo',
   'the_flesh_that_hates:flesh_suffer',
+  'the_flesh_that_hates:bruteplaquecreatureone',
+  'the_flesh_that_hates:flesh_hunter_two',
+  'the_flesh_that_hates:flesh_boomer',
+  'the_flesh_that_hates:plaquethreelegcreature',
 ]
 
 // Staggered emergence + sound-first spawn cues (docs/IDEAS.md's
