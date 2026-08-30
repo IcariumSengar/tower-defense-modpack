@@ -145,6 +145,11 @@ hash = "902bac905b93271f02bd0951a22bac06a3da24f5c237fcaeb469e14a7679e508"
 metafile = true
 
 [[files]]
+file = "mods/ftb-xmod-compat.pw.toml"
+hash = "01fccb8f3abe9c7f542ec610aef0c647bdc5a8ce0677c74e340ba4c2da0614af"
+metafile = true
+
+[[files]]
 file = "mods/ftblibrary.pw.toml"
 hash = "5269d11649a65f8f235c344f9d1728d6b851e07dce47024f06f9455a9f02f2b4"
 metafile = true

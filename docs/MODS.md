@@ -34,6 +34,7 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | FTB Quests | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge) | 2001.4.22 (1.20.1 Forge) | Added 2026-08-29 for one quest ("Fortify") telling the player Tier 1 machines can be crafted — see the FTB Quests entry under Custom glue below | Requires FTB Library + FTB Teams (both added alongside it) | testing |
 | FTB Library | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge) | 2001.2.13 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 | FTB Teams | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | 2001.3.2 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
+| FTB XMod Compat | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-xmod-compat) | 2.1.2 (1.20.1 Forge) | Added 2026-08-29 so clicking an item in a quest jumps to its JEI recipe — does nothing by itself, only bridges FTB Quests/JEI/KubeJS when it detects them installed | Both hard dependencies (FTB Library, Architectury) already satisfied by what's installed; no new dependency chain | testing |
 | Trapcraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trapcraft) | 2.10.2 (1.20.1 Forge) | Added 2026-08-29 to replace the custom Tier 1 machines (Spikes, Bear Trap) after direct playtest feedback that the custom design "sucked" — see the "Tier 1 replaced with Trapcraft" entry under Custom glue below | Standalone, no hard dependency beyond Forge/Minecraft | testing |
 
 ## Removed mods
@@ -415,6 +416,20 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     deleted rather than left as dead code. If "any of N items" is
     wanted again later, the real options are unchanged: FTB Filter
     System + FTB XMod Compat, or N separate quests.
+  - **Click-a-quest-item-to-view-its-JEI-recipe (2026-08-29)** — direct
+    request after noticing this didn't work. `data.snbt`'s
+    `default_quest_disable_jei: false` was already correctly set (not
+    disabled), but that flag alone can't enable a bridge that doesn't
+    exist — this feature is provided by a genuinely separate mod, **FTB
+    XMod Compat**, confirmed from real bug reports of other users
+    hitting exactly this ("click item in quest → view JEI recipe"
+    silently not working) that trace to it being absent. Installed
+    `2.1.2` (real 1.20.1 Forge build) — a clean, low-risk add: both its
+    hard dependencies (FTB Library, Architectury) were already
+    satisfied by what's installed, no new dependency chain at all, and
+    it "does nothing by itself" per its own description, only bridging
+    FTB Quests/JEI/KubeJS when it detects them present (all three
+    already are). **Not yet confirmed in-game.**
   - **Auto-give-book: turned out to need zero configuration.** The
     brief assumed "a standard FTB Quests config option" for this exists
     — real research found the opposite: giving the book on first login

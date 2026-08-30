@@ -230,6 +230,10 @@ research rather than assumed.
   FTB Quests entry for the full crash/fix writeup. Crafting the Bear
   Trap or a plain oak_fence instead will *not* complete this quest
   anymore, that's expected now, not a bug.
+- **Click an item icon in any quest (a task, a reward, whatever) and
+  confirm it jumps to JEI showing that item's recipe.** FTB XMod
+  Compat, added 2026-08-29 specifically for this, needs to actually be
+  detected and bridging FTB Quests to JEI — not yet confirmed in-game.
 
 ## Known caveats
 
