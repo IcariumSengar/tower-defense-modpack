@@ -18,18 +18,13 @@ IDEAS.md/FEATURES.md first.
 
 ## Ready to build
 
-1. **World type rebuild: flattened `noise` generator, real biome
-   support** — see FEATURES.md's "World type" section. Confirmed
-   necessary: the current flat-generator desert override doesn't work
-   at all (tested, still renders plains on a fresh world). Real fix,
-   not a patch — switch to `minecraft:noise` with a custom
-   `noise_settings` file tuned to flatten terrain (density function
-   tuning, exact value needs in-game confirmation) plus a real
-   `multi_noise` biome_source. Phase 1 scope: single biome
-   (`minecraft:desert`) — same intent as before, different, hopefully
-   actually-working mechanism. **Sent ahead of the "hold new work"
-   pacing call** since this blocks the very playtest that call was
-   about, not new scope on top of it.
+1. **Base expansion: escalating growth curve** — see FEATURES.md's
+   "Base expansion" entry. Small, self-contained change to
+   `base_expansion.js`: trigger every wave clear instead of every 2nd,
+   and use `growth = 20 + 5 * floor((waveNumber - 1) / 2)` instead of a
+   flat 5. Confirmed numbers with the user directly (20/20/25/25/30/30/
+   35/35 across waves 1-8, border reaches 270 by wave 8 vs. today's 70)
+   before queuing this, not guessed.
 
 ## In progress (already sent, not yet confirmed built)
 
@@ -37,6 +32,11 @@ IDEAS.md/FEATURES.md first.
   2026-08-30 (see FEATURES.md's "The amulet" and "Quest book"
   sections), **not yet confirmed in-game**. This is the checkpoint the
   user asked to playtest before anything else lands on top of it.
+- **World type rebuild** — built 2026-08-30 (see FEATURES.md's "World
+  type" section): `noise` generator + custom `noise_settings` +
+  `fixed` desert biome_source, replacing the confirmed-broken `flat`
+  override. Needs a brand-new world to actually test, since world-gen
+  changes don't retroactively apply to already-generated chunks.
 
 ## On hold — deliberately not queued right now
 

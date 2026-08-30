@@ -37,8 +37,16 @@ file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
 [[files]]
-file = "kubejs/assets/kubejs/textures/block/amulet_pedestal.png"
-hash = "fabce275b6f1abbff77be6a321eb0c8b05facbddcaafc4c133fc20f81929daaf"
+file = "kubejs/assets/kubejs/models/block/amulet_pedestal.json"
+hash = "cf37ad6e10b1a472eac9a0928d56779ef6eef66b3cf85a6022fd700304070052"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/amulet_pedestal_side.png"
+hash = "a3d6a285386c94033f1594220371accd5058aafe9e5d423f5c063255b07de283"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/amulet_pedestal_top.png"
+hash = "080ff6bb7d8b8314e8a0b2b98b66b19cf24ee3d4411575d38e8e4a0eff34c65b"
 
 [[files]]
 file = "kubejs/assets/kubejs/textures/item/amulet.png"
@@ -86,7 +94,7 @@ hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "c521b46320e8c73f5bcce35ca7a8a55447160d2eb4dcb3ef2cc6823f69f34344"
+hash = "bd6bc4a0db834c6612c5b544439e736af7c3b0cfab5346b99c01ff5dcdf09da7"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
@@ -126,7 +134,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/startup_scripts/amulet.js"
-hash = "ea56eb217cab12d52e9fdd78199c192a531b2ca10576fb0119ecc7f077d39d16"
+hash = "cb4433311b69337cb9a0d8b1d3fc159f0782780d265f41c5b84172bbb222e417"
 
 [[files]]
 file = "kubejs/startup_scripts/loot_bags.js"

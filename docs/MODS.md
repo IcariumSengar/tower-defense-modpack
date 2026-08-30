@@ -2275,6 +2275,27 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   quest IDs checked for uniqueness against every existing ID in the
   quests folder before finalizing.
 
+- **World type rebuilt: `noise` generator replaces `flat` (2026-08-30)**
+  — see `docs/FEATURES.md`'s "World type" entry for the full detail.
+  The flat-type-with-desert-biome override was confirmed broken by
+  direct playtest (still rendered plains on a fresh world); replaced
+  with `type: minecraft:noise` + a custom `noise_settings` file
+  (`kubejs/data/kubejs/worldgen/noise_settings/flat_desert.json`) and a
+  `fixed` biome_source. Every field name was checked against a real,
+  downloaded copy of vanilla's own `overworld.json` noise_settings
+  (120KB, fetched via `gh api` from a server-reimplementation repo that
+  ships exact vanilla data) rather than trusted from summarized wiki
+  fetches, which disagreed with each other and each contained at least
+  one wrong field name. The desert surface rule (sand over sandstone)
+  is copied verbatim from vanilla's own real desert-biome branch inside
+  that file. `final_density` is a Y-only `y_clamped_gradient` — no X/Z
+  term anywhere in the router — so flatness is structurally guaranteed
+  rather than tuned toward, a stronger position than the originally
+  planned `density_factor` approach. Deployed directly to the live
+  instance. Not yet confirmed in-game — needs a brand-new world, since
+  world-gen changes don't retroactively affect already-generated
+  chunks.
+
 ## Compatibility check (2026-08-19)
 
 Reviewed all 11 tracked mods (7 picks + 4 auto-resolved dependencies)

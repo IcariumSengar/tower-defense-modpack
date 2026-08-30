@@ -57,12 +57,28 @@ never roll a rare bag) — this was inverted once and fixed, don't
 reintroduce the inversion. Real textures exist for all three tiers.
 Implementation: `loot_bags.js`, `loot_bag_drops.js`, `loot_bag_open.js`.
 
-**Base expansion** — *live*. The worldborder grows 5 blocks every 2
-waves cleared, auto-set to 50 on world creation, centered on the fixed
-spawn point. Mob spawn positions are clamped to stay within the current
-border. This is the "custom world" idea's first-step scope — no
-separate custom dimension, no hand-built structure, just the border
-mechanic itself. Implementation: `base_expansion.js`.
+**Base expansion** — *live, growth curve change planned*. The
+worldborder grows on wave clear, auto-set to 50 on world creation,
+centered on the fixed spawn point. Mob spawn positions are clamped to
+stay within the current border. This is the "custom world" idea's
+first-step scope — no separate custom dimension, no hand-built
+structure, just the border mechanic itself. Implementation:
+`base_expansion.js`.
+
+**Planned: escalating growth, not a flat rate.** Current live behavior
+is a flat +5 every 2 waves. Changing to: grow after **every** wave
+clear (not every 2nd), by an amount that increases every 2 waves —
+`growth = 20 + 5 * floor((waveNumber - 1) / 2)`, same
+constant-plus-step-function style as `wave_spawner.js`'s
+`staggerGapForWave`, not a new pattern. Gives 20/20/25/25/30/30/35/35
+across waves 1-8, taking the border from 50 to 270 by the end of the
+designed campaign (vs. only reaching 70 under the current flat rate).
+Intent, direct from the user: make late-campaign expansion feel like
+genuinely opening up access to the generated structures out there, not
+just a slow trickle — the bigger total is the point, not an accident.
+Implementation-wise this changes both the trigger cadence (every wave,
+not every 2nd) and the amount (formula instead of a constant) in
+`base_expansion.js`.
 
 **Starter gear as narrative** — *live*. The starting netherite sword +
 iron armor are framed as looted from the base's previous, unfortunate
@@ -114,66 +130,60 @@ walled compound built via `/fill` on first login. Current build:
   once those mods are installed — not blocking the base structure
   itself.
 
-**World type** — *confirmed broken 2026-08-30, replacement planned
-below*. The flat-generator-with-desert-biome override
-(`kubejs/data/minecraft/dimension/overworld.json`, `type: flat`,
-`biome: minecraft:desert`) does not actually work — confirmed on a
-genuinely fresh world post-resync, still renders as plains. Root cause
-not diagnosed (nobody with jar/log access has looked yet — this was
-found via direct playtest, not investigation); rather than debug the
-`flat` generator type further, moving to a different mechanism
-entirely, below.
+**World type** — *rebuilt 2026-08-30, not yet confirmed in-game*. The
+flat-generator-with-desert-biome override (`type: flat`, `biome:
+minecraft:desert`) was confirmed broken on a genuinely fresh world —
+still rendered as plains. Root cause not diagnosed (vanilla's `flat`
+generator type only ever supports **one hardcoded biome, by design** —
+that may be part of why the override never behaved as expected), and
+rather than debug `flat` further, replaced the mechanism entirely.
 
-**Planned replacement: flattened `noise` generator, not `flat`.**
-Real, documented technique, not guesswork: vanilla's `flat` generator
-type only ever supports **one hardcoded biome, by design** — there's no
-version of it that gives biome variety, which may be part of why the
-override never behaved as expected. The actual fix is to stop using
-`flat` entirely and instead use the `minecraft:noise` generator (the
-same type the earlier real-terrain Desert attempt used) with a
-**custom `noise_settings` file** that tunes density functions to
-flatten the terrain to a near-solid plane (a setting called
-`density_factor`, pushed high, is the documented lever — research
-suggests values in the 10+ range for a solid flat plane, ~5 leaves
-small hills, needs real in-game tuning to confirm which value actually
-matches the current Superflat's crispness, not assumed), paired with a
-real `biome_source` (`multi_noise`) for biome placement. This is the
-same underlying mechanism already sitting in IDEAS.md as the deferred
-"Biomes O' Plenty richer multi-biome path" — building this once solves
-both: get desert (or eventually real biome variety) working, via a
-mechanism that might actually function where the flat-type override
-apparently didn't.
+**Real fix, verified against actual vanilla data before writing a
+single line**: switched `kubejs/data/minecraft/dimension/overworld.json`
+to `type: minecraft:noise` with a custom `noise_settings` file
+(`kubejs/data/kubejs/worldgen/noise_settings/flat_desert.json`) and a
+`{"type":"minecraft:fixed","biome":"minecraft:desert"}` biome_source —
+the same `fixed` biome_source this pack's own earlier real-terrain
+Desert attempt already proved works correctly, so that half carried no
+real risk. The `noise_settings` schema itself (an unfamiliar, easy to
+get subtly wrong format) was **not** taken from summarized wiki/doc
+fetches — those turned out to disagree with each other on real field
+names (one invented a nonexistent `initial_density_without_jaggedness`
+field, another used the wrong key name `surface_rules` instead of the
+real singular `surface_rule`). Instead, downloaded vanilla's actual
+120KB `overworld.json` noise_settings directly and diffed every one of
+my keys against its real ones programmatically — exact match, 15/15
+`noise_router` keys, no invented or missing fields. The desert
+sand/sandstone surface rule (`stone_depth` + `above_preliminary_surface`
+condition structure) was copied verbatim from vanilla's own real
+desert-biome branch inside that same file, not guessed.
 
-**Scoped small first, per the pack's usual pattern**: Phase 1 is a
-`multi_noise` biome_source with a single entry (`minecraft:desert`) —
-the simplest version that could actually work, matching the current
-single-biome intent but via the new mechanism. Real biome variety
-(Wasteland etc.) is Phase 2, deferred until Phase 1 is confirmed
-working — see IDEAS.md's Biomes O' Plenty entry, which this
-supersedes/generalizes rather than duplicates.
+**"Genuinely, crisply flat" is structurally guaranteed here, not just
+tuned toward** — a real, deliberate improvement over the originally
+planned `density_factor`-tuning approach (which would have needed
+real in-game trial and error to find a value that "looks flat enough").
+`final_density` is a `y_clamped_gradient` — a function of **Y only**,
+with zero dependency on X or Z anywhere in the noise router (all the
+climate/terrain-shaping terms that normally introduce horizontal
+variation — continents, erosion, depth, ridges — are set to flat
+constants, inert since a `fixed` biome_source never samples them
+anyway). A density function with no X/Z input mathematically cannot
+produce horizontal height variation — every column in the world
+evaluates to the exact same surface Y, by construction, not by
+approximation. This also directly satisfies the fixed-spawn base
+logic's uniform-flat-Y assumption, for the same reason.
 
-**Real acceptance bar, not just "does it run"**: the result has to be
-genuinely, crisply flat — indistinguishable from today's Superflat, not
-"very flat with small hills." The earlier real-terrain Desert attempt
-was rejected specifically for feeling "wonky" from actual height
-variation; a flattened-noise approach that leaves any perceptible
-bumpiness would reintroduce the same complaint under a new mechanism.
-This is the single most important thing to verify before calling this
-done.
-
-**Other things to verify, not assumed**:
-- The fixed-spawn starter base logic assumes a uniform flat Y everywhere
-  (`/fill` at a fixed height) — confirm the flattened noise output is
-  actually uniform across X/Z, not just "mostly flat," or the existing
-  foundation-dig/headroom-clear resilience logic (built for the earlier
-  real-terrain attempt) may need to come back.
-- Structure generation may actually behave *better* under this change,
-  not worse — `noise`-type generators are architecturally closer to
-  normal terrain generation than `flat`, which is exactly why the flat
-  approach needed the "check every mod for flat-world self-disable
-  logic" caution in the first place. Worth re-confirming Treasure2 and
-  vanilla structures still place correctly, but this isn't expected to
-  be a new risk, possibly a reduced one.
+**Still genuinely unverified**: this is real, unfamiliar Minecraft
+worldgen format, hand-assembled from verified real fragments rather
+than one complete tested example — confident in the reasoning, not
+yet confirmed by actually loading a world. **World-gen changes only
+affect newly generated chunks** — testing this needs a brand-new
+world, not the existing one already played on. Structure generation
+(Treasure2, vanilla desert content) is worth re-confirming once a
+world loads — `noise`-type generators are architecturally closer to
+normal terrain than `flat` was, which is why `flat` needed all the
+"check every mod for self-disable logic" caution in the first place;
+this isn't expected to be a new risk, possibly a reduced one.
 
 **Base expansion into rooms/corridors** — *planned, not built*. Goal:
 gather materials, activate something, and a new room/corridor gets
