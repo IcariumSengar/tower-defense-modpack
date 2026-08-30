@@ -2777,6 +2777,20 @@ Linear chain, 1→10, each depending on the previous one unlocking:
    craft a Trapcraft trap. Depends on 6.
    > *(existing flavor text/reward, untouched — just given a place in
    > the actual dependency chain instead of standing alone.)*
+   **Correction (2026-08-29): narrowed to `trapcraft:spikes`
+   specifically, not "any of 3 items."** The `#kubejs:tier1_machines`
+   tag reference this used to complete on was a real, severe bug — FTB
+   Quests' ItemTask parses that field as a literal ResourceLocation and
+   throws on the `#` character, which **hard-crashed the game on every
+   single launch**, before any world could even load, not a soft
+   "no valid items" failure as originally flagged as a risk. Fixed by
+   dropping the tag entirely and checking a plain item ID
+   (`trapcraft:spikes`) instead — the syntax already proven safe
+   everywhere else in this pack. `kubejs:tier1_machines` and
+   `machine_tags.js` are now deleted, unused. **Crafting the Bear Trap
+   or the plain oak_fence no longer completes this quest — only Spikes
+   does.** The dependency chain itself (6 → Fortify → 8) is unaffected,
+   only what completes Fortify changed.
 
 8. **"Watch the Walls Grow"** — Checkmark. Depends on 7.
    > *The border isn't fixed. Every wave you clear pushes it further
@@ -2822,4 +2836,172 @@ turn — a cross-chapter dependency, which FTB Quests supports natively
 by ID regardless of which chapter a quest's `quests` array it's
 declared in. Full writeup in `docs/MODS.md`. **Not yet confirmed
 in-game** — same caveat as everything else in this quest book so far.
+
+### Pending: revised flavor text for all 10 quests (2026-08-20, implemented 2026-08-30)
+
+Direct feedback on the batch above: "it's all very basic at the
+moment." Rewritten to lean harder into the found-diary voice already
+established elsewhere in the pack (the wave-5 gear-removal chat text —
+"the blade and armor crumble to rust and dust in your hands... their
+debt here is paid" — is the benchmark this was matched against), rather
+than plain instructional text. **These replace the descriptions
+drafted in the numbered list above — same quest IDs, dependencies, task
+types, and rewards, only the flavor text changes.**
+
+1. **"You're On Your Own"**
+   > *If you're reading this, they didn't make it. Doesn't matter who
+   > they were. What matters is this: the walls are still standing,
+   > the horn still works, and the desert doesn't care either way. Get
+   > moving.*
+
+2. **"Borrowed Time"**
+   > *Notice the notches in that blade? Someone put those there
+   > fighting for this exact patch of dirt. The armor's dented in
+   > places that matter. None of it was made for you — it was made to
+   > last just long enough for whoever's holding it. Don't get
+   > comfortable.*
+
+3. **"Sound the Horn"**
+   > *Out here, waiting is worse than fighting. The horn doesn't
+   > summon anything that wasn't already coming — it just decides
+   > when. Better you pick the hour than the dark does.*
+
+4. **"Thin the Horde"**
+   > *Count doesn't matter until it's zero. Five isn't a milestone,
+   > it's a start — the desert's got more where these came from, and
+   > it isn't running out before you do.*
+
+5. **"Spoils of War"**
+   > *Strip what you can off anything that stops moving. Whatever's
+   > left in their pockets is worth more to you now than it ever was
+   > to them.*
+
+6. **"Open It"**
+   > *A sealed bag is just extra weight. Open it before you decide it
+   > wasn't worth carrying.*
+
+7. **"Fortify"** *(optional rewrite — this quest predates the Basics
+   chapter and already has its own text; only touch it if wanted)*
+   > *The dead didn't just leave gear behind — some of them left
+   > know-how. Turn scrap into something with teeth. Spikes don't ask
+   > questions, and they don't get tired.*
+
+8. **"Watch the Walls Grow"**
+   > *Every wall you're not standing behind yet is still just desert.
+   > Clear what's in front of you and the line moves — more ground to
+   > hold, more reasons it might not hold.*
+
+9. **"The Reckoning"**
+   > *Five waves. That's the whole story of whoever came before —
+   > start to finish, blade to dust. You've matched them. Now you get
+   > to find out what happens after the story usually ends.*
+
+10. **"No Turning Back"**
+    > *Eight is where the map runs out. Nobody wrote down what comes
+    > after, because nobody who saw it lived to write it down. From
+    > here it's the same night, over and over, until it isn't. How
+    > long you last is the only story left to tell.*
+
+## Structure generation plan (2026-08-20): biome swap + exploration content
+
+Direct instruction: change the starting biome to desert, then put
+together a plan to get real structures generating for exploration —
+treasure chests specifically included, not just decoration.
+
+### Step 1: biome swap, decided and simple
+
+Change `overworld.json`'s `biome` value from `minecraft:plains` to
+`minecraft:desert`, **keeping `"type": "minecraft:flat"` unchanged.**
+This is a different, lower-risk move than the earlier Desert attempt —
+that one used a `noise` generator (real hills/ravines/caves) and was
+reverted for feeling "wonky." Flatness and biome are independent
+settings in this same file; changing only the biome keeps the world
+exactly as flat as it is today while making desert-tagged structures
+and mods newly relevant. Nobody's tried this specific combination yet.
+
+### Step 2: check the free baseline before installing anything
+
+Once the biome swap lands, check whether **vanilla** desert-tagged
+structures (desert temples, desert wells) generate at all on the flat
+generator as-is — zero-cost information that determines whether the
+flat generator inherently supports structure placement here, or
+whether even vanilla content needs help.
+
+### Step 3: install Superflat Structures as insurance, proactively
+
+Real, confirmed risk from research: some structure mods (Repurposed
+Structures specifically) **deliberately self-disable on flat/superflat
+generators** as a compatibility choice, not a hard limitation. Rather
+than install candidates one at a time and debug silent non-appearance
+mod by mod, install **Superflat Structures** first — a small,
+purpose-built mod that removes exactly this restriction (still gated
+by matching biome, just not blocked by the flat generator type). Cheap
+insurance against a whole class of "installed it, nothing showed up"
+outcomes.
+
+### Step 4: structure/exploration mod picks, re-evaluated against flat-generator risk
+
+Revisited the earlier exploration-mod shortlist with this new
+information:
+- **YUNG's Better Desert Temples** — still the lead pick. Enhances
+  vanilla's own Desert Temple (puzzles, traps, parkour, a boss, and
+  explicitly **better loot than vanilla** per its own description) —
+  doesn't add its own biome or its own world generator, lowest combined
+  risk of anything on this list.
+- **Treasure2** — the direct answer to "don't forget treasure chests."
+  Adds dedicated structures built around 18+ tiered, locked treasure
+  chests (including Mimic Chests) — not just loot sprinkled into
+  existing buildings, actual treasure-hunting structures.
+- **Abandoned Structures** — settlement/ruins variety for the
+  "abandoned cities" exploration feel from the original research.
+  Flat-generator compatibility unconfirmed specifically, but doesn't
+  have Repurposed Structures' known conflict — reasonable confidence
+  paired with Superflat Structures.
+- **Deprioritized, not picked:** **Repurposed Structures** (confirmed
+  flat-generator blacklist — even Superflat Structures may not
+  override a mod's own internal dimension-type check, genuinely
+  uncertain) and **Lost Cities** (own world/chunk generator — the same
+  category of risk that's already bitten this pack once with Oculus/
+  shaders and briefly with the noise-based Desert attempt; two
+  different risk factors stacking on the same candidate isn't worth it
+  right now).
+
+### Step 5: loot — keep the channel separate, per the standing decision
+
+Structure loot stays a separate channel from the mob-drop tiered loot
+bags, per the "lootable buildings" idea's own already-standing call
+above ("worth keeping the two channels distinct rather than merging
+them prematurely") — not re-litigated here. YUNG's Better Desert
+Temples and Treasure2 both promise meaningfully better native loot than
+vanilla by design, which should cover "cool treasure" without needing
+custom LootJS injection into structure loot tables as a first pass —
+that stays an available later option (same tool already proven for the
+mob-drop system, different modifier type — loot-table-keyed, not
+entity-kill-keyed) if native loot doesn't feel distinct enough once
+actually played.
+
+### One technical clarification worth being precise about
+
+"Structures become reachable as the border grows" doesn't mean growing
+the border *causes* new structures to generate — the worldborder only
+gates player *movement*, it doesn't control chunk generation timing.
+Structures in a given chunk generate (or don't) the first time any
+entity causes that chunk to load, same as normal vanilla exploration,
+regardless of where the border happens to sit. The border being closed
+just prevents the player from reaching those chunks yet; once it opens,
+normal chunk-loading on approach does the rest. No extra engineering
+needed for this to work as intended, just worth not describing it as
+"the border spawns things" since that's not the actual mechanism.
+
+**Sent as the current plan to the other session** — see below.
+
+**Built (2026-08-30).** All 10 descriptions swapped in verbatim,
+`config/ftbquests/quests/chapters/basics.snbt` — same IDs, dependencies,
+task types, and rewards, description text only. "Fortify"'s optional
+rewrite was applied too, for tonal consistency across the whole chain
+rather than leaving one quest in the old, flatter voice — its new text
+("Spikes don't ask questions, and they don't get tired") also happens
+to read more accurately now that the quest checks `trapcraft:spikes`
+specifically rather than "any of three" (see the crash-fix note
+above). **Not yet confirmed in-game.**
 

@@ -11,7 +11,7 @@
 	quests: [
 		{
 			description: [
-				"Whoever held this ground before you is gone. Their gear is yours now, for as long as it lasts. Get moving."
+				"If you're reading this, they didn't make it. Doesn't matter who they were. What matters is this: the walls are still standing, the horn still works, and the desert doesn't care either way. Get moving."
 			]
 			icon: "minecraft:netherite_sword"
 			id: "88C119F4CDC56F93"
@@ -31,7 +31,7 @@
 		{
 			dependencies: ["88C119F4CDC56F93"]
 			description: [
-				"The netherite blade and the iron plate weren't yours to start with. They belonged to whoever was here before you - and they didn't make it past wave five. This gear won't last that long either. Use it while you have it."
+				"Notice the notches in that blade? Someone put those there fighting for this exact patch of dirt. The armor's dented in places that matter. None of it was made for you - it was made to last just long enough for whoever's holding it. Don't get comfortable."
 			]
 			icon: "minecraft:clock"
 			id: "CF982E95B58602E4"
@@ -51,7 +51,7 @@
 		{
 			dependencies: ["CF982E95B58602E4"]
 			description: [
-				"Right-click the horn to call the next wave in on your own terms, rather than waiting for one to find you."
+				"Out here, waiting is worse than fighting. The horn doesn't summon anything that wasn't already coming - it just decides when. Better you pick the hour than the dark does."
 			]
 			icon: "kubejs:wave_horn"
 			id: "42E42312C8B61976"
@@ -80,7 +80,7 @@
 		{
 			dependencies: ["42E42312C8B61976"]
 			description: [
-				"They keep coming. Make sure more of them stop than start."
+				"Count doesn't matter until it's zero. Five isn't a milestone, it's a start - the desert's got more where these came from, and it isn't running out before you do."
 			]
 			icon: "minecraft:zombie_head"
 			id: "B62C5B2A7651E4C8"
@@ -102,7 +102,7 @@
 		{
 			dependencies: ["B62C5B2A7651E4C8"]
 			description: [
-				"Nothing goes to waste out here - not even the dead. Kills leave something behind."
+				"Strip what you can off anything that stops moving. Whatever's left in their pockets is worth more to you now than it ever was to them."
 			]
 			icon: "kubejs:scavengers_bag"
 			id: "908B8B3AE8327895"
@@ -119,7 +119,7 @@
 		{
 			dependencies: ["908B8B3AE8327895"]
 			description: [
-				"A bag does nothing shut. Right-click it."
+				"A sealed bag is just extra weight. Open it before you decide it wasn't worth carrying."
 			]
 			icon: "minecraft:chest"
 			id: "538A1BBC9A1B8EAC"
@@ -139,7 +139,7 @@
 		{
 			dependencies: ["1454951A7FB14A26"]
 			description: [
-				"The border isn't fixed. Every wave you clear pushes it further out - more ground, more to find, more to defend."
+				"Every wall you're not standing behind yet is still just desert. Clear what's in front of you and the line moves - more ground to hold, more reasons it might not hold."
 			]
 			icon: "minecraft:map"
 			id: "BE3E01220D23C31D"
@@ -159,7 +159,7 @@
 		{
 			dependencies: ["BE3E01220D23C31D"]
 			description: [
-				"Five waves. That's as far as the last one got. The gear is gone now - it was never really yours. Whatever happens from here is on you."
+				"Five waves. That's the whole story of whoever came before - start to finish, blade to dust. You've matched them. Now you get to find out what happens after the story usually ends."
 			]
 			icon: "minecraft:wither_skeleton_skull"
 			id: "E5587D743FF3F653"
@@ -174,7 +174,7 @@
 		{
 			dependencies: ["E5587D743FF3F653"]
 			description: [
-				"Wave eight is as far as anyone's mapped this out. Past that, it's the same fight again, and again, for as long as you can hold. That's the whole point."
+				"Eight is where the map runs out. Nobody wrote down what comes after, because nobody who saw it lived to write it down. From here it's the same night, over and over, until it isn't. How long you last is the only story left to tell."
 			]
 			icon: "minecraft:totem_of_undying"
 			id: "0AA7EE28701688CA"

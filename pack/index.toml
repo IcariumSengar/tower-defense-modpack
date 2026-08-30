@@ -14,11 +14,11 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/basics.snbt"
-hash = "8b75a91eba499bfc461886e7efe87c6c463118b4b041441dacd7cfe57a7f7cd2"
+hash = "1a17c6205f2083e9cc232fb8d3d58fb3d6ead71a257dbf39ddb1e43ccad066bc"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
-hash = "f58ef4f091668ad93eb287a3f74c78b4c2482c3876b284c3f5a445c76d86bddd"
+hash = "7da234382544609ca25a6c5754fe2114675bdf1faa0e5107293517750167b433"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"

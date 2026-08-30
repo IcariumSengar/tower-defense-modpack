@@ -12,9 +12,9 @@
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			description: [
-				"Scrap and loot do not have to just be consumed for gear."
+				"The dead didn't just leave gear behind - some of them left know-how."
 				""
-				"The same Common-tier materials already turning up in loot bags can be turned into defenses instead - a fence, a bear trap, or spikes."
+				"Turn scrap into something with teeth. Spikes don't ask questions, and they don't get tired."
 			]
 			icon: "trapcraft:spikes"
 			id: "1454951A7FB14A26"

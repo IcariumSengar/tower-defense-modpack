@@ -554,6 +554,19 @@ mods sitting parallel to, not part of, the pack's actual built systems.
     dependency into "Fortify" (and out of it, to quest 8) actually
     displays/functions correctly rather than just being inert SNBT.
 
+  **Flavor text rewrite (2026-08-30)** — direct feedback on the first
+  pass ("it's all very basic at the moment"). All 10 descriptions
+  replaced with a found-diary voice matching the wave-5 gear-removal
+  text's established tone ("the blade and armor crumble to rust and
+  dust in your hands..."), drafted by the ideas-hub session and
+  applied here verbatim — same quest IDs, dependencies, task types, and
+  rewards, description text only. Also applied the offered (marked
+  optional) rewrite to "Fortify" itself for tonal consistency across
+  the chain, rather than leaving one quest sounding flatter than its
+  neighbors — its new text happens to read more accurately too, now
+  that the task checks `trapcraft:spikes` specifically rather than
+  "any of three" (see the crash-fix entry above).
+
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same
   day it was picked up.
