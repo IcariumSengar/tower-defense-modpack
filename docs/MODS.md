@@ -2232,6 +2232,27 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   playtest yet. This is the checkpoint the user asked to playtest
   before more work lands.
 
+  **Shrine visual pass, same day, direct request** ("more of a shrine
+  kind of thing... amulet looks like it's hovering above it"). Replaced
+  the pedestal's plain full-cube/single-texture placeholder with a real
+  custom block model — wide sandstone base + smaller raised dais,
+  distinct side/top textures (carved masonry + gold inlay; a glowing
+  gold socket ring) — and gave the marker armor stand `HandItems` so it
+  visibly holds the amulet, floating just above the dais, instead of
+  being purely invisible. `.fullBlock(false)` + a matching `.box()`
+  hitbox added since it's no longer a full opaque cube. Recipe filler
+  switched stone_bricks → sandstone to match. Block-model JSON is
+  standard vanilla format (documented, stable since 1.8), not something
+  needing mod-source verification the way the Curios integration did;
+  the "Marker armor stands still render held items" behavior *was*
+  checked against real sources first, since that one's a common enough
+  point of confusion to get wrong. **Real caveat**: this changed the
+  block's registration (model/hitbox), which only re-runs on a full
+  game relaunch, unlike the KubeJS-Curios fixes above which just needed
+  a world relog — flagged clearly to the user. Deployed directly to the
+  live instance alongside the tracked commit, same as the other amulet
+  fixes. Not yet seen in-game.
+
 - **Quest book restructure: Tier 1 chapter (2026-08-30)** — split Tier 1
   out of the Basics chapter into its own chapter (`tier1_machines.snbt`,
   renamed from "Defenses" to "Tier 1"), per the new "one quest per item,

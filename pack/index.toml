@@ -69,6 +69,10 @@ file = "kubejs/data/curios/tags/items/necklace.json"
 hash = "214373eba2f8296541141df6c85c7ef93222c8b02c5bae9a3737fac397c186fd"
 
 [[files]]
+file = "kubejs/data/kubejs/curios/entities/player.json"
+hash = "2104e96527eba9ba96b58ebc68e0140a85905d14bdf8789da098793fd47d0011"
+
+[[files]]
 file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 

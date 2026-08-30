@@ -15,16 +15,21 @@
 // a different API — this pack installed zhaijineet's, per the CurseForge
 // listing's actual GitHub link).
 //
-// Slot: Curios ships slot TYPES (necklace, charm, back, etc.) but grants
-// zero of them to any entity by default — a consuming pack has to grant
-// slot count itself via a `curios/slots/<id>.json` datapack entry (see
+// Slot: Curios gates slot access with TWO independent mechanisms, both
+// needed - real bug found in first playtest, see docs/FEATURES.md's
+// amulet "Build notes" for the full story. (1) A slot TYPE's size,
+// granted via `curios/slots/<id>.json` (see
 // pack/kubejs/data/kubejs/curios/slots/necklace.json, `{size:1,
-// operation:"ADD"}`) and tag the item into that slot's item tag (see
-// pack/kubejs/data/curios/tags/items/necklace.json). Confirmed from
-// Curios' own CuriosSlotManager.java — slot files are merged by their
-// path (the id), not their namespace, so contributing "size" from our
-// own kubejs namespace correctly stacks onto Curios' own necklace.json
-// (which only defines order/icon/validators, no size).
+// operation:"SET",replace:true}`) - this alone does NOT make the slot
+// usable by anyone. (2) Per-entity-type ELIGIBILITY, granted separately
+// via `curios/entities/<id>.json` (see
+// pack/kubejs/data/kubejs/curios/entities/player.json) - Curios'
+// CuriosEntityManager.getEntitySlots(type) returns a flat empty map for
+// any entity type with no matching entry here, regardless of slot size.
+// Both confirmed directly from Curios' own source
+// (CuriosSlotManager.java, CuriosEntityManager.java). Also tag the item
+// into the slot's item tag (see
+// pack/kubejs/data/curios/tags/items/necklace.json).
 //
 // onEquip/onUnequip just set td_amuletWorn — server_scripts/amulet_worn.js
 // applies the actual buffs while that flag is true, same PlayerEvents.tick
@@ -64,11 +69,32 @@ StartupEvents.registry('item', (event) => {
 // persistentData survives. Fine given this pack is single-player-focused
 // and the design only ever calls for one pedestal. See
 // server_scripts/amulet_pedestal.js for the recipe + interaction logic.
+//
+// Custom shrine-shaped model (2026-08-30, direct request - "more of a
+// shrine kind of thing"), not the default full cube: a wide sandstone
+// base (0-8/16 tall) plus a smaller raised dais on top (8-11/16),
+// giving a stepped altar silhouette instead of a plain block. Model at
+// assets/kubejs/models/block/amulet_pedestal.json, standard vanilla
+// block-model "elements" format (unchanged since 1.8, not a KubeJS-
+// specific schema, so not decompiled/verified against source the way
+// the Curios API was - this one's just documented Minecraft data).
+// Sandstone-toned textures (side: carved masonry courses + a gold
+// inlay band; top: a glowing gold socket ring) tie it visually to the
+// desert world and the amulet's own gold/gem palette, replacing the
+// first pass's generic gray stone-cube placeholder.
+// .fullBlock(false) + a matching .box() hitbox since this isn't a full
+// opaque cube anymore (per KubeJS's own docs: required whenever .box()
+// defines a custom hitbox). Hitbox height (11) matches the dais' top,
+// not the full 16 - otherwise the block would still collide like a
+// full cube despite visually stopping partway up.
 StartupEvents.registry('block', (event) => {
   event.create('amulet_pedestal')
     .displayName('Amulet Pedestal')
-    .soundType('stone')
+    .sandSoundType()
     .hardness(3.0)
     .resistance(6.0)
     .tagBlock('mineable/pickaxe')
+    .model('kubejs:block/amulet_pedestal')
+    .fullBlock(false)
+    .box(0, 0, 0, 16, 11, 16)
 })

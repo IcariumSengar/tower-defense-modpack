@@ -18,9 +18,18 @@ IDEAS.md/FEATURES.md first.
 
 ## Ready to build
 
-*(nothing currently queued — the amulet and the Tier 1 chapter
-restructure both landed 2026-08-30, see FEATURES.md; Tier 2 is
-deliberately on hold, see below)*
+1. **World type rebuild: flattened `noise` generator, real biome
+   support** — see FEATURES.md's "World type" section. Confirmed
+   necessary: the current flat-generator desert override doesn't work
+   at all (tested, still renders plains on a fresh world). Real fix,
+   not a patch — switch to `minecraft:noise` with a custom
+   `noise_settings` file tuned to flatten terrain (density function
+   tuning, exact value needs in-game confirmation) plus a real
+   `multi_noise` biome_source. Phase 1 scope: single biome
+   (`minecraft:desert`) — same intent as before, different, hopefully
+   actually-working mechanism. **Sent ahead of the "hold new work"
+   pacing call** since this blocks the very playtest that call was
+   about, not new scope on top of it.
 
 ## In progress (already sent, not yet confirmed built)
 

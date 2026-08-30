@@ -114,19 +114,66 @@ walled compound built via `/fill` on first login. Current build:
   once those mods are installed — not blocking the base structure
   itself.
 
-**World type** — *live*. Every world forces a **flat, desert-biome**
-generator via a datapack override
-(`kubejs/data/minecraft/dimension/overworld.json`), regardless of what's
-picked on the world-creation screen. History: was flat/plains by
-default, briefly switched to real terrain (Single Biome: Desert, `noise`
-generator) for a non-flat, structure-populated world, reverted the same
-day — real terrain "read as wonky, didn't suit the gameplay." Switched
-to flat + desert-biome (2026-08-30) — a different, lower-risk
-combination than the noise-based attempt, since flatness and biome are
-independent settings in the same generator config; this keeps the world
-exactly as flat as it's always been while making desert-tagged
-structures/mods relevant. See "Structure generation / exploration
-content" below for what that unlocked. **Not yet confirmed in-game.**
+**World type** — *confirmed broken 2026-08-30, replacement planned
+below*. The flat-generator-with-desert-biome override
+(`kubejs/data/minecraft/dimension/overworld.json`, `type: flat`,
+`biome: minecraft:desert`) does not actually work — confirmed on a
+genuinely fresh world post-resync, still renders as plains. Root cause
+not diagnosed (nobody with jar/log access has looked yet — this was
+found via direct playtest, not investigation); rather than debug the
+`flat` generator type further, moving to a different mechanism
+entirely, below.
+
+**Planned replacement: flattened `noise` generator, not `flat`.**
+Real, documented technique, not guesswork: vanilla's `flat` generator
+type only ever supports **one hardcoded biome, by design** — there's no
+version of it that gives biome variety, which may be part of why the
+override never behaved as expected. The actual fix is to stop using
+`flat` entirely and instead use the `minecraft:noise` generator (the
+same type the earlier real-terrain Desert attempt used) with a
+**custom `noise_settings` file** that tunes density functions to
+flatten the terrain to a near-solid plane (a setting called
+`density_factor`, pushed high, is the documented lever — research
+suggests values in the 10+ range for a solid flat plane, ~5 leaves
+small hills, needs real in-game tuning to confirm which value actually
+matches the current Superflat's crispness, not assumed), paired with a
+real `biome_source` (`multi_noise`) for biome placement. This is the
+same underlying mechanism already sitting in IDEAS.md as the deferred
+"Biomes O' Plenty richer multi-biome path" — building this once solves
+both: get desert (or eventually real biome variety) working, via a
+mechanism that might actually function where the flat-type override
+apparently didn't.
+
+**Scoped small first, per the pack's usual pattern**: Phase 1 is a
+`multi_noise` biome_source with a single entry (`minecraft:desert`) —
+the simplest version that could actually work, matching the current
+single-biome intent but via the new mechanism. Real biome variety
+(Wasteland etc.) is Phase 2, deferred until Phase 1 is confirmed
+working — see IDEAS.md's Biomes O' Plenty entry, which this
+supersedes/generalizes rather than duplicates.
+
+**Real acceptance bar, not just "does it run"**: the result has to be
+genuinely, crisply flat — indistinguishable from today's Superflat, not
+"very flat with small hills." The earlier real-terrain Desert attempt
+was rejected specifically for feeling "wonky" from actual height
+variation; a flattened-noise approach that leaves any perceptible
+bumpiness would reintroduce the same complaint under a new mechanism.
+This is the single most important thing to verify before calling this
+done.
+
+**Other things to verify, not assumed**:
+- The fixed-spawn starter base logic assumes a uniform flat Y everywhere
+  (`/fill` at a fixed height) — confirm the flattened noise output is
+  actually uniform across X/Z, not just "mostly flat," or the existing
+  foundation-dig/headroom-clear resilience logic (built for the earlier
+  real-terrain attempt) may need to come back.
+- Structure generation may actually behave *better* under this change,
+  not worse — `noise`-type generators are architecturally closer to
+  normal terrain generation than `flat`, which is exactly why the flat
+  approach needed the "check every mod for flat-world self-disable
+  logic" caution in the first place. Worth re-confirming Treasure2 and
+  vanilla structures still place correctly, but this isn't expected to
+  be a new risk, possibly a reduced one.
 
 **Base expansion into rooms/corridors** — *planned, not built*. Goal:
 gather materials, activate something, and a new room/corridor gets
@@ -367,9 +414,22 @@ which would undercut the tension the mechanic is meant to create.
 
 **Pedestal state**: a `kubejs:amulet_pedestal` block
 (`server_scripts/amulet_pedestal.js`), crafted from 8x gold_ingot
-(Uncommon-tier loot pool) + 1x stone_bricks (the base's own floor
-material) in a ring pattern — no recipe was pinned down in the design,
-so this is an implementation-level pick. Right-clicking it while the
+(Uncommon-tier loot pool) + 1x sandstone in a ring pattern — no recipe
+was pinned down in the design, so this is an implementation-level pick.
+**Shrine visual pass (2026-08-30, direct request)**: originally a
+plain full-cube stone block with one flat texture; rebuilt as a real
+custom block model (`assets/kubejs/models/block/amulet_pedestal.json`,
+standard vanilla block-model "elements" format) — a wide sandstone base
+plus a smaller raised dais on top, a stepped altar silhouette instead
+of a cube, with distinct side (carved masonry courses + a gold inlay
+band) and top (a glowing gold socket ring) textures instead of one
+cube-all texture, tying the block visually to the desert world and the
+amulet's own gold/gem palette. When the amulet is placed, the marker
+armor stand (below) now visibly holds it via `HandItems` — confirmed
+real vanilla behavior, not assumed: a `Marker:1b` armor stand has no
+body/hitbox but still renders held items, the standard "floating item"
+trick — positioned to hover just above the dais rather than sit on it.
+Right-clicking it while the
 amulet's worn clears `td_amuletWorn`, sets `td_amuletOnPedestal`, and
 unequips the item via `setEquippedCurio(slot, index, air)`;
 right-clicking it again while occupied gives the amulet back and
