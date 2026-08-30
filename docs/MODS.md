@@ -36,8 +36,6 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | FTB Teams | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | 2001.3.2 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 | FTB XMod Compat | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-xmod-compat) | 2.1.2 (1.20.1 Forge) | Added 2026-08-29 so clicking an item in a quest jumps to its JEI recipe — does nothing by itself, only bridges FTB Quests/JEI/KubeJS when it detects them installed | Both hard dependencies (FTB Library, Architectury) already satisfied by what's installed; no new dependency chain | testing |
 | Trapcraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trapcraft) | 2.10.2 (1.20.1 Forge) | Added 2026-08-29 to replace the custom Tier 1 machines (Spikes, Bear Trap) after direct playtest feedback that the custom design "sucked" — see the "Tier 1 replaced with Trapcraft" entry under Custom glue below | Standalone, no hard dependency beyond Forge/Minecraft | testing |
-| YUNG's Better Desert Temples | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/yungs-better-desert-temples) | 3.0.3 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — enhances vanilla's own Desert Temple (puzzles, traps, parkour, boss, better loot), doesn't add its own biome/generator | Requires YUNG's API (added alongside it) | testing |
-| YUNG's API | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/yungs-api) | 4.0.6 (1.20.1 Forge) | Hard dependency of YUNG's Better Desert Temples | — | required |
 | Treasure2 | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/treasure2) | 4.0.5 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — desert ruins/wishing wells + general surface/dungeon structures, 18+ tiered locked treasure chests including Mimic Chests. Confirmed directly from its own structure JSONs that these actually target the `minecraft:desert` biome this world uses | Requires GottschCore (added alongside it) | testing |
 | GottschCore | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/gottschcore) | 2.8.0 (1.20.1 Forge) | Hard dependency of Treasure2 | — | required |
 | Create | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/create) | 6.0.8 (1.20.1 Forge) | Added 2026-08-30 for the Schematicannon/Schematic-and-Quill/Schematic Table — the base-expansion-into-rooms mechanic (see FEATURES.md's "Base expansion into rooms/corridors"). Full mod, not an extraction — see the Custom glue entry below for why the planned "standalone" extraction was rejected | Jar-in-jars Flywheel, Ponder, Registrate, and MixinExtras itself (`META-INF/jarjar/`, confirmed from the jar directly) — no separate packwiz entries needed for any of them. Optional JEI integration satisfied by the JEI version already installed | testing |
@@ -45,6 +43,33 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | KubeJS-Curios | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/kubejs-curios) | 1.0.4 (1.20.1 Forge) | Added 2026-08-30 alongside Curios API — bridges Curios' equip/unequip/tick-while-worn hooks to KubeJS scripts. CurseForge project 1255211, author zhaijineet — a *different*, same-named project (Prunoideae/KubeJS-Curios) also exists with a different API; installed the one the actual CurseForge listing links to, not assumed from the name | Requires Curios API, Architectury API, KubeJS, Rhino — all already present, packwiz added no new dependency chain | testing |
 
 ## Removed mods
+
+- **YUNG's Better Desert Temples** + its hard dependency **YUNG's API**
+  (CurseForge, 3.0.3 / 4.0.6, 1.20.1 Forge) — added 2026-08-30 for the
+  desert-biome structure-generation plan, **removed the same day after
+  a confirmed real crash, not a footprint decision.** World creation
+  failed on every attempt: the live instance's `logs/latest.log` showed
+  a repeating `ArrayIndexOutOfBoundsException: Index -1 out of bounds
+  for length 24` inside the mod's own `QuartzPillarProcessor`
+  (`com.yungnickyoung.minecraft.betterdeserttemples.world.processor`),
+  which replaces a temple's quartz pillar with an 8-block sandstone
+  column by walking straight down with no world-floor check — on this
+  pack's genuinely flat/thin world, a temple piece can generate close
+  enough to the floor for that walk to underflow past Y-min, and it did
+  on the very first attempt, deterministically, blocking world creation
+  entirely. Confirmed by reading the actual processor source
+  (`YUNG-GANG/YUNGs-Better-Desert-Temples` GitHub, `1.20` branch), not
+  guessed from the stack trace alone. No newer 1.20.1 build exists and
+  no matching closed issue was found on the mod's own tracker, so this
+  was a "cut it" call rather than a debug-a-third-party-mod's-worldgen
+  attempt. Removed via `packwiz remove` from the tracked pack **and**
+  deleted directly from the live CurseForge instance's `mods/` folder
+  (packwiz doesn't auto-sync into a running instance) so world creation
+  is unblocked immediately, not just fixed in the repo. See
+  `docs/FEATURES.md`'s "Structure generation / exploration content"
+  entry for the full detail — Treasure2 (the other structure mod added
+  the same day) is still genuinely unconfirmed, since world creation
+  never got past this crash to test it.
 
 Footprint audit (2026-08-20) — user asked to remove anything installed
 but not actually wired into any built system, tracking it here for

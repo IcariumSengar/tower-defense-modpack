@@ -15,49 +15,6 @@ one got there. What's left here is the genuinely still-open stuff.
 
 ---
 
-## The amulet
-
-Core idea: an amulet item draws mob attention to *itself*, not to the
-player or a fixed map location. Two states:
-- **Worn**: player gets permanent-while-worn buffs, and their
-  defensive machines get buffs too. Mobs target whoever's wearing it —
-  aggro follows the player, closer to the current horde-density
-  approach.
-- **On a pedestal**: aggro anchors to that fixed spot instead. This is
-  also specifically what lets the player cross the worldborder — take
-  the amulet off, leave it on its pedestal, and the border (wherever it
-  currently sits) stops blocking you. The tradeoff is real: you give up
-  the worn buffs to do it, so the natural play pattern is waiting until
-  there's actually something worth crossing for (a schematic, a rich
-  structure) rather than doing it on a whim. Leaving is also meant to
-  trigger some kind of penalty — a forced extra wave is the leading
-  idea, not confirmed.
-
-Why this is worth building: it's a lightweight route to "true tower
-defense" (mobs pathfinding to a fixed objective regardless of player
-position) without custom AI — `mob_aggro.js` already proves
-`Mob#setTarget()` works reliably in this codebase (currently hardcoded
-to always target the player); the amulet would just change *what* it
-targets based on amulet state, not invent new mechanics.
-
-**Mod research done, not yet acted on**: **Item & Block Attraction**
-(Forge 1.20.1) lets specific mobs be drawn to a chosen block *or* held
-item with tunable radius — covers both amulet states without hand-built
-targeting logic. **Curios API + Fancy Trinkets** gives the
-equip-slot-with-buffs framework for the worn state instead of a
-hand-rolled right-click-equip system. Neither installed. What still
-needs to be custom either way: the specific buffs to this pack's own
-machines, and the pedestal-as-border-key + penalty logic — pack-specific,
-no mod does this.
-
-**Real implementation gotcha to remember if this gets built**: vanilla
-`/worldborder` blocks *everyone* uniformly — there's no built-in way to
-let one player cross based on carrying/not-carrying an item. Making the
-border conditionally passable needs custom per-player enforcement (a
-tick handler checking position + amulet state), not the plain command.
-
----
-
 ## Power system (Tier 3-4 machines)
 
 Not started — Tier 1-2 machines are deliberately fuel-free by design,
@@ -69,13 +26,11 @@ so this only "switches on" once Tier 3 exists.
 - Open question: shared power pool/capacity limit, or unlimited draw
   once a generator exists? Unresolved.
 
-## Machine progression, Tier 2-4
+## Machine progression, Tier 3-4
 
-Tier 1 is live (see FEATURES.md) via Trapcraft. Tiers above that are
-still just the original design-note sketch, not scoped:
-- **Tier 2 — semi-automated** (needs basic resource/fuel, still
-  fragile): Arrow/Dart Turret, Boiling Oil/Fire Trap, Reinforced Spikes
-  (tougher Tier 1).
+Tier 1 (Trapcraft) and Tier 2 (Trapcraft's Igniter/Fan/Magnetic Chest +
+Medieval Defense Turrets) are both specced now — see FEATURES.md. Tier
+3-4 are still just the original design-note sketch, not scoped:
 - **Tier 3 — powered** (needs the power system above): Tesla Coil
   (chain-lightning), Auto-Turret, Flame Thrower Emplacement.
 - **Tier 4 — elite/endgame**: AoE Devastator, Chain-Tesla Network.
@@ -87,7 +42,10 @@ still just the original design-note sketch, not scoped:
   world-gen or footprint cost: Thermal Expansion, Mekanism, Industrial
   Foregoing (tiered component templates), IC2-style Tesla Coil vs.
   Immersive Engineering Tesla Coil for the Tier 3 defense piece
-  specifically.
+  specifically. **TurretCraft and K-Turrets** were also researched for
+  Tier 2's turret slot and passed over as too feature-rich for it
+  (smart auto-targeting, ammo GUIs, combat drones) — worth reconsidering
+  either of them for Tier 3's Auto-Turret instead of researching fresh.
 
 ## Deferred: custom loot materials, beyond vanilla-only
 
@@ -234,3 +192,13 @@ Mostly still genuinely open:
   read the design doc and assume it's implemented that way — this has
   bitten the project multiple times (Spike Trap only checking the
   player, not mobs, being the clearest example).
+- **The quest book must stay in sync with what's actually buildable** —
+  whenever a mechanic gets fleshed out to a real spec in FEATURES.md,
+  check whether it needs a new quest or an existing one refined to
+  actually teach it, and draft that alongside the mechanic itself
+  rather than after the fact. It's the tutorial; letting it fall behind
+  defeats the point of having it. **One quest per distinct item, not
+  one quest describing several** — a paragraph naming multiple items in
+  one quest's text isn't the same as teaching each of them; a tier or
+  feature with multiple craftable items gets its own chapter with one
+  quest per item instead.

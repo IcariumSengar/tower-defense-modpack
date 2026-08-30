@@ -188,7 +188,8 @@ something a coding session can produce headlessly. This is the genuine
 bottleneck now, not the mod choice.
 
 **Structure generation / exploration content** — *live* (2026-08-30),
-**not yet confirmed in-game**. Goal: real structures to explore,
+**partially confirmed broken in-game, one mod removed 2026-08-30**.
+Goal: real structures to explore,
 including actual treasure (not just decoration), tied into the
 border-expansion mechanic (structures become reachable as the border
 grows, but growing the border doesn't *cause* generation — chunks
@@ -211,10 +212,33 @@ generate on approach the normal way, same as any vanilla exploration).
   each installed structure mod below and grepping for
   flat/superflat-specific disable logic instead of relying on a missing
   safety net — none found in any of them.
-- **Mod picks, one dropped from the original plan on hard evidence**:
-  - **YUNG's Better Desert Temples** + its **YUNG's API** dependency —
-    installed. Enhances vanilla's own Desert Temple, no own
-    biome/generator, no flat-world references anywhere in its jar.
+- **Mod picks, two dropped from the original plan — one on hard
+  evidence up front, one on a real in-game crash**:
+  - **YUNG's Better Desert Temples — installed, then REMOVED
+    2026-08-30 after confirmed-broken real-world testing.** World
+    creation crashed on every attempt: `logs/latest.log` showed a
+    repeating `ArrayIndexOutOfBoundsException: Index -1 out of bounds
+    for length 24` inside the mod's own `QuartzPillarProcessor`, which
+    replaces a temple's quartz pillar with an 8-block sandstone column
+    by walking straight down from the pillar's position with no
+    world-floor check. Read the processor's actual source
+    (`YUNG-GANG/YUNGs-Better-Desert-Temples`, `1.20` branch) to confirm:
+    24 is a full-height world's chunk-section count, so index -1 means
+    the column walked below Y-min — on this pack's genuinely flat/thin
+    world, a temple piece can generate close enough to the floor for
+    that walk to underflow, and it did, deterministically, on the very
+    first world-creation attempt. This directly contradicts the
+    original "no flat-world references anywhere in its jar" check —
+    that check looked for explicit flat-world *detection* code (a
+    self-disable check), which genuinely doesn't exist, but a mod
+    having no flat-world checks doesn't mean it's flat-world *safe*, a
+    real distinction this pack hadn't drawn until hitting it. Removed
+    the mod and its **YUNG's API** dependency (nothing else in the pack
+    needs it) — see `docs/MODS.md` for the removal entry. **No fix
+    attempted or found** (no newer 1.20.1 build, no relevant closed
+    issue found on the mod's own tracker) — this was a "cut it, don't
+    debug a third-party mod's worldgen code" call, matching this pack's
+    standing approach to failed features.
   - **Treasure2** + its **GottschCore** dependency — installed.
     Confirmed directly from its own structure JSONs that its desert
     ruins and wishing well structures use a `#treasure2:wells_desert`
@@ -237,9 +261,14 @@ generate on approach the normal way, same as any vanilla exploration).
     world/chunk generator — same risk category that already caused real
     problems with Oculus/shaders and the earlier Desert attempt).
 - Structure loot stays a separate channel from the mob-drop loot bags —
-  deliberate, not an oversight; both YUNG's and Treasure2 promise
-  better-than-vanilla native loot by design, so no custom LootJS
-  structure-loot injection was needed as a first pass.
+  deliberate, not an oversight; Treasure2 promises better-than-vanilla
+  native loot by design, so no custom LootJS structure-loot injection
+  was needed as a first pass.
+- **Treasure2 itself is still genuinely unconfirmed** — world creation
+  never got past the YUNG's crash above to actually test it. Worth
+  watching specifically on the next successful world creation, given
+  what just happened with a different structure mod on this same flat
+  generator.
 
 ---
 

@@ -22,11 +22,11 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/basics.snbt"
-hash = "1a17c6205f2083e9cc232fb8d3d58fb3d6ead71a257dbf39ddb1e43ccad066bc"
+hash = "174b289c269db9e2ba1d7765b9871974431c40711393000922a17c5f47b2efd7"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
-hash = "7da234382544609ca25a6c5754fe2114675bdf1faa0e5107293517750167b433"
+hash = "307a0908eb9ec157b8b4129ad455029c5ff3648594fb30fac5aeecae93690732"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
@@ -35,6 +35,14 @@ hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
 [[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/amulet_pedestal.png"
+hash = "fabce275b6f1abbff77be6a321eb0c8b05facbddcaafc4c133fc20f81929daaf"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/item/amulet.png"
+hash = "ba31412bf680fc3b17adc4fa8508354d4b619ab6dbd601e8643bc920fc6094e2"
 
 [[files]]
 file = "kubejs/assets/kubejs/textures/item/fortified_cache.png"
@@ -57,8 +65,28 @@ file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "kubejs/data/curios/tags/items/necklace.json"
+hash = "214373eba2f8296541141df6c85c7ef93222c8b02c5bae9a3737fac397c186fd"
+
+[[files]]
+file = "kubejs/data/kubejs/curios/slots/necklace.json"
+hash = "e2bf14329bb33c9fc9a3dd35350b69cb40c9b94b8cb2a2f91f7d173c04003c5f"
+
+[[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
 hash = "f226dbfe5241963aeaa3e9abf8a9279fc3a256e545d6c85469d53f9f2439c4af"
+
+[[files]]
+file = "kubejs/server_scripts/amulet_border.js"
+hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
+
+[[files]]
+file = "kubejs/server_scripts/amulet_pedestal.js"
+hash = "c521b46320e8c73f5bcce35ca7a8a55447160d2eb4dcb3ef2cc6823f69f34344"
+
+[[files]]
+file = "kubejs/server_scripts/amulet_worn.js"
+hash = "1c7f53b9052ffd55f273b4f0ec40bec12078f1ac61f5804e6e4a747c95d780fc"
 
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
@@ -74,11 +102,11 @@ hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "3643e8c325d59fba8b0aa495600d82e3517c7ec3c915ec1932b6e18de352bbbc"
+hash = "76d3974482603b96192946bafecafbb7e5706b5c93176ec45944222587653c76"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "9c7d1e913244f95bf9cdcb7af47038e6ce15cb3e52ed47f94a90d9e2deec2e97"
+hash = "3a30678651e2f080371352893ad10cf71800b05669c7641cc5e5590179e73410"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
@@ -91,6 +119,10 @@ hash = "5b50f488bf08e5792839b09a897fd3ad698739f9d39b2b5391f9f0d1abaa1415"
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+[[files]]
+file = "kubejs/startup_scripts/amulet.js"
+hash = "ea56eb217cab12d52e9fdd78199c192a531b2ca10576fb0119ecc7f077d39d16"
 
 [[files]]
 file = "kubejs/startup_scripts/loot_bags.js"
@@ -257,14 +289,4 @@ metafile = true
 [[files]]
 file = "mods/xaeros-minimap.pw.toml"
 hash = "20beda5f9b049a2352334a0f8dd8de122e7399f8a446d8f78aeecba85d99bbdc"
-metafile = true
-
-[[files]]
-file = "mods/yungs-api.pw.toml"
-hash = "e4ae1b758d00ecca211d6acb2e853581beb0d2b9c7b7828f520b26e13163edd2"
-metafile = true
-
-[[files]]
-file = "mods/yungs-better-desert-temples.pw.toml"
-hash = "5778360a173badc8bbfddf54736aa8c65459dad88f14e29d0c665d2147c16553"
 metafile = true
