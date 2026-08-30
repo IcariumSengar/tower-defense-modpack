@@ -32,10 +32,35 @@
 				item: "trapcraft:spikes"
 				type: "item"
 			}]
-			title: "Fortify"
+			title: "Sharpened Scrap"
 			x: 0.0d
 			y: 0.0d
 		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"A Bear Trap doesn't kill quick, but it holds. Whatever steps in it stays there - long enough for whatever comes next."
+			]
+			icon: "trapcraft:bear_trap"
+			id: "3F6D91E4A2C7B850"
+			rewards: [{
+				id: "6B2E8A0C41D5F937"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "9A4C7E2F856D0B13"
+				item: "trapcraft:bear_trap"
+				type: "item"
+			}]
+			title: "Something Crueler"
+			x: 0.0d
+			y: 1.5d
+		}
 	]
-	title: "Defenses"
+	title: "Tier 1"
 }

@@ -5,6 +5,14 @@ file = "config/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "config/TFTH-Data.toml"
+hash = "cea608bbe07dc6a3bcdaf2148a57172e83f604c10a2ee28ac928d866a043a0af"
+
+[[files]]
+file = "config/TFTH.toml"
+hash = "8f6814a973aaceaef3dd4a5f922c41886f0135c15c2ae3571697d905fdfffe95"
+
+[[files]]
 file = "config/epicsiegemod-common.toml"
 hash = "7d422f9f963840830a8eac008e5d157b4479b2b27b5e63fec567252660230ff4"
 
@@ -23,14 +31,6 @@ hash = "7da234382544609ca25a6c5754fe2114675bdf1faa0e5107293517750167b433"
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
 hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
-
-[[files]]
-file = "config/TFTH-Data.toml"
-hash = "cea608bbe07dc6a3bcdaf2148a57172e83f604c10a2ee28ac928d866a043a0af"
-
-[[files]]
-file = "config/TFTH.toml"
-hash = "8f6814a973aaceaef3dd4a5f922c41886f0135c15c2ae3571697d905fdfffe95"
 
 [[files]]
 file = "kubejs/README.md"
@@ -111,7 +111,7 @@ metafile = true
 
 [[files]]
 file = "mods/architectury-api.pw.toml"
-hash = "4e81241ba2da06f425efc5e09fb6b38470125c1581c39e1310c5843a0b96ec76"
+hash = "5e9edd1fd2395f14a0c8a4acbdbdd61e1047be1f0033deb3140d2ce0d093e9d8"
 metafile = true
 
 [[files]]
@@ -122,6 +122,16 @@ metafile = true
 [[files]]
 file = "mods/corpse.pw.toml"
 hash = "2fba2317a375669ccb1376525d4d4e0d1903cc5dc44fc70dce1d0e3dbb6aacb1"
+metafile = true
+
+[[files]]
+file = "mods/create.pw.toml"
+hash = "9d7971a7af2ff4a96a0e5aede76f9cf8dc978da601e2754f79d6ec8631125bb9"
+metafile = true
+
+[[files]]
+file = "mods/curios.pw.toml"
+hash = "55d77d596c2d805f28b47ea53725ccaa220d2857177cad3909e48d8c12b2a2cb"
 metafile = true
 
 [[files]]
@@ -185,8 +195,13 @@ hash = "2e0848d4bd188767d2fc7bde823c7eed5c0d1df72717eb82c53cbda587b815af"
 metafile = true
 
 [[files]]
+file = "mods/kubejs-curios.pw.toml"
+hash = "61c3166eb46728d599273ca32216707321f9283347021f83798261cf5ef2d295"
+metafile = true
+
+[[files]]
 file = "mods/kubejs.pw.toml"
-hash = "9ec37ad87c0c174bdafe7d52fc98f96b83aaef0ad42ae59e196655d3d784f31f"
+hash = "ed086cdfde6ba4bb175468a76f3df3b9517aea3fe95b09bed0f1fa70f7caeb6a"
 metafile = true
 
 [[files]]
@@ -216,7 +231,7 @@ metafile = true
 
 [[files]]
 file = "mods/rhino.pw.toml"
-hash = "5b92406160d9ea8a61ddf111caaecb7f6283678e2c40b08b72dce3eeaf20dc96"
+hash = "ca4411ac6d8a9a892948bb63cd0ba52ae5523ca5e257632d6ae8c933b660c5ee"
 metafile = true
 
 [[files]]

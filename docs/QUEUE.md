@@ -18,28 +18,47 @@ IDEAS.md/FEATURES.md first.
 
 ## Ready to build
 
-1. **Base expansion into rooms/corridors** (Schematicannon) — see
-   FEATURES.md, "Base & structures" section. Fully specced: mod choice
-   made (standalone Schematicannon, not full Create), delivery
-   mechanism decided (curated schematics found as loot, not
-   player-scanned freeform). Two things to confirm as part of the build
-   itself, not blockers to starting: a finished schematic's exact NBT
-   shape for loot-table placement, and the material-check-then-place
-   trigger (custom KubeJS glue either way).
+*(nothing currently queued — the amulet and the Tier 1 chapter
+restructure both landed 2026-08-30, see FEATURES.md; Tier 2 is
+deliberately on hold, see below)*
 
 ## In progress (already sent, not yet confirmed built)
 
-- **Structure generation / exploration content** (biome swap to flat+desert,
-  Superflat Structures, YUNG's Better Desert Temples, Treasure2,
-  Abandoned Structures) — sent 2026-08-20, see FEATURES.md's "Base &
-  structures" section for the full plan.
+- **The amulet** and the **Tier 1 chapter restructure** — both built
+  2026-08-30 (see FEATURES.md's "The amulet" and "Quest book"
+  sections), **not yet confirmed in-game**. This is the checkpoint the
+  user asked to playtest before anything else lands on top of it.
+
+## On hold — deliberately not queued right now
+
+- **Machine progression, Tier 2** — fully specced (see FEATURES.md,
+  "Defense" section, plus its own new Tier 2 quest chapter: Spark and
+  Flame, Herd Them In, Waste Not, Wired for War, one per item, all
+  gated on "Sharpened Scrap"). Fire Trap/Fan/Magnetic Chest all
+  Trapcraft (already installed), Arrow Turret from a new install
+  (Medieval Defense Turrets). **Held on direct request**: the user is
+  low on tokens and wants to playtest the current build (amulet + Tier
+  1 chapter restructure, both now landed — see "In progress" above)
+  before anything else lands on top of it, to avoid stacking up more
+  unverified changes than they can afford to debug right now. Don't
+  start this until told otherwise — it was already ready to build, this
+  isn't a design gap, purely a pacing call. Its Tier 1 chapter
+  dependency ("Sharpened Scrap") is now satisfied.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 
-- The amulet (mob-attraction, buffs, border-crossing) — real idea, real
-  mod candidates researched, but never turned into a concrete build
-  brief.
-- Power system + Tier 2-4 machines — depends on the amulet's machine
-  buffs and each other; still just a tier sketch.
+- Power system + Tier 3-4 machines — still just a tier sketch, blocked
+  on nothing specific but not yet designed in enough detail to queue.
 - Roguelike next-wave-composition choice — parked pending a GUI
   decision that was explicitly not pursued.
+- **Base expansion into rooms/corridors (Schematicannon)** — mod
+  question resolved 2026-08-30 (full Create installed, not the
+  broken "standalone" re-upload — see FEATURES.md), but a harder,
+  genuinely blocking dependency turned up in its place: a lootable
+  `create:schematic` item only points at a `.nbt` file, which has to
+  already exist in that world's `schematics/uploaded/` folder — and no
+  such file exists yet. Needs at least one room hand-built in-game and
+  exported via Schematic and Quill + Schematic Table before any loot
+  injection or delivery-mechanism code can be written against something
+  real. Not a coding-session task — pulled back out of "ready to build"
+  until that exists.

@@ -23,6 +23,15 @@
 // across-versions vanilla method, high confidence, but flagging given
 // how many "should be fine" assumptions turned out wrong earlier in
 // this pack's debugging (Math.PI, bare .x/.y/.z).
+//
+// Amulet pedestal redirect (2026-08-30, docs/FEATURES.md "The amulet"):
+// while td_amuletOnPedestal is true, every wave mob targets the marker
+// armor stand amulet_pedestal.js spawns at the pedestal instead of the
+// player — the whole point of "leaving it behind." Falls back to
+// targeting the player if the flag is set but no marker is actually
+// found (shouldn't happen, but a missing target is worse than a wrong
+// one). Checked once per throttled tick, not per mob, since it's the
+// same flag/entity for every mob in the loop.
 
 var WAVE_MOB_TYPES = [
   'minecraft:zombie',
@@ -46,8 +55,17 @@ PlayerEvents.tick(function (event) {
 
   if (level.getTime() % 10 !== 0) return
 
+  var onPedestal = player.persistentData.getBoolean('td_amuletOnPedestal')
+  var aggroTarget = player
+  if (onPedestal) {
+    var marker = level.getEntities().find(function (e) {
+      return e.hasTag('td_amulet_marker')
+    })
+    if (marker) aggroTarget = marker
+  }
+
   level.getEntities().forEach(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
-    e.setTarget(player)
+    e.setTarget(aggroTarget)
   })
 })

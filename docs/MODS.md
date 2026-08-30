@@ -40,6 +40,9 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | YUNG's API | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/yungs-api) | 4.0.6 (1.20.1 Forge) | Hard dependency of YUNG's Better Desert Temples | — | required |
 | Treasure2 | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/treasure2) | 4.0.5 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — desert ruins/wishing wells + general surface/dungeon structures, 18+ tiered locked treasure chests including Mimic Chests. Confirmed directly from its own structure JSONs that these actually target the `minecraft:desert` biome this world uses | Requires GottschCore (added alongside it) | testing |
 | GottschCore | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/gottschcore) | 2.8.0 (1.20.1 Forge) | Hard dependency of Treasure2 | — | required |
+| Create | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/create) | 6.0.8 (1.20.1 Forge) | Added 2026-08-30 for the Schematicannon/Schematic-and-Quill/Schematic Table — the base-expansion-into-rooms mechanic (see FEATURES.md's "Base expansion into rooms/corridors"). Full mod, not an extraction — see the Custom glue entry below for why the planned "standalone" extraction was rejected | Jar-in-jars Flywheel, Ponder, Registrate, and MixinExtras itself (`META-INF/jarjar/`, confirmed from the jar directly) — no separate packwiz entries needed for any of them. Optional JEI integration satisfied by the JEI version already installed | testing |
+| Curios API | [Modrinth](https://modrinth.com/mod/curios) | 5.14.1+1.20.1 (Forge) | Added 2026-08-30 for the amulet (FEATURES.md's "The amulet") — the current, actively-maintained accessory-slot mod; Baubles (the older equivalent) has no Forge 1.20.1 build at all | Ships slot *types* but grants zero slots to any entity by default — this pack grants 1 necklace slot itself via `pack/kubejs/data/kubejs/curios/slots/necklace.json`, confirmed against Curios' own `CuriosSlotManager.java` source | testing |
+| KubeJS-Curios | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/kubejs-curios) | 1.0.4 (1.20.1 Forge) | Added 2026-08-30 alongside Curios API — bridges Curios' equip/unequip/tick-while-worn hooks to KubeJS scripts. CurseForge project 1255211, author zhaijineet — a *different*, same-named project (Prunoideae/KubeJS-Curios) also exists with a different API; installed the one the actual CurseForge listing links to, not assumed from the name | Requires Curios API, Architectury API, KubeJS, Rhino — all already present, packwiz added no new dependency chain | testing |
 
 ## Removed mods
 
@@ -2093,6 +2096,95 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   handling escalation, hand-tuning raw mob stats on top is a
   later-priority refinement. Revisit once the mod-driven version's gaps
   are actually known from play.
+
+- **Schematicannon mod choice reversed (2026-08-30)** — FEATURES.md's
+  "confirmed Forge 1.20.1" note for the planned "standalone
+  Schematicannon" extraction turned out to only mean *targets that
+  version*, not *safe to use*. Installed CurseForge project 1375728
+  ("Schematicannon standalone" by VinicciusX) as queued, then decompiled
+  the jar before writing any glue against it — standard practice in this
+  pack after the FTB Quests `#tag` crash and Trapcraft/Spike Trap mod
+  evaluations. `META-INF/mods.toml` inside it hardcodes
+  `modId = "schematicannon"`, `authors = "bikerboys"`, and
+  `displayURL = "https://github.com/michiel1106/Create-schematicannon"`
+  — it's a straight re-upload of CurseForge's separate **"Schematicannon"**
+  listing (project 1350154, also bikerboys), not an independent build.
+  That other listing carries the author's own banner: **"BROKEN, MIGHT
+  FIX IN THE FUTURE. DONT USE."** A web search for this exact
+  mod/dependency combination turned up real, credible Flywheel-related
+  launch-crash reports for Create-derived mods on Forge 1.20.1,
+  consistent with the warning. No way to headlessly test-launch Forge
+  in this environment to directly confirm or rule out the crash, so
+  rather than gamble on it, flagged it to the user before writing any
+  KubeJS glue against a foundation that might crash on every launch —
+  same category of risk as the FTB Quests bug, just caught before
+  shipping instead of after. **User decided: install full Create
+  instead** (project 328085, `simibubi`, 6.0.8) — removed the standalone
+  entry (`packwiz remove schematicannon-standalone`) and added Create
+  in its place. Real Create jar-in-jars the same Flywheel/Ponder/
+  Registrate/MixinExtras stack, confirmed from its own
+  `META-INF/jarjar/` contents, so the footprint difference between the
+  two options was smaller than FEATURES.md originally assumed — the
+  fake mod's "lighter, standalone" pitch wasn't actually true.
+
+- **Schematicannon's real mechanics, confirmed against source** —
+  while vetting the mod, also resolved two things FEATURES.md had
+  flagged as open: (1) the material-check-then-place gate is **native**
+  to the Schematicannon, not something needing custom KubeJS glue —
+  confirmed against Create's own official GitHub wiki
+  (`Creators-of-Create/Create` wiki, "Printing a Schematic"): it draws
+  from adjacent inventories and pauses on "Missing Block" until
+  supplied. (2) A finished `create:schematic` item is **not**
+  self-contained NBT — decompiling `SchematicItem.class` (from the real
+  Create 6.0.8 jar) shows its NBT (`File`, `Owner`, `Bounds`,
+  `Deployed`) only *points at* a `.nbt` structure file that must already
+  exist in that world's `saves/<world>/schematics/uploaded/` folder.
+  This is a real, harder blocker than the mod choice ever was — see
+  `docs/QUEUE.md`, pulled back out of "ready to build" until an actual
+  room exists as a real exported `.nbt` file (an in-game, real-client
+  step no coding session can produce headlessly).
+
+- **The amulet (2026-08-30)** — see FEATURES.md's "The amulet" section
+  for the full mechanic and its "Build notes" for the specific API
+  findings (Curios' slot-grant mechanism, KubeJS-Curios' real method
+  signatures). Implementation split across `startup_scripts/amulet.js`
+  (item + block registration, Curios capability attach),
+  `server_scripts/amulet_pedestal.js` (recipe + place/retrieve
+  interaction + marker entity spawn/despawn),
+  `server_scripts/amulet_worn.js` (buff tick handler),
+  `server_scripts/amulet_border.js` (worldborder push-back), plus edits
+  to the existing `mob_aggro.js` (marker-entity targeting redirect) and
+  `playtest_starter_kit.js` (starter-gear give/equip). Two hand-authored
+  16x16 placeholder textures (a gold-chain-and-gem pendant, a stone
+  plinth with a gold-ringed socket), same style as the pack's existing
+  item icons. First time this pack has built a full accessory-slot
+  integration — every non-obvious API detail (slot grants, capability
+  builder methods, the `LivingEntity`-mixed `setEquippedCurio`/
+  `findFirstCurio` helpers) was read from the mods' own GitHub source
+  before being used, not guessed. Not yet confirmed in-game — this is
+  the checkpoint the user asked to playtest before more work lands.
+
+- **Quest book restructure: Tier 1 chapter (2026-08-30)** — split Tier 1
+  out of the Basics chapter into its own chapter (`tier1_machines.snbt`,
+  renamed from "Defenses" to "Tier 1"), per the new "one quest per item,
+  not one quest per tier" process. The existing live Fortify quest was
+  relocated and retitled "Sharpened Scrap" with its quest ID
+  (`1454951A7FB14A26`) and task/dependency left untouched, so Basics
+  quest 8's existing dependency on it kept working unmodified — the
+  real risk was in the move, not the concept (cross-chapter dependencies
+  were already proven when Fortify was first threaded into Basics). A
+  new "Something Crueler" quest (craft `trapcraft:bear_trap`) was added
+  parallel to it, gated on the same Basics quest 6 dependency, not
+  chained to Sharpened Scrap. `trapcraft:bear_trap` was confirmed as the
+  real registry name directly from Trapcraft's own jar
+  (`assets/trapcraft/lang/en_us.json`) before writing the task, not
+  guessed — the same discipline that would have caught the original
+  Fortify `#tag` crash had it been applied there. Two new amulet-side
+  quests ("Not Just Jewelry," "Leave It Behind") were also added to
+  `basics.snbt` in this same pass, inserted by dependency on quests 2
+  and 8 respectively rather than renumbering the existing chain. All new
+  quest IDs checked for uniqueness against every existing ID in the
+  quests folder before finalizing.
 
 ## Compatibility check (2026-08-19)
 

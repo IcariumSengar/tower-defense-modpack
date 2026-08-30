@@ -78,6 +78,26 @@
 			y: 0.0d
 		}
 		{
+			dependencies: ["CF982E95B58602E4"]
+			description: [
+				"That pendant isn't just for show. Wear it and something in you mends faster, and the heat doesn't bite the way it should. Whoever had it before you needed both. So will you."
+			]
+			icon: "kubejs:amulet"
+			id: "7D3A5F912E6C0B48"
+			rewards: [{
+				id: "1F84B26D9A5E307C"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				id: "5C0E7A34D2F9B168"
+				type: "checkmark"
+			}]
+			title: "Not Just Jewelry"
+			x: 2.0d
+			y: 1.5d
+		}
+		{
 			dependencies: ["42E42312C8B61976"]
 			description: [
 				"Count doesn't matter until it's zero. Five isn't a milestone, it's a start - the desert's got more where these came from, and it isn't running out before you do."
@@ -155,6 +175,23 @@
 			title: "Watch the Walls Grow"
 			x: 12.0d
 			y: 0.0d
+		}
+		{
+			dependencies: ["BE3E01220D23C31D"]
+			description: [
+				"Build the stand, set the pendant down, and the wall stops being a wall - for you, anyway. Everything out there stops watching you and starts watching it instead. That's the trade: no more mending, no more warmth, but nothing's stopping you from walking past that line. Just remember what you're leaving unguarded."
+			]
+			icon: "kubejs:amulet_pedestal"
+			id: "4B8F2D6A93E7C051"
+			tasks: [{
+				consume_items: false
+				id: "E1A6C4F97B92D30E"
+				item: "kubejs:amulet_pedestal"
+				type: "item"
+			}]
+			title: "Leave It Behind"
+			x: 12.0d
+			y: 1.5d
 		}
 		{
 			dependencies: ["BE3E01220D23C31D"]

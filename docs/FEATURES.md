@@ -130,23 +130,62 @@ content" below for what that unlocked. **Not yet confirmed in-game.**
 
 **Base expansion into rooms/corridors** — *planned, not built*. Goal:
 gather materials, activate something, and a new room/corridor gets
-built onto the starting structure automatically. Decided approach:
-**Create's standalone Schematicannon mod** (not full Create — a real
-extraction that ships just the Schematicannon/Schematic-and-Quill/
-Schematic Table/clipboard, confirmed Forge 1.20.1). Survival-native
-(no creative-mode restriction, no colonist dependency, unlike the
-Structurize-based plan this superseded). Direction chosen: **curated
-schematics found while exploring**, not player-designed freeform — the
-pack author scans/finalizes each room design once, ships the finished
-schematic as a lootable item placed in structure loot tables (same
-LootJS mechanism already used for loot bags, targeting structure/chest
-loot tables instead of entity-kill drops — exact method name to
-confirm against LootJS's source before writing it). This directly ties
-into the exploration/structure-generation plan below: schematics become
-one of the things worth finding out there. Still needs: confirming a
-finished schematic's NBT shape for loot-table placement, and the
-material-check-then-place trigger logic (custom KubeJS glue — no mod
-does the "check materials, consume them, build" gate on its own).
+built onto the starting structure automatically.
+
+**Mod choice reversed 2026-08-30**: the originally-planned "standalone
+Schematicannon" extraction turned out to be a mislabeled re-upload, not
+an independent mod. Decompiling its jar (CurseForge project 1375728,
+"Schematicannon standalone" by VinicciusX) showed a hardcoded
+`modId = "schematicannon"` / `authors = "bikerboys"` pointing at
+`github.com/michiel1106/Create-schematicannon` — the exact same mod as
+CurseForge's separate **"Schematicannon"** listing (project 1350154,
+also bikerboys), which the author's own page flags **"BROKEN, MIGHT FIX
+IN THE FUTURE. DONT USE."** It also jar-in-jars Flywheel/Ponder/
+Registrate/MixinExtras anyway, so the assumed footprint saving over
+full Create was smaller than it looked. Installed **full Create**
+(CurseForge project 328085, `simibubi`, 6.0.8 for 1.20.1 Forge) instead
+— actively maintained, same bundled-dependency footprint, at the cost
+of shipping Create's full machine/content roster alongside the one
+mechanic actually wanted. A real footprint tradeoff, accepted directly
+by the user rather than decided unilaterally. No separate Flywheel/
+Ponder/Registrate packwiz entries needed — Create bundles all four via
+jar-in-jar, confirmed from the jar's own `META-INF/jarjar/` contents.
+
+Survival-native (no creative-mode restriction, no colonist dependency,
+unlike the Structurize-based plan this superseded). Direction chosen:
+**curated schematics found while exploring**, not player-designed
+freeform — the pack author builds and finalizes each room design once,
+ships the finished schematic as a lootable item placed in structure
+loot tables (same LootJS mechanism already used for loot bags,
+targeting structure/chest loot tables instead of entity-kill drops —
+exact method name to confirm against LootJS's source before writing
+it). This directly ties into the exploration/structure-generation plan
+below: schematics become one of the things worth finding out there.
+
+**Material-check-then-place gate is native, not custom** — corrected
+2026-08-30, confirmed against Create's own official GitHub wiki
+(`Creators-of-Create/Create` wiki, "Printing a Schematic"), not the
+earlier-assumed gap. The Schematicannon draws materials from adjacent
+inventories and pauses with a "Missing Block" status until they're
+supplied (or skips, if "Skip Missing Blocks" is toggled) — no custom
+KubeJS glue needed for the gate itself.
+
+**Real, harder blocker found in its place**: a finished `create:schematic`
+item is not self-contained NBT — decompiling `SchematicItem.class`
+confirms its NBT (`File`, `Owner`, `Bounds`, `Deployed`) is a *pointer*
+to a `.nbt` structure file that must already exist in that specific
+world's `saves/<world>/schematics/uploaded/` folder (populated normally
+by a player running a local schematic file through the in-world
+Schematic Table). A lootable item alone can't carry the room design —
+the underlying `.nbt` file has to reach every world's save folder
+somehow, which needs either a real filesystem-copy hook (KubeJS/Java
+interop, unverified) at first login, or accepting that the loot-schematic
+plan needs a different delivery mechanism entirely. **Still needs,
+before any of this can be built**: at least one actual room, hand-built
+in-game and exported via Schematic and Quill + Schematic Table into a
+real `.nbt` file — inherently a real-client, real-playtest step, not
+something a coding session can produce headlessly. This is the genuine
+bottleneck now, not the mod choice.
 
 **Structure generation / exploration content** — *live* (2026-08-30),
 **not yet confirmed in-game**. Goal: real structures to explore,
@@ -204,6 +243,135 @@ generate on approach the normal way, same as any vanilla exploration).
 
 ---
 
+## The amulet
+
+**The amulet** — *live* (2026-08-30), **not yet confirmed in-game**. A custom item that draws mob
+attention to *itself* rather than the player or a fixed map location —
+a lightweight route to "true tower defense" (mobs pathfinding to a
+fixed objective regardless of player position) without custom AI,
+since `mob_aggro.js` already proves `Mob#setTarget()` works reliably
+here; the amulet just changes *what* it targets.
+
+**Stack**: **Curios API** (the current, actively-maintained accessory-
+slot mod — note **Baubles itself has no Forge 1.20.1 build**, it
+stopped at 1.12.2, Curios is its real modern replacement) +
+**KubeJS-Curios** (a bridge mod that exposes Curios equip/unequip and
+tick-while-worn hooks directly to KubeJS scripts, avoiding custom Java
+or unverified capability reflection). Item: `kubejs:amulet`, registered
+the normal way and tagged to a Curios slot.
+
+**Curios slot mechanics, confirmed from source before building**:
+Curios ships slot *types* (necklace, charm, back, etc., each just an
+icon/order/validator definition) but grants **zero slots of any type to
+any entity by default** — a consuming pack has to grant slot count
+itself. Confirmed directly from Curios' own `CuriosSlotManager.java`:
+slot-definition files at `data/<any namespace>/curios/slots/<id>.json`
+are merged by *path*, not namespace, so this pack's own
+`data/kubejs/curios/slots/necklace.json` (`{size:1, operation:"ADD"}`)
+correctly stacks onto Curios' own `necklace.json` (which only sets
+order/icon/validators, no size) — no separate "which entities get this
+slot" file needed in this Curios version, unlike its own test fixtures
+which misleadingly suggest otherwise. The item is tagged into the slot
+via the standard `#curios:necklace` item tag
+(`data/curios/tags/items/necklace.json`).
+
+**KubeJS-Curios' real API, read from its own source, not guessed**:
+CurseForge project 1255211 (author zhaijineet) has no README in its
+repo, and a *different* project with the same name (Prunoideae's
+KubeJS-Curios) exists too with a different API — installed the right
+one by checking the CurseForge listing's actual linked GitHub, not
+assumed from the name. `CuriosJSCapabilityBuilder.create()` returns a
+builder with `.onEquip((slotContext, prevStack, stack) => …)` /
+`.onUnequip((slotContext, stack, newStack) => …)`, attached to an item
+via `.attachCuriosCapability(builder)` chained onto the item builder
+during registration. `slotContext.entity()` gives the wearer.
+Programmatic equip (for the starter-gear give, below) uses a *different*
+path — `player.setEquippedCurio(slot, index, stack)` /
+`.findFirstCurio(predicate)`, mixed directly onto `LivingEntity` — so
+`player` gets these methods without any special import, same as
+`getX()`/`setTarget()` elsewhere in this codebase.
+
+**Worn state**: the equip/unequip capability callbacks set a
+`td_amuletWorn` persistent-data flag; `server_scripts/amulet_worn.js`
+(the existing `PlayerEvents.tick` pattern, same shape as
+`mob_aggro.js`/`wave_status.js`) applies/refreshes **Regeneration +
+Fire Resistance** while it's true — passive survivability rather than
+combat stats, so it doesn't duplicate the (removed) roguelike buff-pick's
+Vitality/Fortitude/Ferocity trio. **Player-only for this pass** —
+buffing defensive machines too was the original idea, but Tier 1 is now
+Trapcraft's blocks (an external mod with no idea this amulet exists),
+which makes machine-buffing genuinely harder than when Tier 1 was
+custom-owned. Decided to skip it for now rather than build a generic
+damage-event hook for it — revisit once there's a pack-owned machine
+tier again, or if a mod-agnostic approach becomes worth the complexity.
+
+**Decided: the amulet is starter gear, the pedestal is crafted.** The
+amulet arrives already worn at world start, alongside the sword/armor
+— same "inherited from the previous occupant" narrative, generating
+buffs from turn one. The **pedestal** (`kubejs:amulet_pedestal`) is a
+craftable block, not pre-built into the starting base — consistent with
+every other capability in this pack being earned (Tier 1 traps, border
+growth, quest unlocks), and it gives border-crossing an actual "you
+just unlocked this" moment rather than being available immediately,
+which would undercut the tension the mechanic is meant to create.
+
+**Pedestal state**: a `kubejs:amulet_pedestal` block
+(`server_scripts/amulet_pedestal.js`), crafted from 8x gold_ingot
+(Uncommon-tier loot pool) + 1x stone_bricks (the base's own floor
+material) in a ring pattern — no recipe was pinned down in the design,
+so this is an implementation-level pick. Right-clicking it while the
+amulet's worn clears `td_amuletWorn`, sets `td_amuletOnPedestal`, and
+unequips the item via `setEquippedCurio(slot, index, air)`;
+right-clicking it again while occupied gives the amulet back and
+re-equips it the same way. State lives on the **player's**
+persistentData, not the block/world — same reasoning as
+`base_expansion.js`'s worldborder counter (level/world persistentData
+has no save/load hook, player's does), and this pack only ever expects
+one pedestal to exist. **Real technical detail, not hand-waved**:
+vanilla mobs can only `setTarget()` an entity, not a bare block
+position — so placing the amulet spawns an invisible, gravity-less,
+`td_amulet_marker`-tagged armor stand (the standard vanilla trick,
+summoned via command like the rest of this pack's world-state changes)
+at the pedestal, and `mob_aggro.js` now checks `td_amuletOnPedestal`
+each throttled tick and points every wave mob's `setTarget()` at that
+marker instead of the player while it's set, falling back to the player
+if the flag is set but no marker is actually found.
+
+**Border-crossing**: the worldborder already has damage disabled
+(`worldborder damage amount 0`, set earlier for the mob-spawn-beyond-
+border mechanic) — it isn't actually a hard barrier right now, nothing
+currently enforces it. `server_scripts/amulet_border.js` is the
+genuinely custom tick handler this needed: checks player position
+against `level.getWorldBorder()`'s bounds (the same proven API
+`wave_spawner.js` already uses for spawn clamping) and teleports the
+player back in if they're outside *and* `td_amuletOnPedestal` is false,
+with an edge-triggered chat message so it doesn't spam every throttled
+tick. **Deliberately does not implement** the "forced extra wave"
+penalty for leaving via the pedestal — that was flagged as "the leading
+idea, not confirmed" in the original design, and building it now would
+mean guessing at an unresolved point rather than a decided spec.
+
+**Why cross at all**: this is what gives the exploration content
+(structure generation, lootable schematics) a reason to matter before
+the border naturally grows there — push out early for something worth
+finding, at the real cost of losing the worn buffs.
+
+**Build notes (2026-08-30)**: first time this pack has integrated a
+third-party accessory-slot system — every API detail above (the
+Curios slot-grant mechanism, KubeJS-Curios' real method names/
+signatures, `setEquippedCurio`'s existence) was read directly from the
+mods' own decompiled/GitHub source rather than guessed, same discipline
+as the SecurityCraft/Trapcraft/FTB Quests integrations. Two real
+unverified assumptions worth flagging specifically: whether
+`setEquippedCurio` (used for the starter-gear give in
+`playtest_starter_kit.js`) actually routes through the same
+onEquip-callback pipeline as a manual GUI equip (mitigated by also
+setting `td_amuletWorn` explicitly in that same login handler, so the
+buff works regardless), and `Entity#teleportTo(x,y,z)`'s exact behavior
+for the border push-back (a real, standard vanilla method, but not yet
+seen used elsewhere in this codebase). Not yet confirmed in-game at
+all — that's the real bar, same as everything else built this session.
+
 ## Defense
 
 **Tier 1 defenses** — *live*. Originally three hand-built custom
@@ -225,35 +393,92 @@ custom code. Current build:
   the real bar here, given what they replaced failed on feel
   specifically, not just function.
 
-**Machine progression (Tier 2-4)** — see IDEAS.md, not designed in
-detail yet beyond the original tier concept (semi-automated → powered →
-elite). Depends on the power system, also undesigned.
+**Machine progression, Tier 2** — *planned, not built*. Semi-automated,
+redstone-powered, still fragile — the next rung up from Tier 1, and the
+first real use for the Uncommon (Fortified Cache) loot tier, which
+currently has nothing to spend on. Recipes should pull from that tier
+specifically rather than Common — it already contains `redstone_block`,
+which pairs naturally with these being redstone-dependent.
+- **Fire Trap** = Trapcraft's **Igniter** — already installed for Tier
+  1, unused until now. Lights an area on fire on a redstone signal,
+  range upgradeable via its own module. Matches the original Tier 2
+  sketch almost exactly, zero new footprint.
+- **Fan** — also Trapcraft, already installed. Pushes mobs (and items)
+  on a redstone signal — not in the original sketch, but a natural fit:
+  funnel mobs into other traps, or push them back from the chokepoint.
+- **Magnetic Chest** — also Trapcraft. Auto-collects loot from trap
+  kills — more a QoL piece than a defense, but fits the tier and cuts
+  down on manual bag-collection.
+- **Arrow Turret** = **Medieval Defense Turrets**' basic bow turret (new
+  install, Forge 1.20.1) — its simplest turret, arrow ammo only, picked
+  specifically over TurretCraft (smart spherical auto-targeting, ammo
+  GUI) and K-Turrets (needs an actual bow/crossbow, adds combat drones)
+  because both of those sound more like Tier 3 material than Tier 2's
+  "basic, fragile" framing.
+- **Reinforced Spikes** (tougher Tier 1 spikes) — cut. No equivalent
+  found in Trapcraft; not blocking the rest of Tier 2.
+- Still needs, before build: confirming Medieval Defense Turrets' own
+  recipe materials (re-recipe via `ServerEvents.recipes` if it doesn't
+  already use vanilla materials, same pattern as Tier 1), same check
+  Trapcraft's Tier 1 items already got.
+
+**Machine progression (Tier 3-4)** — see IDEAS.md, still just the
+original tier concept (powered → elite). Depends on the power system,
+also undesigned.
 
 ---
 
 ## Quest book
 
-**FTB Quests — "Basics" chapter** — *live*, 10-quest onboarding chain
-plus the pre-existing "Fortify" quest folded in as step 7 via a
-cross-chapter dependency (FTB Quests supports this natively by ID).
-Linear, one quest unlocking the next:
+**FTB Quests — three chapters: Basics, Tier 1, Tier 2** — *Basics and
+Tier 1 are live* (2026-08-30), Tier 2 as its own chapter is **planned,
+on hold** — see QUEUE.md, held deliberately at the user's request so
+they can playtest the current build before more lands on top of it, not
+a design gap. Original design put every quest in one "Basics" chapter;
+per direct feedback, each tier now gets its own chapter with one quest
+per item, rather than one quest per tier carrying a wall of text
+describing several items at once.
+
+**Basics chapter** — *live*, 12-quest chain (10 linear onboarding quests
+plus 2 amulet side-quests inserted by dependency, not renumbering):
 
 | # | Quest | Task | Reward |
 |---|---|---|---|
 | 1 | You're On Your Own | Checkmark | 2 XP levels |
 | 2 | Borrowed Time | Checkmark | 2 XP levels |
+| 2.5 | Not Just Jewelry | Checkmark | 2 XP levels |
 | 3 | Sound the Horn | Checkmark | 4x cobblestone + 4x oak_log |
 | 4 | Thin the Horde | Kill 5x zombie | 3 XP levels |
 | 5 | Spoils of War | Hold a Scavenger's Bag | — |
 | 6 | Open It | Checkmark | 3 XP levels |
-| 7 | Fortify *(pre-existing)* | Craft `trapcraft:spikes` | — |
 | 8 | Watch the Walls Grow | Checkmark | 3 XP levels |
+| 8.5 | Leave It Behind | Craft `kubejs:amulet_pedestal` | — |
 | 9 | The Reckoning | Checkmark (manual, after wave 5 gear removal) | — |
 | 10 | No Turning Back | Checkmark | — |
 
-Final flavor text (found-diary voice, matched against the wave-5
-gear-removal text as the tone benchmark) is live for all 10, including
-an optional rewrite of Fortify's own text for tonal consistency:
+*(Quest 7, "Fortify," is no longer part of this chapter — see "Tier 1
+chapter" below. It's still numbered 7 for reference to its old
+position; nothing here renumbers the rest of the chain.)*
+
+**Two amulet quests, live**: "Not Just Jewelry" depends on quest 2
+(Borrowed Time) and introduces the amulet's worn buffs, since it
+arrives as starter gear like the sword/armor. "Leave It Behind" depends
+on quest 8 (Watch the Walls Grow) and introduces the pedestal as the
+crafted unlock for border-crossing — a deliberate "the wall grows on
+its own, or you can step past it yourself" pairing.
+- *"Not Just Jewelry"*: **"That pendant isn't just for show. Wear it
+  and something in you mends faster, and the heat doesn't bite the way
+  it should. Whoever had it before you needed both. So will you."**
+- *"Leave It Behind"*: **"Build the stand, set the pendant down, and
+  the wall stops being a wall — for you, anyway. Everything out there
+  stops watching you and starts watching it instead. That's the trade:
+  no more mending, no more warmth, but nothing's stopping you from
+  walking past that line. Just remember what you're leaving
+  unguarded."**
+
+Basics quest flavor text (found-diary voice, matched against the wave-5
+gear-removal text as the tone benchmark), quest 7 omitted since it no
+longer lives here:
 
 1. *"If you're reading this, they didn't make it. Doesn't matter who
    they were. What matters is this: the walls are still standing, the
@@ -274,9 +499,6 @@ an optional rewrite of Fortify's own text for tonal consistency:
    them."*
 6. *"A sealed bag is just extra weight. Open it before you decide it
    wasn't worth carrying."*
-7. *"The dead didn't just leave gear behind — some of them left
-   know-how. Turn scrap into something with teeth. Spikes don't ask
-   questions, and they don't get tired."*
 8. *"Every wall you're not standing behind yet is still just desert.
    Clear what's in front of you and the line moves — more ground to
    hold, more reasons it might not hold."*
@@ -287,6 +509,58 @@ an optional rewrite of Fortify's own text for tonal consistency:
     after, because nobody who saw it lived to write it down. From here
     it's the same night, over and over, until it isn't. How long you
     last is the only story left to tell."*
+
+**Tier 1 chapter** — *live* (2026-08-30). Two quests, parallel (both
+gated on Basics quest 6, not on each other — Spikes and Bear Trap are
+alternatives, not a sequence):
+
+| Quest | Task | Reward |
+|---|---|---|
+| Sharpened Scrap *(= the existing live "Fortify," relocated)* | Craft `trapcraft:spikes` | — |
+| Something Crueler *(new)* | Craft `trapcraft:bear_trap` | 2 XP levels |
+
+- *"Sharpened Scrap"* keeps its existing text: **"The dead didn't just
+  leave gear behind — some of them left know-how. Turn scrap into
+  something with teeth. Spikes don't ask questions, and they don't get
+  tired."**
+- *"Something Crueler"*: **"A Bear Trap doesn't kill quick, but it
+  holds. Whatever steps in it stays there — long enough for whatever
+  comes next."**
+
+**Real migration note, not fresh content**: "Sharpened Scrap" is the
+already-live Fortify quest, relocated into its own chapter — moved with
+its quest ID (`1454951A7FB14A26`) and task/dependency untouched, only
+the title and chapter changed, so Basics quest 8's existing dependency
+on it keeps working unmodified. Confirmed `trapcraft:bear_trap` as the
+real registry name directly from Trapcraft's own jar (`assets/trapcraft/
+lang/en_us.json`'s `block.trapcraft.bear_trap` key) before writing
+"Something Crueler"'s task, not guessed — same discipline that would
+have caught the original Fortify `#tag` crash earlier if it'd been
+applied there. Chapter itself renamed from "Defenses" to "Tier 1" for
+the new one-chapter-per-tier structure.
+
+**Tier 2 chapter** — *planned*. Four quests, all gated on "Sharpened
+Scrap" (not chained to each other — order of crafting Tier 2 items
+doesn't matter narratively):
+
+| Quest | Task | Reward |
+|---|---|---|
+| Spark and Flame | Craft the Igniter (confirm real item ID) | 2 XP levels |
+| Herd Them In | Craft the Fan (confirm real item ID) | 2 XP levels |
+| Waste Not | Craft the Magnetic Chest (confirm real item ID) | 2 XP levels |
+| Wired for War | Craft the Arrow Turret (confirm real item ID) | 2 XP levels |
+
+- *"Spark and Flame"*: **"Wire an Igniter and it'll set the ground
+  itself against them — you won't need to swing a blade if the fire
+  gets there first."**
+- *"Herd Them In"*: **"A Fan won't kill anything on its own. It doesn't
+  need to — it just makes sure they end up exactly where your other
+  traps are waiting."**
+- *"Waste Not"*: **"A Magnetic Chest does the grim work so you don't
+  have to — walk away from a kill and let it do the collecting."**
+- *"Wired for War"*: **"An Auto-Turret keeps swinging long after your
+  own arm gives out. Wire one, and for the first time, something else
+  is watching the wall while you sleep."**
 
 **Real bug worth remembering**: Fortify originally used a `#`-prefixed
 tag reference as its item-task target, which FTB Quests' ItemTask
@@ -304,6 +578,20 @@ reference, not guessed and not from an assumed tool.
 Fuller quest book plan (Loot Tiers / Map Expansion / Shop chapters,
 FTB Quests trade-quest or QuestShop-based shop) is still just a vision,
 not scoped — see IDEAS.md.
+
+**Standing process, not a one-off**: the quest book is the tutorial —
+whenever a new mechanic gets fleshed out to "planned" status in this
+file, check whether it needs a new quest (or a refinement to an
+existing one) to actually teach the player about it, and draft that
+alongside the mechanic's own design rather than after the fact. Don't
+let quest coverage silently fall behind what's actually buildable.
+**Refined after the Tier 2 draft got real feedback**: one quest
+describing several distinct items in its text is not the same as
+actually teaching them — if a tier/feature has multiple distinct
+craftable items, each one gets its own quest (one task, one specific
+item), grouped into that tier's own chapter, rather than one quest with
+a paragraph naming everything. The Tier 1/Tier 2 chapters above are the
+first case this applied to.
 
 ---
 

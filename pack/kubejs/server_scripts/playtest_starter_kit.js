@@ -78,6 +78,21 @@ PlayerEvents.loggedIn((event) => {
   player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
 
+  // The amulet (docs/FEATURES.md "The amulet") arrives already worn,
+  // same "inherited from the previous occupant" narrative as the
+  // sword/armor above - but NOT tagged td_starter_gear, since that tag
+  // drives wave_status.js's wave-5 removal and the amulet is a
+  // long-term mechanic, not narrative gear that expires. Equipped
+  // directly into the Curios necklace slot (setEquippedCurio, from
+  // KubeJS-Curios' LivingEntity mixin - see amulet.js) rather than just
+  // given to the inventory, and td_amuletWorn is set explicitly here
+  // rather than relying on the onEquip capability callback to fire for
+  // a programmatic equip - belt-and-suspenders, since that callback
+  // path is unconfirmed for this specific call and a missed flag would
+  // silently mean no buffs from world start.
+  player.setEquippedCurio('necklace', 0, Item.of('kubejs:amulet', 1))
+  data.putBoolean('td_amuletWorn', true)
+
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
   // Snap onto solid ground near world origin (0,0) — heightmap-aware,
