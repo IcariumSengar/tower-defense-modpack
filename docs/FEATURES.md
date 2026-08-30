@@ -270,6 +270,27 @@ generate on approach the normal way, same as any vanilla exploration).
   what just happened with a different structure mod on this same flat
   generator.
 
+**Structure variety after the YUNG's removal — researched, held, not
+queued.** With YUNG's gone and Abandoned Structures never installed,
+the only structure content left is Treasure2 (unconfirmed) plus
+whatever vanilla itself generates on this flat world (also unconfirmed
+— the plan's own first step, "check the free baseline," never got done
+before YUNG's crashed world creation). Researched a candidate to fill
+that gap if it turns out to be real once tested: **Structory: Towers**
+— confirmed Forge 1.20.1, 47.8M downloads (far more real-world use than
+YUNG's Better Desert Temples ever had), includes a desert-specific
+"desert mirage" tower among ~20 biome-themed towers. Structurally a
+different risk shape than what just crashed — towers generate *upward*
+from a placement point rather than digging down into surrounding
+terrain to find a floor, which was the exact pattern behind the YUNG's
+underflow bug — but that's a different risk profile, not proof of
+safety, per the standing lesson above. **Held, not installed or sent
+as a build brief** — the user wants to playtest the current build
+(amulet + Tier 1 restructure) before anything else lands on top of it.
+Revisit once that playtest happens, especially if it confirms the
+current structure variety (Treasure2 + vanilla) actually feels thin in
+practice.
+
 ---
 
 ## The amulet
@@ -390,16 +411,47 @@ third-party accessory-slot system — every API detail above (the
 Curios slot-grant mechanism, KubeJS-Curios' real method names/
 signatures, `setEquippedCurio`'s existence) was read directly from the
 mods' own decompiled/GitHub source rather than guessed, same discipline
-as the SecurityCraft/Trapcraft/FTB Quests integrations. Two real
-unverified assumptions worth flagging specifically: whether
-`setEquippedCurio` (used for the starter-gear give in
-`playtest_starter_kit.js`) actually routes through the same
-onEquip-callback pipeline as a manual GUI equip (mitigated by also
-setting `td_amuletWorn` explicitly in that same login handler, so the
-buff works regardless), and `Entity#teleportTo(x,y,z)`'s exact behavior
-for the border push-back (a real, standard vanilla method, but not yet
-seen used elsewhere in this codebase). Not yet confirmed in-game at
-all — that's the real bar, same as everything else built this session.
+as the SecurityCraft/Trapcraft/FTB Quests integrations.
+
+**Real bug found in first playtest — the amulet was silently
+unreachable, not just unconfirmed.** On this world's very first login,
+`setEquippedCurio` no-op'd: the item never landed in the inventory or
+the Curios slot, so the player genuinely couldn't find it anywhere.
+Diagnosed directly from the player's own saved NBT data (parsed with a
+small hand-written Node NBT reader, since no Python was available) —
+`ForgeCaps.curios:inventory.Curios` only had a `head` entry, no
+`necklace` entry at all, even though `td_amuletWorn` had been set to
+`1` (the flag and the actual equip state had desynced) and the worn
+buffs were active anyway (a real, separate small bug: the buff tick
+handler only checks the flag, not the item's actual presence). Root
+cause, best understood: a brand-new world's very first Curios
+capability attach can race ahead of this pack's own datapack finishing
+its load, so the necklace slot doesn't exist yet at the exact moment
+`PlayerEvents.loggedIn` fires. Fixed two ways: the slot grant
+(`data/kubejs/curios/slots/necklace.json`) now uses an unambiguous
+`SET` + `replace: true` instead of `ADD` (removes any dependency on
+correctly reasoning through Curios' size-merge/default logic, confirmed
+against `docs.illusivesoulworks.com` to default to size 1 if
+unspecified — a real correction to this doc's earlier "Curios grants
+zero slots by default" claim, which turned out to be wrong); and the
+give-logic in `playtest_starter_kit.js` now verifies the equip actually
+landed (`findFirstCurio`) before trusting it, falling back to a plain
+inventory `give()` — and never trusting a lost item to a flag — so the
+amulet is never silently lost even if the same race happens again.
+Also moved out from behind the `td_playtestKitGiven` one-shot flag into
+its own "does the player already have one" check, run on every login —
+self-healing for any world/player that already hit the bug, not just
+new ones.
+
+Two more real unverified assumptions still worth flagging: whether
+`setEquippedCurio` actually routes through the same onEquip-callback
+pipeline as a manual GUI equip (mitigated the same way, by verifying
+and setting `td_amuletWorn` explicitly rather than trusting the
+callback), and `Entity#teleportTo(x,y,z)`'s exact behavior for the
+border push-back (a real, standard vanilla method, but not yet seen
+used elsewhere in this codebase, and not yet actually tested). The rest
+of the feature — worn buffs, pedestal, marker targeting, border
+push-back — still hasn't been reached in a real playtest.
 
 ## Defense
 

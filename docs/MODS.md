@@ -2186,8 +2186,35 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   integration — every non-obvious API detail (slot grants, capability
   builder methods, the `LivingEntity`-mixed `setEquippedCurio`/
   `findFirstCurio` helpers) was read from the mods' own GitHub source
-  before being used, not guessed. Not yet confirmed in-game — this is
-  the checkpoint the user asked to playtest before more work lands.
+  before being used, not guessed.
+
+  **First real playtest immediately found the amulet missing entirely
+  — genuinely lost, not just untested.** Diagnosed by parsing the live
+  instance's own player `.dat` file directly (a small hand-written
+  Node NBT reader, gzip + manual binary parse, since no Python was
+  available) rather than guessing: `setEquippedCurio` had silently
+  no-op'd on the world's very first login (the Curios capability can
+  attach before this pack's own slot-grant datapack finishes loading),
+  so the item never reached the inventory or the Curios slot at all,
+  while `td_amuletWorn` was set `true` anyway and kept applying buffs
+  for an item that didn't exist. Fixed: the slot grant now uses
+  `SET`+`replace:true` instead of `ADD` (removes the dependency on
+  correctly predicting Curios' size-merge defaults — also corrected a
+  wrong claim in this doc's own earlier "Curios grants zero slots by
+  default" note, confirmed via `docs.illusivesoulworks.com` that the
+  real default is size 1), and the login give-logic now verifies the
+  equip actually landed before trusting it, falling back to a plain
+  inventory give — and checks "does the player already have one" on
+  every login instead of a one-shot flag, so it self-heals any
+  world/player that already hit the bug. Both fixed files were also
+  copied directly into the live CurseForge instance so the fix applies
+  without a full pack re-export/re-import cycle.
+
+  Still not yet confirmed in-game beyond this one fix — the rest of the
+  feature (worn buffs actually tied to a real equipped item, pedestal,
+  marker targeting, border push-back) hasn't been reached in a real
+  playtest yet. This is the checkpoint the user asked to playtest
+  before more work lands.
 
 - **Quest book restructure: Tier 1 chapter (2026-08-30)** — split Tier 1
   out of the Basics chapter into its own chapter (`tier1_machines.snbt`,

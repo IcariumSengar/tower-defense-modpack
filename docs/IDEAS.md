@@ -180,6 +180,16 @@ Mostly still genuinely open:
   their description implied (Simple Spikes' 1.20.1 build, Gravemist's
   1.20.1 availability at all, MineTraps' current Forge target). See
   FEATURES.md's "Cross-cutting patterns" for the fuller reasoning.
+- **"Doesn't self-disable on flat worlds" is not the same claim as
+  "works correctly on flat worlds"** — confirmed the hard way: YUNG's
+  Better Desert Temples was checked and found to have no flat-world
+  exclusion logic before installing it, but its `QuartzPillarProcessor`
+  still walks a fixed distance straight down from a temple with no
+  floor check, which underflows past the bottom of a genuinely flat
+  world and crashed world creation deterministically. The "checked the
+  jar for self-disable logic" verification pattern only rules out one
+  failure mode; it doesn't substitute for an actual successful
+  playtest. Removed entirely, no upstream fix exists.
 - **Small deliverable scope now, explicit path to the fancier version
   later** — this pack's whole build pattern so far (base expansion's
   hard wall, staying flat, the Basics quest chapter before the fuller

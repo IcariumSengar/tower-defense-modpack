@@ -68,6 +68,41 @@ PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
 
+  // The amulet (docs/FEATURES.md "The amulet") arrives already worn,
+  // same "inherited from the previous occupant" narrative as the
+  // sword/armor below - but NOT tagged td_starter_gear (that tag drives
+  // wave_status.js's wave-5 removal; the amulet is a long-term
+  // mechanic, not gear that expires), and NOT gated behind
+  // td_playtestKitGiven below - deliberately checked on every login via
+  // "does the player already have one," not a one-shot flag.
+  //
+  // Real bug found in playtesting (2026-08-30): on a brand-new world's
+  // very first login, the player's Curios capability can attach before
+  // this pack's own necklace-slot-grant datapack has finished loading,
+  // so the necklace slot doesn't exist yet and setEquippedCurio
+  // silently no-ops - the item vanishes into nowhere, not the inventory
+  // or the slot. A one-shot flag would have permanently missed it for
+  // anyone caught by that race. Checking "do they have it anywhere"
+  // instead, every login, both fixes that first-login race on retry and
+  // retroactively heals any world/player that already hit the bug
+  // before this fix existed - no separate migration flag needed.
+  const alreadyHasAmulet = player.findFirstCurio((stack) => stack.id === 'kubejs:amulet').isPresent()
+    || player.inventory.find('kubejs:amulet') !== -1
+  if (!alreadyHasAmulet) {
+    player.setEquippedCurio('necklace', 0, Item.of('kubejs:amulet', 1))
+    if (player.findFirstCurio((stack) => stack.id === 'kubejs:amulet').isPresent()) {
+      data.putBoolean('td_amuletWorn', true)
+    } else {
+      // Curios genuinely isn't ready yet (or the slot grant didn't
+      // apply) - fall back to a plain give so the item is never just
+      // lost. Worse to have it sitting unworn in the inventory than to
+      // not have it at all; the player can drag it into their Curios
+      // slot manually, or the pedestal flow still works once it exists.
+      player.give(Item.of('kubejs:amulet', 1))
+      player.tell('§7[Amulet] §fThe pendant didn\'t settle into place - it\'s loose in your pack instead.')
+    }
+  }
+
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
 
@@ -77,21 +112,6 @@ PlayerEvents.loggedIn((event) => {
   player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
-
-  // The amulet (docs/FEATURES.md "The amulet") arrives already worn,
-  // same "inherited from the previous occupant" narrative as the
-  // sword/armor above - but NOT tagged td_starter_gear, since that tag
-  // drives wave_status.js's wave-5 removal and the amulet is a
-  // long-term mechanic, not narrative gear that expires. Equipped
-  // directly into the Curios necklace slot (setEquippedCurio, from
-  // KubeJS-Curios' LivingEntity mixin - see amulet.js) rather than just
-  // given to the inventory, and td_amuletWorn is set explicitly here
-  // rather than relying on the onEquip capability callback to fire for
-  // a programmatic equip - belt-and-suspenders, since that callback
-  // path is unconfirmed for this specific call and a missed flag would
-  // silently mean no buffs from world start.
-  player.setEquippedCurio('necklace', 0, Item.of('kubejs:amulet', 1))
-  data.putBoolean('td_amuletWorn', true)
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
