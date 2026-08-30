@@ -2189,26 +2189,42 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   before being used, not guessed.
 
   **First real playtest immediately found the amulet missing entirely
-  — genuinely lost, not just untested.** Diagnosed by parsing the live
-  instance's own player `.dat` file directly (a small hand-written
-  Node NBT reader, gzip + manual binary parse, since no Python was
-  available) rather than guessing: `setEquippedCurio` had silently
-  no-op'd on the world's very first login (the Curios capability can
-  attach before this pack's own slot-grant datapack finishes loading),
-  so the item never reached the inventory or the Curios slot at all,
-  while `td_amuletWorn` was set `true` anyway and kept applying buffs
-  for an item that didn't exist. Fixed: the slot grant now uses
-  `SET`+`replace:true` instead of `ADD` (removes the dependency on
-  correctly predicting Curios' size-merge defaults — also corrected a
-  wrong claim in this doc's own earlier "Curios grants zero slots by
-  default" note, confirmed via `docs.illusivesoulworks.com` that the
-  real default is size 1), and the login give-logic now verifies the
-  equip actually landed before trusting it, falling back to a plain
-  inventory give — and checks "does the player already have one" on
-  every login instead of a one-shot flag, so it self-heals any
-  world/player that already hit the bug. Both fixed files were also
-  copied directly into the live CurseForge instance so the fix applies
-  without a full pack re-export/re-import cycle.
+  — genuinely lost, not just untested — and it took two fix attempts
+  to actually resolve.** Diagnosed by parsing the live instance's own
+  player `.dat` file directly (a small hand-written Node NBT reader,
+  gzip + manual binary parse, since no Python was available) rather
+  than guessing: `setEquippedCurio` had silently no-op'd, and
+  `td_amuletWorn` was set `true` anyway with buffs applying for an item
+  that didn't exist. **First attempt** — made the slot-size grant
+  (`data/kubejs/curios/slots/necklace.json`) unambiguous
+  (`SET`+`replace:true` instead of `ADD`) on the theory it was a
+  load-order race. Didn't fix it — the user still saw only a single
+  "head" slot in-game. **Real root cause, found by reading
+  `CuriosEntityManager.java` directly**: Curios gates slot access with
+  *two independent* mechanisms, and only one had been addressed. A
+  `curios/slots/<id>.json` file defines a slot type's size; a
+  *separate* `curios/entities/<id>.json` file has to explicitly grant
+  which entity types may use which slot IDs at all —
+  `getEntitySlots(type)` returns a flat empty map for any type with no
+  matching entry, independent of any slot's own size. This pack had
+  never shipped an entities file; the "head" slot visible in-game was
+  coming from some other installed mod's own legacy Java registration,
+  not from anything of ours. Added
+  `data/kubejs/curios/entities/player.json` granting the player the
+  `necklace` slot specifically (not `replace`, so "head" stays intact)
+  — this is what actually fixed it. Also corrected this doc's earlier
+  "Curios grants zero slots by default" claim: a slot type's own
+  default size really is 1 (confirmed via
+  `docs.illusivesoulworks.com`), the actual "zero by default" behavior
+  lives in the entity-eligibility gate, not slot size.
+
+  Separately, made the login give-logic verify the equip actually
+  landed before trusting it, falling back to a plain inventory give —
+  and checks "does the player already have one" on every login instead
+  of a one-shot flag, so it self-heals any world/player that already
+  hit the bug. All three fixed files were copied directly into the live
+  CurseForge instance so each fix applied without a full pack
+  re-export/re-import cycle.
 
   Still not yet confirmed in-game beyond this one fix — the rest of the
   feature (worn buffs actually tied to a real equipped item, pedestal,

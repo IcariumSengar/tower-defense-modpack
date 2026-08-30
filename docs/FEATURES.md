@@ -423,25 +423,39 @@ small hand-written Node NBT reader, since no Python was available) —
 `necklace` entry at all, even though `td_amuletWorn` had been set to
 `1` (the flag and the actual equip state had desynced) and the worn
 buffs were active anyway (a real, separate small bug: the buff tick
-handler only checks the flag, not the item's actual presence). Root
-cause, best understood: a brand-new world's very first Curios
-capability attach can race ahead of this pack's own datapack finishing
-its load, so the necklace slot doesn't exist yet at the exact moment
-`PlayerEvents.loggedIn` fires. Fixed two ways: the slot grant
-(`data/kubejs/curios/slots/necklace.json`) now uses an unambiguous
-`SET` + `replace: true` instead of `ADD` (removes any dependency on
-correctly reasoning through Curios' size-merge/default logic, confirmed
-against `docs.illusivesoulworks.com` to default to size 1 if
-unspecified — a real correction to this doc's earlier "Curios grants
-zero slots by default" claim, which turned out to be wrong); and the
-give-logic in `playtest_starter_kit.js` now verifies the equip actually
-landed (`findFirstCurio`) before trusting it, falling back to a plain
-inventory `give()` — and never trusting a lost item to a flag — so the
-amulet is never silently lost even if the same race happens again.
-Also moved out from behind the `td_playtestKitGiven` one-shot flag into
-its own "does the player already have one" check, run on every login —
-self-healing for any world/player that already hit the bug, not just
-new ones.
+handler only checks the flag, not the item's actual presence). First
+fix attempt (unambiguous `SET`+`replace:true` in
+`data/kubejs/curios/slots/necklace.json`) turned out to be treating a
+symptom, not the cause — user still saw only one Curios slot in-game
+(a "head" one) after it. **Real, complete root cause, found by reading
+`CuriosEntityManager.java` directly**: Curios has *two* independent
+gates, not one. A `curios/slots/<id>.json` file (what the first fix
+touched) only defines a slot *type*'s size — it does **not** make that
+slot usable by any entity. A *separate* `curios/entities/<id>.json`
+file has to explicitly list which entity types can use which slot IDs;
+`CuriosEntityManager.getEntitySlots(type)` returns a **flat empty map**
+for any entity type with no matching entry, regardless of what any slot
+type's own size says. This pack had never shipped one — the "head"
+slot the player could see was coming from some other installed mod's
+own legacy Java-side registration, not from anything of ours. Added
+`data/kubejs/curios/entities/player.json` (`{"entities":
+["minecraft:player"], "slots": ["necklace"]}`, no `replace`, so it adds
+to rather than overwrites whatever's already granting "head") — this is
+the actual fix; the earlier `SET`+`replace:true` change to the slot
+size was harmless but not what fixed it. Also corrected this doc's
+earlier "Curios grants zero slots by default" claim (confirmed via
+`docs.illusivesoulworks.com` that a slot type's own default size is 1,
+not 0) — the real "zero by default" behavior lives in the
+entity-eligibility gate, not the slot-size default.
+
+Also made the give-logic in `playtest_starter_kit.js` verify the equip
+actually landed (`findFirstCurio`) before trusting it, falling back to
+a plain inventory `give()` — and never trusting a lost item to a flag —
+so the amulet is never silently lost again even if some other gate
+turns out to be missing too. Moved out from behind the
+`td_playtestKitGiven` one-shot flag into its own "does the player
+already have one" check, run on every login — self-healing for any
+world/player that already hit the bug, not just new ones.
 
 Two more real unverified assumptions still worth flagging: whether
 `setEquippedCurio` actually routes through the same onEquip-callback

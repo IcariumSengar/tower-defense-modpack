@@ -70,7 +70,7 @@ hash = "214373eba2f8296541141df6c85c7ef93222c8b02c5bae9a3737fac397c186fd"
 
 [[files]]
 file = "kubejs/data/kubejs/curios/slots/necklace.json"
-hash = "e2bf14329bb33c9fc9a3dd35350b69cb40c9b94b8cb2a2f91f7d173c04003c5f"
+hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 
 [[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
@@ -106,7 +106,7 @@ hash = "76d3974482603b96192946bafecafbb7e5706b5c93176ec45944222587653c76"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "3a30678651e2f080371352893ad10cf71800b05669c7641cc5e5590179e73410"
+hash = "6fd600531bceec9c05b062c6028d3723586ffed44af04ae973141a2494e95e40"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
