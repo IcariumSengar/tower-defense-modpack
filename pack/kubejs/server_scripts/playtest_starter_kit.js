@@ -68,39 +68,34 @@ PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
 
-  // The amulet (docs/FEATURES.md "The amulet") arrives already worn,
-  // same "inherited from the previous occupant" narrative as the
-  // sword/armor below - but NOT tagged td_starter_gear (that tag drives
+  // The amulet (docs/FEATURES.md "The amulet") starts loose in the
+  // player's inventory, NOT auto-equipped (2026-08-30, direct request
+  // after the auto-equip attempt below produced a real duplicate - see
+  // next paragraph) - but NOT tagged td_starter_gear (that tag drives
   // wave_status.js's wave-5 removal; the amulet is a long-term
   // mechanic, not gear that expires), and NOT gated behind
   // td_playtestKitGiven below - deliberately checked on every login via
-  // "does the player already have one," not a one-shot flag.
+  // "does the player already have one," not a one-shot flag, so it
+  // still self-heals if a player somehow ends up without one.
   //
-  // Real bug found in playtesting (2026-08-30): on a brand-new world's
-  // very first login, the player's Curios capability can attach before
-  // this pack's own necklace-slot-grant datapack has finished loading,
-  // so the necklace slot doesn't exist yet and setEquippedCurio
-  // silently no-ops - the item vanishes into nowhere, not the inventory
-  // or the slot. A one-shot flag would have permanently missed it for
-  // anyone caught by that race. Checking "do they have it anywhere"
-  // instead, every login, both fixes that first-login race on retry and
-  // retroactively heals any world/player that already hit the bug
-  // before this fix existed - no separate migration flag needed.
+  // Previously tried calling setEquippedCurio() here to hand it over
+  // already worn, with a findFirstCurio() re-check to fall back to
+  // plain give() if the equip silently no-op'd (a real race where
+  // Curios' capability can attach before this pack's own
+  // necklace-slot-grant datapack finishes loading on a world's very
+  // first login). That produced a genuine duplicate in playtesting - one
+  // copy equipped AND one in inventory - meaning the post-equip
+  // findFirstCurio() re-check returned a false negative (equip actually
+  // succeeded, but wasn't detected as such) and the fallback give() ran
+  // on top of a real success. Never fully diagnosed which part of that
+  // path was unreliable; sidestepped it entirely by just never
+  // auto-equipping - a plain give() has no equivalent race since it
+  // doesn't touch the Curios slot at all, and the player equips it
+  // themselves via the Curios inventory tab.
   const alreadyHasAmulet = player.findFirstCurio((stack) => stack.id === 'kubejs:amulet').isPresent()
     || player.inventory.find('kubejs:amulet') !== -1
   if (!alreadyHasAmulet) {
-    player.setEquippedCurio('necklace', 0, Item.of('kubejs:amulet', 1))
-    if (player.findFirstCurio((stack) => stack.id === 'kubejs:amulet').isPresent()) {
-      data.putBoolean('td_amuletWorn', true)
-    } else {
-      // Curios genuinely isn't ready yet (or the slot grant didn't
-      // apply) - fall back to a plain give so the item is never just
-      // lost. Worse to have it sitting unworn in the inventory than to
-      // not have it at all; the player can drag it into their Curios
-      // slot manually, or the pedestal flow still works once it exists.
-      player.give(Item.of('kubejs:amulet', 1))
-      player.tell('§7[Amulet] §fThe pendant didn\'t settle into place - it\'s loose in your pack instead.')
-    }
+    player.give(Item.of('kubejs:amulet', 1))
   }
 
   if (data.getBoolean('td_playtestKitGiven')) return
