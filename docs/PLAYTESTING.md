@@ -44,15 +44,17 @@ needed. The pack forces the actual generator via a datapack override
 (`kubejs/data/minecraft/dimension/overworld.json`), same mechanism
 regardless of which world type gets clicked.
 
-**Back on Superflat (2026-08-20).** Briefly switched to real terrain
-(Single Biome: Desert) for a non-flat, structure-populated world, but
-that read as "wonky, doesn't suit the gameplay" in actual play — the
-override now forces vanilla's own default flat generator (bedrock + 2
-dirt + grass, plains biome) instead, so a fresh world is Superflat
-automatically with zero manual customization, same as before real
-terrain was ever tried. This is deliberately "for now," not a closed
-decision — see `docs/IDEAS.md`'s Seed research section if real terrain
-gets revisited later.
+**Flat generator, desert biome (2026-08-30).** Briefly switched to real
+terrain (Single Biome: Desert, `noise` generator) for a non-flat,
+structure-populated world, but that read as "wonky, doesn't suit the
+gameplay" in actual play — reverted to the flat generator the same day.
+Now flat + desert-biome instead of flat + plains: same bedrock + 2 dirt
++ grass flat generator as always (still 100% flat, zero terrain
+variation), just with the biome value changed to `minecraft:desert` so
+desert-tagged structures/mods become relevant — see "Structure
+generation" below. This is deliberately "for now," not a closed
+decision on real terrain — see `docs/FEATURES.md`/`docs/IDEAS.md` if
+non-flat terrain gets revisited later.
 
 ## The test loop
 
@@ -234,6 +236,36 @@ research rather than assumed.
   confirm it jumps to JEI showing that item's recipe.** FTB XMod
   Compat, added 2026-08-29 specifically for this, needs to actually be
   detected and bridging FTB Quests to JEI — not yet confirmed in-game.
+
+## Structure generation (new, entirely unconfirmed in-game)
+
+World is now flat + **desert biome** (was flat + plains) specifically
+to make this relevant — see "Manual setup" above. **This is a bigger
+unknown than most recent additions**: the reasoning for why structures
+should place on a flat world at all is solid (checked directly against
+vanilla's own Superflat/Settings docs — the flat generator's `features`
+flag only blocks decorative placed-features, not structures, and
+`structure_overrides` defaults to "all structure sets" when unset,
+which this pack's config leaves unset), but nothing here has actually
+been observed generating yet.
+
+**On a fresh world, explore outward from spawn and check:**
+- A **vanilla desert temple** or **desert well** generates at all —
+  this is the free baseline the whole plan's reasoning rests on; if
+  neither shows up within a reasonable radius, that's a real signal the
+  flat-generator reasoning above was wrong somewhere, not just bad luck.
+- A **YUNG's Better Desert Temples**-enhanced temple (puzzles/traps/
+  parkour, not the plain vanilla layout) — confirms the mod is actually
+  hooking in, not just installed inert.
+- A **Treasure2 structure** — desert ruins, a desert wishing well, or
+  one of its general surface/dungeon structures. Locked/tiered chests
+  (up to Mimic Chests) are the actual "real treasure" payoff this whole
+  feature was requested for.
+- **Do NOT expect** anything from Abandoned Structures — deliberately
+  not installed, confirmed none of its 4 structures target desert
+  biome at all (see `docs/MODS.md`'s structure-generation entry for the
+  full reasoning). If you were expecting its content specifically,
+  that's expected-absent, not a bug.
 
 ## Known caveats
 

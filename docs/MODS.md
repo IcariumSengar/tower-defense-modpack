@@ -36,6 +36,10 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | FTB Teams | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | 2001.3.2 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 | FTB XMod Compat | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-xmod-compat) | 2.1.2 (1.20.1 Forge) | Added 2026-08-29 so clicking an item in a quest jumps to its JEI recipe — does nothing by itself, only bridges FTB Quests/JEI/KubeJS when it detects them installed | Both hard dependencies (FTB Library, Architectury) already satisfied by what's installed; no new dependency chain | testing |
 | Trapcraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trapcraft) | 2.10.2 (1.20.1 Forge) | Added 2026-08-29 to replace the custom Tier 1 machines (Spikes, Bear Trap) after direct playtest feedback that the custom design "sucked" — see the "Tier 1 replaced with Trapcraft" entry under Custom glue below | Standalone, no hard dependency beyond Forge/Minecraft | testing |
+| YUNG's Better Desert Temples | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/yungs-better-desert-temples) | 3.0.3 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — enhances vanilla's own Desert Temple (puzzles, traps, parkour, boss, better loot), doesn't add its own biome/generator | Requires YUNG's API (added alongside it) | testing |
+| YUNG's API | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/yungs-api) | 4.0.6 (1.20.1 Forge) | Hard dependency of YUNG's Better Desert Temples | — | required |
+| Treasure2 | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/treasure2) | 4.0.5 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — desert ruins/wishing wells + general surface/dungeon structures, 18+ tiered locked treasure chests including Mimic Chests. Confirmed directly from its own structure JSONs that these actually target the `minecraft:desert` biome this world uses | Requires GottschCore (added alongside it) | testing |
+| GottschCore | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/gottschcore) | 2.8.0 (1.20.1 Forge) | Hard dependency of Treasure2 | — | required |
 
 ## Removed mods
 
@@ -566,6 +570,98 @@ mods sitting parallel to, not part of, the pack's actual built systems.
   neighbors — its new text happens to read more accurately too, now
   that the task checks `trapcraft:spikes` specifically rather than
   "any of three" (see the crash-fix entry above).
+
+- **Structure generation: desert biome swap + Treasure2/YUNG's Better
+  Desert Temples (2026-08-30)** — direct instruction, full plan drafted
+  by the ideas-hub session (`docs/IDEAS.md`'s "Structure generation
+  plan" at the time, since moved into `docs/FEATURES.md`'s "Base &
+  structures" section as it crystallized into shipped content).
+  - **Biome swap**: `kubejs/data/minecraft/dimension/overworld.json`'s
+    `biome` changed from `minecraft:plains` to `minecraft:desert`,
+    `type: minecraft:flat` and the `layers` array left untouched —
+    exactly as specified, no unrequested changes (e.g. didn't swap the
+    surface layer to sand even though that would match desert
+    aesthetically better, since that wasn't part of what was asked).
+    Genuinely different from the earlier Desert attempt this session
+    (that one used a real `noise` generator and got reverted for
+    feeling "wonky") — flatness and biome are independent settings in
+    the same generator config.
+  - **Why vanilla desert structures should still generate on a flat
+    world, reasoned from the actual mechanism, not assumed**: checked
+    the vanilla Superflat/Settings documentation directly. The flat
+    generator's `features` boolean (already `false` in this pack's
+    config) only suppresses decorative placed-features — its own
+    documented text specifically calls out that this is unrelated to
+    structures. Structure eligibility is controlled separately by
+    `structure_overrides`, which **defaults to "all structure sets"
+    when the key is absent** — and this pack's `overworld.json` has
+    never set that key. So nothing in the existing config excludes
+    vanilla (or modded) desert structures from attempting to place; the
+    flat generator was never the blocker the plan worried it might be,
+    at least not via this mechanism.
+  - **The proposed "Superflat Structures" insurance mod doesn't
+    actually exist for this version** — checked three real candidates
+    (Superflat Structures, Superflat Features and Structures,
+    FlatEdit+), all confirmed Forge-1.20.1-absent (NeoForge/1.21+
+    only) directly against CurseForge's own files list. Compensated by
+    decompiling each structure mod actually installed below and
+    grepping for flat/superflat-specific disable logic in their own
+    code, rather than leaving this as an unverified risk — arguably
+    more certain than blind insurance would have been anyway.
+  - **YUNG's Better Desert Temples** (`3.0.3`) + **YUNG's API**
+    (`4.0.6`, its one hard dependency) — installed. Grepped the entire
+    jar for "flat"/"superflat" and found nothing; it doesn't touch
+    world generation type at all, only replaces vanilla's own Desert
+    Temple structure pieces.
+  - **Treasure2** (`4.0.5`) + **GottschCore** (`2.8.0`, its one hard
+    dependency) — installed. Its own `data/treasure2/worldgen/structure/`
+    JSONs were checked directly: `ruins/desert/ruins.json` and
+    `well/desert/wishing_well.json` both use `biomes:
+    "#treasure2:wells_desert"`, and that tag's own definition
+    (`tags/worldgen/biome/wells_desert.json`) explicitly includes
+    `"minecraft:desert"` (plus optional, gracefully-`required:false`
+    hooks for Biomes O' Plenty/BWG desert biomes if those ever get
+    installed). The general surface/dungeon structures
+    (`surface/general.json`, `dungeon/general.json`) use `biomes:
+    "#treasure2:terranean"`, which itself includes `#treasure2:wells_desert`
+    — so those are eligible here too, not just the desert-specific
+    ones. Real, confirmed treasure content for this specific world, not
+    a hopeful guess.
+  - **Abandoned Structures — checked, then deliberately NOT
+    installed.** The brief's own confidence in this pick was
+    conditional on the (turned-out-unavailable) Superflat Structures
+    insurance mod, so it got extra scrutiny here rather than being
+    installed on the original reasoning alone. Downloaded the real
+    1.20.1 Forge jar and checked its own structure definitions
+    directly: all 4 structures it adds (`gas_station`, `house1`,
+    `house2`, `tower`) have hardcoded biome lists —
+    plains/snowy_plains/sunflower_plains for the houses/tower,
+    badlands/savanna/birch_forest/cherry_grove/crimson_forest/
+    dark_forest/flower_forest/forest/old_growth_birch_forest/plains/taiga
+    for the gas station. **`desert` appears in none of them.** In a
+    world that's uniformly desert biome everywhere, none of this mod's
+    content could ever place, full stop, regardless of any other
+    setting. A confirmed, decisive disqualification found by checking
+    the mod's own data — not a gap left for "maybe later," a real
+    reason this specific mod doesn't fit this specific pack's world.
+  - Deliberately still not picked, unchanged from the earlier
+    exploration-mod research: **Repurposed Structures** (confirmed
+    flat-generator conflict) and **Lost Cities** (ships its own
+    world/chunk generator — the same risk category that already caused
+    real problems with Oculus/shaders and the earlier noise-based
+    Desert attempt).
+  - Structure loot stays a separate channel from the mob-drop loot
+    bags, per the pack's own standing "lootable buildings" decision —
+    not re-litigated here. Both installed mods promise better-than-
+    vanilla native loot by design, so no custom LootJS structure-loot
+    injection was needed as a first pass.
+  - **Not yet confirmed in-game at all** — this is a bigger unknown
+    than most recent additions: whether vanilla structures actually
+    place on this exact flat+desert combination has never been
+    observed, only reasoned from documentation. First real test should
+    specifically check for a desert temple, a desert well, and at least
+    one Treasure2 structure within a reasonable exploration radius of
+    spawn.
 
 - **Atmosphere & Wave Feel (2026-08-20)** — the `docs/IDEAS.md`
   "Atmosphere & Wave Feel" (locked) section, built out in full the same

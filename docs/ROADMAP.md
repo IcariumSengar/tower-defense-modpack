@@ -33,12 +33,17 @@
   2 nights survived (`pack/kubejs/server_scripts/base_expansion.js`). A real
   custom dimension and a hand-built `.nbt` starter structure are noted as
   the fancier version, revisit only if Superflat proves insufficient.
-  **Still Superflat as of 2026-08-29** — briefly switched to Single
-  Biome: Desert on 2026-08-20 for real terrain, reverted the same day
-  ("wonky, doesn't suit the gameplay" per direct playtest feedback);
-  `pack/kubejs/data/minecraft/dimension/overworld.json` forces vanilla's
-  flat generator (confirmed directly in the file, not assumed). Desert
-  research in `docs/IDEAS.md` is exploratory/parked, not current state.
+  **Still 100% flat as of 2026-08-30, but desert-biome now, not
+  plains** — briefly switched to Single Biome: Desert with a real
+  `noise` generator on 2026-08-20 for real terrain, reverted the same
+  day ("wonky, doesn't suit the gameplay" per direct playtest
+  feedback); `pack/kubejs/data/minecraft/dimension/overworld.json`
+  still forces vanilla's flat generator, unchanged, just with its biome
+  value swapped to `minecraft:desert` (2026-08-30) to make desert
+  structure mods relevant — see `docs/FEATURES.md`'s "Structure
+  generation" entry. Flatness and biome are independent settings; this
+  is a different, lower-risk combination than the earlier reverted
+  attempt, not a repeat of it.
 
 ## Mod list
 - See [docs/MODS.md](MODS.md) — tracked per-mod as they're picked.
@@ -82,7 +87,7 @@ confirmed in a real playthrough**. See `docs/PLAYTESTING.md` for the
 full test checklist; the bottleneck right now is playing it, not
 building more.
 
-CurseForge instance, Superflat world, on-demand wave triggering via the
+CurseForge instance, flat desert-biome world, on-demand wave triggering via the
 Wave Horn item. `night_scaling.js` (mob stat scaling) stays parked in
 `docs/deferred/` — the current escalation is coming from the
 hand-authored wave campaign (each wave adds a tougher mob type) plus
