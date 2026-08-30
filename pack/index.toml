@@ -85,8 +85,12 @@ file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 
 [[files]]
+file = "kubejs/data/kubejs/worldgen/noise_settings/flat_desert.json"
+hash = "0dfa6e4ec5c862b0e5cbc015b499740510134f3cb3a891bd9a046f8d33e8d619"
+
+[[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
-hash = "f226dbfe5241963aeaa3e9abf8a9279fc3a256e545d6c85469d53f9f2439c4af"
+hash = "faa81a11742877d31d27aba9de9179ff1077cca02500998d6f7ac67b8b10080c"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_border.js"

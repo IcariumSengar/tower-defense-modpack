@@ -23,6 +23,13 @@
     "erosion": 0.0,
     "depth": 0.0,
     "ridges": 0.0,
+    "initial_density_without_jaggedness": {
+      "type": "minecraft:y_clamped_gradient",
+      "from_y": -61,
+      "from_value": 1.0,
+      "to_y": -59,
+      "to_value": -1.0
+    },
     "final_density": {
       "type": "minecraft:y_clamped_gradient",
       "from_y": -61,
@@ -32,9 +39,19 @@
     },
     "vein_toggle": 0.0,
     "vein_ridged": 0.0,
-    "vein_gap": 0.0,
-    "preliminary_surface_level": -60
+    "vein_gap": 0.0
   },
+  "spawn_target": [
+    {
+      "continentalness": [-1.0, 1.0],
+      "depth": 0.0,
+      "erosion": [-1.0, 1.0],
+      "humidity": [-1.0, 1.0],
+      "offset": 0.0,
+      "temperature": [-1.0, 1.0],
+      "weirdness": [-1.0, 1.0]
+    }
+  ],
   "surface_rule": {
     "type": "minecraft:sequence",
     "sequence": [
