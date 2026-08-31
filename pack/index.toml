@@ -34,7 +34,7 @@ hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
 
 [[files]]
 file = "config/lithium.properties"
-hash = "fe35d7074c4cdf900275d6925650be35f05cc926b0ca80f0d37db32ec2bd62c4"
+hash = "4e3f33646330eb651b8c1679d49245e061b9d9a3eb4b09316a0f07837d8d968c"
 
 [[files]]
 file = "kubejs/README.md"
@@ -82,11 +82,11 @@ hash = "214373eba2f8296541141df6c85c7ef93222c8b02c5bae9a3737fac397c186fd"
 
 [[files]]
 file = "kubejs/data/dungeons_arise/worldgen/structure_set/major_structures.json"
-hash = "5d8a030ffb2e9eb0afe0ab5d6794fb8d1d2f170950e13b1657b962ecbed9a4bb"
+hash = "df8003de0fdcaf5153497d35910cf55700f973a20361d5d1af03763d44802542"
 
 [[files]]
 file = "kubejs/data/dungeons_arise/worldgen/structure_set/minor_structures.json"
-hash = "b4e3c1f7e5ba6f88e687f9b3a0a16be759dc8debb62f13ace816ed792c5a1a27"
+hash = "994b8b8dd1ad7f8afb1652abe0bc6a0de6298735f2ca3ff123a57dd559125420"
 
 [[files]]
 file = "kubejs/data/kubejs/curios/entities/player.json"
@@ -110,15 +110,15 @@ hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
 
 [[files]]
 file = "kubejs/data/structory_towers/worldgen/structure_set/rare_towers.json"
-hash = "4c7a34e275074a6a42533db5db973dc0b4aef9414356e67f5081e5fb65476e31"
+hash = "2b84900244840eebe93586b45b7c34b140284d327371fb0a645bb1749980faa3"
 
 [[files]]
 file = "kubejs/data/structory_towers/worldgen/structure_set/towers.json"
-hash = "95308f6401d65831730fa29b175a1bbca150bf2f3ae5b149b532932033b2e319"
+hash = "84c4d16aedbfaccc67ba834a4a422839c3eb5368645889dedd7b017d5568bd2b"
 
 [[files]]
 file = "kubejs/data/structory_towers/worldgen/structure_set/ultra_rare_towers.json"
-hash = "fec70bcf56c0bc7d67b70bf76c6734539b1378d54b437a818bad534f8e214215"
+hash = "20480b3e0e05d9ce3c6cb340cd89445e365c4d15f9cd9cd0d93ff3fb0ba87a3d"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
