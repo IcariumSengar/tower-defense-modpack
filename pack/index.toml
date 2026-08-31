@@ -77,16 +77,36 @@ file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/city.json"
+hash = "7265808db161a2895f8d8838afd6f29c6e851013c5e27b3eaeb7e06efb2a0349"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/fire_tower.json"
+hash = "89338d1e40c81c6fba3aa49079efc2604abc39a805793258eb17588556362a5d"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/gas_station.json"
+hash = "7a931fdfc05b7bb9bf28cd0edd997f90b07ddcd4ac2a763026f6aeb0746fda08"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/motel.json"
+hash = "83b028ab3c20594ccf6ca223cf0ab2bfa36ce9fb9d8681ff28ba7154c3cacb44"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/observatory.json"
+hash = "2707df577aa0d05d7e49ecc21f1b99921487e400565f6f4478f1fda125de3153"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/plane_crash.json"
+hash = "e5deb623c233c4395588370aec1c900884148c234a43a04802a93c25ac33563c"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/worldgen/structure_set/train.json"
+hash = "2232be28fe41cd16db23403c1e64eb1623a729b56a70f6daf14493f2a6414608"
+
+[[files]]
 file = "kubejs/data/curios/tags/items/necklace.json"
 hash = "214373eba2f8296541141df6c85c7ef93222c8b02c5bae9a3737fac397c186fd"
-
-[[files]]
-file = "kubejs/data/dungeons_arise/worldgen/structure_set/major_structures.json"
-hash = "df8003de0fdcaf5153497d35910cf55700f973a20361d5d1af03763d44802542"
-
-[[files]]
-file = "kubejs/data/dungeons_arise/worldgen/structure_set/minor_structures.json"
-hash = "994b8b8dd1ad7f8afb1652abe0bc6a0de6298735f2ca3ff123a57dd559125420"
 
 [[files]]
 file = "kubejs/data/kubejs/curios/entities/player.json"
@@ -109,16 +129,20 @@ file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
 hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
 
 [[files]]
-file = "kubejs/data/structory_towers/worldgen/structure_set/rare_towers.json"
-hash = "2b84900244840eebe93586b45b7c34b140284d327371fb0a645bb1749980faa3"
+file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/abandoned_brick_house.json"
+hash = "bbc49b27d3b6c1d029e45f148151887e1279a6eb1410e116f7b0d873a7b86793"
 
 [[files]]
-file = "kubejs/data/structory_towers/worldgen/structure_set/towers.json"
-hash = "84c4d16aedbfaccc67ba834a4a422839c3eb5368645889dedd7b017d5568bd2b"
+file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/red_mansion.json"
+hash = "b572b7ab678d39a3c2ca3896d98c590df8417d1e3363ea81ed87e7249097dc2f"
 
 [[files]]
-file = "kubejs/data/structory_towers/worldgen/structure_set/ultra_rare_towers.json"
-hash = "20480b3e0e05d9ce3c6cb340cd89445e365c4d15f9cd9cd0d93ff3fb0ba87a3d"
+file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/redhouse.json"
+hash = "deaf192f4120d251ff44f9084104c073c440aeecf9731eda024784ae1de677ef"
+
+[[files]]
+file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/yellowhouse.json"
+hash = "20da86a58e15e9129c3860d1428c73fa5ee4234ae317d1da8ae72103a4cbfbee"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
@@ -187,6 +211,16 @@ hash = "de8b9a892518ae074991fc374d383e11beb94066a1ee70e9212d6a12020ab1b8"
 [[files]]
 file = "mods/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+[[files]]
+file = "mods/abandoned-post-apocalyptic-buildings.pw.toml"
+hash = "1663acb65340088490f63c0288cedcbe5a63d5e3ec97d8dd8ace593703627820"
+metafile = true
+
+[[files]]
+file = "mods/abandoned-urban.pw.toml"
+hash = "a4ca16a107eca67cd789363e67b823e985f2732145a5a7199bc104d3832c45d6"
+metafile = true
 
 [[files]]
 file = "mods/appleskin.pw.toml"
@@ -324,11 +358,6 @@ hash = "9af1c3705dee1576d6691a814eece2b5f4f2548533f037fc9e848fc1eff3edcf"
 metafile = true
 
 [[files]]
-file = "mods/structory-towers.pw.toml"
-hash = "2d5fddc37293f33e8967e4687a69fb98126a8c4f79194547d1ab6e2941007910"
-metafile = true
-
-[[files]]
 file = "mods/tfth.pw.toml"
 hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
 metafile = true
@@ -341,11 +370,6 @@ metafile = true
 [[files]]
 file = "mods/treasure2.pw.toml"
 hash = "2ec1518dc1b6ee8384e8f01a0f3098afff589f88cf4c967633847997b61e8a29"
-metafile = true
-
-[[files]]
-file = "mods/when-dungeons-arise.pw.toml"
-hash = "de4b3b898a16ed4d615cfce18ac872e6a963605d52072d290b495cdff160a34c"
 metafile = true
 
 [[files]]

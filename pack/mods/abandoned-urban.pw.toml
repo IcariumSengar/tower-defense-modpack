@@ -1,0 +1,13 @@
+name = "Abandoned urban"
+filename = "abandoned_urban-1.1.0-forge-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "de01049776e9f6de6894f6739086f107bd7f9e9b"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5297465
+project-id = 1003507

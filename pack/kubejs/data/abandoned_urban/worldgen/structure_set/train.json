@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "abandoned_urban:train",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 24,
+    "separation": 12,
+    "salt": 2064486891
+  }
+}

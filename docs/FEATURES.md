@@ -424,6 +424,90 @@ below for why the floor-depth question came up at all).
 - Same caveats as every world-gen rebuild this pack has done: needs a
   brand-new world to actually test, doesn't retroactively affect
   already-generated chunks.
+- **Crashed on the user's actual first world creation despite a clean
+  sandbox pre-flight — hit 3 times total, only partially resolved,
+  genuinely not fully closed.** Real sequence, not simplified after the
+  fact:
+  1. First crash: sandbox test used a minimal mod set (KubeJS/
+     Architectury/Rhino + the two new structure mods only, kept cheap on
+     purpose) — **Radium wasn't in it**. Radium's own `WorldGenRegion`
+     optimization mixin threw a `NullPointerException` ("No chunk exists
+     at [x,z]") when a jigsaw structure's block-processing rule reached
+     into a neighboring chunk that hadn't generated yet — something the
+     old single-desert setup apparently never produced a structure large
+     enough to trigger, but When Dungeons Arise's and Structory's bigger
+     structures did. Fixed via `mixin.gen.chunk_region=false` in
+     `lithium.properties`, the exact key confirmed three independent
+     ways, re-verified with Radium actually back in the sandbox.
+  2. **Gap caught afterward**: a second Radium mixin fix
+     (`mixin.util.chunk_access`) had only ever been applied directly to
+     the live instance during live debugging — never synced back to the
+     tracked `pack/config/lithium.properties`. Fixed so they match.
+     **Standing lesson**: a fix applied directly to the live instance
+     under crash-fixing time pressure still needs the sync-back step to
+     the tracked repo, and it's exactly the step most likely to get
+     skipped when moving fast on an active crash.
+  3. **Third crash, after both Radium fixes were in**: got further (88%
+     vs. 17% world-gen progress — the fixes were real, not ineffective,
+     just not the whole story) before hitting the identical "chunk out
+     of bound" exception again, this time from a stack frame with **no
+     Radium mixin at all** — pure vanilla `LevelReader` code. Checked via
+     real GitHub issue search, not guessed: this is a known, real,
+     cross-mod **race condition in vanilla/Forge's own multi-threaded
+     jigsaw structure placement** — Ice and Fire and Trees You'll Grow
+     both have open issues with the identical message, historically only
+     fixed by those mods' own authors bounding their structure logic.
+     Neither When Dungeons Arise nor Structory has a newer release
+     picking up an equivalent fix. **No config toggle exists for this
+     one** — it isn't Radium's code throwing it. First mitigation
+     attempt: backed off When Dungeons Arise's and Structory's
+     structure_set spacing (roughly halfway between the mods' own sparse
+     defaults and the first aggressive retune) on the theory that tight
+     spacing near spawn means more large structures competing for
+     generation simultaneously — a reasonable-looking lead given the
+     crashes started right after installing those two mods, but wrong,
+     see below.
+  4. **Fourth crash — the actual culprit, found by reading the crash
+     report properly this time.** The crash report's own Details/Feature
+     section names the exact structure involved (`treasure2:dungeon/general`)
+     — not checked closely on the first three occurrences, which is why
+     mitigation #3 targeted the wrong mods. It was **Treasure2's own
+     structure**, present in this pack since before either new mod
+     existed. Real gap: mitigation #3 never touched Treasure2's own
+     `terranean_treasures_set`, still sitting at 6/3 chunk spacing from
+     the very first density-reachability fix hours earlier — the
+     tightest spacing of anything in the whole world-gen setup, and
+     `dungeon/general` is weight 60 of that set's ~124 total, making it
+     also the single most frequently-selected structure of all of them.
+     Tightest spacing plus highest pick frequency of anything in the
+     pack — the real prime suspect all along. The underlying mechanism
+     is unchanged (same vanilla race condition, confirmed, not a
+     different bug) — it's triggered by whichever structure_set is
+     densest, not specifically the newly-added content. Fixed by
+     applying the same halfway-spacing logic to Treasure2's own sets too:
+     `terranean_treasures_set` 6/3→15/8, `wishing_well` 10/5→22/12.
+  - **Standing lesson from the first fix**: a sandbox test needs the
+    full performance/optimization stack already in the pack (Radium,
+    Embeddium, FerriteCore, ModernFix, Clumps, Entity Culling), not just
+    whatever's being directly evaluated — a minimal test proves less
+    than it looks like it proves, since the thing that breaks is often
+    an interaction, not either mod in isolation.
+  - **Standing lesson from the fourth crash**: a crash report's own
+    Details/Feature section names the actual structure/mod involved —
+    read that line first, before speculating about which recently-added
+    thing is responsible. "The new mods must be it" was a reasonable-
+    looking lead given the timing, and it cost a full round of
+    wrong-direction investigation.
+  - **Honest current status, not overstated**: all four structure_sets
+    in this world (WDA, Structory, and both Treasure2 sets) are now at
+    comparable, deliberately-loosened spacing, and the actual highest-
+    frequency, tightest-spaced offender is fixed directly rather than
+    guessed around — meaningfully higher confidence than the third-crash
+    mitigation. Still not an absolute guarantee: the underlying mechanism
+    is a genuine probabilistic timing race, not something any config
+    value can fully close off. If it recurs again, the next step is
+    checking the crash report's named structure first, not assuming it's
+    whatever was most recently added.
 
 **Structure mod picks, 2026-08-31 — added for variety, not desert-
 specific**: researched with the same rigor as the earlier mod
@@ -431,27 +515,84 @@ evaluations (source-verified where public, flagged honestly where not),
 after ruling out Structory: Towers as *not* redundant once considered
 alongside these three (kept — see below) and re-evaluating Abandoned
 Structures now that "excludes desert" is no longer disqualifying:
-- **When Dungeons Arise — installed 2026-08-31** (Modrinth, author
-  `aureljz` — confirmed the same person/org as the verified GitHub
-  source `Aureljz/WhenDungeonsArise-Forge-main` before installing, same
-  care as the branch-mismatch check elsewhere in this project. Real
-  version: `DungeonsArise-1.20.x-2.1.58-release.jar`, newer than the
-  2.1.57 originally cited — 2.1.57 no longer listed for 1.20.1 on
-  Modrinth, 2.1.58 is the current real file). 52 structures across 2
-  structure_sets (`major_structures`: 31 structures, `minor_structures`:
-  6). No mod dependencies beyond Forge itself. Default spacing (60/50
-  chunks major, 35/25 minor — 800-1600 blocks between attempts) was
-  just as mismatched to this world's bordered play area as every other
-  structure mod checked so far — retuned to 12/6 and 8/4 respectively,
-  same treatment as the earlier Treasure2/vanilla density fix further up
-  this section. See "Floor depth" above for the real `.nbt`-template
-  depth check this mod's own pieces drove.
-- **Structory: Towers — installed 2026-08-31** (Modrinth, real project,
-  confirmed Forge 1.20.1, v1.0.7). ~20 towers across 5 structure_sets
-  (2 Nether/End-only, irrelevant here). Same density mismatch as WDA —
-  `towers`/`rare_towers`/`ultra_rare_towers` retuned from 40-80/10-42
-  chunk spacing down to 10-16/4-8. Real overlap risk with WDA's own
-  towers is unresolved on paper as noted, genuine playtest question.
+- **When Dungeons Arise — installed 2026-08-31, REMOVED 2026-08-31**
+  after real playtest feedback: "the structures just don't look right
+  for the theme... less fantasy and nothing floating." WDA's own content
+  (floating castles, airships, blimps, mage/thornborn towers, shogun
+  mansions) is fundamentally high-fantasy — a real aesthetic mismatch
+  against this pack's Fallout-wasteland identity, not a bug. Not wasted
+  effort: the crash-debugging sequence above (Radium mixin, live-config
+  sync gap, the vanilla jigsaw race condition, the crash-report-Details
+  lesson) are all real, reusable lessons regardless of whether this
+  specific mod stays installed. (Modrinth, author `aureljz` — confirmed
+  the same person/org as the verified GitHub source
+  `Aureljz/WhenDungeonsArise-Forge-main` before installing, same care as
+  the branch-mismatch check elsewhere in this project. Real version:
+  `DungeonsArise-1.20.x-2.1.58-release.jar`, newer than the 2.1.57
+  originally cited. 52 structures across 2 structure_sets. Default
+  spacing (60/50 chunks major, 35/25 minor) retuned to 12/6 and 8/4.)
+- **Structory: Towers — installed 2026-08-31, REMOVED 2026-08-31** —
+  same aesthetic-mismatch call as WDA, its own content is also generic
+  fantasy towers. (Modrinth, confirmed Forge 1.20.1, v1.0.7, ~20 towers
+  across 5 structure_sets, spacing retuned to 10-16/4-8.)
+- **Apocalypse structures: Abandoned city buildings — installed
+  2026-08-31** (CurseForge, author That1LilGuy,
+  `postapocalypse_structures-1.0.2-forge-1.20.1.jar`, 881K downloads).
+  4 aboveground buildings (Yellow House, Red House, Abandoned Brick
+  Building, Red Mansion) — confirmed grounded, no floating, no fantasy,
+  real vanilla-material loot (cobwebs, rotten flesh, potatoes, iron —
+  matches this pack's own vanilla-only loot philosophy). **No mandatory
+  dependencies** — confirmed directly, Berezka's addons are explicitly
+  optional here, unlike the mod dropped below.
+- **Abandoned Urban — installed 2026-08-31** (CurseForge,
+  `abandoned_urban-1.1.0-forge-1.20.1.jar`, author KevinMods — a
+  genuinely different mod/author from the Modrinth listing the same
+  search surfaced first, "Abandoned Urban remaster" by berezka; verified
+  the real CurseForge page directly rather than trust the first search
+  hit, same lesson as the Quest_play mixup earlier). 7 structures,
+  author's own description: "modern style" that "fit well with
+  post-apocalyptic mod packs." **Zero dependencies**, confirmed both on
+  its CurseForge relations page and directly in its `mods.toml`. **Real
+  geometry check, not trusted from marketing copy**: all 7 use plain
+  `minecraft:jigsaw` (no custom processor class — same low-risk category
+  as Treasure2/WDA, not the custom-type risk that blocked the earlier
+  Abandoned Structures pick) with `terrain_adaptation: beard_thin` or
+  `beard_box` and `step: surface_structures` — every one grounded via
+  heightmap projection, none dig underground at all. Spot-checked the
+  largest piece's real `.nbt` size tag directly (`observatory.nbt`,
+  37×30×47) — a real building, not a floating structure.
+- **Both new mods' default spacing checked and retuned moderately**,
+  not aggressively — direct lesson from the crash sequence above.
+  Defaults ranged 50-150 chunks (way past this world's border, same
+  pattern as every structure mod checked in this pack). Set all 11
+  structure_sets (4 from Abandoned city buildings + 7 from Abandoned
+  Urban) to a uniform 24/12 spacing/separation — denser than stock for
+  reachability, but deliberately conservative given this now means 13
+  structure_sets active simultaneously counting Treasure2's own
+  (already-retuned) sets, comparable to the 7-set situation that
+  triggered the vanilla race condition before.
+- **Floor depth**: left at 65 blocks as recommended — Treasure2's own
+  underground diggers still benefit, no cost to keeping it raised even
+  though WDA (the mod that originally drove the number) is gone.
+- **Biome curation, rechecked with real data, no change needed**: 4 of
+  Abandoned city buildings' structures gate on `#forge:is_plains`
+  (confirmed real tag content: plains, snowy_plains, meadow,
+  sunflower_plains) — the existing 7-biome set already includes 3 of
+  those 4. Abandoned Urban's 7 structures each have their own biome list
+  (`city`: plains/desert; `gas_station`/`motel`/`train`: broad,
+  meaningful overlap; `observatory`: very broad, guaranteed overlap);
+  only `fire_tower` has thin overlap (its list is forest/taiga-family,
+  only `meadow` and `savanna_plateau` from the current set match) but
+  still non-zero. Left the biome set unchanged rather than expanding it
+  for one thin-overlap structure — matches the pack's existing
+  arid/open visual identity, which expanding into forest/taiga biomes
+  would dilute.
+- **Verified in a real sandboxed boot with the actual relevant mod set**
+  this time, not a minimal one — direct lesson from missing Radium in
+  the first WDA/Structory pre-flight test. Included Radium (with both
+  chunk-access mixins disabled), Treasure2, GottschCore, plus both new
+  mods and their retuned spacing. Clean boot, no crash patterns, no
+  fatal errors in a full log sweep.
 - **Abandoned Structures — BLOCKED, not installed.** Real, previously-
   unknown finding: decompiling the actual jar (only 89KB, a single
   `Abandoned_structures.class` — essentially no custom Java at all)
@@ -472,13 +613,17 @@ Structures now that "excludes desert" is no longer disqualifying:
   earlier version cited `abandoned_structures-1.2.0.jar`; the actual
   real file found is `abandoned_structures-1.0.0.jar` — worth
   double-checking which CurseForge listing that citation came from.
-  **Held pending a decision**: either identify the exact right
-  "Berezka API for X" variant (if one exists for this specific mod, not
-  found so far) or drop this pick — not guessing among 12 similarly-
-  named listings, same discipline that caught the Pure Suffering branch
-  mismatch and the Quest_play/berezka naming collision above.
-- Treasure2 stays exactly as it is — this doesn't touch its config,
-  only adds alongside it.
+  **Decided 2026-08-31: dropped, not pursued further.** Independently
+  re-ran the same search before this was decided — same result, no
+  exact-match "Berezka API for [this mod]" listing exists. Not worth
+  installing an unverified mandatory dependency blind, especially once
+  Apocalypse structures/Abandoned Urban turned out to need no dependency
+  identification at all. Same discipline that caught the Pure Suffering
+  branch mismatch and the Quest_play/berezka naming collision above —
+  decline to guess when a real "which exact one is correct" ambiguity
+  remains unresolved.
+- Treasure2 stays exactly as it is throughout all of this — never
+  touched, only ever added alongside.
 
 **Base expansion into rooms/corridors** — *planned, not built*. Goal:
 gather materials, activate something, and a new room/corridor gets

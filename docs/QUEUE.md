@@ -23,24 +23,31 @@ world-gen/structure-variety brief just sent)*
 
 ## In progress (already sent, not yet confirmed built)
 
-- **Drop desert-only, structure-mod variety pass** — built 2026-08-31
-  (see FEATURES.md's "World type" section for full detail). Biome
-  source `fixed` desert → curated `multi_noise` (7 biomes, picked from
-  real structure-tag frequency data across WDA/Structory/Treasure2, not
-  guessed). Floor depth raised from ~4 to 65 blocks, sized against the
-  real `.nbt` size of WDA's own underground structure pieces (32 blocks
-  each, confirmed by reading the actual template files). **When
-  Dungeons Arise** and **Structory: Towers** both installed and their
-  structure_set spacing retuned for this world's bordered play area.
-  Verified in a real sandboxed dedicated-server boot (not just JSON
-  validation) before shipping — clean boot, two pre-existing non-fatal
-  WDA issues found and noted (not caused by this pack). **Abandoned
-  Structures BLOCKED, not installed** — real, previously-unknown
-  mandatory dependency on a separate "berezka_api" mod that couldn't be
-  confidently identified among ~12 similarly-named "Berezka API for X"
-  listings; flagged back rather than guessed. Treasure2 untouched.
-  Needs a brand-new world to test, same as every world-gen change so
-  far. Not yet confirmed in-game.
+- **Drop desert-only, world-gen mechanics** — built 2026-08-31,
+  **user-confirmed fixed in-game** (see FEATURES.md's "World type"
+  section for the full 4-crash saga and its lessons). Biome source
+  `fixed` desert → curated `multi_noise` (7 biomes); floor depth raised
+  from ~4 to 65 blocks; both new structure mods' and Treasure2's own
+  spacing retuned. The world-gen mechanics themselves are done — see the
+  next item for the follow-on aesthetic swap this same playtest
+  surfaced.
+- **Structure mod aesthetic swap** — built 2026-08-31 (see FEATURES.md's
+  "Structure mod picks" for full detail). When Dungeons Arise and
+  Structory: Towers removed, spacing overrides cleaned up. **Apocalypse
+  structures: Abandoned city buildings** and **Abandoned Urban**
+  installed — both real-verified (correct author/mod confirmed on
+  CurseForge directly after Modrinth's search surfaced a different,
+  wrong "Abandoned Urban" by a different author), both genuinely
+  dependency-free, both confirmed grounded via real `.nbt`/structure-def
+  inspection (no custom processor classes, no underground digging).
+  Spacing retuned moderately (uniform 24/12 across all 11 structure_sets
+  from both mods) rather than aggressively, per the race-condition
+  lesson. Floor depth (65 blocks) and the 7-biome curation both left
+  unchanged — rechecked with real tag data, still good coverage for the
+  new mods, no reason to touch either. Verified in a real sandboxed boot
+  with the actual relevant mod set this time (Radium + Treasure2
+  included, not a minimal set) — clean, no crash patterns. Not yet
+  confirmed in-game.
 
 - **Amulet pedestal marker fix** — built 2026-08-31: root cause found
   (armor stand held items render at hand/shoulder height, not feet, so
