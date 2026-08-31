@@ -122,11 +122,11 @@ hash = "20480b3e0e05d9ce3c6cb340cd89445e365c4d15f9cd9cd0d93ff3fb0ba87a3d"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
-hash = "94722c98df652885ce44d94234e8a130c3b4dd935c4334b95f1ad2e3ee0ad7ca"
+hash = "0d703e716943f16fa4cde9da3854bc37fa325408e35d78d1f382594ced377e64"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/wishing_well_set.json"
-hash = "ac6d24490143d41e0e45a1203a4b38b277bbd0a333ab1d5d8a4f18136309cd5b"
+hash = "d4d8a99bb8ff08602ed80fb229f748504f53c3aa0d427160f4686742d14a8e02"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_border.js"
