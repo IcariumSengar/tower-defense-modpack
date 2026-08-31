@@ -461,6 +461,79 @@ generate on approach the normal way, same as any vanilla exploration).
   what just happened with a different structure mod on this same flat
   generator.
 
+**Structure density fix, 2026-08-31, direct request ("increase the
+generation of structures").** World creation now succeeds (see "World
+type" section), which surfaced a real problem the earlier planning
+never checked: default structure spacing is tuned for an infinite
+vanilla world, not this pack's bordered one. `worldborder` tops out at
+270 blocks (~17 chunks) even at wave 8 (see "Base expansion"), but the
+mods' own default `random_spread` placement averages **400-800 blocks**
+between attempts (vanilla desert pyramids: 32-chunk spacing; Treasure2
+terranean set: 25 chunks; Treasure2 wishing wells: 50 chunks) — under
+those defaults, a player could plausibly finish the entire 8-wave
+campaign without ever generating a single structure inside the
+reachable area. Fixed by overriding all three `structure_set` registry
+files via the same KubeJS-datapack-overlay mechanism already proven
+working for the dimension override (`kubejs/data/<namespace>/worldgen/
+structure_set/<id>.json`, same technique, different registry):
+  - `minecraft:desert_pyramids` — spacing 32→8, separation 8→4.
+  - `treasure2:terranean_treasures_set` (dungeon/general, both ruins
+    variants, surface/general, wither_tree) — spacing 25→6, separation
+    15→3.
+  - `treasure2:wishing_well_set` — spacing 50→10, separation 35→5.
+  Salts left unchanged, only spacing/separation touched. Aquatic
+  ruins/wells deliberately left alone — their structure_set requires an
+  aquatic biome that can never exist under this world's `fixed:
+  minecraft:desert` biome source, so tightening its spacing would
+  generate zero additional visible content regardless.
+- **Confirmed which entries actually contribute vs. silently waste
+  placement attempts** (a `random_spread` set rolls ONE weighted
+  structure per grid cell — if that specific structure's own biome
+  check fails, nothing places there, it does NOT fall through to
+  another entry): checked every structure's own `biomes` field and the
+  Treasure2 biome tags they resolve to. `#treasure2:terranean` resolves
+  to `#treasure2:wells_general` + `#treasure2:wells_desert`, and
+  `wells_desert` lists `minecraft:desert` directly — so `dungeon/
+  general`, both `ruins` variants, `surface/general`, and `wither_tree`
+  can all actually place here. `surface/temperate` (weight 5 of 124)
+  requires forest/plains-family biomes and can never place in an
+  all-desert world — a real, permanent ~4% wasted-roll rate on that set
+  that the density fix doesn't address (not worth a separate override
+  just to redistribute one entry's weight). The `wishing_well_set` is
+  worse: 3 of its 4 equally-weighted entries (`well/wishing_well`'s
+  `wells_general` tag, plus the forest/jungle variants) can never place
+  in all-desert, only `well/desert/wishing_well` can — meaning ~75% of
+  that set's attempts were always going to be wasted, on top of the
+  original 50-chunk spacing. This is the real reason the wishing well's
+  spacing was cut proportionally more (5x) than the terranean set's
+  (~4x) in the fix above — compensating for that wasted-roll rate, not
+  an arbitrary choice.
+- **Chest loot confirmed real, not placeholder** — checked directly,
+  not assumed. Vanilla `desert_pyramid`'s chest loot table
+  (`data/minecraft/loot_tables/chests/desert_pyramid.json`, untouched
+  by this pack) is standard vanilla: diamonds, gold, emeralds,
+  enchanted golden apples, the desert armor trim template. Treasure2's
+  chests use real per-rarity `minecraft:chest`-type loot tables
+  (`common` through `mythical`) each rolling multiple real sub-pools
+  (treasure/items/armor/food/tools/potions) — e.g. the `common` chest
+  alone rolls 2 treasure entries (Treasure2's own keys/lockpicks, its
+  locked-chest mechanic) + 3-5 items + 1-2 armor + 1-3 food + 1-2 tools,
+  all real items (iron ingots, leather, arrows, etc.), not stubs.
+  Exactly which rarity a given structure's chest rolls is Treasure2's
+  own Java-side logic (`RarityLootTableAssociationRegistry`, not a
+  simple JSON this pack overrides), not verified further — but every
+  rarity tier's loot content itself is confirmed real.
+- **Not yet confirmed in-game** — the density fix is real-data-verified
+  the same way the world-type rebuild was (checked spacing/biome-tag
+  math directly, not assumed), but hasn't been seen in a live world
+  yet. Same caveat as every worldgen change this pack has made:
+  **structure placement is decided at chunk-generation time**, so this
+  only affects chunks not yet generated — an already-explored area
+  keeps whatever the old spacing produced (or didn't) there; new
+  structures at the new density only appear in newly generated chunks,
+  which in practice means most of the map as the border keeps
+  expanding into unexplored territory.
+
 **Structure variety after the YUNG's removal — researched, held, not
 queued.** With YUNG's gone and Abandoned Structures never installed,
 the only structure content left is Treasure2 (unconfirmed) plus
