@@ -38,9 +38,31 @@
 // Marker:1b removes the armor stand's own hitbox/body model entirely,
 // but held items still render regardless — a standard, well-documented
 // "floating item" trick (distinct from just Invisible:1b, which keeps
-// a hitbox). Spawn height (y+1) sits it just above the shrine's raised
-// dais (model tops out at 11/16 of a block), reading as genuinely
-// hovering rather than resting on the surface.
+// a hitbox).
+//
+// Re-offset 2026-08-31, real bug found in playtesting: the original y+1
+// spawn height was wrong — a held item on an armor stand doesn't render
+// at the entity's feet, it renders up near hand/shoulder height (a
+// standing armor stand is ~1.975 blocks tall, hand position sits well
+// above half that), so a feet-at-dais-top spawn put the actual visible
+// amulet floating a full extra body-height above the shrine, nowhere
+// near the ~11/16-tall dais it's meant to sit on. Two changes: added
+// `Small:1b` (a real vanilla armor stand tag - halves the whole model
+// including the hand's height above the feet, not just its visual
+// size), and dropped the feet spawn height to just above the dais
+// surface instead of a full block up, so the now-smaller hand offset
+// lands the item close to the dais rather than far above it. Exact
+// final height is a reasoned estimate, not pixel-measured (no GUI
+// access to check this by eye) - correct on the next real playtest if
+// it still reads wrong, same as the original y+1 guess needed to be.
+//
+// Bob added same day (direct request - "doesn't hover/bob"): the
+// marker's base position is stored on the player
+// (td_amuletMarkerBaseX/Y/Z) when placed, and a throttled
+// PlayerEvents.tick handler below re-teleports it through a small sine
+// wave around that base Y - same "store state on the player, drive it
+// from a tick handler" pattern already used throughout this pack
+// (mob_aggro.js, wave_status.js), no new mechanism introduced.
 //
 // Not yet confirmed in-game.
 
@@ -55,11 +77,21 @@ ServerEvents.recipes((event) => {
   })
 })
 
+// Bob amplitude/period - gentle by design, a subtle float rather than an
+// obvious bounce. Throttled to every 2 ticks (10x/second) - smooth
+// enough for a slow sine wave, cheaper than every tick.
+var BOB_AMPLITUDE = 0.08
+var BOB_PERIOD_TICKS = 60
+
 BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   var player = event.player
   var data = player.persistentData
   var x = event.block.getX() + 0.5
-  var y = event.block.getY() + 1
+  // Feet spawn height: just above the dais surface (top at 11/16 of a
+  // block - see amulet_pedestal.json's model), not a full block up. The
+  // Small marker's hand-held item renders somewhat above this, landing
+  // near the dais rather than a full body-height above it.
+  var y = event.block.getY() + 0.7
   var z = event.block.getZ() + 0.5
 
   if (data.getBoolean('td_amuletOnPedestal')) {
@@ -102,6 +134,37 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   }
 
   data.putBoolean('td_amuletOnPedestal', true)
-  player.getServer().runCommandSilent(`summon minecraft:armor_stand ${x} ${y} ${z} {Invisible:1b,NoGravity:1b,Marker:1b,HandItems:[{id:"kubejs:amulet",Count:1b},{}],Tags:["td_amulet_marker"]}`)
+  // Base position stored for the bob tick handler below to orbit around -
+  // block-anchored, not entity-read-back, so the bob is stable even
+  // though the marker itself moves every couple ticks.
+  data.putDouble('td_amuletMarkerBaseX', x)
+  data.putDouble('td_amuletMarkerBaseY', y)
+  data.putDouble('td_amuletMarkerBaseZ', z)
+  player.getServer().runCommandSilent(`summon minecraft:armor_stand ${x} ${y} ${z} {Invisible:1b,NoGravity:1b,Marker:1b,Small:1b,HandItems:[{id:"kubejs:amulet",Count:1b},{}],Tags:["td_amulet_marker"]}`)
   player.tell('§d[Amulet] §fYou set the pendant on the stand. The line at the border loosens - everything out there stops watching you, and starts watching this instead.')
+})
+
+// Gentle floating bob while the amulet sits on its pedestal - direct
+// request ("doesn't hover/bob"). Re-teleports the marker each throttled
+// tick to its stored base position plus a small sine-wave Y offset,
+// rather than nudging its current position incrementally - stateless
+// per tick (only depends on the stored base + the clock), so it can't
+// drift or accumulate error over a long play session.
+PlayerEvents.tick((event) => {
+  var player = event.entity
+  var data = player.persistentData
+  if (!data.getBoolean('td_amuletOnPedestal')) return
+
+  var level = player.getLevel()
+  var currentTick = level.getTime()
+  if (currentTick % 2 !== 0) return
+
+  var baseX = data.getDouble('td_amuletMarkerBaseX')
+  var baseY = data.getDouble('td_amuletMarkerBaseY')
+  var baseZ = data.getDouble('td_amuletMarkerBaseZ')
+  var bobY = baseY + BOB_AMPLITUDE * Math.sin((2 * Math.PI * currentTick) / BOB_PERIOD_TICKS)
+
+  player.getServer().runCommandSilent(
+    `execute as @e[type=minecraft:armor_stand,tag=td_amulet_marker,limit=1] run tp @s ${baseX} ${bobY} ${baseZ}`
+  )
 })

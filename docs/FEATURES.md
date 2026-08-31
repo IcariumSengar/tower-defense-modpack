@@ -101,72 +101,108 @@ the existing per-mob summon NBT, not a global `EntityEvents.spawned`
 hook keyed to real day/night count) — keeping `wave_spawner.js`'s own
 spawn-position system untouched either way.
 
-**Endless phase scaling (waves 9+) — planned, designed 2026-08-30, not
-yet built.** Direct request: real, indefinite escalation in count,
-toughness, and speed so a player who reaches "a huge number of waves"
-is always hard-pressed, not coasting on wave 8's composition forever.
-Today, `wave_spawner.js`'s `WAVES` array only defines 8 hand-authored
-waves; `Math.min(waveNumber, WAVES.length)` silently repeats wave 8's
-exact composition for every wave after that — no scaling exists past
-the designed campaign at all. Waves 1-8 stay exactly as they are (that's
-the narrative-driven tutorial arc, not something to touch); this only
-adds a procedural phase once `waveNumber > FINAL_WAVE` (8).
+**Endless phase scaling (waves 9+) — planned, redesigned 2026-08-31
+around Undead Nights, not yet built.** Direct request: real, indefinite
+escalation in count, toughness, and speed so a player who reaches "a
+huge number of waves" is always hard-pressed, not coasting on wave 8's
+composition forever. Today, `wave_spawner.js`'s `WAVES` array only
+defines 8 hand-authored waves; `Math.min(waveNumber, WAVES.length)`
+silently repeats wave 8's exact composition for every wave after that —
+no scaling exists past the designed campaign at all. Waves 1-8 stay
+exactly as they are (that's the narrative-driven tutorial arc, not
+something to touch); this only adds a procedural phase once
+`waveNumber > FINAL_WAVE` (8).
 
-Three separate formulas, one per axis, `endlessWave = waveNumber - FINAL_WAVE`
-(1, 2, 3, ... starting at real wave 9) — deliberately split rather than
-one combined "difficulty" number, so each axis can be retuned
-independently after playtesting, same as every other formula in this
-codebase (`staggerGapForWave`, the worldborder growth curve):
+**Before landing on the design below, checked whether a mod already does
+this rather than building it blind** (same standing principle that ruled
+out Pure Suffering above): DeceasedCraft (the user's own other CurseForge
+instance) was ruled out fast — it's a whole separate modpack, not a
+droppable mod, real-playtime-only triggering (waves at day 15/30/45...),
+no documented spawn-positioning info at all. **Undead Nights**
+(MC-Mods-Pete/UndeadNights, `1.20.1-Forge` branch) checked out much
+better — read its actual source, then had the build session run a real
+sandboxed test (standalone dedicated server + RCON + a mineflayer bot,
+never touching the live save):
 
-- **Mob count — capped, this is the performance-safety axis.**
-  `totalMobs(w) = min(20, 6 + floor(w / 2))` — +1 mob every 2 endless
-  waves on top of wave 8's baseline of 6, hard-capped at 20 (reached
-  around endless wave 28, real wave 36). Count is the one axis that
-  actually costs server tick time (this is exactly the load Radium/
-  Entity Culling/Clumps were justified for in MODS.md), so it's the only
-  one that stops growing — toughness carries the escalation from there.
-- **Toughness — uncapped, this is the "always hard-pressed" axis.**
-  `healthMult(w) = 1 + 0.08w`, `damageMult(w) = 1 + 0.05w`. No ceiling —
-  by design, since capping this would put a ceiling on how hard-pressed
-  the player can ever be, which is the entire point of the request. At
-  endless wave 10 (real wave 19): health ×1.8, damage ×1.5. At endless
-  wave 30 (real wave 39): health ×3.4, damage ×2.5.
-- **Speed — capped, unlike toughness.** `speedMult(w) = 1 + min(0.5, 0.02w)`,
-  capping at +50% around endless wave 25. Unlike raw stat bloat, movement
-  speed compounding past a point breaks kiting/pathfinding balance rather
-  than just taking longer to kill something, so this one gets a ceiling
-  toughness doesn't.
-- **Roster mix — reuses the existing pool, no new mods.** Split each
-  wave's mob count between a trash pool (zombie/skeleton/spider/
-  wither_skeleton) and an elite pool (ravager, flesh_suffer,
-  bruteplaquecreatureone, flesh_hunter_two, plaquethreelegcreature,
-  flesh_boomer — all already in the roster from waves 5-8).
-  `eliteFraction(w) = min(0.6, 0.05w)` shifts the mix toward elites as w
-  grows, capped at 60% so there's always some low-effort chaff for
-  contrast, never a pure elite swarm. Every 5th endless wave forces one
-  extra ravager into the roll on top, as a recognizable spike layered on
-  the smooth ramp (same "boss wave" beat already established for the
-  designed campaign's ravager waves).
+- `/undeadnights difficulty set <n>` (with `auto_progression` disabled)
+  is a fully command-driven, wave-number-mappable difficulty index — no
+  real-day dependency. **Confirmed live**, no reload needed.
+- Each difficulty level is a hand-editable JSON entry
+  (`config/undeadnights_difficulty_config.json`) carrying its own
+  `healthAttributeScaleFactor`/`damageAttributeScaleFactor`/
+  `speedAttributeScaleFactor`/`armorAttributeScaleFactor`/
+  `hordeSizeScaleFactor` — exactly the count/toughness/speed axis set
+  this feature needs, as data instead of hand-rolled NBT.
+- Horde composition (`config/undeadnights_horde_mobs_config.json`) is
+  fully open — **confirmed** with a real test spawn producing actual
+  `minecraft:zombie` + `the_flesh_that_hates:flesh_human` entities, no
+  forced use of the mod's own 3 bundled zombie variants.
+- **The one real blocker**: `SpawnLocationFinder` spawns hordes in a
+  ring around the *player* at a `distanceMin`/`distanceMax` band — and
+  that value lives in a `SERVER`-type Forge config
+  (`world/serverconfig/undeadnights-server.toml`), which **only loads at
+  world start and never hot-reloads**. Confirmed by direct measurement
+  (spawned a horde at the stock 70/75 band, live-edited the file to
+  15/20 while the server kept running, respawned twice — still ~70/65
+  blocks out; only a full server restart picked up the new value). So
+  "rewrite the distance band before every wave" doesn't work — the band
+  has to be a single fixed choice for the life of a world.
+- Decided call: set `distanceMax` near its config ceiling (256) once, in
+  the pack's shipped config override, rather than trying to track the
+  border live. Our worldborder formula (`20 + 5·floor((waveNumber-1)/2)`)
+  doesn't pass 256 until roughly wave 95 — comfortably past any
+  realistic playthrough — so this holds up as "always beyond the border"
+  for the practical lifetime of a campaign, at the cost of also spawning
+  wave-1 hordes unusually far out (an accepted tradeoff, not hidden: the
+  first horde reads as more distant/ominous than before, not wrong, just
+  different from the hand-tuned 6-14 block band the designed campaign
+  uses). The ring-vs-square-border "feel" itself is still unverified in
+  practice — the sandboxed test had no visual/GUI capability to judge it,
+  only coordinate data — first real playtest is the actual check.
 
-**Mechanism**: generalizes the per-mob NBT Attributes override already
-proven on the ravager nerf (`Attributes:[{Name:"generic.attack_damage",
-Base:8},{Name:"generic.max_health",Base:60}]` in `wave_spawner.js`'s
-summon call) to every mob type in the endless phase, via a small
-`BASE_STATS` table keyed by mob type — vanilla defaults for the base
-four (zombie 20/3, skeleton 20/2, spider 16/2, wither_skeleton 20/8) and
-the TFTH values already reverse-engineered from `TFTH.toml` and recorded
-in `wave_spawner.js`'s own comments for the elite pool. Each spawn's
-`Base` value becomes `baseStat * mult(endlessWave)` instead of a fixed
-number.
+**Design, reusing the formulas already worked out rather than
+redoing them**: the same three per-axis curves from the original custom
+plan become the values baked into ~30-40 authored `undeadnights_difficulty_config.json`
+levels (one level per endless wave, holding at the last level's values
+past that, same clamp pattern `WAVES` already uses for wave 8) —
+`healthAttributeScaleFactor(w) = 0.08w`, `damageAttributeScaleFactor(w) =
+0.05w` (uncapped — this is still the "always hard-pressed" axis),
+`speedAttributeScaleFactor(w) = min(0.5, 0.02w)` (capped, speed
+compounding breaks kiting past a point), `hordeSizeScaleFactor` capped
+similarly to the old count formula for the same server-performance
+reason (Radium/Entity Culling/Clumps were sized for "a lot of mobs," not
+unlimited). Roster mix (trash pool vs. elite pool, shifting toward
+elites as waves climb) becomes multiple named hordes in the mobs config,
+with higher difficulty levels' `listOfPossibleHordes` weighted toward
+the elite-heavy ones — same elite pool as before (ravager, flesh_suffer,
+bruteplaquecreatureone, flesh_hunter_two, plaquethreelegcreature,
+flesh_boomer), same trash floor (zombie/skeleton/spider/wither_skeleton).
+Boss-wave spike reuses the mod's native `bossHordeEnabled`/`bossHordeId`
+per level instead of a hand-rolled "every 5th wave" check.
 
-**Known caveat, not silently assumed away**: skeleton's real threat is
-its arrows, not its `generic.attack_damage` melee attribute — scaling
-that attribute won't make arrows hit harder. Speed scaling partially
-compensates (a faster skeleton repositions and closes distance more
-often) but this is a real, untested gap in the toughness curve for
-ranged mobs specifically, not a solved problem — flag it for an in-game
-check once built rather than trusting the formula blindly for that one
-mob type.
+**Three integration details, confirmed real, not to skip**:
+1. `updateAttributesOfThirdPartyMobs` must be set `true` on every
+   authored level — without it, the scale factors only ever apply to the
+   mod's own zombie variants and silently do nothing to our vanilla/TFTH
+   roster.
+2. Undead Nights' commands need a real player as the command source
+   (`context.getSource().getEntity()` throws for a console/RCON sender,
+   confirmed by decompiling `DifficultyLevelCommand.class`) — unlike the
+   rest of `wave_spawner.js`'s commands, which run via
+   `server.runCommandSilent(...)` from the console. These specific calls
+   need `execute as <player> at @s run undeadnights ...` instead; the
+   exact KubeJS selector syntax for "as this player" needs verifying
+   in-game, not assumed from the existing `/summon` pattern.
+3. `securityCraftCompatibility` (a toggle in the same server TOML) needs
+   to be enabled — it stops Horde Zombies from breaking SecurityCraft's
+   reinforced blocks, which is exactly what the starter base's
+   Chokepoint walls are built from.
+
+**Known caveat, carried over from the original design, still unsolved**:
+skeleton's real threat is its arrows, not its `generic.attack_damage`
+melee attribute — `damageAttributeScaleFactor` scaling that attribute
+won't make arrows hit harder. Speed scaling partially compensates but
+this is a real, untested gap for ranged mobs specifically.
 
 **Two follow-on changes this requires elsewhere, not optional cleanup**:
 1. `wave_status.js` currently caps the on-screen display at
@@ -184,7 +220,9 @@ mob type.
 **Not sent to build yet** — per the standing pacing call, the amulet,
 Tier 1 chapter restructure, and world-type rebuild are all still
 unconfirmed in-game (see QUEUE.md); this is designed and ready to queue,
-not queued.
+not queued. New footprint: adds the Undead Nights mod (small, focused,
+not a whole modpack) — its 3 bundled zombie variants go unused by our
+config but still ship in the jar.
 
 **Loot bags** — *live*. Kills drop tiered bags — Scavenger's Bag
 (Common, 50%), Fortified Cache (Uncommon, 25%), Warlord's Hoard (Rare,
@@ -379,7 +417,8 @@ something a coding session can produce headlessly. This is the genuine
 bottleneck now, not the mod choice.
 
 **Structure generation / exploration content** — *live* (2026-08-30),
-**partially confirmed broken in-game, one mod removed 2026-08-30**.
+**first real playtest 2026-08-31: desert biome confirmed working
+(desert-specific structures did generate), two real bugs found**.
 Goal: real structures to explore,
 including actual treasure (not just decoration), tied into the
 border-expansion mechanic (structures become reachable as the border
@@ -389,13 +428,40 @@ generate on approach the normal way, same as any vanilla exploration).
   `type: flat` unchanged — flatness and biome are independent settings,
   so this avoids the "wonky" complaint the earlier noise-based Desert
   attempt got, while making desert-tagged structures/mods relevant.
-- **Vanilla desert structures (temples, wells) should generate** —
-  reasoned, not yet observed in-game: the flat generator's `features`
-  flag only suppresses decorative placed-features, not structures;
-  `structure_overrides` defaults to "all structure sets" when unset
-  (confirmed from the vanilla Superflat/Settings docs), and this pack's
-  `overworld.json` doesn't set that key, so nothing is excluding
-  vanilla desert structures by default.
+- **Vanilla desert pyramids confirmed generating (2026-08-31 playtest),
+  then deliberately disabled again.** They actually appeared — real
+  confirmation the `fixed` desert biome_source is genuinely producing
+  desert, not silently falling back to plains. But their loot chamber
+  digs down from the pyramid's base the way real vanilla terrain always
+  has room for, and this world's ground layer is only ~4 blocks thick
+  before hitting the world's absolute floor (`final_density`'s
+  `y_clamped_gradient` sits the surface at y≈-60 against a min_y of
+  -64) — nowhere near enough depth, so the loot chamber has nowhere to
+  go and the structure generates unlootable. Same *shape* of problem as
+  the YUNG's crash, just non-crashing this time. Direct user call,
+  independent of whether this could be fixed: doesn't want vanilla
+  desert temples regardless ("I don't really like them anyway"), so
+  disabled outright rather than chasing loot-chamber placement on a
+  flat world — `kubejs/data/minecraft/worldgen/structure_set/
+  desert_pyramids.json` overridden to an empty `structures` list
+  (standard datapack technique for suppressing a vanilla structure
+  entirely; the placement block's spacing/separation reverted to
+  vanilla defaults since they're meaningless once the structure list is
+  empty — no point tuning spacing for a set that places nothing). This
+  also retires the density-reachability tuning done to this same file
+  earlier the same day (spacing 32→8) — dead config now, cleaned up
+  rather than left orphaned.
+- **Real, quantified risk for Treasure2's own structures, not yet
+  confirmed broken**: that same ~4-block ground thickness applies
+  everywhere in this world, not just under pyramids. `dungeon/general`
+  (the single most likely structure to generate — weight 60 of the
+  `terranean_treasures_set`'s ~124 total) is a genuine underground
+  digger by name; if its loot chamber needs meaningfully more than ~4
+  blocks of clearance below the surface, it could hit the exact same
+  wall. Not fixed speculatively — flagged as a real, evidence-backed
+  risk to watch for on the next playtest, since the user does want to
+  keep Treasure2's own content (only the vanilla temples were
+  objected to).
 - **"Superflat Structures" insurance mod turned out not to exist for
   this version** — checked three candidates (Superflat Structures,
   Superflat Features and Structures, FlatEdit+), all Forge 1.20.1
@@ -533,6 +599,30 @@ structure_set/<id>.json`, same technique, different registry):
   structures at the new density only appear in newly generated chunks,
   which in practice means most of the map as the border keeps
   expanding into unexplored territory.
+- **Playtest findings (2026-08-31), sent for investigation/fix**:
+  - **Good news buried in the bug report**: vanilla desert temples
+    actually generating at all confirms the World type rebuild's `fixed`
+    desert `biome_source` is genuinely working — the biome really is
+    reading as desert now, not the earlier "just plains" failure.
+  - **Treasure2 chests render as plain unopenable boxes** ("cardboard
+    boxes" per the user) instead of their real chest model, and can't be
+    opened. Not the locked-chest mechanic (that's a real Treasure2
+    feature — a locked chest still renders as a proper chest, it just
+    refuses to open without a key) — this reads as a genuine model/
+    render bug. Needs `logs/latest.log` investigation before a fix, not
+    a guess.
+  - **Vanilla desert temples generate but are unlootable**: their loot
+    chamber normally sits some blocks below the pyramid, reached by
+    digging down — on this pack's genuinely flat/thin world (the same
+    "structures assume room below the surface that a flat world doesn't
+    have" shape of problem the YUNG's crash already taught this pack,
+    just non-crashing this time), the chamber has nowhere to be, right
+    down at the world's floor. **User doesn't want vanilla desert
+    temples regardless of the bug** ("I don't really like them anyway")
+    — decided call: disable vanilla `minecraft:desert_pyramid`
+    generation outright rather than try to fix loot-chamber placement on
+    a flat world. Treasure2's own structures stay — the user's objection
+    was specifically to the vanilla temples.
 
 **Structure variety after the YUNG's removal — researched, held, not
 queued.** With YUNG's gone and Abandoned Structures never installed,
@@ -645,12 +735,33 @@ amulet's own gold/gem palette. When the amulet is placed, the marker
 armor stand (below) now visibly holds it via `HandItems` — confirmed
 real vanilla behavior, not assumed: a `Marker:1b` armor stand has no
 body/hitbox but still renders held items, the standard "floating item"
-trick — positioned to hover just above the dais rather than sit on it.
-Right-clicking it while the
-amulet's worn clears `td_amuletWorn`, sets `td_amuletOnPedestal`, and
-unequips the item via `setEquippedCurio(slot, index, air)`;
-right-clicking it again while occupied gives the amulet back and
-re-equips it the same way. State lives on the **player's**
+trick. Placing it accepts the amulet from wherever the player actually
+has it (worn or just carried — see "Two more real bugs" above);
+right-clicking the occupied pedestal again gives it straight back to
+inventory, unequipped, not auto-re-equipped (consistent with the
+amulet no longer auto-equipping anywhere in this feature after the
+duplication bug that caused).
+
+**Marker alignment fix, real bug found in the first actual playtest
+(2026-08-31)**: the original spawn height (a full block above the
+pedestal) put the visible item floating a full extra body-height above
+the shrine, badly misaligned — an armor stand's held item renders near
+hand/shoulder height, not at its feet, so "spawn at the dais surface"
+doesn't mean "item appears at the dais surface." Fixed with two
+changes: added `Small:1b` (halves the whole model including the
+hand-to-feet offset, not just visual size) and dropped the spawn
+height to just above the dais rather than a full block up — landing
+the now-smaller offset much closer to the dais instead of a full body
+above it. Also added the requested gentle float: a throttled
+`PlayerEvents.tick` handler re-teleports the marker each tick to its
+stored base position plus a small sine-wave Y offset, same
+store-state-on-the-player-and-drive-from-a-tick-handler pattern used
+throughout this pack, not a new mechanism. **Exact final height is a
+reasoned estimate, not pixel-measured** (no GUI access to verify by
+eye) — same honest caveat the original y+1 guess needed and didn't
+get; correct again on the next playtest if it still reads wrong.
+
+State lives on the **player's**
 persistentData, not the block/world — same reasoning as
 `base_expansion.js`'s worldborder counter (level/world persistentData
 has no save/load hook, player's does), and this pack only ever expects
@@ -677,6 +788,16 @@ tick. **Deliberately does not implement** the "forced extra wave"
 penalty for leaving via the pedestal — that was flagged as "the leading
 idea, not confirmed" in the original design, and building it now would
 mean guessing at an unresolved point rather than a decided spec.
+
+**Playtest finding (2026-08-31), sent for fix**: the marker armor
+stand's hover position doesn't align with the pedestal's actual dais —
+likely tuned against the original flat-cube block model rather than the
+later stepped-altar rebuild (wide sandstone base + smaller raised dais),
+needs re-offsetting against the real model geometry. Also requested: a
+gentle float/bob animation (small periodic Y offset via the same
+`PlayerEvents.tick` pattern already used everywhere else, not a static
+hover) so it actually reads as floating rather than just stuck slightly
+above the block.
 
 **Why cross at all**: this is what gives the exploration content
 (structure generation, lootable schematics) a reason to matter before

@@ -94,7 +94,7 @@ hash = "faa81a11742877d31d27aba9de9179ff1077cca02500998d6f7ac67b8b10080c"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
-hash = "068700b26259a9e9251ec824f81b9e0e9b7065fe31df483fa04968573f24f101"
+hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
@@ -110,7 +110,7 @@ hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "6f5f48b1bfdfef7e34732ab90b3bd634f44807c93042a98eaa5e5db2aca779c5"
+hash = "9621abc4cebf36ce7d7828dc7a5bd0d408d30c655e400c7c45041e80afe8cd48"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
