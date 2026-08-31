@@ -13,6 +13,12 @@ or a built feature moved to [FEATURES.md](FEATURES.md), written as
 clean current-state specs instead of the layered history of how each
 one got there. What's left here is the genuinely still-open stuff.
 
+**Swept for staleness 2026-09-01** — closed out items resolved by the
+desert-drop rebuild (BOP multi-biome path, absorbed into the shipped
+`multi_noise` set) and refreshed a couple of others against what's
+changed since (the 8-wave campaign framing, decoration mods' aesthetic
+fit) rather than leaving them describing an outdated state.
+
 ---
 
 ## Power system (Tier 3-4 machines)
@@ -60,26 +66,20 @@ now that it's installed for Tier 1 traps — worth checking its own
 recycling-adjacent mechanics before building one from scratch, given
 it's already in the pack for a different reason.
 
-## Biomes O' Plenty — richer multi-biome path (deferred, now folded into the world-type rebuild)
+## Biomes O' Plenty — richer multi-biome path (resolved differently, not pursued)
 
-**Superseded/absorbed 2026-08-30**: the flat-generator desert override
-this was written against turned out not to work at all (confirmed
-broken on a fresh world) — see FEATURES.md's "World type" entry for the
-real replacement plan (a flattened `noise` generator + `multi_noise`
-biome source), which is the exact same mechanism this idea always
-needed. Phase 1 of that plan is single-biome desert; the richer version
-below is its Phase 2, not a separate project:
-
-Several curated arid BOP biomes together (Wasteland is the standout:
-Dried Salt ground, dead trees, dust-through-fog, arguably closer to
-this pack's Fallout aesthetic than plain vanilla desert) — needs a
-`multi_noise` biome source with a curated parameter list, genuinely
-hard to hand-author but de-risked by an existing community tool (a
-Python generator called Whitelist-Minecraft-Biomes). Also needs
-checking whether TerraBlender's own region-weighting config can
-actually restrict to a chosen biome subset cleanly — unresolved. Not
-worth the complexity until Phase 1 (single-biome desert, on the new
-mechanism) is confirmed actually working.
+**Closed 2026-08-31**: the goal this idea was chasing — real biome
+variety on the flat world, not locked to one desert biome — actually
+shipped, just via a different mechanism than planned here. The
+desert-drop rebuild moved the world straight to a curated 7-biome
+`multi_noise` source (desert, badlands, savanna, savanna_plateau,
+plains, sunflower_plains, meadow — picked from real structure-mod tag
+frequency, see FEATURES.md's "World type" section) using **vanilla
+biomes only**, no BOP needed. BOP's Wasteland biome (Dried Salt ground,
+dead trees) is still a genuinely closer aesthetic match than any vanilla
+biome if the current set ever feels thin — worth revisiting for that
+specific reason, not for the "need multi-biome at all" problem, which
+is solved.
 
 ## Wave-clear reward: a building/machine places itself in the base
 
@@ -122,15 +122,20 @@ genuine custom Container/Menu via `StartupEvents.registry('menu', ...)`
 core alone — needs an in-game check, not another search). Parked, not
 being pursued right now per direct request.
 
-## Keeping the (8-wave) campaign interesting — unranked ideas
+## Keeping the designed (waves 1-8) campaign interesting — unranked ideas
+
+Note: item 2 below (a distinct wave-8 finale) is partly superseded by
+the endless phase scaling work in progress — waves 9+ becoming a real,
+escalating system of their own already gives wave 8 a natural "and now
+it gets serious" pivot it didn't have when it just repeated forever.
+Still worth a dedicated finale beat on top of that, not a replacement.
 
 1. Smaller narrative beats mid-campaign (a diary page, a distant
    explosion, a radio crackle at wave 3 or 4), not saving all the story
    for the wave-5/wave-8 beats that already exist.
-2. A genuine, distinct wave 8 finale mechanic — it's the real end of
-   the designed campaign now (that role used to belong to wave 5 before
-   the campaign grew), and currently isn't anything more than a scaled
-   composition.
+2. A genuine, distinct wave 8 finale mechanic beyond a scaled
+   composition — it's the real end of the designed campaign (that role
+   used to belong to wave 5 before the campaign grew).
 3. A supply-drop event during the peacetime countdown gap — gives the
    3-minute wait a reason to move around instead of standing still.
 4. A rotating wave modifier ("faster mobs this wave," "no sound cue
@@ -151,13 +156,40 @@ is still just that — a plan:
 
 ## Pack aesthetic — decoration mods, not yet installed
 
-Researched for the Watchpost's decoration pass (see FEATURES.md) and
-for the general Fallout-post-apocalyptic look: **ZCraft: Zone Decor**
-(military crates, barrels, tires, rusted industrial clutter — purpose-
-built for wasteland builds) and **Doomsday Decoration** (worn
-furniture, discarded belongings, human remains — well-established,
-2.2M+ downloads, small file size). Both decoration-only, no mechanics,
-no dependency on the biome/world-gen decisions above. Not installed.
+**Moved to FEATURES.md 2026-09-01** — fleshed out into a real spec (both
+mods re-verified: exact names, real Forge 1.20.1 files, confirmed no
+dependencies) under "Base & structures" once the 2026-08-31 structure
+swap confirmed "abandoned/post-apocalyptic, not fantasy" as the pack's
+actual aesthetic direction, making this a direct match rather than a
+speculative fit. See FEATURES.md's "Pack decoration pass" entry.
+
+## Platform: future version bump, not now
+
+Decided 2026-08-31, worth recording so it doesn't get re-litigated
+blind: this pack stays on Forge 1.20.1. Considered jumping to 1.21.1 to
+match modern packs like ATM10 — two things ruled it out for now:
+- **ATM10 itself is NeoForge, not Forge** — its 1.21.1 move was a
+  loader switch too, not just a version bump. Forge's own 1.21.1
+  ecosystem is thinner than NeoForge's, since most active mod dev moved
+  to NeoForge once Forge lagged starting around 1.20.5.
+- **1.20.5/1.21 replaced Minecraft's item NBT system with structured
+  "data components"** — a one-time, fixed-size breaking change, not a
+  gradual one. Every NBT-based technique this pack has built (summon
+  Attributes overrides, custom persistent tags) would need rewriting in
+  the new format, on top of re-verifying a mostly-different mod
+  ecosystem from scratch.
+- **No urgency**: 1.20.1 has the same kind of multi-year staying power
+  Forge's 1.12.2 and 1.16.5 had — not being deprecated, no forcing
+  clock running.
+
+**If/when this does happen**: do it as a deliberate, dedicated project
+at a natural checkpoint (current build fully playtested and confirmed,
+not mid-buildout), and seriously consider **NeoForge** 1.21.x rather
+than staying on Forge, since that's genuinely where the modern
+ecosystem is concentrated. Staying on 1.20.1 longer doesn't make the
+eventual rewrite harder in a compounding way — the NBT→components cost
+is fixed size, not growing — it just means more of this pack's own code
+sits on the old side of that boundary by the time it happens.
 
 ## Open questions carried over from the original design notes
 
@@ -205,6 +237,59 @@ Mostly still genuinely open:
 - **A doc claiming "there's a dedicated tool for X" is a claim to
   verify, not a fact** — burned twice on the FTB Quests SNBT-authoring
   tool specifically. Check before planning around it.
+- **Searching a mod's exact name is not enough to find the right
+  listing — check the platform, author, and download source match what
+  was actually intended, every time.** Recurred often enough to be a
+  pattern, not a one-off: the Pure Suffering branch mismatch, the two
+  same-named-but-different-API "KubeJS-Curios" projects, the
+  Quest_play/berezka "Abandoned structures" naming collision, and (same
+  report) both new post-apocalyptic structure mods — one whose Modrinth
+  listing under that exact name is a different, wrong mod entirely (the
+  real one is CurseForge-only), the other where Modrinth surfaces a
+  different author's "remaster." The fix each time was the same: confirm
+  the real listing directly (author, platform, and — best case — a
+  hash/checksum match against what's actually pinned) rather than
+  trusting the first search result with a matching name.
+- **A crash report's own Details/Feature section names the actual
+  structure/mod involved — read that line first, before speculating
+  about which recently-added thing is responsible.** Cost a full round
+  of wrong-direction investigation during the desert-drop world-gen
+  crashes: the third crash's fix targeted When Dungeons Arise and
+  Structory (a reasonable-looking lead, since crashes started right
+  after installing them), but the real culprit — confirmed by the
+  fourth crash's report naming it directly — was Treasure2's own
+  `dungeon/general`, present since before either new mod existed, just
+  left at its original tight spacing the whole time. "The newest thing
+  must be the cause" is a recency bias, not a diagnosis.
+- **A fix applied directly to the live instance under crash-fixing time
+  pressure still needs a sync-back step to the tracked repo config** —
+  it's exactly the step most likely to get skipped when moving fast on
+  an active crash. Caught the hard way: a second Radium mixin fix
+  (`mixin.util.chunk_access`) during the desert-drop crash debugging
+  only ever got applied to the live `world/serverconfig` copy, not
+  `pack/config/lithium.properties` — the tracked repo and the running
+  instance silently diverged until it was specifically checked for.
+- **A sandbox test needs this pack's full performance/optimization
+  stack in it (Radium, Embeddium, FerriteCore, ModernFix, Clumps, Entity
+  Culling), not just whatever mod is being directly evaluated.** A
+  minimal-mod-set sandbox for the desert-drop structure pass came back
+  clean, but the real pack crashed on actual first world creation —
+  Radium's own `WorldGenRegion` mixin threw an NPE that only showed up
+  once real, larger jigsaw structures (When Dungeons Arise/Structory)
+  reached into a not-yet-generated neighboring chunk, an interaction the
+  minimal sandbox never exercised. A minimal test proves less than it
+  looks like it proves when the thing that actually breaks is an
+  interaction between two mods, not either one alone.
+- **When switching a world's `biome_source` to `multi_noise`, check
+  whether the climate axes (temperature/humidity/continentalness/
+  erosion) were hardcoded to constants for a prior single-biome setup**
+  — caught before shipping during the desert-drop rebuild: the flat
+  world's `noise_router` had all four pinned to `0.0` (harmless when
+  only one biome ever got selected), which would have silently resolved
+  every column to the same biome again under `multi_noise`, defeating
+  the entire point without erroring. Fixed by reusing vanilla's own real
+  noise functions for those four axes specifically, confirmed safe for
+  flatness because `final_density` never reads them.
 - **A Forge `SERVER`-type config never hot-reloads — only `CLIENT`/
   `COMMON` configs get the live file-watcher.** Confirmed the hard way
   evaluating Undead Nights as a wave-scaling backend: live-editing a
