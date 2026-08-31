@@ -350,6 +350,47 @@ change — not something more exploration alone fixes, since the sampled
 area is already fully saturated with badlands/savanna with zero variety
 at any sampled point.
 
+**Decided and built 2026-09-01: moved the fixed spawn point, didn't
+retune badlands.** Lower-risk than reopening the hand-tuned
+`multi_noise` parameter math again — leaves the underlying pack-wide
+badlands-vs-desert area skew as-is (accepted, not a problem worth
+another world-gen round on its own), just relocates the base to a
+coordinate with real biome variety nearby. Picked `(780, -150)` using
+the same RCON census technique used for diagnosis, not guessed: from
+every point checked in a 200-block neighborhood around it, badlands
+stays 300-500+ blocks away and desert 650+ away (vs. 0 blocks at the
+old spawn), with plains and savanna genuinely close (0 and 45 blocks).
+The full 320x320 setblock-marker grid technique hit real RCON
+reliability problems at this scale (occasional timeouts, and a
+still-unexplained "Unknown or incomplete command" failure mode once
+under heavier load — not chased further) — fell back to multiple
+independent `/locate biome` checks from several offset points, which
+is less exhaustive but had zero connection failures and gave a
+consistent, confident picture. Implementation: `playtest_starter_kit.js`
+has exactly one hardcoded spawn coordinate (the `/spreadplayers`
+target) — confirmed by reading the rest of the function before
+changing it, not assumed — with `setworldspawn`, `worldborder center`,
+and the entire Watchpost build (walls/shrine/graves/shack/tower) all
+deriving from the x/y/z read back afterward, so moving that one line
+relocates everything cleanly. **`sunflower_plains`'s unreachable
+parameter point is staying as-is** — decided not worth another round of
+churn for one biome's cosmetic absence.
+
+**Related bug found and fixed in the same pass**: `wave_spawner.js`'s
+mob spawn positioning used to be worldborder-relative (spawn just
+outside whatever the border's current edge was), which meant spawn
+distance grew unboundedly with the border — base_expansion.js's own
+escalating growth curve reaches 270 blocks by wave 8, and the amulet's
+`BORDER_EXPAND_DELTA` (10,000,000) sends it far beyond that whenever
+the amulet's on the pedestal. Real playtest symptom this caused: "the
+horn says a horde spawned but nothing shows up" (mobs spawning millions
+of blocks away, never arriving). Rewrote to a fixed 40-60 block
+player-relative distance instead — matching the shape (if not the
+exact numbers) of the endless-phase system's own player-relative
+Undead Nights spawn band, so both systems are now consistent instead of
+one being border-relative and one player-relative. Not yet confirmed
+by an actual wave playtest.
+
 **Biomes O' Plenty + TerraBlender — reasoned incompatible, not
 installed.** TerraBlender's documented architecture assigns each
 participating mod its own "region" *within TerraBlender's own injected

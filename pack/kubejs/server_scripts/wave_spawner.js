@@ -264,41 +264,43 @@ function useWaveHorn(player) {
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
-  // Spawn genuinely BEYOND the worldborder, not inside it (2026-08-20,
-  // second attempt - the first attempt still spawned mobs just inside
-  // the edge, on the wrong assumption that vanilla's worldborder blocks
-  // ALL entity movement across it the way it blocks players. It
-  // doesn't - the border only clamps *player* movement; mobs path
-  // across it under normal AI/movement with no special resistance. The
-  // original 2026-08-19 bug this used to guard against ("mobs
-  // spawning outside the border become permanently unreachable") predates
-  // mob_aggro.js's unconditional, no-distance-limit setTarget entirely -
-  // that's what actually makes the long walk-in reliable now, not
-  // keeping mobs inside the wall.
+  // Fixed distance from the PLAYER, not the worldborder edge (rewritten
+  // 2026-09-01, real bug found in playtest: border-relative spawning
+  // meant spawn distance grew with the border - base_expansion.js's
+  // escalating growth curve alone reaches a 270-block half-width by
+  // wave 8, and the amulet's own BORDER_EXPAND_DELTA
+  // (amulet_pedestal.js, 10000000) balloons it far beyond that whenever
+  // the amulet sits on the pedestal - mobs were spawning literally
+  // millions of blocks away and never arriving, read in-game as "the
+  // horn says a horde spawned but nothing shows up." Both this system
+  // and the endless-phase system (wave_spawner.js's `undeadnights
+  // spawn_horde` branch above, which already uses a fixed
+  // distanceMin/distanceMax band around the player via
+  // defaultconfigs/undeadnights-server.toml) now share the same
+  // player-relative-fixed-distance shape instead of one being
+  // border-relative and one player-relative.
   //
-  // The one real vanilla side effect of spawning outside: border damage
-  // (default ~0.2 hearts/sec per block past the border's 5-block safe
-  // buffer) would otherwise chip mobs (and the player, if they ever near
-  // the edge) for no gameplay reason this pack actually wants - the
-  // border here is a containment/staging boundary, not a shrinking-zone
-  // battle-royale mechanic. Disabled once per world in
-  // playtest_starter_kit.js (`worldborder damage amount 0`), alongside
-  // its other one-time worldborder setup.
-  var border = level.getWorldBorder()
-  var edgeMinX = border.getMinX()
-  var edgeMaxX = border.getMaxX()
-  var edgeMinZ = border.getMinZ()
-  var edgeMaxZ = border.getMaxZ()
-  var SPAWN_OUTSIDE_MIN = 6
-  var SPAWN_OUTSIDE_MAX = 14
+  // Distance band picked to land clearly outside the compound itself
+  // (the base is ~11 blocks across) while staying inside typical
+  // render distance for the staggered walk-in and sound-cue design to
+  // still read as intended - smaller than Undead Nights' 240-256 band,
+  // which was sized for endless-phase view distance, not this designed
+  // 8-wave campaign.
+  //
+  // Border damage stays disabled regardless (playtest_starter_kit.js) -
+  // harmless, and the border is still a real containment boundary
+  // during normal exploration even though wave mobs no longer spawn
+  // relative to it.
+  var SPAWN_DISTANCE_MIN = 40
+  var SPAWN_DISTANCE_MAX = 60
 
-  function randomBorderEdgePosition() {
-    var side = Math.floor(Math.random() * 4) // 0=minZ 1=maxZ 2=minX 3=maxX
-    var offset = SPAWN_OUTSIDE_MIN + Math.random() * (SPAWN_OUTSIDE_MAX - SPAWN_OUTSIDE_MIN)
-    if (side === 0) return { x: Math.floor(edgeMinX + Math.random() * (edgeMaxX - edgeMinX)), z: Math.floor(edgeMinZ - offset) }
-    if (side === 1) return { x: Math.floor(edgeMinX + Math.random() * (edgeMaxX - edgeMinX)), z: Math.floor(edgeMaxZ + offset) }
-    if (side === 2) return { x: Math.floor(edgeMinX - offset), z: Math.floor(edgeMinZ + Math.random() * (edgeMaxZ - edgeMinZ)) }
-    return { x: Math.floor(edgeMaxX + offset), z: Math.floor(edgeMinZ + Math.random() * (edgeMaxZ - edgeMinZ)) }
+  function randomPlayerRelativePosition() {
+    var angle = Math.random() * 2 * Math.PI
+    var distance = SPAWN_DISTANCE_MIN + Math.random() * (SPAWN_DISTANCE_MAX - SPAWN_DISTANCE_MIN)
+    return {
+      x: Math.floor(player.getX() + Math.cos(angle) * distance),
+      z: Math.floor(player.getZ() + Math.sin(angle) * distance),
+    }
   }
 
   // Staggered instead of all-at-once - each mob gets a queued spawn
@@ -311,7 +313,7 @@ function useWaveHorn(player) {
     var mobType = pair[0]
     var count = pair[1]
     for (var i = 0; i < count; i++) {
-      var pos = randomBorderEdgePosition()
+      var pos = randomPlayerRelativePosition()
       var spawnTick = currentTick + mobIndex * staggerGap
       pendingSpawns.push({
         mobType: mobType,

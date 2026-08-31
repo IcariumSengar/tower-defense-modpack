@@ -92,7 +92,21 @@ PlayerEvents.loggedIn((event) => {
   // maxRange (8) keeps this close enough to true origin to still read
   // as "the same fixed spot" every world, while giving the command room
   // to find a valid column if (0,0) exactly happens to be an edge case.
-  event.server.runCommandSilent('spreadplayers 0 0 1 8 false @a')
+  // Fixed spawn target moved 2026-09-01 (direct request, real diagnosis
+  // in docs/FEATURES.md's "World type" section): the original (0,0)
+  // landed the whole base inside a huge contiguous badlands blob (72.8%
+  // of a 320x320-block sample, 0% desert - not a biome_source bug,
+  // just this seed's bad luck for that exact point). (780,-150) was
+  // picked from a real RCON grid census, not guessed: badlands stays
+  // 300-500+ blocks away and desert 650+ blocks away from every point
+  // checked in a 200-block neighborhood around it, with plains/savanna
+  // genuinely close (plains at 0 blocks, savanna 45 blocks). Everything
+  // else (setworldspawn, worldborder center, the whole Watchpost build
+  // below) already derives from the x/y/z read back right after this
+  // one command - confirmed by reading the rest of this function before
+  // changing this line, not assumed - so moving just this target
+  // coordinate relocates the entire base cleanly with it.
+  event.server.runCommandSilent('spreadplayers 780 -150 1 8 false @a')
 
   // Ground truth read AFTER spreadplayers — this is where the player is
   // actually now standing, on real terrain, not a guess.
