@@ -43,6 +43,149 @@ to the next wave starts automatically once a wave clears (see below);
 using the horn manually during the countdown skips the wait.
 Implementation: `wave_spawner.js`, `wave_status.js`.
 
+**Investigated and decided against 2026-08-30: don't hand off scaling to
+Pure Suffering.** The plan was to use Pure Suffering's built-in tiered
+escalation as the scaling backend for "a huge number of waves" with
+real, indefinite escalation (count/toughness/speed), with the Wave Horn
+as a thin trigger calling `/puresuffering add primary ... set <severity>`.
+Checked directly against the actual pinned source (cloned the mod's
+`1.20.1` branch at tag `1.6.8.5R-LTS1`, matching our exact installed
+version — not a newer branch, which would have been a repeat of the
+noise-generator mistake of verifying against the wrong version):
+
+1. **Severity is fully controllable, better than assumed.** `/puresuffering
+   add primary <session> <difficulty> <type> set <severity>` takes an
+   explicit severity 1-N directly (`AddInvasionsCommand`) — no dependency
+   on real in-game days. That part of the plan checks out cleanly.
+2. **Correction to the record: there is no in-invasion ramp.** Each
+   invasion type's "5 stages" (confirmed exactly 5 in every
+   `invasion_types/*.json`, e.g. `zombie.json`) are 5 separate
+   hand-authored `SeverityInfo` presets — mob cap, spawn tick delay, and
+   roster all fixed at whichever severity you pick when the invasion is
+   created (`Invasion.java`'s `severity` field, set once in the
+   constructor, never changed by `tick()`). It doesn't escalate on its
+   own during a single invasion; we would drive escalation ourselves by
+   commanding a higher severity number as waves climb — this is actually
+   simpler than a "ramp," not a problem.
+3. **Real, structural blocker: mob positioning.** `Invasion.getMobSpawnPos`
+   always picks a spawn point within `mobSpawnChunkRadius` chunks of the
+   player's *current chunk* (game rule, config range 1-8, default 8 ≈ up
+   to 128 blocks), excluding only a minimum-distance ring around the
+   player (`noSpawnMobsBlockRadius`, config range 1-256, default 16
+   blocks). This is entirely player-distance-based and has no concept of
+   the worldborder at all — there's no config path to "spawn just beyond
+   the border." Worse, the two radii fight each other: pushing
+   `noSpawnMobsBlockRadius` out far enough to clear our worldborder (which
+   starts well under 128 blocks) shrinks the valid spawn ring toward zero
+   and starves spawning. Using Pure Suffering as the mob source would mean
+   giving up the already-tuned "spawn beyond the border, walk in with
+   staggered sound cues" system in `wave_spawner.js`
+   (`randomBorderEdgePosition()`) — not a compatibility risk to mitigate,
+   a straight either/or.
+4. Checked the mixins it applies (`MobMixin`, `SensorMixin`, etc.) for
+   collision with `mob_aggro.js`'s forced `setTarget()` or Epic Siege
+   Mod's AI changes — `MobMixin` only adds synced hyper-charge data via
+   `@Inject(at = @At("RETURN"))`, purely additive, no override risk. This
+   part was never the blocker.
+
+**Net call**: severity control and the escalation-preset idea are sound
+and worth keeping as inspiration, but the positioning system is a
+hard architectural mismatch with the border-edge spawn staging this pack
+is built around, not a tunable detail — reusing Pure Suffering's own
+spawning would mean throwing out the "walk in from beyond the border"
+feel entirely. Falling back to hand-building the scaling formula instead
+— see the "Endless phase scaling" entry immediately below, which
+supersedes `docs/deferred/night_scaling.js`'s approach rather than
+reviving it as-is (wave-number-keyed and scoped to wave-spawned mobs via
+the existing per-mob summon NBT, not a global `EntityEvents.spawned`
+hook keyed to real day/night count) — keeping `wave_spawner.js`'s own
+spawn-position system untouched either way.
+
+**Endless phase scaling (waves 9+) — planned, designed 2026-08-30, not
+yet built.** Direct request: real, indefinite escalation in count,
+toughness, and speed so a player who reaches "a huge number of waves"
+is always hard-pressed, not coasting on wave 8's composition forever.
+Today, `wave_spawner.js`'s `WAVES` array only defines 8 hand-authored
+waves; `Math.min(waveNumber, WAVES.length)` silently repeats wave 8's
+exact composition for every wave after that — no scaling exists past
+the designed campaign at all. Waves 1-8 stay exactly as they are (that's
+the narrative-driven tutorial arc, not something to touch); this only
+adds a procedural phase once `waveNumber > FINAL_WAVE` (8).
+
+Three separate formulas, one per axis, `endlessWave = waveNumber - FINAL_WAVE`
+(1, 2, 3, ... starting at real wave 9) — deliberately split rather than
+one combined "difficulty" number, so each axis can be retuned
+independently after playtesting, same as every other formula in this
+codebase (`staggerGapForWave`, the worldborder growth curve):
+
+- **Mob count — capped, this is the performance-safety axis.**
+  `totalMobs(w) = min(20, 6 + floor(w / 2))` — +1 mob every 2 endless
+  waves on top of wave 8's baseline of 6, hard-capped at 20 (reached
+  around endless wave 28, real wave 36). Count is the one axis that
+  actually costs server tick time (this is exactly the load Radium/
+  Entity Culling/Clumps were justified for in MODS.md), so it's the only
+  one that stops growing — toughness carries the escalation from there.
+- **Toughness — uncapped, this is the "always hard-pressed" axis.**
+  `healthMult(w) = 1 + 0.08w`, `damageMult(w) = 1 + 0.05w`. No ceiling —
+  by design, since capping this would put a ceiling on how hard-pressed
+  the player can ever be, which is the entire point of the request. At
+  endless wave 10 (real wave 19): health ×1.8, damage ×1.5. At endless
+  wave 30 (real wave 39): health ×3.4, damage ×2.5.
+- **Speed — capped, unlike toughness.** `speedMult(w) = 1 + min(0.5, 0.02w)`,
+  capping at +50% around endless wave 25. Unlike raw stat bloat, movement
+  speed compounding past a point breaks kiting/pathfinding balance rather
+  than just taking longer to kill something, so this one gets a ceiling
+  toughness doesn't.
+- **Roster mix — reuses the existing pool, no new mods.** Split each
+  wave's mob count between a trash pool (zombie/skeleton/spider/
+  wither_skeleton) and an elite pool (ravager, flesh_suffer,
+  bruteplaquecreatureone, flesh_hunter_two, plaquethreelegcreature,
+  flesh_boomer — all already in the roster from waves 5-8).
+  `eliteFraction(w) = min(0.6, 0.05w)` shifts the mix toward elites as w
+  grows, capped at 60% so there's always some low-effort chaff for
+  contrast, never a pure elite swarm. Every 5th endless wave forces one
+  extra ravager into the roll on top, as a recognizable spike layered on
+  the smooth ramp (same "boss wave" beat already established for the
+  designed campaign's ravager waves).
+
+**Mechanism**: generalizes the per-mob NBT Attributes override already
+proven on the ravager nerf (`Attributes:[{Name:"generic.attack_damage",
+Base:8},{Name:"generic.max_health",Base:60}]` in `wave_spawner.js`'s
+summon call) to every mob type in the endless phase, via a small
+`BASE_STATS` table keyed by mob type — vanilla defaults for the base
+four (zombie 20/3, skeleton 20/2, spider 16/2, wither_skeleton 20/8) and
+the TFTH values already reverse-engineered from `TFTH.toml` and recorded
+in `wave_spawner.js`'s own comments for the elite pool. Each spawn's
+`Base` value becomes `baseStat * mult(endlessWave)` instead of a fixed
+number.
+
+**Known caveat, not silently assumed away**: skeleton's real threat is
+its arrows, not its `generic.attack_damage` melee attribute — scaling
+that attribute won't make arrows hit harder. Speed scaling partially
+compensates (a faster skeleton repositions and closes distance more
+often) but this is a real, untested gap in the toughness curve for
+ranged mobs specifically, not a solved problem — flag it for an in-game
+check once built rather than trusting the formula blindly for that one
+mob type.
+
+**Two follow-on changes this requires elsewhere, not optional cleanup**:
+1. `wave_status.js` currently caps the on-screen display at
+   `Math.min(data.getInt('td_waveNumber'), FINAL_WAVE)` — literally
+   showing "Wave 8" forever past the designed campaign. That has to stop
+   capping once this ships, since "how far did I get" is the actual
+   point of an endless phase.
+2. Quest 10 "No Turning Back"'s flavor text ("Eight is where the map
+   runs out... it's the same night, over and over, until it isn't")
+   describes a frozen repeat, which stops being true the moment real
+   escalation exists. Needs a rewrite in the same diary voice — left for
+   the user to redo rather than guessed at here, since tone/flavor is
+   editorial, not a technical spec.
+
+**Not sent to build yet** — per the standing pacing call, the amulet,
+Tier 1 chapter restructure, and world-type rebuild are all still
+unconfirmed in-game (see QUEUE.md); this is designed and ready to queue,
+not queued.
+
 **Loot bags** — *live*. Kills drop tiered bags — Scavenger's Bag
 (Common, 50%), Fortified Cache (Uncommon, 25%), Warlord's Hoard (Rare,
 10%) — keyed to which wave a mob's type first appears in, not to a
@@ -57,28 +200,19 @@ never roll a rare bag) — this was inverted once and fixed, don't
 reintroduce the inversion. Real textures exist for all three tiers.
 Implementation: `loot_bags.js`, `loot_bag_drops.js`, `loot_bag_open.js`.
 
-**Base expansion** — *live, growth curve change planned*. The
-worldborder grows on wave clear, auto-set to 50 on world creation,
-centered on the fixed spawn point. Mob spawn positions are clamped to
-stay within the current border. This is the "custom world" idea's
-first-step scope — no separate custom dimension, no hand-built
-structure, just the border mechanic itself. Implementation:
-`base_expansion.js`.
-
-**Planned: escalating growth, not a flat rate.** Current live behavior
-is a flat +5 every 2 waves. Changing to: grow after **every** wave
-clear (not every 2nd), by an amount that increases every 2 waves —
-`growth = 20 + 5 * floor((waveNumber - 1) / 2)`, same
-constant-plus-step-function style as `wave_spawner.js`'s
+**Base expansion** — *live*. The worldborder grows on **every** wave
+clear, by an escalating amount — `growth = 20 + 5 * floor((waveNumber -
+1) / 2)`, same constant-plus-step-function style as `wave_spawner.js`'s
 `staggerGapForWave`, not a new pattern. Gives 20/20/25/25/30/30/35/35
-across waves 1-8, taking the border from 50 to 270 by the end of the
-designed campaign (vs. only reaching 70 under the current flat rate).
-Intent, direct from the user: make late-campaign expansion feel like
-genuinely opening up access to the generated structures out there, not
-just a slow trickle — the bigger total is the point, not an accident.
-Implementation-wise this changes both the trigger cadence (every wave,
-not every 2nd) and the amount (formula instead of a constant) in
-`base_expansion.js`.
+across waves 1-8, taking the border from 50 (auto-set on world
+creation) to 270 by the end of the designed campaign — up from only 70
+under the original flat +20-every-2-waves rate. Built 2026-08-31,
+numbers pre-confirmed with the user before implementation. Centered on
+the fixed spawn point; mob spawn positions are clamped to stay within
+the current border. This is the "custom world" idea's first-step scope
+— no separate custom dimension, no hand-built structure, just the
+border mechanic itself. Implementation: `base_expansion.js`. Not yet
+confirmed in-game.
 
 **Starter gear as narrative** — *live*. The starting netherite sword +
 iron armor are framed as looted from the base's previous, unfortunate

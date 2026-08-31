@@ -60,19 +60,26 @@ now that it's installed for Tier 1 traps — worth checking its own
 recycling-adjacent mechanics before building one from scratch, given
 it's already in the pack for a different reason.
 
-## Biomes O' Plenty — richer multi-biome path (deferred)
+## Biomes O' Plenty — richer multi-biome path (deferred, now folded into the world-type rebuild)
 
-FEATURES.md's structure-generation plan uses vanilla `minecraft:desert`
-on the flat generator. The richer version — several curated arid BOP
-biomes together (Wasteland is the standout: Dried Salt ground, dead
-trees, dust-through-fog, arguably closer to this pack's Fallout
-aesthetic than plain vanilla desert) — needs a `multi_noise` biome
-source with a curated parameter list, genuinely hard to hand-author but
-de-risked by an existing community tool (a Python generator called
-Whitelist-Minecraft-Biomes). Also needs checking whether TerraBlender's
-own region-weighting config can actually restrict to a chosen biome
-subset cleanly — unresolved. Not worth the complexity until the simple
-version is played and found wanting.
+**Superseded/absorbed 2026-08-30**: the flat-generator desert override
+this was written against turned out not to work at all (confirmed
+broken on a fresh world) — see FEATURES.md's "World type" entry for the
+real replacement plan (a flattened `noise` generator + `multi_noise`
+biome source), which is the exact same mechanism this idea always
+needed. Phase 1 of that plan is single-biome desert; the richer version
+below is its Phase 2, not a separate project:
+
+Several curated arid BOP biomes together (Wasteland is the standout:
+Dried Salt ground, dead trees, dust-through-fog, arguably closer to
+this pack's Fallout aesthetic than plain vanilla desert) — needs a
+`multi_noise` biome source with a curated parameter list, genuinely
+hard to hand-author but de-risked by an existing community tool (a
+Python generator called Whitelist-Minecraft-Biomes). Also needs
+checking whether TerraBlender's own region-weighting config can
+actually restrict to a chosen biome subset cleanly — unresolved. Not
+worth the complexity until Phase 1 (single-biome desert, on the new
+mechanism) is confirmed actually working.
 
 ## Wave-clear reward: a building/machine places itself in the base
 
@@ -198,6 +205,16 @@ Mostly still genuinely open:
 - **A doc claiming "there's a dedicated tool for X" is a claim to
   verify, not a fact** — burned twice on the FTB Quests SNBT-authoring
   tool specifically. Check before planning around it.
+- **When checking a mod's real behavior against source, pin to the exact
+  installed version/branch, not just "a real copy of the repo."** The
+  world-type noise rebuild broke on its first real test because its
+  reference data was verified against a source that wasn't actually
+  pinned to this exact Forge 1.20.1 build. Repeated correctly for the
+  Pure Suffering investigation: the mod's GitHub repo's `main` branch is
+  actually a NeoForge 1.21.1 rewrite, entirely different code from what's
+  installed — the real check used the repo's separate `1.20.1` branch,
+  confirmed by its `gradle.properties` matching our pinned
+  `1.6.8.5R-LTS1` exactly before trusting anything read from it.
 - **Connect design intent to what the code actually does**, don't just
   read the design doc and assume it's implemented that way — this has
   bitten the project multiple times (Spike Trap only checking the

@@ -106,7 +106,7 @@ hash = "1c7f53b9052ffd55f273b4f0ec40bec12078f1ac61f5804e6e4a747c95d780fc"
 
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
-hash = "fc2e8a5a3d7e0267796c27ae671baa00a2320aaa25b32df0d35751e264227a4e"
+hash = "ee456ea0776133200def8062c6b0d29bc3004c9188028467fa75f8fe449a24cb"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"

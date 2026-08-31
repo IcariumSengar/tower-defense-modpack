@@ -18,15 +18,14 @@ IDEAS.md/FEATURES.md first.
 
 ## Ready to build
 
-1. **Base expansion: escalating growth curve** — see FEATURES.md's
-   "Base expansion" entry. Small, self-contained change to
-   `base_expansion.js`: trigger every wave clear instead of every 2nd,
-   and use `growth = 20 + 5 * floor((waveNumber - 1) / 2)` instead of a
-   flat 5. Confirmed numbers with the user directly (20/20/25/25/30/30/
-   35/35 across waves 1-8, border reaches 270 by wave 8 vs. today's 70)
-   before queuing this, not guessed.
+*(nothing queued right now)*
 
 ## In progress (already sent, not yet confirmed built)
+
+- **Base expansion: escalating growth curve** — built 2026-08-31 (see
+  FEATURES.md's "Base expansion" entry): grows on every wave clear now,
+  not every 2nd, by `20 + 5 * floor((waveNumber - 1) / 2)`. Not yet
+  confirmed in-game.
 
 - **The amulet** and the **Tier 1 chapter restructure** — both built
   2026-08-30 (see FEATURES.md's "The amulet" and "Quest book"
@@ -53,6 +52,18 @@ IDEAS.md/FEATURES.md first.
   start this until told otherwise — it was already ready to build, this
   isn't a design gap, purely a pacing call. Its Tier 1 chapter
   dependency ("Sharpened Scrap") is now satisfied.
+- **Endless phase scaling (waves 9+)** — fully specced 2026-08-30 (see
+  FEATURES.md's "Wave Horn" section): separate count/toughness/speed
+  formulas past wave 8, roster mix shifting toward existing elite mobs,
+  generalizing the ravager's proven per-mob NBT stat override to every
+  mob type. Investigated and ruled out handing this to Pure Suffering
+  first (see the same section) before designing it custom. Two required
+  follow-on edits bundled with it: `wave_status.js`'s display stops
+  capping at `FINAL_WAVE`, and Quest 10's flavor text needs a rewrite
+  (it currently describes a frozen repeat that stops being true). **Held
+  for the same pacing reason as Tier 2 above** — not queued until the
+  user has actually playtested the amulet/Tier 1/world-type rebuild
+  that's already landed.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 

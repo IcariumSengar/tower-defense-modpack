@@ -1,4 +1,5 @@
-// Grows the worldborder every few WAVES CLEARED — the progression
+// Grows the worldborder on every WAVE CLEARED, by an escalating amount —
+// the progression
 // trigger for the "custom world" idea in docs/IDEAS.md. Originally
 // implemented as "nights survived" since that was the best available
 // proxy before the Wave Horn system existed (waves were going to be
@@ -26,9 +27,21 @@
 // (the player's own permission level, which may not be enough even with
 // cheats nominally on).
 
-var WAVES_PER_EXPANSION = 2
-var EXPANSION_BLOCKS = 20
 var EXPANSION_TIME_SECONDS = 10
+
+// Escalating growth curve (2026-08-31, direct request, numbers
+// pre-confirmed with the user via docs/QUEUE.md before this was built):
+// grows on EVERY wave clear now, not every 2nd, by an amount that steps
+// up every 2 waves - same constant-plus-step-function style as
+// wave_spawner.js's staggerGapForWave, not a new pattern. Gives
+// 20/20/25/25/30/30/35/35 across waves 1-8, taking the border from 50
+// to 270 by the end of the designed campaign (vs. 70 under the old flat
+// +20-every-2-waves rate) - intent is late-campaign expansion feeling
+// like real access to the world's generated structures opening up, not
+// a slow trickle.
+function expansionForWave(waveNumber) {
+  return 20 + 5 * Math.floor((waveNumber - 1) / 2)
+}
 
 PlayerEvents.tick(function (event) {
   var player = event.entity
@@ -42,13 +55,12 @@ PlayerEvents.tick(function (event) {
   // Only react to the true -> false transition (a wave just cleared).
   if (!wasInWave || isInWave) return
 
-  var wavesSinceExpansion = data.getInt('td_wavesSinceExpansion') + 1
+  // wave_spawner.js increments td_waveNumber at spawn time and never
+  // decrements it, so at the moment a wave clears this already holds
+  // the number of the wave that just ended.
+  var waveNumber = data.getInt('td_waveNumber')
+  var expansionBlocks = expansionForWave(waveNumber)
 
-  if (wavesSinceExpansion >= WAVES_PER_EXPANSION) {
-    data.putInt('td_wavesSinceExpansion', 0)
-    player.getServer().runCommandSilent(`worldborder add ${EXPANSION_BLOCKS} ${EXPANSION_TIME_SECONDS}`)
-    player.tell(`§6[Base Expansion] §fYou cleared ${WAVES_PER_EXPANSION} more waves - the border grows by ${EXPANSION_BLOCKS} blocks.`)
-  } else {
-    data.putInt('td_wavesSinceExpansion', wavesSinceExpansion)
-  }
+  player.getServer().runCommandSilent(`worldborder add ${expansionBlocks} ${EXPANSION_TIME_SECONDS}`)
+  player.tell(`§6[Base Expansion] §fWave ${waveNumber} cleared - the border grows by ${expansionBlocks} blocks.`)
 })
