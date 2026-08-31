@@ -33,6 +33,10 @@ file = "config/ftbquests/quests/data.snbt"
 hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
 
 [[files]]
+file = "config/lithium.properties"
+hash = "fe35d7074c4cdf900275d6925650be35f05cc926b0ca80f0d37db32ec2bd62c4"
+
+[[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
