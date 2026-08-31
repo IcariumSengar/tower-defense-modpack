@@ -83,8 +83,29 @@ ServerEvents.recipes((event) => {
 var BOB_AMPLITUDE = 0.08
 var BOB_PERIOD_TICKS = 60
 
+// Real bug found in playtesting (2026-08-31): placing the amulet on the
+// pedestal never actually let the player cross the border - "can't
+// cross either way." Root cause: amulet_border.js's own tick handler
+// was already correctly skipping ITS push-back while td_amuletOnPedestal
+// is true, but that was never the thing blocking movement in the first
+// place - vanilla's OWN worldborder physically blocks player movement
+// on its own (confirmed elsewhere in this pack, see wave_spawner.js's
+// spawn-position comments: "the border only clamps *player* movement"),
+// completely independent of any KubeJS script. Nothing was ever
+// disabling THAT. Fixed by actually resizing the real border: expand it
+// by a large fixed delta when the amulet goes on the pedestal, shrink by
+// the same fixed delta when it comes back off. Using a fixed delta
+// (rather than snapshot-and-restore an absolute size) means this stays
+// correct even if base_expansion.js grows the border for an unrelated
+// wave-clear while the amulet happens to be away - reading the border's
+// real current size at both ends and only ever adding/subtracting the
+// same constant preserves whatever real growth happened in between,
+// nothing is silently lost or reset.
+var BORDER_EXPAND_DELTA = 10000000
+
 BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   var player = event.player
+  var level = player.getLevel()
   var data = player.persistentData
   var x = event.block.getX() + 0.5
   // Feet spawn height: just above the dais surface (top at 11/16 of a
@@ -103,6 +124,28 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
     // back before their next trip to the pedestal.
     player.give(Item.of('kubejs:amulet', 1))
     player.getServer().runCommandSilent('kill @e[type=minecraft:armor_stand,tag=td_amulet_marker]')
+    // Shrink the real border back down by the same fixed delta it was
+    // expanded by below - see BORDER_EXPAND_DELTA's comment. If the
+    // player is currently standing beyond the real (shrunk-back) edge,
+    // amulet_border.js's own tick handler picks that up on its next
+    // check and pushes them back in - same intended "locked to the
+    // safe zone once the amulet's back on you" behavior already
+    // documented for this feature, not a new side effect.
+    //
+    // Sanity-clamped rather than applied blindly: any save where the
+    // amulet was already sitting on the pedestal from BEFORE this fix
+    // shipped never actually had its border expanded (the old code
+    // never touched it) - shrinking that real, un-expanded size by the
+    // full delta would produce a nonsense deeply-negative border. A
+    // real border only ever starts at 50 and grows, so anything the
+    // shrink would drop below that floor means there was nothing to
+    // undo in the first place - skip the command entirely rather than
+    // apply a broken value, and leave the border exactly as it was.
+    var currentBorderSize = level.getWorldBorder().getSize()
+    var shrunkBorderSize = currentBorderSize - BORDER_EXPAND_DELTA
+    if (shrunkBorderSize >= 50) {
+      player.getServer().runCommandSilent(`worldborder set ${shrunkBorderSize} 0`)
+    }
     player.tell('§d[Amulet] §fYou lift the pendant back off its stand. It settles into your pack, not onto you.')
     return
   }
@@ -140,6 +183,12 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   data.putDouble('td_amuletMarkerBaseX', x)
   data.putDouble('td_amuletMarkerBaseY', y)
   data.putDouble('td_amuletMarkerBaseZ', z)
+  // Expand the real border by a large fixed delta so vanilla's own
+  // player-movement clamp (not just this pack's custom push-back tick
+  // handler) actually stops blocking crossing - see BORDER_EXPAND_DELTA's
+  // comment above for the real root cause this fixes.
+  var currentBorderSize = level.getWorldBorder().getSize()
+  player.getServer().runCommandSilent(`worldborder set ${currentBorderSize + BORDER_EXPAND_DELTA} 0`)
   player.getServer().runCommandSilent(`summon minecraft:armor_stand ${x} ${y} ${z} {Invisible:1b,NoGravity:1b,Marker:1b,Small:1b,HandItems:[{id:"kubejs:amulet",Count:1b},{}],Tags:["td_amulet_marker"]}`)
   player.tell('§d[Amulet] §fYou set the pendant on the stand. The line at the border loosens - everything out there stops watching you, and starts watching this instead.')
 })

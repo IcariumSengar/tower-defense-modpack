@@ -110,7 +110,7 @@ hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "9621abc4cebf36ce7d7828dc7a5bd0d408d30c655e400c7c45041e80afe8cd48"
+hash = "5a0dafa79645786fe45e7ecfc55eaa2e36b31b2589a1bd5d50f0acfeb4a3c578"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
