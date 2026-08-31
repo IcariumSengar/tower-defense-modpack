@@ -43,11 +43,13 @@ const RADIUS = 80
 // Must match wave_spawner.js's WAVES.length — server_scripts don't
 // reliably share top-level scope across files (same duplication pattern
 // as HOSTILE_TYPES above), so this is redeclared here rather than
-// imported. Drives ONLY the wave-number display cap below (td_waveNumber
-// is an uncapped raw click-count, would otherwise show numbers higher
-// than any wave that's actually been designed) - does NOT drive starter
-// gear removal, see GEAR_REMOVAL_WAVE below for why those were split
-// apart 2026-08-29.
+// imported. No longer drives the wave-number display (2026-08-31, see
+// below - that's uncapped now that endless-phase waves are a real,
+// distinct thing worth showing, not a repeat of wave 8) - kept as the
+// stable "designed campaign length" reference GEAR_REMOVAL_WAVE's own
+// comment below still contrasts itself against, and never drove starter
+// gear removal either, see GEAR_REMOVAL_WAVE below for why those were
+// split apart 2026-08-29.
 const FINAL_WAVE = 8
 
 // Tag set on the sword/armor in playtest_starter_kit.js — matching on
@@ -173,11 +175,12 @@ PlayerEvents.tick((event) => {
   }).length
 
   const wasInWave = data.getBoolean('td_inWave')
-  // Capped at FINAL_WAVE (only that many waves are designed; calls
-  // beyond that repeat the final wave's composition) - td_waveNumber
-  // itself is an uncapped raw click-count, would otherwise show numbers
-  // higher than any wave that's actually been designed.
-  const waveNumber = Math.min(data.getInt('td_waveNumber'), FINAL_WAVE)
+  // No longer capped at FINAL_WAVE (2026-08-31, endless phase scaling
+  // shipped - see wave_spawner.js): waves past FINAL_WAVE are now a
+  // real, distinct endless phase (Undead Nights hordes), not a silent
+  // repeat of wave 8's composition, so showing the real wave number is
+  // the whole point - "how far did I get" is the actual feature.
+  const waveNumber = data.getInt('td_waveNumber')
 
   if (hostileCount > 0) {
     player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)

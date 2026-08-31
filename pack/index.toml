@@ -37,6 +37,18 @@ file = "config/lithium.properties"
 hash = "4e3f33646330eb651b8c1679d49245e061b9d9a3eb4b09316a0f07837d8d968c"
 
 [[files]]
+file = "config/undeadnights_difficulty_config.json"
+hash = "4df9fdca78c7f3f5c0dc77fc5ac3626581c6212cb2b561246176dd0e303b3b0d"
+
+[[files]]
+file = "config/undeadnights_horde_mobs_config.json"
+hash = "c27a34be1500287ab91de1eaaa9fb9db93e56685f03438ce03abda329402dc86"
+
+[[files]]
+file = "defaultconfigs/undeadnights-server.toml"
+hash = "973f74e6df7b191ae4b3f98957de53fb5dd6c062e01c90c99293d131745e49ad"
+
+[[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
 
@@ -186,11 +198,11 @@ hash = "4827815474b21875be2edf8f85fdd73029b6a6aef9ebbf180e12b90dec25291f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "4a7121efc4712af13c51f9922aebbdc1710bfcfdc9e61f656be12e0d8c6a61da"
+hash = "af893c8b389add1806d4b22589c022d3a2ae5230dafa472c1c4bb1dc6e4aeb8b"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "5b50f488bf08e5792839b09a897fd3ad698739f9d39b2b5391f9f0d1abaa1415"
+hash = "1fa95e40d230f577fc59d978878c25757a07968c4e9a0c2ca72d96533c8b0cb2"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -370,6 +382,11 @@ metafile = true
 [[files]]
 file = "mods/treasure2.pw.toml"
 hash = "2ec1518dc1b6ee8384e8f01a0f3098afff589f88cf4c967633847997b61e8a29"
+metafile = true
+
+[[files]]
+file = "mods/undead-nights.pw.toml"
+hash = "42b5c040a2abe394deb5969b4ff4a07cb1bd4f6a6e93484c4f82696918ef9aab"
 metafile = true
 
 [[files]]

@@ -1,0 +1,13 @@
+name = "Undead Nights - Zombie Horde Nights / Hordes"
+filename = "UndeadNights-2.3.0-Forge-mc1.20.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/g0mmcQV2/versions/EMzeC0pU/UndeadNights-2.3.0-Forge-mc1.20.1.jar"
+hash-format = "sha512"
+hash = "d75850dd00cbb75f0b367e0ce06f774eebf0ad65fb0e455ca0eb64085dbdd41130ee1bed7358a474ddf79bd54ca36da6f628e15c8556465d76f9869d4c09a673"
+
+[update]
+[update.modrinth]
+mod-id = "g0mmcQV2"
+version = "EMzeC0pU"

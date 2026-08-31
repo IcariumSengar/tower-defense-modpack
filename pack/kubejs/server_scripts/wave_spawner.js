@@ -224,6 +224,43 @@ function useWaveHorn(player) {
   server.runCommandSilent('time set night')
   server.runCommandSilent('gamerule doDaylightCycle false')
 
+  // Endless phase (waves 9+, direct request 2026-08-31): the designed
+  // 8-wave campaign is done, hand off to Undead Nights' own difficulty-
+  // level system instead of repeating WAVES[7] forever. Real
+  // integration details, confirmed by decompiling the mod and real
+  // sandboxed testing before this was written, not assumed:
+  // - Its commands NPE from a console/RCON source (getEntity() on a
+  //   non-entity source) - needs `execute as <player>`, unlike every
+  //   other command in this file which uses the plain console source
+  //   via server.runCommandSilent directly. `@a` rather than a
+  //   specific name/UUID, same "this pack is single-player-focused"
+  //   reasoning as wave_status.js's starter-gear removal.
+  // - Endless level maps 1:1 to (waveNumber - FINAL_WAVE), clamped to
+  //   40 (the number of authored levels in
+  //   config/undeadnights_difficulty_config.json) - holds at level 40's
+  //   values past that, same clamp pattern WAVES.length already uses
+  //   for wave 8.
+  // - spawn_horde is a genuine on-demand trigger (confirmed live in
+  //   the sandbox test), no day-count dependency - difficulty set then
+  //   spawn_horde, same call-and-response pattern as every other
+  //   command pair in this file.
+  // - Does NOT use pendingSpawns/the staggered-emergence system below -
+  //   Undead Nights handles its own spawn positioning (a fixed
+  //   distanceMin/distanceMax band around the player, shipped via
+  //   defaultconfigs/undeadnights-server.toml since that's a SERVER-type
+  //   Forge config that only loads at world start and can't be
+  //   rewritten live - confirmed by direct sandboxed testing, see
+  //   docs/FEATURES.md's "Wave Horn" section for the full story).
+  if (waveNumber > WAVES.length) {
+    var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
+    server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
+    server.runCommandSilent(`execute as @a at @s run undeadnights spawn_horde`)
+    player.tell(`§6[Wave Horn] §fWave ${waveNumber} incoming! (endless horde, difficulty ${endlessLevel})`)
+    server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}","color":"gold","bold":true}`)
+    server.runCommandSilent(`title @a subtitle {"text":"An endless horde approaches...","color":"white"}`)
+    return
+  }
+
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 

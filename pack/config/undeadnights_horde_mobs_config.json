@@ -1,0 +1,55 @@
+{
+  "configVariant": 2,
+  "defaultHordeId": 1,
+  "hordes": [
+    {
+      "hordeName": "trash_horde",
+      "dimension": "minecraft:overworld",
+      "horde1": [
+        {"mobId": "minecraft:zombie", "spawnChance": "30", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:skeleton", "spawnChance": "30", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:spider", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:wither_skeleton", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+      ]
+    },
+    {
+      "hordeName": "mixed_horde",
+      "dimension": "minecraft:overworld",
+      "horde2": [
+        {"mobId": "minecraft:zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:skeleton", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:spider", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:wither_skeleton", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:flesh_hunter_two", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:bruteplaquecreatureone", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+      ]
+    },
+    {
+      "hordeName": "elite_horde",
+      "dimension": "minecraft:overworld",
+      "horde3": [
+        {"mobId": "minecraft:zombie", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:skeleton", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:flesh_suffer", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:plaquethreelegcreature", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:flesh_boomer", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:bruteplaquecreatureone", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:flesh_hunter_two", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+      ]
+    },
+    {
+      "hordeName": "boss_horde",
+      "dimension": "minecraft:overworld",
+      "horde4": [
+        {"mobId": "minecraft:zombie", "spawnChance": "5", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:skeleton", "spawnChance": "5", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:ravager", "spawnChance": "25", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:flesh_suffer", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:plaquethreelegcreature", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:flesh_boomer", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "the_flesh_that_hates:bruteplaquecreatureone", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+      ]
+    }
+  ],
+  "internalConfigVersion": 1
+}
