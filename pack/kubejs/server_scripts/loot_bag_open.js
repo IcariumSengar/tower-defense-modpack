@@ -65,7 +65,12 @@ var SCAVENGERS_BAG_POOL = [
 var FORTIFIED_CACHE_POOL = [
   { item: 'minecraft:iron_ingot', weight: 25, min: 3, max: 6 },
   { item: 'minecraft:quartz', weight: 20, min: 3, max: 5 },
-  { item: 'minecraft:gold_ingot', weight: 15, min: 2, max: 4 },
+  // Weight 15->30, quantity 2-4->4-6 (2026-09-01, real playtest
+  // complaint: can't get enough gold to craft the amulet - see
+  // amulet_pedestal.js's recipe, 8x gold_ingot). Now the single
+  // highest-weight item in this pool, expected ~2.4 gold ingots per
+  // bag opened (was ~0.9) at Fortified Cache's own 3-roll count.
+  { item: 'minecraft:gold_ingot', weight: 30, min: 4, max: 6 },
   { item: 'minecraft:redstone_block', weight: 15, min: 1, max: 2 },
   { item: 'minecraft:obsidian', weight: 15, min: 2, max: 4 },
   { item: 'minecraft:lapis_block', weight: 15, min: 1, max: 2 },

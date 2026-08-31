@@ -107,12 +107,29 @@ zombie's actual attribute values — health +160%, damage +100%, speed
 not its `generic.attack_damage` melee attribute — scaling that
 attribute won't make arrows hit harder.
 
-**Left deliberately undone**: Quest 10 "No Turning Back"'s flavor text
-("Eight is where the map runs out... it's the same night, over and
-over") describes a frozen repeat that's no longer true — needs a
-rewrite in the diary voice, intentionally left for the user rather than
-guessed at by either Claude session. Not yet confirmed by an actual
-wave-9 playtest, same as everything else waiting on real play.
+**Quest 10 ("No Turning Back") removed entirely** (2026-09-01, direct
+request alongside "The Reckoning" - the last 2 Basics quests, user
+found them pointless) - resolves the flavor-text-rewrite need above by
+removing it, not by writing new text.
+
+**Real bug found on the first actual wave-9 playtest, fixed
+2026-09-01**: Wave Horn reported "a horde has spawned" but nothing
+appeared. Root cause confirmed, not guessed: the live instance's real
+`simulationDistance` is 12 chunks (192 blocks, from `options.txt`) -
+the shipped `distanceMin`/`distanceMax` (240/256, chosen to spawn
+"beyond the worldborder," the same border-relative reasoning
+`wave_spawner.js`'s own deterministic-phase spawn code had, since
+fixed - see "Wave Horn" above) always exceeded that, so every horde
+spawn target landed in a chunk the game never simulates and the mobs
+never ticked or became visible. Reverted `distanceMin`/`distanceMax` to
+the mod's own real default (70/75) in both the tracked
+`defaultconfigs/undeadnights-server.toml` and directly in the live
+save's own runtime `serverconfig/undeadnights-server.toml` (SERVER-type
+Forge configs don't hot-reload - editing the per-save file directly is
+the established technique for an already-created save). This exact
+70/75 value was already confirmed working in a real sandbox test during
+the original build above - not a fresh, unverified guess. Not yet
+confirmed by an actual wave-9 playtest with the fix in place.
 
 **Loot bags** — *live*. Kills drop tiered bags — Scavenger's Bag
 (Common, 50%), Fortified Cache (Uncommon, 25%), Warlord's Hoard (Rare,
@@ -1020,9 +1037,97 @@ actual gate the loot tier was missing.
   FTB Quests logging "3 chapters, 17 quests" — the exact expected count
   (11 Basics + 2 Tier 1 + 4 Tier 2).
 
-**Machine progression (Tier 3-4)** — see IDEAS.md, still just the
-original tier concept (powered → elite). Depends on the power system,
-also undesigned.
+**Machine progression (Tier 3-4)** — see IDEAS.md for the still-unscoped
+elite/endgame tier list (AoE Devastator, Chain-Tesla Network). Tier 3
+itself now has a real power system to depend on — see "Storage & power
+system" below, designed 2026-09-01, parked in QUEUE.md rather than
+sent to build (deliberately queued behind the current playtest-feedback
+batch, not a design gap).
+
+**Storage & power system** — *planned, parked, not built*. Direct
+request: give the pack "a tech pack feel" alongside base defense, with
+sensible item management as higher-tier machines come online. Four
+mods, all independently verified for Forge 1.20.1, not assumed from
+search summaries alone (see the per-mod caveats below on which
+dependency pages were actually checked directly versus not):
+
+- **Sophisticated Storage** (CurseForge, author P3pp3rF1y) — upgradeable
+  storage barrels/chests with filtering. Requires **Sophisticated
+  Core** (same author) as a mandatory dependency — confirmed directly
+  from the mod's own CurseForge relations page. No power requirement;
+  a clean, low-risk addition independent of everything else here.
+- **Refined Storage** (CurseForge, author raoulvdberge, confirmed
+  Forge 1.20.1 build v1.12.4) — the actual digital/networked item
+  storage system: a Controller, a Grid (crafting/access interface),
+  Disks (storage medium), Importers/Exporters/Constructors/Destructors
+  for automation. **Purely consumes Forge Energy, includes no
+  generation of its own** — the Controller needs an actual power
+  source connected to it, which is what the next two mods provide.
+  Energy requirement can be disabled via config if ever wanted, but the
+  plan here is to keep it on, since power management is part of the
+  "tech pack feel" being asked for, not incidental to it. **Not yet
+  directly verified**: its exact dependency list (only reasoned from
+  general documentation, not fetched from its own CurseForge relations
+  page the way Sophisticated Storage's was) — check directly before
+  installing.
+- **Immersive Engineering** (CurseForge, author BluSunrize, confirmed
+  Forge 1.20.1, v10.2.0-183 — marked "Final release for 1.20.1" by the
+  author, meaning a complete, stable stopping point on this version,
+  not an abandoned mid-version build) — the actual power generator.
+  Picked over the leaner, more generic **Powah! (Rearchitected)**
+  specifically for aesthetic fit: its Diesel Generator, exposed wiring,
+  and scavenged-industrial content read as wasteland-appropriate in a
+  way Powah's sci-fi reactors/solar panels don't. **Real double duty**:
+  IE's own Tesla Coil was already flagged in IDEAS.md as a candidate
+  for the still-unscoped Tier 3 "chain-lightning" defense machine —
+  installing IE for power generation means that candidate is already
+  in the pack, not a separate future install. **Real footprint cost,
+  not hidden**: this is a full standalone tech mod (its own ore
+  processing, engineering workbench, multiblock machines), the biggest
+  single addition to this pack besides full Create. **Not yet directly
+  verified**: dependency list not fetched from its own relations page —
+  check before installing, IE is generally known to be self-contained
+  but that's reasoned, not confirmed here.
+- **Flux Networks** (CurseForge, author sonar_sonic, confirmed Forge
+  1.20.1, v7.2.1, "compatible with FE/EU/RF/TESLA/AE") — wireless power
+  distribution: a Flux Point at the generator, Flux Plugs at consumers
+  (the Refined Storage Controller, and any Tier 2+ powered machine),
+  no cables between them, per-network configuration. Modern versions no
+  longer require the old SonarCore dependency (confirmed from search
+  results, not the relations page directly — same caveat as above).
+  This is specifically what lets "place a machine and it draws
+  automatically" work, matching the wireless-power feel already
+  sketched in IDEAS.md's original power-system notes.
+
+**How the pieces connect**: Immersive Engineering generates FE → Flux
+Networks distributes it wirelessly to the Refined Storage Controller
+and to Tier 2+ machines → Refined Storage handles the digital item
+network on top of (or alongside) Sophisticated Storage's simpler
+physical bulk storage. This is genuinely the pack's power system now,
+not a separate one for storage — the same open question from IDEAS.md
+(shared power pool/capacity limit vs. unlimited draw) still isn't
+resolved by picking these mods; Flux Networks supports per-network
+throughput/capacity config if a limit is ever wanted, but whether to
+actually use one is still an open game-design call, not decided here.
+
+**Explicitly not decided by this spec, flagged for whoever builds it**:
+- Whether this newly powers Tier 1-2 machines too, or stays scoped to
+  Tier 3-4 only as originally sketched (Tier 1-2 were deliberately
+  designed fuel-free — "two different flavors of resource tension for
+  early vs. late game" — preserving that split unless told otherwise).
+- Where in the base this physically goes — no "workshop" or tech room
+  exists in the current Watchpost layout, this needs real placement
+  decided at build time, not assumed to fit into existing rooms.
+- Whether Refined Storage/Sophisticated Storage components should be
+  gated behind specific loot tiers (matching this pack's existing
+  Uncommon/Rare materials-gating pattern) or craftable from the start.
+
+**Deliberately parked, not sent to build** — queued behind the current
+2026-09-01 playtest-feedback batch (13 items across 5 phases already in
+progress). This is a real, ready design, not something still being
+figured out; it's just sequenced to land after the current batch
+finishes rather than adding a fifth substantial mod-install project on
+top of what's already in flight.
 
 ---
 

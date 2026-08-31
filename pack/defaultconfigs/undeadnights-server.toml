@@ -8,10 +8,21 @@ sendHordeNightsCountdownMessage = false
 hordeSpawnedMessageAndSound = true
 #Minimum distance a horde will spawn away from the player | default: 70
 #Range: 10 ~ 256
-distanceMin = 240
+#Reverted to the mod's own default 2026-09-01, real bug found on the
+#first actual endless-phase playtest: "horde spawned" but nothing
+#appeared. Root cause confirmed, not guessed - the live instance's real
+#simulationDistance is 12 chunks (192 blocks; options.txt), and the
+#previous 240 value was chosen to spawn "beyond the worldborder" (same
+#border-relative thinking wave_spawner.js's own spawn code had, since
+#fixed - see docs/FEATURES.md's "World type"/"Wave Horn" sections)
+#without accounting for simulation distance at all. Every horde spawn
+#target landed in a chunk beyond what the game actually simulates, so
+#the mobs never ticked or became visible. The mod's own default (70)
+#is comfortably inside 192 blocks with real margin.
+distanceMin = 70
 #Maximum distance a horde will spawn away from the player | default: 75
 #Range: 10 ~ 256
-distanceMax = 256
+distanceMax = 75
 #Maximum amount of horde mobs that can be loaded in the world at the same time | default: 80
 hordeMobsSpawnCap = 80
 #If true, the vanilla gamerule doMobSpawning will be ignored | default: true

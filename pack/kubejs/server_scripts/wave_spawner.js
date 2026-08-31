@@ -166,9 +166,16 @@ function staggerGapForWave(waveNumber) {
   return Math.max(MIN_STAGGER_GAP_TICKS, BASE_STAGGER_GAP_TICKS - (waveNumber - 1) * 3)
 }
 
-function nearbyWaveMobCount(player, level, radius) {
+// requireTag defaults true (only count mobs actually spawned by this
+// file's own summon code, via td_wave_mob - see the tag's own comment
+// at the summon point below for why). Pass false during the endless
+// phase (waveNumber > WAVES.length), where mobs come from Undead
+// Nights' own opaque spawn_horde command and can never carry the tag -
+// falls back to the old type-only matching for that phase specifically.
+function nearbyWaveMobCount(player, level, radius, requireTag) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
+    if (requireTag !== false && !e.hasTag('td_wave_mob')) return false
     // Same fix as wave_status.js - a killed mob lingers ~1 second
     // (death animation) before actual removal, so exclude anything
     // already at 0 health rather than waiting for it to disappear.
@@ -200,7 +207,10 @@ function useWaveHorn(player) {
   // yet actually summoned - without this, spam-clicking the horn during
   // the emergence window could queue a second wave's mobs on top of the
   // first's before any of them exist yet for nearbyWaveMobCount to see.
-  if (nearbyWaveMobCount(player, level, 80) > 0 || pendingSpawns.length > 0) {
+  // requireTag false once already past the designed campaign (endless
+  // phase) - see nearbyWaveMobCount's own comment for why.
+  var isEndlessPhase = data.getInt('td_waveNumber') > WAVES.length
+  if (nearbyWaveMobCount(player, level, 80, !isEndlessPhase) > 0 || pendingSpawns.length > 0) {
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
     return
   }
@@ -415,12 +425,37 @@ PlayerEvents.tick(function (event) {
       // same Attributes-NBT override already used for follow_range
       // below, rather than touching every other mob's stats.
       var isRavager = spawn.mobType === 'minecraft:ravager'
+      // td_wave_mob (2026-09-01, real bug found in playtest: the
+      // "hostiles remaining" counter in wave_status.js, and this file's
+      // own nearbyWaveMobCount below, both used to match by mob TYPE
+      // only - any vanilla zombie/skeleton/spider from a nearby
+      // structure's real spawner block (spawners bypass doMobSpawning,
+      // confirmed vanilla behavior) within the counting radius got
+      // miscounted as a wave mob. td_wave_mob is permanent (unlike
+      // td_justSpawned below, which is removed within this same block) -
+      // both counters now require it, not just a type match, for the
+      // deterministic 1-8 wave phase. Endless-phase (waves 9+) mobs
+      // don't go through this summon path at all - Undead Nights spawns
+      // its own hordes via an opaque command - so they can't carry this
+      // tag; nearbyWaveMobCount/wave_status.js fall back to type-only
+      // matching specifically when waveNumber > WAVES.length.
+      // Flesh Suffer-specific nerf (2026-09-01, real playtest feedback -
+      // the real combat log shows it killed the player 4 separate times
+      // at wave 5). TFTH.toml's own base value is 25 attack damage,
+      // easily a one-shot against starter iron armor - cut to 12,
+      // matching the ravager's own post-nerf value above for
+      // consistency, via the same Attributes-NBT override technique.
+      var isFleshSuffer = spawn.mobType === 'the_flesh_that_hates:flesh_suffer'
       var summonNbt = isRavager
-        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:8},{Name:"generic.max_health",Base:60}],Health:60,Tags:["td_justSpawned"]}'
-        : '{Attributes:[{Name:"generic.follow_range",Base:128}],Tags:["td_justSpawned"]}'
-      // Tag added and removed within this same synchronous block, so
-      // the very next spawn processed (even same tick, even same mob
-      // type) can never see a stale tag from this one.
+        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:8},{Name:"generic.max_health",Base:60}],Health:60,Tags:["td_justSpawned","td_wave_mob"]}'
+        : isFleshSuffer
+          ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:12}],Tags:["td_justSpawned","td_wave_mob"]}'
+          : '{Attributes:[{Name:"generic.follow_range",Base:128}],Tags:["td_justSpawned","td_wave_mob"]}'
+      // td_justSpawned added and removed within this same synchronous
+      // block, so the very next spawn processed (even same tick, even
+      // same mob type) can never see a stale tag from this one.
+      // td_wave_mob is never removed - it identifies the mob as
+      // wave-spawned for the rest of its life.
       server.runCommandSilent(
         `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} ${summonNbt}`
       )

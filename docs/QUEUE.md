@@ -25,48 +25,96 @@ reflect actual current status.
 
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
-redesign together. See the full build brief sent to the build session
-for exact detail; grouped here by category. Two items below are already
-done — see "Built, awaiting your next playtest":
+redesign together. Sequenced 2026-09-01 (user-confirmed order). Phases
+1 and 2 are done (see "Built, awaiting your next playtest"); Phase 3 is
+partially done (structure loot fix shipped for one of two mods, see
+below); Phases 4 and 5 not started:
 
-- **Critical bugs (investigate first, gameplay-breaking)**:
+3. Structure improvements, remaining — spawners in structures, The
+   Lost City evaluation, and Abandoned Urban's own missing-loot half
+   (see below - deliberately not rushed given this pack's real
+   jigsaw/structure-generation crash history).
+4. QOL mod batch, install + verify together — Inventory Sorter,
+   Crafting Station Improved, Controlling, Xaero's World Map,
+   Waystones + Balm (+ quest), Zoomify.
+5. Decoration polish last — lang-file fix is cheap and can happen any
+   time, but placement/density reassessment waits until the user has
+   actually seen the redesigned base in a fresh world.
+
+- **Structure improvements, remaining (Phase 3)**:
+  - **Treasure-chest loot — half fixed, real root cause found for
+    both mods, not guessed**: `postapocalypse_structures`' own 3 chest
+    loot tables (`chests/{food,trash,cobwebs}.json`, real standard
+    vanilla-format tables, decompiled directly from the mod's jar) were
+    genuinely low-value "wasteland junk" by the mod's own design - not
+    a bug, just thin. Overridden via `pack/kubejs/data/
+    postapocalypse_structures/loot_tables/chests/` to add a real
+    treasure pool (gold/lapis_block/ender_pearl/diamond/emerald/
+    redstone_block/obsidian/golden_apple) on top of the existing junk
+    pool, not replacing it. Verified end-to-end: force-loaded a real
+    chunk, rolled the tables via `/loot spawn` in a live sandbox, and
+    directly confirmed the new items actually drop (a first attempt at
+    this check produced a false negative - the check query didn't
+    account for the item's fall trajectory from the spawn height, not
+    a real bug - caught and fixed the check itself). **Abandoned
+    Urban is a real, harder, separate problem, still open**: decompiled
+    its 34 structure `.nbt` files directly - only ONE
+    (`gas_station_loot.nbt`) has any chest at all (referencing vanilla's
+    own real `minecraft:chests/simple_dungeon` table, genuinely decent
+    loot), the other 33 have none. Real fix would mean either
+    hand-editing NBT structure files (real corruption risk, no
+    in-game way to verify blind) or adding a `processors` rule to the
+    mod's own jigsaw template pool entries to probabilistically inject
+    chests (and see below, spawners) into the existing pieces - the
+    standard vanilla technique for this, but real, and this pack has a
+    documented history of jigsaw/structure-generation crashes from
+    exactly this kind of change (see FEATURES.md's "World type"
+    section) - deliberately not rushed into the same session as
+    everything else already shipped today.
+  - Add spawners to structures for real danger - same underlying
+    technique (structure processors) and same caution as Abandoned
+    Urban's loot fix above - worth doing together once that's designed,
+    not as two separate structure-generation changes.
+  - Evaluate/install **The Lost City** for structure cohesion - real
+    caution flag still applies (Berezka dependency, same family that
+    sank an earlier pick) - verify it's genuinely the core library
+    before installing.
+- **Critical bugs, remaining**:
   - Endless phase (waves 9+): Wave Horn says "a horde has spawned" but
-    nothing appears. **Confirmed NOT fixed by the spawn-positioning
-    rewrite below** — that rewrite only touches the deterministic
-    1-8-wave system's own spawn code; the endless-phase branch returns
-    early and calls Undead Nights' own `spawn_horde` command directly,
-    a completely separate code path untouched by this fix. Still needs
-    its own diagnosis.
-  - "Hostiles remaining" wave counter includes mobs elsewhere on the
-    map (likely structure-spawned), not just wave mobs — needs scoping
-    to wave-tagged mobs only. Real candidate fix identified while
-    reading this code for the spawn-positioning rewrite:
-    `wave_spawner.js`'s own staggered-spawn tick handler already tags
-    each mob `td_justSpawned` for one tick (then clears it) — could add
-    a second, persistent `td_wave_mob` tag at the same summon point and
-    have both `nearbyWaveMobCount()` (this file) and `wave_status.js`'s
-    counter filter on it instead of by type list. Doesn't obviously
-    cover endless-phase mobs the same way, since those aren't summoned
-    through this file's own code at all (see above) — needs a decision
-    on whether that matters in practice (Undead Nights' hordes spawn
-    240-256 blocks out, likely outside the 80-block counting radius
-    until they close in) before implementing.
-  - Structures generate with no real treasure-chest loot, only basic
-    barrel contents — Treasure2's chest tiers not confirmed showing up
-    in the newer structure mods, needs diagnosis.
+    nothing appears. **Root cause confirmed, real fix shipped, not yet
+    playtested**: the live instance's actual `simulationDistance` is 12
+    chunks (192 blocks, confirmed from `options.txt`) - the shipped
+    `distanceMin`/`distanceMax` (240/256, chosen to spawn "beyond the
+    worldborder," the same flawed border-relative reasoning the
+    deterministic wave system's own spawn code had, since fixed) always
+    exceeded that, so every horde spawn target landed in an unsimulated
+    chunk and never ticked or became visible. Reverted to the mod's own
+    real default (70/75, confirmed from the config's own comments) in
+    both the tracked `defaultconfigs/undeadnights-server.toml` and
+    directly in the live save's own runtime
+    `serverconfig/undeadnights-server.toml` (SERVER-type Forge configs
+    don't hot-reload - editing the per-save file directly is the
+    correct, established technique for an already-created save, same
+    as used earlier this session). Confidence basis: this exact 70/75
+    value was already confirmed working in a real sandbox test during
+    the original endless-phase build (see FEATURES.md's "Wave Horn"
+    section) - not a fresh guess.
   - An unidentified mob that can turn invisible one-shot-killed the
-    user — needs identifying (check combat/death log) before it can be
-    removed from whatever roster it's in.
-- **Balance tweaks (clear direction, just needs numbers)**:
-  - Gold drop rate too low to craft the amulet — increase it.
-  - Worldborder growing too fast — reduce the per-wave escalation.
-  - Flesh Suffer one-shots the player at wave 5 — nerf its attack
-    damage (same technique as the ravager nerf), or move it later in
-    the campaign.
-  - Remove the last 2 Basics quests ("The Reckoning," "No Turning
-    Back") — user finds them pointless. Conveniently resolves the
-    already-flagged "Quest 10 flavor text needs a rewrite" item by
-    removing the need for it.
+    user - **investigated, no literal invisible mob found**. Read the
+    real combat log directly: the player died 5 times total, 4 to
+    "Flesh Suffer" and 1 to "Flesh Hunter Two," both real, already-known
+    roster mobs - no unidentified or blank attacker anywhere in the log.
+    Decompiled Flesh Suffer's own entity class looking for an
+    invisibility ability: found a real retaliation effect instead (
+    Slowness VI for 2 seconds, applied to whoever melee-attacks it,
+    confirmed by decompiling vanilla's own `MobEffects.class` to
+    identify the exact SRG field, not guessed) - not invisibility, but
+    a real mechanic that could easily read as "got trapped and killed
+    before I could react," which may be what got described as
+    "invisible." Flesh Suffer's own real 25 attack damage is separately
+    nerfed below - if the user still experiences a literal invisible
+    attacker after that, it needs a fresh death with log access, not
+    guessed at from this window's log alone.
 - **Decoration quality**: some of the new decoration blocks show
   Chinese labels instead of English (likely an incomplete `en_us` lang
   file in Doomsday Decoration or Zcraft Decoration — fixable via a lang
@@ -89,13 +137,16 @@ done — see "Built, awaiting your next playtest":
   - **Zoomify** (CurseForge, isXander, 33M+ downloads) — confirmed
     real, Forge 1.20.1. Default keybind is C, not Z — fully
     configurable, just needs rebinding.
-  - **Crafting table with adjacent-inventory pull** — NOT YET
-    IDENTIFIED. Searched for a specific match to "remembers its
-    inventory, pulls from an adjacent inventory to craft" — no
-    confident match found (a mod called "Smart Crafting Table" looked
-    promising by name but turned out Fabric-only, 1.19/1.12.2, wrong
-    fit). Held until the exact mod is identified — asked the user for
-    the name/source if they remember it.
+  - **Crafting Station Improved** (CurseForge, author Deepacat,
+    `craftingstation-1.20.1-1.4.0.jar`) — identified 2026-09-01, user
+    named it directly ("Crafting Station"). A standalone extraction of
+    Tinkers' Construct's crafting station block — own crafting-grid
+    state, connects to adjacent inventories to pull materials. Confirmed
+    Forge 1.20.1, no required dependencies. Picked over the plain
+    "Crafting Station" and "Crafting Station: JEI Edition" variants for
+    its extra whitelist/blacklist config and shift-click clear-to-
+    inventory QOL, both strict additions on top of the same base
+    functionality.
   - **"Abandoned towns/cities" structure mod for cohesion** — candidate
     found: **The Lost City** (singular — distinct from "The Lost
     Cities," which was already ruled out for shipping its own chunk
@@ -163,12 +214,40 @@ done — see "Built, awaiting your next playtest":
   boot (clean `Done`, 0 script errors, exact expected 17-quest count) —
   not yet seen in-game.
 - **Endless phase scaling (waves 9+)** — built 2026-09-01, **real bug
-  found on first actual wave-9 playtest**: Wave Horn reports "a horde
-  has spawned" but nothing appears. See "2026-09-01 playtest feedback
-  batch" above — needs investigation, not yet fixed. Quest 10 ("No
-  Turning Back") is slated for removal per the same feedback batch,
-  which resolves its outstanding flavor-text-rewrite need by removing
-  it entirely.
+  found on first actual wave-9 playtest, real fix shipped 2026-09-01**:
+  see "Structure improvements, remaining" above for the full root-cause
+  writeup (Undead Nights' spawn-distance config exceeded the live
+  instance's real simulation distance). Not yet confirmed by an actual
+  wave-9 playtest with the fix in place.
+- **2026-09-01 playtest feedback batch, Phase 2 (balance tweaks)** —
+  built and shipped 2026-09-01, all four items:
+  - Gold drop rate: Fortified Cache's `gold_ingot` entry weight 15->30
+    (now the single highest-weight item in that pool) and quantity
+    2-4->4-6 - expected ~2.4 gold ingots per bag opened, was ~0.9.
+  - Worldborder growth: `base_expansion.js`'s per-wave rate cut to
+    roughly 43% of the previous curve (10+3*step instead of 20+5*step),
+    same step-every-2-waves shape - ends at 166 blocks by wave 8
+    instead of 270.
+  - Flesh Suffer nerf: attack damage 25->12 via the same Attributes-NBT
+    override technique already used for the ravager, at the mob's
+    summon point in `wave_spawner.js`.
+  - Basics chapter: "The Reckoning" and "No Turning Back" (the last 2
+    quests) removed entirely from `basics.snbt` - confirmed nothing
+    else depended on them before removing. Resolves the outstanding
+    "Quest 10 flavor text needs a rewrite" item by removing the need
+    for it. Sandbox-verified: chapter reload shows exactly 15 quests
+    (was 17), matching the removal.
+  - Also fixed in the same pass, not originally its own numbered item:
+    the "hostiles remaining" counter (`wave_status.js`) and the Wave
+    Horn's own re-use gate (`wave_spawner.js`'s `nearbyWaveMobCount`)
+    both used to match nearby hostiles by type only, so a real vanilla
+    mob from a nearby structure's spawner block (spawners bypass
+    `doMobSpawning`) within the counting radius got miscounted as a
+    wave mob. Both now require a persistent `td_wave_mob` tag, set at
+    the actual summon point, for the deterministic 1-8-wave phase;
+    endless-phase mobs (which can't carry this tag, coming from Undead
+    Nights' own opaque `spawn_horde` command) fall back to the old
+    type-only matching, a deliberate scope boundary, not an oversight.
 
 ## Confirmed working (recent playtests)
 
@@ -192,12 +271,24 @@ done — see "Built, awaiting your next playtest":
 
 ## On hold — deliberately not queued right now
 
-*(nothing on hold right now)*
+- **Storage & power system** — fully specced 2026-09-01 (see
+  FEATURES.md's "Defense" section, "Storage & power system" entry).
+  **Sophisticated Storage** (+ required Sophisticated Core), **Refined
+  Storage**, **Immersive Engineering** (power generation — also
+  resolves the Tier 3 Tesla Coil candidate for free), and **Flux
+  Networks** (wireless distribution) — four mods, real footprint (IE is
+  a full standalone tech mod, the biggest single addition besides full
+  Create). Real design decision made along the way: this becomes the
+  pack's actual Tier 3-4 power system, not a separate storage-only
+  addition. Three of the four mods' exact dependency lists weren't
+  fetched directly from their own CurseForge relations pages (only
+  Sophisticated Storage's was) — verify before installing, not assumed.
+  **Deliberately parked, not sent to build** — queued behind the
+  current 2026-09-01 playtest-feedback batch (13 items, 5 phases) so it
+  doesn't add a fifth substantial project on top of what's already in
+  flight. Send when that batch clears.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
-
-- Power system + Tier 3-4 machines — still just a tier sketch, blocked
-  on nothing specific but not yet designed in enough detail to queue.
 - Roguelike next-wave-composition choice — parked pending a GUI
   decision that was explicitly not pursued.
 - **Base expansion into rooms/corridors (Schematicannon)** — mod

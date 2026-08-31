@@ -159,9 +159,26 @@ PlayerEvents.tick((event) => {
   if (level.getTime() % 4 !== 0) return
 
   const data = player.persistentData
+  // No longer capped at FINAL_WAVE (2026-08-31, endless phase scaling
+  // shipped - see wave_spawner.js): waves past FINAL_WAVE are now a
+  // real, distinct endless phase (Undead Nights hordes), not a silent
+  // repeat of wave 8's composition, so showing the real wave number is
+  // the whole point - "how far did I get" is the actual feature.
+  const waveNumber = data.getInt('td_waveNumber')
+  // Past the designed campaign (endless phase), mobs come from Undead
+  // Nights' own spawn_horde command and can never carry td_wave_mob -
+  // see wave_spawner.js's tag comment for the full story.
+  const isEndlessPhase = waveNumber > FINAL_WAVE
 
   const hostileCount = level.getEntities().filter((e) => {
     if (!HOSTILE_TYPES.includes(`${e.type}`)) return false
+    // Real bug found in playtest (2026-09-01): this used to match by
+    // type only, so any vanilla zombie/skeleton/spider from a nearby
+    // structure's real spawner block (spawners bypass doMobSpawning)
+    // within RADIUS got miscounted as a wave mob. td_wave_mob is set
+    // permanently on every mob wave_spawner.js actually summons - see
+    // its own comment at the summon point for the full story.
+    if (!isEndlessPhase && !e.hasTag('td_wave_mob')) return false
     // A killed mob plays a ~1 second death animation before actually
     // being removed from the world, so it's still present in
     // getEntities() during that window - excluding anything already at
@@ -175,12 +192,6 @@ PlayerEvents.tick((event) => {
   }).length
 
   const wasInWave = data.getBoolean('td_inWave')
-  // No longer capped at FINAL_WAVE (2026-08-31, endless phase scaling
-  // shipped - see wave_spawner.js): waves past FINAL_WAVE are now a
-  // real, distinct endless phase (Undead Nights hordes), not a silent
-  // repeat of wave 8's composition, so showing the real wave number is
-  // the whole point - "how far did I get" is the actual feature.
-  const waveNumber = data.getInt('td_waveNumber')
 
   if (hostileCount > 0) {
     player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)

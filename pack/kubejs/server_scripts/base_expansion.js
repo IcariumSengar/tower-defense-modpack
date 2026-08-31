@@ -29,18 +29,16 @@
 
 var EXPANSION_TIME_SECONDS = 10
 
-// Escalating growth curve (2026-08-31, direct request, numbers
-// pre-confirmed with the user via docs/QUEUE.md before this was built):
-// grows on EVERY wave clear now, not every 2nd, by an amount that steps
-// up every 2 waves - same constant-plus-step-function style as
-// wave_spawner.js's staggerGapForWave, not a new pattern. Gives
-// 20/20/25/25/30/30/35/35 across waves 1-8, taking the border from 50
-// to 270 by the end of the designed campaign (vs. 70 under the old flat
-// +20-every-2-waves rate) - intent is late-campaign expansion feeling
-// like real access to the world's generated structures opening up, not
-// a slow trickle.
+// Escalating growth curve, reduced 2026-09-01 (real playtest feedback:
+// "growing too fast"). Original 2026-08-31 numbers (20 + 5*step) gave
+// 20/20/25/25/30/30/35/35 across waves 1-8, a cumulative 220 blocks,
+// taking the border from 50 to 270 by the end of the designed campaign.
+// Cut to roughly 43% of that per-wave rate, same shape (steps up every
+// 2 waves, same style as wave_spawner.js's staggerGapForWave) - gives
+// 10/10/13/13/16/16/19/19, cumulative 116, ending at 166 by wave 8.
+// Still real, felt growth every wave clear, just a slower climb.
 function expansionForWave(waveNumber) {
-  return 20 + 5 * Math.floor((waveNumber - 1) / 2)
+  return 10 + 3 * Math.floor((waveNumber - 1) / 2)
 }
 
 PlayerEvents.tick(function (event) {

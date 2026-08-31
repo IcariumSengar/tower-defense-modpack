@@ -193,36 +193,6 @@
 			x: 12.0d
 			y: 1.5d
 		}
-		{
-			dependencies: ["BE3E01220D23C31D"]
-			description: [
-				"Five waves. That's the whole story of whoever came before - start to finish, blade to dust. You've matched them. Now you get to find out what happens after the story usually ends."
-			]
-			icon: "minecraft:wither_skeleton_skull"
-			id: "E5587D743FF3F653"
-			tasks: [{
-				id: "F52E626FCE12BEB0"
-				type: "checkmark"
-			}]
-			title: "The Reckoning"
-			x: 14.0d
-			y: 0.0d
-		}
-		{
-			dependencies: ["E5587D743FF3F653"]
-			description: [
-				"Eight is where the map runs out. Nobody wrote down what comes after, because nobody who saw it lived to write it down. From here it's the same night, over and over, until it isn't. How long you last is the only story left to tell."
-			]
-			icon: "minecraft:totem_of_undying"
-			id: "0AA7EE28701688CA"
-			tasks: [{
-				id: "AD978B89F7FE38E7"
-				type: "checkmark"
-			}]
-			title: "No Turning Back"
-			x: 16.0d
-			y: 0.0d
-		}
 	]
 	title: "Basics"
 }
