@@ -17,24 +17,40 @@
     "fluid_level_floodedness": 0.0,
     "fluid_level_spread": 0.0,
     "lava": 0.0,
-    "temperature": 0.0,
-    "vegetation": 0.0,
-    "continents": 0.0,
-    "erosion": 0.0,
+    "temperature": {
+      "type": "minecraft:shifted_noise",
+      "noise": "minecraft:temperature",
+      "shift_x": "minecraft:shift_x",
+      "shift_y": 0,
+      "shift_z": "minecraft:shift_z",
+      "xz_scale": 0.25,
+      "y_scale": 0
+    },
+    "vegetation": {
+      "type": "minecraft:shifted_noise",
+      "noise": "minecraft:vegetation",
+      "shift_x": "minecraft:shift_x",
+      "shift_y": 0,
+      "shift_z": "minecraft:shift_z",
+      "xz_scale": 0.25,
+      "y_scale": 0
+    },
+    "continents": "minecraft:overworld/continents",
+    "erosion": "minecraft:overworld/erosion",
     "depth": 0.0,
     "ridges": 0.0,
     "initial_density_without_jaggedness": {
       "type": "minecraft:y_clamped_gradient",
-      "from_y": -61,
+      "from_y": 1,
       "from_value": 1.0,
-      "to_y": -59,
+      "to_y": 3,
       "to_value": -1.0
     },
     "final_density": {
       "type": "minecraft:y_clamped_gradient",
-      "from_y": -61,
+      "from_y": 1,
       "from_value": 1.0,
-      "to_y": -59,
+      "to_y": 3,
       "to_value": -1.0
     },
     "vein_toggle": 0.0,

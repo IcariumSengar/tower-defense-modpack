@@ -77,6 +77,14 @@ file = "kubejs/data/curios/tags/items/necklace.json"
 hash = "214373eba2f8296541141df6c85c7ef93222c8b02c5bae9a3737fac397c186fd"
 
 [[files]]
+file = "kubejs/data/dungeons_arise/worldgen/structure_set/major_structures.json"
+hash = "5d8a030ffb2e9eb0afe0ab5d6794fb8d1d2f170950e13b1657b962ecbed9a4bb"
+
+[[files]]
+file = "kubejs/data/dungeons_arise/worldgen/structure_set/minor_structures.json"
+hash = "b4e3c1f7e5ba6f88e687f9b3a0a16be759dc8debb62f13ace816ed792c5a1a27"
+
+[[files]]
 file = "kubejs/data/kubejs/curios/entities/player.json"
 hash = "2104e96527eba9ba96b58ebc68e0140a85905d14bdf8789da098793fd47d0011"
 
@@ -86,15 +94,27 @@ hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/noise_settings/flat_desert.json"
-hash = "0dfa6e4ec5c862b0e5cbc015b499740510134f3cb3a891bd9a046f8d33e8d619"
+hash = "6faa18a507dcd4030aa3a9076eb5c60c7b9806b9c0957b6a057fe1748e1b89d5"
 
 [[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
-hash = "faa81a11742877d31d27aba9de9179ff1077cca02500998d6f7ac67b8b10080c"
+hash = "552d3fd292cc01237277ac4007bda3cc61a1be2a88f5a6c219c903c3ada2f866"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
 hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
+
+[[files]]
+file = "kubejs/data/structory_towers/worldgen/structure_set/rare_towers.json"
+hash = "4c7a34e275074a6a42533db5db973dc0b4aef9414356e67f5081e5fb65476e31"
+
+[[files]]
+file = "kubejs/data/structory_towers/worldgen/structure_set/towers.json"
+hash = "95308f6401d65831730fa29b175a1bbca150bf2f3ae5b149b532932033b2e319"
+
+[[files]]
+file = "kubejs/data/structory_towers/worldgen/structure_set/ultra_rare_towers.json"
+hash = "fec70bcf56c0bc7d67b70bf76c6734539b1378d54b437a818bad534f8e214215"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
@@ -300,6 +320,11 @@ hash = "9af1c3705dee1576d6691a814eece2b5f4f2548533f037fc9e848fc1eff3edcf"
 metafile = true
 
 [[files]]
+file = "mods/structory-towers.pw.toml"
+hash = "2d5fddc37293f33e8967e4687a69fb98126a8c4f79194547d1ab6e2941007910"
+metafile = true
+
+[[files]]
 file = "mods/tfth.pw.toml"
 hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
 metafile = true
@@ -312,6 +337,11 @@ metafile = true
 [[files]]
 file = "mods/treasure2.pw.toml"
 hash = "2ec1518dc1b6ee8384e8f01a0f3098afff589f88cf4c967633847997b61e8a29"
+metafile = true
+
+[[files]]
+file = "mods/when-dungeons-arise.pw.toml"
+hash = "de4b3b898a16ed4d615cfce18ac872e6a963605d52072d290b495cdff160a34c"
 metafile = true
 
 [[files]]

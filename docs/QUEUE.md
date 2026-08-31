@@ -18,9 +18,45 @@ IDEAS.md/FEATURES.md first.
 
 ## Ready to build
 
-*(nothing queued right now)*
+*(nothing queued right now — see "In progress" for the 2026-08-31
+world-gen/structure-variety brief just sent)*
 
 ## In progress (already sent, not yet confirmed built)
+
+- **Drop desert-only, structure-mod variety pass** — built 2026-08-31
+  (see FEATURES.md's "World type" section for full detail). Biome
+  source `fixed` desert → curated `multi_noise` (7 biomes, picked from
+  real structure-tag frequency data across WDA/Structory/Treasure2, not
+  guessed). Floor depth raised from ~4 to 65 blocks, sized against the
+  real `.nbt` size of WDA's own underground structure pieces (32 blocks
+  each, confirmed by reading the actual template files). **When
+  Dungeons Arise** and **Structory: Towers** both installed and their
+  structure_set spacing retuned for this world's bordered play area.
+  Verified in a real sandboxed dedicated-server boot (not just JSON
+  validation) before shipping — clean boot, two pre-existing non-fatal
+  WDA issues found and noted (not caused by this pack). **Abandoned
+  Structures BLOCKED, not installed** — real, previously-unknown
+  mandatory dependency on a separate "berezka_api" mod that couldn't be
+  confidently identified among ~12 similarly-named "Berezka API for X"
+  listings; flagged back rather than guessed. Treasure2 untouched.
+  Needs a brand-new world to test, same as every world-gen change so
+  far. Not yet confirmed in-game.
+
+- **Amulet pedestal marker fix** — built 2026-08-31: root cause found
+  (armor stand held items render at hand/shoulder height, not feet, so
+  the marker was a full body-height too high), fixed with `Small:1b` +
+  a lowered spawn height + a gentle bob via a throttled tick handler.
+  **Height is a reasoned estimate, not pixel-verified** (vanilla's
+  client jar is obfuscated at the raw level, unlike the Java mod jars
+  this pack usually decompiles cleanly) — worth a visual confirm next
+  playtest, same as everything else in this list.
+- **Vanilla desert pyramids disabled** — built 2026-08-31: emptied
+  `desert_pyramids.json`'s structure list, cleaned up the now-dead
+  spacing override. Confirmed root cause along the way: this world's
+  floor is only ~4 blocks thick (surface at y≈-60, world min_y=-64) —
+  not a desert-specific problem, any underground-digging structure on
+  this world risks the same wall. Directly relevant to the "drop desert,
+  pick structure mods for variety" work below.
 
 - **Base expansion: escalating growth curve** — built 2026-08-31 (see
   FEATURES.md's "Base expansion" entry): grows on every wave clear now,
@@ -36,6 +72,26 @@ IDEAS.md/FEATURES.md first.
   `fixed` desert biome_source, replacing the confirmed-broken `flat`
   override. Needs a brand-new world to actually test, since world-gen
   changes don't retroactively apply to already-generated chunks.
+- **Endless phase scaling (waves 9+)** — sent to build 2026-08-31 on
+  direct request (Tier 2 stays on hold, this one specifically was pulled
+  off hold and queued — see FEATURES.md's "Wave Horn" section for the
+  full spec). Built on the **Undead Nights** mod's difficulty-level
+  system (health/damage/speed/armor/horde-size scale factors per level,
+  wave-number-mapped via `/undeadnights difficulty set <n>`), after
+  ruling out Pure Suffering and DeceasedCraft and real-testing Undead
+  Nights in a sandboxed server first. Fixed `distanceMax≈256` spawn band
+  (its distance config doesn't hot-reload — confirmed by direct
+  measurement, not assumed) instead of tracking the worldborder live;
+  holds up to ~wave 95. New footprint: adds the Undead Nights mod. Three
+  integration details that are required, not optional:
+  `updateAttributesOfThirdPartyMobs: true` per level,
+  `securityCraftCompatibility` enabled, and its commands need
+  `execute as <player>` rather than the console source the rest of
+  `wave_spawner.js` uses. Two required follow-on edits: `wave_status.js`'s
+  display stops capping at `FINAL_WAVE`, and Quest 10's flavor text needs
+  a rewrite (it currently describes a frozen repeat that stops being
+  true — left for the user to redo in the diary voice, not for the build
+  session to guess at). Not yet confirmed in-game.
 
 ## On hold — deliberately not queued right now
 
@@ -52,18 +108,6 @@ IDEAS.md/FEATURES.md first.
   start this until told otherwise — it was already ready to build, this
   isn't a design gap, purely a pacing call. Its Tier 1 chapter
   dependency ("Sharpened Scrap") is now satisfied.
-- **Endless phase scaling (waves 9+)** — fully specced 2026-08-30 (see
-  FEATURES.md's "Wave Horn" section): separate count/toughness/speed
-  formulas past wave 8, roster mix shifting toward existing elite mobs,
-  generalizing the ravager's proven per-mob NBT stat override to every
-  mob type. Investigated and ruled out handing this to Pure Suffering
-  first (see the same section) before designing it custom. Two required
-  follow-on edits bundled with it: `wave_status.js`'s display stops
-  capping at `FINAL_WAVE`, and Quest 10's flavor text needs a rewrite
-  (it currently describes a frozen repeat that stops being true). **Held
-  for the same pacing reason as Tier 2 above** — not queued until the
-  user has actually playtested the amulet/Tier 1/world-type rebuild
-  that's already landed.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 

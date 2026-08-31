@@ -357,6 +357,129 @@ normal terrain than `flat` was, which is why `flat` needed all the
 "check every mod for self-disable logic" caution in the first place;
 this isn't expected to be a new risk, possibly a reduced one.
 
+**Redesigned again 2026-08-31 — dropping the desert-only constraint,
+raising the floor.** Direct request after the first real playtest:
+"lose the whole desert theme thing," pick whatever biome/structure mods
+actually give the best structure *variety* — desert was never the goal
+on its own merits, it was a means to unlock desert-tagged structures/
+mods back when the `flat` generator's one-hardcoded-biome limit forced a
+single-biome choice. Now that this pack is on `noise` + a custom flat
+density function (not `flat`), that constraint is gone, and staying flat
+was independently re-confirmed as a keeper (see "Structure mod picks"
+below for why the floor-depth question came up at all).
+
+- **Biome source, built 2026-08-31**: `fixed` (single `minecraft:desert`)
+  → `multi_noise` with a curated 7-biome set — `desert`, `badlands`,
+  `savanna`, `savanna_plateau`, `plains`, `sunflower_plains`, `meadow`.
+  Picked from real data, not aesthetic preference: extracted every
+  structure-biome tag from When Dungeons Arise's own jar (39 structures'
+  worth) and counted frequency — `plains`/`sunflower_plains` topped the
+  list (15/39 each), `desert` third (9/39), `meadow` (8), `savanna`/
+  `savanna_plateau` (7+6) — then cross-checked against Structory:
+  Towers' own biome tags (`oak_biomes` = plains/forest/meadow/
+  sunflower_plains/savanna/swamp/flower_forest, `deserts` = desert +
+  Terralith desert variants) and added `badlands` on top since
+  Structory's `nomad_outpost` specifically needs it and no WDA structure
+  was hurt by including it. Deliberately kept to this one arid/open
+  biome family (no forest/jungle/snow/ocean) — avoids reintroducing
+  water-related edge cases this world has never tested, and keeps the
+  desert-adjacent visual identity mostly intact while genuinely
+  broadening what can generate. Real, honest limitation: vanilla's own
+  exact per-biome climate parameter values live in Java code
+  (`OverworldBiomeBuilder`), not a datapack file, and couldn't be
+  extracted from the raw (obfuscated) client jar the way `noise_settings`
+  was — so this is a **custom parameter-point assignment** across
+  temperature/humidity/continentalness/erosion (spread across the real
+  -1..1 space, not vanilla's own values), not a reverse-engineered
+  match to vanilla's real biome distribution. Terrain shape is
+  unaffected either way — `final_density` never reads these axes at
+  all, so flatness stays structurally guaranteed regardless of what
+  biome gets painted where.
+- **Floor depth, built 2026-08-31**: raised from ~4 blocks (surface
+  y≈-60, `min_y=-64`) to 65 blocks (surface y≈2) — not guessed, sized
+  against real data. Downloaded When Dungeons Arise's actual `.nbt`
+  structure templates and read their real `size` tag directly: every
+  underground piece checked (`mining_system_descent_0`,
+  `mushroom_mines_part_0`, etc.) is exactly 32 blocks tall, and jigsaw
+  structures can chain multiple pieces vertically, so a single piece's
+  height is a floor, not a ceiling, on real depth need. 65 blocks gives
+  2x margin over one confirmed piece. Checked Treasure2's own
+  `dungeon/pit` shaft pieces too (6-9 blocks each, chained) — a smaller
+  real requirement, comfortably covered by the same number.
+- Verified in a real sandboxed dedicated-server boot (not just JSON
+  validation) before shipping — installed the exact same KubeJS +
+  Architectury + Rhino jars this pack uses, plus the two new structure
+  mods, in a scratch server, deleted the world, and confirmed a clean
+  `Done (20.176s)!` boot with the new biome source, raised floor, and
+  both mods' retuned structure_sets all active together. Found two
+  pre-existing, non-fatal issues along the way, **neither caused by
+  this pack's own changes**: When Dungeons Arise has its own missing
+  jigsaw pool (`dungeons_arise:underworld/foundry/foundry_corridor_gears`
+  logs "Empty or non-existent pool," same class of issue Treasure2's
+  `well_rooms` pool has) and some underground pieces have hanging
+  entities (item frames/paintings) that fail to attach ("Hanging entity
+  at invalid position") — both logged as warnings/errors but neither
+  stopped generation or crashed the server. Worth watching on the real
+  playtest, not blocking.
+- Same caveats as every world-gen rebuild this pack has done: needs a
+  brand-new world to actually test, doesn't retroactively affect
+  already-generated chunks.
+
+**Structure mod picks, 2026-08-31 — added for variety, not desert-
+specific**: researched with the same rigor as the earlier mod
+evaluations (source-verified where public, flagged honestly where not),
+after ruling out Structory: Towers as *not* redundant once considered
+alongside these three (kept — see below) and re-evaluating Abandoned
+Structures now that "excludes desert" is no longer disqualifying:
+- **When Dungeons Arise — installed 2026-08-31** (Modrinth, author
+  `aureljz` — confirmed the same person/org as the verified GitHub
+  source `Aureljz/WhenDungeonsArise-Forge-main` before installing, same
+  care as the branch-mismatch check elsewhere in this project. Real
+  version: `DungeonsArise-1.20.x-2.1.58-release.jar`, newer than the
+  2.1.57 originally cited — 2.1.57 no longer listed for 1.20.1 on
+  Modrinth, 2.1.58 is the current real file). 52 structures across 2
+  structure_sets (`major_structures`: 31 structures, `minor_structures`:
+  6). No mod dependencies beyond Forge itself. Default spacing (60/50
+  chunks major, 35/25 minor — 800-1600 blocks between attempts) was
+  just as mismatched to this world's bordered play area as every other
+  structure mod checked so far — retuned to 12/6 and 8/4 respectively,
+  same treatment as the earlier Treasure2/vanilla density fix further up
+  this section. See "Floor depth" above for the real `.nbt`-template
+  depth check this mod's own pieces drove.
+- **Structory: Towers — installed 2026-08-31** (Modrinth, real project,
+  confirmed Forge 1.20.1, v1.0.7). ~20 towers across 5 structure_sets
+  (2 Nether/End-only, irrelevant here). Same density mismatch as WDA —
+  `towers`/`rare_towers`/`ultra_rare_towers` retuned from 40-80/10-42
+  chunk spacing down to 10-16/4-8. Real overlap risk with WDA's own
+  towers is unresolved on paper as noted, genuine playtest question.
+- **Abandoned Structures — BLOCKED, not installed.** Real, previously-
+  unknown finding: decompiling the actual jar (only 89KB, a single
+  `Abandoned_structures.class` — essentially no custom Java at all)
+  found its `mods.toml` declares a **mandatory, separate dependency**:
+  `berezka_api`, not bundled in this jar. Its structures use a custom
+  `"type": "berezka_api:berezka_structures_extra"` (not plain
+  `minecraft:jigsaw`) — meaning the actual placement/terrain-adaptation
+  logic this needed checking lives in THAT mod, not this one, and
+  couldn't be reached. Searched for it: no plain "Berezka API" exists on
+  Modrinth or CurseForge — only ~12 separate "Berezka API for X"
+  add-on listings (one per compatible base mod, e.g. "for Abandoned
+  city buildings," "for Abandoned urban," "for Lost Cities"), none of
+  which is an exact name match for this specific mod ("Abandoned
+  Structures (by berezka)," confirmed via its own Modrinth description —
+  "4 abandoned structures" — matching this pack's earlier 4-structure
+  signature check against a different, wrong "Abandoned structures" by
+  Quest_play that was correctly ruled out). Also noticed: this doc's
+  earlier version cited `abandoned_structures-1.2.0.jar`; the actual
+  real file found is `abandoned_structures-1.0.0.jar` — worth
+  double-checking which CurseForge listing that citation came from.
+  **Held pending a decision**: either identify the exact right
+  "Berezka API for X" variant (if one exists for this specific mod, not
+  found so far) or drop this pick — not guessing among 12 similarly-
+  named listings, same discipline that caught the Pure Suffering branch
+  mismatch and the Quest_play/berezka naming collision above.
+- Treasure2 stays exactly as it is — this doesn't touch its config,
+  only adds alongside it.
+
 **Base expansion into rooms/corridors** — *planned, not built*. Goal:
 gather materials, activate something, and a new room/corridor gets
 built onto the starting structure automatically.
@@ -599,51 +722,27 @@ structure_set/<id>.json`, same technique, different registry):
   structures at the new density only appear in newly generated chunks,
   which in practice means most of the map as the border keeps
   expanding into unexplored territory.
-- **Playtest findings (2026-08-31), sent for investigation/fix**:
-  - **Good news buried in the bug report**: vanilla desert temples
-    actually generating at all confirms the World type rebuild's `fixed`
-    desert `biome_source` is genuinely working — the biome really is
-    reading as desert now, not the earlier "just plains" failure.
-  - **Treasure2 chests render as plain unopenable boxes** ("cardboard
-    boxes" per the user) instead of their real chest model, and can't be
-    opened. Not the locked-chest mechanic (that's a real Treasure2
-    feature — a locked chest still renders as a proper chest, it just
-    refuses to open without a key) — this reads as a genuine model/
-    render bug. Needs `logs/latest.log` investigation before a fix, not
-    a guess.
-  - **Vanilla desert temples generate but are unlootable**: their loot
-    chamber normally sits some blocks below the pyramid, reached by
-    digging down — on this pack's genuinely flat/thin world (the same
-    "structures assume room below the surface that a flat world doesn't
-    have" shape of problem the YUNG's crash already taught this pack,
-    just non-crashing this time), the chamber has nowhere to be, right
-    down at the world's floor. **User doesn't want vanilla desert
-    temples regardless of the bug** ("I don't really like them anyway")
-    — decided call: disable vanilla `minecraft:desert_pyramid`
-    generation outright rather than try to fix loot-chamber placement on
-    a flat world. Treasure2's own structures stay — the user's objection
-    was specifically to the vanilla temples.
+- **Treasure2 "cardboard boxes" (2026-08-31 playtest) turned out not to
+  be a bug at all.** Checked `logs/latest.log` first rather than
+  guessing at a fix — no crash, no exception, nothing. Root cause: the
+  jar ships a real `cardboard_box_mimic` entity (texture, glowing-eyes
+  variant, ambient sounds, spawn egg) — Treasure2's own GitHub confirms
+  this (`gottsch/gottsch-minecraft-Treasure` issues #349/#350, both
+  closed as implemented). It's a monster disguised as ordinary junk, not
+  a chest — explains both symptoms at once: looks like a box because
+  that's the design, doesn't open because it's a mob, not a block
+  entity. **Decided 2026-08-31: leave it undocumented.** No Patchouli,
+  no quest-book hint — the ambush is the point of a mimic, matches the
+  wasteland's "danger lurks" tone. Direct call, not an oversight.
 
-**Structure variety after the YUNG's removal — researched, held, not
-queued.** With YUNG's gone and Abandoned Structures never installed,
-the only structure content left is Treasure2 (unconfirmed) plus
-whatever vanilla itself generates on this flat world (also unconfirmed
-— the plan's own first step, "check the free baseline," never got done
-before YUNG's crashed world creation). Researched a candidate to fill
-that gap if it turns out to be real once tested: **Structory: Towers**
-— confirmed Forge 1.20.1, 47.8M downloads (far more real-world use than
-YUNG's Better Desert Temples ever had), includes a desert-specific
-"desert mirage" tower among ~20 biome-themed towers. Structurally a
-different risk shape than what just crashed — towers generate *upward*
-from a placement point rather than digging down into surrounding
-terrain to find a floor, which was the exact pattern behind the YUNG's
-underflow bug — but that's a different risk profile, not proof of
-safety, per the standing lesson above. **Held, not installed or sent
-as a build brief** — the user wants to playtest the current build
-(amulet + Tier 1 restructure) before anything else lands on top of it.
-Revisit once that playtest happens, especially if it confirms the
-current structure variety (Treasure2 + vanilla) actually feels thin in
-practice.
+**Structure variety after the YUNG's removal** — resolved 2026-08-31,
+see "Structure mod picks" further up in this "World type" section for
+the actual decision (When Dungeons Arise, Structory: Towers unheld,
+Abandoned Structures, alongside the existing Treasure2). This entry
+originally just held Structory: Towers as a researched-but-unqueued
+candidate pending the first real playtest — that playtest happened, the
+desert temple bug it surfaced led directly to the broader "drop desert,
+pick structure mods for real variety" decision instead.
 
 ---
 
@@ -788,16 +887,6 @@ tick. **Deliberately does not implement** the "forced extra wave"
 penalty for leaving via the pedestal — that was flagged as "the leading
 idea, not confirmed" in the original design, and building it now would
 mean guessing at an unresolved point rather than a decided spec.
-
-**Playtest finding (2026-08-31), sent for fix**: the marker armor
-stand's hover position doesn't align with the pedestal's actual dais —
-likely tuned against the original flat-cube block model rather than the
-later stepped-altar rebuild (wide sandstone base + smaller raised dais),
-needs re-offsetting against the real model geometry. Also requested: a
-gentle float/bob animation (small periodic Y offset via the same
-`PlayerEvents.tick` pattern already used everywhere else, not a static
-hover) so it actually reads as floating rather than just stuck slightly
-above the block.
 
 **Why cross at all**: this is what gives the exploration content
 (structure generation, lootable schematics) a reason to matter before

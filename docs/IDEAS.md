@@ -205,6 +205,14 @@ Mostly still genuinely open:
 - **A doc claiming "there's a dedicated tool for X" is a claim to
   verify, not a fact** — burned twice on the FTB Quests SNBT-authoring
   tool specifically. Check before planning around it.
+- **A Forge `SERVER`-type config never hot-reloads — only `CLIENT`/
+  `COMMON` configs get the live file-watcher.** Confirmed the hard way
+  evaluating Undead Nights as a wave-scaling backend: live-editing a
+  `SERVER` config value while the world kept running had zero effect
+  across two respawns, only a full restart picked it up. Relevant any
+  time a future mod's config needs to change mid-session rather than at
+  world start — check which config type a value lives in before
+  designing around "just rewrite the file."
 - **When checking a mod's real behavior against source, pin to the exact
   installed version/branch, not just "a real copy of the repo."** The
   world-type noise rebuild broke on its first real test because its
