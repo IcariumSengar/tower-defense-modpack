@@ -15,7 +15,12 @@
 // (KubeJS-Curios' LivingEntity mixin methods, confirmed from its source —
 // see amulet.js) rather than the onEquip/onUnequip capability callbacks,
 // since this is a deliberate script-driven move, not the player using
-// Curios' own equip GUI.
+// Curios' own equip GUI. Placing it accepts the amulet from wherever the
+// player actually has it (worn OR just in inventory/hand), using
+// player.inventory.find()/.extractItem() (KubeJS's InventoryKJS mixin,
+// confirmed by decompiling kubejs-forge's own .class file directly) for
+// the non-worn case — real bug found in playtesting (2026-08-31), see
+// the interaction handler's own comment below for the full story.
 //
 // Marker entity for mob targeting (docs/FEATURES.md's "real technical
 // detail, not hand-waved": vanilla mobs can only setTarget() an entity,
@@ -59,21 +64,43 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
 
   if (data.getBoolean('td_amuletOnPedestal')) {
     data.putBoolean('td_amuletOnPedestal', false)
-    player.setEquippedCurio('necklace', 0, Item.of('kubejs:amulet', 1))
-    data.putBoolean('td_amuletWorn', true)
+    // Returns to inventory unequipped, not auto-re-equipped - consistent
+    // with the amulet no longer auto-equipping at login either (see
+    // playtest_starter_kit.js) after the duplication bug that caused.
+    // Player can re-equip from their Curios tab if they want the buffs
+    // back before their next trip to the pedestal.
+    player.give(Item.of('kubejs:amulet', 1))
     player.getServer().runCommandSilent('kill @e[type=minecraft:armor_stand,tag=td_amulet_marker]')
-    player.tell('§d[Amulet] §fYou lift the pendant back off its stand. The weight - and the warmth - settles back onto you.')
+    player.tell('§d[Amulet] §fYou lift the pendant back off its stand. It settles into your pack, not onto you.')
     return
   }
 
+  // Accept the amulet from wherever the player actually has it right
+  // now - worn in the Curios slot, or just sitting in inventory/hand -
+  // rather than requiring it be worn first. Real bug found in
+  // playtesting (2026-08-31): this used to ONLY check the Curios slot,
+  // so a player who never manually equipped it (now the default state
+  // since the amulet stopped auto-equipping at login) got "the amulet
+  // isn't on you" while genuinely carrying it. inventory.find() covers
+  // the hotbar/mainhand slot too, so holding it in hand already works
+  // without a separate check.
   var equippedAmulet = player.findFirstCurio((stack) => stack.id === 'kubejs:amulet')
-  if (!equippedAmulet.isPresent()) {
-    player.tell('§7[Amulet] §fThere\'s nothing to place here - the amulet isn\'t on you.')
-    return
+  if (equippedAmulet.isPresent()) {
+    player.setEquippedCurio('necklace', 0, Item.of('minecraft:air'))
+    data.putBoolean('td_amuletWorn', false)
+  } else {
+    var slot = player.inventory.find('kubejs:amulet')
+    if (slot === -1) {
+      player.tell('§7[Amulet] §fThere\'s nothing to place here - the amulet isn\'t on you.')
+      return
+    }
+    // kjs$extractItem, confirmed from KubeJS's own InventoryKJS.class
+    // (decompiled directly, not guessed) - removes exactly 1 from that
+    // slot, mirroring Forge's IItemHandler#extractItem(slot, amount,
+    // simulate) contract.
+    player.inventory.extractItem(slot, 1, false)
   }
 
-  player.setEquippedCurio('necklace', 0, Item.of('minecraft:air'))
-  data.putBoolean('td_amuletWorn', false)
   data.putBoolean('td_amuletOnPedestal', true)
   player.getServer().runCommandSilent(`summon minecraft:armor_stand ${x} ${y} ${z} {Invisible:1b,NoGravity:1b,Marker:1b,HandItems:[{id:"kubejs:amulet",Count:1b},{}],Tags:["td_amulet_marker"]}`)
   player.tell('§d[Amulet] §fYou set the pendant on the stand. The line at the border loosens - everything out there stops watching you, and starts watching this instead.')

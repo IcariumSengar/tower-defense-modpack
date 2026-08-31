@@ -740,8 +740,34 @@ pipeline as a manual GUI equip (mitigated the same way, by verifying
 and setting `td_amuletWorn` explicitly rather than trusting the
 callback), and `Entity#teleportTo(x,y,z)`'s exact behavior for the
 border push-back (a real, standard vanilla method, but not yet seen
-used elsewhere in this codebase, and not yet actually tested). The rest
-of the feature — worn buffs, pedestal, marker targeting, border
+used elsewhere in this codebase, and not yet actually tested).
+
+**Two more real bugs, found once world creation actually started
+succeeding (2026-08-30/31)**:
+1. **Duplication on login** — the auto-equip-at-login path (setEquippedCurio
+   + a findFirstCurio re-check, falling back to give() if the equip
+   looked like it hadn't landed) produced a genuine duplicate: one
+   amulet equipped, one in inventory. The re-check must have false-
+   negatived a real success. Never root-caused which part was
+   unreliable — fixed by removing the whole auto-equip path per direct
+   request: the amulet now just starts unequipped in inventory, which
+   has no Curios-slot interaction at login at all, so the race can't
+   happen either way.
+2. **Pedestal rejected a genuinely-carried amulet** — direct
+   consequence of fix #1. The pedestal's placement check only ever
+   looked at the worn Curios slot (`findFirstCurio`); once the amulet
+   stopped auto-equipping, a player who hadn't manually equipped it yet
+   got "the amulet isn't on you" while actually holding/carrying it.
+   Fixed: the pedestal now also checks `player.inventory.find(...)` /
+   `.extractItem(slot, 1, false)` (KubeJS's `InventoryKJS` mixin,
+   confirmed by decompiling `kubejs-forge`'s own class file directly,
+   not guessed) when nothing's equipped, accepting the amulet from
+   wherever the player actually has it — worn, in hand, or just sitting
+   in inventory. Taking it back off the pedestal now also gives it
+   unequipped (`give()`, not `setEquippedCurio`), consistent with fix
+   #1's "never auto-equip" direction.
+
+The rest of the feature — worn buffs, marker targeting, border
 push-back — still hasn't been reached in a real playtest.
 
 ## Defense
