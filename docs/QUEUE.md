@@ -23,31 +23,53 @@ reflect actual current status.
 
 ## Ready to build
 
-1. **Pack decoration pass** — see FEATURES.md's "Base & structures"
-   section, "Pack decoration pass" entry. Install **Doomsday
-   Decoration** + **Zcraft Decoration** (both real-verified, no
-   dependencies, pure decorative blocks — lowest-risk category of
-   anything added to this pack so far), then pick real block IDs from
-   each mod's registry and dress the Watchpost/watchtower via
-   `/setblock`/`/fill` calls in `playtest_starter_kit.js`. Expect a
-   visual-iteration round after the first pass, same as other cosmetic
-   work in this pack.
+*(nothing queued right now — see "Diagnosed, pending a decision" below
+for one real open item)*
+
+## Diagnosed, pending a decision
+
+- **"Reads as entirely desert" — real cause found, no fix queued yet**.
+  Diagnosed 2026-08-31 (see FEATURES.md's "World type" section for the
+  full investigation) by sampling the actual live save's real biome data,
+  not a fresh test world. Verdict: not a biome_source bug — the fixed
+  spawn point happens to land inside a large contiguous **badlands**
+  blob (72.8% of a 320x320-block sample around spawn, 0% desert), which
+  reads visually close enough to "desert" to explain the report.
+  Biomes O' Plenty was also ruled out as a fix (TerraBlender's
+  architecture doesn't compose with this pack's own hand-written
+  `multi_noise` biome_source — reasoned from its docs, not decompiled).
+  Real fix options, neither built: retune badlands' own parameter point
+  so it claims less territory, or move the fixed spawn point to
+  known-different terrain. Not queued since it's a real design choice
+  (how much do you actually mind badlands-at-spawn, given it was always
+  going to be one of 7 roughly-equal-weighted biomes) rather than an
+  obvious bug fix — flag if you want it built.
 
 ## In progress (sent directly to the build session)
 
-- **Biome variety investigation** — sent 2026-09-01, diagnosis only, not
-  a build yet. Playtest reported the world reading as entirely desert
-  despite the curated 7-biome `multi_noise` set being live — could be a
-  real bug in the hand-assigned biome parameter-point placement (never
-  verified against vanilla's real values, see FEATURES.md's "World
-  type" section), or just unexplored territory. User also asked about
-  adding Biomes O' Plenty for more variety — held pending the diagnosis,
-  since BOP's TerraBlender integration compatibility with this pack's
-  fully custom biome_source is a real open question, not confirmed
-  either way. Not yet reported back.
+*(nothing in progress right now)*
 
 ## Built, awaiting your next playtest
 
+- **"Last bastion, in disrepair" base redesign + amulet/pedestal
+  reversal** — built and shipped 2026-08-31 (see FEATURES.md's "Starting
+  base" and "The amulet" sections for the full spec). Watchpost walls
+  now uneven (reinforcement concentrated at the gate, a genuinely weaker
+  breached section on the back wall), gate dressed with cover props +
+  a decorative spikes line, pedestal pre-placed in a shrine nook with
+  grave markers, watchtower got battle-wear detail, and the previously
+  unbuilt interior shack is now a real furnished room. Amulet is no
+  longer starter gear — it has a real crafting recipe now, and the
+  pedestal no longer gates on being crafted. Quest book updated to
+  match (Basics 6.5/8.5 retasked). **Doomsday Decoration** + **Zcraft
+  Decoration** installed. Verified via a live sandbox: every new block
+  ID/blockstate individually confirmed placeable via RCON (caught and
+  fixed 2 real "unknown block type" IDs that looked valid from
+  blockstate files alone), script/quest reload clean with 0 errors. Not
+  confirmed by an actual player spawn — the sandbox's mineflayer bot
+  couldn't complete this mod set's FML handshake, so exact visual
+  placement/spacing is unverified; expect at least one iteration round
+  after your next look at it.
 - **Machine progression, Tier 2** — built and shipped 2026-08-31 (see
   FEATURES.md's "Machine progression, Tier 2" and its Tier 2 quest
   chapter for the full spec). Fire Trap/Fan/Magnetic Chest (Trapcraft)

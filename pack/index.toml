@@ -22,7 +22,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/basics.snbt"
-hash = "174b289c269db9e2ba1d7765b9871974431c40711393000922a17c5f47b2efd7"
+hash = "6ff1112631e2b14831aa1c3422573976ec1301ed18ab60724b1614f1ec164a9c"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
@@ -174,7 +174,7 @@ hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "5a0dafa79645786fe45e7ecfc55eaa2e36b31b2589a1bd5d50f0acfeb4a3c578"
+hash = "ee102c7fd651c1c6f0a2984256e11b885353f2c7f6d400a6b5d8031b62aca591"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
@@ -198,7 +198,7 @@ hash = "76d3974482603b96192946bafecafbb7e5706b5c93176ec45944222587653c76"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "4827815474b21875be2edf8f85fdd73029b6a6aef9ebbf180e12b90dec25291f"
+hash = "4c5ce71ae12bb99ca55e1436861d583038532b1a68b7dc91091fda91d8ed2730"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
@@ -270,6 +270,11 @@ metafile = true
 [[files]]
 file = "mods/curios.pw.toml"
 hash = "9eefd607e0d54ec444e798ccdeede1a09a3939440bd1e11c11b84c07a5134be2"
+metafile = true
+
+[[files]]
+file = "mods/doomsday-decoration.pw.toml"
+hash = "1fb18505ec4875548903e27a2b05d094fcd96489072db89ce58bcaf41abeeb71"
 metafile = true
 
 [[files]]
@@ -405,4 +410,9 @@ metafile = true
 [[files]]
 file = "mods/xaeros-minimap.pw.toml"
 hash = "20beda5f9b049a2352334a0f8dd8de122e7399f8a446d8f78aeecba85d99bbdc"
+metafile = true
+
+[[files]]
+file = "mods/zcraft-decoration.pw.toml"
+hash = "cef81cf950c5460176fa73e9d6cb89196dcfaae360903055dd1e51acfcdcf75f"
 metafile = true

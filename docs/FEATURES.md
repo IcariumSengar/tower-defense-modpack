@@ -165,39 +165,58 @@ Implementation: display/auto-trigger in `wave_spawner.js`, started in
 
 ## Base & structures
 
-**Starting base ("The Watchpost")** — *live, partially built*. Fixed
-spawn point (`/setworldspawn` + `gamerule spawnRadius 0`), a small
-walled compound built via `/fill` on first login. Current build:
-- **Chokepoint perimeter** — full-height walls in SecurityCraft
-  reinforced blocks (`reinforced_cobblestone` primary, mossy/cracked
-  variants scattered for a weathered look), with one gate (plain
-  vanilla door — SecurityCraft's own lockable door was considered and
-  rejected as unnecessary complexity for a singleplayer pack). Chosen
-  specifically because Epic Siege Mod's zombies dig/pillar through
-  plain blocks; reinforced blocks resist that (reasoned from both
-  mods' decompiled bytecode, not yet confirmed in a real fight).
-  **Known, accepted gap**: wall height (3 blocks) doesn't stop a
-  zombie pillaring its own blocks up and over the top — raised and
-  explicitly accepted as a difficulty factor, not a bug to fix.
-- **Watchtower** (phase 1 of "expand into multiple buildings") — a
-  cobblestone pillar north of the base, external ladder, 5x5 platform
-  with a parapet gap at the ladder — deliberately open on all sides
-  since mobs can approach from any border edge, not just one direction.
-- Design intent for the full concept (not all built): a single-room
-  shack (narrative home of the previous occupant), the watchtower
-  overlooking the chokepoint gate specifically, a pedestal near the
-  entrance reserved for the amulet mechanic (see Ideas), a well styled
-  to match vanilla's own desert well. Decoration pass planned as a
-  later, separate step — see below, not blocking the base structure
-  itself.
+**Starting base ("The Watchpost") — redesigned 2026-09-01: "the last
+bastion, in disrepair."** *Live* — direct request, following the
+structure-mod aesthetic swap: the base should read as a real defensive
+position that held for a long time and shows it, not a clean fortress or
+an abandoned ruin. Two layers of construction on top of each other —
+the *original* structure, and the desperate patchwork of whoever kept
+it standing — is the core visual idea everything below is built from.
+Fixed spawn point (`/setworldspawn` + `gamerule spawnRadius 0`)
+unchanged; the compound itself is still built via `/fill`/`/setblock`
+on first login, now with real design detail instead of a plain box:
 
-**Pack decoration pass** — *planned, not built*. Direct request
-2026-09-01, following the 2026-08-31 structure swap that confirmed
-"abandoned/post-apocalyptic, not fantasy" as this pack's real aesthetic
-direction — dress the Watchpost (and its watchtower) with matching
-clutter/props rather than leaving it bare stone, using two mods
-researched earlier and re-verified now that they're actually being
-built:
+- **Walls — mixed construction, not uniform.** A cracked/mossy stone
+  base (the original build) with irregular *patches* of SecurityCraft
+  reinforced block bolted on wherever it mattered most — heaviest
+  concentration right around the gate, thinning toward the back
+  corners. One section reads as the weakest point: lower, cruder
+  material, propped with debris — a wall that's clearly been breached
+  and rebuilt before, not a pristine perimeter. Supersedes the previous
+  flat "reinforced_cobblestone primary, mossy/cracked scattered for a
+  weathered look" description — same materials, deliberately uneven
+  distribution now instead of even scattering.
+- **The gate as the visible fault line** — heaviest reinforcement,
+  most damage, most repair, since it's the chokepoint everything funnels
+  through. Improvised defenses dressed around it: barrels/crates as
+  cover (Zcraft Decoration), a barbed-wire or Spikes line just outside
+  (Trapcraft's Spikes placed decoratively here, independent of the
+  craftable ones).
+- **Grave markers, not just clutter** — a handful of makeshift graves
+  (crossed fence posts, or a sign on a dirt mound) near the pedestal
+  (see below). Directly reinforces the existing narrative (gear-removal
+  flavor text, "whoever carried this before you held the line for N
+  waves") rather than being decoration for its own sake — turns the
+  amulet shrine into a memorial, not just a crafting station.
+- **The pedestal is now pre-built, not crafted** — see "The amulet"
+  section for the full reasoning and mechanic-level detail. Placed in a
+  small shrine nook near the graves, as part of the *original*
+  structure layer (it mattered enough to be built properly from the
+  start, unlike the patchwork walls). Empty at world start — "something
+  was supposed to be here" is the intended hook.
+- **Interior — lived-in, then left.** The single-room shack (still not
+  built) becomes a command post rather than a house: bedroll, stacked
+  supply crates, worn furniture and discarded belongings (Doomsday
+  Decoration) doing the storytelling — organized, not just messy.
+- **Watchtower carries battle-wear too** — already open on all sides
+  (cobblestone pillar, external ladder, 5x5 platform with parapet),
+  add scorch/damage detail and props (crates, barrels) at its base so
+  it reads as a manned post, not just a lookout pillar.
+- A well styled to match vanilla's own desert well remains unbuilt
+  design intent, not part of this pass specifically.
+
+**Decoration mods needed to actually build the above** — researched and
+verified 2026-09-01, both real, current, and dependency-free:
 - **Doomsday Decoration** (CurseForge, author Huzai,
   `doomsday_decoration-1.1.3-forge-1.20.1.jar`, 793.9K downloads) —
   "pure decorative blocks": worn furniture, discarded belongings, human
@@ -213,16 +232,51 @@ built:
   category than every structure mod checked in this project so far (no
   jigsaw/processor risk, no floor-depth interaction, no biome
   dependency).
-- **What's actually needed to build this**: install both, then pick
-  specific block IDs from each mod's real registry (not guessed — same
-  discipline as confirming `trapcraft:bear_trap` from its own jar before
-  writing that quest task) and scatter them via `/setblock`/`/fill`
-  calls appended to `playtest_starter_kit.js`'s existing Watchpost
-  build, around the walls/watchtower/interior. This is a visual/
-  atmosphere pass, not a mechanic — expect it to need at least one
-  round of "seen in-game, adjust placement/density" iteration, same as
-  the worldborder texture and the amulet pedestal's shrine visual pass
-  both needed.
+
+**What's actually needed to build all of this**: install both
+decoration mods, then pick specific block IDs from each mod's real
+registry (not guessed — same discipline as confirming
+`trapcraft:bear_trap` from its own jar before writing that quest task)
+and rework `playtest_starter_kit.js`'s existing `/fill`/`/setblock`
+Watchpost build to the uneven-wall/gate/graves/pedestal/interior/
+watchtower detail above. This is a visual/narrative pass, not a new
+mechanic — expect at least one round of "seen in-game, adjust
+placement/density" iteration, same as the worldborder texture and the
+amulet pedestal's own shrine visual pass both needed. The wall-material
+distribution (which sections get reinforced vs. stay cracked stone) and
+exact grave-marker/prop placement are implementation-level picks, not
+pinned down to specific coordinates here.
+
+**Built 2026-08-31.** Reinforcement chance now falls off with distance
+from the gate (0.85 at the door down to a floor of 0.08 by the far
+corners), a genuinely weaker 3-block stretch of the west wall (2 blocks
+tall, plain cobblestone, cobweb + gravel debris) reads as
+breached-and-rebuilt, the gate got barrel/crate cover plus a decorative
+Trapcraft Spikes line and Zcraft barrier props, the pedestal is
+pre-placed in a shrine nook with 3 oak_fence-on-coarse_dirt grave
+markers nearby, the watchtower got scorch/cracked-brick detail plus
+crates/a burning barrel/a generator at its base, and the interior shack
+(previously unbuilt) is now a real 5x5 room with a mattress, table,
+shelf and crates. **Two real bugs caught in a live sandbox test, both
+fixed before shipping**: `zcraft_decorations:hesco_sandwall` and
+`barbed_wire_1` both have real blockstate JSON *and* real lang entries,
+but turned out to be orphaned assets with no block actually registered
+behind them — `/setblock` rejected both as "Unknown block type" even
+though the file-existence check that's been this session's usual bar
+said they were fine. Swapped for `sfz_shuiniqiang` (Concrete Wall) and
+`sfz_lantiepiweilan` (Broken Iron Fence), both confirmed placeable the
+same way. Also caught (before ever touching the sandbox): 3 of the
+interior shack's 5 furniture pieces were originally positioned exactly
+on the wall line instead of the interior, which would have carved holes
+in the walls — fixed by widening the shack to a proper 5x5 (3x3 usable
+interior) and rechecking every furniture coordinate against it.
+**Not yet confirmed by a real player** — the sandbox verification here
+covers command/block-ID validity (every new block placement individually
+confirmed via RCON) and script/quest-parse correctness (clean reload, 0
+KubeJS errors), not actual in-game visual placement; a mineflayer bot
+couldn't complete this particular mod set's FML handshake to get a real
+spawn-and-look test, a tooling gap not a pack problem. Needs an actual
+playtest to confirm layout/spacing reads as intended.
 
 **World type** — *live, user-confirmed working in-game (2026-09-01)*.
 `kubejs/data/minecraft/dimension/overworld.json` uses `type:
@@ -264,6 +318,56 @@ piece heights; when WDA was later removed for aesthetic reasons (see
 "Structure mod picks" below), both numbers were re-checked against the
 mods actually still installed and left unchanged — still good coverage,
 not stale leftovers from a removed mod.
+
+**"Reads as entirely desert" investigation, 2026-08-31 — real finding,
+not a biome_source bug.** Diagnosed by copying the actual live save into
+a sandbox (not a fresh test world — this matters, see below) and
+querying real biome data with `/locate biome` and a 320x320-block RCON
+grid census centered on the live save's actual spawn point (-1, 4). The
+live save's `level.dat` confirms its baked-in overworld generator
+already matches the current tracked `overworld.json` exactly (same 7
+biomes, same `multi_noise` type, same `kubejs:flat_desert` settings
+ref) — dimension generators are NOT frozen at world-creation time the
+way an earlier hypothesis here assumed; whatever's in the datapack at
+each boot is what's live. The real finding: **badlands, not desert,
+dominates the area around the fixed spawn point** — 72.8% of the
+320x320 grid sample is badlands, 25.9% savanna, 0% desert and 0% of the
+other 4 biomes. Badlands (dry, orange/tan terracotta canyon terrain)
+reads visually close enough to "desert" that the report is accurate in
+spirit even though it names the wrong biome. This is real, deterministic
+Minecraft biome-blob generation for this specific seed + this fixed
+spawn point (biomes generate in large contiguous regions by design, not
+fine-grained noise) — not a sign the parameter-point math is broken
+toward desert generally (a separate uniform-grid statistical check
+across the full parameter space put desert at only ~6.6% of total area,
+the *smallest* of the 7, with `sunflower_plains` mathematically
+unreachable — its point is a strict weirdness-penalized superset of
+plains' point, so plains always wins the tie). The badlands dominance
+near spawn is just this fixed point's bad luck landing deep inside one
+biome's blob, and would need a real fix (retuning badlands' own
+parameter point, or picking spawn coordinates known to avoid it) to
+change — not something more exploration alone fixes, since the sampled
+area is already fully saturated with badlands/savanna with zero variety
+at any sampled point.
+
+**Biomes O' Plenty + TerraBlender — reasoned incompatible, not
+installed.** TerraBlender's documented architecture assigns each
+participating mod its own "region" *within TerraBlender's own injected
+biome source* — it doesn't compose with an arbitrary datapack-defined
+`multi_noise` biome_source the way this pack's `overworld.json` is
+written. Since both TerraBlender and this pack's own datapack target
+the same `minecraft:overworld` dimension's biome_source, installing BOP
+would either have TerraBlender's injection silently replace this pack's
+whole curated 7-biome list (undoing the work above unpredictably), or
+this pack's own datapack keep winning and BOP's biomes never get
+selected at all (the mod installs, contributes nothing to variety). This
+is a reasoned conclusion from TerraBlender's stated design, not a
+decompiled/bytecode-verified one (its wiki doesn't document the exact
+mixin/injection mechanism) — flagged at that confidence level rather
+than asserted as fact. Recommendation: don't install BOP for this
+purpose; if more variety is wanted, retune this pack's own multi_noise
+parameter points instead (same approach that already produced this
+7-biome set).
 
 **Structure mod picks, 2026-08-31 — added for variety, not desert-
 specific. User-confirmed 2026-09-01: generation now reads as the
@@ -684,21 +788,42 @@ custom-owned. Decided to skip it for now rather than build a generic
 damage-event hook for it — revisit once there's a pack-owned machine
 tier again, or if a mod-agnostic approach becomes worth the complexity.
 
-**Decided: the amulet is starter gear, the pedestal is crafted.** The
-amulet arrives already worn at world start, alongside the sword/armor
-— same "inherited from the previous occupant" narrative, generating
-buffs from turn one. The **pedestal** (`kubejs:amulet_pedestal`) is a
-craftable block, not pre-built into the starting base — consistent with
-every other capability in this pack being earned (Tier 1 traps, border
-growth, quest unlocks), and it gives border-crossing an actual "you
-just unlocked this" moment rather than being available immediately,
-which would undercut the tension the mechanic is meant to create.
+**Reversed 2026-09-01, live — the pedestal is pre-built, the amulet is
+crafted.** Direct request as part of the "last bastion" base redesign
+(see "Starting base" above): the shrine belongs to the *original*
+structure, not something the player builds — it's part of what this
+place was before it fell into disrepair, reinforcing that the amulet
+mechanic mattered enough here to be built into the bastion from the
+start, not bolted on later. This flips the original design (amulet as
+starter gear, pedestal crafted) — the narrative reframes cleanly rather
+than breaking: the shrine survived, whatever sat on it didn't. An empty
+pedestal at world start is a real hook ("something was supposed to be
+here") instead of a dead prop.
+
+- The player **no longer starts with the amulet** — cut from
+  `playtest_starter_kit.js`'s starter-gear give entirely, alongside the
+  sword/armor.
+- **`kubejs:amulet` now has a real crafting recipe**
+  (`amulet_pedestal.js`): a hollow gold ring, `minecraft:gold_ingot`
+  only (8), matching "Not Just Jewelry"'s revised flavor text ("melt
+  what gold you can spare").
+- **The pedestal no longer gates progress on being crafted** — the
+  base-build script places `kubejs:amulet_pedestal` directly in the
+  shrine nook, as part of the Watchpost's `/fill`/`/setblock`
+  construction. Its own crafting recipe stays as a fallback/spare.
+  Needed zero changes to the interaction logic in `amulet_pedestal.js` —
+  confirmed by reading it: the mechanic already tracked state on the
+  player, not the block/world, exactly as predicted.
+- **Quest book, built**: "Not Just Jewelry" moved from position 2.5
+  (gated on quest 2) to 6.5 (gated on quest 6, "Open It"), retasked from
+  a checkmark to `Craft kubejs:amulet`. "Leave It Behind" stays at 8.5
+  but now depends on both quest 8 *and* the new 6.5, retasked from
+  "craft the pedestal" (no longer possible) to a manual checkmark
+  against `td_amuletOnPedestal`, same pattern as "The Reckoning."
 
 **Pedestal state**: a `kubejs:amulet_pedestal` block
-(`server_scripts/amulet_pedestal.js`), crafted from 8x gold_ingot
-(Uncommon-tier loot pool) + 1x sandstone in a ring pattern — no recipe
-was pinned down in the design, so this is an implementation-level pick.
-**Shrine visual pass (2026-08-30, direct request)**: originally a
+(`server_scripts/amulet_pedestal.js`). **Shrine visual pass (2026-08-30,
+direct request)**: originally a
 plain full-cube stone block with one flat texture; rebuilt as a real
 custom block model (`assets/kubejs/models/block/amulet_pedestal.json`,
 standard vanilla block-model "elements" format) — a wide sandstone base
@@ -869,20 +994,22 @@ per direct feedback, each tier now gets its own chapter with one quest
 per item, rather than one quest per tier carrying a wall of text
 describing several items at once.
 
-**Basics chapter** — *live*, 12-quest chain (10 linear onboarding quests
-plus 2 amulet side-quests inserted by dependency, not renumbering):
+**Basics chapter** — *live*, updated for the amulet/pedestal reversal
+2026-09-01. 12-quest chain (10 linear onboarding quests plus 2 amulet
+side-quests inserted by dependency, not renumbering) — table below
+matches what's actually shipped in `basics.snbt`:
 
 | # | Quest | Task | Reward |
 |---|---|---|---|
 | 1 | You're On Your Own | Checkmark | 2 XP levels |
 | 2 | Borrowed Time | Checkmark | 2 XP levels |
-| 2.5 | Not Just Jewelry | Checkmark | 2 XP levels |
 | 3 | Sound the Horn | Checkmark | 4x cobblestone + 4x oak_log |
 | 4 | Thin the Horde | Kill 5x zombie | 3 XP levels |
 | 5 | Spoils of War | Hold a Scavenger's Bag | — |
 | 6 | Open It | Checkmark | 3 XP levels |
+| 6.5 | Not Just Jewelry *(moved, retasked)* | Craft `kubejs:amulet` | 2 XP levels |
 | 8 | Watch the Walls Grow | Checkmark | 3 XP levels |
-| 8.5 | Leave It Behind | Craft `kubejs:amulet_pedestal` | — |
+| 8.5 | Leave It Behind *(retasked)* | Checkmark (manual, after placing on the pedestal) | — |
 | 9 | The Reckoning | Checkmark (manual, after wave 5 gear removal) | — |
 | 10 | No Turning Back | Checkmark | — |
 
@@ -890,21 +1017,30 @@ plus 2 amulet side-quests inserted by dependency, not renumbering):
 chapter" below. It's still numbered 7 for reference to its old
 position; nothing here renumbers the rest of the chain.)*
 
-**Two amulet quests, live**: "Not Just Jewelry" depends on quest 2
-(Borrowed Time) and introduces the amulet's worn buffs, since it
-arrives as starter gear like the sword/armor. "Leave It Behind" depends
-on quest 8 (Watch the Walls Grow) and introduces the pedestal as the
-crafted unlock for border-crossing — a deliberate "the wall grows on
-its own, or you can step past it yourself" pairing.
-- *"Not Just Jewelry"*: **"That pendant isn't just for show. Wear it
-  and something in you mends faster, and the heat doesn't bite the way
-  it should. Whoever had it before you needed both. So will you."**
-- *"Leave It Behind"*: **"Build the stand, set the pendant down, and
-  the wall stops being a wall — for you, anyway. Everything out there
-  stops watching you and starts watching it instead. That's the trade:
-  no more mending, no more warmth, but nothing's stopping you from
-  walking past that line. Just remember what you're leaving
-  unguarded."**
+**Two amulet quests, retasked for the reversal — built 2026-08-31**:
+"Not Just Jewelry" moved from position 2.5 (gated on quest 2) to 6.5
+(gated on quest 6, "Open It") — it's now the crafting quest, needing the
+player to plausibly have Uncommon-tier materials first. Task is now
+`Craft kubejs:amulet`. "Leave It Behind" kept its position (8.5) but its
+task changed from crafting the pedestal (no longer possible — pre-built
+now, see "The amulet" section) to a manual checkmark against
+`td_amuletOnPedestal`, same pattern as "The Reckoning," and gained a
+dependency on 6.5 alongside its existing one on quest 8 — preserves the
+original "the wall grows on its own, or you can step past it yourself"
+pairing intent while adding the real prerequisite.
+- *"Not Just Jewelry"*: **"Whoever manned this post before
+  you didn't leave the pendant behind by choice — it's gone, and the
+  shrine's stood empty since. If it mattered enough to build a stand
+  for, it's worth making another. Melt what gold you can spare and see
+  what comes of it."**
+- *"Leave It Behind"*: **"The stand's been waiting a
+  long time for something to hold. Set the pendant down and the wall
+  stops being a wall — for you, anyway. Everything out there stops
+  watching you and starts watching it instead. No more mending, no more
+  warmth, but nothing's stopping you from walking past that line. Just
+  remember what you're leaving unguarded."**
+- Both flavor-text drafts, not final — same editorial latitude as every
+  other quest text in this book.
 
 Basics quest flavor text (found-diary voice, matched against the wave-5
 gear-removal text as the tone benchmark), quest 7 omitted since it no

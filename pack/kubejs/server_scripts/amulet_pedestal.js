@@ -1,12 +1,20 @@
-// The amulet pedestal — craftable (docs/FEATURES.md, "Decided: the
-// amulet is starter gear, the pedestal is crafted"), not pre-built into
-// the starting base. Recipe uses gold ingots (Uncommon-tier loot pool,
-// see loot_bag_open.js) + sandstone — switched from stone_bricks
-// 2026-08-30 to match the pedestal's new shrine model/textures
-// (amulet.js), which went sandstone-toned to tie into the desert world
-// and the amulet's own gold palette. No recipe was pinned down in
-// FEATURES.md, this is an implementation-level pick, not a design
-// decision needing sign-off.
+// The amulet pedestal — **reversed 2026-09-01** (docs/FEATURES.md, "The
+// amulet": "the pedestal is pre-built, the amulet is crafted"). The
+// pedestal is now placed directly by playtest_starter_kit.js's base
+// build, in a shrine nook near the grave markers, as part of the
+// *original* structure layer — nothing depends on the player ever
+// crafting one. Its own recipe (below) stays as a fallback/spare in
+// case the block is somehow lost, not because progress requires it.
+// Needed zero changes to the interaction logic below to support this —
+// state already lived on the player (td_amuletWorn/td_amuletOnPedestal),
+// not the block, so it never cared how the block got placed.
+//
+// Recipe uses gold ingots (Uncommon-tier loot pool, see
+// loot_bag_open.js) + sandstone — switched from stone_bricks 2026-08-30
+// to match the pedestal's new shrine model/textures (amulet.js), which
+// went sandstone-toned to tie into the desert world and the amulet's
+// own gold palette. No recipe was pinned down in FEATURES.md, this is
+// an implementation-level pick, not a design decision needing sign-off.
 //
 // Right-click interaction is the actual "place the amulet on it" and
 // "take it back" mechanic. State lives on the player's persistentData
@@ -74,6 +82,21 @@ ServerEvents.recipes((event) => {
   ], {
     G: 'minecraft:gold_ingot',
     S: 'minecraft:sandstone',
+  })
+
+  // New 2026-09-01, part of the pedestal/amulet reversal above - the
+  // amulet previously had no recipe at all (only ever given
+  // programmatically at login). Hollow gold ring, matching "Not Just
+  // Jewelry"'s revised flavor text ("melt what gold you can spare and
+  // see what comes of it") - plain gold_ingot only, no invented
+  // material, Uncommon-tier per loot_bag_open.js same as the pedestal's
+  // own recipe above.
+  event.shaped('kubejs:amulet', [
+    'GGG',
+    'G G',
+    'GGG',
+  ], {
+    G: 'minecraft:gold_ingot',
   })
 })
 

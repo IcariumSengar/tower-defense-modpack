@@ -78,9 +78,9 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["CF982E95B58602E4"]
+			dependencies: ["538A1BBC9A1B8EAC"]
 			description: [
-				"That pendant isn't just for show. Wear it and something in you mends faster, and the heat doesn't bite the way it should. Whoever had it before you needed both. So will you."
+				"Whoever manned this post before you didn't leave the pendant behind by choice - it's gone, and the shrine's stood empty since. If it mattered enough to build a stand for, it's worth making another. Melt what gold you can spare and see what comes of it."
 			]
 			icon: "kubejs:amulet"
 			id: "7D3A5F912E6C0B48"
@@ -90,11 +90,13 @@
 				xp_levels: 2
 			}]
 			tasks: [{
+				consume_items: false
 				id: "5C0E7A34D2F9B168"
-				type: "checkmark"
+				item: "kubejs:amulet"
+				type: "item"
 			}]
 			title: "Not Just Jewelry"
-			x: 2.0d
+			x: 11.0d
 			y: 1.5d
 		}
 		{
@@ -177,17 +179,15 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["BE3E01220D23C31D"]
+			dependencies: ["BE3E01220D23C31D", "7D3A5F912E6C0B48"]
 			description: [
-				"Build the stand, set the pendant down, and the wall stops being a wall - for you, anyway. Everything out there stops watching you and starts watching it instead. That's the trade: no more mending, no more warmth, but nothing's stopping you from walking past that line. Just remember what you're leaving unguarded."
+				"The stand's been waiting a long time for something to hold. Set the pendant down and the wall stops being a wall - for you, anyway. Everything out there stops watching you and starts watching it instead. No more mending, no more warmth, but nothing's stopping you from walking past that line. Just remember what you're leaving unguarded."
 			]
 			icon: "kubejs:amulet_pedestal"
 			id: "4B8F2D6A93E7C051"
 			tasks: [{
-				consume_items: false
 				id: "E1A6C4F97B92D30E"
-				item: "kubejs:amulet_pedestal"
-				type: "item"
+				type: "checkmark"
 			}]
 			title: "Leave It Behind"
 			x: 12.0d

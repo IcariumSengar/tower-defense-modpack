@@ -68,35 +68,12 @@ PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
 
-  // The amulet (docs/FEATURES.md "The amulet") starts loose in the
-  // player's inventory, NOT auto-equipped (2026-08-30, direct request
-  // after the auto-equip attempt below produced a real duplicate - see
-  // next paragraph) - but NOT tagged td_starter_gear (that tag drives
-  // wave_status.js's wave-5 removal; the amulet is a long-term
-  // mechanic, not gear that expires), and NOT gated behind
-  // td_playtestKitGiven below - deliberately checked on every login via
-  // "does the player already have one," not a one-shot flag, so it
-  // still self-heals if a player somehow ends up without one.
-  //
-  // Previously tried calling setEquippedCurio() here to hand it over
-  // already worn, with a findFirstCurio() re-check to fall back to
-  // plain give() if the equip silently no-op'd (a real race where
-  // Curios' capability can attach before this pack's own
-  // necklace-slot-grant datapack finishes loading on a world's very
-  // first login). That produced a genuine duplicate in playtesting - one
-  // copy equipped AND one in inventory - meaning the post-equip
-  // findFirstCurio() re-check returned a false negative (equip actually
-  // succeeded, but wasn't detected as such) and the fallback give() ran
-  // on top of a real success. Never fully diagnosed which part of that
-  // path was unreliable; sidestepped it entirely by just never
-  // auto-equipping - a plain give() has no equivalent race since it
-  // doesn't touch the Curios slot at all, and the player equips it
-  // themselves via the Curios inventory tab.
-  const alreadyHasAmulet = player.findFirstCurio((stack) => stack.id === 'kubejs:amulet').isPresent()
-    || player.inventory.find('kubejs:amulet') !== -1
-  if (!alreadyHasAmulet) {
-    player.give(Item.of('kubejs:amulet', 1))
-  }
+  // The amulet is NO LONGER starter gear (reversed 2026-09-01,
+  // docs/FEATURES.md's "The amulet" - "the pedestal is pre-built, the
+  // amulet is crafted"). It now has a real crafting recipe
+  // (server_scripts/amulet_pedestal.js) instead of being given here;
+  // the empty pre-built pedestal (below, in the base-building section)
+  // is the intended hook - "something was supposed to be here."
 
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
@@ -165,75 +142,116 @@ PlayerEvents.loggedIn((event) => {
   // "for now," not a closed decision.
   run(`fill ${x0} ${floorY} ${z0} ${x1} ${floorY} ${z1} minecraft:stone_bricks`)
 
-  // Perimeter walls rebuilt from SecurityCraft reinforced blocks
-  // (2026-08-29, direct request) - the previous plain cobblestone walls
-  // gave Epic Siege Mod's zombies (this pack's only digger/pillar/
-  // block-targeting mob under the current config - diggerMobs/
-  // buildingMobs/targetingMobs all default to just minecraft:zombie,
-  // see epicsiegemod-common.toml) nothing to actually push against.
-  // Registry names confirmed directly from the mod jar's own lang file
-  // (assets/securitycraft/lang/en_us.json) rather than guessed -
-  // securitycraft ships a reinforced_<vanilla name> variant of nearly
-  // every vanilla block.
+  // Perimeter walls — "the last bastion, in disrepair" redesign
+  // (2026-09-01, direct request, see docs/FEATURES.md's "Starting base"
+  // section for the full brief). Two layers of construction: the
+  // *original* build (cracked/mossy stone, everywhere, as the base
+  // material) with SecurityCraft reinforced-block *patches* bolted on
+  // wherever it mattered most - heaviest right around the gate,
+  // thinning toward the back. Supersedes the previous flat "reinforced
+  // primary, mossy/cracked scattered for a weathered look" version
+  // (2026-08-29) - same three materials, deliberately uneven
+  // distribution now instead of near-uniform reinforcement with
+  // scattered weathering.
   //
-  // Dig resistance, reasoned from both mods' actual decompiled
-  // bytecode (not yet confirmed in-game): Epic Siege's digging AI
-  // (ESM_EntityAIDigging.class) breaks blocks through a real Forge
-  // FakePlayer via the standard block-breaking pipeline, not a raw
-  // bypass - SecurityCraft's protection is an ownership check on that
-  // same pipeline (a FakePlayer is never the wall's owner), so it
-  // should apply exactly like it would to a real non-owner player.
-  // Reinforced blocks are also unconditionally explosion-proof, so
-  // creeper breaching (Creepers.breaching=true) should be blocked
-  // regardless. NOT solved by material alone: pillaring is the mob
-  // placing its OWN blocks outside the wall to climb over the top, a
-  // height/coverage problem no wall material addresses - this wall's
-  // height (3 blocks, unchanged from before) wasn't re-examined here.
-  // Genuinely needs a real playtest against this pack's summoned
-  // zombies to confirm either way - see docs/MODS.md's SecurityCraft
-  // entry.
+  // Dig resistance / pillaring reasoning for the reinforced portions is
+  // unchanged from the 2026-08-29 version - see docs/MODS.md's
+  // SecurityCraft entry. The unreinforced cracked/mossy portions are
+  // genuinely weaker (plain vanilla blocks, no ownership protection) -
+  // intentional now that reinforcement is concentrated by design, not
+  // just cosmetic variance.
   //
-  // Gate stays a plain vanilla oak_door (unchanged) sitting in the
-  // reinforced wall's one opening, rather than SecurityCraft's own
-  // lockable Reinforced Door - that door's owner/whitelist system is
-  // built for keeping OTHER PLAYERS out, which this singleplayer pack
-  // has no use for, and placing it via console command has no player
-  // context to set an owner from anyway. A plain door in a reinforced
-  // frame gets the same practical result for zero extra complexity.
-  //
-  // Placed via /setblock (console, no player context) rather than a
-  // real player placing them, so these walls come out ownerless -
-  // doesn't weaken mob resistance (mobs can never be an "owner"
-  // either way) but does mean the player themself can't casually break
-  // their own walls later without SecurityCraft's
-  // allow_breaking_non_owned_blocks config option enabled. That config
-  // file doesn't exist yet (SecurityCraft has never actually run in
-  // this instance before now) - check config/securitycraft-common.toml
-  // after the first launch, see docs/MODS.md for the exact key.
+  // Gate stays a plain vanilla oak_door (unchanged reasoning - see
+  // docs/MODS.md), placed via /setblock so these walls come out
+  // ownerless the same way they always have.
   const WALL_MOSSY_CHANCE = 0.12
   const WALL_CRACKED_CHANCE = 0.05
 
-  function reinforcedWallBlock() {
+  function reinforcedVariant() {
     const roll = Math.random()
     if (roll < WALL_CRACKED_CHANCE) return 'securitycraft:reinforced_cracked_stone_bricks'
     if (roll < WALL_CRACKED_CHANCE + WALL_MOSSY_CHANCE) return 'securitycraft:reinforced_mossy_cobblestone'
     return 'securitycraft:reinforced_cobblestone'
   }
 
+  // Chance of a reinforced patch at this position, falling off with
+  // distance from the gate (doorX, z1) - 0.85 right at the gate, down
+  // to a floor of 0.08 by the far corners (~15 blocks away on this
+  // 11x11 footprint). The remainder is the "original" cracked/mossy
+  // stone, not plain cobblestone - it's old masonry, not fresh
+  // material.
+  function perimeterWallBlock(wx, wz) {
+    const distFromGate = Math.sqrt((wx - doorX) * (wx - doorX) + (wz - z1) * (wz - z1))
+    const reinforceChance = Math.max(0.08, 0.85 - distFromGate * 0.06)
+    if (Math.random() < reinforceChance) return reinforcedVariant()
+    return Math.random() < 0.5 ? 'minecraft:cracked_stone_bricks' : 'minecraft:mossy_cobblestone'
+  }
+
+  // Weakest point: a 3-block stretch of the west wall nearest the back
+  // (NW corner, as far from the gate as this footprint allows) - two
+  // blocks tall instead of three, always plain (unreinforced)
+  // cobblestone regardless of the distance roll above, reading as
+  // "breached and crudely rebuilt" rather than pristine. Real gameplay
+  // difference too, not just visual: no SecurityCraft protection here.
+  const WEAK_WALL_Z0 = z0
+  const WEAK_WALL_Z1 = z0 + 2
+
   for (let wx = x0; wx <= x1; wx++) {
     for (let wy = wallY0; wy <= wallY1; wy++) {
-      run(`setblock ${wx} ${wy} ${z0} ${reinforcedWallBlock()}`)
-      run(`setblock ${wx} ${wy} ${z1} ${reinforcedWallBlock()}`)
+      run(`setblock ${wx} ${wy} ${z0} ${perimeterWallBlock(wx, z0)}`)
+      run(`setblock ${wx} ${wy} ${z1} ${perimeterWallBlock(wx, z1)}`)
     }
   }
   for (let wz = z0; wz <= z1; wz++) {
     for (let wy = wallY0; wy <= wallY1; wy++) {
-      run(`setblock ${x0} ${wy} ${wz} ${reinforcedWallBlock()}`)
-      run(`setblock ${x1} ${wy} ${wz} ${reinforcedWallBlock()}`)
+      if (wz >= WEAK_WALL_Z0 && wz <= WEAK_WALL_Z1) {
+        run(`setblock ${x0} ${wy} ${wz} ${wy <= wallY0 + 1 ? 'minecraft:cobblestone' : 'minecraft:air'}`)
+      } else {
+        run(`setblock ${x0} ${wy} ${wz} ${perimeterWallBlock(x0, wz)}`)
+      }
+      run(`setblock ${x1} ${wy} ${wz} ${perimeterWallBlock(x1, wz)}`)
     }
   }
+  // Debris propping the weak section - cobweb along its shortened top
+  // (where the missing third row would be) and a scatter of gravel/
+  // rubble just outside, like it's never been properly rebuilt.
+  for (let wz = WEAK_WALL_Z0; wz <= WEAK_WALL_Z1; wz++) {
+    run(`setblock ${x0} ${wallY1} ${wz} minecraft:cobweb`)
+  }
+  run(`setblock ${x0 - 1} ${wallY0} ${z0} minecraft:gravel`)
+  run(`setblock ${x0 - 1} ${wallY0} ${z0 + 1} minecraft:cobblestone`)
+  run(`setblock ${x0 - 1} ${wallY0} ${z0 + 2} minecraft:gravel`)
+
   run(`setblock ${doorX} ${wallY0} ${z1} minecraft:oak_door[facing=south,half=lower]`)
   run(`setblock ${doorX} ${wallY0 + 1} ${z1} minecraft:oak_door[facing=south,half=upper]`)
+
+  // Gate dressing - the visible fault line, heaviest fought-over spot
+  // (docs/FEATURES.md's "Starting base"): improvised defense props
+  // (Zcraft Decoration barrels/crates as cover) flanking the door, and
+  // a Trapcraft Spikes line just outside - placed purely decoratively
+  // via /setblock, independent of the real craftable Tier 1 spikes
+  // (see docs/MODS.md's Trapcraft replacement entry), no power/wiring
+  // implied. Registry names confirmed from each mod's own jar before
+  // writing this, blockstates checked for facing requirements - AND,
+  // real gap caught by that check alone: `hesco_sandwall`/`barbed_wire_1`
+  // both had real blockstate JSON *and* real lang entries, but turned
+  // out to be orphaned assets with no actual registered block behind
+  // them (`/setblock` rejected both as "Unknown block type" in a live
+  // sandbox test) - ships `sfz_shuiniqiang` (Concrete Wall) and
+  // `sfz_lantiepiweilan` (Broken Iron Fence) instead, both confirmed
+  // real via the same live test. Lesson: a blockstate file existing is
+  // NOT sufficient proof a block is placeable - `/setblock` it for real
+  // before trusting an ID, same bar as everything else this session.
+  run(`setblock ${doorX - 2} ${wallY0} ${z1 + 1} zcraft_decorations:sfz_shuiniqiang[facing=south]`)
+  run(`setblock ${doorX + 2} ${wallY0} ${z1 + 1} zcraft_decorations:sfz_shuiniqiang[facing=south]`)
+  run(`setblock ${doorX - 1} ${wallY0} ${z1 + 1} doomsday_decoration:barrel[facing=south]`)
+  run(`setblock ${doorX + 1} ${wallY0} ${z1 + 1} doomsday_decoration:woodencrate[facing=south]`)
+  for (let wx = x0; wx <= x1; wx++) {
+    if (Math.abs(wx - doorX) <= 1) continue
+    run(`setblock ${wx} ${wallY0} ${z1 + 2} trapcraft:spikes`)
+  }
+  run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
+  run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
 
   // Watchtower (2026-08-20) - phase 1 of expanding the starter base
   // into multiple buildings, per direct request. Placed north of the
@@ -281,4 +299,113 @@ PlayerEvents.loggedIn((event) => {
   // platform floor near the north edge - clear of the ladder gap.
   run(`setblock ${towerX0} ${platformY + 1} ${towerZ0} minecraft:torch`)
   run(`setblock ${towerX1} ${platformY + 1} ${towerZ0} minecraft:torch`)
+
+  // Tower battle-wear + base props (2026-09-01, folds into the same
+  // "manned post, not just a lookout pillar" brief as the rest of this
+  // pass) - a scorch mark near the base (coal_block, the plain vanilla
+  // "burnt" block reused this way in `docs/FEATURES.md`'s own worked
+  // examples elsewhere in this codebase) and cracked stone worked into
+  // the otherwise-uniform cobblestone pillar, plus crates/barrels/a
+  // burning barrel/a generator at its base - real-verified block IDs
+  // from Doomsday Decoration + Zcraft Decoration, facing states checked
+  // against each mod's own blockstate JSON before writing this, same
+  // discipline as the wall/gate names above.
+  run(`setblock ${towerX0} ${wallY0} ${towerZ1} minecraft:coal_block`)
+  run(`setblock ${towerX0} ${wallY0 + 1} ${towerZ0} minecraft:cracked_stone_bricks`)
+  run(`setblock ${towerX1} ${wallY0 + 2} ${towerZ0} minecraft:cracked_stone_bricks`)
+  run(`setblock ${towerX0 - 1} ${wallY0} ${towerZ0} doomsday_decoration:woodencrate[facing=east]`)
+  run(`setblock ${towerX1 + 1} ${wallY0} ${towerZ0} doomsday_decoration:carton[facing=west]`)
+  run(`setblock ${towerX0 - 1} ${wallY0} ${towerZ1} doomsday_decoration:barrel[facing=east]`)
+  run(`setblock ${towerX1 + 1} ${wallY0} ${towerZ1} zcraft_decorations:sfz_ranhaodetietong[facing=west]`)
+  run(`setblock ${towerX0} ${wallY0} ${towerZ0 - 1} doomsday_decoration:fixedgenerator[facing=north]`)
+
+  // Two more (unlit, decorative only - the torches above are the real
+  // light source) police lights on the platform's south corners,
+  // mirroring the existing torches on the north corners. Clear of the
+  // ladder gap at (x, platformY+1, towerZ1+1).
+  run(`setblock ${towerX0} ${platformY + 1} ${towerZ1} zcraft_decorations:sfz_buliangdejingdeng[facing=south]`)
+  run(`setblock ${towerX1} ${platformY + 1} ${towerZ1} zcraft_decorations:sfz_buliangdejingdeng[facing=south]`)
+
+  // Shrine nook + grave markers (2026-09-01, docs/FEATURES.md's "The
+  // amulet" reversal - the pedestal is now pre-built into the *original*
+  // structure layer, not something the player crafts). NE interior
+  // corner, away from both the door and the interior shack (below).
+  // The pedestal mechanic itself (server_scripts/amulet_pedestal.js)
+  // already tracks state on the player, not the block/world, so
+  // pre-placing it here needed zero changes to that file's own logic -
+  // confirmed by reading it, not assumed.
+  const shrineX = x1 - 2
+  const shrineZ = z0 + 2
+  run(`setblock ${shrineX} ${wallY0} ${shrineZ} kubejs:amulet_pedestal`)
+
+  // Grave markers - plain vanilla oak_fence posts on small coarse_dirt
+  // mounds, not a sign (avoids the 1.20.1 sign-NBT format entirely -
+  // this pack already has one real crash history with guessed NBT
+  // syntax, see docs/FEATURES.md's FTB Quests `#`-tag entry, not worth
+  // repeating for a purely cosmetic prop). Clustered around the shrine,
+  // directly reinforcing the existing "whoever held this before you"
+  // wave-5 gear-removal flavor text (wave_status.js) rather than being
+  // generic clutter.
+  const graveSpots = [
+    [shrineX - 1, shrineZ - 1],
+    [shrineX + 1, shrineZ - 1],
+    [shrineX, shrineZ + 2],
+  ]
+  graveSpots.forEach(([gx, gz]) => {
+    run(`setblock ${gx} ${wallY0} ${gz} minecraft:coarse_dirt`)
+    run(`setblock ${gx} ${wallY0 + 1} ${gz} minecraft:oak_fence`)
+  })
+
+  // Interior shack (2026-09-01, "still not built" per docs/FEATURES.md
+  // - this pass builds it for the first time, not just decorates an
+  // existing room). NW interior corner, clear of the door, the shrine,
+  // and the tower's own footprint outside z0. A single 5x5 room (3x3
+  // usable interior once the 1-thick walls are subtracted), walls two
+  // blocks tall (shorter than the 3-block perimeter, reads as a lean-to
+  // rather than a second fortification), oak_planks floor distinct from
+  // the compound's stone_bricks, flat oak_planks roof, one doorway
+  // facing the compound interior (south wall, centered). Dressed as a
+  // command post, not a house - bedroll (Zcraft's mattress, not a
+  // vanilla bed, to keep the "found, not slept in for real" reading),
+  // stacked crates, a shelf, a table - worn furniture and discarded
+  // belongings doing the storytelling per the brief, not a tidy room.
+  // Furniture positions are all genuinely interior (shackX0+1..X1-1,
+  // shackZ0+1..Z1-1) - a real placement bug caught in a live sandbox
+  // test put 3 of these directly ON the wall line instead, which would
+  // have carved holes in the walls rather than furnishing the room.
+  const shackX0 = x0 + 1
+  const shackX1 = x0 + 5
+  const shackZ0 = z0 + 1
+  const shackZ1 = z0 + 5
+  const shackWallY1 = wallY0 + 1
+  const shackDoorX = shackX0 + 2
+
+  run(`fill ${shackX0} ${floorY + 1} ${shackZ0} ${shackX1} ${floorY + 1} ${shackZ1} minecraft:oak_planks`)
+  for (let sx = shackX0; sx <= shackX1; sx++) {
+    for (let sy = wallY0; sy <= shackWallY1; sy++) {
+      run(`setblock ${sx} ${sy} ${shackZ0} minecraft:cracked_stone_bricks`)
+      run(`setblock ${sx} ${sy} ${shackZ1} minecraft:cracked_stone_bricks`)
+    }
+  }
+  for (let sz = shackZ0; sz <= shackZ1; sz++) {
+    for (let sy = wallY0; sy <= shackWallY1; sy++) {
+      run(`setblock ${shackX0} ${sy} ${sz} minecraft:cracked_stone_bricks`)
+      run(`setblock ${shackX1} ${sy} ${sz} minecraft:cracked_stone_bricks`)
+    }
+  }
+  run(`fill ${shackX0} ${shackWallY1 + 1} ${shackZ0} ${shackX1} ${shackWallY1 + 1} ${shackZ1} minecraft:oak_planks`)
+  // Doorway - punched through the south wall (the side facing the
+  // compound's open interior, toward the shrine/pedestal), centered.
+  run(`setblock ${shackDoorX} ${wallY0} ${shackZ1} minecraft:air`)
+  run(`setblock ${shackDoorX} ${wallY0 + 1} ${shackZ1} minecraft:air`)
+
+  // 3x3 interior grid (columns shackX0+1..shackX0+3, rows
+  // shackZ0+1..shackZ0+3) - mattress/shelf along the back wall, table
+  // centered, crates flanking the doorway, the tile directly in front
+  // of the door (shackDoorX, shackZ1-1) left clear as the walk-in path.
+  run(`setblock ${shackX0 + 1} ${wallY0} ${shackZ0 + 1} zcraft_decorations:sfz_chuangdian_2[facing=north]`)
+  run(`setblock ${shackX0 + 3} ${wallY0} ${shackZ0 + 1} doomsday_decoration:shelf[facing=north]`)
+  run(`setblock ${shackX0 + 2} ${wallY0} ${shackZ0 + 2} doomsday_decoration:table`)
+  run(`setblock ${shackX0 + 1} ${wallY0} ${shackZ0 + 3} doomsday_decoration:carton_2[facing=south]`)
+  run(`setblock ${shackX0 + 3} ${wallY0} ${shackZ0 + 3} doomsday_decoration:weaponbox[facing=south]`)
 })
