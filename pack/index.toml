@@ -29,6 +29,10 @@ file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
 hash = "307a0908eb9ec157b8b4129ad455029c5ff3648594fb30fac5aeecae93690732"
 
 [[files]]
+file = "config/ftbquests/quests/chapters/tier2_machines.snbt"
+hash = "976ed65cc29543768ddf43c833cec63b2b68edb7dd9b9aa24cc33afd437f29a7"
+
+[[files]]
 file = "config/ftbquests/quests/data.snbt"
 hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
 
@@ -197,6 +201,10 @@ file = "kubejs/server_scripts/playtest_starter_kit.js"
 hash = "4827815474b21875be2edf8f85fdd73029b6a6aef9ebbf180e12b90dec25291f"
 
 [[files]]
+file = "kubejs/server_scripts/tier2_recipes.js"
+hash = "0cabf019d2b3e0b1378f98af78a17cbd3c8c75c57e38515c8bce2ba9703eeaf2"
+
+[[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
 hash = "af893c8b389add1806d4b22589c022d3a2ae5230dafa472c1c4bb1dc6e4aeb8b"
 
@@ -337,6 +345,11 @@ metafile = true
 [[files]]
 file = "mods/lootjs.pw.toml"
 hash = "713685d5c4c72d8bd46e314ea164b9f9a6a368dedf71398b2246142e2ed66c1f"
+metafile = true
+
+[[files]]
+file = "mods/medieval-defense-turrets.pw.toml"
+hash = "4f3644efb55b1dd4a88154258462b120233687b18361e90b4c7100e6f4ca4563"
 metafile = true
 
 [[files]]

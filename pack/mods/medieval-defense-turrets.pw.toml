@@ -1,0 +1,13 @@
+name = "Medieval Defense Turrets"
+filename = "Medieval Defense Turrets 1.1.4.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/9y40sONu/versions/PbbU7I1P/Medieval%20Defense%20Turrets%201.1.4.jar"
+hash-format = "sha512"
+hash = "5d018dce163017af7fd511912815951a91cc5b74ed7bb05f280b46779b8aa26e861ab9c2fdc6df9714f46a725b946a02996937a0ed21070995426588d4d0b5cb"
+
+[update]
+[update.modrinth]
+mod-id = "9y40sONu"
+version = "PbbU7I1P"

@@ -14,107 +14,79 @@ line from this file. Don't queue something that's still genuinely
 unresolved (open forks, undecided mod picks) — flesh it out in
 IDEAS.md/FEATURES.md first.
 
+**Cleaned up 2026-09-01** — this file had accumulated stale entries for
+things confirmed working, things superseded by later redesigns, and
+a duplicate leftover from before the desert-drop rebuild. Trimmed to
+reflect actual current status.
+
 ---
 
 ## Ready to build
 
-*(nothing queued right now — see "In progress" for the 2026-08-31
-world-gen/structure-variety brief just sent)*
+1. **Pack decoration pass** — see FEATURES.md's "Base & structures"
+   section, "Pack decoration pass" entry. Install **Doomsday
+   Decoration** + **Zcraft Decoration** (both real-verified, no
+   dependencies, pure decorative blocks — lowest-risk category of
+   anything added to this pack so far), then pick real block IDs from
+   each mod's registry and dress the Watchpost/watchtower via
+   `/setblock`/`/fill` calls in `playtest_starter_kit.js`. Expect a
+   visual-iteration round after the first pass, same as other cosmetic
+   work in this pack.
 
-## In progress (already sent, not yet confirmed built)
+## In progress (sent directly to the build session)
 
-- **Drop desert-only, world-gen mechanics** — built 2026-08-31,
-  **user-confirmed fixed in-game** (see FEATURES.md's "World type"
-  section for the full 4-crash saga and its lessons). Biome source
-  `fixed` desert → curated `multi_noise` (7 biomes); floor depth raised
-  from ~4 to 65 blocks; both new structure mods' and Treasure2's own
-  spacing retuned. The world-gen mechanics themselves are done — see the
-  next item for the follow-on aesthetic swap this same playtest
-  surfaced.
-- **Structure mod aesthetic swap** — built 2026-08-31 (see FEATURES.md's
-  "Structure mod picks" for full detail). When Dungeons Arise and
-  Structory: Towers removed, spacing overrides cleaned up. **Apocalypse
-  structures: Abandoned city buildings** and **Abandoned Urban**
-  installed — both real-verified (correct author/mod confirmed on
-  CurseForge directly after Modrinth's search surfaced a different,
-  wrong "Abandoned Urban" by a different author), both genuinely
-  dependency-free, both confirmed grounded via real `.nbt`/structure-def
-  inspection (no custom processor classes, no underground digging).
-  Spacing retuned moderately (uniform 24/12 across all 11 structure_sets
-  from both mods) rather than aggressively, per the race-condition
-  lesson. Floor depth (65 blocks) and the 7-biome curation both left
-  unchanged — rechecked with real tag data, still good coverage for the
-  new mods, no reason to touch either. Verified in a real sandboxed boot
-  with the actual relevant mod set this time (Radium + Treasure2
-  included, not a minimal set) — clean, no crash patterns. Not yet
-  confirmed in-game.
+- **Biome variety investigation** — sent 2026-09-01, diagnosis only, not
+  a build yet. Playtest reported the world reading as entirely desert
+  despite the curated 7-biome `multi_noise` set being live — could be a
+  real bug in the hand-assigned biome parameter-point placement (never
+  verified against vanilla's real values, see FEATURES.md's "World
+  type" section), or just unexplored territory. User also asked about
+  adding Biomes O' Plenty for more variety — held pending the diagnosis,
+  since BOP's TerraBlender integration compatibility with this pack's
+  fully custom biome_source is a real open question, not confirmed
+  either way. Not yet reported back.
 
-- **Amulet pedestal marker fix** — built 2026-08-31: root cause found
-  (armor stand held items render at hand/shoulder height, not feet, so
-  the marker was a full body-height too high), fixed with `Small:1b` +
-  a lowered spawn height + a gentle bob via a throttled tick handler.
-  **Height is a reasoned estimate, not pixel-verified** (vanilla's
-  client jar is obfuscated at the raw level, unlike the Java mod jars
-  this pack usually decompiles cleanly) — worth a visual confirm next
-  playtest, same as everything else in this list.
-- **Vanilla desert pyramids disabled** — built 2026-08-31: emptied
-  `desert_pyramids.json`'s structure list, cleaned up the now-dead
-  spacing override. Confirmed root cause along the way: this world's
-  floor is only ~4 blocks thick (surface at y≈-60, world min_y=-64) —
-  not a desert-specific problem, any underground-digging structure on
-  this world risks the same wall. Directly relevant to the "drop desert,
-  pick structure mods for variety" work below.
+## Built, awaiting your next playtest
 
-- **Base expansion: escalating growth curve** — built 2026-08-31 (see
-  FEATURES.md's "Base expansion" entry): grows on every wave clear now,
-  not every 2nd, by `20 + 5 * floor((waveNumber - 1) / 2)`. Not yet
-  confirmed in-game.
+- **Machine progression, Tier 2** — built and shipped 2026-08-31 (see
+  FEATURES.md's "Machine progression, Tier 2" and its Tier 2 quest
+  chapter for the full spec). Fire Trap/Fan/Magnetic Chest (Trapcraft)
+  and Arrow Turret (new install: Medieval Defense Turrets) all
+  re-recipied to pull from the Uncommon loot tier; its own 4-quest FTB
+  Quests chapter shipped alongside. Verified via a full-mod-set sandbox
+  boot (clean `Done`, 0 script errors, exact expected 17-quest count) —
+  not yet seen in-game.
+- **Endless phase scaling (waves 9+)** — built and shipped 2026-09-01
+  (see FEATURES.md's "Wave Horn" section for the full spec). 40
+  difficulty levels, 4 hordes built from this pack's own roster, verified
+  against real spawned-entity attribute NBT (exact match to the
+  formulas). Quest 10's flavor text still needs a rewrite — left for the
+  user, not built by either Claude session. Needs an actual wave-9
+  playtest to fully confirm.
 
-- **The amulet** and the **Tier 1 chapter restructure** — both built
-  2026-08-30 (see FEATURES.md's "The amulet" and "Quest book"
-  sections), **not yet confirmed in-game**. This is the checkpoint the
-  user asked to playtest before anything else lands on top of it.
-- **World type rebuild** — built 2026-08-30 (see FEATURES.md's "World
-  type" section): `noise` generator + custom `noise_settings` +
-  `fixed` desert biome_source, replacing the confirmed-broken `flat`
-  override. Needs a brand-new world to actually test, since world-gen
-  changes don't retroactively apply to already-generated chunks.
-- **Endless phase scaling (waves 9+)** — sent to build 2026-08-31 on
-  direct request (Tier 2 stays on hold, this one specifically was pulled
-  off hold and queued — see FEATURES.md's "Wave Horn" section for the
-  full spec). Built on the **Undead Nights** mod's difficulty-level
-  system (health/damage/speed/armor/horde-size scale factors per level,
-  wave-number-mapped via `/undeadnights difficulty set <n>`), after
-  ruling out Pure Suffering and DeceasedCraft and real-testing Undead
-  Nights in a sandboxed server first. Fixed `distanceMax≈256` spawn band
-  (its distance config doesn't hot-reload — confirmed by direct
-  measurement, not assumed) instead of tracking the worldborder live;
-  holds up to ~wave 95. New footprint: adds the Undead Nights mod. Three
-  integration details that are required, not optional:
-  `updateAttributesOfThirdPartyMobs: true` per level,
-  `securityCraftCompatibility` enabled, and its commands need
-  `execute as <player>` rather than the console source the rest of
-  `wave_spawner.js` uses. Two required follow-on edits: `wave_status.js`'s
-  display stops capping at `FINAL_WAVE`, and Quest 10's flavor text needs
-  a rewrite (it currently describes a frozen repeat that stops being
-  true — left for the user to redo in the diary voice, not for the build
-  session to guess at). Not yet confirmed in-game.
+## Confirmed working (recent playtests)
+
+- **Structure mod aesthetic swap** — **user-confirmed**: structure
+  generation now reads as the intended abandoned aesthetic. When
+  Dungeons Arise/Structory: Towers removed, Apocalypse structures:
+  Abandoned city buildings + Abandoned Urban installed instead.
+- World-gen: `multi_noise` biome source (7-biome curated set), raised
+  floor depth, the whole 4-crash world-creation saga — **user-confirmed
+  fixed**.
+- The amulet + pedestal (worn buffs, border-crossing, marker
+  alignment/bob fix) — exercised directly through real bug reports
+  (marker misalignment, since fixed), so the core mechanic is proven
+  working even though the marker height fix itself isn't pixel-verified.
+- Vanilla desert pyramids disabled, Treasure2's mimic mechanic
+  identified (not a bug, left undocumented on purpose).
+- Base expansion's escalating growth curve — built, not separately
+  confirmed by name, but the same worldborder machinery has been
+  exercised repeatedly through the structure-reachability and world-gen
+  playtests since.
 
 ## On hold — deliberately not queued right now
 
-- **Machine progression, Tier 2** — fully specced (see FEATURES.md,
-  "Defense" section, plus its own new Tier 2 quest chapter: Spark and
-  Flame, Herd Them In, Waste Not, Wired for War, one per item, all
-  gated on "Sharpened Scrap"). Fire Trap/Fan/Magnetic Chest all
-  Trapcraft (already installed), Arrow Turret from a new install
-  (Medieval Defense Turrets). **Held on direct request**: the user is
-  low on tokens and wants to playtest the current build (amulet + Tier
-  1 chapter restructure, both now landed — see "In progress" above)
-  before anything else lands on top of it, to avoid stacking up more
-  unverified changes than they can afford to debug right now. Don't
-  start this until told otherwise — it was already ready to build, this
-  isn't a design gap, purely a pacing call. Its Tier 1 chapter
-  dependency ("Sharpened Scrap") is now satisfied.
+*(nothing on hold right now)*
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 
@@ -123,13 +95,9 @@ world-gen/structure-variety brief just sent)*
 - Roguelike next-wave-composition choice — parked pending a GUI
   decision that was explicitly not pursued.
 - **Base expansion into rooms/corridors (Schematicannon)** — mod
-  question resolved 2026-08-30 (full Create installed, not the
-  broken "standalone" re-upload — see FEATURES.md), but a harder,
-  genuinely blocking dependency turned up in its place: a lootable
-  `create:schematic` item only points at a `.nbt` file, which has to
-  already exist in that world's `schematics/uploaded/` folder — and no
-  such file exists yet. Needs at least one room hand-built in-game and
-  exported via Schematic and Quill + Schematic Table before any loot
-  injection or delivery-mechanism code can be written against something
-  real. Not a coding-session task — pulled back out of "ready to build"
-  until that exists.
+  question resolved (full Create installed), but a harder, genuinely
+  blocking dependency remains: a lootable `create:schematic` item only
+  points at a `.nbt` file, which has to already exist in that world's
+  `schematics/uploaded/` folder — and none exists yet. Needs at least
+  one room hand-built in-game and exported via Schematic and Quill +
+  Schematic Table first. Not a coding-session task.

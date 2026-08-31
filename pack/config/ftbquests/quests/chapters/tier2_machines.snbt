@@ -1,0 +1,114 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "tier2_machines"
+	group: ""
+	icon: "trapcraft:igniter"
+	id: "8E785D41B13203B8"
+	order_index: 2
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: [
+				"Wire an Igniter and it'll set the ground itself against them - you won't need to swing a blade if the fire gets there first."
+			]
+			icon: "trapcraft:igniter"
+			id: "D50EDBCBC06A1B74"
+			rewards: [{
+				id: "4491B1785A049FFB"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "2308FBFB34BD44ED"
+				item: "trapcraft:igniter"
+				type: "item"
+			}]
+			title: "Spark and Flame"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: [
+				"A Fan won't kill anything on its own. It doesn't need to - it just makes sure they end up exactly where your other traps are waiting."
+			]
+			icon: "trapcraft:fan"
+			id: "22F3265BCDFA63B5"
+			rewards: [{
+				id: "29DB799954472846"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "BADE6D7C81961E02"
+				item: "trapcraft:fan"
+				type: "item"
+			}]
+			title: "Herd Them In"
+			x: 0.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: [
+				"A Magnetic Chest does the grim work so you don't have to - walk away from a kill and let it do the collecting."
+			]
+			icon: "trapcraft:magnetic_chest"
+			id: "BDF75A9DF9F353D6"
+			rewards: [{
+				id: "D968603760ABC83C"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "26CCD7A04ABD1646"
+				item: "trapcraft:magnetic_chest"
+				type: "item"
+			}]
+			title: "Waste Not"
+			x: 0.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: [
+				"An Auto-Turret keeps swinging long after your own arm gives out. Wire one, and for the first time, something else is watching the wall while you sleep."
+			]
+			icon: "medievalturrets:bow_turret_item"
+			id: "74779308DEED321D"
+			rewards: [{
+				id: "0F62E8F07D9945A4"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "0AE9B4E0C4263BE8"
+				item: "medievalturrets:bow_turret_item"
+				type: "item"
+			}]
+			title: "Wired for War"
+			x: 0.0d
+			y: 4.5d
+		}
+	]
+	title: "Tier 2"
+}

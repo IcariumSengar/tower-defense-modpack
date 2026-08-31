@@ -25,6 +25,13 @@ Status tags used below: **live** (built and part of the current pack),
 **planned** (fully designed, not built yet), **retired** (built, then
 deliberately removed — kept here so it doesn't get re-proposed blind).
 
+**Swept for staleness 2026-09-01** — several sections had drifted into
+blow-by-blow debugging narrative (this file's own stated job belongs to
+MODS.md) or described mods/mechanisms since replaced or removed.
+Compressed to current-state descriptions with pointers to MODS.md for
+full history, and fixed several "not yet confirmed in-game" tags that
+had since been confirmed through actual playtesting.
+
 ---
 
 ## Core loop
@@ -43,186 +50,69 @@ to the next wave starts automatically once a wave clears (see below);
 using the horn manually during the countdown skips the wait.
 Implementation: `wave_spawner.js`, `wave_status.js`.
 
-**Investigated and decided against 2026-08-30: don't hand off scaling to
-Pure Suffering.** The plan was to use Pure Suffering's built-in tiered
-escalation as the scaling backend for "a huge number of waves" with
-real, indefinite escalation (count/toughness/speed), with the Wave Horn
-as a thin trigger calling `/puresuffering add primary ... set <severity>`.
-Checked directly against the actual pinned source (cloned the mod's
-`1.20.1` branch at tag `1.6.8.5R-LTS1`, matching our exact installed
-version — not a newer branch, which would have been a repeat of the
-noise-generator mistake of verifying against the wrong version):
+**Investigated and rejected 2026-08-30: Pure Suffering as the scaling
+backend.** The plan was to use its built-in tiered invasion escalation
+for "a huge number of waves" of real count/toughness/speed scaling,
+with the Wave Horn as a thin trigger. Checked against the exact pinned
+source (its `1.20.1` branch at tag `1.6.8.5R-LTS1`, matching the
+installed version, not a newer/wrong branch). Severity turned out fully
+command-controllable (a real positive) and its "5 stages" are fixed
+presets, not an auto-ramp (a correction to the original assumption, also
+fine). The actual blocker: its mob spawn positioning is entirely
+player-distance-based with no concept of the worldborder at all — using
+it would mean giving up the already-tuned "spawn beyond the border, walk
+in" system in `wave_spawner.js` entirely, not a tunable detail. Fell
+back to hand-building the scaling formula instead — see "Endless phase
+scaling" below, which superseded `docs/deferred/night_scaling.js`'s
+approach rather than reviving it (wave-number-keyed, scoped to
+wave-spawned mobs, not a global day/night-keyed hook).
 
-1. **Severity is fully controllable, better than assumed.** `/puresuffering
-   add primary <session> <difficulty> <type> set <severity>` takes an
-   explicit severity 1-N directly (`AddInvasionsCommand`) — no dependency
-   on real in-game days. That part of the plan checks out cleanly.
-2. **Correction to the record: there is no in-invasion ramp.** Each
-   invasion type's "5 stages" (confirmed exactly 5 in every
-   `invasion_types/*.json`, e.g. `zombie.json`) are 5 separate
-   hand-authored `SeverityInfo` presets — mob cap, spawn tick delay, and
-   roster all fixed at whichever severity you pick when the invasion is
-   created (`Invasion.java`'s `severity` field, set once in the
-   constructor, never changed by `tick()`). It doesn't escalate on its
-   own during a single invasion; we would drive escalation ourselves by
-   commanding a higher severity number as waves climb — this is actually
-   simpler than a "ramp," not a problem.
-3. **Real, structural blocker: mob positioning.** `Invasion.getMobSpawnPos`
-   always picks a spawn point within `mobSpawnChunkRadius` chunks of the
-   player's *current chunk* (game rule, config range 1-8, default 8 ≈ up
-   to 128 blocks), excluding only a minimum-distance ring around the
-   player (`noSpawnMobsBlockRadius`, config range 1-256, default 16
-   blocks). This is entirely player-distance-based and has no concept of
-   the worldborder at all — there's no config path to "spawn just beyond
-   the border." Worse, the two radii fight each other: pushing
-   `noSpawnMobsBlockRadius` out far enough to clear our worldborder (which
-   starts well under 128 blocks) shrinks the valid spawn ring toward zero
-   and starves spawning. Using Pure Suffering as the mob source would mean
-   giving up the already-tuned "spawn beyond the border, walk in with
-   staggered sound cues" system in `wave_spawner.js`
-   (`randomBorderEdgePosition()`) — not a compatibility risk to mitigate,
-   a straight either/or.
-4. Checked the mixins it applies (`MobMixin`, `SensorMixin`, etc.) for
-   collision with `mob_aggro.js`'s forced `setTarget()` or Epic Siege
-   Mod's AI changes — `MobMixin` only adds synced hyper-charge data via
-   `@Inject(at = @At("RETURN"))`, purely additive, no override risk. This
-   part was never the blocker.
+**Endless phase scaling (waves 9+)** — *live, built 2026-09-01*. Real,
+indefinite escalation in count/toughness/speed past the designed 8-wave
+campaign, so a player who reaches "a huge number of waves" is always
+hard-pressed instead of coasting on wave 8's composition forever. Waves
+1-8 are untouched. Built on the **Undead Nights** mod (chosen after
+ruling out Pure Suffering — see above — and DeceasedCraft, which is a
+whole separate modpack, not a droppable mod): `wave_spawner.js` calls
+`/undeadnights difficulty set <n>` (mapped from wave number) then
+`spawn_horde` via `execute as <player>` (console source NPEs on these
+specific commands, unlike the rest of the file's commands), and
+`wave_status.js`'s display no longer caps at wave 8.
 
-**Net call**: severity control and the escalation-preset idea are sound
-and worth keeping as inspiration, but the positioning system is a
-hard architectural mismatch with the border-edge spawn staging this pack
-is built around, not a tunable detail — reusing Pure Suffering's own
-spawning would mean throwing out the "walk in from beyond the border"
-feel entirely. Falling back to hand-building the scaling formula instead
-— see the "Endless phase scaling" entry immediately below, which
-supersedes `docs/deferred/night_scaling.js`'s approach rather than
-reviving it as-is (wave-number-keyed and scoped to wave-spawned mobs via
-the existing per-mob summon NBT, not a global `EntityEvents.spawned`
-hook keyed to real day/night count) — keeping `wave_spawner.js`'s own
-spawn-position system untouched either way.
-
-**Endless phase scaling (waves 9+) — planned, redesigned 2026-08-31
-around Undead Nights, not yet built.** Direct request: real, indefinite
-escalation in count, toughness, and speed so a player who reaches "a
-huge number of waves" is always hard-pressed, not coasting on wave 8's
-composition forever. Today, `wave_spawner.js`'s `WAVES` array only
-defines 8 hand-authored waves; `Math.min(waveNumber, WAVES.length)`
-silently repeats wave 8's exact composition for every wave after that —
-no scaling exists past the designed campaign at all. Waves 1-8 stay
-exactly as they are (that's the narrative-driven tutorial arc, not
-something to touch); this only adds a procedural phase once
-`waveNumber > FINAL_WAVE` (8).
-
-**Before landing on the design below, checked whether a mod already does
-this rather than building it blind** (same standing principle that ruled
-out Pure Suffering above): DeceasedCraft (the user's own other CurseForge
-instance) was ruled out fast — it's a whole separate modpack, not a
-droppable mod, real-playtime-only triggering (waves at day 15/30/45...),
-no documented spawn-positioning info at all. **Undead Nights**
-(MC-Mods-Pete/UndeadNights, `1.20.1-Forge` branch) checked out much
-better — read its actual source, then had the build session run a real
-sandboxed test (standalone dedicated server + RCON + a mineflayer bot,
-never touching the live save):
-
-- `/undeadnights difficulty set <n>` (with `auto_progression` disabled)
-  is a fully command-driven, wave-number-mappable difficulty index — no
-  real-day dependency. **Confirmed live**, no reload needed.
-- Each difficulty level is a hand-editable JSON entry
-  (`config/undeadnights_difficulty_config.json`) carrying its own
-  `healthAttributeScaleFactor`/`damageAttributeScaleFactor`/
-  `speedAttributeScaleFactor`/`armorAttributeScaleFactor`/
-  `hordeSizeScaleFactor` — exactly the count/toughness/speed axis set
-  this feature needs, as data instead of hand-rolled NBT.
-- Horde composition (`config/undeadnights_horde_mobs_config.json`) is
-  fully open — **confirmed** with a real test spawn producing actual
-  `minecraft:zombie` + `the_flesh_that_hates:flesh_human` entities, no
-  forced use of the mod's own 3 bundled zombie variants.
-- **The one real blocker**: `SpawnLocationFinder` spawns hordes in a
-  ring around the *player* at a `distanceMin`/`distanceMax` band — and
-  that value lives in a `SERVER`-type Forge config
-  (`world/serverconfig/undeadnights-server.toml`), which **only loads at
-  world start and never hot-reloads**. Confirmed by direct measurement
-  (spawned a horde at the stock 70/75 band, live-edited the file to
-  15/20 while the server kept running, respawned twice — still ~70/65
-  blocks out; only a full server restart picked up the new value). So
-  "rewrite the distance band before every wave" doesn't work — the band
-  has to be a single fixed choice for the life of a world.
-- Decided call: set `distanceMax` near its config ceiling (256) once, in
-  the pack's shipped config override, rather than trying to track the
-  border live. Our worldborder formula (`20 + 5·floor((waveNumber-1)/2)`)
-  doesn't pass 256 until roughly wave 95 — comfortably past any
-  realistic playthrough — so this holds up as "always beyond the border"
-  for the practical lifetime of a campaign, at the cost of also spawning
-  wave-1 hordes unusually far out (an accepted tradeoff, not hidden: the
-  first horde reads as more distant/ominous than before, not wrong, just
-  different from the hand-tuned 6-14 block band the designed campaign
-  uses). The ring-vs-square-border "feel" itself is still unverified in
-  practice — the sandboxed test had no visual/GUI capability to judge it,
-  only coordinate data — first real playtest is the actual check.
-
-**Design, reusing the formulas already worked out rather than
-redoing them**: the same three per-axis curves from the original custom
-plan become the values baked into ~30-40 authored `undeadnights_difficulty_config.json`
-levels (one level per endless wave, holding at the last level's values
-past that, same clamp pattern `WAVES` already uses for wave 8) —
-`healthAttributeScaleFactor(w) = 0.08w`, `damageAttributeScaleFactor(w) =
-0.05w` (uncapped — this is still the "always hard-pressed" axis),
-`speedAttributeScaleFactor(w) = min(0.5, 0.02w)` (capped, speed
+40 difficulty levels, generated by script rather than hand-typed:
+`healthAttributeScaleFactor(w) = 0.08w`, `damageAttributeScaleFactor(w)
+= 0.05w` (both uncapped — the "always hard-pressed" axis),
+`speedAttributeScaleFactor(w) = min(0.5, 0.02w)` (capped — speed
 compounding breaks kiting past a point), `hordeSizeScaleFactor` capped
-similarly to the old count formula for the same server-performance
-reason (Radium/Entity Culling/Clumps were sized for "a lot of mobs," not
-unlimited). Roster mix (trash pool vs. elite pool, shifting toward
-elites as waves climb) becomes multiple named hordes in the mobs config,
-with higher difficulty levels' `listOfPossibleHordes` weighted toward
-the elite-heavy ones — same elite pool as before (ravager, flesh_suffer,
-bruteplaquecreatureone, flesh_hunter_two, plaquethreelegcreature,
-flesh_boomer), same trash floor (zombie/skeleton/spider/wither_skeleton).
-Boss-wave spike reuses the mod's native `bossHordeEnabled`/`bossHordeId`
-per level instead of a hand-rolled "every 5th wave" check.
+for the same server-performance reason count was always going to need a
+ceiling. 4 named hordes, built entirely from this pack's own existing
+roster (zombie/skeleton/spider/wither_skeleton trash floor, ravager/
+flesh_suffer/bruteplaquecreatureone/flesh_hunter_two/
+plaquethreelegcreature/flesh_boomer elite pool) — none of Undead
+Nights' own bundled zombie variants used. Boss-wave spike uses the
+mod's native `bossHordeEnabled`/`bossHordeId`. `updateAttributesOfThirdPartyMobs:
+true` is set on every level (required or the scale factors silently do
+nothing to non-Undead-Nights mobs), and `securityCraftCompatibility` is
+enabled (stops Horde Zombies breaking the reinforced Chokepoint walls).
+Spawn distance is fixed at 240-256 (shipped via default configs — the
+underlying Forge `SERVER` config can't be changed at runtime, confirmed
+earlier), holding "beyond the border" for roughly the first 95 waves.
 
-**Three integration details, confirmed real, not to skip**:
-1. `updateAttributesOfThirdPartyMobs` must be set `true` on every
-   authored level — without it, the scale factors only ever apply to the
-   mod's own zombie variants and silently do nothing to our vanilla/TFTH
-   roster.
-2. Undead Nights' commands need a real player as the command source
-   (`context.getSource().getEntity()` throws for a console/RCON sender,
-   confirmed by decompiling `DifficultyLevelCommand.class`) — unlike the
-   rest of `wave_spawner.js`'s commands, which run via
-   `server.runCommandSilent(...)` from the console. These specific calls
-   need `execute as <player> at @s run undeadnights ...` instead; the
-   exact KubeJS selector syntax for "as this player" needs verifying
-   in-game, not assumed from the existing `/summon` pattern.
-3. `securityCraftCompatibility` (a toggle in the same server TOML) needs
-   to be enabled — it stops Horde Zombies from breaking SecurityCraft's
-   reinforced blocks, which is exactly what the starter base's
-   Chokepoint walls are built from.
+**Verified with real spawned-entity NBT, not just config validation**:
+set difficulty level 20 on a live sandbox, spawned a horde, read a real
+zombie's actual attribute values — health +160%, damage +100%, speed
++40%, matching the formulas to the decimal.
 
-**Known caveat, carried over from the original design, still unsolved**:
-skeleton's real threat is its arrows, not its `generic.attack_damage`
-melee attribute — `damageAttributeScaleFactor` scaling that attribute
-won't make arrows hit harder. Speed scaling partially compensates but
-this is a real, untested gap for ranged mobs specifically.
+**Known caveat, still unsolved**: skeleton's real threat is its arrows,
+not its `generic.attack_damage` melee attribute — scaling that
+attribute won't make arrows hit harder.
 
-**Two follow-on changes this requires elsewhere, not optional cleanup**:
-1. `wave_status.js` currently caps the on-screen display at
-   `Math.min(data.getInt('td_waveNumber'), FINAL_WAVE)` — literally
-   showing "Wave 8" forever past the designed campaign. That has to stop
-   capping once this ships, since "how far did I get" is the actual
-   point of an endless phase.
-2. Quest 10 "No Turning Back"'s flavor text ("Eight is where the map
-   runs out... it's the same night, over and over, until it isn't")
-   describes a frozen repeat, which stops being true the moment real
-   escalation exists. Needs a rewrite in the same diary voice — left for
-   the user to redo rather than guessed at here, since tone/flavor is
-   editorial, not a technical spec.
-
-**Not sent to build yet** — per the standing pacing call, the amulet,
-Tier 1 chapter restructure, and world-type rebuild are all still
-unconfirmed in-game (see QUEUE.md); this is designed and ready to queue,
-not queued. New footprint: adds the Undead Nights mod (small, focused,
-not a whole modpack) — its 3 bundled zombie variants go unused by our
-config but still ship in the jar.
+**Left deliberately undone**: Quest 10 "No Turning Back"'s flavor text
+("Eight is where the map runs out... it's the same night, over and
+over") describes a frozen repeat that's no longer true — needs a
+rewrite in the diary voice, intentionally left for the user rather than
+guessed at by either Claude session. Not yet confirmed by an actual
+wave-9 playtest, same as everything else waiting on real play.
 
 **Loot bags** — *live*. Kills drop tiered bags — Scavenger's Bag
 (Common, 50%), Fortified Cache (Uncommon, 25%), Warlord's Hoard (Rare,
@@ -297,244 +187,104 @@ walled compound built via `/fill` on first login. Current build:
   shack (narrative home of the previous occupant), the watchtower
   overlooking the chokepoint gate specifically, a pedestal near the
   entrance reserved for the amulet mechanic (see Ideas), a well styled
-  to match vanilla's own desert well. Decoration pass (ZCraft: Zone
-  Decor + Doomsday Decoration props) planned as a later, separate step
-  once those mods are installed — not blocking the base structure
+  to match vanilla's own desert well. Decoration pass planned as a
+  later, separate step — see below, not blocking the base structure
   itself.
 
-**World type** — *rebuilt 2026-08-30, not yet confirmed in-game*. The
-flat-generator-with-desert-biome override (`type: flat`, `biome:
-minecraft:desert`) was confirmed broken on a genuinely fresh world —
-still rendered as plains. Root cause not diagnosed (vanilla's `flat`
-generator type only ever supports **one hardcoded biome, by design** —
-that may be part of why the override never behaved as expected), and
-rather than debug `flat` further, replaced the mechanism entirely.
+**Pack decoration pass** — *planned, not built*. Direct request
+2026-09-01, following the 2026-08-31 structure swap that confirmed
+"abandoned/post-apocalyptic, not fantasy" as this pack's real aesthetic
+direction — dress the Watchpost (and its watchtower) with matching
+clutter/props rather than leaving it bare stone, using two mods
+researched earlier and re-verified now that they're actually being
+built:
+- **Doomsday Decoration** (CurseForge, author Huzai,
+  `doomsday_decoration-1.1.3-forge-1.20.1.jar`, 793.9K downloads) —
+  "pure decorative blocks": worn furniture, discarded belongings, human
+  remains. **No dependencies.**
+- **Zcraft Decoration** (CurseForge, author NothingTs, project 1407825
+  — its own description also calls it "ZCraft: Zone Decor," same
+  project, not a separate mod) — military crates, barrels, tires,
+  rusted industrial clutter, purpose-built for wasteland/STALKER-style
+  builds. **No dependencies.** Actively maintained past 1.20.1 (up to
+  1.21.1+), not an abandoned single-version mod.
+- Both are pure decoration — placeable blocks only, no entities, no
+  world-gen, no structure-placement logic — a meaningfully lower risk
+  category than every structure mod checked in this project so far (no
+  jigsaw/processor risk, no floor-depth interaction, no biome
+  dependency).
+- **What's actually needed to build this**: install both, then pick
+  specific block IDs from each mod's real registry (not guessed — same
+  discipline as confirming `trapcraft:bear_trap` from its own jar before
+  writing that quest task) and scatter them via `/setblock`/`/fill`
+  calls appended to `playtest_starter_kit.js`'s existing Watchpost
+  build, around the walls/watchtower/interior. This is a visual/
+  atmosphere pass, not a mechanic — expect it to need at least one
+  round of "seen in-game, adjust placement/density" iteration, same as
+  the worldborder texture and the amulet pedestal's shrine visual pass
+  both needed.
 
-**Real fix, verified against actual vanilla data before writing a
-single line**: switched `kubejs/data/minecraft/dimension/overworld.json`
-to `type: minecraft:noise` with a custom `noise_settings` file
-(`kubejs/data/kubejs/worldgen/noise_settings/flat_desert.json`) and a
-`{"type":"minecraft:fixed","biome":"minecraft:desert"}` biome_source —
-the same `fixed` biome_source this pack's own earlier real-terrain
-Desert attempt already proved works correctly, so that half carried no
-real risk. The `noise_settings` schema itself (an unfamiliar, easy to
-get subtly wrong format) was **not** taken from summarized wiki/doc
-fetches — those turned out to disagree with each other on real field
-names (one invented a nonexistent `initial_density_without_jaggedness`
-field, another used the wrong key name `surface_rules` instead of the
-real singular `surface_rule`). Instead, downloaded vanilla's actual
-120KB `overworld.json` noise_settings directly and diffed every one of
-my keys against its real ones programmatically — exact match, 15/15
-`noise_router` keys, no invented or missing fields. The desert
-sand/sandstone surface rule (`stone_depth` + `above_preliminary_surface`
-condition structure) was copied verbatim from vanilla's own real
-desert-biome branch inside that same file, not guessed.
+**World type** — *live, user-confirmed working in-game (2026-09-01)*.
+`kubejs/data/minecraft/dimension/overworld.json` uses `type:
+minecraft:noise` with a custom `noise_settings` file and a `multi_noise`
+biome_source over a curated 7-biome set (desert, badlands, savanna,
+savanna_plateau, plains, sunflower_plains, meadow). Genuinely,
+structurally flat, not just tuned to look flat: `final_density` is a
+`y_clamped_gradient` — a function of **Y only**, zero dependency on X/Z
+anywhere in the noise router — so every column evaluates to the exact
+same surface height by construction. Floor depth (room below the
+walkable surface, before hitting `min_y`) is 65 blocks.
 
-**"Genuinely, crisply flat" is structurally guaranteed here, not just
-tuned toward** — a real, deliberate improvement over the originally
-planned `density_factor`-tuning approach (which would have needed
-real in-game trial and error to find a value that "looks flat enough").
-`final_density` is a `y_clamped_gradient` — a function of **Y only**,
-with zero dependency on X or Z anywhere in the noise router (all the
-climate/terrain-shaping terms that normally introduce horizontal
-variation — continents, erosion, depth, ridges — are set to flat
-constants, inert since a `fixed` biome_source never samples them
-anyway). A density function with no X/Z input mathematically cannot
-produce horizontal height variation — every column in the world
-evaluates to the exact same surface Y, by construction, not by
-approximation. This also directly satisfies the fixed-spawn base
-logic's uniform-flat-Y assumption, for the same reason.
+**How this got here, briefly** (full blow-by-blow, including the real
+crash sequences, lives in `docs/MODS.md`): started as vanilla `flat`
+with a swapped biome value, which turned out not to work at all —
+`flat`'s generator only ever supports one hardcoded biome, full stop.
+Rebuilt on `noise` with a `fixed` single-desert biome_source instead
+(the `noise_settings` schema was hand-verified against vanilla's actual
+shipped `overworld.json`, not summarized docs, which disagreed with
+each other on real field names). That held until a real playtest found
+vanilla desert temples generating unlootable — the world's floor was
+only ~4 blocks above `min_y`, nowhere near enough room for a loot
+chamber, a problem that turns out to affect any biome, not just desert.
+That, plus "the desert theme doesn't need to be a hard constraint,"
+drove the move to the current `multi_noise` + 65-block-floor setup,
+picked from real structure-mod tag frequency data rather than guessed.
+World creation itself then crashed four separate times during that
+transition (two Radium mixin issues, then a genuine vanilla/Forge
+jigsaw-structure race condition traced to Treasure2's own
+tightest-spaced structure) before the user confirmed a clean, working
+world. See `docs/IDEAS.md`'s working principles for the reusable
+lessons that debugging surfaced (sandbox tests need the full mod stack,
+crash reports name the real culprit, live config fixes need syncing
+back to the tracked repo).
 
-**Still genuinely unverified**: this is real, unfamiliar Minecraft
-worldgen format, hand-assembled from verified real fragments rather
-than one complete tested example — confident in the reasoning, not
-yet confirmed by actually loading a world. **World-gen changes only
-affect newly generated chunks** — testing this needs a brand-new
-world, not the existing one already played on. Structure generation
-(Treasure2, vanilla desert content) is worth re-confirming once a
-world loads — `noise`-type generators are architecturally closer to
-normal terrain than `flat` was, which is why `flat` needed all the
-"check every mod for self-disable logic" caution in the first place;
-this isn't expected to be a new risk, possibly a reduced one.
-
-**Redesigned again 2026-08-31 — dropping the desert-only constraint,
-raising the floor.** Direct request after the first real playtest:
-"lose the whole desert theme thing," pick whatever biome/structure mods
-actually give the best structure *variety* — desert was never the goal
-on its own merits, it was a means to unlock desert-tagged structures/
-mods back when the `flat` generator's one-hardcoded-biome limit forced a
-single-biome choice. Now that this pack is on `noise` + a custom flat
-density function (not `flat`), that constraint is gone, and staying flat
-was independently re-confirmed as a keeper (see "Structure mod picks"
-below for why the floor-depth question came up at all).
-
-- **Biome source, built 2026-08-31**: `fixed` (single `minecraft:desert`)
-  → `multi_noise` with a curated 7-biome set — `desert`, `badlands`,
-  `savanna`, `savanna_plateau`, `plains`, `sunflower_plains`, `meadow`.
-  Picked from real data, not aesthetic preference: extracted every
-  structure-biome tag from When Dungeons Arise's own jar (39 structures'
-  worth) and counted frequency — `plains`/`sunflower_plains` topped the
-  list (15/39 each), `desert` third (9/39), `meadow` (8), `savanna`/
-  `savanna_plateau` (7+6) — then cross-checked against Structory:
-  Towers' own biome tags (`oak_biomes` = plains/forest/meadow/
-  sunflower_plains/savanna/swamp/flower_forest, `deserts` = desert +
-  Terralith desert variants) and added `badlands` on top since
-  Structory's `nomad_outpost` specifically needs it and no WDA structure
-  was hurt by including it. Deliberately kept to this one arid/open
-  biome family (no forest/jungle/snow/ocean) — avoids reintroducing
-  water-related edge cases this world has never tested, and keeps the
-  desert-adjacent visual identity mostly intact while genuinely
-  broadening what can generate. Real, honest limitation: vanilla's own
-  exact per-biome climate parameter values live in Java code
-  (`OverworldBiomeBuilder`), not a datapack file, and couldn't be
-  extracted from the raw (obfuscated) client jar the way `noise_settings`
-  was — so this is a **custom parameter-point assignment** across
-  temperature/humidity/continentalness/erosion (spread across the real
-  -1..1 space, not vanilla's own values), not a reverse-engineered
-  match to vanilla's real biome distribution. Terrain shape is
-  unaffected either way — `final_density` never reads these axes at
-  all, so flatness stays structurally guaranteed regardless of what
-  biome gets painted where.
-- **Floor depth, built 2026-08-31**: raised from ~4 blocks (surface
-  y≈-60, `min_y=-64`) to 65 blocks (surface y≈2) — not guessed, sized
-  against real data. Downloaded When Dungeons Arise's actual `.nbt`
-  structure templates and read their real `size` tag directly: every
-  underground piece checked (`mining_system_descent_0`,
-  `mushroom_mines_part_0`, etc.) is exactly 32 blocks tall, and jigsaw
-  structures can chain multiple pieces vertically, so a single piece's
-  height is a floor, not a ceiling, on real depth need. 65 blocks gives
-  2x margin over one confirmed piece. Checked Treasure2's own
-  `dungeon/pit` shaft pieces too (6-9 blocks each, chained) — a smaller
-  real requirement, comfortably covered by the same number.
-- Verified in a real sandboxed dedicated-server boot (not just JSON
-  validation) before shipping — installed the exact same KubeJS +
-  Architectury + Rhino jars this pack uses, plus the two new structure
-  mods, in a scratch server, deleted the world, and confirmed a clean
-  `Done (20.176s)!` boot with the new biome source, raised floor, and
-  both mods' retuned structure_sets all active together. Found two
-  pre-existing, non-fatal issues along the way, **neither caused by
-  this pack's own changes**: When Dungeons Arise has its own missing
-  jigsaw pool (`dungeons_arise:underworld/foundry/foundry_corridor_gears`
-  logs "Empty or non-existent pool," same class of issue Treasure2's
-  `well_rooms` pool has) and some underground pieces have hanging
-  entities (item frames/paintings) that fail to attach ("Hanging entity
-  at invalid position") — both logged as warnings/errors but neither
-  stopped generation or crashed the server. Worth watching on the real
-  playtest, not blocking.
-- Same caveats as every world-gen rebuild this pack has done: needs a
-  brand-new world to actually test, doesn't retroactively affect
-  already-generated chunks.
-- **Crashed on the user's actual first world creation despite a clean
-  sandbox pre-flight — hit 3 times total, only partially resolved,
-  genuinely not fully closed.** Real sequence, not simplified after the
-  fact:
-  1. First crash: sandbox test used a minimal mod set (KubeJS/
-     Architectury/Rhino + the two new structure mods only, kept cheap on
-     purpose) — **Radium wasn't in it**. Radium's own `WorldGenRegion`
-     optimization mixin threw a `NullPointerException` ("No chunk exists
-     at [x,z]") when a jigsaw structure's block-processing rule reached
-     into a neighboring chunk that hadn't generated yet — something the
-     old single-desert setup apparently never produced a structure large
-     enough to trigger, but When Dungeons Arise's and Structory's bigger
-     structures did. Fixed via `mixin.gen.chunk_region=false` in
-     `lithium.properties`, the exact key confirmed three independent
-     ways, re-verified with Radium actually back in the sandbox.
-  2. **Gap caught afterward**: a second Radium mixin fix
-     (`mixin.util.chunk_access`) had only ever been applied directly to
-     the live instance during live debugging — never synced back to the
-     tracked `pack/config/lithium.properties`. Fixed so they match.
-     **Standing lesson**: a fix applied directly to the live instance
-     under crash-fixing time pressure still needs the sync-back step to
-     the tracked repo, and it's exactly the step most likely to get
-     skipped when moving fast on an active crash.
-  3. **Third crash, after both Radium fixes were in**: got further (88%
-     vs. 17% world-gen progress — the fixes were real, not ineffective,
-     just not the whole story) before hitting the identical "chunk out
-     of bound" exception again, this time from a stack frame with **no
-     Radium mixin at all** — pure vanilla `LevelReader` code. Checked via
-     real GitHub issue search, not guessed: this is a known, real,
-     cross-mod **race condition in vanilla/Forge's own multi-threaded
-     jigsaw structure placement** — Ice and Fire and Trees You'll Grow
-     both have open issues with the identical message, historically only
-     fixed by those mods' own authors bounding their structure logic.
-     Neither When Dungeons Arise nor Structory has a newer release
-     picking up an equivalent fix. **No config toggle exists for this
-     one** — it isn't Radium's code throwing it. First mitigation
-     attempt: backed off When Dungeons Arise's and Structory's
-     structure_set spacing (roughly halfway between the mods' own sparse
-     defaults and the first aggressive retune) on the theory that tight
-     spacing near spawn means more large structures competing for
-     generation simultaneously — a reasonable-looking lead given the
-     crashes started right after installing those two mods, but wrong,
-     see below.
-  4. **Fourth crash — the actual culprit, found by reading the crash
-     report properly this time.** The crash report's own Details/Feature
-     section names the exact structure involved (`treasure2:dungeon/general`)
-     — not checked closely on the first three occurrences, which is why
-     mitigation #3 targeted the wrong mods. It was **Treasure2's own
-     structure**, present in this pack since before either new mod
-     existed. Real gap: mitigation #3 never touched Treasure2's own
-     `terranean_treasures_set`, still sitting at 6/3 chunk spacing from
-     the very first density-reachability fix hours earlier — the
-     tightest spacing of anything in the whole world-gen setup, and
-     `dungeon/general` is weight 60 of that set's ~124 total, making it
-     also the single most frequently-selected structure of all of them.
-     Tightest spacing plus highest pick frequency of anything in the
-     pack — the real prime suspect all along. The underlying mechanism
-     is unchanged (same vanilla race condition, confirmed, not a
-     different bug) — it's triggered by whichever structure_set is
-     densest, not specifically the newly-added content. Fixed by
-     applying the same halfway-spacing logic to Treasure2's own sets too:
-     `terranean_treasures_set` 6/3→15/8, `wishing_well` 10/5→22/12.
-  - **Standing lesson from the first fix**: a sandbox test needs the
-    full performance/optimization stack already in the pack (Radium,
-    Embeddium, FerriteCore, ModernFix, Clumps, Entity Culling), not just
-    whatever's being directly evaluated — a minimal test proves less
-    than it looks like it proves, since the thing that breaks is often
-    an interaction, not either mod in isolation.
-  - **Standing lesson from the fourth crash**: a crash report's own
-    Details/Feature section names the actual structure/mod involved —
-    read that line first, before speculating about which recently-added
-    thing is responsible. "The new mods must be it" was a reasonable-
-    looking lead given the timing, and it cost a full round of
-    wrong-direction investigation.
-  - **Honest current status, not overstated**: all four structure_sets
-    in this world (WDA, Structory, and both Treasure2 sets) are now at
-    comparable, deliberately-loosened spacing, and the actual highest-
-    frequency, tightest-spaced offender is fixed directly rather than
-    guessed around — meaningfully higher confidence than the third-crash
-    mitigation. Still not an absolute guarantee: the underlying mechanism
-    is a genuine probabilistic timing race, not something any config
-    value can fully close off. If it recurs again, the next step is
-    checking the crash report's named structure first, not assuming it's
-    whatever was most recently added.
+Both the 7-biome set and the 65-block floor depth were originally sized
+against When Dungeons Arise's own structure-tag frequency and `.nbt`
+piece heights; when WDA was later removed for aesthetic reasons (see
+"Structure mod picks" below), both numbers were re-checked against the
+mods actually still installed and left unchanged — still good coverage,
+not stale leftovers from a removed mod.
 
 **Structure mod picks, 2026-08-31 — added for variety, not desert-
-specific**: researched with the same rigor as the earlier mod
-evaluations (source-verified where public, flagged honestly where not),
-after ruling out Structory: Towers as *not* redundant once considered
-alongside these three (kept — see below) and re-evaluating Abandoned
-Structures now that "excludes desert" is no longer disqualifying:
-- **When Dungeons Arise — installed 2026-08-31, REMOVED 2026-08-31**
-  after real playtest feedback: "the structures just don't look right
-  for the theme... less fantasy and nothing floating." WDA's own content
-  (floating castles, airships, blimps, mage/thornborn towers, shogun
-  mansions) is fundamentally high-fantasy — a real aesthetic mismatch
-  against this pack's Fallout-wasteland identity, not a bug. Not wasted
+specific. User-confirmed 2026-09-01: generation now reads as the
+intended abandoned aesthetic.** Researched with the same rigor as the
+earlier mod evaluations (source-verified where public, flagged honestly
+where not), after ruling out Structory: Towers as *not* redundant once
+considered alongside these three (kept — see below) and re-evaluating
+Abandoned Structures now that "excludes desert" is no longer
+disqualifying:
+- **When Dungeons Arise and Structory: Towers — both installed then
+  REMOVED same day (2026-08-31)** after real playtest feedback: "the
+  structures just don't look right for the theme... less fantasy and
+  nothing floating." Both mods' content (WDA: floating castles, airships,
+  mage towers, shogun mansions; Structory: generic fantasy towers) is
+  fundamentally high-fantasy — a real aesthetic mismatch against this
+  pack's Fallout-wasteland identity, not a bug in either mod. Not wasted
   effort: the crash-debugging sequence above (Radium mixin, live-config
   sync gap, the vanilla jigsaw race condition, the crash-report-Details
-  lesson) are all real, reusable lessons regardless of whether this
-  specific mod stays installed. (Modrinth, author `aureljz` — confirmed
-  the same person/org as the verified GitHub source
-  `Aureljz/WhenDungeonsArise-Forge-main` before installing, same care as
-  the branch-mismatch check elsewhere in this project. Real version:
-  `DungeonsArise-1.20.x-2.1.58-release.jar`, newer than the 2.1.57
-  originally cited. 52 structures across 2 structure_sets. Default
-  spacing (60/50 chunks major, 35/25 minor) retuned to 12/6 and 8/4.)
-- **Structory: Towers — installed 2026-08-31, REMOVED 2026-08-31** —
-  same aesthetic-mismatch call as WDA, its own content is also generic
-  fantasy towers. (Modrinth, confirmed Forge 1.20.1, v1.0.7, ~20 towers
-  across 5 structure_sets, spacing retuned to 10-16/4-8.)
+  lesson) are all real, reusable lessons regardless of whether either mod
+  stayed installed. Full version/spacing detail for both lives in
+  `docs/MODS.md` if ever needed again.
 - **Apocalypse structures: Abandoned city buildings — installed
   2026-08-31** (CurseForge, author That1LilGuy,
   `postapocalypse_structures-1.0.2-forge-1.20.1.jar`, 881K downloads).
@@ -593,35 +343,17 @@ Structures now that "excludes desert" is no longer disqualifying:
   chunk-access mixins disabled), Treasure2, GottschCore, plus both new
   mods and their retuned spacing. Clean boot, no crash patterns, no
   fatal errors in a full log sweep.
-- **Abandoned Structures — BLOCKED, not installed.** Real, previously-
-  unknown finding: decompiling the actual jar (only 89KB, a single
-  `Abandoned_structures.class` — essentially no custom Java at all)
-  found its `mods.toml` declares a **mandatory, separate dependency**:
-  `berezka_api`, not bundled in this jar. Its structures use a custom
-  `"type": "berezka_api:berezka_structures_extra"` (not plain
-  `minecraft:jigsaw`) — meaning the actual placement/terrain-adaptation
-  logic this needed checking lives in THAT mod, not this one, and
-  couldn't be reached. Searched for it: no plain "Berezka API" exists on
-  Modrinth or CurseForge — only ~12 separate "Berezka API for X"
-  add-on listings (one per compatible base mod, e.g. "for Abandoned
-  city buildings," "for Abandoned urban," "for Lost Cities"), none of
-  which is an exact name match for this specific mod ("Abandoned
-  Structures (by berezka)," confirmed via its own Modrinth description —
-  "4 abandoned structures" — matching this pack's earlier 4-structure
-  signature check against a different, wrong "Abandoned structures" by
-  Quest_play that was correctly ruled out). Also noticed: this doc's
-  earlier version cited `abandoned_structures-1.2.0.jar`; the actual
-  real file found is `abandoned_structures-1.0.0.jar` — worth
-  double-checking which CurseForge listing that citation came from.
-  **Decided 2026-08-31: dropped, not pursued further.** Independently
-  re-ran the same search before this was decided — same result, no
-  exact-match "Berezka API for [this mod]" listing exists. Not worth
-  installing an unverified mandatory dependency blind, especially once
-  Apocalypse structures/Abandoned Urban turned out to need no dependency
-  identification at all. Same discipline that caught the Pure Suffering
-  branch mismatch and the Quest_play/berezka naming collision above —
-  decline to guess when a real "which exact one is correct" ambiguity
-  remains unresolved.
+- **Abandoned Structures (the Berezka mod, distinct from Abandoned Urban
+  above) — investigated, dropped, not installed.** Its jar is nearly
+  empty; the real structure-placement logic lives in a mandatory
+  `berezka_api` dependency that couldn't be confidently matched among
+  ~12 similarly-named "Berezka API for X" listings, none an exact fit
+  for this specific mod. Not worth installing an unverified mandatory
+  dependency blind, especially once Abandoned city buildings/Abandoned
+  Urban turned out to need no dependency identification at all. Same
+  discipline as the Pure Suffering branch mismatch and the Quest_play/
+  berezka naming collision — decline to guess when the "which exact one
+  is correct" ambiguity doesn't resolve.
 - Treasure2 stays exactly as it is throughout all of this — never
   touched, only ever added alongside.
 
@@ -857,16 +589,13 @@ structure_set/<id>.json`, same technique, different registry):
   own Java-side logic (`RarityLootTableAssociationRegistry`, not a
   simple JSON this pack overrides), not verified further — but every
   rarity tier's loot content itself is confirmed real.
-- **Not yet confirmed in-game** — the density fix is real-data-verified
-  the same way the world-type rebuild was (checked spacing/biome-tag
-  math directly, not assumed), but hasn't been seen in a live world
-  yet. Same caveat as every worldgen change this pack has made:
-  **structure placement is decided at chunk-generation time**, so this
-  only affects chunks not yet generated — an already-explored area
-  keeps whatever the old spacing produced (or didn't) there; new
-  structures at the new density only appear in newly generated chunks,
-  which in practice means most of the map as the border keeps
-  expanding into unexplored territory.
+- **Confirmed in-game** through the subsequent structure-mod playtests —
+  Treasure2 structures (including the density-tuned spacing here) have
+  generated and been explored repeatedly since this was first written.
+  Standing caveat for any future spacing change: **structure placement
+  is decided at chunk-generation time**, so a change only affects chunks
+  not yet generated — an already-explored area keeps whatever the old
+  spacing produced there.
 - **Treasure2 "cardboard boxes" (2026-08-31 playtest) turned out not to
   be a bug at all.** Checked `logs/latest.log` first rather than
   guessing at a fix — no crash, no exception, nothing. Root cause: the
@@ -893,7 +622,9 @@ pick structure mods for real variety" decision instead.
 
 ## The amulet
 
-**The amulet** — *live* (2026-08-30), **not yet confirmed in-game**. A custom item that draws mob
+**The amulet** — *live, confirmed working in-game* (built 2026-08-30;
+several real bugs found and fixed via actual playtesting since — see
+below). A custom item that draws mob
 attention to *itself* rather than the player or a fixed map location —
 a lightweight route to "true tower defense" (mobs pathfinding to a
 fixed objective regardless of player position) without custom AI,
@@ -1045,85 +776,24 @@ signatures, `setEquippedCurio`'s existence) was read directly from the
 mods' own decompiled/GitHub source rather than guessed, same discipline
 as the SecurityCraft/Trapcraft/FTB Quests integrations.
 
-**Real bug found in first playtest — the amulet was silently
-unreachable, not just unconfirmed.** On this world's very first login,
-`setEquippedCurio` no-op'd: the item never landed in the inventory or
-the Curios slot, so the player genuinely couldn't find it anywhere.
-Diagnosed directly from the player's own saved NBT data (parsed with a
-small hand-written Node NBT reader, since no Python was available) —
-`ForgeCaps.curios:inventory.Curios` only had a `head` entry, no
-`necklace` entry at all, even though `td_amuletWorn` had been set to
-`1` (the flag and the actual equip state had desynced) and the worn
-buffs were active anyway (a real, separate small bug: the buff tick
-handler only checks the flag, not the item's actual presence). First
-fix attempt (unambiguous `SET`+`replace:true` in
-`data/kubejs/curios/slots/necklace.json`) turned out to be treating a
-symptom, not the cause — user still saw only one Curios slot in-game
-(a "head" one) after it. **Real, complete root cause, found by reading
-`CuriosEntityManager.java` directly**: Curios has *two* independent
-gates, not one. A `curios/slots/<id>.json` file (what the first fix
-touched) only defines a slot *type*'s size — it does **not** make that
-slot usable by any entity. A *separate* `curios/entities/<id>.json`
-file has to explicitly list which entity types can use which slot IDs;
-`CuriosEntityManager.getEntitySlots(type)` returns a **flat empty map**
-for any entity type with no matching entry, regardless of what any slot
-type's own size says. This pack had never shipped one — the "head"
-slot the player could see was coming from some other installed mod's
-own legacy Java-side registration, not from anything of ours. Added
-`data/kubejs/curios/entities/player.json` (`{"entities":
-["minecraft:player"], "slots": ["necklace"]}`, no `replace`, so it adds
-to rather than overwrites whatever's already granting "head") — this is
-the actual fix; the earlier `SET`+`replace:true` change to the slot
-size was harmless but not what fixed it. Also corrected this doc's
-earlier "Curios grants zero slots by default" claim (confirmed via
-`docs.illusivesoulworks.com` that a slot type's own default size is 1,
-not 0) — the real "zero by default" behavior lives in the
-entity-eligibility gate, not the slot-size default.
-
-Also made the give-logic in `playtest_starter_kit.js` verify the equip
-actually landed (`findFirstCurio`) before trusting it, falling back to
-a plain inventory `give()` — and never trusting a lost item to a flag —
-so the amulet is never silently lost again even if some other gate
-turns out to be missing too. Moved out from behind the
-`td_playtestKitGiven` one-shot flag into its own "does the player
-already have one" check, run on every login — self-healing for any
-world/player that already hit the bug, not just new ones.
-
-Two more real unverified assumptions still worth flagging: whether
-`setEquippedCurio` actually routes through the same onEquip-callback
-pipeline as a manual GUI equip (mitigated the same way, by verifying
-and setting `td_amuletWorn` explicitly rather than trusting the
-callback), and `Entity#teleportTo(x,y,z)`'s exact behavior for the
-border push-back (a real, standard vanilla method, but not yet seen
-used elsewhere in this codebase, and not yet actually tested).
-
-**Two more real bugs, found once world creation actually started
-succeeding (2026-08-30/31)**:
-1. **Duplication on login** — the auto-equip-at-login path (setEquippedCurio
-   + a findFirstCurio re-check, falling back to give() if the equip
-   looked like it hadn't landed) produced a genuine duplicate: one
-   amulet equipped, one in inventory. The re-check must have false-
-   negatived a real success. Never root-caused which part was
-   unreliable — fixed by removing the whole auto-equip path per direct
-   request: the amulet now just starts unequipped in inventory, which
-   has no Curios-slot interaction at login at all, so the race can't
-   happen either way.
-2. **Pedestal rejected a genuinely-carried amulet** — direct
-   consequence of fix #1. The pedestal's placement check only ever
-   looked at the worn Curios slot (`findFirstCurio`); once the amulet
-   stopped auto-equipping, a player who hadn't manually equipped it yet
-   got "the amulet isn't on you" while actually holding/carrying it.
-   Fixed: the pedestal now also checks `player.inventory.find(...)` /
-   `.extractItem(slot, 1, false)` (KubeJS's `InventoryKJS` mixin,
-   confirmed by decompiling `kubejs-forge`'s own class file directly,
-   not guessed) when nothing's equipped, accepting the amulet from
-   wherever the player actually has it — worn, in hand, or just sitting
-   in inventory. Taking it back off the pedestal now also gives it
-   unequipped (`give()`, not `setEquippedCurio`), consistent with fix
-   #1's "never auto-equip" direction.
-
-The rest of the feature — worn buffs, marker targeting, border
-push-back — still hasn't been reached in a real playtest.
+**Three real bugs found via actual playtesting, all fixed** (full
+diagnostic detail in `docs/MODS.md` if ever needed again):
+1. **Amulet silently unreachable on first login** — Curios has two
+   independent gates, not one: a slot-size file (`curios/slots/`) alone
+   doesn't make a slot usable by any entity — a separate
+   `curios/entities/<id>.json` has to explicitly grant it, which this
+   pack hadn't shipped. Fixed by adding one. The give-logic now also
+   verifies the equip actually landed (`findFirstCurio`) before trusting
+   it, self-healing for any world/player that already hit the bug.
+2. **Duplication on login** — the original auto-equip-at-login path
+   produced a genuine duplicate (one equipped, one in inventory). Root
+   cause never pinned down; fixed by removing auto-equip entirely — the
+   amulet now starts unequipped in inventory, so the race can't happen
+   either way.
+3. **Pedestal rejected a genuinely-carried amulet** — direct consequence
+   of fix #2: the pedestal only checked the worn Curios slot. Now also
+   checks the player's inventory directly, accepting the amulet from
+   wherever it actually is.
 
 ## Defense
 
@@ -1142,38 +812,47 @@ custom code. Current build:
 - Trapcraft's redstone-dependent traps (fan, igniter, magnetic chest)
   are deliberately left out of Tier 1 and unwired for now, since Tier 1
   is specifically "no power, no fuel."
-- Not yet confirmed to actually feel better in a real playtest — that's
-  the real bar here, given what they replaced failed on feel
-  specifically, not just function.
+- No explicit "this feels better now" feedback recorded, despite
+  several playtest rounds since — worth a direct check next time, since
+  what they replaced failed specifically on feel, not function.
 
-**Machine progression, Tier 2** — *planned, not built*. Semi-automated,
+**Machine progression, Tier 2** — *live* (2026-08-31). Semi-automated,
 redstone-powered, still fragile — the next rung up from Tier 1, and the
-first real use for the Uncommon (Fortified Cache) loot tier, which
-currently has nothing to spend on. Recipes should pull from that tier
-specifically rather than Common — it already contains `redstone_block`,
-which pairs naturally with these being redstone-dependent.
-- **Fire Trap** = Trapcraft's **Igniter** — already installed for Tier
-  1, unused until now. Lights an area on fire on a redstone signal,
-  range upgradeable via its own module. Matches the original Tier 2
-  sketch almost exactly, zero new footprint.
-- **Fan** — also Trapcraft, already installed. Pushes mobs (and items)
-  on a redstone signal — not in the original sketch, but a natural fit:
-  funnel mobs into other traps, or push them back from the chokepoint.
-- **Magnetic Chest** — also Trapcraft. Auto-collects loot from trap
-  kills — more a QoL piece than a defense, but fits the tier and cuts
-  down on manual bag-collection.
-- **Arrow Turret** = **Medieval Defense Turrets**' basic bow turret (new
-  install, Forge 1.20.1) — its simplest turret, arrow ammo only, picked
-  specifically over TurretCraft (smart spherical auto-targeting, ammo
-  GUI) and K-Turrets (needs an actual bow/crossbow, adds combat drones)
-  because both of those sound more like Tier 3 material than Tier 2's
-  "basic, fragile" framing.
+first real use for the Uncommon (Fortified Cache) loot tier. All four
+items re-recipied via `ServerEvents.recipes`
+(`pack/kubejs/server_scripts/tier2_recipes.js`) to swap each stock
+recipe's Common-tier filler (cobblestone, loose redstone, iron ingot)
+for Uncommon-tier materials (`quartz`, `redstone_block`, `iron_block`)
+confirmed real from `loot_bag_open.js`'s `FORTIFIED_CACHE_POOL` — the
+actual gate the loot tier was missing.
+- **Fire Trap** = Trapcraft's **Igniter** (`trapcraft:igniter`) —
+  already installed for Tier 1, unused until now. Lights an area on
+  fire on a redstone signal. Re-recipe: netherrack ring, quartz
+  filler, redstone_block core (was cobblestone/redstone dust).
+- **Fan** (`trapcraft:fan`) — also Trapcraft. Pushes mobs (and items)
+  on a redstone signal — funnels mobs into other traps, or pushes them
+  back from the chokepoint. Re-recipe: quartz ring around an
+  iron_block hub (was cobblestone/iron ingot).
+- **Magnetic Chest** (`trapcraft:magnetic_chest`) — also Trapcraft.
+  Auto-collects loot from trap kills. Re-recipe: planks, redstone_block,
+  iron_block (was planks/redstone dust/iron ingot).
+- **Arrow Turret** = **Medieval Defense Turrets**'
+  `medievalturrets:bow_turret_item` (new install, Modrinth project
+  `9y40sONu`, v1.1.4, Forge 1.20.1, no dependencies, confirmed real via
+  the mod's own shipped recipe JSON before touching anything) — its
+  simplest turret, arrow ammo only, picked specifically over TurretCraft
+  and K-Turrets for being more "basic, fragile" like the rest of this
+  tier. Re-recipe: bow + planks + iron_block (was bow/planks/
+  cobblestone).
 - **Reinforced Spikes** (tougher Tier 1 spikes) — cut. No equivalent
   found in Trapcraft; not blocking the rest of Tier 2.
-- Still needs, before build: confirming Medieval Defense Turrets' own
-  recipe materials (re-recipe via `ServerEvents.recipes` if it doesn't
-  already use vanilla materials, same pattern as Tier 1), same check
-  Trapcraft's Tier 1 items already got.
+- Verified via a full-mod-set sandbox boot (not just `node --check`):
+  copied the live instance's entire relevant mod/config set into the
+  same throwaway dedicated server used for the endless-phase-scaling
+  verification, added the new turret mod, and confirmed a clean
+  `Done (...)!` boot with `tier2_recipes.js` loading with 0 errors and
+  FTB Quests logging "3 chapters, 17 quests" — the exact expected count
+  (11 Basics + 2 Tier 1 + 4 Tier 2).
 
 **Machine progression (Tier 3-4)** — see IDEAS.md, still just the
 original tier concept (powered → elite). Depends on the power system,
@@ -1183,11 +862,9 @@ also undesigned.
 
 ## Quest book
 
-**FTB Quests — three chapters: Basics, Tier 1, Tier 2** — *Basics and
-Tier 1 are live* (2026-08-30), Tier 2 as its own chapter is **planned,
-on hold** — see QUEUE.md, held deliberately at the user's request so
-they can playtest the current build before more lands on top of it, not
-a design gap. Original design put every quest in one "Basics" chapter;
+**FTB Quests — three chapters: Basics, Tier 1, Tier 2** — *all three
+live* (Basics/Tier 1 2026-08-30, Tier 2 2026-08-31). Original design put
+every quest in one "Basics" chapter;
 per direct feedback, each tier now gets its own chapter with one quest
 per item, rather than one quest per tier carrying a wall of text
 describing several items at once.
@@ -1292,16 +969,17 @@ have caught the original Fortify `#tag` crash earlier if it'd been
 applied there. Chapter itself renamed from "Defenses" to "Tier 1" for
 the new one-chapter-per-tier structure.
 
-**Tier 2 chapter** — *planned*. Four quests, all gated on "Sharpened
-Scrap" (not chained to each other — order of crafting Tier 2 items
-doesn't matter narratively):
+**Tier 2 chapter** — *live* (2026-08-31,
+`pack/config/ftbquests/quests/chapters/tier2_machines.snbt`). Four
+quests, all gated on "Sharpened Scrap" (not chained to each other —
+order of crafting Tier 2 items doesn't matter narratively):
 
 | Quest | Task | Reward |
 |---|---|---|
-| Spark and Flame | Craft the Igniter (confirm real item ID) | 2 XP levels |
-| Herd Them In | Craft the Fan (confirm real item ID) | 2 XP levels |
-| Waste Not | Craft the Magnetic Chest (confirm real item ID) | 2 XP levels |
-| Wired for War | Craft the Arrow Turret (confirm real item ID) | 2 XP levels |
+| Spark and Flame | Craft `trapcraft:igniter` | 2 XP levels |
+| Herd Them In | Craft `trapcraft:fan` | 2 XP levels |
+| Waste Not | Craft `trapcraft:magnetic_chest` | 2 XP levels |
+| Wired for War | Craft `medievalturrets:bow_turret_item` | 2 XP levels |
 
 - *"Spark and Flame"*: **"Wire an Igniter and it'll set the ground
   itself against them — you won't need to swing a blade if the fire
