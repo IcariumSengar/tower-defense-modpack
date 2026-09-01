@@ -24,6 +24,18 @@
 // how many "should be fine" assumptions turned out wrong earlier in
 // this pack's debugging (Math.PI, bare .x/.y/.z).
 //
+// Real bug found in playtest (2026-09-01): the marker lookup below used
+// to call e.hasTag(...), which doesn't exist on either KubeJS's own
+// entity wrapper or vanilla's real Entity class (same wrong-method
+// mistake independently made in wave_spawner.js/wave_status.js, fixed
+// there the same day) - this threw every throttled tick WHENEVER
+// td_amuletOnPedestal was true, aborting the whole handler before ever
+// reaching the aggro loop below. Real user-visible symptom this
+// explains: wave mobs would summon correctly (confirmed separately)
+// but never path toward the player at all - reads exactly like "the
+// horn works but nothing spawns in." Fixed to the real vanilla method,
+// getTags().contains(...), confirmed by decompiling Entity.class.
+//
 // Amulet pedestal redirect (2026-08-30, docs/FEATURES.md "The amulet"):
 // while td_amuletOnPedestal is true, every wave mob targets the marker
 // armor stand amulet_pedestal.js spawns at the pedestal instead of the
@@ -59,7 +71,7 @@ PlayerEvents.tick(function (event) {
   var aggroTarget = player
   if (onPedestal) {
     var marker = level.getEntities().find(function (e) {
-      return e.hasTag('td_amulet_marker')
+      return e.getTags().contains('td_amulet_marker')
     })
     if (marker) aggroTarget = marker
   }
