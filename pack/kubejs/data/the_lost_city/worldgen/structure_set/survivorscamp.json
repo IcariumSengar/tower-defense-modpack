@@ -1,12 +1,18 @@
 {
   "structures": [
-    { "structure": "the_lost_city:survivorscamp", "weight": 1 }
+    {
+      "structure": "the_lost_city:survivorscamp",
+      "weight": 1
+    }
   ],
   "placement": {
     "type": "minecraft:random_spread",
-    "spacing": 22,
-    "separation": 11,
+    "spacing": 13,
+    "separation": 7,
     "salt": 841035629,
-    "exclusion_zone": { "other_set": "the_lost_city:city", "chunk_count": 16 }
+    "exclusion_zone": {
+      "other_set": "the_lost_city:city",
+      "chunk_count": 16
+    }
   }
 }

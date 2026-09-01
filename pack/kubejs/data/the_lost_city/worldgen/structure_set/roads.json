@@ -1,12 +1,18 @@
 {
   "structures": [
-    { "structure": "the_lost_city:roads", "weight": 1 }
+    {
+      "structure": "the_lost_city:roads",
+      "weight": 1
+    }
   ],
   "placement": {
     "type": "minecraft:random_spread",
-    "spacing": 10,
-    "separation": 6,
+    "spacing": 7,
+    "separation": 4,
     "salt": 895565230,
-    "exclusion_zone": { "other_set": "the_lost_city:city", "chunk_count": 16 }
+    "exclusion_zone": {
+      "other_set": "the_lost_city:city",
+      "chunk_count": 16
+    }
   }
 }

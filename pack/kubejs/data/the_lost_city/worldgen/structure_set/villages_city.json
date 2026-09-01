@@ -1,11 +1,14 @@
 {
   "structures": [
-    { "structure": "the_lost_city:villages_city", "weight": 1 }
+    {
+      "structure": "the_lost_city:villages_city",
+      "weight": 1
+    }
   ],
   "placement": {
     "type": "minecraft:random_spread",
-    "spacing": 20,
-    "separation": 10,
+    "spacing": 12,
+    "separation": 6,
     "salt": 1973954143
   }
 }

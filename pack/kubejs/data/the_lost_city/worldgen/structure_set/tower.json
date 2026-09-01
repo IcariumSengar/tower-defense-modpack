@@ -1,12 +1,18 @@
 {
   "structures": [
-    { "structure": "the_lost_city:tower", "weight": 1 }
+    {
+      "structure": "the_lost_city:tower",
+      "weight": 1
+    }
   ],
   "placement": {
     "type": "minecraft:random_spread",
-    "spacing": 16,
-    "separation": 8,
+    "spacing": 9,
+    "separation": 5,
     "salt": 1406035121,
-    "exclusion_zone": { "other_set": "the_lost_city:city", "chunk_count": 16 }
+    "exclusion_zone": {
+      "other_set": "the_lost_city:city",
+      "chunk_count": 16
+    }
   }
 }
