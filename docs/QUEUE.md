@@ -108,18 +108,32 @@ below); Phase 5 not started:
     nerfed below - if the user still experiences a literal invisible
     attacker after that, it needs a fresh death with log access, not
     guessed at from this window's log alone.
-- **Decoration quality**: some of the new decoration blocks show
-  Chinese labels instead of English (likely an incomplete `en_us` lang
-  file in Doomsday Decoration or Zcraft Decoration — fixable via a lang
-  override). Placement itself also read as "lame" — worth a look once
-  visually confirmed, may need denser/more varied placement rather than
-  a mod swap.
+- **Decoration quality**: placement itself read as "lame" — worth a
+  look once visually confirmed, may need denser/more varied placement
+  rather than a mod swap. (Chinese labels fixed, see "Built" below.)
+
 ## In progress (sent directly to the build session)
 
 *(nothing in progress right now)*
 
 ## Built, awaiting your next playtest
 
+- **Decoration lang fix (Phase 5, partial)** — built and shipped
+  2026-09-01. Root cause confirmed, not guessed: Doomsday Decoration's
+  own shipped `en_us.json` (its only language file) genuinely contains
+  Chinese text despite the filename — Zcraft Decoration's own lang file
+  was checked too and is fully correct English already, ruling it out.
+  Overrode `pack/kubejs/assets/doomsday_decoration/lang/en_us.json` —
+  had to include the mod's full 1152-key file, not just the 8 keys
+  actually placed in this pack's base build, since a resource pack
+  replaces a language file wholesale rather than merging per-key (a
+  partial override would've blanked every other label to its raw
+  key). The 8 real English translations
+  (barrel/woodencrate/carton/carton_2/fixedgenerator/shelf/table/
+  weaponbox): confirmed by direct 1:1 translation of the mod's own
+  Chinese source text, not guessed. Placement/density reassessment
+  (the other half of Phase 5) still waits on the user actually seeing
+  the redesigned base in-game.
 - **QOL mod batch (Phase 4) + Mob Dismemberment + The Lost City** —
   built and shipped 2026-09-01. All installed, sandbox-verified with a
   fresh-world boot (real jigsaw structure generation exercised, since
@@ -305,6 +319,35 @@ below); Phase 5 not started:
   not background scenery. **Deliberately parked, not sent to build** —
   same reasoning as the storage/power system above, queued behind the
   current playtest batch rather than adding a sixth parallel project.
+- **Defense-breaching enemies (Demolition Zombie)** — fully specced
+  2026-09-01 (see FEATURES.md's new "Mob roster & defense-breaching
+  threats" section). Introduces Undead Nights' own Demolition Zombie
+  (already installed, currently unused) as a late-wave threat that can
+  genuinely destroy the gate/watchtower/placed machines via real TNT —
+  confirmed first that the reinforced perimeter walls themselves can
+  never be the breach point (SecurityCraft's explosion immunity is
+  unconditional, not tunable), so this targets what's actually
+  vulnerable instead. User decided: also reinforce the gate (was left
+  plain as "unnecessary complexity" before there was any real threat to
+  it — that's now an accidental weak point, not an intentional one).
+  Exact numbers (TNT count, spawn weight, introduction wave) still
+  open. **Deliberately parked, not sent to build** — queued behind the
+  current playtest batch, same as
+  everything else above.
+- **Mutants and Zombies (more zombie-family variety)** — fully specced
+  2026-09-01 (see FEATURES.md's "Mob roster & defense-breaching
+  threats" section, "More zombie-family variety" entry). 8 real
+  zombie-family mobs (Zombie Brute, Crawler, Spitter, Blister Zombie,
+  Split Head Zombie, Mutant Brute, Rotten Mutant, Mutant Zombie), same
+  author as the already-trusted Undead Nights, confirmed to add no
+  autonomous wave/horde systems of its own. One clean dependency
+  (Advanced Wall Climber API, confirmed real Forge 1.20.1). Mutant
+  Monsters (the more famous alternative) checked and ruled out — no
+  Forge 1.20.1 build exists. Still needs: deciding which waves/hordes
+  these mobs actually join, and any loot/stat re-recipe work, same
+  treatment TFTH mobs got. **Deliberately parked, not sent to build** —
+  queued behind the current playtest batch, same as everything else
+  above.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 - Roguelike next-wave-composition choice — parked pending a GUI
