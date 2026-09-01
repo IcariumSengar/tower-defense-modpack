@@ -1,0 +1,11 @@
+{
+  "structures": [
+    { "structure": "the_lost_city:lighthouse", "weight": 1 }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 20,
+    "separation": 10,
+    "salt": 1463095153
+  }
+}

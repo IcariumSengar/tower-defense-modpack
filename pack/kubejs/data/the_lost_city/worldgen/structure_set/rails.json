@@ -1,0 +1,12 @@
+{
+  "structures": [
+    { "structure": "the_lost_city:rails", "weight": 1 }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 16,
+    "separation": 8,
+    "salt": 141988967,
+    "exclusion_zone": { "other_set": "the_lost_city:city", "chunk_count": 16 }
+  }
+}

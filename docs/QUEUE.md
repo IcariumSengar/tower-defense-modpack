@@ -26,17 +26,14 @@ reflect actual current status.
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
 redesign together. Sequenced 2026-09-01 (user-confirmed order). Phases
-1 and 2 are done (see "Built, awaiting your next playtest"); Phase 3 is
-partially done (structure loot fix shipped for one of two mods, see
-below); Phases 4 and 5 not started:
+1, 2, and 4 are done (see "Built, awaiting your next playtest"); Phase 3
+is partially done (structure loot fix shipped for one of two mods, see
+below); Phase 5 not started:
 
-3. Structure improvements, remaining — spawners in structures, The
-   Lost City evaluation, and Abandoned Urban's own missing-loot half
-   (see below - deliberately not rushed given this pack's real
-   jigsaw/structure-generation crash history).
-4. QOL mod batch, install + verify together — Inventory Sorter,
-   Crafting Station Improved, Controlling, Xaero's World Map,
-   Waystones + Balm (+ quest), Zoomify.
+3. Structure improvements, remaining — spawners in structures and
+   Abandoned Urban's own missing-loot half (see below - deliberately
+   not rushed given this pack's real jigsaw/structure-generation crash
+   history).
 5. Decoration polish last — lang-file fix is cheap and can happen any
    time, but placement/density reassessment waits until the user has
    actually seen the redesigned base in a fresh world.
@@ -75,10 +72,6 @@ below); Phases 4 and 5 not started:
     technique (structure processors) and same caution as Abandoned
     Urban's loot fix above - worth doing together once that's designed,
     not as two separate structure-generation changes.
-  - Evaluate/install **The Lost City** for structure cohesion - real
-    caution flag still applies (Berezka dependency, same family that
-    sank an earlier pick) - verify it's genuinely the core library
-    before installing.
 - **Critical bugs, remaining**:
   - Endless phase (waves 9+): Wave Horn says "a horde has spawned" but
     nothing appears. **Root cause confirmed, real fix shipped, not yet
@@ -121,52 +114,63 @@ below); Phases 4 and 5 not started:
   override). Placement itself also read as "lame" — worth a look once
   visually confirmed, may need denser/more varied placement rather than
   a mod swap.
-- **New mod requests, researched 2026-09-01**:
-  - **Inventory Sorter** (CurseForge, middle-click sort) — confirmed
-    real, Forge 1.20.1.
-  - **Controlling** (CurseForge, Jaredlll08, 390M+ downloads) —
-    searchable/conflict-highlighting keybind menu, confirmed real,
-    Forge 1.20.1.
-  - **Xaero's World Map** (CurseForge) — fullscreen map, designed to
-    pair with the already-installed Xaero's Minimap, confirmed real,
-    Forge 1.20.1.
-  - **Waystones + Balm** (CurseForge, BlayTheNinth) — re-adding what
-    was removed in the original footprint audit, confirmed still real
-    and current for Forge 1.20.1. Needs a new quest teaching the
-    mechanic, per direct request.
-  - **Zoomify** (CurseForge, isXander, 33M+ downloads) — confirmed
-    real, Forge 1.20.1. Default keybind is C, not Z — fully
-    configurable, just needs rebinding.
-  - **Crafting Station Improved** (CurseForge, author Deepacat,
-    `craftingstation-1.20.1-1.4.0.jar`) — identified 2026-09-01, user
-    named it directly ("Crafting Station"). A standalone extraction of
-    Tinkers' Construct's crafting station block — own crafting-grid
-    state, connects to adjacent inventories to pull materials. Confirmed
-    Forge 1.20.1, no required dependencies. Picked over the plain
-    "Crafting Station" and "Crafting Station: JEI Edition" variants for
-    its extra whitelist/blacklist config and shift-click clear-to-
-    inventory QOL, both strict additions on top of the same base
-    functionality.
-  - **"Abandoned towns/cities" structure mod for cohesion** — candidate
-    found: **The Lost City** (singular — distinct from "The Lost
-    Cities," which was already ruled out for shipping its own chunk
-    generator). Confirmed Forge 1.20.1, "small ruined buildings and old
-    streets." **Real caution flag**: requires "Berezka library" as a
-    dependency — same mod family whose unclear dependency chain
-    (`berezka_api`) sank the earlier Abandoned Structures pick. This
-    time the dependency is named unambiguously on the mod's own page
-    (unlike the ~12-way-ambiguous situation before), but still needs
-    the same real verification (exact version, confirm it's genuinely
-    the general "Berezka's Library" core dependency and not another
-    per-mod addon) before installing, not assumed safe just because the
-    name is clearer this time.
-
 ## In progress (sent directly to the build session)
 
 *(nothing in progress right now)*
 
 ## Built, awaiting your next playtest
 
+- **QOL mod batch (Phase 4) + Mob Dismemberment + The Lost City** —
+  built and shipped 2026-09-01. All installed, sandbox-verified with a
+  fresh-world boot (real jigsaw structure generation exercised, since
+  Lost City is a new structure mod) before deploying live:
+  - **Inventory Sorter**, **Controlling** (+ Searchables dependency),
+    **Xaero's World Map**, **Waystones** (+ Balm dependency), **Crafting
+    Station Improved** — all installed as specced, each independently
+    re-verified against its real CurseForge page (author/downloads/
+    dependencies) before installing.
+  - **Zoomify substituted for Just Zoom** — the originally-requested
+    "Zoomify" (isXander) turned out to have no Forge build at all (only
+    Fabric/Quilt - confirmed directly via `packwiz`'s own version
+    resolution failing, not assumed from a search result). Real
+    substitute found via Modrinth (`Just Zoom` by Keksuccino, 9M+
+    downloads, + its Konkrete dependency) - and its real default
+    keybind, confirmed by decompiling the mod's own `KeyMappings.class`,
+    is already **Z** (GLFW keycode 90), so the "rebind C to Z" ask
+    turned out to need zero configuration.
+  - **A new Basics quest** ("A Stone That Remembers," gated on quest 6
+    same as "Not Just Jewelry") teaches waystone crafting - real item
+    task against `waystones:waystone`, confirmed craftable from its own
+    shipped recipe before writing the task.
+  - **Mob Dismemberment [UNOFFICIAL MODERN PORT]** — installed
+    (ThatSoulyGuy's port, confirmed real Forge 1.20.1 build; the
+    well-known original by iChun has none). **Real bug caught in
+    sandbox verification**: it's genuinely client-side only and crashes
+    outright when loaded in a dedicated-server context (references a
+    client-only vanilla class during common setup) - packwiz's
+    CurseForge metadata had defaulted its `side` to `"both"`, which
+    would be wrong; corrected to `"client"`. This pack's own live
+    instance runs as an integrated singleplayer client (not a dedicated
+    server), so this shouldn't affect actual play - flagged as a real
+    methodology gap in this session's own dedicated-server sandbox
+    testing, worth remembering for any other client-only mod added
+    later.
+  - **The Lost City** (+ Berezka's library dependency, confirmed
+    unambiguous this time, matching the peer's re-verification) — all
+    12 of its own `structure_set` files retuned to moderate spacing
+    (matching this pack's established pattern for every other structure
+    mod), except `infinity_city.json`, which uses a custom placement
+    type this session doesn't yet understand well enough to safely
+    retune - left at its shipped default, flagged rather than guessed
+    at. Verified for real: a fresh sandbox world booted clean through
+    actual jigsaw structure placement (the highest-risk phase, given
+    this pack's crash history) and `/locate structure
+    the_lost_city:city` found a real instance 112 blocks from a test
+    point, confirming the retuned spacing is genuinely reachable within
+    this pack's small bordered play area.
+  Not yet confirmed by an actual player session — sandbox verification
+  covers boot/generation stability and real block/structure placement,
+  not gameplay feel.
 - **Fixed spawn point moved off the badlands blob + wave-spawn
   positioning rewritten** — built 2026-09-01 (see FEATURES.md's "World
   type" section for the full spec). Spawn now targets `(780, -150)`,
@@ -287,6 +291,20 @@ below); Phases 4 and 5 not started:
   current 2026-09-01 playtest-feedback batch (13 items, 5 phases) so it
   doesn't add a fifth substantial project on top of what's already in
   flight. Send when that batch clears.
+- **Hardcore mode** — fully specced 2026-09-01 (see FEATURES.md's new
+  "Hardcore mode" section). Real permadeath (player death or pedestal
+  destruction) softened by Totems of Undying, obtainable both as a rare
+  boss-kill drop and via a new (vanilla has none) hard crafting recipe.
+  Built fully custom via KubeJS, not vanilla's native Hardcore flag —
+  confirmed that flag can't be turned on after world creation, no
+  command/datapack path exists. Optional toggle, not the pack's new
+  default — endless-phase scaling means every hardcore run eventually
+  ends in death no matter how skilled the player is, which is fine for
+  an opt-in but not as a forced default. Pedestal deliberately stays
+  unhardened — defending it is meant to be real base-defense stakes,
+  not background scenery. **Deliberately parked, not sent to build** —
+  same reasoning as the storage/power system above, queued behind the
+  current playtest batch rather than adding a sixth parallel project.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 - Roguelike next-wave-composition choice — parked pending a GUI

@@ -94,9 +94,27 @@ mod's native `bossHordeEnabled`/`bossHordeId`. `updateAttributesOfThirdPartyMobs
 true` is set on every level (required or the scale factors silently do
 nothing to non-Undead-Nights mobs), and `securityCraftCompatibility` is
 enabled (stops Horde Zombies breaking the reinforced Chokepoint walls).
-Spawn distance is fixed at 240-256 (shipped via default configs — the
-underlying Forge `SERVER` config can't be changed at runtime, confirmed
-earlier), holding "beyond the border" for roughly the first 95 waves.
+**Spawn distance reverted to 70/75 (2026-09-01), a real regression from
+the original design, not silently papered over.** Originally shipped at
+240-256 specifically to stay "beyond the worldborder" for roughly the
+first 95 waves. First real wave-9 playtest found it completely broken —
+"a horde has spawned" but nothing appeared — root cause: the live
+instance's actual `simulationDistance` is 12 chunks (192 blocks), so
+every horde spawn target at 240-256 blocks landed in a chunk that was
+never simulated and never ticked into existence. Reverted to Undead
+Nights' own real default (70/75), already confirmed working in the
+original build's sandbox test. **Known consequence, not resolved**: at
+70/75 blocks, endless-phase hordes stop reliably spawning beyond the
+worldborder once it grows past that range — which happens early
+(worldborder growth was also just reduced ~43% per separate playtest
+feedback, but even at the reduced rate this is well within the
+designed 1-8 campaign, let alone the endless phase). The "always beyond
+the border" guarantee this axis was designed around no longer holds at
+high wave counts — a real, currently-unaddressed gap between two of
+this pack's own decisions (server simulation distance vs. desired spawn
+staging), not something to build around further until it's decided
+whether server config (raising simulation distance) or a different
+spawn strategy is the real fix.
 
 **Verified with real spawned-entity NBT, not just config validation**:
 set difficulty level 20 on a live sandbox, spawned a horde, read a real
@@ -177,6 +195,25 @@ wave when it hits zero; using the horn manually at any point cancels it
 and starts immediately. Gives urgency without removing player agency.
 Implementation: display/auto-trigger in `wave_spawner.js`, started in
 `wave_status.js`.
+
+**Mob death effects — sent to build 2026-09-01.** Direct request: real
+death animations (limbs scatter, heads roll) instead of the vanilla
+death animation, matching a look the user had seen elsewhere. **Mob
+Dismemberment [UNOFFICIAL MODERN PORT]** (CurseForge, author
+ThatSoulyGuy, `MobDismemberment-1.20.1-8.0.1.jar`) — verified directly,
+not assumed from the name: iChun's original "Mob Dismemberment" (the
+well-known 13.9M-download classic) has **no Forge 1.20.1 build at
+all**, abandoned since 2017 at 1.12.2 — this port is the real,
+current, properly-licensed (GNU LGPLv3, explicit credit to iChun)
+option for this pack, same naming-collision pattern this project has
+hit repeatedly (Pure Suffering, KubeJS-Curios, Abandoned Structures).
+No dependencies. **Client-side only, no server component** — zero
+impact on the server-tick performance stack (Radium, wave-spawning)
+this pack has been careful about throughout. Configurable blood
+effects and max gib count via its own generated config. **Physics
+Mod** (16M downloads, real Forge 1.20.1) was checked as an alternative
+and ruled out — a full physics engine touching blocks/items/terrain,
+far beyond the specific death-effect ask, not the right scope.
 
 ---
 
@@ -483,6 +520,26 @@ disqualifying:
   structure_sets active simultaneously counting Treasure2's own
   (already-retuned) sets, comparable to the 7-set situation that
   triggered the vanilla race condition before.
+- **The Lost City — installed 2026-09-01** (CurseForge, author Berezka,
+  `the_lost_city-1.5.0-forge-1.20.1.jar`, 1M+ downloads) for structure
+  cohesion, distinct from "The Lost Cities" (ruled out earlier for
+  shipping its own chunk generator). Requires **Berezka's library**
+  (`berezka_api-1.2.9.6-forge-1.20.1.jar`) as its sole dependency —
+  confirmed unambiguous this time (named directly and singularly on the
+  mod's own dependencies page), genuinely different from the
+  `berezka_api` ambiguity that sank the earlier Abandoned Structures
+  pick. All 12 of its `structure_set` files (`city`, `big_city_structure`,
+  `villages_city`, `camp`, `lighthouse`, `survivorscamp`, `tower`,
+  `train`, `factory`, `post`, `rails`, `roads`) retuned to moderate
+  spacing (matching the 24/12-style pattern above), except
+  `infinity_city.json` — it uses a custom `the_lost_city:grid_placement`
+  type this session doesn't understand well enough to safely retune,
+  left at its shipped default rather than guessed at. Verified for
+  real: a fresh sandbox world booted clean through actual jigsaw
+  structure placement, and `/locate structure the_lost_city:city` found
+  a real instance 112 blocks from a test point, confirming the retuned
+  spacing is genuinely reachable within this pack's small bordered play
+  area, not just theoretically closer.
 - **Floor depth**: left at 65 blocks as recommended — Treasure2's own
   underground diggers still benefit, no cost to keeping it raised even
   though WDA (the mod that originally drove the number) is gone.
@@ -518,6 +575,30 @@ disqualifying:
   is correct" ambiguity doesn't resolve.
 - Treasure2 stays exactly as it is throughout all of this — never
   touched, only ever added alongside.
+
+**"The Lost City" for structure cohesion — ready, dependency fully
+resolved 2026-09-01.** Direct request after the same 2026-09-01
+playtest that confirmed the abandoned aesthetic was landing: structures
+still "don't feel cohesive," asked for a mod with real small towns/
+cities rather than isolated single buildings. **The Lost City**
+(singular — not "The Lost Cities," which was ruled out earlier for
+shipping its own chunk generator, incompatible with this pack's custom
+`noise`/`multi_noise` setup) — confirmed Forge 1.20.1, "small ruined
+buildings and old streets," a real match for the complaint. **Berezka
+dependency fully checked, not just flagged this time**: its own
+dependencies page lists exactly one required dependency — "Berezka's
+library," linking directly to the correct, singular, official core
+library (confirmed current Forge 1.20.1, actively maintained, its own
+page states "Berezka Library is a core mod required for all mods
+created by Berezka"). This is a genuinely different situation from the
+one that sank the earlier Abandoned Structures pick — that mod declared
+a mandatory dependency on a specific modid with no matching listing
+anywhere among ~12 similarly-named per-mod addons; here, the correct
+listing is named directly and unambiguously on the mod's own page, no
+guessing required. Two optional dependencies also listed (a TaCZ
+weapon-mod addon, a Survival Instinct addon) — both irrelevant here,
+skip both. **Not yet installed** — same spacing-retuning treatment
+every structure mod in this pack has needed will apply once it is.
 
 **Base expansion into rooms/corridors** — *planned, not built*. Goal:
 gather materials, activate something, and a new room/corridor gets
@@ -977,6 +1058,171 @@ diagnostic detail in `docs/MODS.md` if ever needed again):
    of fix #2: the pedestal only checked the worn Curios slot. Now also
    checks the player's inventory directly, accepting the amulet from
    wherever it actually is.
+
+---
+
+## Hardcore mode
+
+**Hardcore mode — planned, parked, not built.** Direct request 2026-09-01:
+real permadeath stakes — player death or the amulet pedestal being
+destroyed both end the run — softened by Totems of Undying as a genuine
+"extra life" mechanic, since vanilla's own totem-prevents-death behavior
+already does exactly that automatically, no custom tracking needed for
+the totem itself.
+
+**Not vanilla Hardcore — confirmed why, not assumed**: checked directly
+— Minecraft's native Hardcore flag is a **world-creation-time-only**
+setting; there is no command, gamerule, or datapack mechanism to turn it
+on for an already-created or future-created world after the fact. This
+pack's whole pattern is forcing settings automatically so the player
+never has to remember a manual checkbox at world creation (see "Manual
+setup" throughout this doc's history) — relying on the real Hardcore
+flag would break that pattern and require players to remember an easy-
+to-miss checkbox. Building this fully custom via KubeJS event hooks
+instead, same approach as everything else in this pack.
+
+**Three real decisions made 2026-09-01, not left open**:
+1. **The pedestal stays vulnerable, not hardened.** Direct choice:
+   protecting it becomes real, active base defense, not background
+   scenery — matches the "last bastion, defend it or lose" tone the
+   base redesign was already built around. Not SecurityCraft-reinforced
+   like the perimeter walls.
+2. **Totems obtainable both ways**: a real, meaningfully rare drop (tied
+   to a genuine difficulty spike — killing the ravager or an Undead
+   Nights boss-horde spawn is the natural candidate, not a random roll
+   on any common loot bag, so it feels earned rather than lucky) *and*
+   a real crafting recipe (vanilla has **no** totem recipe at all — this
+   needs a genuinely new one, gated behind expensive/rare materials,
+   e.g. Rare-tier loot bag contents or a byproduct of the parked
+   storage/power system — exact materials are an implementation-level
+   pick, not fixed here, same as the original pedestal recipe wasn't).
+   Two paths so a run with bad luck on drops still has a path forward.
+3. **Optional toggle, not the pack's new default.** Direct reasoning:
+   endless-phase scaling makes the game unboundedly harder forever, so
+   under permadeath every run eventually ends in death no matter how
+   skilled the player is — that's an acceptable, even intended, endgame
+   for a player who opts in, but forcing it as the default on every
+   playthrough would be a much bigger tonal shift than requested.
+   Mechanism for the toggle itself not designed yet — likely a simple
+   custom command (`/hardcore enable` or similar) the player runs
+   themselves, defaulting off, rather than a GUI/menu (this pack has a
+   standing, confirmed-real caution about building custom menus — see
+   the still-unbuilt roguelike-composition-choice entry in IDEAS.md).
+
+**What actually needs building, not yet designed in detail**:
+- A `td_hardcoreEnabled`-style persistent flag (same pattern as every
+  other player-state flag in this pack), set via the toggle command.
+- A death-event hook that, when the flag is set and the player's actual
+  death wasn't intercepted by a totem (i.e., a real death happened),
+  forces permanent spectator mode and freezes further wave-triggering —
+  vanilla real Hardcore's own spectator-lock behavior, reimplemented,
+  not the flag itself.
+- A block-break/explosion detection on the pedestal specifically,
+  triggering the same game-over sequence as a real death when hardcore
+  is on. Needs checking whether `mobGriefing` (already on, given the
+  perimeter walls needed reinforcement specifically because zombies
+  dig/creepers explode) can actually destroy the pedestal's particular
+  block registration, or whether its blast resistance needs adjusting
+  to make "vulnerable" mean something real rather than accidentally
+  already-indestructible.
+- The totem drop (which kill(s) trigger it, what rarity) and the totem
+  recipe (materials) both still need real numbers, not just the
+  two-path decision above.
+- Not designed for multiplayer — this pack's whole framing (fixed
+  single spawn, "You're On Your Own" as the very first quest) is
+  singleplayer-specific; what "game over" means if a second player is
+  ever in the world isn't considered here.
+
+**Deliberately parked, not sent to build** — same reasoning as the
+storage/power system: this is real, ready design, not still being
+figured out, just sequenced behind the current playtest-feedback batch
+rather than adding another substantial parallel project.
+
+---
+
+## Mob roster & defense-breaching threats
+
+**Roster direction — confirmed, not changed.** Direct check-in
+2026-09-01: the "zombie apocalypse as the base, mutated enemies for
+variety" framing is exactly what's already built — vanilla zombie-
+family mobs as the trash floor, TFTH's Flesh-themed mutants layered in
+from wave 2 for variety, endless-phase elite pool drawing from the same
+set. No roster change requested or made here; recorded as a validated
+design decision so it doesn't get second-guessed blind later.
+
+**Defense-breaching enemies — planned, parked, not built.** Direct
+request: as waves escalate, mobs should be able to genuinely threaten
+base defenses (blocks), not just the player — trap/machine placement
+should be real strategy, not just decoration.
+
+**Checked whether SecurityCraft's reinforced walls could ever be the
+thing that breaks, before designing around a wrong assumption**:
+confirmed reinforced blocks are **unconditionally immune to
+explosions** — a hardcoded SecurityCraft property, not a tunable
+resistance or a tiered value (the mod's 4 reinforcer tiers govern how
+hard a block is to *un-reinforce* by another player, not how much
+attack it can survive). Breakable only by the owner's own Universal
+Block Remover. So the Chokepoint perimeter walls specifically **cannot
+ever be the breach point**, at any wave/difficulty — this isn't a gap
+to work around, it's the mod doing exactly what it was chosen for.
+
+**Real candidate found, already installed, currently entirely
+unused**: Undead Nights' own **Demolition Zombie**
+(`net.petemc.undeadnights.entity.DemolitionZombieEntity`) — decompiled
+directly, not assumed from the name. A fully-built wall-breaching
+threat: carries live TNT and actively throws it at targets
+(`TntIgniteAndThrowGoal`), and if set on fire, self-detonates with a
+real terrain-destroying explosion (`Level.explode(..., ExplosionInteraction.TNT)`,
+not just entity damage). Its health/speed/damage/armor already scale
+off the exact same Undead Nights difficulty-level system already
+driving the endless-phase toughness curve — introducing it costs zero
+new scaling code, it inherits the existing curve automatically. None of
+Undead Nights' bundled zombie variants were used in the original
+endless-phase build (a deliberate choice at the time, not an oversight)
+— this is a considered, specific exception, not a reversal of that
+decision, since it fills a real design need nothing else in the roster
+does.
+
+**What it actually threatens, now that the walls are confirmed safe**:
+the gate (`playtest_starter_kit.js` still builds it as a plain vanilla
+door, never reinforced), the watchtower (plain cobblestone, no
+reinforcement), and any placed Tier 1-4 traps/machines (Trapcraft,
+Medieval Defense Turrets, the parked storage/power blocks) — none of
+these carry any explosion protection. This is a better design than
+"walls eventually break," not a consolation: the perimeter stays a
+safe, permanent reward for the early build effort, while the gate and
+machine placement become real, ongoing risk once this threat starts
+appearing — genuine "where do I put my expensive stuff, do I actively
+defend the gate" strategy, not just an eventual, undifferentiated loss
+condition.
+
+**Real emergent interaction, noted not treated as a bug**: Tier 2's
+Fire Trap (Trapcraft's Igniter) would set a Demolition Zombie alight on
+contact, triggering its self-detonation — using fire-based defenses
+against this specific enemy becomes a genuine double-edged tactical
+choice (kills it fast, but at the cost of a real explosion going off
+at your trap line), not something to patch around.
+
+**Open questions, not decided here**:
+- Whether the gate should now get SecurityCraft-reinforced too, given
+  it's the confirmed real weak point (a lockable reinforced door was
+  originally "considered and rejected as unnecessary complexity" — that
+  calculus may be different now that gates matter strategically, not
+  just decoratively) — genuinely undecided, worth asking rather than
+  guessing.
+- Introduction point: a late designed-campaign wave (6-8, as a real
+  "the fight has changed" story beat) versus folding it into the
+  endless-phase horde composition's elite pool (recurs and scales
+  forever) versus both — not picked yet.
+- Exact numbers: how much TNT it carries in this pack specifically
+  (Undead Nights supports 0-64, configurable per spawn), spawn
+  weight/frequency, and whether it needs its own horde entry or joins
+  an existing elite-pool horde.
+
+**Deliberately parked, not sent to build** — same reasoning as
+everything else parked today: real, ready design, sequenced behind the
+current playtest-feedback batch rather than adding another parallel
+project.
 
 ## Defense
 

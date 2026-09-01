@@ -1,0 +1,13 @@
+name = "Mob Dismemberment [UNOFFICIAL MODERN PORT]"
+filename = "MobDismemberment-1.20.1-8.0.1.jar"
+side = "client"
+
+[download]
+hash-format = "sha1"
+hash = "fc77a3e72b89f5d82eb0371fb8e71ce1eaf0d354"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8432262
+project-id = 1439856

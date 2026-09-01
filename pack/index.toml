@@ -22,7 +22,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/basics.snbt"
-hash = "6ff1112631e2b14831aa1c3422573976ec1301ed18ab60724b1614f1ec164a9c"
+hash = "a96a10f54aa53e7cff66c7bf3c2ff3076b8225de89312518fef931c3106cfceb"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
@@ -50,7 +50,7 @@ hash = "c27a34be1500287ab91de1eaaa9fb9db93e56685f03438ce03abda329402dc86"
 
 [[files]]
 file = "defaultconfigs/undeadnights-server.toml"
-hash = "973f74e6df7b191ae4b3f98957de53fb5dd6c062e01c90c99293d131745e49ad"
+hash = "01d67aab82278bde760f5c66a040340ec7e73c183b527943c37151fe3af0455c"
 
 [[files]]
 file = "kubejs/README.md"
@@ -145,6 +145,18 @@ file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
 hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
 
 [[files]]
+file = "kubejs/data/postapocalypse_structures/loot_tables/chests/cobwebs.json"
+hash = "050e99a1cb1391b32947d91f2c3c5eaf71f5fe3121800338f9dfd1c12b12f36f"
+
+[[files]]
+file = "kubejs/data/postapocalypse_structures/loot_tables/chests/food.json"
+hash = "993205f0e967be9ae8786f267390a0f658465a3f8e039cfe3e0f0fa8a9f93381"
+
+[[files]]
+file = "kubejs/data/postapocalypse_structures/loot_tables/chests/trash.json"
+hash = "ae50c3d3f29dcb2433f1e7f02c4b1d3b7b5238976f742488ac49e984f7e56e8a"
+
+[[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/abandoned_brick_house.json"
 hash = "bbc49b27d3b6c1d029e45f148151887e1279a6eb1410e116f7b0d873a7b86793"
 
@@ -159,6 +171,54 @@ hash = "deaf192f4120d251ff44f9084104c073c440aeecf9731eda024784ae1de677ef"
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/yellowhouse.json"
 hash = "20da86a58e15e9129c3860d1428c73fa5ee4234ae317d1da8ae72103a4cbfbee"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/big_city_structure.json"
+hash = "a7a5f1116b70c3672b341ac1995eb55985c23c37c8483feb9fd9f7af5a6deb29"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/camp.json"
+hash = "5abb924824a6413504f7fa7579a4ad56904d8dd1605a86b51a8c4ce5b85fe42a"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/city.json"
+hash = "6da705b6c5f868f5098e2b823e3072b75e253054117d801333f3764693b0317f"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/factory.json"
+hash = "f358a58d90bc145fddc26ed4eda247f4146cbe7f95dc1ba6c7f8bc4e3680c954"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/lighthouse.json"
+hash = "481bf392a9b89cc94408e05999bdd5dc830d137127e970fc1d6f14a402a0015f"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/post.json"
+hash = "cc096da2687173130cf7d6994876a6953cec4193a018d83e2ce33b80b65b900d"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/rails.json"
+hash = "7b76d8f2b22893f0c19b7cbaa52ab4537cd29fa583b0dce36ca6b8b1d2c78720"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/roads.json"
+hash = "c1053e82bd08dbaed1394255659f2a4ddfbde5e99301b9cb21d2bf5b14676787"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/survivorscamp.json"
+hash = "59a8d3dd81ff3caf1a2a88bde1cd1a0bb626e49f6f3035744823caf7c40b7f03"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/tower.json"
+hash = "0d2b9b1d890736f2aa79dccd91950576b884353ede00d4ca9edb7094fa8d82ea"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/train.json"
+hash = "dd1b68afd34f78f92ee762d405c6c6e5c1612293a3ce878b007c7a2e11b56e65"
+
+[[files]]
+file = "kubejs/data/the_lost_city/worldgen/structure_set/villages_city.json"
+hash = "7d7e49de30a1e71fe4ad0ba3aa18187be64c287225a8fdabcd14e5742352e6f3"
 
 [[files]]
 file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
@@ -182,7 +242,7 @@ hash = "1c7f53b9052ffd55f273b4f0ec40bec12078f1ac61f5804e6e4a747c95d780fc"
 
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
-hash = "ee456ea0776133200def8062c6b0d29bc3004c9188028467fa75f8fe449a24cb"
+hash = "0403861d0ee3d7ca38d534f00d3099c39c44b86fc27ccefef2c3ec787ed3376a"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
@@ -190,7 +250,7 @@ hash = "6bc4b766ee855fa49afab3f244fa0d91300ac75ec1277e1ddd4c4ba691cfba5a"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_open.js"
-hash = "8f1e8053d9726dacfafb43895c3c8e0cfa6d6517ae7cafc0925de4e2d4d26691"
+hash = "501865e2b0293143ecbe975f414a1da289a031eb6f4f25b36ed1aee67de08404"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -198,7 +258,7 @@ hash = "76d3974482603b96192946bafecafbb7e5706b5c93176ec45944222587653c76"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "4c5ce71ae12bb99ca55e1436861d583038532b1a68b7dc91091fda91d8ed2730"
+hash = "aa610649fc3b9e3391ec7ba61cf10f6bcb5ad56da48eeef69921554a3b86603f"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
@@ -206,11 +266,11 @@ hash = "0cabf019d2b3e0b1378f98af78a17cbd3c8c75c57e38515c8bce2ba9703eeaf2"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "af893c8b389add1806d4b22589c022d3a2ae5230dafa472c1c4bb1dc6e4aeb8b"
+hash = "078173524cee04e587b1a7551ac3af58dd97c841de26d3e84253a0ff3e701647"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "1fa95e40d230f577fc59d978878c25757a07968c4e9a0c2ca72d96533c8b0cb2"
+hash = "895c3189d06851a5af02edb57e4dd0245827ea0a3ba4d25c55f6b14417916b5c"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -253,13 +313,33 @@ hash = "5e9edd1fd2395f14a0c8a4acbdbdd61e1047be1f0033deb3140d2ce0d093e9d8"
 metafile = true
 
 [[files]]
+file = "mods/balm.pw.toml"
+hash = "ddff810b39bb8873325aa34230c2a174073ad9bbf002e04a66835735550a1b7b"
+metafile = true
+
+[[files]]
+file = "mods/berezka-library.pw.toml"
+hash = "4171835454f8a0fbb6dc9b4cafa6661babb96fa598d3686515a9a4e9355bcf8b"
+metafile = true
+
+[[files]]
 file = "mods/clumps.pw.toml"
 hash = "903352ffbd84d4b95fed905893f4715d9c3f88ec9fff6fb06f6e359e0b839dc3"
 metafile = true
 
 [[files]]
+file = "mods/controlling.pw.toml"
+hash = "1e56f528d8e21b0cf9c52c3d6deea2a4eafa408170b39a070195dbf66617f373"
+metafile = true
+
+[[files]]
 file = "mods/corpse.pw.toml"
 hash = "2fba2317a375669ccb1376525d4d4e0d1903cc5dc44fc70dce1d0e3dbb6aacb1"
+metafile = true
+
+[[files]]
+file = "mods/crafting-station-improved.pw.toml"
+hash = "01c9f9492ce3586673cc18577e562d7e0d4571d27c400edf0a9f0c77e9ce6904"
 metafile = true
 
 [[files]]
@@ -319,12 +399,17 @@ metafile = true
 
 [[files]]
 file = "mods/geckolib.pw.toml"
-hash = "93e75c0ec763f3cd49fc9e3bcd24822178e123a7b2163c81a2709e82f4b70829"
+hash = "898fd2704dd260ae8f3dc20b4416439751f0a9e76367c4f0bbdac886b6987802"
 metafile = true
 
 [[files]]
 file = "mods/gottschcore.pw.toml"
 hash = "2df2e0b8ee15faf0389ba827d3ff04577986d41a929c5ea4303cb7002227c7f8"
+metafile = true
+
+[[files]]
+file = "mods/inventory-sorter.pw.toml"
+hash = "58170607da6517dc43eeb5a664dea9dec7d96a8ad9e99d2623c2a5a9099c91be"
 metafile = true
 
 [[files]]
@@ -335,6 +420,16 @@ metafile = true
 [[files]]
 file = "mods/jei.pw.toml"
 hash = "2e0848d4bd188767d2fc7bde823c7eed5c0d1df72717eb82c53cbda587b815af"
+metafile = true
+
+[[files]]
+file = "mods/just-zoom.pw.toml"
+hash = "589b370ffcef405a00daafc5bfa6febaeafef81aa797a3cb63a49555db90fd76"
+metafile = true
+
+[[files]]
+file = "mods/konkrete.pw.toml"
+hash = "90a70141bcec839b6a1aa647c91f97bb7b33b6b9e6ce6b3b18a4113aa7dff636"
 metafile = true
 
 [[files]]
@@ -355,6 +450,11 @@ metafile = true
 [[files]]
 file = "mods/medieval-defense-turrets.pw.toml"
 hash = "4f3644efb55b1dd4a88154258462b120233687b18361e90b4c7100e6f4ca4563"
+metafile = true
+
+[[files]]
+file = "mods/mob-dismemberment-unofficial-modern-port.pw.toml"
+hash = "ebb8f8ca52024772c8446d56c08b96bd62578f649d9ae018670de462e32dbc47"
 metafile = true
 
 [[files]]
@@ -383,6 +483,11 @@ hash = "ca4411ac6d8a9a892948bb63cd0ba52ae5523ca5e257632d6ae8c933b660c5ee"
 metafile = true
 
 [[files]]
+file = "mods/searchables.pw.toml"
+hash = "2cb8dd9a3944a6430b49916a4fe1b6cf0bd7efd907054f8e679a02717149404f"
+metafile = true
+
+[[files]]
 file = "mods/securitycraft.pw.toml"
 hash = "9af1c3705dee1576d6691a814eece2b5f4f2548533f037fc9e848fc1eff3edcf"
 metafile = true
@@ -390,6 +495,11 @@ metafile = true
 [[files]]
 file = "mods/tfth.pw.toml"
 hash = "f3a527378c2f80703574ed25bb550029bd741eb2cde460a92930341614d09a5b"
+metafile = true
+
+[[files]]
+file = "mods/the-lost-city.pw.toml"
+hash = "fd6874e968f6252ec903171e30f1aa66c87caeb5e11a48fd50f5ced37658790e"
 metafile = true
 
 [[files]]
@@ -408,8 +518,18 @@ hash = "42b5c040a2abe394deb5969b4ff4a07cb1bd4f6a6e93484c4f82696918ef9aab"
 metafile = true
 
 [[files]]
+file = "mods/waystones.pw.toml"
+hash = "5ab6f2a4a50bd53506496d3da0c2c09d5a3ca363c3ebc7ca8641ecd3f7104365"
+metafile = true
+
+[[files]]
 file = "mods/xaeros-minimap.pw.toml"
 hash = "20beda5f9b049a2352334a0f8dd8de122e7399f8a446d8f78aeecba85d99bbdc"
+metafile = true
+
+[[files]]
+file = "mods/xaeros-world-map.pw.toml"
+hash = "c7d38bde9d8255b52786ab99e29ca0198fb0e407af3e638fad6a7807070361b8"
 metafile = true
 
 [[files]]

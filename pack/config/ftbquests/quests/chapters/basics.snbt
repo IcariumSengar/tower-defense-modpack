@@ -159,6 +159,28 @@
 			y: 0.0d
 		}
 		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"A stone that remembers where you stood. Set one down, and the distance between here and anywhere else you've claimed stops mattering - step through, not across. Whoever built the first one wasn't thinking about convenience. They were thinking about how far they'd have to run if it all went wrong."
+			]
+			icon: "waystones:waystone"
+			id: "216966530DE6E3DB"
+			rewards: [{
+				id: "4B2522E0A3B82AA9"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				consume_items: false
+				id: "FAFD5783813100D5"
+				item: "waystones:waystone"
+				type: "item"
+			}]
+			title: "A Stone That Remembers"
+			x: 10.0d
+			y: -1.5d
+		}
+		{
 			dependencies: ["1454951A7FB14A26"]
 			description: [
 				"Every wall you're not standing behind yet is still just desert. Clear what's in front of you and the line moves - more ground to hold, more reasons it might not hold."

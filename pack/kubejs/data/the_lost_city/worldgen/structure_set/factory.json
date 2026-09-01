@@ -1,0 +1,12 @@
+{
+  "structures": [
+    { "structure": "the_lost_city:factory", "weight": 1 }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 40,
+    "separation": 20,
+    "salt": 310908202519,
+    "exclusion_zone": { "other_set": "the_lost_city:city", "chunk_count": 16 }
+  }
+}
