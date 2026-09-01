@@ -125,16 +125,13 @@ PlayerEvents.loggedIn((event) => {
   // happened to be standing — matches the manual setup step from
   // docs/PLAYTESTING.md, now automatic.
   event.server.runCommandSilent(`worldborder center ${x} ${z}`)
-  // Bumped 50 -> 90 (2026-09-01, real consequence of the Red Mansion
-  // redesign below, not a separate balance change): the old 50-diameter
-  // border comfortably contained the tiny 11x11 hand-built shell, but
-  // the mansion alone is 26x28, plus courtyard/margins/watchtower pushes
-  // the compound's north edge ~41 blocks from spawn - needs at least an
-  // 82 diameter to avoid building outside the border on day one. 90
-  // gives a small buffer. base_expansion.js's per-wave growth amounts
-  // are unchanged, so this shifts the wave-8 ending border from 166 to
-  // ~206 - a real side effect of this change, not independently tuned.
-  event.server.runCommandSilent('worldborder set 90')
+  // Briefly bumped to 90 for the Red Mansion (26x28), reverted back to
+  // 50 the same day (2026-09-01) once the mansion itself was swapped for
+  // Abandoned Brick House (12x11, see below) - the smaller building's
+  // compound footprint comfortably fits the original border size again,
+  // so this also restores base_expansion.js's originally-tuned wave-8
+  // ending border of 166 instead of the mansion-driven ~206.
+  event.server.runCommandSilent('worldborder set 50')
   // Wave mobs deliberately spawn just beyond the border (wave_spawner.js)
   // and walk in - without this, vanilla's default border damage would
   // chip them (and the player, near the edge) for no reason this pack
@@ -149,35 +146,37 @@ PlayerEvents.loggedIn((event) => {
 
   const run = (cmd) => event.server.runCommandSilent(cmd)
 
-  // Layout redesigned 2026-09-01 to wrap around the real Red Mansion
-  // structure (see below) instead of the old symmetric 11x11 shell -
-  // gate sits right at the fixed spawn point (matches the old "player
-  // spawns at the door" feel), courtyard runs north from there, then the
-  // mansion, then a back margin and the watchtower beyond that. Real
-  // mansion dimensions confirmed by decompiling its own NBT directly
-  // (26 wide (X) x 19 tall (Y) x 28 deep (Z), DataVersion 3465 - matches
-  // this pack's own install exactly, no version-mismatch risk).
-  const MANSION_WIDTH = 26
-  const MANSION_DEPTH = 28
-  const MANSION_HEIGHT = 19
-  const COURTYARD_DEPTH = 7
-  const SIDE_MARGIN = 4
-  const BACK_MARGIN = 3
+  // Layout wraps around a real postapocalypse_structures building
+  // instead of the old hand-built shell - gate sits just off the fixed
+  // spawn point, courtyard runs north from there, then the building,
+  // then a back margin and the watchtower beyond that. Swapped from Red
+  // Mansion to Abandoned Brick House the same day (2026-09-01, direct
+  // feedback: "this mansion is too big") - real dimensions confirmed by
+  // decompiling its own NBT directly (12 wide (X) x 13 tall (Y) x 11
+  // deep (Z), DataVersion 3465 matches this pack's install exactly),
+  // barely bigger than the original hand-built 11x11 footprint. Same
+  // mod, same aesthetic family, already installed - no new dependency.
+  const BUILDING_WIDTH = 12
+  const BUILDING_DEPTH = 11
+  const BUILDING_HEIGHT = 13
+  const COURTYARD_DEPTH = 4
+  const SIDE_MARGIN = 3
+  const BACK_MARGIN = 2
   // Gate sits 2 blocks north of the player's own spawn point, not on
   // top of it - a real bug caught before ever reaching the sandbox: a
   // literal door block placed exactly at (x, y, z) would spawn the
   // player inside/on top of a solid door every single login.
   const GATE_OFFSET = 2
 
-  const mansionX0 = x - Math.floor(MANSION_WIDTH / 2)
-  const mansionX1 = mansionX0 + MANSION_WIDTH - 1
+  const buildingX0 = x - Math.floor(BUILDING_WIDTH / 2)
+  const buildingX1 = buildingX0 + BUILDING_WIDTH - 1
   const z1 = z + GATE_OFFSET
-  const mansionZ1 = z1 - COURTYARD_DEPTH - 1
-  const mansionZ0 = mansionZ1 - MANSION_DEPTH + 1
+  const buildingZ1 = z1 - COURTYARD_DEPTH - 1
+  const buildingZ0 = buildingZ1 - BUILDING_DEPTH + 1
 
-  const x0 = mansionX0 - SIDE_MARGIN
-  const x1 = mansionX1 + SIDE_MARGIN
-  const z0 = mansionZ0 - BACK_MARGIN
+  const x0 = buildingX0 - SIDE_MARGIN
+  const x1 = buildingX1 + SIDE_MARGIN
+  const z0 = buildingZ0 - BACK_MARGIN
 
   // No foundation dig / headroom clear needed - back on Superflat
   // (2026-08-20, reverted from Single Biome: Desert - real terrain
@@ -316,12 +315,10 @@ PlayerEvents.loggedIn((event) => {
   const towerX1 = x + 1
   const towerZ1 = z0 - 3
   const towerZ0 = towerZ1 - 2
-  // Raised 10 -> 22 (2026-09-01, real consequence of the Red Mansion
-  // redesign below): the mansion is 19 tall, so the old platform height
-  // would put the lookout below the roofline of the building right in
-  // front of it, blocking exactly the sightline the tower exists for.
-  // 22 clears the mansion's roof by 3 blocks.
-  const platformY = wallY0 + 22
+  // Raised from the original 10 to clear the building's own roofline
+  // (13 tall, Abandoned Brick House) by 3 blocks, same margin logic as
+  // when this was briefly 22 for the taller Red Mansion.
+  const platformY = wallY0 + 16
 
   run(`fill ${towerX0} ${wallY0} ${towerZ0} ${towerX1} ${platformY - 1} ${towerZ1} minecraft:cobblestone`)
 
@@ -382,15 +379,23 @@ PlayerEvents.loggedIn((event) => {
 
   // Shrine nook + grave markers (2026-09-01, docs/FEATURES.md's "The
   // amulet" reversal - the pedestal is now pre-built into the *original*
-  // structure layer, not something the player crafts). Moved into the
-  // courtyard (east side, between the gate and the mansion) for this
-  // redesign - the old NE-interior-corner spot now sits inside the
-  // mansion's own footprint. The pedestal mechanic itself
+  // structure layer, not something the player crafts). Sits in the
+  // courtyard (east side, between the gate and the building) rather than
+  // inside the building's own footprint - stays valid across both the
+  // Red Mansion and Abandoned Brick House swaps since it never depended
+  // on the building's own interior. The pedestal mechanic itself
   // (server_scripts/amulet_pedestal.js) already tracks state on the
   // player, not the block/world, so relocating it needed zero changes
   // to that file's own logic - confirmed by reading it, not assumed.
+  // shrineZ = z1-3, not z1-4 - a real overlap bug caught in review: with
+  // the tighter COURTYARD_DEPTH (4, down from the Red Mansion's 7), a
+  // z1-4 shrine's own grave offset (-1) would land exactly on the
+  // building's front wall row (buildingZ1) and get silently overwritten
+  // by the /place template call below, since building placement happens
+  // after the shrine/graves. z1-3 keeps both grave offsets (-1 and +2)
+  // inside the courtyard's safe rows on either side.
   const shrineX = x1 - 3
-  const shrineZ = z1 - 4
+  const shrineZ = z1 - 3
   run(`setblock ${shrineX} ${wallY0} ${shrineZ} kubejs:amulet_pedestal`)
 
   // Grave markers - plain vanilla oak_fence posts on small coarse_dirt
@@ -411,42 +416,41 @@ PlayerEvents.loggedIn((event) => {
     run(`setblock ${gx} ${wallY0 + 1} ${gz} minecraft:oak_fence`)
   })
 
-  // Red Mansion (2026-09-01, docs/FEATURES.md's "Redesign direction" -
-  // replaces the old hand-built single-room shack with a real
-  // professionally-modeled structure, since no amount of /fill detail
-  // fixed the "terrible" verdict on the old hand-typed shell). Real
-  // structure ID and dimensions confirmed by decompiling the mod's own
-  // NBT directly (postapocalypse_structures:red_mansion, 26x19x28,
-  // DataVersion 3465 matches this pack's install exactly) - not guessed.
-  // /place template loads a mod-registered structure the same clean way
-  // as a vanilla one, confirmed in a live sandbox test before writing
-  // this. Its 22 chests/barrels already carry LootTable refs pointing at
+  // Abandoned Brick House (2026-09-01, docs/FEATURES.md's "Redesign
+  // direction" - replaces the old hand-built single-room shack with a
+  // real professionally-modeled structure, since no amount of /fill
+  // detail fixed the "terrible" verdict on the old hand-typed shell).
+  // Swapped in from Red Mansion the same day (direct feedback: "this
+  // mansion is too big") - same mod, same postapocalypse aesthetic,
+  // 12x13x11 (barely bigger than the original hand-built 11x11
+  // footprint), real dimensions confirmed by decompiling the mod's own
+  // NBT directly (DataVersion 3465 matches this pack's install exactly)
+  // - not guessed. /place template loads a mod-registered structure the
+  // same clean way as a vanilla one, already confirmed in a live sandbox
+  // test for this same mod's Red Mansion. Its 8 chests/barrels already
+  // carry LootTable refs pointing at
   // postapocalypse_structures:chests/{trash,cobwebs,food} - the exact
   // tables this pack already buffed with real treasure earlier this
   // session (see docs/QUEUE.md's Phase 3 entry) - so this is free
   // upgraded starting loot, not something that needed clearing/replacing.
-  // Placed at floorY, not wallY0 - the mansion's own local y=0 layer is
+  // Placed at floorY, not wallY0 - the building's own local y=0 layer is
   // its floor/foundation material (matching the courtyard's floorY
   // block below the walkable surface), so its local y=1 walkable ground
-  // floor (confirmed by the real door positions found in the NBT, all
-  // at local y=1) lines up exactly with the courtyard's own walkable
-  // surface at wallY0 - placing at wallY0 instead would have left the
-  // mansion's floor sitting 2 blocks above the courtyard, an awkward
-  // step up right at the building's own front rather than a level walk-in.
-  run(`place template postapocalypse_structures:red_mansion ${mansionX0} ${floorY} ${mansionZ0}`)
+  // floor lines up exactly with the courtyard's own walkable surface at
+  // wallY0 - placing at wallY0 instead would leave the building's floor
+  // sitting 2 blocks above the courtyard, an awkward step up right at
+  // its own front rather than a level walk-in (the exact bug caught and
+  // fixed for the Red Mansion placement this same day).
+  run(`place template postapocalypse_structures:abandoned_brick_house ${buildingX0} ${floorY} ${buildingZ0}`)
 
-  // Real bug caught in a live sandbox test before shipping, not
-  // guessed: /place template bypasses the mod's own worldgen
+  // Same real bug class caught for the Red Mansion, confirmed present
+  // here too by parsing this building's own NBT directly before
+  // shipping: /place template bypasses the mod's own worldgen
   // block_ignore processor (which strips these during natural jigsaw
-  // generation, per the mod's own worldgen/structure/red_mansion.json)
-  // - the raw NBT has a literal 409-block wet_sponge layer at its own
-  // local y=0 (a "leave the terrain alone here" foundation marker,
-  // confirmed by parsing the NBT directly), which would otherwise show
-  // up as visible sponge across the whole ground floor footprint.
-  // Replace-mode fill over just that one Y layer swaps it for the same
-  // stone_bricks the rest of the compound floor uses - sandbox-verified
-  // to replace exactly 409 blocks, matching the NBT's own count exactly,
-  // and to leave every other placed block (chests, walls, furniture)
-  // untouched.
-  run(`fill ${mansionX0} ${floorY} ${mansionZ0} ${mansionX1} ${floorY} ${mansionZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
+  // generation), and the raw NBT has a 78-block wet_sponge layer at its
+  // own local y=0 (a "leave the terrain alone here" foundation marker)
+  // that would otherwise show up as visible sponge across the ground
+  // floor footprint. Replace-mode fill over just that one Y layer swaps
+  // it for the same stone_bricks the rest of the compound floor uses.
+  run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
 })
