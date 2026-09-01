@@ -332,6 +332,116 @@ couldn't complete this particular mod set's FML handshake to get a real
 spawn-and-look test, a tooling gap not a pack problem. Needs an actual
 playtest to confirm layout/spacing reads as intended.
 
+**Real player verdict, 2026-09-01: "terrible."** The detail pass above
+was genuinely built and sandbox-verified, but direct feedback after an
+actual playtest is that the base and watchtower design don't hold up —
+confirms the honest gap flagged above (block-ID validity isn't the same
+as looking good) wasn't just theoretical.
+
+**Redesign, built and deployed 2026-09-01 — stop hand-typing the shell,
+use a real structure instead.** Direct call: the fundamental limitation
+isn't insufficient detail, it's the technique — hand-authored `/fill`/
+`/setblock` commands produce boxy, rectangular architecture no matter
+how much decoration gets layered on. This pack now has three real
+structure mods installed with genuinely professionally-modeled
+buildings (Apocalypse structures, Abandoned Urban, The Lost City) — use
+one of their real `.nbt` structures as the base's shell via
+`/place template`, the same cross-cutting "structure placement at a
+triggered location" pattern already used elsewhere in this pack, just
+pointed at a mod's structure instead of hand-typed commands for the
+first time.
+
+- **Lead candidate: Apocalypse structures' Red Mansion.** Its own
+  in-mod description literally says it's "perfect to reinforce and use
+  as a base" — not a coincidental fit, that's what it was built for.
+  Already thematically correct out of the box too: Apocalypse
+  structures' whole design premise is abandoned/post-apocalyptic, so it
+  shouldn't need a weathering pass the way a fresh vanilla build would.
+- **Real unknowns, resolved 2026-09-01 via direct jar inspection, not
+  guessed**:
+  - Structure ID confirmed: `postapocalypse_structures:red_mansion`,
+    NBT at `data/postapocalypse_structures/structures/red_mansion.nbt`.
+  - Real dimensions, parsed from the NBT's own size tag: **26 (X) × 19
+    (Y) × 28 (Z)** — this is what the wall perimeter/gate/watchtower/
+    pedestal-shrine positions get recalculated around.
+  - `DataVersion 3465` matches this pack's live instance exactly — no
+    version-mismatch risk on the structure itself.
+  - **No loot clearing needed, real bonus found instead**: 22 chests/
+    barrels inside carry real `LootTable` references, and they already
+    point at `postapocalypse_structures:chests/{trash,cobwebs,food}` —
+    the exact same tables already buffed with a real treasure pool
+    earlier this session (see "Structure mod picks"). Free upgraded
+    loot in the player's own starting building, no extra work. 3
+    barrels are plain empty, fine as-is.
+  - 0 embedded entities, 47 total NBT-bearing blocks (barrels, chests,
+    smokers, signs, campfires) — reads as a genuinely furnished,
+    lived-in building already, confirming the "probably needs little
+    extra decoration" guess above.
+  - Its own `worldgen/structure/red_mansion.json`: standard
+    `minecraft:jigsaw` type, `single_pool_element`, rigid projection,
+    a `block_ignore` processor already strips structure-block/wet-
+    sponge markers — clean, nothing unusual to work around.
+  - `/place template` compatibility confirmed working — see the real
+    gotcha it surfaced, below. Backup candidates never ended up needed.
+- **`/place template` real gotcha, caught before it ever reached a
+  test**: the mod's own `block_ignore` structure processor (confirmed
+  clean earlier) only applies during natural jigsaw generation — raw
+  `/place template` bypasses it entirely. The mansion's real NBT has a
+  409-block `minecraft:wet_sponge` layer at its own local y=0, a "leave
+  the terrain alone" foundation marker meant to be stripped by that
+  processor — without a cleanup pass this would show as visible sponge
+  across the whole ground floor. Fixed with a replace-mode fill
+  immediately after placement; sandbox-confirmed it replaces exactly
+  409 blocks, matching the NBT's own count precisely. A second
+  placement bug (the mansion's local y=0 nearly mapped to the wrong
+  absolute Y, which would've put the real walkable floor 2 blocks above
+  the courtyard surface) was also caught and fixed before any test.
+- **Full compound redesign around the real footprint, not just the
+  building swap** — the mansion (26×28 footprint) is far bigger than
+  the old hand-built shell (11×11), so everything around it moved:
+  - Gate now sits 2 blocks north of the exact spawn point, not on top
+    of it — caught in review before it was ever a bug: a door placed
+    exactly at the spawn coordinate would trap the player on their own
+    first login.
+  - A real courtyard now sits between the gate and the mansion; the
+    pedestal shrine and grave markers moved into it.
+  - Watchtower raised from 10 to 22 blocks specifically to clear the
+    mansion's own 19-block roofline — it needs to see over the building
+    it's meant to be watching from.
+  - **Initial worldborder diameter raised 50→90** to actually contain
+    the new footprint — a direct side effect of the bigger building,
+    not an independent balance change. Since the escalating growth
+    curve is additive on top of the starting value, this shifts the
+    wave-8 ending border from 166 to roughly 206.
+- **Final layout numbers, verified via a full end-to-end sandbox replay
+  of the real login command sequence (not just individual pieces)**:
+  gate 2 blocks north of spawn (`GATE_OFFSET`), a 7-block courtyard,
+  mansion centered on spawn X (26 wide), 4-block side margins, 3-block
+  back margin before the watchtower, tower platform raised to
+  `wallY0+22` (was `+10`), shrine/pedestal + 3 graves relocated into the
+  courtyard's east side. Gate-trap risk, wet_sponge cleanup, and
+  watchtower roof-clearance were each spot-checked via RCON in that
+  replay and confirmed correct — no exceptions anywhere in the run.
+  Deployed to the live instance and committed (code only). **Same
+  caveat as every other spawn-time change this pack has made**: only
+  takes effect on a brand-new world, not retroactively on an existing
+  save.
+- **How this integrates with what's already built, not a full
+  do-over**: the SecurityCraft-reinforced perimeter wall (uneven
+  material distribution, weak-point section, now-reinforced gate),
+  watchtower, and pedestal shrine/grave markers all stay as *separate*
+  structures around the new building shell — only the core "single-room
+  shack" building itself gets replaced by the real structure, not the
+  whole compound design. The mansion's own interior likely needs little
+  extra decoration work, given it should already ship with some level
+  of built-in detail as part of its own mod design — worth checking
+  before assuming Doomsday/Zcraft Decoration props are still needed
+  inside it.
+- **Not parked** — given this is direct negative feedback on something
+  currently live, not a new feature request, flagged for the user on
+  whether to prioritize ahead of the current playtest batch rather than
+  queue behind it by default.
+
 **World type** — *live, user-confirmed working in-game (2026-09-01)*.
 `kubejs/data/minecraft/dimension/overworld.json` uses `type:
 minecraft:noise` with a custom `noise_settings` file and a `multi_noise`
@@ -1142,13 +1252,55 @@ rather than adding another substantial parallel project.
 
 ## Mob roster & defense-breaching threats
 
-**Roster direction — confirmed, not changed.** Direct check-in
+**Roster direction — confirmed, then extended.** Direct check-in
 2026-09-01: the "zombie apocalypse as the base, mutated enemies for
 variety" framing is exactly what's already built — vanilla zombie-
 family mobs as the trash floor, TFTH's Flesh-themed mutants layered in
 from wave 2 for variety, endless-phase elite pool drawing from the same
-set. No roster change requested or made here; recorded as a validated
-design decision so it doesn't get second-guessed blind later.
+set. Recorded as a validated design decision. Extended the same day
+with a real new roster addition — see below.
+
+**More zombie-family variety — planned, parked, not built.**
+Researched candidates for more zombie-esque mobs with distinct
+abilities, same "mutated enemies" framing, not a departure from it:
+- **Mutant Monsters** (the well-known, 46.8M-download option) —
+  checked directly, **ruled out**: no Forge 1.20.1 build exists at all,
+  current releases only target Fabric/NeoForge/1.21.x, despite an
+  outdated-looking file title suggesting otherwise in search results.
+- **Mutants and Zombies** (CurseForge, author **MCModsPete**, confirmed
+  Forge 1.20.1 v1.4.0) — the real pick. Same author as **Undead
+  Nights**, already deeply trusted in this pack (decompiled twice) —
+  its own description explicitly states it's designed to pair with
+  Undead Nights ("A separate mod by the same author, Undead Nights,
+  handles horde night functionality"), and confirmed to add **no
+  autonomous wave/horde/spawn systems of its own**, just real mob
+  content — passes the standing "check for autonomous world-altering
+  systems before adding any mob mod" caution cleanly. 8 distinct
+  zombie-family mobs, real ability variety, not just reskins: Zombie
+  Brute / Mutant Brute (tanks), Crawler (fast, climbs walls — needs one
+  clean dependency, **Advanced Wall Climber API**, confirmed real
+  Forge 1.20.1 v1.0.2, 375K+ downloads, small focused library, low
+  risk), Spitter (ranged, slimeballs), Blister Zombie / Split Head
+  Zombie (speed/strength variants), Rotten Mutant (tanky, slow), Mutant
+  Zombie (mild upgrade). Stays fully within "zombie apocalypse as the
+  base" — mutations of the same zombie family already in the roster,
+  not generic mutant-animal content the way Mutant Monsters would have
+  been.
+- **Deliberately not stacking a second zombie-variety mod on top** —
+  a cluster of "Zombie Apocalypse"-branded mods was also found
+  (ZombieApocalypseAddon, ZAo Zombie Apocalypse, Infectious - Zombie
+  Apocalypse) but not pursued: ZombieApocalypseAddon specifically adds
+  its own hordes/blood-moons/day-based-difficulty, the exact
+  autonomous-system-conflict risk this pack has a standing caution
+  about. Mutants and Zombies alone already adds substantial real
+  variety on top of what's in the roster now (TFTH's mutants, the
+  parked Demolition Zombie) — redundant/conflicting footprint not worth
+  it for more of the same thing.
+- **Not yet designed**: which waves/hordes these 8 new mobs actually
+  join (the designed 1-8 campaign, the endless-phase elite/trash pools,
+  or both), and whether any need re-recipied loot/stat adjustments the
+  way TFTH mobs did. Purely a "the mod is real and verified" spec so
+  far, not a wave-composition design.
 
 **Defense-breaching enemies — planned, parked, not built.** Direct
 request: as waves escalate, mobs should be able to genuinely threaten
@@ -1204,12 +1356,14 @@ choice (kills it fast, but at the cost of a real explosion going off
 at your trap line), not something to patch around.
 
 **Open questions, not decided here**:
-- Whether the gate should now get SecurityCraft-reinforced too, given
-  it's the confirmed real weak point (a lockable reinforced door was
-  originally "considered and rejected as unnecessary complexity" — that
-  calculus may be different now that gates matter strategically, not
-  just decoratively) — genuinely undecided, worth asking rather than
-  guessing.
+- **Decided 2026-09-01: reinforce the gate too.** The plain-door choice
+  was made before there was any real threat to it ("unnecessary
+  complexity" for a decorative chokepoint) — now that the Demolition
+  Zombie makes it a genuine target, that's an accidental weak point, not
+  an intentional one worth keeping. Needs picking a real SecurityCraft
+  door variant (a reinforced door exists per the mod's own block set,
+  exact one not chosen here) and updating `playtest_starter_kit.js`'s
+  base-build script alongside the wall material already in place.
 - Introduction point: a late designed-campaign wave (6-8, as a real
   "the fight has changed" story beat) versus folding it into the
   endless-phase horde composition's elite pool (recurs and scales

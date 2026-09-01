@@ -118,6 +118,23 @@ below); Phase 5 not started:
 
 ## Built, awaiting your next playtest
 
+- **Starting base redesign (Red Mansion via `/place template`)** —
+  built, verified, and deployed 2026-09-01, direct response to "the
+  starter base and tower design is terrible." See FEATURES.md's
+  "Starting base" section, "Redesign" entry for full detail. Real
+  structure (`postapocalypse_structures:red_mansion`, 26×19×28)
+  replaces the old hand-typed 11×11 shell; two real placement bugs
+  (a 409-block wet_sponge foundation marker `/place template` doesn't
+  auto-strip, a floor-height mapping error) caught and fixed before
+  either ever reached a test; full compound redesigned around the
+  bigger footprint (gate offset from spawn, courtyard, watchtower
+  raised to clear the roofline, worldborder start 50→90 — shifts the
+  wave-8 ending border 166→~206 as a side effect, not a balance change).
+  Verified via a full end-to-end sandbox replay of the real login
+  sequence, not just individual pieces — no exceptions anywhere.
+  **Needs a brand-new world to see** — same as every other spawn-time
+  change this pack has made, doesn't apply retroactively to an existing
+  save.
 - **Decoration lang fix (Phase 5, partial)** — built and shipped
   2026-09-01. Root cause confirmed, not guessed: Doomsday Decoration's
   own shipped `en_us.json` (its only language file) genuinely contains
