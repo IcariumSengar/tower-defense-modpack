@@ -175,7 +175,7 @@ function staggerGapForWave(waveNumber) {
 function nearbyWaveMobCount(player, level, radius, requireTag) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
-    if (requireTag !== false && !e.hasTag('td_wave_mob')) return false
+    if (requireTag !== false && !e.getTags().contains('td_wave_mob')) return false
     // Same fix as wave_status.js - a killed mob lingers ~1 second
     // (death animation) before actual removal, so exclude anything
     // already at 0 health rather than waiting for it to disappear.

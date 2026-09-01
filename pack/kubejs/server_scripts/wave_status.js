@@ -178,7 +178,7 @@ PlayerEvents.tick((event) => {
     // within RADIUS got miscounted as a wave mob. td_wave_mob is set
     // permanently on every mob wave_spawner.js actually summons - see
     // its own comment at the summon point for the full story.
-    if (!isEndlessPhase && !e.hasTag('td_wave_mob')) return false
+    if (!isEndlessPhase && !e.getTags().contains('td_wave_mob')) return false
     // A killed mob plays a ~1 second death animation before actually
     // being removed from the world, so it's still present in
     // getEntities() during that window - excluding anything already at
