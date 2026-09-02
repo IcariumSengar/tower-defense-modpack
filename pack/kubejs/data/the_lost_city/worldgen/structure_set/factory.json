@@ -7,8 +7,8 @@
   ],
   "placement": {
     "type": "minecraft:random_spread",
-    "spacing": 18,
-    "separation": 9,
+    "spacing": 150,
+    "separation": 100,
     "salt": 310908202519,
     "exclusion_zone": {
       "other_set": "the_lost_city:city",
