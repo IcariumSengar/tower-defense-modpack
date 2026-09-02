@@ -29,16 +29,25 @@
 
 var EXPANSION_TIME_SECONDS = 10
 
-// Escalating growth curve, reduced 2026-09-01 (real playtest feedback:
-// "growing too fast"). Original 2026-08-31 numbers (20 + 5*step) gave
-// 20/20/25/25/30/30/35/35 across waves 1-8, a cumulative 220 blocks,
-// taking the border from 50 to 270 by the end of the designed campaign.
-// Cut to roughly 43% of that per-wave rate, same shape (steps up every
-// 2 waves, same style as wave_spawner.js's staggerGapForWave) - gives
-// 10/10/13/13/16/16/19/19, cumulative 116, ending at 166 by wave 8.
-// Still real, felt growth every wave clear, just a slower climb.
+// Escalating growth curve, reduced again 2026-09-02 (real playtest
+// feedback: "the world border is expanding too quickly" - given AFTER
+// already experiencing the 2026-09-01 cut below, not against the
+// original 2026-08-31 numbers, so this needed to be genuinely slower
+// than 2026-09-01's own result, not just re-derive something close to
+// it). 2026-08-31 original: 20 + 5*step, 20/20/25/25/30/30/35/35,
+// cumulative 220, ending at 270. 2026-09-01 cut: 10 + 3*step,
+// 10/10/13/13/16/16/19/19, cumulative 116, ending at 166 - still not
+// flat enough early per this feedback. Regrouped to a 3-wave step
+// (matching the paired "exploration pacing" retune's own back-loaded
+// framing, docs/FEATURES.md's "Growth curve retune") instead of a
+// 2-wave one, and cut the per-step amount too: 5/5/5/10/10/10/15/15
+// across waves 1-8, cumulative 75, ending at 125 by wave 8 - waves 1-3
+// (the ones driving the "reachable from wave 1" complaint) now add only
+// 15 total, vs 33 under the 09-01 cut and 65 under the original.
+// Continues the same escalating pattern into the endless phase past
+// wave 8, same as before.
 function expansionForWave(waveNumber) {
-  return 10 + 3 * Math.floor((waveNumber - 1) / 2)
+  return 5 + 5 * Math.floor((waveNumber - 1) / 3)
 }
 
 PlayerEvents.tick(function (event) {
