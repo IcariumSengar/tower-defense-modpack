@@ -1,5 +1,17 @@
 #If true, Nights of the Undead (horde nights) are enabled | default: true
-undeadNightsEnabled = true
+# Disabled 2026-09-02 - real bug found in live playtest: this pack's own
+# every-horn-forces-night (wave_spawner.js) was ALSO tripping Undead
+# Nights' own autonomous horde-night system (gracePeriod 0 = fires
+# immediately, no gate needed), spawning a second, uncontrolled horde
+# on top of every deterministic wave the whole session, unnoticed until
+# now because "A horde has spawned!" reads like ambient flavor text,
+# not an error. Confirmed by decompiling MainConfig.class/HordeSpawner.
+# class directly: this flag ONLY gates HordeSpawner.tick() (the
+# autonomous per-tick day-count checker) - the explicit
+# /undeadnights spawn_horde command this pack's own endless-phase
+# system calls (wave_spawner.js) goes through a separate spawnHorde()
+# method that never reads this flag, so the endless phase is unaffected.
+undeadNightsEnabled = false
 #Grace period in days before the first horde night | default: 0
 gracePeriod = 0
 #If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false
