@@ -106,6 +106,17 @@ ServerEvents.recipes((event) => {
 var BOB_AMPLITUDE = 0.08
 var BOB_PERIOD_TICKS = 60
 
+// Real, confirmed bug (2026-09-02, found while root-causing the wave
+// spawn saga): Math.PI is undefined in this exact KubeJS/Rhino
+// environment (Math.cos/Math.sin/Math.random work fine, Math.PI and
+// Math.E specifically don't - confirmed on a clean sandbox boot, not
+// guessed). The bob effect below has been computing NaN for its sine
+// term this whole time - `tp @s x NaN z` most likely just silently
+// no-ops (the marker stays at its base position, no visible bob),
+// reading as "the bob effect quietly does nothing" rather than an
+// error, which is why this went unnoticed. Hardcoded literal instead.
+var PI = 3.141592653589793
+
 // Real bug found in playtesting (2026-08-31): placing the amulet on the
 // pedestal never actually let the player cross the border - "can't
 // cross either way." Root cause: amulet_border.js's own tick handler
@@ -234,7 +245,7 @@ PlayerEvents.tick((event) => {
   var baseX = data.getDouble('td_amuletMarkerBaseX')
   var baseY = data.getDouble('td_amuletMarkerBaseY')
   var baseZ = data.getDouble('td_amuletMarkerBaseZ')
-  var bobY = baseY + BOB_AMPLITUDE * Math.sin((2 * Math.PI * currentTick) / BOB_PERIOD_TICKS)
+  var bobY = baseY + BOB_AMPLITUDE * Math.sin((2 * PI * currentTick) / BOB_PERIOD_TICKS)
 
   player.getServer().runCommandSilent(
     `execute as @e[type=minecraft:armor_stand,tag=td_amulet_marker,limit=1] run tp @s ${baseX} ${bobY} ${baseZ}`

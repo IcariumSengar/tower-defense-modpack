@@ -304,8 +304,28 @@ function useWaveHorn(player) {
   var SPAWN_DISTANCE_MIN = 40
   var SPAWN_DISTANCE_MAX = 60
 
+  // Real, confirmed root cause of the "nothing spawns" saga across this
+  // whole pack's history (2026-09-02): Math.PI is undefined in this
+  // exact KubeJS/Rhino environment - confirmed on a clean sandbox boot,
+  // at top-level script scope, with zero event-callback involvement
+  // (Math.cos/Math.sin/Math.random all work fine; Math.PI and Math.E
+  // specifically do not - a real quirk in how this KubeJS version
+  // exposes Math's static fields, not a guess). Every angle computed
+  // below was silently NaN, so every mob spawn position was NaN,NaN -
+  // /summon with NaN coordinates fails silently (runCommandSilent
+  // suppresses the feedback), so no wave mob has ever actually spawned
+  // via this function. The staggered pendingSpawns queue still drained
+  // normally regardless (queue entries are removed once processed,
+  // whether their summon succeeded or not), which is why re-using the
+  // horn still looked correctly gated for the first few seconds after
+  // each use - that was the queue itself, not real mobs, misleading
+  // every earlier investigation into this bug. Hardcoded literal below,
+  // not Math.PI - see mob_aggro.js's own historical flag on this exact
+  // constant for the earlier, unconfirmed version of this same worry.
+  var PI = 3.141592653589793
+
   function randomPlayerRelativePosition() {
-    var angle = Math.random() * 2 * Math.PI
+    var angle = Math.random() * 2 * PI
     var distance = SPAWN_DISTANCE_MIN + Math.random() * (SPAWN_DISTANCE_MAX - SPAWN_DISTANCE_MIN)
     return {
       x: Math.floor(player.getX() + Math.cos(angle) * distance),

@@ -22,7 +22,13 @@
 // Not yet tested in-game — Mob#setTarget is a very standard, unchanged-
 // across-versions vanilla method, high confidence, but flagging given
 // how many "should be fine" assumptions turned out wrong earlier in
-// this pack's debugging (Math.PI, bare .x/.y/.z).
+// this pack's debugging (bare .x/.y/.z, and Math.PI - confirmed real
+// 2026-09-02, not just a flagged worry anymore: Math.PI/Math.E are
+// undefined in this exact KubeJS/Rhino environment while Math's methods
+// work fine, verified on a clean sandbox boot. This was the real,
+// dominant cause behind the whole "wave mobs sometimes don't spawn"
+// saga - see wave_spawner.js's randomPlayerRelativePosition() and
+// amulet_pedestal.js's bob effect, both fixed the same day).
 //
 // Real bug found in playtest (2026-09-01): the marker lookup below used
 // to call e.hasTag(...), which doesn't exist on either KubeJS's own
