@@ -2,12 +2,14 @@
 // (Trapcraft, already installed) and Arrow Turret (Medieval Defense
 // Turrets, installed for this tier) all ship with plain Common-tier
 // recipes (cobblestone/iron_ingot/loose redstone). docs/FEATURES.md's
-// Tier 2 spec calls for these to pull from the Uncommon/Fortified Cache
-// loot tier instead (see loot_bag_open.js's FORTIFIED_CACHE_POOL) -
-// redstone_block, quartz and iron_block are all real Uncommon-pool
-// items, so swapping each recipe's structural filler (cobblestone) and
-// core component (redstone dust/iron ingot) for those is a real tier
-// gate, not just flavor. Confirmed real stock recipes/IDs by decompiling
+// Tier 2 spec calls for these to pull from the next loot tier up
+// instead - redstone_block, quartz and iron_block are all real items
+// from that pool (originally the custom system's Fortified Cache pool,
+// now BountyBags' Rare tier pool since the 2026-09-02 loot-bag
+// migration - see data/bountybags/loot_tables/items/rare.json), so
+// swapping each recipe's structural filler (cobblestone) and core
+// component (redstone dust/iron ingot) for those is a real tier gate,
+// not just flavor. Confirmed real stock recipes/IDs by decompiling
 // Trapcraft's and Medieval Defense Turrets' own shipped recipe JSON
 // before touching any of this.
 ServerEvents.recipes((event) => {

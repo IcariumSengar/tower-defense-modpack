@@ -126,12 +126,12 @@
 			description: [
 				"Strip what you can off anything that stops moving. Whatever's left in their pockets is worth more to you now than it ever was to them."
 			]
-			icon: "kubejs:scavengers_bag"
+			icon: "bountybags:uncommon_loot_bag"
 			id: "908B8B3AE8327895"
 			tasks: [{
 				consume_items: false
 				id: "24986BBE1C6FBBCF"
-				item: "kubejs:scavengers_bag"
+				item: "bountybags:uncommon_loot_bag"
 				type: "item"
 			}]
 			title: "Spoils of War"

@@ -1,0 +1,15 @@
+#Bounty Bags Configuration
+[general]
+	#Whether bounty bags should drop from mobs at all [default: true]
+	# Disabled 2026-09-02 - this pack drives loot bag drops itself via
+	# server_scripts/loot_bag_drops.js (a LootJS entity loot modifier
+	# keyed to this pack's own wave-tier mob roster, including TFTH
+	# mobs BountyBags' own allowedMobTypes list doesn't know about).
+	# Leaving this on would let BountyBags' own native mob-drop system
+	# fire independently on top of that, on its own default vanilla-only
+	# mob list and rates - the same "two systems fighting" bug already
+	# found and fixed for Undead Nights' native horde system this same
+	# day. Confirmed via decompiling BountyBagsConfig.class that this is
+	# the real master toggle (enableDrops) for that native system before
+	# disabling it.
+	enableDrops = false

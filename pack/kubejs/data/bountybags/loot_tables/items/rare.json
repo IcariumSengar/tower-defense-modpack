@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:gift",
+  "pools": [
+    {
+      "rolls": 3,
+      "entries": [
+        { "type": "minecraft:item", "name": "minecraft:iron_ingot", "weight": 25, "functions": [{ "function": "minecraft:set_count", "count": { "min": 3, "max": 6 } }] },
+        { "type": "minecraft:item", "name": "minecraft:quartz", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 3, "max": 5 } }] },
+        { "type": "minecraft:item", "name": "minecraft:gold_ingot", "weight": 30, "functions": [{ "function": "minecraft:set_count", "count": { "min": 4, "max": 6 } }] },
+        { "type": "minecraft:item", "name": "minecraft:redstone_block", "weight": 15, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
+        { "type": "minecraft:item", "name": "minecraft:obsidian", "weight": 15, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] },
+        { "type": "minecraft:item", "name": "minecraft:lapis_block", "weight": 15, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
+        { "type": "minecraft:item", "name": "minecraft:iron_block", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
+        { "type": "minecraft:item", "name": "minecraft:tnt", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
+        { "type": "minecraft:item", "name": "minecraft:ender_pearl", "weight": 8, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
+        { "type": "minecraft:item", "name": "minecraft:diamond", "weight": 5, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] }
+      ]
+    }
+  ]
+}

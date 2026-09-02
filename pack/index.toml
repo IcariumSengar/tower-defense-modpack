@@ -50,11 +50,15 @@ hash = "c27a34be1500287ab91de1eaaa9fb9db93e56685f03438ce03abda329402dc86"
 
 [[files]]
 file = "defaultconfigs/undeadnights-server.toml"
-hash = "01d67aab82278bde760f5c66a040340ec7e73c183b527943c37151fe3af0455c"
+hash = "62ca123be3076166511580355a9e92fe82884e19569e8890509cc27209c21eb6"
 
 [[files]]
 file = "kubejs/README.md"
 hash = "c4bb210df95f354f7d5b4accf3fc3e81bb138c899bea7dde1db91a696bb1cd12"
+
+[[files]]
+file = "kubejs/assets/doomsday_decoration/lang/en_us.json"
+hash = "bef996bed9ebabe45236ed8eac4b15e09d57d292f068c9980b7c7833300845bb"
 
 [[files]]
 file = "kubejs/assets/kubejs/models/block/amulet_pedestal.json"
@@ -94,7 +98,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/city.json"
-hash = "7265808db161a2895f8d8838afd6f29c6e851013c5e27b3eaeb7e06efb2a0349"
+hash = "c17f61ea5301a0101df92dde1c74e42c1038527b0ae82a1ba70c3ffac4c2060c"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/fire_tower.json"
@@ -158,75 +162,67 @@ hash = "ae50c3d3f29dcb2433f1e7f02c4b1d3b7b5238976f742488ac49e984f7e56e8a"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/abandoned_brick_house.json"
-hash = "bbc49b27d3b6c1d029e45f148151887e1279a6eb1410e116f7b0d873a7b86793"
+hash = "18c34013816e03b6e2c24211dd52e2b683dc8fcf0088cb00bb74d4e27b8840ed"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/red_mansion.json"
-hash = "b572b7ab678d39a3c2ca3896d98c590df8417d1e3363ea81ed87e7249097dc2f"
+hash = "491c61c3d5a9af395e8504220135f3641dbd1d72c67416752da5eed6a059efcd"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/redhouse.json"
-hash = "deaf192f4120d251ff44f9084104c073c440aeecf9731eda024784ae1de677ef"
+hash = "bf0a99b40e358078c306bcf415b747d9058f66d2c4340a2e024b0a2315dd8616"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/yellowhouse.json"
-hash = "20da86a58e15e9129c3860d1428c73fa5ee4234ae317d1da8ae72103a4cbfbee"
+hash = "7fc18cef1e637f8501feaf96b581dd5b8109d7c7508045e8347a3c952f4cdd1a"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/big_city_structure.json"
-hash = "a7a5f1116b70c3672b341ac1995eb55985c23c37c8483feb9fd9f7af5a6deb29"
+hash = "e89fa00cd665785014953fce2d46d92acbd7a6df652b445a0109ebde3bfff949"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/camp.json"
-hash = "5abb924824a6413504f7fa7579a4ad56904d8dd1605a86b51a8c4ce5b85fe42a"
+hash = "9eb6f01835e235f9add19e69a1869549770b7f7318588744fb91662566620b21"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/city.json"
-hash = "6da705b6c5f868f5098e2b823e3072b75e253054117d801333f3764693b0317f"
+hash = "8a4dc57e2c08dc2fceaa3d6a983ae0d968b746416260b2787824a5177f4a5e9a"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/factory.json"
-hash = "f358a58d90bc145fddc26ed4eda247f4146cbe7f95dc1ba6c7f8bc4e3680c954"
+hash = "f618e080cf61b3d66f452034be165d62df8234fc7cf0f5b8807be97fd9c2bb79"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/lighthouse.json"
-hash = "481bf392a9b89cc94408e05999bdd5dc830d137127e970fc1d6f14a402a0015f"
+hash = "5e0da3b02a0c40311b20a3ee49582bb7c3c9bef8b6d3db56075581fa2fcc7feb"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/post.json"
-hash = "cc096da2687173130cf7d6994876a6953cec4193a018d83e2ce33b80b65b900d"
+hash = "2d02aaf28b87bf73fddb0ecf6212490f107dfe4e1c106549a3c0f40c3ad5c48b"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/rails.json"
-hash = "7b76d8f2b22893f0c19b7cbaa52ab4537cd29fa583b0dce36ca6b8b1d2c78720"
+hash = "304a3bcaf04870b54afceee9a8057c5cbc283340ca7fd081064260710f6a7263"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/roads.json"
-hash = "c1053e82bd08dbaed1394255659f2a4ddfbde5e99301b9cb21d2bf5b14676787"
+hash = "9ab14b37cdcc926abc945b4ed9085a85723fe18921dd04dbc688af5aa5cee4f8"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/survivorscamp.json"
-hash = "59a8d3dd81ff3caf1a2a88bde1cd1a0bb626e49f6f3035744823caf7c40b7f03"
+hash = "5e48143ca15a26567a2a7c164cf521f394d7b37e3abe47a4f8bc8b3951fa708e"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/tower.json"
-hash = "0d2b9b1d890736f2aa79dccd91950576b884353ede00d4ca9edb7094fa8d82ea"
+hash = "824b82e1e1248f918f972e2ad57ffc9da0f0ae9476fd772779b7e02eb0dac536"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/train.json"
-hash = "dd1b68afd34f78f92ee762d405c6c6e5c1612293a3ce878b007c7a2e11b56e65"
+hash = "8997fd7b967da214eed7a7bdcb194ad2189fa41e028df5ec9dfe0cda9e4139a3"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/villages_city.json"
-hash = "7d7e49de30a1e71fe4ad0ba3aa18187be64c287225a8fdabcd14e5742352e6f3"
-
-[[files]]
-file = "kubejs/data/treasure2/worldgen/structure_set/terranean_treasures_set.json"
-hash = "0d703e716943f16fa4cde9da3854bc37fa325408e35d78d1f382594ced377e64"
-
-[[files]]
-file = "kubejs/data/treasure2/worldgen/structure_set/wishing_well_set.json"
-hash = "d4d8a99bb8ff08602ed80fb229f748504f53c3aa0d427160f4686742d14a8e02"
+hash = "3ad6bea5db8008460b84f2528f9d82fc3f120dcc87db351e25cce40c1cbf74e5"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_border.js"
@@ -242,7 +238,7 @@ hash = "1c7f53b9052ffd55f273b4f0ec40bec12078f1ac61f5804e6e4a747c95d780fc"
 
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
-hash = "0403861d0ee3d7ca38d534f00d3099c39c44b86fc27ccefef2c3ec787ed3376a"
+hash = "2b1c228e73659760fd5401ed6ee884f560d9be673f64da7c140d7660f0f100e6"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
@@ -254,11 +250,11 @@ hash = "501865e2b0293143ecbe975f414a1da289a031eb6f4f25b36ed1aee67de08404"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "76d3974482603b96192946bafecafbb7e5706b5c93176ec45944222587653c76"
+hash = "576efcc660f7dc2d2f88bd22b5d3c00ef29cc40b8ddc6e365ad9d8fa3c02940a"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "aa610649fc3b9e3391ec7ba61cf10f6bcb5ad56da48eeef69921554a3b86603f"
+hash = "c86f010c26a5a2b964a5a5f6226929ce144f24d8eed2306eda78a5171fe0e078"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
@@ -266,11 +262,11 @@ hash = "0cabf019d2b3e0b1378f98af78a17cbd3c8c75c57e38515c8bce2ba9703eeaf2"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "078173524cee04e587b1a7551ac3af58dd97c841de26d3e84253a0ff3e701647"
+hash = "04296a4cf7af7e6d086403e5c709c9da4b969cb9892763178f025d30b5eaa431"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "895c3189d06851a5af02edb57e4dd0245827ea0a3ba4d25c55f6b14417916b5c"
+hash = "bc774271eef4c57f874644d8d61afea66a0986978ed2517c20cd40204906508e"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -320,6 +316,11 @@ metafile = true
 [[files]]
 file = "mods/berezka-library.pw.toml"
 hash = "4171835454f8a0fbb6dc9b4cafa6661babb96fa598d3686515a9a4e9355bcf8b"
+metafile = true
+
+[[files]]
+file = "mods/bounty-bags.pw.toml"
+hash = "aa120eb0ebb78e5a0e7467cdecf22687a456e79b43ca7c6f3deac268075bedc6"
 metafile = true
 
 [[files]]
@@ -403,11 +404,6 @@ hash = "898fd2704dd260ae8f3dc20b4416439751f0a9e76367c4f0bbdac886b6987802"
 metafile = true
 
 [[files]]
-file = "mods/gottschcore.pw.toml"
-hash = "2df2e0b8ee15faf0389ba827d3ff04577986d41a929c5ea4303cb7002227c7f8"
-metafile = true
-
-[[files]]
 file = "mods/inventory-sorter.pw.toml"
 hash = "58170607da6517dc43eeb5a664dea9dec7d96a8ad9e99d2623c2a5a9099c91be"
 metafile = true
@@ -445,6 +441,11 @@ metafile = true
 [[files]]
 file = "mods/lootjs.pw.toml"
 hash = "713685d5c4c72d8bd46e314ea164b9f9a6a368dedf71398b2246142e2ed66c1f"
+metafile = true
+
+[[files]]
+file = "mods/lootr.pw.toml"
+hash = "e8b4876d403b4f4daab64bad9704a5b271a33031d1ff8d19d23ebd1e3b8dd39a"
 metafile = true
 
 [[files]]
@@ -505,11 +506,6 @@ metafile = true
 [[files]]
 file = "mods/trapcraft.pw.toml"
 hash = "69b6ab59ddf2325278735aa5bf1b5be68a436b6327dd68d00516071b387f92ae"
-metafile = true
-
-[[files]]
-file = "mods/treasure2.pw.toml"
-hash = "2ec1518dc1b6ee8384e8f01a0f3098afff589f88cf4c967633847997b61e8a29"
 metafile = true
 
 [[files]]

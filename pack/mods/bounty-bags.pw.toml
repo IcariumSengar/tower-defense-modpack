@@ -1,0 +1,13 @@
+name = "BountyBags"
+filename = "BountyBags-5.9.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "d4701b16b8a7f2e3029efd0e4a02ba926022a394"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8537855
+project-id = 1206557
