@@ -13,6 +13,10 @@ file = "config/TFTH.toml"
 hash = "8f6814a973aaceaef3dd4a5f922c41886f0135c15c2ae3571697d905fdfffe95"
 
 [[files]]
+file = "config/bountybags-common.toml"
+hash = "108c4151cb64cc39375bb6ff0d7108abe7645dfaf62bc2f696ab76f008c194c0"
+
+[[files]]
 file = "config/epicsiegemod-common.toml"
 hash = "7d422f9f963840830a8eac008e5d157b4479b2b27b5e63fec567252660230ff4"
 
@@ -22,7 +26,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/basics.snbt"
-hash = "a96a10f54aa53e7cff66c7bf3c2ff3076b8225de89312518fef931c3106cfceb"
+hash = "64175acb7095f05f692d656075185138e2fb6a82f682ab31db3b61e4c9a5d968"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
@@ -77,18 +81,6 @@ file = "kubejs/assets/kubejs/textures/item/amulet.png"
 hash = "ba31412bf680fc3b17adc4fa8508354d4b619ab6dbd601e8643bc920fc6094e2"
 
 [[files]]
-file = "kubejs/assets/kubejs/textures/item/fortified_cache.png"
-hash = "9f6cc5febf2d59e482fb26befef21afc9aba5e5e64bcc486da8145423bdccb58"
-
-[[files]]
-file = "kubejs/assets/kubejs/textures/item/scavengers_bag.png"
-hash = "6830a060fef26ae2d56d928939c4f9ece51e3b60a593a348dee4c9879326705d"
-
-[[files]]
-file = "kubejs/assets/kubejs/textures/item/warlords_hoard.png"
-hash = "2672d046624d5cb6a5f513941798740ae10b8f06a8c6c2e98cd6b6b832ab4932"
-
-[[files]]
 file = "kubejs/assets/kubejs/textures/item/wave_horn.png"
 hash = "fc4ceb66506bc37f9f3803248016df4b8b664ae002bfa1faa062d9b371ef65c5"
 
@@ -123,6 +115,22 @@ hash = "e5deb623c233c4395588370aec1c900884148c234a43a04802a93c25ac33563c"
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/train.json"
 hash = "2232be28fe41cd16db23403c1e64eb1623a729b56a70f6daf14493f2a6414608"
+
+[[files]]
+file = "kubejs/data/bountybags/loot_tables/items/epic.json"
+hash = "32d558a003f664bfaa6165af3f500cf9e7c2a0e35f2c50d900c779bc5ee1970e"
+
+[[files]]
+file = "kubejs/data/bountybags/loot_tables/items/legendary.json"
+hash = "d5c96219b2006ab48a20ec6d843b319632100d74746cf17102c43ce6f8c4076e"
+
+[[files]]
+file = "kubejs/data/bountybags/loot_tables/items/rare.json"
+hash = "2cb33ded86429364fde4d705096268295fb6bb891e2fd770b9949e2ee3f14dfb"
+
+[[files]]
+file = "kubejs/data/bountybags/loot_tables/items/uncommon.json"
+hash = "f351237f2bfe2d30117038ddf807fea7ea4eec13f5f5b0df9aae4cfa42d2a20f"
 
 [[files]]
 file = "kubejs/data/curios/tags/items/necklace.json"
@@ -230,7 +238,7 @@ hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "ee102c7fd651c1c6f0a2984256e11b885353f2c7f6d400a6b5d8031b62aca591"
+hash = "ca7fb08db3495b42d946e6ceacde6adc80427e3053d948d6f8f75469922cf3e5"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
@@ -242,31 +250,31 @@ hash = "2b1c228e73659760fd5401ed6ee884f560d9be673f64da7c140d7660f0f100e6"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "6bc4b766ee855fa49afab3f244fa0d91300ac75ec1277e1ddd4c4ba691cfba5a"
-
-[[files]]
-file = "kubejs/server_scripts/loot_bag_open.js"
-hash = "501865e2b0293143ecbe975f414a1da289a031eb6f4f25b36ed1aee67de08404"
+hash = "d970873af5576c0469a718f3c1fbbcc0413f85650276acb857422bb8b6723a04"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "576efcc660f7dc2d2f88bd22b5d3c00ef29cc40b8ddc6e365ad9d8fa3c02940a"
+hash = "21f0656150354602d7a25bde97eaae3c8ff48e7794e4f3dfcd000ca94bd7a4ad"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "c86f010c26a5a2b964a5a5f6226929ce144f24d8eed2306eda78a5171fe0e078"
+hash = "d5959507774f8a0294c80ca059e874fc0694fe871c2e66dffe4e88b90d29a929"
+
+[[files]]
+file = "kubejs/server_scripts/structure_loot_progression.js"
+hash = "4caba46603d96e93847a03c34fe36abeeaa5f4a082d5ef10e216825720895883"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
-hash = "0cabf019d2b3e0b1378f98af78a17cbd3c8c75c57e38515c8bce2ba9703eeaf2"
+hash = "f76f5876026465418347da9c107effebaf37928d14003d0b83f94b4f52160380"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "04296a4cf7af7e6d086403e5c709c9da4b969cb9892763178f025d30b5eaa431"
+hash = "054121a15449474aea0ca587c41c00db43b3d064a9ea8d3b6447d7bac883abd0"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "bc774271eef4c57f874644d8d61afea66a0986978ed2517c20cd40204906508e"
+hash = "d9126282cd88f5e6357d8060a080e41f86d233c017c4fdabd7d5850973dce932"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -275,10 +283,6 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 [[files]]
 file = "kubejs/startup_scripts/amulet.js"
 hash = "cb4433311b69337cb9a0d8b1d3fc159f0782780d265f41c5b84172bbb222e417"
-
-[[files]]
-file = "kubejs/startup_scripts/loot_bags.js"
-hash = "b601fa13e6176846a090ff91747623f2ff8ffb6fd431f2744331ed7ef2e7ecd1"
 
 [[files]]
 file = "kubejs/startup_scripts/wave_horn.js"
@@ -474,6 +478,11 @@ hash = "1588f074af0ca7a5145fd676faf3e14381bb96d1383a3dfbaac7398b1dc6e2fd"
 metafile = true
 
 [[files]]
+file = "mods/placebo.pw.toml"
+hash = "045d582e2c534c5bb96d7336b4ae2cd12692c6de29b19ae5f1dbfd8759c03b03"
+metafile = true
+
+[[files]]
 file = "mods/radium.pw.toml"
 hash = "ae4d739bbdb025651a884093de72addac0865525b39e603fb575031a59987763"
 metafile = true
@@ -501,6 +510,11 @@ metafile = true
 [[files]]
 file = "mods/the-lost-city.pw.toml"
 hash = "fd6874e968f6252ec903171e30f1aa66c87caeb5e11a48fd50f5ced37658790e"
+metafile = true
+
+[[files]]
+file = "mods/toast-control.pw.toml"
+hash = "1195cdfa90ac4ef4d5ebed8dbca1df990cf58b0a0fe3b9b965ccefa0cfd5a2e3"
 metafile = true
 
 [[files]]
