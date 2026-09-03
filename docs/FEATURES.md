@@ -230,8 +230,8 @@ loot bags" below for the first real application of this exception, and
 "Legendary loot bag" for the first custom-item reward.
 
 **Andesite gated behind exploration, not loot bags — requested
-2026-09-05, built and deployed 2026-09-05, not yet committed (held for
-review, same pattern as the rig hotfix).** Direct playtest report:
+2026-09-05, built, deployed, and committed 2026-09-05 (30588f6).**
+Direct playtest report:
 crafting materials don't actually match what the player needs to
 progress — "Andesite isnt being dropped for example, so cant even craft
 a hand crank." Real, confirmed gap, not a guess: grepped every current
@@ -264,7 +264,47 @@ exception from the loot-philosophy change above.
   (16 → 17 quests, no errors). **This is the real, live quest name —
   the quest book rebuild below should reference "Turn the Crank," not
   invent a second name/quest for the same thing.**
-- **Not yet committed** — held for review, same as the rig hotfix.
+- **Committed** (30588f6).
+
+**Legendary loot bag jackpot + beam-of-light visual — fleshed out and
+queued 2026-09-05.** Raised in the "some ideas..." batch as item 1:
+"during any wave there is a slim chance of a Legendary Loot bag being
+dropped." Two real, independent pieces:
+- **Jackpot roll, additive to the existing tier system.** Right now a
+  mob can only ever drop its own tier's bag (a trash-floor zombie can
+  never roll Legendary) — that gating stays exactly as-is, this doesn't
+  touch it. On top of that, every wave mob (all 4 tiers combined, the
+  same 4 arrays already defined in `loot_bag_drops.js`) gets a second,
+  separate `randomChance` roll at a flat 2% to *also* drop a bonus
+  `bountybags:legendary_loot_bag` regardless of the mob's own tier —
+  a second `event.addEntityLootModifier(id).randomChance(0.02).addLoot(...)`
+  call per mob id, layered alongside the existing per-tier one, not
+  replacing it. This is what makes it read as a jackpot: killing plain
+  trash-floor zombies all game genuinely can pay off big, not just
+  killing the wave-8 finale mobs that already roll Legendary on their
+  own terms.
+- **Beam visual: install Loot Beams: Refork.** Verified fresh
+  directly against its own CurseForge file page (not assumed from a
+  search result, per this pack's own mod-freshness lesson) —
+  `Loot Beams Refork-forge-1.20.1-3.2.10.jar`, real Forge 1.20.1 build,
+  uploaded 2025-11-29. Client-side only (confirmed on the file page's
+  own Environment field) — fine for this pack, same reasoning already
+  established for Mob Dismemberment: this instance runs as integrated
+  singleplayer, not a dedicated server. Beams apply automatically to
+  every dropped item, colored by the item's rarity; the mod's own page
+  says unsupported modded items need a config entry to get a rarity
+  assigned. **Real open item for the build session**: confirm whether
+  `bountybags:legendary_loot_bag` gets picked up automatically or needs
+  an explicit config entry — if it needs one, give it the mod's
+  highest/rarest color tier so the jackpot bag is visually unmistakable
+  from a normal bag drop.
+- **Scope note**: this is a kill-time jackpot, not a wave-clear-time
+  event — deliberately kept inside `loot_bag_drops.js` only, no changes
+  to `wave_spawner.js`/`wave_status.js`/`mob_aggro.js`, since those are
+  mid-fix for the fresh-world "mobs not pathing to pedestal" regression
+  right now and shouldn't have unrelated work landing in the same files
+  while that's being debugged live.
+- Queued to build, see QUEUE.md.
 
 **Mob-tier loot progression — requested 2026-09-02, built and deployed
 2026-09-03 (commit 2faf4ef).** Direct follow-up once BountyBags (bags) and Lootr (chests) were both
@@ -530,8 +570,7 @@ the user directly, not assumed:
     change that could reintroduce either if not rechecked against the
     real current coordinates, not assumed safe by similarity to the
     old layout.
-- **Built and deployed 2026-09-05, not yet committed** — held for
-  review, same pattern as the other three pending items. Shipped
+- **Built, deployed, and committed (a9e6c1a) 2026-09-05.** Shipped
   exactly as specced: `mob_aggro.js` targets the pedestal marker
   always, no amulet check, no player fallback; `wave_spawner.js`/
   `wave_status.js`'s objective resolution always keys off the
@@ -566,16 +605,13 @@ the user directly, not assumed:
     command executes clean at its real coordinates. Zero KubeJS errors
     across all passes.
   - **Real scope limit, flagged back rather than decided
-    unilaterally**: the courtyard *visual* redesign (dais/step/
-    braziers/grave arc/outdoor workshop) only applies to **new**
-    worlds — the build session deliberately did not retrofit the
-    existing live save's actual courtyard layout, since that would mean
-    moving the user's real, already-explored base around, a much bigger
-    ask than the functional self-heal above. The live save gets the
-    functional fix (unconditional targeting works again) but keeps the
-    old side-shrine pedestal visually unless the user wants a manual
-    retrofit or a fresh world — genuinely the user's call, not decided
-    here.
+    unilaterally, then resolved directly with the user**: the courtyard
+    *visual* redesign (dais/step/braziers/grave arc/outdoor workshop)
+    only applies to **new** worlds — the build session deliberately did
+    not retrofit the existing live save's actual courtyard layout, since
+    that would mean moving the user's real, already-explored base
+    around. **User's call: start a fresh world** for the full redesign
+    rather than keep playing the old save or ask for a manual retrofit.
 
 **Base expansion** — *live*. The worldborder grows on **every** wave
 clear, by an escalating amount, retuned twice since its original ship:
@@ -2023,8 +2059,85 @@ too, not just an explosion." Two real, separate pieces:
   - **`diggerMobs` question still fully open, not reached** — whether
     wave mobs already partially bite through obstacles via that
     separate mechanism, independent of `blockTargets` entirely.
-- **Built and deployed 2026-09-05, not yet committed** — held for
-  review, same pattern as the other pending items.
+  - **Possible real explanation for the inconclusive test, found
+    2026-09-05 while fixing the mob-pathing regression below**: ESM
+    stacks six of its own `ESM_EntityAINearestAttackableTarget` goals in
+    every wave mob's target selector, and the test zombie almost
+    certainly kept re-acquiring the player (or nothing reachable) as its
+    living target instead of ever falling back to block-targeting.
+    `mob_aggro.js`'s fix (stripping the target selector) should let
+    `ESM_EntityTargetBlock` get a real chance to fire once mobs reliably
+    camp at a fixed point instead — not claimed as fixed here, genuinely
+    unconfirmed, but worth checking on the next playtest rather than
+    re-diagnosing from scratch.
+- **Built, deployed, and committed (f49f947) 2026-09-05.**
+
+**Mob pathing regression — "mobs aren't pathing toward the pedestal at
+all" — found and fixed 2026-09-05, first fresh-world playtest of the
+above.** Real feedback contradicting the "unconditional targeting" work
+in commit a9e6c1a. Diagnosed live, not guessed:
+- **The permanent marker genuinely existed** — confirmed by parsing the
+  actual live save's player NBT (`td_pedestalX/Y/Z` set to real
+  coordinates) and its entity region file directly (the marker armor
+  stand was found in the correct chunk, correctly tagged
+  `td_pedestal_target`, correct Marker/Invisible/NoGravity flags). A
+  real wave zombie was also found in the same save sitting 3.6 blocks
+  from the player and 13.9 blocks from the pedestal — direct evidence
+  the mob converged on the player, not the objective, matching the
+  report exactly.
+- **Real root cause, found via direct Java reflection against a live
+  sandbox (not a guess)**: Epic Siege Mod entirely replaces vanilla's
+  own target-acquisition AI. A freshly spawned zombie's real target
+  selector (found by walking `Mob`'s two protected `GoalSelector`
+  fields via `Field#setAccessible(true)` — no public getter exists for
+  either in this build, confirmed by a full reflection scan of all 790
+  public methods on a live `Zombie` finding zero matches) held vanilla
+  `HurtByTargetGoal` plus **six** stacked
+  `funwayguy.epicsiegemod.ai.ESM_EntityAINearestAttackableTarget`
+  instances — no vanilla `NearestAttackableTargetGoal<Player>` even
+  present anymore, ESM fully replaced it. This out-competed
+  `mob_aggro.js`'s 10-tick-throttled `setTarget()` force almost every
+  time once a mob had ever seen or been hit by the player — explains
+  "not at all," not "sometimes," since ESM is deliberately more
+  aggressive/responsive than vanilla, not less. Compounded (not caused)
+  by this pack's own `generic.follow_range=128` override in
+  `wave_spawner.js`'s summon NBT, which also widens ESM's own
+  player-seeking radius, not just this script's own pursuit range.
+- **The fix**: `mob_aggro.js` now physically removes every goal from
+  each wave mob's target selector — identified by content (does it
+  contain a real `TargetGoal` instance?), not by field order, since
+  reflection doesn't guarantee declaration order — exactly once per mob,
+  via `GoalSelector#removeGoal(Goal)` called once per goal object
+  (`removeAllGoals(Predicate)` was tried first and rejected: manually
+  invoking a reflected `Method` doesn't get Rhino's usual
+  JS-function-to-functional-interface coercion, since that only applies
+  on normal dot-syntax calls where Rhino knows the target parameter type
+  up front — threw a real "argument type mismatch" when tried).
+  The goal selector (actual attack/wander/dig/pillar/block-target
+  behavior, including ESM's own obstacle-breaching goals) is completely
+  untouched. Also worth noting for future reflection-based scripts in
+  this pack: the `java.*`/`Packages.*` global shorthand for referencing
+  a class by name is disabled in this exact KubeJS build ("`java()` is
+  no longer supported", KJS6) — class lookups go through
+  `mob.getClass().getClass()` (always `java.lang.Class`) to reach
+  `Class.forName(String)` by reflection instead.
+- **Verified end to end in a sandbox before shipping**: stripped a fresh
+  zombie's target selector down to 0 goals (from 7), force-set its
+  target to a stand-in entity via the exact same clean-name
+  `setTarget()` call already used in production, and confirmed 4 real
+  seconds (80 ticks) later the target was unchanged — and that the mob
+  had genuinely pathed 9 blocks toward the stand-in in that time using
+  its own still-intact attack-goal AI, proving combat/pathing survive
+  the strip.
+- **Real, honest limit on this verification**: this pack's sandbox
+  cannot get a real player through this modset's FML handshake
+  (established blind spot — mineflayer never completes it), so the
+  exact `PlayerEvents.tick` wiring this fix lives in couldn't be
+  exercised end-to-end, only the underlying reflection mechanism it
+  calls. The full mod set was confirmed to boot clean (0 KubeJS script
+  errors) with the fixed file in place. Still needs a real playtest to
+  fully close the loop, same as everything else in this pack shipped
+  without a live player available.
 
 **Pedestal destruction = game over — requested 2026-09-04, built and
 deployed 2026-09-04 (commit ce75d1f).** Direct request, explicitly narrower than the parked Hardcore
@@ -2240,9 +2353,10 @@ custom code. Current build:
   original custom Spike Trap got — see "Barbed Wire replaces Spikes"
   below for the fix.
 
-**Barbed Wire replaces Spikes — requested 2026-09-04, built and
-deployed to the live instance 2026-09-04, not yet committed (see end of
-this entry).** Direct feedback: "the spikes is kinda rubbish, can we replace this
+**Barbed Wire replaces Spikes — requested 2026-09-04, built, deployed,
+and committed (8e1ed02; the rig's final outdoor position landed later
+in a9e6c1a as part of the pedestal rework — see end of this entry).**
+Direct feedback: "the spikes is kinda rubbish, can we replace this
 block with barbed wire trap from Create: Crafts & Additions." Verified
 directly, not assumed:
 - **Create: Crafts & Additions** (CurseForge, author MRHminer, 108M+
@@ -2319,11 +2433,9 @@ directly, not assumed:
   file's item/icon/description in place — keeping its real IDs — then
   syncing the repo copy back from that live file, so both now match
   exactly and the completed quest stays completed.
-- **`packwiz refresh` run, all hashes clean. Deployed to the live
-  instance, but deliberately not committed yet** — held for review
-  given the quest-ID divergence risk above, rather than committed
-  straight through like most other fixes in this project. Waiting on
-  the user's go-ahead before the build session commits.
+- **`packwiz refresh` run, all hashes clean. Deployed and committed**
+  (8e1ed02) — held for review first given the quest-ID divergence risk
+  above, then committed once the user gave the go-ahead.
 
 **Machine progression, Tier 2** — *live* (2026-08-31). Semi-automated,
 redstone-powered, still fragile — the next rung up from Tier 1, and the

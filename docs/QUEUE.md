@@ -54,6 +54,95 @@ below); Phase 5 not started:
 
 ## In progress (sent directly to the build session)
 
+- **Legendary loot bag jackpot + beam visual** — sent to build
+  2026-09-05, user gave standing authorization to line up and dispatch
+  queue items without per-item confirmation while away. Full spec in
+  FEATURES.md's "Legendary loot bag jackpot + beam-of-light visual"
+  entry (under "Loot bags"): a flat 2% bonus-roll on every wave mob kill
+  (any tier) for `bountybags:legendary_loot_bag`, additive to the
+  existing tier-gated drops, plus installing **Loot Beams: Refork**
+  (verified fresh, Forge 1.20.1, uploaded 2025-11-29) for the beam
+  visual, with a config check for whether the modded bag item needs an
+  explicit rarity entry. Deliberately scoped to `loot_bag_drops.js`
+  only — no touches to `wave_spawner.js`/`wave_status.js`/
+  `mob_aggro.js`, since those are mid-debugging for the fresh-world
+  mob-pathing regression right now.
+- **Fresh-world playtest batch, 2026-09-05 — sent to build.** Real
+  feedback from the first actual playtest of the new fresh-world
+  pedestal redesign, 4 items:
+  1. **Mobs aren't pathing toward the pedestal at all — real root cause
+     found and fixed 2026-09-05, see FEATURES.md/MODS.md for the full
+     writeup.** Diagnosed for real, not guessed: the permanent marker DID
+     exist correctly on the live save (confirmed by parsing the actual
+     save's entity/player NBT directly — right tags, right coordinates,
+     one real wave zombie found sitting 3.6 blocks from the player and
+     13.9 blocks from the pedestal, matching the report). Root cause,
+     found via direct Java reflection against a live sandbox: **Epic
+     Siege Mod entirely replaces vanilla's own player-targeting AI** — a
+     fresh zombie's real target selector held vanilla `HurtByTargetGoal`
+     plus **six** stacked `ESM_EntityAINearestAttackableTarget`
+     instances, no vanilla `NearestAttackableTargetGoal<Player>` even
+     left. That out-competed `mob_aggro.js`'s 10-tick-throttled
+     `setTarget()` force almost every time — explains "not at all," not
+     "sometimes," since ESM is built to be *more* aggressive than
+     vanilla, not less. Fix: `mob_aggro.js` now physically strips every
+     goal from each wave mob's target selector (goal selector — actual
+     attack/dig/pillar/block-target behavior — untouched) exactly once
+     per mob, so `setTarget()` is the only thing left that can ever
+     assign one. Verified end to end in a sandbox before shipping:
+     stripped a fresh zombie's target selector, force-set its target to
+     a stand-in entity, confirmed the target was unchanged 4 real seconds
+     later, and confirmed the mob had genuinely pathed 9 blocks toward it
+     in that time. **Real, honest caveat**: this pack's sandbox can't
+     get a live player through this modset's FML handshake (established
+     blind spot), so the exact `PlayerEvents.tick` wiring itself couldn't
+     be exercised end-to-end — the underlying mechanism is fully
+     verified, but this still needs a real playtest to close the loop.
+     Possible bonus, not claimed as fixed here: this may also explain why
+     the separate pedestal mob-vulnerability config read as
+     inconclusive — worth watching for on the same playtest.
+  2. **A vanilla village generated close to spawn** (outside the
+     worldborder) and its Iron Golem aggroed wave mobs during an actual
+     wave, pulling them into a fight with village mobs instead of
+     converging on the pedestal — a real interaction risk given the
+     "always converges on the objective" design this pack just
+     committed to. Needs investigating: how close can vanilla villages
+     actually generate given current spacing, and whether that's worth
+     addressing (push village spacing out further, or something else)
+     given it can now actively interfere with the core mechanic, not
+     just be atmospheric clutter.
+  3. **The new pedestal dais reads badly in practice — real reference
+     provided, not guessed this time.** Direct feedback, blunt: "looks
+     like hot garbage," campfires specifically called out. User shared
+     a reference image, described precisely since the build session
+     can't see it: a **circular, stepped dais** — 2-3 concentric rings
+     of stone steps, each ring slightly higher than the last, leading
+     up to a raised central platform, with a stone plinth/column at the
+     very center (where the pedestal block sits) rising above that.
+     Dark, uniform stone throughout — cracked/tiled texture, closer to
+     slate or basalt than sandstone. **No campfires or fire props
+     anywhere** — clean and monumental, not rustic/campsite. A soft
+     grass/moss edge where the rings meet the courtyard ground. Real
+     shape-language change, not a material swap: square platform →
+     circular tiers, campfire-lit shrine → dark stone altar.
+     **Real technique note for the build session**: this pack's
+     established building method is procedural `/fill`/`/setblock`
+     placement, which can't natively produce a true circle — the
+     practical path is an octagon approximation (a well-known technique
+     for "round" builds via commands), not a real blocker, just the
+     right expectation to set before starting. Material candidates
+     already in vanilla, no new mod needed: blackstone/polished
+     blackstone/deepslate tiles/cracked deepslate tiles, mixed for the
+     "old, uneven stone" texture the reference shows.
+  4. **World biome variety "looks kinda soulless, just sand"** — direct
+     contradiction of the user-confirmed-working multi_noise 7-biome
+     set. Could be the fixed spawn point landing in/near a
+     desert-heavy area again (same shape of problem as the earlier
+     badlands-blob issue, already fixed once at the old spawn point),
+     or a real regression, or just genuinely thin variety immediately
+     visible from spawn even though it exists further out. Needs a real
+     biome census near the actual current spawn point, not assumed —
+     same technique already used to diagnose the badlands blob.
 - **Aesthetic structure variety pass** — sent to build 2026-09-05,
   user's go-ahead. Full detail in FEATURES.md, "Aesthetic structure
   variety pass" (under "World type"). Install **Philip's Ruins** and
@@ -74,8 +163,8 @@ below); Phase 5 not started:
 
 ## Built, awaiting your next playtest
 
-- **Mob-attack vulnerability (pedestal)** — config built and deployed
-  2026-09-05, **not yet committed**, and **real live behavior is
+- **Mob-attack vulnerability (pedestal)** — config built, deployed, and
+  committed (f49f947) 2026-09-05, and **real live behavior is
   unconfirmed, not a clean win — flag this honestly, don't report it as
   done.** Full detail in FEATURES.md's "Pedestal visual upgrade +
   mob-attack vulnerability" entry. What shipped: both real pedestal
@@ -100,11 +189,13 @@ below); Phase 5 not started:
   through obstacles via a separate mechanism) is still fully open too,
   not reached.
 - **Pedestal: unconditional targeting + visual retrofit + compound
-  redesign** — built and deployed to the live instance 2026-09-05,
-  **not yet committed** — held for review, same pattern as the other
-  three pending items. Full detail in FEATURES.md's "Superseded
-  2026-09-05" entry. All three pieces landed together (they shared the
-  same coordinate rewiring):
+  redesign** — built, deployed, and committed (a9e6c1a) 2026-09-05.
+  Full detail in FEATURES.md's "Superseded 2026-09-05" entry. All three
+  pieces landed together (they shared the same coordinate rewiring),
+  and this commit's final state also absorbed the earlier rig-placement
+  hotfix — that fix's indoor location got fully superseded by this
+  rework moving the rig outdoors again, so it never got a separate
+  commit of its own, it's just part of this one now:
   - **Unconditional objective**: mobs always target the pedestal, no
     amulet check, no player fallback. The amulet is now purely personal
     buffs + border-crossing unlock.
@@ -130,17 +221,14 @@ below); Phase 5 not started:
   - **Real scope limit, flagged rather than decided unilaterally**: the
     courtyard visual redesign only applies to **new** worlds — the
     build session didn't retrofit the existing live save's actual
-    layout (would mean moving the user's real, already-explored base).
-    The live save gets the functional fix only and keeps the old
-    side-shrine pedestal visually unless the user wants a manual
-    retrofit or a fresh world. **Genuinely the user's open call.**
-  - **Still outstanding, not part of this**: the mob-attack-
-    vulnerability piece (Epic Siege Mod's `blockTargets` config) — see
-    "In progress" above.
+    layout. **Resolved**: user's call was to start a fresh world for
+    the full redesign rather than keep the old save or retrofit it.
+  - The mob-attack-vulnerability piece (Epic Siege Mod's `blockTargets`
+    config) shipped separately — see its own entry above, not part of
+    this commit.
 
-- **Quest book rebuild** — built and deployed to the live instance
-  2026-09-05, **not yet committed** — held for review, same pattern as
-  the other two pending items. Full detail in FEATURES.md's "Quest book
+- **Quest book rebuild** — built, deployed, and committed (76f35f7)
+  2026-09-05. Full detail in FEATURES.md's "Quest book
   rebuild" entry. Single consolidated chapter (`campaign.snbt`,
   replacing `basics.snbt`/`tier1_machines.snbt`/`tier2_machines.snbt`),
   19 quests total: all 17 existing quests carried over with their real,
@@ -168,8 +256,7 @@ below); Phase 5 not started:
   broke existing completions. Live `ftbquests` config backed up before
   deploying. `packwiz refresh` run, all hashes clean.
 - **Andesite gated behind exploration + "Turn the Crank" quest** —
-  built and deployed to the live instance 2026-09-05, **not yet
-  committed** — held for review, same pattern as the rig hotfix. Full
+  built, deployed, and committed (30588f6) 2026-09-05. Full
   detail in FEATURES.md, "Andesite gated behind exploration, not loot
   bags" (under "Loot bags"). Real recipe correction found along the
   way: Hand Crank is actually 3 planks + 1 Andesite Alloy, no Shaft
@@ -180,10 +267,9 @@ below); Phase 5 not started:
   chapter, flavor text already referencing the corrected Rolling Mill
   location. This is the same quest the in-progress quest book rebuild
   should carry forward, not duplicate.
-- **Barbed Wire replaces Spikes** — built and deployed to the live
-  instance 2026-09-04, **not yet committed** — the peer build session
-  deliberately held the commit for review given a real save-compatibility
-  risk it caught along the way (see below). Full detail in FEATURES.md's
+- **Barbed Wire replaces Spikes** — built, deployed, and committed
+  (8e1ed02, plus a9e6c1a for the rig's final outdoor position — see the
+  Pedestal entry above). Full detail in FEATURES.md's
   "Tier 1 defenses" section. What shipped:
   - **Create: Crafts & Additions installed** (author MRHminer, real
     slug `createaddition`), jar hash-verified into the live instance.
