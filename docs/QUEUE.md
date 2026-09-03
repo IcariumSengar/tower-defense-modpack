@@ -145,29 +145,48 @@ below); Phase 5 not started:
      single seed test doesn't prove every future seed will land equally
      far, just that this exact reported scenario is now resolved and the
      odds are substantially better going forward.
-  3. **The new pedestal dais reads badly in practice — real reference
-     provided, not guessed this time.** Direct feedback, blunt: "looks
-     like hot garbage," campfires specifically called out. User shared
-     a reference image, described precisely since the build session
-     can't see it: a **circular, stepped dais** — 2-3 concentric rings
-     of stone steps, each ring slightly higher than the last, leading
-     up to a raised central platform, with a stone plinth/column at the
-     very center (where the pedestal block sits) rising above that.
-     Dark, uniform stone throughout — cracked/tiled texture, closer to
-     slate or basalt than sandstone. **No campfires or fire props
-     anywhere** — clean and monumental, not rustic/campsite. A soft
-     grass/moss edge where the rings meet the courtyard ground. Real
-     shape-language change, not a material swap: square platform →
-     circular tiers, campfire-lit shrine → dark stone altar.
-     **Real technique note for the build session**: this pack's
-     established building method is procedural `/fill`/`/setblock`
-     placement, which can't natively produce a true circle — the
-     practical path is an octagon approximation (a well-known technique
-     for "round" builds via commands), not a real blocker, just the
-     right expectation to set before starting. Material candidates
-     already in vanilla, no new mod needed: blackstone/polished
-     blackstone/deepslate tiles/cracked deepslate tiles, mixed for the
-     "old, uneven stone" texture the reference shows.
+  3. **Circular altar dais — built, verified, and committed
+     2026-09-05.** Full rebuild in `playtest_starter_kit.js`, real
+     shape-language change per the reference: square sandstone platform
+     → 3 concentric octagon rings (radius 3/2/1, each one block higher
+     moving inward — a small octagon at each radius, a square ring with
+     its 4 true diagonal corners cut, the standard `/fill`/`/setblock`
+     approximation for "round" since this pack can't build a true
+     circle) leading to a flat raised platform, a plinth/column rising
+     from its center, and the pedestal on top of that. Material is a
+     randomized blackstone/polished blackstone/deepslate tiles/cracked
+     deepslate tiles mix (same "mostly uniform, occasional weathered
+     accent" ratio the perimeter walls already use), a moss-carpet ring
+     one radius wider than the dais blends it into the courtyard floor,
+     and two single stair blocks soften the main south-facing approach
+     without stairing the whole circumference. **Every campfire
+     removed outright**, not reduced — direct request, the old braziers
+     were named specifically as part of what read badly. Grave arc
+     relocated to the dais's west flank (its old front/back position is
+     now inside the bigger radius-3 footprint) — checked against the
+     real x0 wall coordinate before picking the new spot, real margin on
+     both sides, not eyeballed. Pedestal height grew from wallY0+2 to
+     wallY0+4 with the new plinth; `td_pedestalX/Y/Z` and the targeting
+     marker's own Y both updated together, everything else that reads
+     those values (mob_aggro.js, wave_spawner.js, pedestal_destruction.js,
+     amulet_pedestal.js) treats them as an opaque stored coordinate, so
+     nothing else needed touching. **Verified for real, not assumed
+     from the math alone**: this pack's sandbox can't get a real player
+     through the login flow (established FML-handshake blind spot), so
+     replayed the exact same build logic via `ServerEvents.tick` against
+     the live save's own real seed and real spawn coordinates instead —
+     first pass returned all-air/failed everywhere (a real, separate
+     gotcha: the target chunk had never been visited in that fresh test
+     world, and `/setblock` at a cold, never-loaded chunk can silently
+     no-op even though the production flow never hits this, since the
+     player is already physically standing there when the real script
+     runs); re-ran with an explicit `forceload` and real settling time
+     first, and every block landed exactly as intended — pedestal,
+     ring material, moss edge, and the approach stair all confirmed via
+     direct block readback, zero errors, clean boot. **Real, honest
+     limit**: like every other spawn-time build in this pack, this only
+     applies to a **fresh world** — the current live save's actual
+     placed dais is unchanged and needs a new world to see this.
   4. **"Just sand" — real root cause found and fixed 2026-09-05, the
      biggest single finding of this batch.** Not a perception issue, not
      thin variety, and not a badlands-style spawn-point problem — the

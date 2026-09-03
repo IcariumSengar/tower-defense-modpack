@@ -320,81 +320,121 @@ PlayerEvents.loggedIn((event) => {
   run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
   run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
 
-  // Centered dais (2026-09-05, real redesign, docs/FEATURES.md's
-  // "Superseded" note - direct request: "the pedestal area is lacking
-  // any oomph... I want this to be the heart of the base, the centre
-  // point to everything"). Moved from a side shrine nook (the old
-  // shrineX = x1-3, tucked against the east wall) to dead center of the
-  // courtyard, between the gate and the building - this is why
-  // COURTYARD_DEPTH grew from 4 to 8 above, real room for a platform,
-  // a step, and a grave arc that don't feel cramped. centerX = doorX
-  // (the courtyard is already roughly centered on the player's own
-  // spawn X, confirmed by re-deriving x0/x1 above - x1-x0 = 17,
-  // centerX sits 8-9 blocks from either wall, comfortable margin for
-  // everything below). centerZ = z1-4, middle of the new 8-row
-  // courtyard (walkable rows z1-1 through z1-8, building front wall at
-  // buildingZ1 = z1-9) - every measurement below is checked against
-  // that real range, not assumed clear:
-  //   z1-2: step (between gate and platform)
-  //   z1-3..z1-5: 3x3 platform (centerZ ± 1)
-  //   z1-6..z1-7: grave arc
-  //   z1-8: buffer row before the building's own front wall
-  // Real gate-trap risk this pack already hit once (a door landing
-  // exactly on the spawn coordinate) is untouched by any of this -
-  // doorX/GATE_OFFSET/z1 aren't touched here, only what happens deeper
-  // in the courtyard. Real grave-overlap risk this pack also already
-  // hit once (shrineZ = z1-3 vs z1-4) is the reason every row above is
-  // spelled out and checked against buildingZ1 before shipping, not
-  // just eyeballed.
+  // Circular stepped altar (2026-09-05, real rebuild - direct follow-up
+  // feedback on the square sandstone shrine above, blunt: "looks like
+  // hot garbage," campfires specifically called out. A real reference
+  // image was provided (described precisely since scripts can't see
+  // images): 2-3 concentric rings of stone steps, each ring slightly
+  // higher than the last, leading up to a raised central platform, with
+  // a stone plinth/column at the very center - where the pedestal sits -
+  // rising above that. Dark, uniform, cracked/tiled stone (closer to
+  // slate/basalt than sandstone), no fire props anywhere, a soft
+  // grass/moss edge where it meets the courtyard. A real shape-language
+  // change, not a material swap: square platform -> circular tiers,
+  // campfire-lit shrine -> dark stone altar.
   //
-  // Platform: cut sandstone, one block riser (wallY0+1) - matches the
-  // amulet's own established gold/sandstone palette (amulet.js). Real
-  // block swap 2026-09-05 for the pedestal itself (docs/FEATURES.md
-  // "Pedestal visual upgrade"): `supplementaries:pedestal` replaces the
-  // custom `kubejs:amulet_pedestal` - a real Container block that
-  // renders whatever's placed in it natively, so the pack no longer
-  // hand-builds the floating-item visual. No blockstate properties
-  // needed for a plain freestanding placement - confirmed live.
+  // /fill and /setblock can't produce a true circle - approximates one
+  // as a small octagon at each ring radius (a square ring with its 4
+  // true diagonal corners omitted), the standard technique for "round"
+  // builds via commands, not a real blocker once expected going in.
+  //
+  // Radius 3, not 4 - a radius-4 footprint would have consumed the
+  // entire 8-row courtyard depth end to end (centerZ±4 = z1-8..z1-0),
+  // leaving no room for anything else. Radius 3 fits within
+  // centerZ±3 = z1-7..z1-1, leaving z1-8 as a buffer row before the
+  // building, and frees up the courtyard's side margins (checked
+  // against x0/x1 above, x0 = centerX-9) for the grave arc to flank
+  // the dais instead of sitting in front of or behind it - its old
+  // position, now occupied by the dais's own greater depth.
   const centerX = doorX
   const centerZ = z1 - 4
-  for (let px = centerX - 1; px <= centerX + 1; px++) {
-    for (let pz = centerZ - 1; pz <= centerZ + 1; pz++) {
-      run(`setblock ${px} ${wallY0 + 1} ${pz} minecraft:cut_sandstone`)
+
+  function octagonRing(radius) {
+    const cells = []
+    for (let dx = -radius; dx <= radius; dx++) {
+      for (let dz = -radius; dz <= radius; dz++) {
+        if (Math.max(Math.abs(dx), Math.abs(dz)) !== radius) continue
+        if (Math.abs(dx) === radius && Math.abs(dz) === radius) continue // corner cut
+        cells.push([dx, dz])
+      }
     }
+    return cells
   }
-  // Step on the gate-facing (south) side, one row south of the
-  // platform's own edge - bridges the 1-block rise from the courtyard
-  // floor (wallY0) up to the platform surface (wallY0+1). Not load-
-  // bearing for traversal (a 1-block rise is climbable unaided anyway)
-  // - purely the "step" the direct request asked for. Orientation
-  // reasoned from vanilla's stair-facing convention, not visually
-  // confirmed (no GUI access to check this by eye) - correct on the
-  // next real playtest if it reads backwards.
-  run(`setblock ${centerX} ${wallY0 + 1} ${centerZ + 2} minecraft:sandstone_stairs[facing=north]`)
-  run(`setblock ${centerX} ${wallY0 + 2} ${centerZ} supplementaries:pedestal`)
+
+  // Dark, uneven stone mix per the reference - blackstone/polished
+  // blackstone as the base, deepslate tiles and cracked deepslate tiles
+  // as weathering accents, same "mostly uniform, occasional accent"
+  // ratio already used for the perimeter walls' mossy/cracked patches.
+  function altarStoneBlock() {
+    const roll = Math.random()
+    if (roll < 0.1) return 'minecraft:cracked_deepslate_tiles'
+    if (roll < 0.3) return 'minecraft:deepslate_tiles'
+    if (roll < 0.55) return 'minecraft:polished_blackstone'
+    return 'minecraft:blackstone'
+  }
+
+  // Moss edge - a radius-4 shell, one wider than the dais itself, blends
+  // the dark stone into the courtyard's own stone_bricks floor rather
+  // than a hard material cutoff. A thin carpet layer on top of the
+  // existing floor, not a structural replacement.
+  octagonRing(4).forEach(([dx, dz]) => {
+    run(`setblock ${centerX + dx} ${wallY0} ${centerZ + dz} minecraft:moss_carpet`)
+  })
+
+  // Three concentric rings, each one block higher than the last moving
+  // inward - the vertical face between one ring and the next IS the
+  // step (a 1-block rise is climbable unaided, same reasoning the old
+  // platform's own riser used), no stair blocks needed around the whole
+  // circumference. One stair block on each riser, at the main
+  // south-facing approach axis only, softens the actual entry - matches
+  // the reference's "leading up to" framing without stairing the entire
+  // ring. Orientation reasoned from vanilla's stair-facing convention,
+  // not visually confirmed (no GUI access) - correct on the next real
+  // playtest if it reads backwards.
+  octagonRing(3).forEach(([dx, dz]) => {
+    run(`setblock ${centerX + dx} ${wallY0} ${centerZ + dz} ${altarStoneBlock()}`)
+  })
+  octagonRing(2).forEach(([dx, dz]) => {
+    if (dx === 0 && dz === 2) return // approach stair, placed separately below
+    run(`setblock ${centerX + dx} ${wallY0 + 1} ${centerZ + dz} ${altarStoneBlock()}`)
+  })
+  run(`setblock ${centerX} ${wallY0 + 1} ${centerZ + 2} minecraft:polished_blackstone_stairs[facing=north]`)
+
+  // Innermost ring + true center - the flat raised platform itself.
+  octagonRing(1).forEach(([dx, dz]) => {
+    if (dx === 0 && dz === 1) return // approach stair, placed separately below
+    run(`setblock ${centerX + dx} ${wallY0 + 2} ${centerZ + dz} ${altarStoneBlock()}`)
+  })
+  run(`setblock ${centerX} ${wallY0 + 2} ${centerZ + 1} minecraft:polished_blackstone_stairs[facing=north]`)
+  run(`setblock ${centerX} ${wallY0 + 2} ${centerZ} ${altarStoneBlock()}`)
+
+  // Plinth/column rising from the platform's own center, per the
+  // reference - the pedestal sits on top of it, not flush with the
+  // platform surface. Real block swap 2026-09-05 for the pedestal
+  // itself (docs/FEATURES.md "Pedestal visual upgrade"):
+  // `supplementaries:pedestal` replaces the custom
+  // `kubejs:amulet_pedestal` - a real Container block that renders
+  // whatever's placed in it natively, so the pack no longer hand-builds
+  // the floating-item visual. No blockstate properties needed for a
+  // plain freestanding placement - confirmed live.
+  run(`setblock ${centerX} ${wallY0 + 3} ${centerZ} minecraft:polished_blackstone`)
+  run(`setblock ${centerX} ${wallY0 + 4} ${centerZ} supplementaries:pedestal`)
   // Stored once here, permanent regardless of amulet state -
   // pedestal_destruction.js's own destruction check, amulet_pedestal.js's
   // border-crossing poll, and every wave/mob-targeting reference below
   // all key off this same fixed coordinate. 2026-09-03, "if the pedestal
-  // is destroyed you lose."
+  // is destroyed you lose." Y grew wallY0+2 -> wallY0+4 with the new
+  // plinth/column - every reader of this data already treats it as an
+  // opaque stored coordinate, not a derived offset, so nothing else
+  // needed updating.
   data.putInt('td_pedestalX', centerX)
-  data.putInt('td_pedestalY', wallY0 + 2)
+  data.putInt('td_pedestalY', wallY0 + 4)
   data.putInt('td_pedestalZ', centerZ)
 
-  // Braziers - real vanilla campfires (not an unverified mod block),
-  // flanking the platform's east/west sides front and back rather than
-  // its north/south center lines (which the step and grave arc already
-  // occupy). Real "night presence" per the direct request, and a real
-  // light source, not just a prop.
-  const brazierSpots = [
-    [centerX - 2, centerZ - 1],
-    [centerX + 2, centerZ - 1],
-    [centerX - 2, centerZ + 1],
-    [centerX + 2, centerZ + 1],
-  ]
-  brazierSpots.forEach(([bx, bz]) => {
-    run(`setblock ${bx} ${wallY0} ${bz} minecraft:campfire`)
-  })
+  // No campfires or fire props anywhere in this build - direct request,
+  // dropped entirely rather than reduced. The old braziers were called
+  // out by name as part of what read badly ("hot garbage... campfires
+  // specifically") - this isn't an oversight, it's the ask.
 
   // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
   // note on the amulet objective fix): the pedestal is the permanent
@@ -417,8 +457,9 @@ PlayerEvents.loggedIn((event) => {
   // server restart or long absence. No HandItems - Supplementaries'
   // pedestal now renders its own contents natively, so this is a pure,
   // invisible targeting anchor, not a visual prop. One block above the
-  // pedestal's own position, not inside it.
-  run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 3} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
+  // pedestal's own position (now wallY0+4, see the altar rebuild above),
+  // not inside it.
+  run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 5} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
 
   // Forceload is now a one-time permanent setup, not a toggle -
   // same 96-block/169-chunk radius already verified safe
@@ -433,17 +474,22 @@ PlayerEvents.loggedIn((event) => {
   // mounds, not a sign (avoids the 1.20.1 sign-NBT format entirely -
   // this pack already has one real crash history with guessed NBT
   // syntax, see docs/FEATURES.md's FTB Quests `#`-tag entry, not worth
-  // repeating for a purely cosmetic prop). Arranged in an arc around the
-  // dais's north side (2026-09-05, direct request - "arranged in an arc
-  // around the dais's base instead of clustered to one side"), facing
-  // the platform from the side opposite the gate/step, directly
-  // reinforcing the existing "whoever held this before you" wave-5
-  // gear-removal flavor text (wave_status.js) rather than being generic
-  // clutter.
+  // repeating for a purely cosmetic prop). Reinforces the existing
+  // "whoever held this before you" wave-5 gear-removal flavor text
+  // (wave_status.js) rather than being generic clutter.
+  //
+  // Relocated to the dais's west flank 2026-09-05 - the circular altar
+  // rebuild's own radius-3 footprint (centerX±3, centerZ±3) now spans
+  // the courtyard's full front-to-back depth, unlike the old 3x3
+  // platform, so the graves' old front/back position would sit directly
+  // on top of dais blocks now. centerX-5 checked against x0 (=
+  // centerX-9, re-derived above) before picking it - 4 blocks clear of
+  // the west wall, 2 blocks clear of the dais's own max extent
+  // (centerX-3), a real gap either side, not assumed clear.
   const graveSpots = [
-    [centerX - 2, centerZ - 3],
-    [centerX, centerZ - 4],
-    [centerX + 2, centerZ - 3],
+    [centerX - 5, centerZ - 2],
+    [centerX - 5, centerZ],
+    [centerX - 5, centerZ + 2],
   ]
   graveSpots.forEach(([gx, gz]) => {
     run(`setblock ${gx} ${wallY0} ${gz} minecraft:coarse_dirt`)

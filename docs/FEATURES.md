@@ -1739,6 +1739,35 @@ broken settings and won't retroactively fix itself; needs either the
 border expanding well past what's already generated, or a fresh world,
 same limit every other worldgen change in this pack has had.
 
+**Circular altar dais — built and committed 2026-09-05, real shape-
+language change per a user-supplied reference image.** Rebuilt the
+square sandstone platform in `playtest_starter_kit.js` into 3
+concentric octagon rings (radius 3/2/1, one block higher moving inward
+— a square ring with its 4 true diagonal corners cut at each radius,
+the standard `/fill`/`/setblock` approximation for "round," since this
+pack can't build a true circle) leading to a flat raised platform, a
+central plinth/column, and the pedestal on top of it. Randomized
+blackstone/polished blackstone/deepslate tiles/cracked deepslate tiles
+mix (same ratio pattern as the perimeter walls' own weathered accents),
+a moss-carpet ring blending it into the courtyard floor, two stair
+blocks softening only the main approach. Every campfire removed
+outright — direct request, not a reduction. Grave arc relocated to the
+dais's west flank since the bigger radius-3 footprint now occupies its
+old front/back spot. Pedestal Y grew wallY0+2 → wallY0+4 with the new
+plinth; every other script reading `td_pedestalX/Y/Z` treats it as an
+opaque coordinate, so nothing else needed touching. **Verified for
+real**: replayed the exact build logic via `ServerEvents.tick` against
+the live save's real seed/spawn coordinates (can't get a real player
+through this modset's FML handshake in a sandbox) — first pass failed
+everywhere from a real, separate gotcha (the target chunk had never
+been visited in that fresh test world, so `/setblock` silently no-op'd;
+the real login flow never hits this since the player is already
+standing there) — re-ran with an explicit forceload and real settle
+time first, and every block (pedestal, ring material, moss edge,
+approach stair) landed exactly as intended, zero errors. **Real limit**:
+fresh-world only, same as every other spawn-time build in this pack —
+doesn't change the current live save's already-placed dais.
+
 **Aesthetic structure variety pass — requested 2026-09-04, sent to
 build 2026-09-05.** Direct feedback: "now that we have got the beginnings of
 structure gen/placement... the current one is just lacking." Researched
