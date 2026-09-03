@@ -23,47 +23,6 @@ reflect actual current status.
 
 ## Ready to build
 
-**Pedestal visual upgrade + mob-attack vulnerability** — requested
-2026-09-04, direct follow-up ("the pedestal block...looks a bit
-rubbish" + "should be vulnerable to mobs attacking it too, not just an
-explosion"). Full detail in FEATURES.md, "Pedestal visual upgrade +
-mob-attack vulnerability" (right before "Pedestal destruction = game
-over"). Two pieces:
-1. Install **Supplementaries** (MehVahdJukaar, 221M+ downloads, real
-   recent Forge 1.20.1 build, needs Moonlight Library dependency) for
-   its real Pedestal block. Recommended: retire the custom marker/bob
-   system entirely (the same code the Math.PI bug lived in) and drive
-   `td_amuletOnPedestal` off reading Supplementaries' own pedestal
-   storage instead — real NBT/API details, right-click-accepts-any-item
-   handling, and the dependency check all left for the build session.
-2. Add the pedestal's real block ID to Epic Siege Mod's `blockTargets`
-   config list (currently just `#minecraft:candles`) so mobs actively
-   target and destroy it, not just via explosion. **Correction to the
-   already-shipped pedestal-destruction spec**: `demolitionMobs` is
-   actually empty in this pack's tracked config, not the mod default as
-   previously claimed there — fixed in FEATURES.md. Also worth checking
-   live: `diggerMobs` (zombies digging through obstacles to reach a
-   target) might already partially let mobs bite through the pedestal
-   now that wave mobs path to it, independent of any new config; and
-   whether `blockTargeting` needs the general `griefing` flag on too.
-**Not yet sent — real technical unknowns on both pieces, holding for
-build-session verification before dispatch.**
-
-**Aesthetic structure variety pass** — requested 2026-09-04, direct
-feedback that the structure/decoration aesthetic is "just lacking."
-Full detail in FEATURES.md, "Aesthetic structure variety pass" (under
-"World type," right after the exploration-pacing/loot-tier entries).
-Install **Philip's Ruins** (philipmoddev, 200+ terrain-blending small
-ruins) and **Big Lost City — Apocalyptic Structures!** (Flashh,
-modern abandoned buildings). Both real, verified Forge 1.20.1 builds,
-picked from real research over guessing. Left for the build session:
-re-verify dependencies via a filtered file list/API (only checked via
-single-page fetches so far), retune structure_set spacing to the
-*current* border curve (125 by wave 8), and check whether either mod's
-loot uses standard vanilla-format tables or an opaque system like
-Treasure2's before assuming it's controllable. **Not yet sent —
-awaiting go-ahead.**
-
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
 redesign together. Sequenced 2026-09-01 (user-confirmed order). Phases
@@ -71,58 +30,156 @@ redesign together. Sequenced 2026-09-01 (user-confirmed order). Phases
 is partially done (structure loot fix shipped for one of two mods, see
 below); Phase 5 not started:
 
-3. Structure improvements, remaining — spawners in structures and
-   Abandoned Urban's own missing-loot half (see below - deliberately
-   not rushed given this pack's real jigsaw/structure-generation crash
-   history).
+3. Structure improvements, remaining — spawners in structures, held
+   until after the aesthetic structure variety pass and Abandoned
+   Urban's chest fix land and prove stable (user's own sequencing call,
+   2026-09-04) — same real jigsaw/structure-generation crash-history
+   caution as always, not stacking structure-gen changes in one pass.
 5. Decoration polish last — lang-file fix is cheap and can happen any
    time, but placement/density reassessment waits until the user has
    actually seen the redesigned base in a fresh world.
 
-- **Structure improvements, remaining (Phase 3)**:
-  - **Treasure-chest loot — half fixed, real root cause found for
-    both mods, not guessed**: `postapocalypse_structures`' own 3 chest
-    loot tables (`chests/{food,trash,cobwebs}.json`, real standard
-    vanilla-format tables, decompiled directly from the mod's jar) were
-    genuinely low-value "wasteland junk" by the mod's own design - not
-    a bug, just thin. Overridden via `pack/kubejs/data/
-    postapocalypse_structures/loot_tables/chests/` to add a real
-    treasure pool (gold/lapis_block/ender_pearl/diamond/emerald/
-    redstone_block/obsidian/golden_apple) on top of the existing junk
-    pool, not replacing it. Verified end-to-end: force-loaded a real
-    chunk, rolled the tables via `/loot spawn` in a live sandbox, and
-    directly confirmed the new items actually drop (a first attempt at
-    this check produced a false negative - the check query didn't
-    account for the item's fall trajectory from the spawn height, not
-    a real bug - caught and fixed the check itself). **Abandoned
-    Urban is a real, harder, separate problem, still open**: decompiled
-    its 34 structure `.nbt` files directly - only ONE
-    (`gas_station_loot.nbt`) has any chest at all (referencing vanilla's
-    own real `minecraft:chests/simple_dungeon` table, genuinely decent
-    loot), the other 33 have none. Real fix would mean either
-    hand-editing NBT structure files (real corruption risk, no
-    in-game way to verify blind) or adding a `processors` rule to the
-    mod's own jigsaw template pool entries to probabilistically inject
-    chests (and see below, spawners) into the existing pieces - the
-    standard vanilla technique for this, but real, and this pack has a
-    documented history of jigsaw/structure-generation crashes from
-    exactly this kind of change (see FEATURES.md's "World type"
-    section) - deliberately not rushed into the same session as
-    everything else already shipped today.
-  - Add spawners to structures for real danger - same underlying
-    technique (structure processors) and same caution as Abandoned
-    Urban's loot fix above - worth doing together once that's designed,
-    not as two separate structure-generation changes.
+- **Structure spawners — held, not sent yet.** Add spawners to
+  structures for real danger via the same `processors` technique as
+  the chest-loot fix below. Deliberately sequenced *after* the aesthetic
+  structure variety pass and the Abandoned Urban chest fix (both sent
+  2026-09-04) rather than stacked into the same batch — this pack has a
+  documented history of jigsaw/structure-generation crashes from
+  exactly this kind of change, and 3 structure-gen changes landing
+  together would make any new crash much harder to root-cause. Send
+  once those two are confirmed stable.
 - **Decoration quality**: placement itself read as "lame" — worth a
   look once visually confirmed, may need denser/more varied placement
   rather than a mod swap. (Chinese labels fixed, see "Built" below.)
 
 ## In progress (sent directly to the build session)
 
-*(nothing in progress right now)*
+- **Aesthetic structure variety pass** — sent to build 2026-09-05,
+  user's go-ahead. Full detail in FEATURES.md, "Aesthetic structure
+  variety pass" (under "World type"). Install **Philip's Ruins** and
+  **Big Lost City — Apocalyptic Structures!**. Dependency
+  re-verification, spacing retune to the current border curve, and a
+  loot-table-opacity check all left for the build session.
+- **Abandoned Urban missing chest loot** — sent to build 2026-09-05,
+  user's go-ahead. 33 of its 34 structures have no chest at all
+  (confirmed by decompiling all 34 `.nbt` files directly — only
+  `gas_station_loot.nbt` has one). Real fix: a `processors` rule on the
+  mod's own jigsaw template pool entries to probabilistically inject
+  chests into the existing pieces — the standard vanilla technique, but
+  real, and this pack has a documented crash history from exactly this
+  kind of change (see FEATURES.md's "World type" section). **Structure
+  spawners are deliberately held back, not part of this dispatch** —
+  user's own sequencing: send spawners only after this and the
+  aesthetic pass are confirmed stable, not stacked into the same batch.
 
 ## Built, awaiting your next playtest
 
+- **Mob-attack vulnerability (pedestal)** — config built and deployed
+  2026-09-05, **not yet committed**, and **real live behavior is
+  unconfirmed, not a clean win — flag this honestly, don't report it as
+  done.** Full detail in FEATURES.md's "Pedestal visual upgrade +
+  mob-attack vulnerability" entry. What shipped: both real pedestal
+  block ids added to Epic Siege Mod's `blockTargets`, and
+  `targetingMobs` widened from just zombie to this pack's full wave
+  roster (a deliberate call — a base-under-siege premise should let the
+  whole roster threaten it). Decompiled the mod's own AI goal to
+  resolve the spec's open question: `blockTargeting`'s destroy behavior
+  is gated by the real vanilla `mobGriefing` gamerule (confirmed `true`
+  here), not ESM's own `griefing` toggle — two separate systems. Also
+  found a real, non-obvious requirement: the target needs 2 full air
+  blocks directly above it. **But the live test was inconclusive**: a
+  zombie left adjacent to a pedestal for 60+ seconds in a sealed test
+  pen never destroyed it — and neither did one left next to a plain
+  vanilla candle, the mod's own untouched default target, which rules
+  out this specific config as the cause and points at the whole
+  destroy-mechanism possibly not firing in this environment at all.
+  Shipped as correct per the real decompiled logic (harmless either
+  way) but **not confirmed working — needs a real player checking
+  whether mobs actually chip away at anything in `blockTargets` during
+  normal play.** `diggerMobs` (whether wave mobs already partially bite
+  through obstacles via a separate mechanism) is still fully open too,
+  not reached.
+- **Pedestal: unconditional targeting + visual retrofit + compound
+  redesign** — built and deployed to the live instance 2026-09-05,
+  **not yet committed** — held for review, same pattern as the other
+  three pending items. Full detail in FEATURES.md's "Superseded
+  2026-09-05" entry. All three pieces landed together (they shared the
+  same coordinate rewiring):
+  - **Unconditional objective**: mobs always target the pedestal, no
+    amulet check, no player fallback. The amulet is now purely personal
+    buffs + border-crossing unlock.
+  - **Supplementaries retrofit**: `amulet_pedestal.js` is now a
+    tick-poll against the real Container, not a right-click hook.
+  - **Recentered dais + outdoor workshop**: pedestal moved to a raised
+    3×3 platform dead center of the courtyard (courtyard depth grew
+    4→8 to fit it), grave markers arranged in an arc, 4 campfire
+    braziers, Create rig relocated outdoors along the east wall.
+  - **Real risk caught before shipping**: deleting the old pedestal
+    block's registration would have destroyed the live save's actual
+    placed pedestal (wave 4+ deep) on next load — Forge drops
+    unregistered custom blocks to air. Fixed by keeping the old block
+    registered as a real fallback, making both destruction-detection
+    and the amulet-poll accept either block id, and restoring a scoped
+    legacy right-click handler for the old block only.
+  - **Self-healing marker**: `mob_aggro.js` now re-summons the
+    permanent target marker (and forceload) on any login where the
+    pedestal exists but the marker doesn't — fixes the live save
+    automatically, no manual commands needed this time.
+  - **Verified in 4 sandbox passes**, the last two against a real copy
+    of the actual live save.
+  - **Real scope limit, flagged rather than decided unilaterally**: the
+    courtyard visual redesign only applies to **new** worlds — the
+    build session didn't retrofit the existing live save's actual
+    layout (would mean moving the user's real, already-explored base).
+    The live save gets the functional fix only and keeps the old
+    side-shrine pedestal visually unless the user wants a manual
+    retrofit or a fresh world. **Genuinely the user's open call.**
+  - **Still outstanding, not part of this**: the mob-attack-
+    vulnerability piece (Epic Siege Mod's `blockTargets` config) — see
+    "In progress" above.
+
+- **Quest book rebuild** — built and deployed to the live instance
+  2026-09-05, **not yet committed** — held for review, same pattern as
+  the other two pending items. Full detail in FEATURES.md's "Quest book
+  rebuild" entry. Single consolidated chapter (`campaign.snbt`,
+  replacing `basics.snbt`/`tier1_machines.snbt`/`tier2_machines.snbt`),
+  19 quests total: all 17 existing quests carried over with their real,
+  unchanged IDs (including ones with live completed progress, like
+  "Sharpened Scrap"), plus the spine's 2 new story-beat quests. Real
+  decisions the build session made where the spec left it open:
+  dependencies unchanged exactly (the tree shape comes from x/y layout
+  only — spine at y=0, Tier 1/amulet/Waystones branch at x=13, Tier
+  2/pedestal branch at x=19, reconverging visually at "Watch the Walls
+  Grow" and "The Reckoning" — no new dependency edges, no intermediate
+  hub quest needed); reused the old Basics chapter's real id
+  (`1178FD42CF9984A2`) for the merged chapter rather than minting a new
+  one, since it's the one thing the live save's progress file actually
+  references (a first-viewed timestamp) — confirmed the other two old
+  chapter ids have zero references, safe to discard; "Turn the Crank"
+  got a real rewrite (its shipped text was practical but didn't end on
+  an open question, so it didn't match the new house style — replaced
+  while keeping the real furnace/recipe detail); "A Stone That
+  Remembers" (Waystones) wasn't in the finalized text list, so it kept
+  its existing flavor text, just given a spot in the new layout.
+  **Verified in three passes**: a fresh sandbox boot (clean, 19 quests,
+  no errors), the same after deleting the 3 old files exactly as it
+  would happen live, and a boot against a real copy of the actual live
+  save (with its real progress data) confirming nothing about the merge
+  broke existing completions. Live `ftbquests` config backed up before
+  deploying. `packwiz refresh` run, all hashes clean.
+- **Andesite gated behind exploration + "Turn the Crank" quest** —
+  built and deployed to the live instance 2026-09-05, **not yet
+  committed** — held for review, same pattern as the rig hotfix. Full
+  detail in FEATURES.md, "Andesite gated behind exploration, not loot
+  bags" (under "Loot bags"). Real recipe correction found along the
+  way: Hand Crank is actually 3 planks + 1 Andesite Alloy, no Shaft
+  involved (this doc's earlier text was wrong). Andesite added to all 3
+  `postapocalypse_structures` base chest tables, verified live via 45
+  real sandbox rolls (3 real andesite hits), deliberately not in any
+  BountyBags tier. New quest "Turn the Crank" shipped in the Tier 1
+  chapter, flavor text already referencing the corrected Rolling Mill
+  location. This is the same quest the in-progress quest book rebuild
+  should carry forward, not duplicate.
 - **Barbed Wire replaces Spikes** — built and deployed to the live
   instance 2026-09-04, **not yet committed** — the peer build session
   deliberately held the commit for review given a real save-compatibility
@@ -139,16 +196,46 @@ below); Phase 5 not started:
     mod's own ponder text says items go beneath) → iron_sheet → Rolling
     Mill (items dropped on top) → iron_wire ×2 → crafting table
     (diamond of 4 iron wires) → barbed_wire ×2.
-  - **Pre-placed rig**: a real Depot + Mechanical Press + Rolling Mill
-    inside Abandoned Brick House's back room (local x=4-6,z=9 —
-    confirmed genuinely clear floor/headroom via a fresh `/place
-    template` + block reads before touching anything). Press and Mill
-    face the same direction and conduct power directly to each other,
-    no shaft needed — confirmed live with a temporary creative motor
-    (real nonzero Speed on both in a single 3-block kinetic network).
-    The cell past the Mill is left open for the player's own Hand
-    Crank — that one genuinely can't be pre-placed already-turning, it
-    needs a real player right-clicking it.
+  - **Pre-placed rig, corrected 2026-09-05 after a real placement bug**:
+    the original spot-check (local x=4-6,z=9) only verified "air, floor
+    below, ceiling above" — never *what kind* of space that was. It
+    turned out to be the open, unwalled entrance yard right outside the
+    building's real door, not a back room, which is exactly why the
+    live playtest found the rig blocking the doorway. Root-caused by
+    parsing `abandoned_brick_house.nbt` block-by-block directly (not
+    another spot-check), and re-verified by reproducing the bug fresh
+    against real terrain with the actual deployed script's exact math —
+    the already-played live save (4 real waves of playtime by then)
+    wasn't trusted for reproduction, since the player could have mined/
+    moved the block themselves before reporting it. **Corrected spot:
+    local x=7, z=5-7**, a real enclosed room confirmed from the NBT
+    itself (solid andesite foundation, 3 clear blocks of headroom, a
+    real brick_slab ceiling, walls/doors/furniture boxing it in on
+    every other side) — right beside the structure's own pre-placed
+    furnace. Press and Mill face the same direction and conduct power
+    directly to each other, no shaft needed — confirmed live with a
+    temporary creative motor (real nonzero Speed on both in a single
+    3-block kinetic network) at the new spot. The cell past the Mill is
+    left open for the player's own Hand Crank — that one genuinely
+    can't be pre-placed already-turning, it needs a real player
+    right-clicking it. Real Create gotcha documented along the way,
+    worth remembering for future kinetic-block placement scripts:
+    overwriting a kinetic block's facing via repeated `/setblock`
+    doesn't reliably rebuild Create's kinetic network — didn't affect
+    this fix (each cell places into real air exactly once), but matters
+    for any future hand-tuning of a live rig.
+  - **Fixed script deployed to the repo and the live instance's kubejs
+    folder, syntax-checked, but not committed yet** — same "hold for
+    review" pattern as the original work, given how much this
+    diagnosis undercut the original verification. **This only fixes
+    fresh worlds** — the current live save already has the 3 wrongly-
+    placed blocks built in from the old script (that part only runs
+    once per world at first login), and fixing an already-placed block
+    in a real save needs either a live command run by the player
+    themselves or booting a server directly against that save file —
+    the build session's own permission settings blocked the latter, so
+    real coordinates for a manual fix were handed back instead (see
+    QUEUE.md's own note to the user / chat for the exact commands).
   - **Real save-compatibility risk caught before deploying**: the live
     instance's quest save already had "Sharpened Scrap" completed under
     its own task/chapter IDs, which had diverged from the repo's copy

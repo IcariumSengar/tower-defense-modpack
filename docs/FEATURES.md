@@ -211,6 +211,61 @@ mob = common drop) and enemy-tier gating (a weak mob can never roll a
 top-tier bag) — this was inverted once early on and fixed; don't
 reintroduce the inversion.
 
+**"Vanilla-materials-only" rule retired 2026-09-05.** Direct
+reconsideration: "only vanilla drops in loot bags...not ideal, dont
+remember coming to that decision. I want the game to feel like killing
+mobs means progressing your tech." The rule existed (it's real, it was
+written deliberately when loot bags first shipped, not misremembered)
+but no longer reflects what's wanted. **New standing principle,
+replacing it**: loot should generally match what the player actually
+needs to craft and progress — kills should feel like real tech
+progress, not just a drip of raw materials. Custom/invented items are
+now allowed, especially for top-tier rewards, not just real vanilla
+items. **Real materials can still be deliberately gated out of
+mob-drop loot bags as a rare exception** (to drive exploration, or gate
+a specific unlock behind finding it) — but that's the exception now,
+not the rule; most progression materials should be reachable through
+normal kill/loot-bag play. See "Andesite gated behind exploration, not
+loot bags" below for the first real application of this exception, and
+"Legendary loot bag" for the first custom-item reward.
+
+**Andesite gated behind exploration, not loot bags — requested
+2026-09-05, built and deployed 2026-09-05, not yet committed (held for
+review, same pattern as the rig hotfix).** Direct playtest report:
+crafting materials don't actually match what the player needs to
+progress — "Andesite isnt being dropped for example, so cant even craft
+a hand crank." Real, confirmed gap, not a guess: grepped every current
+loot source (all 4 BountyBags tier tables, `postapocalypse_structures`'
+own base loot overrides, the structure-loot-progression bonus pools) —
+**Andesite appeared in none of them.** So the Barbed Wire feature that
+just shipped was genuinely uncraftable in real play, not just thin on
+materials. This is the first real application of the exploration-gating
+exception from the loot-philosophy change above.
+- **Real recipe correction, verified from Create's own recipe JSONs
+  rather than trusting this doc's earlier paraphrase**: Hand Crank is
+  actually **3 planks + 1 Andesite Alloy** — no Shaft involved at all,
+  despite what this entry originally said. Andesite Alloy itself is
+  2 andesite + 2 iron nuggets, confirmed the same way.
+- **Shipped**: raw `minecraft:andesite` added to all three
+  `postapocalypse_structures` base chest loot tables — `trash.json`
+  weight 4/count 3-8, `food.json` weight 2/count 2-6 (kept modest
+  there, off-theme filler), `cobwebs.json` weight 4/count 3-9.
+  Deliberately **not** added to any BountyBags tier, exactly as
+  specced — this material comes from exploring, not killing. Verified
+  live, not just valid-JSON-checked: rolled all three tables 15× each
+  in a sandbox, real andesite drops actually came out (3 hits across 45
+  rolls).
+- **New quest shipped: "Turn the Crank"** (Tier 1 chapter), real task
+  `create:hand_crank`, flavor text pointing at structure exploration for
+  the andesite per the "search the wasteland" request — and since it
+  was written after the rig placement hotfix landed, it already
+  correctly references the Rolling Mill's real corrected location next
+  to the furnace, not the old broken one. Sandbox boot loaded it clean
+  (16 → 17 quests, no errors). **This is the real, live quest name —
+  the quest book rebuild below should reference "Turn the Crank," not
+  invent a second name/quest for the same thing.**
+- **Not yet committed** — held for review, same as the rig hotfix.
+
 **Mob-tier loot progression — requested 2026-09-02, built and deployed
 2026-09-03 (commit 2faf4ef).** Direct follow-up once BountyBags (bags) and Lootr (chests) were both
 live: "put together a loot table and tiered system so that it feels
@@ -218,8 +273,9 @@ like you are progressing in terms of item rarity as you kill higher
 tier mobs." Two separate systems, tied together by the same design
 intent — better loot the tougher the thing you killed, or the further
 out the chest you found — using each system's existing loot tables and
-rarity tiers, no new mods and no new custom items (keeps the
-vanilla-materials-only aesthetic rule above).
+rarity tiers, no new mods needed for the mechanism itself (the
+"no new custom items" constraint mentioned when this was first written
+is retired now, see above).
 - **Loot bags: reclassifying by actual mob toughness, not "wave of
   first appearance."** The current live mapping
   (`loot_bag_drops.js`) groups mobs into BountyBags' 4 tiers by which
@@ -374,8 +430,152 @@ by reading the actual code, not guessed:
   objective, zero near the fake player, and after a real 10-second wait
   (simulating the player staying away) all 8 were still alive and in
   place — confirms the position fix and the persistence/forceload fix
-  actually work together, not just correct in isolation. **Not yet
-  confirmed by an actual playtest.**
+  actually work together, not just correct in isolation.
+
+**Superseded 2026-09-05 — the whole mechanic was gated on the wrong
+condition.** Direct playtest report: "the mobs are not aggroed to the
+amulet when it is on the pedestal... are the mobs ever aggroed to the
+pedestal? The intention is that regardless of whether the amulet is on
+the pedestal or not, this is the focus point for the enemies... if im
+not in the base to defend it then i lose the game." This is a real,
+foundational correction, not a bug in the fix above — the fix worked
+exactly as specced, but the spec itself had the core premise backwards.
+The pedestal was never meant to be an optional, amulet-gated objective;
+it's the permanent front line of the entire game, full stop — that's
+the literal "tower defense" of "Tower Defense Modpack." Confirmed with
+the user directly, not assumed:
+- **The amulet's role narrows to two things, fully decoupled from
+  whether mobs target the pedestal**: personal buffs while worn
+  (Regen/Fire Res, unchanged), and unlocking border-crossing while
+  placed (unchanged). It no longer gates targeting, spawn position,
+  forceload, or wave-clear detection at all — those become
+  unconditional.
+- **Everything becomes permanently pedestal-relative, not just
+  targeting**: spawn position, forceload, and wave-clear detection all
+  key off the pedestal's fixed location always, matching "regardless of
+  whether I'm there, this is the fight" — a wave can genuinely resolve
+  (or overrun the base) while the player is off exploring, which is the
+  real stake the shipped "pedestal destruction = game over" mechanic
+  was always meant to sit inside, not a rare edge case bolted onto it.
+- **Real architectural implication**: the current target marker (an
+  armor stand `mob_aggro.js` points mobs at) only exists while the
+  amulet is placed — `amulet_pedestal.js` summons it on placement,
+  kills it on pickup. For targeting to be unconditional, a target has
+  to exist unconditionally too — vanilla mobs can only `setTarget()` an
+  entity, not a bare block position (already established, see "The
+  amulet" above). **This needs a permanent marker, summoned once at
+  world-build time in `playtest_starter_kit.js` alongside the pedestal
+  itself**, tagged something no longer amulet-specific (e.g.
+  `td_pedestal_target`, retiring `td_amulet_marker`), never killed.
+  `mob_aggro.js` then unconditionally targets it — no fallback-to-player
+  branch needed anymore.
+- **Real cross-dependency with the in-flight Pedestal visual upgrade
+  (Supplementaries) work below — build these together, not twice.**
+  The build session already verified Supplementaries' real Container
+  API for this exact purpose: `supplementaries:pedestal`'s block entity
+  has a real, always-present Container (not tied to amulet state),
+  readable/writable directly via `getDisplayedItem()`/
+  `setDisplayedItem()`, no item-type filter. Once that block replaces
+  the custom pedestal, the permanent target marker above doesn't need
+  to render/hold anything itself anymore — Supplementaries' own block
+  handles the floating-item visual whenever something's actually in its
+  slot, and "is the amulet placed" becomes a simple
+  `getDisplayedItem() == kubejs:amulet` check, fully decoupled from
+  targeting. This **eliminates the custom bob-effect tick handler
+  entirely** (the code the Math.PI bug lived in), not just relocates
+  it. Building the permanent-marker fix against the *old* custom
+  pedestal now, then rebuilding it again for Supplementaries right
+  after, would be real wasted work — better to land both as one piece.
+- **Forceload becomes permanent, not toggled** — moves from
+  `amulet_pedestal.js`'s add/remove-on-toggle to a one-time
+  `forceload add` in `playtest_starter_kit.js` at world creation,
+  same 96-block/169-chunk sizing already verified safe under vanilla's
+  256-chunk cap, never removed. **Real, deliberate resource-cost
+  tradeoff, not an oversight**: this permanently reserves chunk-loading
+  around the base for the whole game, not just while the amulet's
+  placed — an accepted cost of "the base is always genuinely at stake,"
+  matching the core premise directly.
+- **Compound redesign folded in 2026-09-05, same dispatch, not a
+  separate pass.** Direct follow-up once the "always the target"
+  correction landed: "the pedestal area is lacking any oomph. I want
+  this to be the heart of the base, the centre point to everything" —
+  plus a separate complaint that the pre-placed Create rig (Rolling
+  Mill/Mechanical Press/Depot) feels cramped inside the building.
+  **Real sequencing reason this has to happen together, not after**:
+  the pedestal's position feeds directly into the coordinate system
+  this whole entry is building (targeting, spawn, forceload, game-over
+  all key off it) — repositioning it *after* that lands would mean
+  redoing the wiring, not just moving a block.
+  - **Pedestal moves to the center of the courtyard** (the open space
+    between the gate and the building), replacing the current side
+    shrine nook — first thing visible on entering the gate, and mobs
+    converging on it (now unconditional) visibly funnel through the
+    same space the player stands in.
+  - **Raised dais**, a few blocks up from the courtyard floor with a
+    step on the gate-facing side — real physical presence without
+    blocking sightlines across the yard.
+  - **The 3 existing grave markers arranged in an arc around the base
+    of the dais**, not clustered to one side as now — same markers,
+    repositioned to actually frame what they're implicitly guarding.
+  - **Braziers/torches at a few points around the dais** so it reads as
+    a lit focal point specifically at night, when it actually matters.
+  - **The Create rig relocates to the yard too, off to one side** — a
+    "workshop corner," solving the cramped-interior complaint while
+    staying clearly secondary to the pedestal as the courtyard's one
+    real focal point.
+  - **Real open item for the build session**: check the new central
+    position against the existing gate-trap-avoidance and
+    grave-marker-on-wall near-misses already caught once each in this
+    compound's history — a recentered layout is exactly the kind of
+    change that could reintroduce either if not rechecked against the
+    real current coordinates, not assumed safe by similarity to the
+    old layout.
+- **Built and deployed 2026-09-05, not yet committed** — held for
+  review, same pattern as the other three pending items. Shipped
+  exactly as specced: `mob_aggro.js` targets the pedestal marker
+  always, no amulet check, no player fallback; `wave_spawner.js`/
+  `wave_status.js`'s objective resolution always keys off the
+  pedestal's fixed position; the amulet is now purely personal buffs +
+  border-crossing unlock, decoupled from base defense entirely.
+  `amulet_pedestal.js` is now a tick-poll against Supplementaries' real
+  Container (`getDisplayedItem()`/`setDisplayedItem()`, confirmed
+  callable directly from KubeJS) instead of a right-click hook —
+  Supplementaries' own block handles pick-up/place natively.
+  - **Real risk caught before shipping, not assumed safe**: deleting
+    the old `kubejs:amulet_pedestal` block registration outright would
+    have destroyed the actual live save's real placed pedestal on next
+    load (Forge silently drops an unregistered custom block to air) —
+    this pack's live instance is wave 4+ deep with that exact block
+    still standing. Fixed properly: kept the old block + recipe
+    registered (dead for new worlds, a real fallback for old ones);
+    both the destruction-detection and the new amulet-poll accept
+    *either* block id (checking only the new one would have read an
+    untouched old pedestal as destroyed the moment this deployed — a
+    real false game-over); restored a scoped legacy right-click handler
+    for the old block only, since it never had a Container the new poll
+    can read.
+  - **Self-healing marker, not a manual fix this time**: `mob_aggro.js`
+    re-summons the permanent target marker (and forceload) on any login
+    where the pedestal coordinate exists but no tagged entity does —
+    fixes the live save's missing marker automatically, unlike the
+    earlier rig-placement bug which needed the user to run commands
+    themselves.
+  - **Verified in 4 sandbox passes**, the last two specifically against
+    a real copy of the actual live save — confirmed its pedestal really
+    is still the old block, and that the self-heal's exact summon
+    command executes clean at its real coordinates. Zero KubeJS errors
+    across all passes.
+  - **Real scope limit, flagged back rather than decided
+    unilaterally**: the courtyard *visual* redesign (dais/step/
+    braziers/grave arc/outdoor workshop) only applies to **new**
+    worlds — the build session deliberately did not retrofit the
+    existing live save's actual courtyard layout, since that would mean
+    moving the user's real, already-explored base around, a much bigger
+    ask than the functional self-heal above. The live save gets the
+    functional fix (unconditional targeting works again) but keeps the
+    old side-shrine pedestal visually unless the user wants a manual
+    retrofit or a fresh world — genuinely the user's call, not decided
+    here.
 
 **Base expansion** — *live*. The worldborder grows on **every** wave
 clear, by an escalating amount, retuned twice since its original ship:
@@ -1381,8 +1581,8 @@ the way, see below), each individually confirmed with the user:
   instead of Treasure2-specific logic. Not started yet, ready to
   sequence whenever.
 
-**Aesthetic structure variety pass — requested 2026-09-04, ready to
-build.** Direct feedback: "now that we have got the beginnings of
+**Aesthetic structure variety pass — requested 2026-09-04, sent to
+build 2026-09-05.** Direct feedback: "now that we have got the beginnings of
 structure gen/placement... the current one is just lacking." Researched
 directly against real post-apocalyptic modpacks and mod listings rather
 than guessed — most "post-apoc" modpacks turned out to be 150+ mod
@@ -1726,7 +1926,12 @@ figured out, just sequenced behind the current playtest-feedback batch
 rather than adding another substantial parallel project.
 
 **Pedestal visual upgrade + mob-attack vulnerability — requested
-2026-09-04, ready to build.** Direct follow-up: "the pedestal
+2026-09-04.** The visual-upgrade half shipped 2026-09-05 as part of the
+combined "always pedestal-relative" rework above (Supplementaries
+retrofit, recentered dais, self-healing marker — see that entry for the
+full detail). **The mob-attack-vulnerability half shipped 2026-09-05 too, config-wise
+— but its real live behavior is unconfirmed, see the end of that
+bullet below, don't report this as a clean win.** Direct follow-up: "the pedestal
 block...it looks a bit rubbish. can we leverage a mod that renders cool
 pedestals with floating items whilst keeping the entire mechanic of the
 pedestal" plus "the pedestal should be vulnerable to mobs attacking it
@@ -1742,29 +1947,36 @@ too, not just an explosion." Two real, separate pieces:
   genuine, well-built block, not a stub. **One real dependency**:
   Moonlight Library (MehVahdJukaar's own shared library across several
   of his mods — not currently installed).
-  - **Recommended integration, not just a texture swap**: this pack's
-    current floating-amulet visual is entirely custom (a summoned
-    invisible marker armor stand + a throttled tick-handler sine-wave
-    bob, both hand-built and both bitten by the real Math.PI bug found
-    2026-09-02). Supplementaries' own Pedestal already handles exactly
-    this — storage, floating render, rotation — as real, tested mod
-    code. Cleanest path: **retire the custom marker/bob system
-    entirely**, place a Supplementaries Pedestal at the shrine instead
-    of `kubejs:amulet_pedestal`'s current plain block, and drive this
-    pack's own `td_amuletOnPedestal` state (and everything downstream
-    of it — aggro redirect, forceload, border-crossing, game-over
-    detection) off reading whether *that* block's own stored item is
-    the amulet, via the same tick-poll pattern already dominant in this
-    codebase. Less custom code, one whole bug class removed for free.
+  - **Real progress, 2026-09-05**: Supplementaries + Moonlight Library
+    installed, hash-verified. Real API confirmed by decompiling, not
+    assumed: `supplementaries:pedestal`'s block entity is a real
+    Container, slot 0 readable/writable directly via
+    `level.getBlockEntity([x,y,z]).getDisplayedItem()`/
+    `.setDisplayedItem(...)` from KubeJS (confirmed live), any item is
+    accepted (no type filter, confirmed from the mod's own
+    `canPlaceItem` bytecode), and a real BlockEntity exists in the
+    normal placed state. The actual `amulet_pedestal.js` retrofit using
+    this API is what's still outstanding.
+  - **Integration updated by the "always pedestal-relative"
+    supersession above — read that entry first.** Retire the custom
+    marker/bob system entirely (the code the Math.PI bug lived in), same
+    as originally planned, but the *reason* changed: this pack's own
+    `td_amuletOnPedestal` state no longer drives aggro/spawn/forceload/
+    wave-clear at all (those are unconditional now) — it only still
+    gates border-crossing. So the retrofit is: place a Supplementaries
+    Pedestal at the shrine; drive `td_amuletOnPedestal` (for
+    border-crossing purposes only) off `getDisplayedItem() ==
+    kubejs:amulet`; and separately, summon the permanent
+    `td_pedestal_target` marker armor stand from the supersession entry
+    above at world-build time, unconditionally, needing nothing from
+    Supplementaries' own item slot at all — Supplementaries' block
+    handles the floating-item visual on its own whenever something's in
+    it, the marker is purely a targeting anchor now, not a visual one.
   - **Real open items for the build session, not pinned down here**:
-    the exact NBT field/real API for reading and *writing* the
-    Pedestal's stored item from KubeJS (need to both detect "is the
-    amulet on it" and support this pack's own "place it programmatically
-    at first login" flows, if that's still wanted); confirming the
-    block's right-click accepts *any* item (so this pack's own logic
-    must ignore non-amulet items placed on it, not just assume only the
-    amulet ever gets used); verifying Moonlight Library doesn't collide
-    with anything already installed.
+    supporting this pack's own "place it programmatically at first
+    login" flows, if that's still wanted, via `setDisplayedItem()`; and
+    verifying Moonlight Library doesn't collide with anything already
+    installed.
 - **Mob-attack vulnerability: real current Epic Siege Mod config
   checked directly, not assumed** — and it corrects something this doc
   got wrong in the pedestal-destruction spec above. `demolitionMobs`
@@ -1777,30 +1989,42 @@ too, not just an explosion." Two real, separate pieces:
   via an actual live TNT test) still stands — that was tested with
   manually-placed TNT, not mob-dropped — but "mobs already threaten it
   today" needs a fresh, honest look, not the old claim repeated.
-  - **Real candidate mechanism found**: ESM's `[Advanced]` block has
-    `blockTargeting = true` and a `blockTargets` list (currently just
-    `#minecraft:candles`) for blocks mobs actively target and destroy —
-    adding the pedestal's real block ID here is the natural fix, same
-    "check the mod's own config before writing new KubeJS" discipline
-    already established for this exact mod. `targetingMobs` (currently
-    just `minecraft:zombie`) would also need deciding — just zombie, or
-    the wider wave roster.
-  - **Separate, possibly-already-partial mechanism, not yet tested**:
-    `diggerMobs` (zombie, 5% chance of the tool needed) lets mobs dig
-    through obstacles blocking their path to their actual target — now
-    that wave mobs path to the pedestal marker when it's active (see
-    the objective fix above), a digging zombie *might* already be able
-    to bite through the pedestal or its surroundings to reach it,
-    independent of any new config. Worth a real live test before
-    assuming new config is even needed for this specific path.
-  - **`griefing = false` is the master toggle currently gating most of
-    this** — whether `blockTargeting`'s own destruction behavior
-    requires the general `griefing` flag too, or works independently,
-    needs checking against the mod's own logic before assuming which
-    knobs actually need flipping.
-- **Not yet sent to build** — real technical unknowns on both pieces,
-  holding for the build session's own verification before dispatch is
-  worth much, per standing instruction anyway.
+  - **Shipped 2026-09-05**: both real pedestal block ids
+    (`kubejs:amulet_pedestal` and `supplementaries:pedestal`, same
+    backward-compat pairing as the rest of the pedestal rework) added to
+    `blockTargets`. `targetingMobs` widened from just `minecraft:zombie`
+    to this pack's full wave roster (`mob_aggro.js`'s `WAVE_MOB_TYPES`)
+    — a deliberate call that a base-under-siege premise should let the
+    whole roster threaten it, not just zombies.
+  - **`griefing = false` question resolved by decompiling the mod's own
+    AI goal, not guessed**: `blockTargeting`'s destroy behavior is
+    gated by the real **vanilla `mobGriefing` gamerule** (via a Forge
+    event), not by ESM's own `griefing` config toggle — two separate
+    systems. This pack's `mobGriefing` is confirmed `true`, so that gate
+    is open. Also found a real, non-obvious requirement along the way:
+    the target block needs 2 full air blocks directly above it to be
+    eligible at all.
+  - **Real live test came back inconclusive, not a confirmation —
+    flag honestly.** A zombie left adjacent to a pedestal in a sealed
+    test pen (satisfying the air-above requirement) for 60+ seconds
+    never destroyed it. To isolate whether that was this pack's config,
+    the same test was run against a plain vanilla candle — the mod's
+    own pre-existing default target, untouched by anything changed
+    here — and it was never destroyed either. That rules out this
+    specific config as the cause, and points at the whole
+    destroy-mechanism possibly not firing in this environment at all
+    (could be a goal-priority interaction with vanilla AI, could be
+    something else — not chased further, diminishing returns). Shipped
+    as correct per the real decompiled logic (harmless either way), but
+    **not confirmed working** — needs a real player checking whether
+    mobs actually chip away at anything in `blockTargets` during normal
+    play; if they don't, that's a real, separate bug to open, not
+    assumed fixed because the config reads correctly.
+  - **`diggerMobs` question still fully open, not reached** — whether
+    wave mobs already partially bite through obstacles via that
+    separate mechanism, independent of `blockTargets` entirely.
+- **Built and deployed 2026-09-05, not yet committed** — held for
+  review, same pattern as the other pending items.
 
 **Pedestal destruction = game over — requested 2026-09-04, built and
 deployed 2026-09-04 (commit ce75d1f).** Direct request, explicitly narrower than the parked Hardcore
@@ -2039,16 +2263,27 @@ directly, not assumed:
   pack's own established Tier 1 rule ("no power, no fuel," the exact
   reason Trapcraft's Igniter/Fan/Magnetic Chest are Tier 2, not Tier
   1). **User's call: keep it in Tier 1 anyway.**
-- **Friction reduced, then fully shipped, 2026-09-04**: rather than
-  making the player build a Rolling Mill from scratch, **a finished
-  Depot + Mechanical Press + Rolling Mill rig is pre-placed** inside
-  Abandoned Brick House's back room (local x=4-6,z=9 — confirmed
-  genuinely clear floor/headroom via a fresh `/place template` + block
-  reads before touching anything). The player's only remaining task is
-  crafting one **Hand Crank** and placing it in the reserved open cell
-  past the Mill — that step genuinely can't be pre-placed already
-  running, it needs a real player right-click. Press and Mill face the
-  same direction and conduct power directly to each other, no shaft
+- **Friction reduced, then fully shipped, 2026-09-04 — placement bug
+  found and fixed 2026-09-05.** Rather than making the player build a
+  Rolling Mill from scratch, **a finished Depot + Mechanical Press +
+  Rolling Mill rig is pre-placed** inside the starting structure.
+  **Real placement bug, direct playtest report**: the rig landed
+  outside the building, blocking the front door — the original
+  "clear space" spot-check only verified air/floor/ceiling, never
+  *what kind* of space it was, and local x=4-6,z=9 turned out to be the
+  open entrance yard, not a back room. Root-caused by parsing
+  `abandoned_brick_house.nbt` directly (not another spot-check) and
+  reproduced fresh against real terrain rather than trusting the
+  already-played live save (4 waves in by report time, could have been
+  altered by the player). **Corrected spot: local x=7, z=5-7** — a real
+  enclosed room confirmed from the NBT itself (solid andesite
+  foundation, 3 blocks of headroom, a real ceiling, walls/doors/
+  furniture boxing it in), right beside the structure's own pre-placed
+  furnace. The player's only remaining task is crafting one **Hand
+  Crank** and placing it in the reserved open cell past the Mill —
+  that step genuinely can't be pre-placed already running, it needs a
+  real player right-click. Press and Mill face the same direction and
+  conduct power directly to each other, no shaft
   needed — confirmed live with a temporary creative motor (real nonzero
   Speed on both blocks in a single 3-block kinetic network).
 - **Real crafting chain, decompiled and live-verified end to end, not
@@ -2224,147 +2459,199 @@ top of what's already in flight.
 
 ## Quest book
 
-**FTB Quests — three chapters: Basics, Tier 1, Tier 2** — *all three
-live* (Basics/Tier 1 2026-08-30, Tier 2 2026-08-31). Original design put
-every quest in one "Basics" chapter;
-per direct feedback, each tier now gets its own chapter with one quest
-per item, rather than one quest per tier carrying a wall of text
-describing several items at once.
+**Quest book rebuild — requested 2026-09-05, design settled, sent to
+build.** Direct feedback: "I would prefer to be a bit linear in
+the beginning rather than a basics section then a tier 1 etc...each of
+these chapters feel empty of fun," plus a separate follow-up that the
+existing flavor text "sounds quite AI" — too heavy on mysterious/
+portentous prose, not enough practical information, no sense that the
+world still has open questions in it. Design fully worked through with
+the user before any content got written; this replaces the "three
+chapters" structure below entirely, not incrementally.
 
-**Basics chapter** — *live*, updated for the amulet/pedestal reversal
-2026-09-01. 12-quest chain (10 linear onboarding quests plus 2 amulet
-side-quests inserted by dependency, not renumbering) — table below
-matches what's actually shipped in `basics.snbt`:
+**Structural philosophy — a single chapter, one spine, tiers as
+branches off it.** The old three-chapter split (Basics/Tier 1/Tier 2)
+already had a mostly tree-shaped dependency graph underneath it (Tier 1
+gated on Basics, Tier 2 gated on Tier 1) — the real problem was that
+FTB Quests renders each chapter as a separate flat tab, so that shape
+never became visible. Consolidating into one chapter's canvas, with
+real x/y layout so the branch-and-reconverge shape actually reads,
+fixes this without needing to invent new content or new dependencies.
+User's explicit calls, not assumed:
+- Tier 1 and Tier 2 both branch off the same point on the spine
+  ("Open It") rather than Tier 2 visually nesting inside Tier 1's
+  branch — acceptable as a first pass, can be revisited once it's
+  actually laid out in-game.
+- The early stretch (onboarding through the tier branches) should read
+  as one continuous thing — story beats, core-loop teaching (horn →
+  wave → loot → open), and the push into Tier 1/2 progression all
+  happening in the same breath, not sequential blocks. The tier
+  branches should read as "you need this now," not optional side
+  content — reflected in the flavor text tone below, not a structural
+  change.
+- Checkmark "story beat" quests stay — the found-diary narrative is
+  genuinely doing real work as connective tissue between objective
+  quests — just not as filler where they don't add anything.
 
-| # | Quest | Task | Reward |
-|---|---|---|---|
-| 1 | You're On Your Own | Checkmark | 2 XP levels |
-| 2 | Borrowed Time | Checkmark | 2 XP levels |
-| 3 | Sound the Horn | Checkmark | 4x cobblestone + 4x oak_log |
-| 4 | Thin the Horde | Kill 5x zombie | 3 XP levels |
-| 5 | Spoils of War | Hold a Scavenger's Bag | — |
-| 6 | Open It | Checkmark | 3 XP levels |
-| 6.5 | Not Just Jewelry *(moved, retasked)* | Craft `kubejs:amulet` | 2 XP levels |
-| 8 | Watch the Walls Grow | Checkmark | 3 XP levels |
-| 8.5 | Leave It Behind *(retasked)* | Checkmark (manual, after placing on the pedestal) | — |
-| 9 | The Reckoning | Checkmark (manual, after wave 5 gear removal) | — |
-| 10 | No Turning Back | Checkmark | — |
+Tree shape (spine down the middle, both tiers branching from the same
+point, reconverging before the campaign's late-game beats):
 
-*(Quest 7, "Fortify," is no longer part of this chapter — see "Tier 1
-chapter" below. It's still numbered 7 for reference to its old
-position; nothing here renumbers the rest of the chain.)*
+```
+ You're On Your Own
+ Borrowed Time
+ Sound the Horn
+ Thin the Horde (kill 5x zombie)
+ Spoils of War (hold a bag)
+        │
+    Open It ──────────────┬──────────────┐
+        │                 │              │
+ Not Just Jewelry     Tier 1 branch: Sharpened Scrap (barbed wire),
+ (craft amulet)        Something Crueler (bear trap),
+        │              Turn the Crank (hand crank, already shipped)
+        │                 │              │
+ Watch the Walls Grow ────┴──────────────┘
+        │
+ Leave It Behind      Tier 2 branch (gated on Tier 1): Spark and Flame,
+ (amulet on pedestal)  Herd Them In, Waste Not, Wired for War
+        │                 │
+ The Reckoning ───────────┘
+   (wave 5 gear removal)
+        │
+ No Turning Back
+   (wave 8)
+```
 
-**Two amulet quests, retasked for the reversal — built 2026-08-31**:
-"Not Just Jewelry" moved from position 2.5 (gated on quest 2) to 6.5
-(gated on quest 6, "Open It") — it's now the crafting quest, needing the
-player to plausibly have Uncommon-tier materials first. Task is now
-`Craft kubejs:amulet`. "Leave It Behind" kept its position (8.5) but its
-task changed from crafting the pedestal (no longer possible — pre-built
-now, see "The amulet" section) to a manual checkmark against
-`td_amuletOnPedestal`, same pattern as "The Reckoning," and gained a
-dependency on 6.5 alongside its existing one on quest 8 — preserves the
-original "the wall grows on its own, or you can step past it yourself"
-pairing intent while adding the real prerequisite.
-- *"Not Just Jewelry"*: **"Whoever manned this post before
-  you didn't leave the pendant behind by choice — it's gone, and the
-  shrine's stood empty since. If it mattered enough to build a stand
-  for, it's worth making another. Melt what gold you can spare and see
-  what comes of it."**
-- *"Leave It Behind"*: **"The stand's been waiting a
-  long time for something to hold. Set the pendant down and the wall
-  stops being a wall — for you, anyway. Everything out there stops
-  watching you and starts watching it instead. No more mending, no more
-  warmth, but nothing's stopping you from walking past that line. Just
-  remember what you're leaving unguarded."**
-- Both flavor-text drafts, not final — same editorial latitude as every
-  other quest text in this book.
+**Tone rework — new house style for every quest in the book, not just
+new ones.** Same found-diary voice (still written by "whoever held this
+post before"), but every entry now does two things instead of one:
+gives real, actionable information about the mechanic it's attached to,
+and ends on a genuine open question the writer doesn't have the answer
+to — not a closed, portentous mic-drop. The open questions aren't
+decoration: several point at things that are real and true about this
+pack right now (no known ceiling on endless-phase waves, the amulet's
+exact effect being worth discovering rather than stated outright), so
+the "more to learn yet" feeling isn't manufactured. Finalized text for
+the full existing quest set, replacing every old line below:
 
-Basics quest flavor text (found-diary voice, matched against the wave-5
-gear-removal text as the tone benchmark), quest 7 omitted since it no
-longer lives here:
+*Spine:*
+1. *"You're On Your Own"*: **"Whoever was here before you didn't make
+   it, but they left the place standing — that's not nothing. Sound the
+   horn when you're actually ready, not before. Never did figure out
+   where the horde comes from before it shows up here. Worth keeping an
+   eye out, if you're the type."**
+2. *"Borrowed Time"*: **"That sword and armor aren't permanent — you'll
+   lose them a few waves in, five if I've got it right. Get real use
+   out of them while you can, because whatever you find after has to
+   carry you the rest of the way. Never worked out why five
+   specifically. Felt too exact to be random."**
+3. *"Sound the Horn"*: **"Right-click it when you want the next wave —
+   it won't come on its own until the timer runs out, so take the gap
+   if you need to patch up or restock. I'd rather choose my moment than
+   get caught mid-repair."**
+4. *"Thin the Horde"*: **"Five's not much, but it'll tell you fast
+   whether your gear can actually handle this. Count resets every wave.
+   Never found a real ceiling on how many of these this place can throw
+   at you — not sure there is one."**
+5. *"Spoils of War"*: **"Bags don't always drop, but when they do, grab
+   them — better loot seems to come off tougher kills, near as I can
+   tell. Never pinned down the actual odds."**
+6. *"Open It"*: **"Open bags as you get them rather than hoarding —
+   they don't do anything sitting in your inventory. I kept a few
+   unopened once, convinced myself they'd be worth more later. They
+   weren't."**
+8. *"Watch the Walls Grow"*: **"Clearing waves pushes the border out —
+   more room to work with, but also more ground you're on the hook for.
+   It grows a little more each time, faster later on. Never figured out
+   what happens if you just... stop clearing them."**
+9. *"The Reckoning"* (wave 5 gear removal): **"Five waves was as far as
+   whoever held this post before you got. You've matched that, and the
+   gear's finally given out — it was never going to last past this
+   point anyway. Everything from here is genuinely unwritten; nobody's
+   diary goes further than this."**
+10. *"No Turning Back"* (wave 8): **"Eight was the last wave anyone
+    bothered planning for — after this, it just keeps escalating, no
+    ceiling anyone's found yet. Whatever gear and defenses you've built
+    by now are what you're taking into it. I don't know how far it
+    actually goes. Maybe you'll be the one who finds out."**
 
-1. *"If you're reading this, they didn't make it. Doesn't matter who
-   they were. What matters is this: the walls are still standing, the
-   horn still works, and the desert doesn't care either way. Get
-   moving."*
-2. *"Notice the notches in that blade? Someone put those there fighting
-   for this exact patch of dirt. The armor's dented in places that
-   matter. None of it was made for you — it was made to last just long
-   enough for whoever's holding it. Don't get comfortable."*
-3. *"Out here, waiting is worse than fighting. The horn doesn't summon
-   anything that wasn't already coming — it just decides when. Better
-   you pick the hour than the dark does."*
-4. *"Count doesn't matter until it's zero. Five isn't a milestone, it's
-   a start — the desert's got more where these came from, and it isn't
-   running out before you do."*
-5. *"Strip what you can off anything that stops moving. Whatever's
-   left in their pockets is worth more to you now than it ever was to
-   them."*
-6. *"A sealed bag is just extra weight. Open it before you decide it
-   wasn't worth carrying."*
-8. *"Every wall you're not standing behind yet is still just desert.
-   Clear what's in front of you and the line moves — more ground to
-   hold, more reasons it might not hold."*
-9. *"Five waves. That's the whole story of whoever came before — start
-   to finish, blade to dust. You've matched them. Now you get to find
-   out what happens after the story usually ends."*
-10. *"Eight is where the map runs out. Nobody wrote down what comes
-    after, because nobody who saw it lived to write it down. From here
-    it's the same night, over and over, until it isn't. How long you
-    last is the only story left to tell."*
+*Amulet side-branch:*
+- *"Not Just Jewelry"* (craft `kubejs:amulet`): **"The shrine's been
+  empty a while — whoever wore this before isn't coming back for it.
+  Melt down enough gold and you can make another; the recipe's simple
+  once you've got the materials. I still don't know exactly what it
+  does once it's on, only that it's worth building the stand for."**
+- *"Leave It Behind"* (manual checkmark, after placing on the pedestal):
+  **"Set the pendant on the stand and whatever's coming stops watching
+  you and starts watching it instead — you can walk past the border
+  line without it pushing back once that's done. You lose whatever the
+  amulet was doing for you while it's off you, so it's a real trade,
+  not a free one. And it's not indestructible sitting there. Worth
+  thinking about what you're leaving behind to guard it."**
 
-**Tier 1 chapter** — *live* (2026-08-30). Two quests, parallel (both
-gated on Basics quest 6, not on each other — Spikes and Bear Trap are
-alternatives, not a sequence):
+*Tier 1 branch:*
+- *"Sharpened Scrap"* (craft the real Barbed Wire block — task target
+  updated when Spikes got replaced, this text wasn't yet): **"Wire it
+  right and it does two things at once — cuts and slows anything that
+  tries to push through. Needs power to make, not just a workbench; the
+  rig for that's already set up in here somewhere. Never seen barbed
+  wire do more than that, but I only ever wired up the one line."**
+- *"Something Crueler"* (craft `trapcraft:bear_trap`): **"A Bear Trap
+  won't kill on its own, but it holds whatever steps in it in place —
+  long enough for you or something else to finish the job. Resets
+  itself once it's sprung, near as I can tell, so it's not a one-time
+  thing. Never tested how many times before it actually gives out."**
+- *"Turn the Crank"* (already shipped as part of the Andesite fix
+  above, not new — this entry's earlier "A Long Way From Home" name was
+  written before that shipped and never went live; use the real
+  quest, don't create a second one for the same thing). Real task
+  `create:hand_crank`. The build session already wrote its own real
+  flavor text, referencing the Rolling Mill's real corrected location
+  — carry that quest's existing text forward into the tree as-is if it
+  already matches this house style, or give it the same tone pass as
+  everything else here if it doesn't (it shipped before this tone
+  rework was settled, so it may still be in the old voice). The
+  proposed line below is this session's draft in case the existing text
+  needs replacing, not a second quest to add: **"Whoever built the
+  press and mill in here never finished wiring it up — there's a gap
+  where a crank should go. Andesite's the missing piece, and I've never
+  found it lying around close to home. The old structures out past the
+  border might still have some, if you're willing to go looking."**
 
-| Quest | Task | Reward |
-|---|---|---|
-| Sharpened Scrap *(= the existing live "Fortify," relocated)* | Craft `trapcraft:spikes` | — |
-| Something Crueler *(new)* | Craft `trapcraft:bear_trap` | 2 XP levels |
+*Tier 2 branch:*
+- *"Spark and Flame"* (craft `trapcraft:igniter`): **"Wire an Igniter
+  to redstone and it lights the ground on a signal — undead catch fast,
+  and fire keeps working after you've moved on to the next thing. Worth
+  knowing it'll ignite anything flammable nearby too, not just what
+  you're aiming at. Never traced exactly how far it spreads."**
+- *"Herd Them In"* (craft `trapcraft:fan`): **"A Fan pushes anything
+  caught in front of it, on a signal — mobs, items, doesn't
+  discriminate. Point it right and it does the aiming for you, funneling
+  things into whatever's actually going to finish them off. Still
+  working out the best angle myself."**
+- *"Waste Not"* (craft `trapcraft:magnetic_chest`): **"A Magnetic Chest
+  pulls in anything dropped nearby once it's wired up — saves you
+  walking back after a fight to collect what's left. Range seems to
+  depend on the chest itself, not the signal. Never measured it
+  exactly."**
+- *"Wired for War"* (craft `medievalturrets:bow_turret_item`): **"An
+  Auto-Turret keeps firing on its own once it's placed and stocked with
+  arrows — it'll pick targets in range without you doing anything.
+  First thing in this place that can actually watch a wall while you're
+  somewhere else. Haven't tested what happens if it runs dry
+  mid-wave."**
 
-- *"Sharpened Scrap"* keeps its existing text: **"The dead didn't just
-  leave gear behind — some of them left know-how. Turn scrap into
-  something with teeth. Spikes don't ask questions, and they don't get
-  tired."**
-- *"Something Crueler"*: **"A Bear Trap doesn't kill quick, but it
-  holds. Whatever steps in it stays there — long enough for whatever
-  comes next."**
-
-**Real migration note, not fresh content**: "Sharpened Scrap" is the
-already-live Fortify quest, relocated into its own chapter — moved with
-its quest ID (`1454951A7FB14A26`) and task/dependency untouched, only
-the title and chapter changed, so Basics quest 8's existing dependency
-on it keeps working unmodified. Confirmed `trapcraft:bear_trap` as the
-real registry name directly from Trapcraft's own jar (`assets/trapcraft/
-lang/en_us.json`'s `block.trapcraft.bear_trap` key) before writing
-"Something Crueler"'s task, not guessed — same discipline that would
-have caught the original Fortify `#tag` crash earlier if it'd been
-applied there. Chapter itself renamed from "Defenses" to "Tier 1" for
-the new one-chapter-per-tier structure.
-
-**Tier 2 chapter** — *live* (2026-08-31,
-`pack/config/ftbquests/quests/chapters/tier2_machines.snbt`). Four
-quests, all gated on "Sharpened Scrap" (not chained to each other —
-order of crafting Tier 2 items doesn't matter narratively):
-
-| Quest | Task | Reward |
-|---|---|---|
-| Spark and Flame | Craft `trapcraft:igniter` | 2 XP levels |
-| Herd Them In | Craft `trapcraft:fan` | 2 XP levels |
-| Waste Not | Craft `trapcraft:magnetic_chest` | 2 XP levels |
-| Wired for War | Craft `medievalturrets:bow_turret_item` | 2 XP levels |
-
-- *"Spark and Flame"*: **"Wire an Igniter and it'll set the ground
-  itself against them — you won't need to swing a blade if the fire
-  gets there first."**
-- *"Herd Them In"*: **"A Fan won't kill anything on its own. It doesn't
-  need to — it just makes sure they end up exactly where your other
-  traps are waiting."**
-- *"Waste Not"*: **"A Magnetic Chest does the grim work so you don't
-  have to — walk away from a kill and let it do the collecting."**
-- *"Wired for War"*: **"An Auto-Turret keeps swinging long after your
-  own arm gives out. Wire one, and for the first time, something else
-  is watching the wall while you sleep."**
+**Not pinned down here, left for the build session**: the real x/y
+grid coordinates in the consolidated chapter's `.snbt` (the ASCII shape
+above is the intent, not literal pixel positions); whether "Open It,"
+"Not Just Jewelry," and both tier branches can share one dependency
+cleanly in FTB Quests' own model or need an intermediate hub quest;
+migrating quest IDs across the old chapter files without breaking
+`1454951A7FB14A26` ("Sharpened Scrap")'s real completed-progress risk
+on the live save, same care the Barbed Wire swap already took once.
+Rewards (XP levels etc.) carry over unchanged from the old tables
+unless the build session finds a real reason to adjust one.
+- **Sent to build 2026-09-05** — design and full text settled through
+  direct back-and-forth before dispatch, per standing instruction.
 
 **Real bug worth remembering**: Fortify originally used a `#`-prefixed
 tag reference as its item-task target, which FTB Quests' ItemTask
