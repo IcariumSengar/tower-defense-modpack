@@ -71,8 +71,8 @@ below); Phase 5 not started:
   feedback from the first actual playtest of the new fresh-world
   pedestal redesign, 4 items:
   1. **Mobs aren't pathing toward the pedestal at all — real root cause
-     found and fixed 2026-09-05, see FEATURES.md/MODS.md for the full
-     writeup.** Diagnosed for real, not guessed: the permanent marker DID
+     found, fixed, and committed (1520565) 2026-09-05, see FEATURES.md/MODS.md
+     for the full writeup.** Diagnosed for real, not guessed: the permanent marker DID
      exist correctly on the live save (confirmed by parsing the actual
      save's entity/player NBT directly — right tags, right coordinates,
      one real wave zombie found sitting 3.6 blocks from the player and
@@ -101,16 +101,30 @@ below); Phase 5 not started:
      Possible bonus, not claimed as fixed here: this may also explain why
      the separate pedestal mob-vulnerability config read as
      inconclusive — worth watching for on the same playtest.
-  2. **A vanilla village generated close to spawn** (outside the
-     worldborder) and its Iron Golem aggroed wave mobs during an actual
-     wave, pulling them into a fight with village mobs instead of
-     converging on the pedestal — a real interaction risk given the
-     "always converges on the objective" design this pack just
-     committed to. Needs investigating: how close can vanilla villages
-     actually generate given current spacing, and whether that's worth
-     addressing (push village spacing out further, or something else)
-     given it can now actively interfere with the core mechanic, not
-     just be atmospheric clutter.
+  2. **Village spacing — real root cause confirmed and fixed
+     2026-09-05, not yet committed.** Extracted the live save's own real
+     seed (`-705653274963918758`) directly from its `level.dat` and ran
+     `/locate structure #minecraft:village` from the actual fixed spawn
+     point (780, -150) in a sandbox running this pack's real worldgen
+     config — confirmed a real savanna village only **92 blocks** from
+     spawn on this exact seed, using vanilla's untouched default village
+     spacing (`spacing=34, separation=8` chunks, this pack had never
+     overridden it). That's well within where wave mobs spawn (40-60
+     blocks from the objective) and inside where the worldborder reaches
+     by wave 6 (95 blocks) — a real, quantified collision, not
+     speculation. Fix: added `pack/kubejs/data/minecraft/worldgen/
+     structure_set/villages.json`, doubling spacing to 64/16 (same 5
+     vanilla village variants/weights/salt, only the placement numbers
+     changed). Re-tested with the identical seed and spawn point after
+     the change: nearest village jumped to **813 blocks** away. Full mod
+     set still boots clean with the override in place. **Real, honest
+     limit**: this is a statistical spacing change for *future* worlds —
+     it can't retroactively move the already-generated village on the
+     current live save (structures don't relocate once generated), and a
+     single seed test doesn't prove every future seed will land equally
+     far, just that this exact reported scenario is now resolved and the
+     odds are substantially better going forward. Not committed yet,
+     same "hold for review" pattern as the mob-pathing fix.
   3. **The new pedestal dais reads badly in practice — real reference
      provided, not guessed this time.** Direct feedback, blunt: "looks
      like hot garbage," campfires specifically called out. User shared

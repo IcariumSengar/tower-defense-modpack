@@ -1617,6 +1617,27 @@ the way, see below), each individually confirmed with the user:
   instead of Treasure2-specific logic. Not started yet, ready to
   sequence whenever.
 
+**Vanilla village spacing — real playtest report 2026-09-05, fixed the
+same day.** A village generated close enough to the fixed spawn point
+that its Iron Golem pulled wave mobs into a fight instead of letting
+them converge on the pedestal — a real interaction risk given the
+"always converges on the objective" targeting fix above. Confirmed for
+real, not assumed: extracted the live save's actual seed from its
+`level.dat` and ran `/locate structure #minecraft:village` from the
+real fixed spawn point (780, -150) against this pack's actual worldgen
+config in a sandbox — a savanna village really was only 92 blocks away,
+on vanilla's untouched default village spacing (this pack had never
+overridden `minecraft:villages` before). Added
+`pack/kubejs/data/minecraft/worldgen/structure_set/villages.json`,
+doubling spacing/separation from vanilla's 34/8 to 64/16 (same 5
+variants/weights/salt). Re-tested with the identical seed and point:
+nearest village moved to 813 blocks away. Full mod set still boots
+clean. **Honest limit**: a spacing change is statistical and forward-
+looking only — it can't move the village already generated on the
+current live save, and one seed's improvement doesn't guarantee every
+future seed lands equally far, just that this exact reported collision
+is resolved and the odds are meaningfully better going forward.
+
 **Aesthetic structure variety pass — requested 2026-09-04, sent to
 build 2026-09-05.** Direct feedback: "now that we have got the beginnings of
 structure gen/placement... the current one is just lacking." Researched
