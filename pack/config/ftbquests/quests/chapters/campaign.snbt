@@ -1,0 +1,393 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "campaign"
+	group: ""
+	icon: "minecraft:book"
+	id: "1178FD42CF9984A2"
+	order_index: 0
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Whoever was here before you didn't make it, but they left the place standing - that's not nothing. Sound the horn when you're actually ready, not before. Never did figure out where the horde comes from before it shows up here. Worth keeping an eye out, if you're the type."]
+			icon: {
+				Count: 1
+				id: "minecraft:netherite_sword"
+				tag: {
+					Damage: 0
+				}
+			}
+			id: "46AB9754465218CF"
+			rewards: [{
+				id: "63AE16AB9867B80D"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				id: "3BF8DCAF2F4960C2"
+				type: "checkmark"
+			}]
+			title: "You're On Your Own"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			description: ["That sword and armor aren't permanent - you'll lose them a few waves in, five if I've got it right. Get real use out of them while you can, because whatever you find after has to carry you the rest of the way. Never worked out why five specifically. Felt too exact to be random."]
+			icon: "minecraft:clock"
+			id: "70DA454A61DDC3A1"
+			rewards: [{
+				id: "5B4213658A2A99F8"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				id: "42E75310C2F28FF9"
+				type: "checkmark"
+			}]
+			title: "Borrowed Time"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			description: ["Right-click it when you want the next wave - it won't come on its own until the timer runs out, so take the gap if you need to patch up or restock. I'd rather choose my moment than get caught mid-repair."]
+			icon: "kubejs:wave_horn"
+			id: "42E42312C8B61976"
+			rewards: [
+				{
+					count: 4
+					id: "24A66E75C30766A0"
+					item: "minecraft:cobblestone"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "47321F7EAFB51D23"
+					item: "minecraft:oak_log"
+					type: "item"
+				}
+			]
+			tasks: [{
+				id: "581F189F7A4A833B"
+				type: "checkmark"
+			}]
+			title: "Sound the Horn"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["42E42312C8B61976"]
+			description: ["Five's not much, but it'll tell you fast whether your gear can actually handle this. Count resets every wave. Never found a real ceiling on how many of these this place can throw at you - not sure there is one."]
+			icon: "minecraft:zombie_head"
+			id: "7F675AEBC7301832"
+			rewards: [{
+				id: "351F6384CED5BB12"
+				type: "xp_levels"
+				xp_levels: 3
+			}]
+			tasks: [{
+				entity: "minecraft:zombie"
+				id: "2FBB03E59B623145"
+				type: "kill"
+				value: 5L
+			}]
+			title: "Thin the Horde"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			description: ["Bags don't always drop, but when they do, grab them - better loot seems to come off tougher kills, near as I can tell. Never pinned down the actual odds."]
+			icon: "bountybags:uncommon_loot_bag"
+			id: "3BFCD0E4AA8C5B36"
+			tasks: [{
+				consume_items: false
+				id: "24986BBE1C6FBBCF"
+				item: "bountybags:uncommon_loot_bag"
+				type: "item"
+			}]
+			title: "Spoils of War"
+			x: 8.0d
+			y: 0.0d
+		}
+		{
+			description: ["Open bags as you get them rather than hoarding - they don't do anything sitting in your inventory. I kept a few unopened once, convinced myself they'd be worth more later. They weren't."]
+			icon: "minecraft:chest"
+			id: "538A1BBC9A1B8EAC"
+			rewards: [{
+				id: "0532F9400886F2D7"
+				type: "xp_levels"
+				xp_levels: 3
+			}]
+			tasks: [{
+				id: "4B770968EBD48DB3"
+				type: "checkmark"
+			}]
+			title: "Open It"
+			x: 10.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: ["The shrine's been empty a while - whoever wore this before isn't coming back for it. Melt down enough gold and you can make another; the recipe's simple once you've got the materials. I still don't know exactly what it does once it's on, only that it's worth building the stand for."]
+			icon: "kubejs:amulet"
+			id: "7D3A5F912E6C0B48"
+			rewards: [{
+				id: "1F84B26D9A5E307C"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				consume_items: false
+				id: "5C0E7A34D2F9B168"
+				item: "kubejs:amulet"
+				type: "item"
+			}]
+			title: "Not Just Jewelry"
+			x: 13.0d
+			y: -2.0d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: ["A stone that remembers where you stood. Set one down, and the distance between here and anywhere else you've claimed stops mattering - step through, not across. Whoever built the first one wasn't thinking about convenience. They were thinking about how far they'd have to run if it all went wrong."]
+			icon: "waystones:waystone"
+			id: "216966530DE6E3DB"
+			rewards: [{
+				id: "4B2522E0A3B82AA9"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				consume_items: false
+				id: "0536AD0E341D2F75"
+				item: "waystones:waystone"
+				type: "item"
+			}]
+			title: "A Stone That Remembers"
+			x: 13.0d
+			y: -3.5d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"Wire it right and it does two things at once - cuts and slows anything that tries to push through. Needs power to make, not just a workbench; the rig for that's already set up in here somewhere. Never seen barbed wire do more than that, but I only ever wired up the one line."
+			]
+			icon: "createaddition:barbed_wire"
+			id: "1454951A7FB14A26"
+			rewards: [{
+				id: "0892955D880F0E2C"
+				type: "xp"
+				xp: 10
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "655A19AD37263BC9"
+				item: "createaddition:barbed_wire"
+				type: "item"
+			}]
+			title: "Sharpened Scrap"
+			x: 13.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: ["A Bear Trap won't kill on its own, but it holds whatever steps in it in place - long enough for you or something else to finish the job. Resets itself once it's sprung, near as I can tell, so it's not a one-time thing. Never tested how many times before it actually gives out."]
+			icon: "trapcraft:bear_trap"
+			id: "3F6D91E4A2C7B850"
+			rewards: [{
+				id: "6B2E8A0C41D5F937"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "5D7488609EA3E850"
+				item: "trapcraft:bear_trap"
+				type: "item"
+			}]
+			title: "Something Crueler"
+			x: 13.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"Whoever built the press and mill in here never got around to powering them - there's an open slot where a crank should sit. Take some planks and an Andesite Alloy to it and it'll finish the job; the andesite itself never seems to turn up close to home, only out in the old structures past the wall. Never checked whether it's just this stretch of desert, or the whole wasteland's picked clean of it near any real ground."
+			]
+			icon: "create:hand_crank"
+			id: "30DB900D8BD39277"
+			rewards: [{
+				id: "BAB27AB4EEE39EC3"
+				type: "xp"
+				xp: 10
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Search the wasteland for the andesite"
+			tasks: [{
+				consume_items: false
+				id: "210CD7D6975E275B"
+				item: "create:hand_crank"
+				type: "item"
+			}]
+			title: "Turn the Crank"
+			x: 13.0d
+			y: 4.5d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: ["Every wall you're not standing behind yet is still just desert. Clear what's in front of you and the line moves - more ground to hold, more reasons it might not hold."]
+			icon: "minecraft:map"
+			id: "689899208FC0ADF0"
+			rewards: [{
+				id: "1C41A9C1424FE8A4"
+				type: "xp_levels"
+				xp_levels: 3
+			}]
+			tasks: [{
+				id: "2282360EBA016659"
+				type: "checkmark"
+			}]
+			title: "Watch the Walls Grow"
+			x: 16.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["7D3A5F912E6C0B48"]
+			description: ["The stand's been waiting a long time for something to hold. Set the pendant down and the wall stops being a wall - for you, anyway. Everything out there stops watching you and starts watching it instead. No more mending, no more warmth, but nothing's stopping you from walking past that line. Just remember what you're leaving unguarded."]
+			icon: "supplementaries:pedestal"
+			id: "4B8F2D6A93E7C051"
+			tasks: [{
+				id: "057900B083CDA998"
+				type: "checkmark"
+			}]
+			title: "Leave It Behind"
+			x: 19.0d
+			y: -2.0d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: ["Wire an Igniter to redstone and it lights the ground on a signal - undead catch fast, and fire keeps working after you've moved on to the next thing. Worth knowing it'll ignite anything flammable nearby too, not just what you're aiming at. Never traced exactly how far it spreads."]
+			icon: "trapcraft:igniter"
+			id: "60D8DCF2E4CB570F"
+			rewards: [{
+				id: "4491B1785A049FFB"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "2308FBFB34BD44ED"
+				item: "trapcraft:igniter"
+				type: "item"
+			}]
+			title: "Spark and Flame"
+			x: 19.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: ["A Fan pushes anything caught in front of it, on a signal - mobs, items, doesn't discriminate. Point it right and it does the aiming for you, funneling things into whatever's actually going to finish them off. Still working out the best angle myself."]
+			icon: "trapcraft:fan"
+			id: "22F3265BCDFA63B5"
+			rewards: [{
+				id: "29DB799954472846"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "113A0DEA5FD00904"
+				item: "trapcraft:fan"
+				type: "item"
+			}]
+			title: "Herd Them In"
+			x: 19.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: ["A Magnetic Chest pulls in anything dropped nearby once it's wired up - saves you walking back after a fight to collect what's left. Range seems to depend on the chest itself, not the signal. Never measured it exactly."]
+			icon: "trapcraft:magnetic_chest"
+			id: "573EEB3757B78B97"
+			rewards: [{
+				id: "50CA0E4584F66F83"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "26CCD7A04ABD1646"
+				item: "trapcraft:magnetic_chest"
+				type: "item"
+			}]
+			title: "Waste Not"
+			x: 19.0d
+			y: 4.5d
+		}
+		{
+			dependencies: ["1454951A7FB14A26"]
+			description: ["An Auto-Turret keeps firing on its own once it's placed and stocked with arrows - it'll pick targets in range without you doing anything. First thing in this place that can actually watch a wall while you're somewhere else. Haven't tested what happens if it runs dry mid-wave."]
+			icon: "medievalturrets:bow_turret_item"
+			id: "74779308DEED321D"
+			rewards: [{
+				id: "0F62E8F07D9945A4"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "0AE9B4E0C4263BE8"
+				item: "medievalturrets:bow_turret_item"
+				type: "item"
+			}]
+			title: "Wired for War"
+			x: 19.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["689899208FC0ADF0"]
+			description: ["Five waves was as far as whoever held this post before you got. You've matched that, and the gear's finally given out - it was never going to last past this point anyway. Everything from here is genuinely unwritten; nobody's diary goes further than this."]
+			icon: "minecraft:netherite_chestplate"
+			id: "F58E263493C23094"
+			tasks: [{
+				id: "530B75E9DB0F03E9"
+				type: "checkmark"
+			}]
+			title: "The Reckoning"
+			x: 22.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["F58E263493C23094"]
+			description: ["Eight was the last wave anyone bothered planning for - after this, it just keeps escalating, no ceiling anyone's found yet. Whatever gear and defenses you've built by now are what you're taking into it. I don't know how far it actually goes. Maybe you'll be the one who finds out."]
+			icon: "minecraft:nether_star"
+			id: "9AFCCB27E483832B"
+			tasks: [{
+				id: "0D083E83110799B5"
+				type: "checkmark"
+			}]
+			title: "No Turning Back"
+			x: 24.0d
+			y: 0.0d
+		}
+	]
+	title: "Campaign"
+}
