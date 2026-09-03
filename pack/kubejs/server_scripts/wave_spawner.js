@@ -198,36 +198,35 @@ function nearbyWaveMobCount(origin, level, radius, requireTag) {
 // the base and they despawned, causing me to win the wave." Root cause,
 // confirmed by reading the code, not assumed: every spawn-position and
 // mob-count calculation in this file always used the player's own
-// position, with zero check of td_amuletOnPedestal - mob_aggro.js's own
-// targeting redirect to the pedestal marker was correct, but nothing
-// upstream of it (where mobs spawn, or whether the wave reads as
-// "cleared") ever pointed at the pedestal. This directly contradicted
-// docs/FEATURES.md's own stated design intent for the amulet ("mobs
-// pathfinding to a fixed objective regardless of player position").
+// position. Originally fixed by pointing this at the pedestal only
+// while the amulet sat on it (2026-09-02) - **superseded 2026-09-05**,
+// real premise correction from the user: the pedestal is the permanent
+// front line regardless of amulet state ("if im not in the base to
+// defend it then i lose the game"), not an objective that only exists
+// while the amulet happens to be placed.
 //
-// Returns the pedestal marker's stored base position
-// (td_amuletMarkerBaseX/Y/Z, set by amulet_pedestal.js when the amulet
-// is placed) while td_amuletOnPedestal is true, else the player's own
-// position - same persistentData cross-file pattern already used
-// throughout this pack (mob_aggro.js reads these same flags/values).
+// Returns the pedestal's own fixed, permanent position
+// (td_pedestalX/Y/Z, set once in playtest_starter_kit.js at world-build
+// time, independent of the amulet entirely) - same coordinate
+// pedestal_destruction.js already uses for its own destruction check.
+// The defensive fallback to the player's own position only matters for
+// the narrow window before the base finishes building on a brand-new
+// login.
 function waveObjective(player, data) {
-  if (data.getBoolean('td_amuletOnPedestal')) {
+  if (data.contains('td_pedestalX')) {
     return {
-      x: data.getDouble('td_amuletMarkerBaseX'),
-      y: data.getDouble('td_amuletMarkerBaseY'),
-      z: data.getDouble('td_amuletMarkerBaseZ'),
+      x: data.getInt('td_pedestalX') + 0.5,
+      y: data.getInt('td_pedestalY'),
+      z: data.getInt('td_pedestalZ') + 0.5,
     }
   }
   return { x: player.getX(), y: player.getY(), z: player.getZ() }
 }
 //
-// Chunk simulation while the objective is the pedestal, not the player,
-// is handled in amulet_pedestal.js itself (forceload add/remove right
-// where td_amuletOnPedestal actually toggles) - server_scripts don't
-// reliably share top-level scope across files in this codebase, and
-// that file is the one place this pack already knows exactly when the
-// amulet goes on/off the pedestal, so the forceload's lifetime can
-// match the feature's own real duration instead of guessing from here.
+// Chunk simulation around the pedestal is now a one-time permanent
+// forceload set up in playtest_starter_kit.js at world-build time, not
+// a toggle - see that file's own comment for the real resource-cost
+// tradeoff this accepts.
 
 function useWaveHorn(player) {
   var level = player.getLevel()

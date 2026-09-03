@@ -156,15 +156,17 @@ const COUNTDOWN_TICKS = 3600
 // bug - it measured distance from the player, so a player who outran
 // their own wave mobs back to base would see the wave read as
 // "cleared" even though the mobs were still alive somewhere behind
-// them. Now measures from the pedestal marker's stored position while
-// td_amuletOnPedestal is true, same as wave_spawner.js's own spawn/
-// reuse-gate logic.
+// them. Originally fixed to measure from the pedestal only while the
+// amulet was placed - **superseded 2026-09-05**, same premise
+// correction as wave_spawner.js's own waveObjective(): the pedestal is
+// the permanent objective regardless of amulet state, so this always
+// measures from its fixed td_pedestalX/Y/Z now, not conditionally.
 function waveObjective(player, data) {
-  if (data.getBoolean('td_amuletOnPedestal')) {
+  if (data.contains('td_pedestalX')) {
     return {
-      x: data.getDouble('td_amuletMarkerBaseX'),
-      y: data.getDouble('td_amuletMarkerBaseY'),
-      z: data.getDouble('td_amuletMarkerBaseZ'),
+      x: data.getInt('td_pedestalX') + 0.5,
+      y: data.getInt('td_pedestalY'),
+      z: data.getInt('td_pedestalZ') + 0.5,
     }
   }
   return { x: player.getX(), y: player.getY(), z: player.getZ() }

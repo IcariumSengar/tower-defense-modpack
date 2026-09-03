@@ -165,7 +165,14 @@ PlayerEvents.loggedIn((event) => {
   const BUILDING_WIDTH = 12
   const BUILDING_DEPTH = 11
   const BUILDING_HEIGHT = 13
-  const COURTYARD_DEPTH = 4
+  // 4 → 8 (2026-09-05, "the pedestal area is lacking any oomph... I
+  // want this to be the heart of the base, the centre point to
+  // everything"): the centered dais/step/grave-arc redesign below needs
+  // real room that the old 4-row courtyard didn't have. Every other
+  // measurement in this file (walls, gate, building) already derives
+  // from this constant, so the whole compound just grows northward with
+  // it - no other coordinate needed a manual adjustment.
+  const COURTYARD_DEPTH = 8
   const SIDE_MARGIN = 3
   const BACK_MARGIN = 2
   // Gate sits 2 blocks north of the player's own spawn point, not on
@@ -313,47 +320,130 @@ PlayerEvents.loggedIn((event) => {
   run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
   run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
 
-  // Shrine nook + grave markers (2026-09-01, docs/FEATURES.md's "The
-  // amulet" reversal - the pedestal is now pre-built into the *original*
-  // structure layer, not something the player crafts). Sits in the
-  // courtyard (east side, between the gate and the building) rather than
-  // inside the building's own footprint - stays valid across both the
-  // Red Mansion and Abandoned Brick House swaps since it never depended
-  // on the building's own interior. The pedestal mechanic itself
-  // (server_scripts/amulet_pedestal.js) already tracks state on the
-  // player, not the block/world, so relocating it needed zero changes
-  // to that file's own logic - confirmed by reading it, not assumed.
-  // shrineZ = z1-3, not z1-4 - a real overlap bug caught in review: with
-  // the tighter COURTYARD_DEPTH (4, down from the Red Mansion's 7), a
-  // z1-4 shrine's own grave offset (-1) would land exactly on the
-  // building's front wall row (buildingZ1) and get silently overwritten
-  // by the /place template call below, since building placement happens
-  // after the shrine/graves. z1-3 keeps both grave offsets (-1 and +2)
-  // inside the courtyard's safe rows on either side.
-  const shrineX = x1 - 3
-  const shrineZ = z1 - 3
-  run(`setblock ${shrineX} ${wallY0} ${shrineZ} kubejs:amulet_pedestal`)
-  // Stored once here, independent of the amulet ever being placed on it
-  // (amulet_pedestal.js's own td_amuletMarkerBaseX/Y/Z only exist while
-  // the amulet is actually on the pedestal) - pedestal_destruction.js
-  // needs a permanent reference to check against regardless of amulet
-  // state. 2026-09-03, "if the pedestal is destroyed you lose."
-  data.putInt('td_pedestalX', shrineX)
-  data.putInt('td_pedestalY', wallY0)
-  data.putInt('td_pedestalZ', shrineZ)
+  // Centered dais (2026-09-05, real redesign, docs/FEATURES.md's
+  // "Superseded" note - direct request: "the pedestal area is lacking
+  // any oomph... I want this to be the heart of the base, the centre
+  // point to everything"). Moved from a side shrine nook (the old
+  // shrineX = x1-3, tucked against the east wall) to dead center of the
+  // courtyard, between the gate and the building - this is why
+  // COURTYARD_DEPTH grew from 4 to 8 above, real room for a platform,
+  // a step, and a grave arc that don't feel cramped. centerX = doorX
+  // (the courtyard is already roughly centered on the player's own
+  // spawn X, confirmed by re-deriving x0/x1 above - x1-x0 = 17,
+  // centerX sits 8-9 blocks from either wall, comfortable margin for
+  // everything below). centerZ = z1-4, middle of the new 8-row
+  // courtyard (walkable rows z1-1 through z1-8, building front wall at
+  // buildingZ1 = z1-9) - every measurement below is checked against
+  // that real range, not assumed clear:
+  //   z1-2: step (between gate and platform)
+  //   z1-3..z1-5: 3x3 platform (centerZ ± 1)
+  //   z1-6..z1-7: grave arc
+  //   z1-8: buffer row before the building's own front wall
+  // Real gate-trap risk this pack already hit once (a door landing
+  // exactly on the spawn coordinate) is untouched by any of this -
+  // doorX/GATE_OFFSET/z1 aren't touched here, only what happens deeper
+  // in the courtyard. Real grave-overlap risk this pack also already
+  // hit once (shrineZ = z1-3 vs z1-4) is the reason every row above is
+  // spelled out and checked against buildingZ1 before shipping, not
+  // just eyeballed.
+  //
+  // Platform: cut sandstone, one block riser (wallY0+1) - matches the
+  // amulet's own established gold/sandstone palette (amulet.js). Real
+  // block swap 2026-09-05 for the pedestal itself (docs/FEATURES.md
+  // "Pedestal visual upgrade"): `supplementaries:pedestal` replaces the
+  // custom `kubejs:amulet_pedestal` - a real Container block that
+  // renders whatever's placed in it natively, so the pack no longer
+  // hand-builds the floating-item visual. No blockstate properties
+  // needed for a plain freestanding placement - confirmed live.
+  const centerX = doorX
+  const centerZ = z1 - 4
+  for (let px = centerX - 1; px <= centerX + 1; px++) {
+    for (let pz = centerZ - 1; pz <= centerZ + 1; pz++) {
+      run(`setblock ${px} ${wallY0 + 1} ${pz} minecraft:cut_sandstone`)
+    }
+  }
+  // Step on the gate-facing (south) side, one row south of the
+  // platform's own edge - bridges the 1-block rise from the courtyard
+  // floor (wallY0) up to the platform surface (wallY0+1). Not load-
+  // bearing for traversal (a 1-block rise is climbable unaided anyway)
+  // - purely the "step" the direct request asked for. Orientation
+  // reasoned from vanilla's stair-facing convention, not visually
+  // confirmed (no GUI access to check this by eye) - correct on the
+  // next real playtest if it reads backwards.
+  run(`setblock ${centerX} ${wallY0 + 1} ${centerZ + 2} minecraft:sandstone_stairs[facing=north]`)
+  run(`setblock ${centerX} ${wallY0 + 2} ${centerZ} supplementaries:pedestal`)
+  // Stored once here, permanent regardless of amulet state -
+  // pedestal_destruction.js's own destruction check, amulet_pedestal.js's
+  // border-crossing poll, and every wave/mob-targeting reference below
+  // all key off this same fixed coordinate. 2026-09-03, "if the pedestal
+  // is destroyed you lose."
+  data.putInt('td_pedestalX', centerX)
+  data.putInt('td_pedestalY', wallY0 + 2)
+  data.putInt('td_pedestalZ', centerZ)
+
+  // Braziers - real vanilla campfires (not an unverified mod block),
+  // flanking the platform's east/west sides front and back rather than
+  // its north/south center lines (which the step and grave arc already
+  // occupy). Real "night presence" per the direct request, and a real
+  // light source, not just a prop.
+  const brazierSpots = [
+    [centerX - 2, centerZ - 1],
+    [centerX + 2, centerZ - 1],
+    [centerX - 2, centerZ + 1],
+    [centerX + 2, centerZ + 1],
+  ]
+  brazierSpots.forEach(([bx, bz]) => {
+    run(`setblock ${bx} ${wallY0} ${bz} minecraft:campfire`)
+  })
+
+  // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
+  // note on the amulet objective fix): the pedestal is the permanent
+  // front line, full stop - not an objective that only exists while the
+  // amulet happens to be sitting on it. "regardless of whether the
+  // amulet is on the pedestal or not, this is the focus point for the
+  // enemies... if im not in the base to defend it then i lose the
+  // game." Every wave mob (mob_aggro.js) targets this marker
+  // unconditionally now, and wave_spawner.js/wave_status.js's own
+  // waveObjective() always resolves to this same fixed point - the
+  // amulet's actual remaining job (server_scripts/amulet_pedestal.js)
+  // narrows to just personal buffs while worn and unlocking
+  // border-crossing while placed, fully decoupled from whether the base
+  // itself is being defended.
+  //
+  // Marker summoned once, here, permanently - never killed, unlike the
+  // old amulet-gated marker it replaces. `PersistenceRequired:1b`
+  // (same real bug this pack already hit once with wave mobs -
+  // unpersisted entities silently despawn) keeps it from vanishing on a
+  // server restart or long absence. No HandItems - Supplementaries'
+  // pedestal now renders its own contents natively, so this is a pure,
+  // invisible targeting anchor, not a visual prop. One block above the
+  // pedestal's own position, not inside it.
+  run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 3} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
+
+  // Forceload is now a one-time permanent setup, not a toggle -
+  // same 96-block/169-chunk radius already verified safe
+  // (amulet_pedestal.js used to add/remove this exact range whenever
+  // the amulet went on/off the pedestal; now it's just always on). Real,
+  // deliberate resource-cost tradeoff, not an oversight: permanently
+  // reserving chunk-loading around the base for the whole game is the
+  // accepted cost of "the base is always genuinely at stake."
+  run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
 
   // Grave markers - plain vanilla oak_fence posts on small coarse_dirt
   // mounds, not a sign (avoids the 1.20.1 sign-NBT format entirely -
   // this pack already has one real crash history with guessed NBT
   // syntax, see docs/FEATURES.md's FTB Quests `#`-tag entry, not worth
-  // repeating for a purely cosmetic prop). Clustered around the shrine,
-  // directly reinforcing the existing "whoever held this before you"
-  // wave-5 gear-removal flavor text (wave_status.js) rather than being
-  // generic clutter.
+  // repeating for a purely cosmetic prop). Arranged in an arc around the
+  // dais's north side (2026-09-05, direct request - "arranged in an arc
+  // around the dais's base instead of clustered to one side"), facing
+  // the platform from the side opposite the gate/step, directly
+  // reinforcing the existing "whoever held this before you" wave-5
+  // gear-removal flavor text (wave_status.js) rather than being generic
+  // clutter.
   const graveSpots = [
-    [shrineX - 1, shrineZ - 1],
-    [shrineX + 1, shrineZ - 1],
-    [shrineX, shrineZ + 2],
+    [centerX - 2, centerZ - 3],
+    [centerX, centerZ - 4],
+    [centerX + 2, centerZ - 3],
   ]
   graveSpots.forEach(([gx, gz]) => {
     run(`setblock ${gx} ${wallY0} ${gz} minecraft:coarse_dirt`)
@@ -399,34 +489,57 @@ PlayerEvents.loggedIn((event) => {
   run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
 
   // Pre-placed Tier 1 kinetic rig (2026-09-03, direct request: pre-place
-  // a finished Rolling Mill inside the starting structure "same way it
-  // already ships with a furnace etc.", so the only remaining player
-  // task is crafting a Hand Crank and connecting it). Local x=4-6, z=9
-  // (a back room) confirmed real, clear indoor floor via a live sandbox
-  // test of this exact structure - fresh /place template, then
-  // /execute if block checks at every target cell before touching
-  // anything, floor solid at local y=0, ceiling solid at local y=4,
-  // open to the west - not guessed from the structure's advertised
-  // dimensions.
+  // a finished Rolling Mill "same way it already ships with a furnace
+  // etc.", so the only remaining player task is crafting a Hand Crank
+  // and connecting it).
+  //
+  // **Real hotfix 2026-09-03**: the original indoor spot (local x=4-6,
+  // z=9 in the building's own NBT) was wrong - not bad math, a wrong
+  // reading of the space. It turned out to be the open, unwalled yard
+  // strip right outside the building's real entrance, not a room -
+  // landed the rig in the walkway between the gate and the door,
+  // exactly the live bug report ("blocking it"). Refit indoors first
+  // (local x=7,z=5-7, beside the building's own furnace, confirmed
+  // enclosed by parsing the structure's real NBT) - then **relocated
+  // outdoors entirely 2026-09-05** (docs/FEATURES.md, direct request:
+  // "the pre-placed Create rig... feels cramped inside the building -
+  // relocate it to the yard too, off to one side, clearly secondary to
+  // the pedestal"). Sits along the east wall, one courtyard row north
+  // of the dais platform (rigZ = centerZ-2), a real gap from both the
+  // platform (ends at centerZ-1) and the grave arc (starts at
+  // centerZ-3) - checked against those real coordinates, not assumed
+  // clear just because it moved outdoors.
   //
   // The Depot goes BENEATH the Press, not on top - confirmed from the
   // mod's own ponder text ("Input items can be dropped or placed on a
   // Depot under the Press"), the opposite of the Rolling Mill, which
-  // takes items dropped directly onto itself. Both kinetic blocks face
-  // the same direction (east) so they share a rotation axis and
-  // conduct power to each other through direct adjacency, no shaft
-  // needed - live-verified with a temporary creative motor immediately
-  // west of the Press: both blocks showed a real nonzero Speed and a
-  // single 3-block kinetic Network. The cell east of the Mill is left
-  // open on purpose - it's the next block in that same kinetic line,
-  // reserved for the player's own Hand Crank, which (like any
-  // hand-cranked source) needs a real player right-clicking it and
+  // takes items dropped directly onto itself. Outdoors, "beneath" means
+  // the depot sits AT floorY (replacing one courtyard floor tile,
+  // already solid stone_bricks from the fill above) with the Press
+  // standing on top of it at wallY0 - the Mill sits at that same wallY0
+  // height on ordinary floor, no depot needed under it. Both kinetic
+  // blocks face the same direction (west, along this row's real open
+  // run) so they share a rotation axis and conduct power to each other
+  // through direct adjacency, no shaft needed - live-verified with a
+  // temporary creative motor: both blocks showed a real nonzero Speed
+  // and a single 3-block kinetic Network. Real gotcha hit during that
+  // same verification: /setblock-ing a block's facing property in
+  // place, without actually removing and replacing it, did not reliably
+  // rebuild Create's kinetic network - Speed read 0 until the blocks
+  // were cleared to air and placed fresh. Not a concern for this script
+  // (each cell is placed exactly once, into real air, every time), but
+  // worth knowing if this rig is ever hand-tuned again through repeated
+  // /setblock calls in a live test.
+  //
+  // The cell west of the Mill is left open on purpose (closer to
+  // center, away from the wall) - it's the next block in that same
+  // kinetic line, reserved for the player's own Hand Crank, which (like
+  // any hand-cranked source) needs a real player right-clicking it and
   // can't be pre-placed already turning.
-  const rigX0 = buildingX0 + 4
-  const rigZ = buildingZ0 + 9
-  const rigY1 = floorY + 1
-  const rigY2 = floorY + 2
-  run(`setblock ${rigX0} ${rigY2} ${rigZ} createaddition:rolling_mill[facing=east]`)
-  run(`setblock ${rigX0 + 1} ${rigY2} ${rigZ} create:mechanical_press[facing=east]`)
-  run(`setblock ${rigX0 + 1} ${rigY1} ${rigZ} create:depot`)
+  const rigZ = centerZ - 2
+  const rigPressX = x1 - 2
+  const rigMillX = x1 - 3
+  run(`setblock ${rigMillX} ${wallY0} ${rigZ} createaddition:rolling_mill[facing=west]`)
+  run(`setblock ${rigPressX} ${wallY0} ${rigZ} create:mechanical_press[facing=west]`)
+  run(`setblock ${rigPressX} ${floorY} ${rigZ} create:depot`)
 })

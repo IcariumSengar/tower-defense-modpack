@@ -22,14 +22,19 @@
 //
 // Real open question resolved, not assumed: does mobGriefing/the
 // pedestal's own blast resistance actually let an explosion destroy
-// it? Checked both directly - mobGriefing is never referenced anywhere
-// in this pack (grepped pack/), so it stays at vanilla's own default,
-// true. The pedestal's own block definition (startup_scripts/amulet.js)
-// sets .resistance(6.0), the same real blast resistance as plain
-// vanilla stone - well within TNT's real destructive range, not
-// explosion-proof like SecurityCraft's reinforced blocks. Confirmed
-// live in a sandbox test (not just reasoned from the numbers): a real
-// TNT explosion next to a placed amulet_pedestal block destroyed it.
+// it? Checked directly - mobGriefing is never referenced anywhere in
+// this pack (grepped pack/), so it stays at vanilla's own default,
+// true. The original custom block's own definition
+// (startup_scripts/amulet.js) sets .resistance(6.0), the same real
+// blast resistance as plain vanilla stone - well within TNT's real
+// destructive range, not explosion-proof like SecurityCraft's
+// reinforced blocks. Confirmed live in a sandbox test (not just
+// reasoned from the numbers): a real TNT explosion next to a placed
+// amulet_pedestal block destroyed it. Supplementaries' own pedestal
+// (2026-09-05's real block) hasn't had its own resistance value
+// independently re-verified - a real gap, not assumed identical, but
+// this detection logic doesn't depend on the exact number either way:
+// it just checks the block is gone, whatever destroyed it.
 
 PlayerEvents.tick((event) => {
   var player = event.entity
@@ -52,7 +57,16 @@ PlayerEvents.tick((event) => {
   var y = data.getInt('td_pedestalY')
   var z = data.getInt('td_pedestalZ')
   var block = level.getBlock(x, y, z)
-  if (`${block.id}` === 'kubejs:amulet_pedestal') return
+  // Accepts either real pedestal block - `supplementaries:pedestal` is
+  // what every new world places (2026-09-05), but `kubejs:amulet_pedestal`
+  // is still a real, currently-placed block on any save from before
+  // that swap (its registration was deliberately kept, see
+  // startup_scripts/amulet.js). Checking only the new id would read an
+  // untouched old pedestal as destroyed the moment this script deployed
+  // - a real false game-over this pack came within one save-diff of
+  // shipping.
+  var blockId = `${block.id}`
+  if (blockId === 'supplementaries:pedestal' || blockId === 'kubejs:amulet_pedestal') return
 
   data.putBoolean('td_pedestalDestroyed', true)
 

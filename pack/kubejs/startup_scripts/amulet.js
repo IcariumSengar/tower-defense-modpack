@@ -61,32 +61,33 @@ StartupEvents.registry('item', (event) => {
     )
 })
 
-// The pedestal — a plain block, no block entity/GUI. "Has the amulet"
-// state deliberately lives on the player's own persistentData
-// (td_amuletOnPedestal), not on the block/world, matching this pack's
-// established reasoning in base_expansion.js: KubeJS's level/world
-// persistentData has no save/load hook and resets on restart, player
-// persistentData survives. Fine given this pack is single-player-focused
-// and the design only ever calls for one pedestal. See
-// server_scripts/amulet_pedestal.js for the recipe + interaction logic.
+// The pedestal itself is **retired 2026-09-05** (docs/FEATURES.md
+// "Pedestal visual upgrade" - direct request: "can we leverage a mod
+// that renders cool pedestals with floating items"): every NEW world
+// build now places Supplementaries' real Pedestal block
+// (`supplementaries:pedestal`) instead, a genuine Container that
+// renders whatever's placed in it natively - see
+// server_scripts/amulet_pedestal.js for the real detail on that
+// retrofit. Supplementaries' own pedestal already has a real,
+// 100%-vanilla-materials crafting recipe (6x stone_brick_slab + 1x
+// stone_bricks/chiseled_stone_bricks → 2 pedestals, confirmed from the
+// mod's own recipe JSON), so a lost/destroyed one on a fresh world has
+// a real replacement path.
 //
-// Custom shrine-shaped model (2026-08-30, direct request - "more of a
-// shrine kind of thing"), not the default full cube: a wide sandstone
-// base (0-8/16 tall) plus a smaller raised dais on top (8-11/16),
-// giving a stepped altar silhouette instead of a plain block. Model at
-// assets/kubejs/models/block/amulet_pedestal.json, standard vanilla
-// block-model "elements" format (unchanged since 1.8, not a KubeJS-
-// specific schema, so not decompiled/verified against source the way
-// the Curios API was - this one's just documented Minecraft data).
-// Sandstone-toned textures (side: carved masonry courses + a gold
-// inlay band; top: a glowing gold socket ring) tie it visually to the
-// desert world and the amulet's own gold/gem palette, replacing the
-// first pass's generic gray stone-cube placeholder.
-// .fullBlock(false) + a matching .box() hitbox since this isn't a full
-// opaque cube anymore (per KubeJS's own docs: required whenever .box()
-// defines a custom hitbox). Hitbox height (11) matches the dais' top,
-// not the full 16 - otherwise the block would still collide like a
-// full cube despite visually stopping partway up.
+// This registration stays, though, deliberately not deleted - real
+// risk found before shipping, not assumed safe: any already-in-progress
+// save (this pack's own live instance included) has an actual placed
+// `kubejs:amulet_pedestal` block from before this swap. Removing its
+// registration entirely would leave that block unresolvable on the
+// next load - Forge's real, documented behavior for a missing custom
+// block is to silently drop it to air, which would destroy an existing
+// player's actual pedestal (and, with it, their save's own game-over
+// failsafe) the next time they logged in. Keeping the block type
+// registered costs nothing (no new build ever places it again) and
+// avoids that real, silent data loss. Its own recipe still works too,
+// as a genuine fallback if an old save's block is ever lost - the same
+// reasoning this recipe has had since the original pedestal/amulet
+// reversal.
 StartupEvents.registry('block', (event) => {
   event.create('amulet_pedestal')
     .displayName('Amulet Pedestal')
