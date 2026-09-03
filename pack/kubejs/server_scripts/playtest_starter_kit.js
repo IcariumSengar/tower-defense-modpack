@@ -149,13 +149,19 @@ PlayerEvents.loggedIn((event) => {
   // Layout wraps around a real postapocalypse_structures building
   // instead of the old hand-built shell - gate sits just off the fixed
   // spawn point, courtyard runs north from there, then the building,
-  // then a back margin and the watchtower beyond that. Swapped from Red
+  // then a back margin closing out the compound. Swapped from Red
   // Mansion to Abandoned Brick House the same day (2026-09-01, direct
   // feedback: "this mansion is too big") - real dimensions confirmed by
   // decompiling its own NBT directly (12 wide (X) x 13 tall (Y) x 11
   // deep (Z), DataVersion 3465 matches this pack's install exactly),
   // barely bigger than the original hand-built 11x11 footprint. Same
   // mod, same aesthetic family, already installed - no new dependency.
+  // Watchtower removed entirely 2026-09-03 (direct request: "it serves
+  // no purpose now that we have a better starting structure" - its
+  // original 4-sided-lookout reasoning assumed border-relative mob
+  // spawns, stale since spawns went player-relative 2026-09-01, and it
+  // stood outside the compound's own back wall regardless, never part
+  // of the defended perimeter).
   const BUILDING_WIDTH = 12
   const BUILDING_DEPTH = 11
   const BUILDING_HEIGHT = 13
@@ -300,82 +306,6 @@ PlayerEvents.loggedIn((event) => {
   }
   run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
   run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
-
-  // Watchtower (2026-08-20) - phase 1 of expanding the starter base
-  // into multiple buildings, per direct request. Placed north of the
-  // base (behind the back wall, clear of the door on the south/+Z
-  // side), a solid cobblestone pillar with an external ladder up to a
-  // platform - matches the base's own material palette rather than
-  // introducing a new one. Open on all sides at the top rather than
-  // facing one direction, since wave_spawner.js's
-  // randomBorderEdgePosition() spawns mobs at a random point on any of
-  // the 4 border edges - a lookout facing only one way would miss
-  // three-quarters of what it's meant to watch for.
-  const towerX0 = x - 1
-  const towerX1 = x + 1
-  const towerZ1 = z0 - 3
-  const towerZ0 = towerZ1 - 2
-  // Raised from the original 10 to clear the building's own roofline
-  // (13 tall, Abandoned Brick House) by 3 blocks, same margin logic as
-  // when this was briefly 22 for the taller Red Mansion.
-  const platformY = wallY0 + 16
-
-  run(`fill ${towerX0} ${wallY0} ${towerZ0} ${towerX1} ${platformY - 1} ${towerZ1} minecraft:cobblestone`)
-
-  // Ladder on the south face (the side facing the base, for a short,
-  // convenient walk from the door). Placed in the air position just
-  // outside the pillar's south face; facing=south points away from the
-  // pillar (the block it's mounted against is to its north) - standard
-  // vanilla wall-attachment convention, same direction as the block it
-  // opens away from.
-  for (let ly = wallY0; ly < platformY; ly++) {
-    run(`setblock ${x} ${ly} ${towerZ1 + 1} minecraft:ladder[facing=south]`)
-  }
-
-  // 5x5 platform (one block wider than the pillar on each side), same
-  // stone brick as the base floor for visual consistency.
-  run(`fill ${towerX0 - 1} ${platformY} ${towerZ0 - 1} ${towerX1 + 1} ${platformY} ${towerZ1 + 1} minecraft:stone_bricks`)
-
-  // Parapet ring around the platform edge, one block above the floor -
-  // four separate fills for the four edges rather than a hollow-box
-  // trick, so the ladder-access gap (punched out after) is easy to
-  // reason about precisely.
-  run(`fill ${towerX0 - 1} ${platformY + 1} ${towerZ0 - 1} ${towerX1 + 1} ${platformY + 1} ${towerZ0 - 1} minecraft:cobblestone_wall`)
-  run(`fill ${towerX0 - 1} ${platformY + 1} ${towerZ1 + 1} ${towerX1 + 1} ${platformY + 1} ${towerZ1 + 1} minecraft:cobblestone_wall`)
-  run(`fill ${towerX0 - 1} ${platformY + 1} ${towerZ0 - 1} ${towerX0 - 1} ${platformY + 1} ${towerZ1 + 1} minecraft:cobblestone_wall`)
-  run(`fill ${towerX1 + 1} ${platformY + 1} ${towerZ0 - 1} ${towerX1 + 1} ${platformY + 1} ${towerZ1 + 1} minecraft:cobblestone_wall`)
-  run(`setblock ${x} ${platformY + 1} ${towerZ1 + 1} minecraft:air`)
-
-  // Two torches for a lit lookout point at night, placed on the
-  // platform floor near the north edge - clear of the ladder gap.
-  run(`setblock ${towerX0} ${platformY + 1} ${towerZ0} minecraft:torch`)
-  run(`setblock ${towerX1} ${platformY + 1} ${towerZ0} minecraft:torch`)
-
-  // Tower battle-wear + base props (2026-09-01, folds into the same
-  // "manned post, not just a lookout pillar" brief as the rest of this
-  // pass) - a scorch mark near the base (coal_block, the plain vanilla
-  // "burnt" block reused this way in `docs/FEATURES.md`'s own worked
-  // examples elsewhere in this codebase) and cracked stone worked into
-  // the otherwise-uniform cobblestone pillar, plus crates/barrels/a
-  // burning barrel/a generator at its base - real-verified block IDs
-  // from Doomsday Decoration + Zcraft Decoration, facing states checked
-  // against each mod's own blockstate JSON before writing this, same
-  // discipline as the wall/gate names above.
-  run(`setblock ${towerX0} ${wallY0} ${towerZ1} minecraft:coal_block`)
-  run(`setblock ${towerX0} ${wallY0 + 1} ${towerZ0} minecraft:cracked_stone_bricks`)
-  run(`setblock ${towerX1} ${wallY0 + 2} ${towerZ0} minecraft:cracked_stone_bricks`)
-  run(`setblock ${towerX0 - 1} ${wallY0} ${towerZ0} doomsday_decoration:woodencrate[facing=east]`)
-  run(`setblock ${towerX1 + 1} ${wallY0} ${towerZ0} doomsday_decoration:carton[facing=west]`)
-  run(`setblock ${towerX0 - 1} ${wallY0} ${towerZ1} doomsday_decoration:barrel[facing=east]`)
-  run(`setblock ${towerX1 + 1} ${wallY0} ${towerZ1} zcraft_decorations:sfz_ranhaodetietong[facing=west]`)
-  run(`setblock ${towerX0} ${wallY0} ${towerZ0 - 1} doomsday_decoration:fixedgenerator[facing=north]`)
-
-  // Two more (unlit, decorative only - the torches above are the real
-  // light source) police lights on the platform's south corners,
-  // mirroring the existing torches on the north corners. Clear of the
-  // ladder gap at (x, platformY+1, towerZ1+1).
-  run(`setblock ${towerX0} ${platformY + 1} ${towerZ1} zcraft_decorations:sfz_buliangdejingdeng[facing=south]`)
-  run(`setblock ${towerX1} ${platformY + 1} ${towerZ1} zcraft_decorations:sfz_buliangdejingdeng[facing=south]`)
 
   // Shrine nook + grave markers (2026-09-01, docs/FEATURES.md's "The
   // amulet" reversal - the pedestal is now pre-built into the *original*
