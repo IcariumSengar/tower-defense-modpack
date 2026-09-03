@@ -18,24 +18,30 @@
 // way (the counter would never have matched real distances), just
 // never surfaced since nothing depended on catching the error.
 
+// Full zombie-apocalypse roster pivot (2026-09-06) - same list as
+// wave_spawner.js's WAVE_MOB_TYPES/mob_aggro.js's own copy, see
+// wave_spawner.js for the full writeup (real ids confirmed by
+// decompilation). Keep all three in sync if the roster changes again.
 const HOSTILE_TYPES = [
   'minecraft:zombie',
   'minecraft:husk',
   'minecraft:drowned',
-  'minecraft:skeleton',
-  'minecraft:spider',
-  'minecraft:creeper',
   'minecraft:zombie_villager',
-  'minecraft:wither_skeleton',
-  'minecraft:ravager',
   'the_flesh_that_hates:flesh_human',
   'the_flesh_that_hates:flesh_villager',
+  'the_flesh_that_hates:flesh_dog',
   'the_flesh_that_hates:plaquecreaturetwo',
   'the_flesh_that_hates:flesh_suffer',
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
   'the_flesh_that_hates:plaquethreelegcreature',
+  'undeadnights:elite_zombie',
+  'undeadnights:horde_zombie',
+  'undeadnights:demolition_zombie',
+  'mutantszombies:zombie_brute',
+  'mutantszombies:mutant_brute',
+  'mutantszombies:rotten_mutant',
 ]
 
 const RADIUS = 80

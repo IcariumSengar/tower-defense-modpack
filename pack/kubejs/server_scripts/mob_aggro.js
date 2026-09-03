@@ -201,20 +201,32 @@ function stripAutoRetargeting(mob) {
   }
 }
 
+// Full zombie-apocalypse roster pivot (2026-09-06) - real ids confirmed
+// by decompilation, not pattern-guessed; see wave_spawner.js's own
+// WAVE_MOB_TYPES for the full writeup (same list, redeclared here per
+// this codebase's established cross-file duplication pattern - server_
+// scripts don't reliably share top-level scope). Keep both in sync, plus
+// wave_status.js's HOSTILE_TYPES, if this roster changes again.
 var WAVE_MOB_TYPES = [
   'minecraft:zombie',
-  'minecraft:skeleton',
-  'minecraft:spider',
-  'minecraft:wither_skeleton',
-  'minecraft:ravager',
+  'minecraft:husk',
+  'minecraft:drowned',
+  'minecraft:zombie_villager',
   'the_flesh_that_hates:flesh_human',
   'the_flesh_that_hates:flesh_villager',
+  'the_flesh_that_hates:flesh_dog',
   'the_flesh_that_hates:plaquecreaturetwo',
   'the_flesh_that_hates:flesh_suffer',
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
   'the_flesh_that_hates:plaquethreelegcreature',
+  'undeadnights:elite_zombie',
+  'undeadnights:horde_zombie',
+  'undeadnights:demolition_zombie',
+  'mutantszombies:zombie_brute',
+  'mutantszombies:mutant_brute',
+  'mutantszombies:rotten_mutant',
 ]
 
 // Self-healing marker (2026-09-05, real backward-compat need, not

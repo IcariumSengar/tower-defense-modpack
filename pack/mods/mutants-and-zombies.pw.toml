@@ -1,0 +1,13 @@
+name = "Mutants and Zombies"
+filename = "MutantsZombies-1.4.0-Forge-mc1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "5ba65035baaef763f892488ac35066b92dbec6fe"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8577715
+project-id = 1204883

@@ -18,7 +18,7 @@ hash = "108c4151cb64cc39375bb6ff0d7108abe7645dfaf62bc2f696ab76f008c194c0"
 
 [[files]]
 file = "config/epicsiegemod-common.toml"
-hash = "515485e842cae90df043eac6867db0f5134f6060d48467c912d159fb27e5ba61"
+hash = "d3e215dd5b1e94f046aa4ba9134e4b24be295a100c4b2ac37fdcb94ccaa034de"
 
 [[files]]
 file = "config/ftbquests/quests/chapter_groups.snbt"
@@ -42,7 +42,7 @@ hash = "4df9fdca78c7f3f5c0dc77fc5ac3626581c6212cb2b561246176dd0e303b3b0d"
 
 [[files]]
 file = "config/undeadnights_horde_mobs_config.json"
-hash = "c27a34be1500287ab91de1eaaa9fb9db93e56685f03438ce03abda329402dc86"
+hash = "8c5d2366a2d2886cde09b6b65a9b2907412fa3186cfd7aab61d477b8215022e8"
 
 [[files]]
 file = "defaultconfigs/undeadnights-server.toml"
@@ -137,16 +137,20 @@ file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 
 [[files]]
-file = "kubejs/data/kubejs/worldgen/noise_settings/flat_desert.json"
-hash = "6faa18a507dcd4030aa3a9076eb5c60c7b9806b9c0957b6a057fe1748e1b89d5"
+file = "kubejs/data/kubejs/worldgen/noise_settings/overworld_flat.json"
+hash = "ab7dc049fa4eaea0a73ef777390297f5953a537cdce165954d8ab08b2dc092a8"
 
 [[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
-hash = "552d3fd292cc01237277ac4007bda3cc61a1be2a88f5a6c219c903c3ada2f866"
+hash = "d2a3be8b6c8e3e899710e721c6e38e182f7db93de4cd9004b04d1b8d7a2d5de5"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
 hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
+
+[[files]]
+file = "kubejs/data/minecraft/worldgen/structure_set/villages.json"
+hash = "ed01ea970ff82a83bc6c338e1d791711fd24c24263cbf53f31dd7460b0861a3c"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/cobwebs.json"
@@ -242,11 +246,11 @@ hash = "2b1c228e73659760fd5401ed6ee884f560d9be673f64da7c140d7660f0f100e6"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "d970873af5576c0469a718f3c1fbbcc0413f85650276acb857422bb8b6723a04"
+hash = "6a9175c86bba991179b32b64837c671290a6825b06df9976f7b4db921b1a692b"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "219e211ce6949204f5c8bebba1a2a850f5b5511747c2d10b0a29e9b45e13f9e1"
+hash = "307f8f8475a741ff528c04240a20109a4895ecd51a0a2609654dbac17178302b"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_destruction.js"
@@ -254,7 +258,7 @@ hash = "be5f59fe23fe827896fa97dfde1b2908fc762cc961da944b7964ea305ffd375d"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "bd9f9147137b22b3f86c1eb11bf4a6fe2b56b5ba65c6fe2d3112b8b314c34b42"
+hash = "c3bb18d874666229ef3e4999da03d25e8b6167fc99609f9f52ae96fdf32c8c35"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -266,11 +270,11 @@ hash = "f76f5876026465418347da9c107effebaf37928d14003d0b83f94b4f52160380"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "679a05bfc31abea0b90c3557cc361a5b29f5d198619a823b3686f12c4d22964d"
+hash = "cd4ce2ab8d62d721f8c745261255a4fb0d6b422a1c7f108ad6767cc5b342eac0"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "0a19ee3cf25f1f1185b462cedd77facefef4e0cb49afcc1250eca1cb3aeff411"
+hash = "7de6bf4da9705dd2f343aaa16358eef600fb40e7695a2459520dcd079e0ebd41"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -296,6 +300,11 @@ metafile = true
 [[files]]
 file = "mods/abandoned-urban.pw.toml"
 hash = "a4ca16a107eca67cd789363e67b823e985f2732145a5a7199bc104d3832c45d6"
+metafile = true
+
+[[files]]
+file = "mods/advanced-wall-climber-api.pw.toml"
+hash = "0566062bbaa28e90f99da7e0233e1680585147990bec1d648b0371d328d3d9c7"
 metafile = true
 
 [[files]]
@@ -471,6 +480,11 @@ metafile = true
 [[files]]
 file = "mods/mouse-tweaks.pw.toml"
 hash = "679fa8f3b49b9ed3fbcb29d6ccdb99bce465faa01f9cec000464ac8d4fbe134f"
+metafile = true
+
+[[files]]
+file = "mods/mutants-and-zombies.pw.toml"
+hash = "64c9b936bc91993a8b5a9593af92056b95df5d86b618103e03d1df4b6597f81c"
 metafile = true
 
 [[files]]

@@ -1,0 +1,13 @@
+name = "Advanced Wall Climber API"
+filename = "awcapi-neoforge-1.20.1-1.0.2.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "77be758a82d72a29affd7fe18b0e05e4a93d630c"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7567734
+project-id = 1425144

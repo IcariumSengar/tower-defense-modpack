@@ -94,53 +94,106 @@
 // correctly for position in this environment even though it's a common
 // pattern elsewhere in this codebase.
 
-// Mob type strings are now full namespaced IDs (was bare names like
-// 'zombie' with `minecraft:` hardcoded onto every summon - changed
-// 2026-08-19 so TFTH mobs, which need their own namespace, can sit in
-// the same table). TFTH added starting wave 2: flesh_human (Germ stage,
-// ~zombie-tier) at 2, flesh_villager (Germ stage) at 3, plaquecreaturetwo
-// = "Flesh Hunter I" (Awareness stage, tougher - MaxHealth 50/Armor 6
-// per TFTH.toml) at 4 alongside wither_skeleton, and flesh_suffer
-// (Awareness stage, AttackDamage 25 per TFTH.toml - hits hard) at 5
-// alongside the ravager mini-boss. TFTH's own autonomous Incubator/
-// spread systems are disabled via config (see pack/config/TFTH.toml) -
-// these are summoned directly, same as every vanilla mob here, not
-// spawned by the mod's own logic.
-// Witches removed entirely from the roster (2026-08-29, direct
-// request - "completely remove witches as a mob type," no reason
-// recorded). Was in waves 3-8; those rows just drop the witch entry
-// rather than backfilling with more of another mob - a clean removal,
-// not a rebalance. See docs/IDEAS.md's "Mob roster exclusions" note.
+// Full zombie-apocalypse roster pivot (2026-09-06, direct request: "I
+// want to strip out the other mob types [and] speck out all the zombie
+// type mobs we have available... I want the waves to feel like you are
+// being attacked by larger and larger hordes"). Every non-zombie-family
+// mob (skeleton/spider/wither_skeleton/ravager/creeper) stripped
+// entirely - TFTH's own "Flesh X" mobs are already a zombie-apocalypse
+// roster under a different name (Flesh Villager from Villager, Flesh
+// Dog from Wolf, etc. - a real Germ->Awareness infection escalation
+// built into the mod itself per TFTH.toml, not a stylistic mismatch
+// worked around here), so they stay and expand. New material folded in,
+// none of it previously used anywhere in this pack: vanilla husk/
+// drowned/zombie_villager (zero cost, zero new mods), TFTH's own much
+// larger unused roster (flesh_dog/flesh_hunter_i etc., all real
+// registry ids confirmed by decompiling TheFleshThatHatesModEntities.class
+// directly, not pattern-guessed from the namespace - real correction
+// found doing that: "Flesh Unseen," the spec's own proposed wave-8
+// finale mob, turned out to have NO registered EntityType at all in
+// this exact mod build - only its combat-stat config section and some
+// ambient sound files exist, nothing summonable - so it's not used
+// anywhere below despite being in the original proposal), Undead
+// Nights' own 3 previously-unused zombie variants (`horde_zombie`/
+// `elite_zombie`/`demolition_zombie` - real ids confirmed straight from
+// the mod's own shipped `data/undeadnights/tags/entity_types/
+// horde_mobs.json` tag, which already bundles exactly this
+// all-zombie roster as its own intended default), and a new mod,
+// **Mutants and Zombies** (author MCModsPete, same trusted author as
+// Undead Nights, v1.4.0/2026-08-04, needs the **Advanced Wall Climber
+// API** dependency for its Crawler mob - real ids confirmed by
+// decompiling ModEntities.class directly: mod id `mutantszombies`,
+// `zombie_brute`/`mutant_brute`/`crawler`/`spitter`/`blister_zombie`/
+// `split_head_zombie`/`rotten_mutant`/`mutant_zombie`).
+//
+// Real framing correction (2026-09-06): waves 1-8 below are NOT "the
+// campaign" with wave 8 as a finale - that language is stale, left over
+// from before endless-phase scaling existed (see docs/FEATURES.md).
+// This is just the hand-authored ramp-up; wave 9 hands off to Undead
+// Nights' own already-built 40-level procedural difficulty system,
+// which keeps escalating forever. Nothing below is an ending - early
+// waves stay light trash-floor infected, Undead Nights' own zombies
+// arrive mid-ramp as reinforcements, Mutants and Zombies debuts late,
+// and the wall-breaching Demolition Zombie makes its first-ever
+// appearance right at the wave 8/9 handoff specifically because that's
+// where the endless horde config (undeadnights_horde_mobs_config.json)
+// picks it up and keeps using it forever after - not because anything
+// is culminating. Witches were removed entirely 2026-08-29 (unrelated
+// to this pivot, predates it) - see docs/IDEAS.md's "Mob roster
+// exclusions" note.
 var WAVES = [
-  [['minecraft:zombie', 4], ['minecraft:skeleton', 4]],
-  [['minecraft:zombie', 4], ['minecraft:skeleton', 4], ['minecraft:spider', 4], ['the_flesh_that_hates:flesh_human', 2]],
-  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 3], ['the_flesh_that_hates:flesh_villager', 2]],
-  [['minecraft:zombie', 3], ['minecraft:skeleton', 3], ['minecraft:spider', 2], ['minecraft:wither_skeleton', 3], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
-  // Scaled down 2026-08-29 (was 2/2/2/2/2/1/1 = 12 mobs, felt too OP) -
-  // halved every regular-mob count to 1, kept the ravager (mini boss)
-  // and flesh_suffer (25 attack damage, TFTH's hardest hitter) at their
-  // existing floor of 1 each - they're the designed finale, the
-  // dogpile of regular mobs alongside them was the actual problem.
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:flesh_suffer', 1]],
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:bruteplaquecreatureone', 1]],
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['the_flesh_that_hates:flesh_hunter_two', 1], ['the_flesh_that_hates:flesh_boomer', 1]],
-  [['minecraft:zombie', 1], ['minecraft:skeleton', 1], ['minecraft:spider', 1], ['minecraft:wither_skeleton', 1], ['minecraft:ravager', 1], ['the_flesh_that_hates:plaquethreelegcreature', 1]],
+  [['minecraft:zombie', 4], ['minecraft:husk', 2], ['minecraft:zombie_villager', 1]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 2], ['minecraft:drowned', 2], ['the_flesh_that_hates:flesh_human', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['minecraft:drowned', 1], ['the_flesh_that_hates:flesh_human', 2], ['the_flesh_that_hates:flesh_villager', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['the_flesh_that_hates:flesh_villager', 1], ['the_flesh_that_hates:flesh_dog', 2], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
+  // Elite Zombie (Undead Nights' own, real distinct stat block per its
+  // own bytecode - slower but hits harder than Horde Zombie) replaces
+  // the ravager as this wave's toughest mob.
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['the_flesh_that_hates:plaquecreaturetwo', 1], ['the_flesh_that_hates:flesh_suffer', 1], ['undeadnights:elite_zombie', 1]],
+  // Undead Nights' own zombies arrive as a numbers-focused reinforcement
+  // wave - a real, intended "horde grows" beat, not filler.
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['the_flesh_that_hates:bruteplaquecreatureone', 1], ['undeadnights:horde_zombie', 2]],
+  // Mutants and Zombies debuts alongside a second Elite Zombie.
+  [['the_flesh_that_hates:flesh_hunter_two', 1], ['the_flesh_that_hates:flesh_boomer', 1], ['mutantszombies:zombie_brute', 1], ['undeadnights:elite_zombie', 1]],
+  // Toughest hand-authored mix, including the first appearance of
+  // something that can genuinely breach the base's own defenses, not
+  // just the player - Demolition Zombie, real TNT capability per
+  // Undead Nights' own class. A step up, not a climax: the endless
+  // horde config below keeps using this exact roster past this point.
+  // Mutant Brute (Mutants and Zombies' other confirmed tank mob) takes
+  // the slot the original proposal gave "Flesh Unseen" - see the real
+  // correction in this block's own header comment for why that mob was
+  // dropped.
+  [['the_flesh_that_hates:plaquethreelegcreature', 1], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 2]],
 ]
 
+// Also the endless-phase horde roster's own mob set (see
+// undeadnights_horde_mobs_config.json) - kept as a superset, same as
+// before this pivot, so mob_aggro.js's forced pedestal-targeting and
+// wave_status.js's HOSTILE_TYPES counter cover every mob that can
+// actually appear post-wave-8, not just the hand-authored ramp.
+// `mutantszombies:rotten_mutant` is horde-config-only, never in WAVES
+// above - included here for exactly that reason.
 var WAVE_MOB_TYPES = [
   'minecraft:zombie',
-  'minecraft:skeleton',
-  'minecraft:spider',
-  'minecraft:wither_skeleton',
-  'minecraft:ravager',
+  'minecraft:husk',
+  'minecraft:drowned',
+  'minecraft:zombie_villager',
   'the_flesh_that_hates:flesh_human',
   'the_flesh_that_hates:flesh_villager',
+  'the_flesh_that_hates:flesh_dog',
   'the_flesh_that_hates:plaquecreaturetwo',
   'the_flesh_that_hates:flesh_suffer',
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
   'the_flesh_that_hates:plaquethreelegcreature',
+  'undeadnights:elite_zombie',
+  'undeadnights:horde_zombie',
+  'undeadnights:demolition_zombie',
+  'mutantszombies:zombie_brute',
+  'mutantszombies:mutant_brute',
+  'mutantszombies:rotten_mutant',
 ]
 
 // Staggered emergence + sound-first spawn cues (docs/IDEAS.md's
@@ -500,12 +553,6 @@ PlayerEvents.tick(function (event) {
       spawn.soundPlayed = true
     }
     if (currentTick >= spawn.spawnTick) {
-      // Ravager-specific nerf (2026-08-29 feedback: the halved regular-
-      // mob dogpile wasn't the OP part of wave 5, the ravager itself
-      // was) - vanilla's 12 attack damage / 100 health cut down via the
-      // same Attributes-NBT override already used for follow_range
-      // below, rather than touching every other mob's stats.
-      var isRavager = spawn.mobType === 'minecraft:ravager'
       // td_wave_mob (2026-09-01, real bug found in playtest: the
       // "hostiles remaining" counter in wave_status.js, and this file's
       // own nearbyWaveMobCount below, both used to match by mob TYPE
@@ -536,11 +583,9 @@ PlayerEvents.tick(function (event) {
       // it. Applies to every wave mob now, not just the amulet case -
       // no real downside outside it either, since td_wave_mob-tagged
       // mobs are meant to be fought, not left to quietly disappear.
-      var summonNbt = isRavager
-        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:8},{Name:"generic.max_health",Base:60}],Health:60,PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
-        : isFleshSuffer
-          ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:12}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
-          : '{Attributes:[{Name:"generic.follow_range",Base:128}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
+      var summonNbt = isFleshSuffer
+        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:12}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
+        : '{Attributes:[{Name:"generic.follow_range",Base:128}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
       // td_justSpawned added and removed within this same synchronous
       // block, so the very next spawn processed (even same tick, even
       // same mob type) can never see a stale tag from this one.

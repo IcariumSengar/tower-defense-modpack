@@ -51,27 +51,34 @@ below); Phase 5 not started:
 - **Decoration quality**: placement itself read as "lame" — worth a
   look once visually confirmed, may need denser/more varied placement
   rather than a mod swap. (Chinese labels fixed, see "Built" below.)
-- **Modded crafting materials in loot — specced 2026-09-06, held, not
-  sent.** Direct user question ("have the loot bags/chests been updated
-  to include crafting materials from mods, not just vanilla") that
-  turned into a real audit + spec. Full detail in FEATURES.md's "Modded
-  crafting materials in loot" entry (under "Loot bags"). Audit found:
-  loot bags/chests are still 100% vanilla items, no other Andesite-style
-  blocking gap exists (Tier 1/Tier 2 recipes are fully covered by
-  existing vanilla loot already), but no modded item has ever been used
-  as a reward. Spec: bonus-chance rolls of real Create-family
-  intermediate items (`create:andesite_alloy` in Rare tier + the
-  structure mid-tier pool, `createaddition:iron_sheet` in Epic tier,
-  `createaddition:iron_wire` in Legendary tier) layered onto the
-  existing tiers as shortcuts through the Hand Crank/Barbed Wire chains,
-  not replacements. Same files as the jackpot item above
-  (`loot_bag_drops.js` + `structure_loot_progression.js`) — sensible to
-  build together in one pass if/when both go out. Item ids need real
-  verification against the actual mod jars before shipping (inferred
-  from this doc's own prose, not independently re-confirmed) — same
-  lesson as the Hand Crank recipe correction, don't trust the
-  paraphrase. **Waiting on explicit go-ahead before dispatch, per direct
-  instruction — do not send with the queue items above.**
+- **Modded crafting materials in loot — retracted 2026-09-06.** Original
+  spec (bonus rolls of Create's andesite_alloy/iron_sheet/iron_wire)
+  pulled after direct correction: those items are the literal outputs
+  of the Press/Rolling Mill rig already pre-placed at the base, and
+  andesite_alloy undercuts the existing andesite exploration-gating —
+  loot shouldn't hand out shortcuts to what a placed home machine
+  already makes. Full writeup + the resulting standing design principle
+  in FEATURES.md's "Modded crafting materials in loot" entry (under
+  "Loot bags"). No replacement item proposed — revisit once Tier 3-4/
+  Storage & Power ships real components nothing at home can make.
+  Superseded by the loot-table dead-weight audit below.
+- **Loot-table dead-weight audit — specced 2026-09-06, strip list
+  confirmed via AskUserQuestion, held, not sent.** Direct feedback: "a
+  lot of loot items... I dont see ever being useful... like minecart
+  rails or name tags." Full detail in FEATURES.md's "Loot-table
+  dead-weight audit" entry (under "Loot bags") — real source traced (not
+  this pack's own custom tables, which are clean; comes from Abandoned
+  Urban + real vanilla structures reusing stock vanilla loot tables
+  wholesale), real technique confirmed (LootJS's `removeLoot`, same
+  chest-type-level targeting already proven for the additive bonus
+  pools). Full confirmed strip list: the whole minecart/rail family,
+  name tags, horse gear, vanilla maps, leads, all music discs, and
+  elytra/End-city loot — see FEATURES.md for the complete id list. Real
+  open item for the build session: exact chest-type-modifier
+  `removeLoot` syntax needs verifying against the installed LootJS jar
+  before shipping, not assumed from the block-loot-modifier form.
+  **Waiting on explicit go-ahead before dispatch — do not send with the
+  queue items above.**
 
 ## In progress (sent directly to the build session)
 
@@ -247,6 +254,35 @@ below); Phase 5 not started:
 
 ## Built, awaiting your next playtest
 
+- **Full zombie-apocalypse roster pivot** — built, verified, and
+  deployed 2026-09-06. Full detail in FEATURES.md's "Full
+  zombie-apocalypse roster pivot" entry (under "Mob roster &
+  defense-breaching threats"), including a "Built, verified, and
+  deployed" postscript with the full verification writeup. Short
+  version: every skeleton/spider/wither_skeleton/ravager/creeper
+  reference stripped from `wave_spawner.js`, `loot_bag_drops.js`,
+  `undeadnights_horde_mobs_config.json`, plus 2 files the original audit
+  missed but this pack's own duplication pattern required
+  (`mob_aggro.js`'s and `wave_status.js`'s own copies of the roster) and
+  Epic Siege Mod's `targetingMobs`. Replaced with vanilla zombie-family,
+  TFTH's much bigger unused roster, Undead Nights' own 3 zombie
+  variants, and a newly-installed mod (**Mutants and Zombies** + its
+  **Advanced Wall Climber API** dependency). **Real correction found
+  during verification, not shipped on the pattern-inferred guess**: the
+  original proposal's "Flesh Unseen" turned out to have no registered
+  `EntityType` at all in this exact TFTH build (config and sounds exist,
+  nothing summonable) - dropped everywhere it was proposed, Mutants and
+  Zombies' Mutant Brute took its wave-8 slot instead. **Real filename
+  scare on the Advanced Wall Climber API dependency, resolved before
+  shipping**: packwiz resolved a jar named
+  `awcapi-neoforge-1.20.1-1.0.2.jar` on a Forge pack - checked its real
+  `mods.toml` directly rather than trusting the name, confirmed a
+  genuine Forge dependency declaration, and its Crawler entity
+  (the mob that actually needs it) was successfully real-summoned in
+  the verification pass. **All 23 new/changed mob ids across all 3 mod
+  sources were individually real-summoned and confirmed in a sandbox**,
+  not spot-checked - full mod set boots clean, 0 KubeJS errors. Not yet
+  confirmed by an actual playtest.
 - **Mob-attack vulnerability (pedestal)** — config built, deployed, and
   committed (f49f947) 2026-09-05, and **real live behavior is
   unconfirmed, not a clean win — flag this honestly, don't report it as

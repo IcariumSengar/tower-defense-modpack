@@ -330,50 +330,131 @@ separate findings from this audit:
   Additions, Trapcraft, or Medieval Defense Turrets) has ever been
   placed as a reward for killing something or finding a chest, only as
   something the player crafts from vanilla inputs.
-- **Proposed addition, matching the loot-philosophy principle
-  ("killing mobs = tech progression") more directly than the Andesite
-  fix did**: layer real Create-family intermediate/output items into
-  the existing tiers as rare bonus finds — a lucky kill or a chest
-  further out can hand the player pre-fabricated pieces of the Barbed
-  Wire/Hand Crank chains, shortcutting (not replacing) the crafting
-  path. Same additive-bonus-roll technique already proven twice this
-  session (the jackpot roll above, `structure_loot_progression.js`'s
-  distance bands):
-  - **BountyBags Rare tier**: small bonus chance (~5%) of
-    `create:andesite_alloy` — a real shortcut toward "Turn the Crank"
-    (Hand Crank = 3 planks + 1 Andesite Alloy) for a player who hasn't
-    found raw andesite yet, on top of the existing Rare pool.
-  - **BountyBags Epic tier**: small bonus chance (~4%) of
-    `createaddition:iron_sheet` — skips the Mechanical Press step of
-    the Barbed Wire chain. Doubles as a real safety net, not just
-    flavor: the Press's auto-fire behavior is still an open,
-    unconfirmed bug (see "Barbed Wire replaces Spikes" below), so a
-    loot-sourced Iron Sheet gives a player a way past that chain even
-    if the Press turns out not to work when played for real.
-  - **BountyBags Legendary tier**: small bonus chance (~3%) of
-    `createaddition:iron_wire` ×2 — skips both the Press and the
-    Rolling Mill, one step short of a finished Barbed Wire.
-  - **`structure_loot_progression.js`'s mid-tier bonus pool** (60-120
-    blocks): add `create:andesite_alloy` alongside the existing
-    iron/gold/lapis/redstone/copper/emerald entries — positions the
-    processed alloy as a rarer exploration find sitting one tier above
-    raw andesite (which stays in the base structure chest tables,
-    unchanged).
-  Deliberately **not** touching Tier 2's re-recipes or extending into
-  Tier 3-4/Storage & Power materials — that system (Immersive
-  Engineering, Flux Networks, Sophisticated/Refined Storage) isn't
-  installed yet, so there are no real item ids to target; revisit this
-  same technique once it ships.
-- **Real verification needed before shipping, not assumed**: this
-  entry's item ids (`create:andesite_alloy`, `createaddition:iron_sheet`,
-  `createaddition:iron_wire`) are inferred from this doc's own earlier
-  prose describing the crafting chain, not independently re-confirmed
-  against the actual mod jars the way `createaddition:barbed_wire`'s
-  full blockstate was for the wall placement — same lesson as the Hand
-  Crank recipe correction: verify the exact registry ids directly
-  (decompile or `/give` a stack in a sandbox) before wiring them into
-  any loot table, don't trust the paraphrase.
-- Queued to build, see QUEUE.md.
+- **Original proposal retracted 2026-09-06, real design correction from
+  the user**: the original plan (below, struck through in spirit, kept
+  for the record) put `create:andesite_alloy`/`createaddition:iron_sheet`/
+  `createaddition:iron_wire` in loot bags as "shortcuts." Direct
+  correction: "because we start with the rolling machine and the press,
+  I dont want those specific items in the loot bags table." Iron Sheet
+  and Iron Wire are the literal outputs of the Press/Rolling Mill rig
+  already pre-placed at the base — putting them in loot as a shortcut
+  undermines the actual home-crafting loop that rig exists for, not
+  complements it. Andesite Alloy has the same problem one level up: raw
+  `minecraft:andesite` was deliberately kept **out** of loot bags
+  specifically to force exploration for it (see "Andesite gated behind
+  exploration" above) — handing out the *next step up* (the Alloy
+  itself) in a loot bag would undercut that exact decision.
+- **Real standing design principle, stated directly by the user, worth
+  applying beyond just this one spec**: "I like that a player can also
+  choose to stay at base and craft things/make things to bolster their
+  tech or just build defences" alongside "[I want] the player be forced
+  to venture out into the dangerous structures outside the world border
+  thus leaving the base unguarded." Two distinct, real paths — stay home
+  and use placed machines/mob-kill materials, or leave the base exposed
+  to explore for things you can't get any other way — and loot design
+  has to keep them distinct. **Rule**: never put the direct output of an
+  already-placed home machine into loot (bags or chests) as a
+  "shortcut" — that's not a bonus, it's a hole in the choice between the
+  two paths. Exploration rewards should be things genuinely unreachable
+  by staying home, not a faster version of what the base can already
+  make. See [[feedback_loot_shortcut_undermines_choice]].
+- **Not re-proposed with different items** — given the rule above, there
+  isn't an obvious modded-material candidate left from what's currently
+  installed: everything in Create/Create Additions/Trapcraft/Medieval
+  Defense Turrets that this pack actually uses is craftable from a
+  placed machine or a plain recipe already covered by existing loot.
+  Revisit once Tier 3-4/Storage & Power (Immersive Engineering, Flux
+  Networks, Sophisticated/Refined Storage) actually ships — that system
+  will have real components not obtainable at any currently-placed
+  machine, which is exactly the shape of thing exploration loot should
+  reward.
+- **Superseded by, and folded into, the loot-table dead-weight audit**
+  below — this entry stays for the record but isn't a standalone build
+  item anymore.
+
+**Loot-table dead-weight audit — raised 2026-09-06, not yet fully
+specced, real candidate list below needs the user's confirmation on
+where the line sits before it's ready to build.** Direct feedback:
+"there are a lot of loot items that I dont see ever being useful in the
+pack, like minecart rails or name tags." Real, not paranoid — checked
+where these would actually come from, since none of this pack's own
+custom tables (all 4 BountyBags tiers, all 3
+`postapocalypse_structures` chest overrides, both
+`structure_loot_progression.js` bonus pools) contain anything like a
+rail or a name tag; every one of them was already grepped for the
+Modded-materials audit above and is 100% deliberately-chosen items.
+**Real source, traced from this doc's own earlier research**: Abandoned
+Urban's 34 structures overwhelmingly reuse stock **vanilla** loot
+tables wholesale (`village_butcher`, `stronghold_corridor`,
+`simple_dungeon`, `shipwreck_treasure`, etc. — confirmed by decompiling
+all 34 structure NBTs directly, see "Loot chests: rarity scaling by
+distance from spawn" below), and any genuine vanilla structure
+generating in the bordered play area (strongholds, mineshafts,
+dungeons, shipwrecks — none of these were disabled, only desert
+pyramids were) carries the same stock tables too. That's where
+`minecraft:rail` (abandoned mineshaft loot), `minecraft:name_tag`
+(bastion/dungeon/stronghold pools), and similar dead weight actually
+comes from — not this pack's own design, vanilla's.
+
+**Real technique confirmed**: LootJS (already installed, v2.13.1,
+already used for the additive bonus pools above) supports
+`removeLoot(Ingredient)` on a loot modifier — the same
+`event.addLootTypeModifier('chest')` type-level targeting already
+proven in `structure_loot_progression.js` (covers every chest opened
+anywhere, custom or vanilla, without needing to individually override
+every table a structure mod might reuse) should support a matching
+subtractive call, not just the additive `context.addLoot(...)` already
+in use. **Real verification needed before shipping**: this pack's exact
+LootJS version's chest-type-modifier removal syntax hasn't been
+confirmed directly yet (the block-loot-modifier form,
+`event.addBlockLootModifier(id).removeLoot(Ingredient.all)`, is
+confirmed real; the chest-context equivalent needs a real check against
+the installed jar, not assumed identical).
+
+**Candidate strip list — first pass, needs your confirmation on where
+the line sits, not shipping on my own judgment call alone**: items with
+no real function anywhere in this pack's actual mechanics as they
+stand today.
+- **Minecart/rail system** (no minecart transport anywhere in this
+  pack): `minecraft:rail`, `minecraft:powered_rail`,
+  `minecraft:detector_rail`, `minecraft:activator_rail`,
+  `minecraft:minecart`, `minecraft:chest_minecart`,
+  `minecraft:hopper_minecart`, `minecraft:tnt_minecart`,
+  `minecraft:furnace_minecart`.
+- **`minecraft:name_tag`** — no taming/pet-naming system this pack
+  emphasizes.
+- **Horse gear** (`minecraft:saddle`, `minecraft:iron_horse_armor`,
+  `minecraft:golden_horse_armor`, `minecraft:diamond_horse_armor`,
+  `minecraft:leather_horse_armor`) — no mounted-travel design anywhere
+  in this pack; worldborder is small and the player is meant to be on
+  foot defending a fixed base.
+- **Vanilla maps** (`minecraft:map`, `minecraft:filled_map`) —
+  redundant now that Xaero's World Map is installed and does this
+  better.
+- **Confirmed via AskUserQuestion 2026-09-06, also stripping**:
+  `minecraft:lead`, `minecraft:music_disc_*` (all discs), and
+  `minecraft:elytra` plus other End-city-only loot.
+- **Not** stripping anything that's a raw crafting material, food,
+  combat gear, or tool — even a "boring" vanilla item like
+  `minecraft:string`/`minecraft:gunpowder`/`minecraft:leather` has a
+  real recipe use somewhere in this pack.
+
+**Full final strip list**: `minecraft:rail`, `minecraft:powered_rail`,
+`minecraft:detector_rail`, `minecraft:activator_rail`,
+`minecraft:minecart`, `minecraft:chest_minecart`,
+`minecraft:hopper_minecart`, `minecraft:tnt_minecart`,
+`minecraft:furnace_minecart`, `minecraft:name_tag`,
+`minecraft:saddle`, `minecraft:iron_horse_armor`,
+`minecraft:golden_horse_armor`, `minecraft:diamond_horse_armor`,
+`minecraft:leather_horse_armor`, `minecraft:map`,
+`minecraft:filled_map`, `minecraft:lead`, `minecraft:elytra`, plus
+every `minecraft:music_disc_*` variant (real ids need enumerating from
+the game's own item registry/tag at build time, not guessed one by
+one) — real verification still needed on the exact chest-type-modifier
+`removeLoot` syntax before shipping (see above), same as always.
+
+**Ready to queue** — strip list confirmed, technique confirmed real,
+only the exact removal syntax needs verifying at build time.
 
 **Mob-tier loot progression — requested 2026-09-02, built and deployed
 2026-09-03 (commit 2faf4ef).** Direct follow-up once BountyBags (bags) and Lootr (chests) were both
@@ -2481,6 +2562,239 @@ at your trap line), not something to patch around.
 everything else parked today: real, ready design, sequenced behind the
 current playtest-feedback batch rather than adding another parallel
 project.
+
+**Full zombie-apocalypse roster pivot — specced 2026-09-06, supersedes
+"More zombie-family variety" above and resolves its open questions,
+held, not sent to build.** Direct request: "I want to strip out the
+other mob types [and] speck out all the zombie type mobs we have
+available... maybe there are other cool zombie mobs in other mods...
+I want the waves to feel like you are being attacked by larger and
+larger hordes, till eventually it feels epic in scale." Confirmed via
+AskUserQuestion: strip non-zombie mobs completely (no rare exception),
+and install Mutants and Zombies now rather than holding off.
+
+**Audit: what's zombie-family vs. not, across every real mob source in
+this pack** (`wave_spawner.js`'s `WAVES`/`WAVE_MOB_TYPES`,
+`loot_bag_drops.js`'s 4 tier arrays,
+`undeadnights_horde_mobs_config.json`'s 4 named hordes):
+- **Strip entirely**: `minecraft:skeleton`, `minecraft:spider`,
+  `minecraft:wither_skeleton`, `minecraft:ravager`, and
+  `minecraft:creeper` (only in `loot_bag_drops.js`'s Uncommon
+  catch-all, not in any wave — same non-zombie problem, caught in this
+  audit, not previously flagged).
+- **Keep — TFTH is already a zombie-apocalypse mod, not a separate
+  monster mod.** Checked its real config (`TFTH.toml`), not assumed:
+  every "Flesh X" entity is an infected/corrupted vanilla creature
+  (Flesh Villager from Villager, Flesh Dog from Wolf, Flesh Cow from
+  Cow, etc.), with a real Germ → Awareness stage escalation already
+  built into the mod itself. It's a full infection-zombie mod under a
+  different name, not a stylistic mismatch to work around.
+
+**New material found, not previously used anywhere in this pack** —
+real headroom for "larger and larger hordes" without inventing content
+from scratch:
+- **Vanilla zombie-family, never used in any wave**: `minecraft:husk`,
+  `minecraft:drowned`, `minecraft:zombie_villager`,
+  `minecraft:zombified_piglin`. Zero cost, zero new mods.
+- **TFTH's own unused roster** (confirmed directly from `TFTH.toml`'s
+  `["MOB TYPES"]` and `["MOB SETTINGS"]` sections) is much bigger than
+  what's live. Germ stage (weaker, early-game): Flesh Dog, Flesh Cow,
+  Flesh Sheep, Flesh Pig, Flesh Vindicator, Flesh Pillager, Flesh Mutant
+  (`plaquecreatureone`), Flesh Infector (`plaquecontaminator`). Awareness
+  stage (tougher): Flesh Howler — previously excluded for a real,
+  still-valid technical reason (`CallForHelpGoal`, an unconfirmed
+  "summons more mobs" risk that breaks the deterministic 1-8 campaign's
+  exact mob count) — proposal below uses it in the endless-phase horde
+  config only, where mob count is never exact anyway, not in `WAVES`.
+  **Real find**: `Flesh Unseen` (MaxHealth 100/AttackDamage 14/Armor
+  10) — tougher than anything currently in the roster including Flesh
+  Hysterizer, sitting fully configured and completely unused (not in
+  either stage's mob list, spawned only via its own special mechanics
+  in the base mod) — a real finale-tier candidate.
+- **Undead Nights' own 3 zombie variants, already installed, never
+  used** — decompiled directly (`net/petemc/undeadnights/entity/*.class`
+  in the live jar), not assumed: `undeadnights:horde_zombie`,
+  `undeadnights:elite_zombie` (slower but hits harder than Horde Zombie
+  — real distinct stat block, confirmed from bytecode, not guessed),
+  and the already-known `undeadnights:demolition_zombie`. All three
+  read their core stats live from Undead Nights' own difficulty-level
+  system — same mechanism already driving the endless phase — so using
+  them costs zero new scaling code. **Real confirmation the mod's own
+  intended default already matches this whole direction**: its shipped
+  `data/undeadnights/tags/entity_types/horde_mobs.json` tag is
+  `zombie + zombie_villager + husk + drowned + zombified_piglin +
+  horde_zombie + elite_zombie + demolition_zombie` — a complete,
+  all-zombie horde template this pack has never actually turned on.
+- **Mutants and Zombies — install now.** Re-verified fresh directly
+  against its own CurseForge page (not trusting the earlier spec's
+  claims, per this pack's own mod-freshness lesson): author
+  **MCModsPete** confirmed, latest Forge 1.20.1 file is **v1.4.0**,
+  released 2026-08-04 — genuinely current. One correction to the
+  earlier spec: **its description does not actually mention pairing
+  with Undead Nights** (that earlier claim doesn't hold up on a fresh
+  read) — same trusted author is still independently true, and its "no
+  autonomous systems" verification from the original spec stands.
+  8 mobs unchanged from the original research: Zombie Brute, Mutant
+  Brute (tanks), Crawler (fast, wall-climbing — needs **Advanced Wall
+  Climber API**, confirmed required as of 1.4.0), Spitter (ranged),
+  Blister Zombie, Split Head Zombie (speed/strength variants), Rotten
+  Mutant (tanky/slow), Mutant Zombie (mild upgrade).
+
+**Proposed wave-by-wave composition (`WAVES` in `wave_spawner.js`) —
+first pass, easy to retune, same as every other wave-count decision in
+this codebase.** **Real framing correction (2026-09-06)**: waves 1-8
+are not "the campaign" with wave 8 as its finale — that language is
+stale, left over from before endless-phase scaling existed. The game
+is endless now; waves 1-8 are just the hand-authored *ramp-up*, and
+wave 9 onward hands off to Undead Nights' own procedural difficulty
+system (already built, 40 escalating levels) which keeps going forever.
+Nothing here is an ending. Tells a real escalation story rather than
+just swapping mob names 1:1: early waves stay light trash-floor
+infected, Undead Nights' own zombies arrive mid-ramp as
+"reinforcements," Mutants and Zombies debuts late, and the
+wall-breaching Demolition Zombie makes its first-ever appearance right
+at the wave 8/9 handoff — introduced there specifically because that's
+where the hand-authored ramp ends and the endless horde config
+(below) picks it up and keeps using it forever after, not because
+anything is culminating.
+- **Wave 1**: zombie×4, husk×2, zombie_villager×1 (7)
+- **Wave 2**: zombie×3, husk×2, drowned×2, flesh_human×2 (9)
+- **Wave 3**: zombie×2, husk×2, drowned×1, flesh_human×2,
+  flesh_villager×2 (9)
+- **Wave 4**: zombie×2, husk×2, flesh_villager×1, flesh_dog×2,
+  flesh_hunter_i (`plaquecreaturetwo`)×1 (8) — first Awareness-stage
+  elite
+- **Wave 5** (was ravager + flesh_suffer): zombie×1, husk×1,
+  flesh_hunter_i×1, flesh_suffer×1, `undeadnights:elite_zombie`×1 (5)
+  — Elite Zombie replaces the ravager as this wave's toughest mob
+- **Wave 6**: zombie×1, husk×1, flesh_brute_i
+  (`bruteplaquecreatureone`)×1, `undeadnights:horde_zombie`×2 (5) —
+  Undead Nights' own zombies arrive as a numbers-focused reinforcement
+  wave
+- **Wave 7**: flesh_hunter_ii×1, flesh_boomer×1, Mutants and Zombies'
+  Zombie Brute×1, `undeadnights:elite_zombie`×1 (4) — new mod debuts
+  alongside a second elite
+- **Wave 8** (was ravager + plaquethreelegcreature, the last
+  hand-authored wave before the endless ramp takes over):
+  flesh_hysterizer (`plaquethreelegcreature`)×1, Flesh Unseen×1,
+  `undeadnights:demolition_zombie`×1, `undeadnights:elite_zombie`×1,
+  `undeadnights:horde_zombie`×2 (6) — the toughest hand-authored mix,
+  including the first appearance of something that can genuinely
+  breach the base's defenses, not just the player. It's a step up, not
+  a climax — waves 9+ keep escalating past it using the same roster
+  (see the horde config below).
+
+**Proposed endless-phase horde reclassification**
+(`undeadnights_horde_mobs_config.json`'s 4 named hordes) — same
+non-zombie strip, escalating the same way the trash/mixed/elite/boss
+naming already implies:
+- `trash_horde`: zombie, husk, drowned, zombie_villager, horde_zombie
+- `mixed_horde`: zombie, husk, flesh_hunter_ii, flesh_brute_i,
+  horde_zombie, Mutants and Zombies' Rotten Mutant
+- `elite_horde`: zombie, flesh_suffer, flesh_hysterizer, flesh_boomer,
+  flesh_brute_i, elite_zombie, Mutants and Zombies' Zombie Brute
+- `boss_horde`: zombie, elite_zombie, flesh_suffer, flesh_hysterizer,
+  flesh_boomer, demolition_zombie, Flesh Unseen, Mutants and Zombies'
+  Mutant Brute
+
+**Proposed loot-bag tier reclassification** (`loot_bag_drops.js`'s 4
+mob arrays) — same real-toughness-based tiering already used for the
+current roster, applied to the new one:
+- `UNCOMMON_MOBS`: zombie, husk, drowned, zombie_villager,
+  zombified_piglin, flesh_human, flesh_villager, horde_zombie
+- `RARE_MOBS`: flesh_dog, flesh_cow, flesh_sheep, flesh_pig,
+  flesh_vindicator, flesh_pillager, flesh_mutant, flesh_infector
+- `EPIC_MOBS`: flesh_hunter_i, flesh_hunter_ii, flesh_brute_i,
+  flesh_boomer, elite_zombie, + 2-3 Mutants and Zombies mid-tier mobs
+- `LEGENDARY_MOBS`: flesh_hysterizer, flesh_suffer, Flesh Unseen,
+  demolition_zombie, Mutants and Zombies' Zombie Brute/Mutant Brute
+
+**Real verification still needed before shipping, not assumed**:
+- Every TFTH id above beyond the ones already live in this pack today
+  (`flesh_dog`, `flesh_cow`, `flesh_sheep`, `flesh_pig`,
+  `flesh_vindicator`, `flesh_pillager`, `flesh_mutant`/
+  `plaquecreatureone`, `flesh_infector`/`plaquecontaminator`,
+  `flesh_howler`, `flesh_unseen`) is a **pattern-inferred** registry id
+  (`the_flesh_that_hates:<name>`, matching every already-confirmed TFTH
+  id's namespace), not independently confirmed the way `flesh_human`/
+  `flesh_suffer`/etc. were — verify by decompile or a real `/summon`
+  test before wiring into any file, same lesson as the Hand Crank
+  recipe correction.
+- Mutants and Zombies' exact registry ids (mod id + entity names)
+  aren't known at all yet since the mod isn't installed in this pack —
+  it's referenced above by display name only. Confirm real ids once
+  actually installed, same as every other not-yet-installed mod in
+  this doc.
+- Whether `Flesh Unseen` is actually summonable/balanced the same way
+  as every other TFTH mob used so far (its own spawn mechanics in the
+  base mod are unclear from the config alone) — worth a real sandbox
+  `/summon` check before relying on it for wave 8.
+- Quest book: the existing "kill 5 zombie" task
+  (`entity: "minecraft:zombie"`) still works unchanged since
+  `minecraft:zombie` stays in the roster — no quest text needs to
+  change for this pivot.
+
+**Built, verified, and deployed 2026-09-06.** All 4 files touched
+(`wave_spawner.js`'s `WAVES`/`WAVE_MOB_TYPES`, `loot_bag_drops.js`'s 4
+tier arrays, `undeadnights_horde_mobs_config.json`'s 4 hordes) plus 2
+more the original audit missed but this pack's own established
+duplication pattern required: `mob_aggro.js`'s own copy of
+`WAVE_MOB_TYPES` (the pedestal-targeting fix from earlier this session)
+and `wave_status.js`'s `HOSTILE_TYPES` (its own header comment already
+said to keep these three in sync) - missing either would have left
+every new mob either not forced onto the pedestal or invisible to the
+"hostiles remaining" counter. Also updated Epic Siege Mod's own
+`targetingMobs` config to the same roster, for the same reason the
+original ESM pass covered the whole roster in the first place.
+- **Every "real verification still needed" item above was actually
+  checked, not shipped on the pattern-inferred guess**: decompiled
+  `TheFleshThatHatesModEntities.class` directly for the real TFTH
+  registry ids (all confirmed correct except one, see below), and
+  `net/petemc/mutantszombies/entity/ModEntities.class` for Mutants and
+  Zombies' real ids once the mod was actually installed - `mutantszombies:
+  mutant_zombie/rotten_mutant/mutant_brute/split_head_zombie/zombie_brute/
+  spitter/crawler/blister_zombie`, matching the spec's display names
+  exactly. Undead Nights' 3 ids re-confirmed straight from its own
+  shipped `horde_mobs.json` tag rather than re-decompiling.
+- **Real correction found doing that verification, not assumed away**:
+  **"Flesh Unseen" has no registered `EntityType` at all** in this
+  exact TFTH build - its `MOB SETTINGS` config section and some ambient
+  sound files exist, but `TheFleshThatHatesModEntities`'s real
+  registration list has no `flesh_unseen` entry anywhere, and the jar
+  has zero `FleshUnseenEntity.class` file. Not summonable, full stop -
+  the spec's own flagged uncertainty about this mob turned out to be a
+  real dead end, not a formality. Dropped from wave 8, `LEGENDARY_MOBS`,
+  and `boss_horde` everywhere it was proposed; Mutants and Zombies'
+  Mutant Brute (a real, confirmed tank mob already used elsewhere in the
+  proposal) took its wave-8 slot instead, keeping that wave's real
+  toughness intent without inventing a new number.
+- **Advanced Wall Climber API dependency - real filename scare, resolved
+  before shipping, not ignored**: packwiz resolved
+  `awcapi-neoforge-1.20.1-1.0.2.jar` - a filename that reads as
+  NeoForge-only on a Forge 1.20.1 pack, which would be a real
+  incompatibility if true. Checked directly rather than trusting the
+  name: downloaded the exact resolved file, verified its sha1 against
+  packwiz's own recorded hash, then read its real `META-INF/mods.toml`
+  - `modLoader = "javafml"`, with an explicit `forge` mod dependency
+  (`versionRange = "[47,)"`, matching this pack's own Forge 47.4.10)
+  - unambiguous proof it's a genuine Forge mod despite the confusing
+  filename (likely just a multi-loader build-pipeline artifact). Its
+  Crawler entity (the mob that actually needs this API) was
+  real-summoned successfully in the full verification pass below,
+  confirming the dependency loads and works, not just that the toml
+  claims it should.
+- **Verified end to end in a sandbox before deploying**: full mod set
+  boots clean (`Loaded 13/13 KubeJS server scripts... 0 errors`), then
+  every single new/changed mob id (23 total, spanning all 3 mod
+  sources) was real-summoned and confirmed to land as a genuine entity
+  - not spot-checked, every one. No crashes, no missing-dependency
+  errors, no unknown-entity failures.
+- **What did NOT get touched, deliberately**: `diggerMobs`/
+  `buildingMobs`/`jumpingMobs` in `epicsiegemod-common.toml` (still
+  `["minecraft:zombie"]` only) - separate, already-flagged-open design
+  questions (see the pedestal mob-vulnerability entry above), not a
+  roster-consistency gap this pivot needed to close. Quest book
+  confirmed unaffected per the spec's own note above.
 
 ## Defense
 

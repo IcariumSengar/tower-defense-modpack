@@ -75,7 +75,15 @@
 	#If the block targeting should be as important as targeting entities (When enabled the goal gets added to the targetSelector instead of the goalSelector) [default: true]
 	targetBlocksImportance = false
 	#List of mobs that can actively target blocks [default: [minecraft:zombie]
-	targetingMobs = ["minecraft:zombie", "minecraft:skeleton", "minecraft:spider", "minecraft:wither_skeleton", "minecraft:ravager", "the_flesh_that_hates:flesh_human", "the_flesh_that_hates:flesh_villager", "the_flesh_that_hates:plaquecreaturetwo", "the_flesh_that_hates:flesh_suffer", "the_flesh_that_hates:bruteplaquecreatureone", "the_flesh_that_hates:flesh_hunter_two", "the_flesh_that_hates:flesh_boomer", "the_flesh_that_hates:plaquethreelegcreature"]
+	#Full zombie-apocalypse roster pivot (2026-09-06) - same real ids as
+	#wave_spawner.js's WAVE_MOB_TYPES (see there for the full writeup),
+	#kept in sync with the whole roster per this pack's own original
+	#reasoning: a base-under-siege premise should let the whole roster
+	#threaten it, not just zombies. mob_aggro.js's target-selector strip
+	#already runs generically on any WAVE_MOB_TYPES mob regardless of
+	#source mod, so this doesn't conflict with Undead Nights'/Mutants and
+	#Zombies' own AI either.
+	targetingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "the_flesh_that_hates:flesh_human", "the_flesh_that_hates:flesh_villager", "the_flesh_that_hates:flesh_dog", "the_flesh_that_hates:plaquecreaturetwo", "the_flesh_that_hates:flesh_suffer", "the_flesh_that_hates:bruteplaquecreatureone", "the_flesh_that_hates:flesh_hunter_two", "the_flesh_that_hates:flesh_boomer", "the_flesh_that_hates:plaquethreelegcreature", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant"]
 	#What blocks will be targeted for removal when idle (Format: 'minecraft:wool' prefix with # if mentioning a block tag)
 	blockTargets = ["#minecraft:candles", "kubejs:amulet_pedestal", "supplementaries:pedestal"]
 
