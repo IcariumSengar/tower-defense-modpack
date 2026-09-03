@@ -3,8 +3,8 @@
 	default_quest_shape: ""
 	filename: "tier1_machines"
 	group: ""
-	icon: "trapcraft:spikes"
-	id: "E0FD1EE720089BB3"
+	icon: "createaddition:barbed_wire"
+	id: "1D29106DD8F4502B"
 	order_index: 1
 	progression_mode: "flexible"
 	quest_links: [ ]
@@ -14,9 +14,9 @@
 			description: [
 				"The dead didn't just leave gear behind - some of them left know-how."
 				""
-				"Turn scrap into something with teeth. Spikes don't ask questions, and they don't get tired."
+				"Turn scrap into something with teeth. Barbed wire doesn't ask questions, and it doesn't get tired."
 			]
-			icon: "trapcraft:spikes"
+			icon: "createaddition:barbed_wire"
 			id: "1454951A7FB14A26"
 			rewards: [{
 				id: "0892955D880F0E2C"
@@ -28,8 +28,8 @@
 			subtitle: "Turn scrap into defenses"
 			tasks: [{
 				consume_items: false
-				id: "8932A33D33981462"
-				item: "trapcraft:spikes"
+				id: "655A19AD37263BC9"
+				item: "createaddition:barbed_wire"
 				type: "item"
 			}]
 			title: "Sharpened Scrap"
@@ -38,9 +38,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: [
-				"A Bear Trap doesn't kill quick, but it holds. Whatever steps in it stays there - long enough for whatever comes next."
-			]
+			description: ["A Bear Trap doesn't kill quick, but it holds. Whatever steps in it stays there - long enough for whatever comes next."]
 			icon: "trapcraft:bear_trap"
 			id: "3F6D91E4A2C7B850"
 			rewards: [{
@@ -53,7 +51,7 @@
 			subtitle: "Turn scrap into defenses"
 			tasks: [{
 				consume_items: false
-				id: "9A4C7E2F856D0B13"
+				id: "5D7488609EA3E850"
 				item: "trapcraft:bear_trap"
 				type: "item"
 			}]

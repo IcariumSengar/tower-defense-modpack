@@ -282,10 +282,16 @@ PlayerEvents.loggedIn((event) => {
   // Gate dressing - the visible fault line, heaviest fought-over spot
   // (docs/FEATURES.md's "Starting base"): improvised defense props
   // (Zcraft Decoration barrels/crates as cover) flanking the door, and
-  // a Trapcraft Spikes line just outside - placed purely decoratively
-  // via /setblock, independent of the real craftable Tier 1 spikes
+  // a Barbed Wire line just outside - placed purely decoratively via
+  // /setblock, independent of the real craftable Tier 1 barbed wire
   // (see docs/MODS.md's Trapcraft replacement entry), no power/wiring
-  // implied. Registry names confirmed from each mod's own jar before
+  // implied. Switched from Trapcraft's Spikes 2026-09-03 (direct
+  // request: Barbed Wire replaces Spikes as the Tier 1 defense item) -
+  // createaddition:barbed_wire needs both `vertical` and `facing`
+  // blockstate properties (confirmed from the mod's own blockstate
+  // JSON, not guessed); vertical=false is the ground-laid variant this
+  // decorative line wants, matching how the old Spikes line sat.
+  // Registry names confirmed from each mod's own jar before
   // writing this, blockstates checked for facing requirements - AND,
   // real gap caught by that check alone: `hesco_sandwall`/`barbed_wire_1`
   // both had real blockstate JSON *and* real lang entries, but turned
@@ -302,7 +308,7 @@ PlayerEvents.loggedIn((event) => {
   run(`setblock ${doorX + 1} ${wallY0} ${z1 + 1} doomsday_decoration:woodencrate[facing=south]`)
   for (let wx = x0; wx <= x1; wx++) {
     if (Math.abs(wx - doorX) <= 1) continue
-    run(`setblock ${wx} ${wallY0} ${z1 + 2} trapcraft:spikes`)
+    run(`setblock ${wx} ${wallY0} ${z1 + 2} createaddition:barbed_wire[vertical=false,facing=south]`)
   }
   run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
   run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
@@ -391,4 +397,36 @@ PlayerEvents.loggedIn((event) => {
   // floor footprint. Replace-mode fill over just that one Y layer swaps
   // it for the same stone_bricks the rest of the compound floor uses.
   run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
+
+  // Pre-placed Tier 1 kinetic rig (2026-09-03, direct request: pre-place
+  // a finished Rolling Mill inside the starting structure "same way it
+  // already ships with a furnace etc.", so the only remaining player
+  // task is crafting a Hand Crank and connecting it). Local x=4-6, z=9
+  // (a back room) confirmed real, clear indoor floor via a live sandbox
+  // test of this exact structure - fresh /place template, then
+  // /execute if block checks at every target cell before touching
+  // anything, floor solid at local y=0, ceiling solid at local y=4,
+  // open to the west - not guessed from the structure's advertised
+  // dimensions.
+  //
+  // The Depot goes BENEATH the Press, not on top - confirmed from the
+  // mod's own ponder text ("Input items can be dropped or placed on a
+  // Depot under the Press"), the opposite of the Rolling Mill, which
+  // takes items dropped directly onto itself. Both kinetic blocks face
+  // the same direction (east) so they share a rotation axis and
+  // conduct power to each other through direct adjacency, no shaft
+  // needed - live-verified with a temporary creative motor immediately
+  // west of the Press: both blocks showed a real nonzero Speed and a
+  // single 3-block kinetic Network. The cell east of the Mill is left
+  // open on purpose - it's the next block in that same kinetic line,
+  // reserved for the player's own Hand Crank, which (like any
+  // hand-cranked source) needs a real player right-clicking it and
+  // can't be pre-placed already turning.
+  const rigX0 = buildingX0 + 4
+  const rigZ = buildingZ0 + 9
+  const rigY1 = floorY + 1
+  const rigY2 = floorY + 2
+  run(`setblock ${rigX0} ${rigY2} ${rigZ} createaddition:rolling_mill[facing=east]`)
+  run(`setblock ${rigX0 + 1} ${rigY2} ${rigZ} create:mechanical_press[facing=east]`)
+  run(`setblock ${rigX0 + 1} ${rigY1} ${rigZ} create:depot`)
 })

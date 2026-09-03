@@ -30,7 +30,7 @@ hash = "64175acb7095f05f692d656075185138e2fb6a82f682ab31db3b61e4c9a5d968"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier1_machines.snbt"
-hash = "307a0908eb9ec157b8b4129ad455029c5ff3648594fb30fac5aeecae93690732"
+hash = "7eb76de3a1df273037926eb02f85e6de3e723fcbc98fce61285774947b227e17"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tier2_machines.snbt"
@@ -38,7 +38,7 @@ hash = "976ed65cc29543768ddf43c833cec63b2b68edb7dd9b9aa24cc33afd437f29a7"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
-hash = "da5a0239616b11344564a0fe4b0d06fc6603a1e83f149a86363e07717f45ea47"
+hash = "ada02480bd90dae94378b9144a9b38365cbcfdd0657fd5d2e25772043b21509c"
 
 [[files]]
 file = "config/lithium.properties"
@@ -257,8 +257,12 @@ file = "kubejs/server_scripts/mob_aggro.js"
 hash = "21f0656150354602d7a25bde97eaae3c8ff48e7794e4f3dfcd000ca94bd7a4ad"
 
 [[files]]
+file = "kubejs/server_scripts/pedestal_destruction.js"
+hash = "787b20ca43c1c2857b6c069ae2a56834465ddd5376e4ad1110749070af9274fd"
+
+[[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "d5959507774f8a0294c80ca059e874fc0694fe871c2e66dffe4e88b90d29a929"
+hash = "b2d0959b08b28ca78ad3315e0cca7a7f82e02c541b23968965a526ac1670ed45"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -270,7 +274,7 @@ hash = "f76f5876026465418347da9c107effebaf37928d14003d0b83f94b4f52160380"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "054121a15449474aea0ca587c41c00db43b3d064a9ea8d3b6447d7bac883abd0"
+hash = "7b375f150a51c61af2ad31449dad0dde18777c65627b3f97b47826b403a97e72"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
@@ -350,6 +354,11 @@ metafile = true
 [[files]]
 file = "mods/create.pw.toml"
 hash = "9d7971a7af2ff4a96a0e5aede76f9cf8dc978da601e2754f79d6ec8631125bb9"
+metafile = true
+
+[[files]]
+file = "mods/createaddition.pw.toml"
+hash = "8a5f33277995fccd2be6793c4fba1b5d657983be32f0b47e4afab4eac70b8ab8"
 metafile = true
 
 [[files]]
