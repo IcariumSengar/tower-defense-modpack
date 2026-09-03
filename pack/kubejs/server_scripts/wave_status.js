@@ -146,6 +146,30 @@ const FIXED_WAVE_EVENTS = [
 // choice step that used to gate it is gone.
 const COUNTDOWN_TICKS = 3600
 
+// Same waveObjective() fix as wave_spawner.js (server_scripts don't
+// reliably share top-level scope across files, so it's redeclared here
+// rather than imported - same duplication pattern as HOSTILE_TYPES
+// above). Real playtest report: "I expected the enemies to spawn near
+// the base and attack the pedestal. This didn't happen - I was out
+// adventuring and they spawned on me. I then ran to the base and they
+// despawned, causing me to win the wave." This counter was half of that
+// bug - it measured distance from the player, so a player who outran
+// their own wave mobs back to base would see the wave read as
+// "cleared" even though the mobs were still alive somewhere behind
+// them. Now measures from the pedestal marker's stored position while
+// td_amuletOnPedestal is true, same as wave_spawner.js's own spawn/
+// reuse-gate logic.
+function waveObjective(player, data) {
+  if (data.getBoolean('td_amuletOnPedestal')) {
+    return {
+      x: data.getDouble('td_amuletMarkerBaseX'),
+      y: data.getDouble('td_amuletMarkerBaseY'),
+      z: data.getDouble('td_amuletMarkerBaseZ'),
+    }
+  }
+  return { x: player.getX(), y: player.getY(), z: player.getZ() }
+}
+
 PlayerEvents.tick((event) => {
   const player = event.player
   const level = player.getLevel()
@@ -169,6 +193,7 @@ PlayerEvents.tick((event) => {
   // Nights' own spawn_horde command and can never carry td_wave_mob -
   // see wave_spawner.js's tag comment for the full story.
   const isEndlessPhase = waveNumber > FINAL_WAVE
+  const objective = waveObjective(player, data)
 
   const hostileCount = level.getEntities().filter((e) => {
     if (!HOSTILE_TYPES.includes(`${e.type}`)) return false
@@ -185,9 +210,9 @@ PlayerEvents.tick((event) => {
     // 0 health makes the counter match what the player visually sees,
     // not the ~1 second-delayed removal.
     if (e.getHealth() <= 0) return false
-    const dx = e.getX() - player.getX()
-    const dy = e.getY() - player.getY()
-    const dz = e.getZ() - player.getZ()
+    const dx = e.getX() - objective.x
+    const dy = e.getY() - objective.y
+    const dz = e.getZ() - objective.z
     return dx * dx + dy * dy + dz * dz <= RADIUS * RADIUS
   }).length
 

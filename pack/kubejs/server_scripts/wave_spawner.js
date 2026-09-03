@@ -172,7 +172,12 @@ function staggerGapForWave(waveNumber) {
 // phase (waveNumber > WAVES.length), where mobs come from Undead
 // Nights' own opaque spawn_horde command and can never carry the tag -
 // falls back to the old type-only matching for that phase specifically.
-function nearbyWaveMobCount(player, level, radius, requireTag) {
+//
+// Takes a plain {x,y,z} origin, not a player - see waveObjective() below
+// for why: "regardless of player position" (docs/FEATURES.md's own
+// stated intent for the amulet) can't hold if this still measured
+// distance from the player.
+function nearbyWaveMobCount(origin, level, radius, requireTag) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
     if (requireTag !== false && !e.getTags().contains('td_wave_mob')) return false
@@ -180,12 +185,49 @@ function nearbyWaveMobCount(player, level, radius, requireTag) {
     // (death animation) before actual removal, so exclude anything
     // already at 0 health rather than waiting for it to disappear.
     if (e.getHealth() <= 0) return false
-    var dx = e.getX() - player.getX()
-    var dy = e.getY() - player.getY()
-    var dz = e.getZ() - player.getZ()
+    var dx = e.getX() - origin.x
+    var dy = e.getY() - origin.y
+    var dz = e.getZ() - origin.z
     return dx * dx + dy * dy + dz * dz <= radius * radius
   }).length
 }
+
+// Real design gap found in playtest (2026-09-02): "I expected the
+// enemies to spawn near the base and attack the pedestal. This didn't
+// happen - I was out adventuring and they spawned on me. I then ran to
+// the base and they despawned, causing me to win the wave." Root cause,
+// confirmed by reading the code, not assumed: every spawn-position and
+// mob-count calculation in this file always used the player's own
+// position, with zero check of td_amuletOnPedestal - mob_aggro.js's own
+// targeting redirect to the pedestal marker was correct, but nothing
+// upstream of it (where mobs spawn, or whether the wave reads as
+// "cleared") ever pointed at the pedestal. This directly contradicted
+// docs/FEATURES.md's own stated design intent for the amulet ("mobs
+// pathfinding to a fixed objective regardless of player position").
+//
+// Returns the pedestal marker's stored base position
+// (td_amuletMarkerBaseX/Y/Z, set by amulet_pedestal.js when the amulet
+// is placed) while td_amuletOnPedestal is true, else the player's own
+// position - same persistentData cross-file pattern already used
+// throughout this pack (mob_aggro.js reads these same flags/values).
+function waveObjective(player, data) {
+  if (data.getBoolean('td_amuletOnPedestal')) {
+    return {
+      x: data.getDouble('td_amuletMarkerBaseX'),
+      y: data.getDouble('td_amuletMarkerBaseY'),
+      z: data.getDouble('td_amuletMarkerBaseZ'),
+    }
+  }
+  return { x: player.getX(), y: player.getY(), z: player.getZ() }
+}
+//
+// Chunk simulation while the objective is the pedestal, not the player,
+// is handled in amulet_pedestal.js itself (forceload add/remove right
+// where td_amuletOnPedestal actually toggles) - server_scripts don't
+// reliably share top-level scope across files in this codebase, and
+// that file is the one place this pack already knows exactly when the
+// amulet goes on/off the pedestal, so the forceload's lifetime can
+// match the feature's own real duration instead of guessing from here.
 
 function useWaveHorn(player) {
   var level = player.getLevel()
@@ -210,7 +252,8 @@ function useWaveHorn(player) {
   // requireTag false once already past the designed campaign (endless
   // phase) - see nearbyWaveMobCount's own comment for why.
   var isEndlessPhase = data.getInt('td_waveNumber') > WAVES.length
-  if (nearbyWaveMobCount(player, level, 80, !isEndlessPhase) > 0 || pendingSpawns.length > 0) {
+  var objective = waveObjective(player, data)
+  if (nearbyWaveMobCount(objective, level, 80, !isEndlessPhase) > 0 || pendingSpawns.length > 0) {
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
     return
   }
@@ -274,21 +317,29 @@ function useWaveHorn(player) {
   var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
   var totalMobs = 0
 
-  // Fixed distance from the PLAYER, not the worldborder edge (rewritten
-  // 2026-09-01, real bug found in playtest: border-relative spawning
-  // meant spawn distance grew with the border - base_expansion.js's
-  // escalating growth curve alone reaches a 270-block half-width by
-  // wave 8, and the amulet's own BORDER_EXPAND_DELTA
-  // (amulet_pedestal.js, 10000000) balloons it far beyond that whenever
-  // the amulet sits on the pedestal - mobs were spawning literally
-  // millions of blocks away and never arriving, read in-game as "the
-  // horn says a horde spawned but nothing shows up." Both this system
-  // and the endless-phase system (wave_spawner.js's `undeadnights
-  // spawn_horde` branch above, which already uses a fixed
+  // Fixed distance from the OBJECTIVE (the pedestal while the amulet
+  // sits on it, else the player - see waveObjective() above), not the
+  // worldborder edge (rewritten 2026-09-01, real bug found in playtest:
+  // border-relative spawning meant spawn distance grew with the border -
+  // base_expansion.js's escalating growth curve alone reaches a
+  // 270-block half-width by wave 8, and the amulet's own
+  // BORDER_EXPAND_DELTA (amulet_pedestal.js, 10000000) balloons it far
+  // beyond that whenever the amulet sits on the pedestal - mobs were
+  // spawning literally millions of blocks away and never arriving, read
+  // in-game as "the horn says a horde spawned but nothing shows up."
+  // Both this system and the endless-phase system (wave_spawner.js's
+  // `undeadnights spawn_horde` branch above, which already uses a fixed
   // distanceMin/distanceMax band around the player via
-  // defaultconfigs/undeadnights-server.toml) now share the same
-  // player-relative-fixed-distance shape instead of one being
+  // defaultconfigs/undeadnights-server.toml, unaffected by the amulet -
+  // that's Undead Nights' own separate spawn positioning, out of scope
+  // here) now share the same fixed-distance shape instead of one being
   // border-relative and one player-relative.
+  //
+  // Switched from always-player to waveObjective() 2026-09-02, real
+  // playtest report: "I expected the enemies to spawn near the base and
+  // attack the pedestal. This didn't happen - I was out adventuring and
+  // they spawned on me." See waveObjective()'s own comment above for
+  // the full root-cause writeup.
   //
   // Distance band picked to land clearly outside the compound itself
   // (the base is ~11 blocks across) while staying inside typical
@@ -324,12 +375,12 @@ function useWaveHorn(player) {
   // constant for the earlier, unconfirmed version of this same worry.
   var PI = 3.141592653589793
 
-  function randomPlayerRelativePosition() {
+  function randomObjectiveRelativePosition() {
     var angle = Math.random() * 2 * PI
     var distance = SPAWN_DISTANCE_MIN + Math.random() * (SPAWN_DISTANCE_MAX - SPAWN_DISTANCE_MIN)
     return {
-      x: Math.floor(player.getX() + Math.cos(angle) * distance),
-      z: Math.floor(player.getZ() + Math.sin(angle) * distance),
+      x: Math.floor(objective.x + Math.cos(angle) * distance),
+      z: Math.floor(objective.z + Math.sin(angle) * distance),
     }
   }
 
@@ -343,7 +394,7 @@ function useWaveHorn(player) {
     var mobType = pair[0]
     var count = pair[1]
     for (var i = 0; i < count; i++) {
-      var pos = randomPlayerRelativePosition()
+      var pos = randomObjectiveRelativePosition()
       var spawnTick = currentTick + mobIndex * staggerGap
       pendingSpawns.push({
         mobType: mobType,
@@ -352,7 +403,7 @@ function useWaveHorn(player) {
         // as the summon command's starting Y - not required to be
         // exact, since the /spreadplayers correction in the spawn tick
         // handler below fixes the mob's actual final height.
-        y: Math.floor(player.getY()),
+        y: Math.floor(objective.y),
         z: pos.z,
         spawnTick: spawnTick,
         soundTick: spawnTick - SOUND_LEAD_TICKS,
@@ -466,11 +517,20 @@ PlayerEvents.tick(function (event) {
       // matching the ravager's own post-nerf value above for
       // consistency, via the same Attributes-NBT override technique.
       var isFleshSuffer = spawn.mobType === 'the_flesh_that_hates:flesh_suffer'
+      // PersistenceRequired:1b added 2026-09-02, part of the same
+      // amulet-objective fix as waveObjective() above - "regardless of
+      // player position" (docs/FEATURES.md's own stated design intent)
+      // can never actually hold while these mobs stay vanilla-
+      // despawnable, since a hostile mob far from every player is
+      // eligible to despawn on its own regardless of what's targeting
+      // it. Applies to every wave mob now, not just the amulet case -
+      // no real downside outside it either, since td_wave_mob-tagged
+      // mobs are meant to be fought, not left to quietly disappear.
       var summonNbt = isRavager
-        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:8},{Name:"generic.max_health",Base:60}],Health:60,Tags:["td_justSpawned","td_wave_mob"]}'
+        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:8},{Name:"generic.max_health",Base:60}],Health:60,PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
         : isFleshSuffer
-          ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:12}],Tags:["td_justSpawned","td_wave_mob"]}'
-          : '{Attributes:[{Name:"generic.follow_range",Base:128}],Tags:["td_justSpawned","td_wave_mob"]}'
+          ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:12}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
+          : '{Attributes:[{Name:"generic.follow_range",Base:128}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
       // td_justSpawned added and removed within this same synchronous
       // block, so the very next spawn processed (even same tick, even
       // same mob type) can never see a stale tag from this one.

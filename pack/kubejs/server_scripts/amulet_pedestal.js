@@ -137,6 +137,37 @@ var PI = 3.141592653589793
 // nothing is silently lost or reset.
 var BORDER_EXPAND_DELTA = 10000000
 
+// Real design gap found in playtest (2026-09-02): "I expected the
+// enemies to spawn near the base and attack the pedestal. This didn't
+// happen - I was out adventuring and they spawned on me. I then ran to
+// the base and they despawned, causing me to win the wave." Fixing
+// where mobs spawn and what counts as "cleared" (wave_spawner.js/
+// wave_status.js's own waveObjective()) isn't enough on its own - this
+// pack's live simulationDistance is 12 chunks (192 blocks, confirmed
+// from options.txt, the same fact already used to fix the endless-phase
+// spawn-distance bug), centered on the PLAYER, not a fixed world
+// region. Without forcing the pedestal's own chunks to stay simulated,
+// mobs correctly spawned there while the player is off exploring would
+// just freeze the moment the player wanders far enough away - right
+// position, but frozen, unable to actually reach or attack anything.
+// Forceloaded here (not wave_spawner.js) because this is the one place
+// that already knows exactly when the amulet goes on/off the pedestal -
+// server_scripts don't reliably share top-level scope across files in
+// this codebase. Real, ongoing cost while active (up to ~169
+// always-ticking chunks, well within vanilla's 256-chunk forceload cap
+// per call) - only paid while the amulet actually sits on the pedestal,
+// matching the feature's own real requirement rather than running
+// constantly.
+var OBJECTIVE_FORCELOAD_RADIUS = 96
+
+function forceloadObjective(server, x, z, add) {
+  var x0 = Math.floor(x) - OBJECTIVE_FORCELOAD_RADIUS
+  var z0 = Math.floor(z) - OBJECTIVE_FORCELOAD_RADIUS
+  var x1 = Math.floor(x) + OBJECTIVE_FORCELOAD_RADIUS
+  var z1 = Math.floor(z) + OBJECTIVE_FORCELOAD_RADIUS
+  server.runCommandSilent(`forceload ${add ? 'add' : 'remove'} ${x0} ${z0} ${x1} ${z1}`)
+}
+
 BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   var player = event.player
   var level = player.getLevel()
@@ -158,6 +189,7 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
     // back before their next trip to the pedestal.
     player.give(Item.of('kubejs:amulet', 1))
     player.getServer().runCommandSilent('kill @e[type=minecraft:armor_stand,tag=td_amulet_marker]')
+    forceloadObjective(player.getServer(), x, z, false)
     // Shrink the real border back down by the same fixed delta it was
     // expanded by below - see BORDER_EXPAND_DELTA's comment. If the
     // player is currently standing beyond the real (shrunk-back) edge,
@@ -224,6 +256,7 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   var currentBorderSize = level.getWorldBorder().getSize()
   player.getServer().runCommandSilent(`worldborder set ${currentBorderSize + BORDER_EXPAND_DELTA} 0`)
   player.getServer().runCommandSilent(`summon minecraft:armor_stand ${x} ${y} ${z} {Invisible:1b,NoGravity:1b,Marker:1b,Small:1b,HandItems:[{id:"kubejs:amulet",Count:1b},{}],Tags:["td_amulet_marker"]}`)
+  forceloadObjective(player.getServer(), x, z, true)
   player.tell('§d[Amulet] §fYou set the pendant on the stand. The line at the border loosens - everything out there stops watching you, and starts watching this instead.')
 })
 
