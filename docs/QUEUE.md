@@ -23,6 +23,47 @@ reflect actual current status.
 
 ## Ready to build
 
+**Pedestal visual upgrade + mob-attack vulnerability** — requested
+2026-09-04, direct follow-up ("the pedestal block...looks a bit
+rubbish" + "should be vulnerable to mobs attacking it too, not just an
+explosion"). Full detail in FEATURES.md, "Pedestal visual upgrade +
+mob-attack vulnerability" (right before "Pedestal destruction = game
+over"). Two pieces:
+1. Install **Supplementaries** (MehVahdJukaar, 221M+ downloads, real
+   recent Forge 1.20.1 build, needs Moonlight Library dependency) for
+   its real Pedestal block. Recommended: retire the custom marker/bob
+   system entirely (the same code the Math.PI bug lived in) and drive
+   `td_amuletOnPedestal` off reading Supplementaries' own pedestal
+   storage instead — real NBT/API details, right-click-accepts-any-item
+   handling, and the dependency check all left for the build session.
+2. Add the pedestal's real block ID to Epic Siege Mod's `blockTargets`
+   config list (currently just `#minecraft:candles`) so mobs actively
+   target and destroy it, not just via explosion. **Correction to the
+   already-shipped pedestal-destruction spec**: `demolitionMobs` is
+   actually empty in this pack's tracked config, not the mod default as
+   previously claimed there — fixed in FEATURES.md. Also worth checking
+   live: `diggerMobs` (zombies digging through obstacles to reach a
+   target) might already partially let mobs bite through the pedestal
+   now that wave mobs path to it, independent of any new config; and
+   whether `blockTargeting` needs the general `griefing` flag on too.
+**Not yet sent — real technical unknowns on both pieces, holding for
+build-session verification before dispatch.**
+
+**Aesthetic structure variety pass** — requested 2026-09-04, direct
+feedback that the structure/decoration aesthetic is "just lacking."
+Full detail in FEATURES.md, "Aesthetic structure variety pass" (under
+"World type," right after the exploration-pacing/loot-tier entries).
+Install **Philip's Ruins** (philipmoddev, 200+ terrain-blending small
+ruins) and **Big Lost City — Apocalyptic Structures!** (Flashh,
+modern abandoned buildings). Both real, verified Forge 1.20.1 builds,
+picked from real research over guessing. Left for the build session:
+re-verify dependencies via a filtered file list/API (only checked via
+single-page fetches so far), retune structure_set spacing to the
+*current* border curve (125 by wave 8), and check whether either mod's
+loot uses standard vanilla-format tables or an opaque system like
+Treasure2's before assuming it's controllable. **Not yet sent —
+awaiting go-ahead.**
+
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
 redesign together. Sequenced 2026-09-01 (user-confirmed order). Phases
@@ -72,42 +113,6 @@ below); Phase 5 not started:
     technique (structure processors) and same caution as Abandoned
     Urban's loot fix above - worth doing together once that's designed,
     not as two separate structure-generation changes.
-- **Critical bugs, remaining**:
-  - Endless phase (waves 9+): Wave Horn says "a horde has spawned" but
-    nothing appears. **Root cause confirmed, real fix shipped, not yet
-    playtested**: the live instance's actual `simulationDistance` is 12
-    chunks (192 blocks, confirmed from `options.txt`) - the shipped
-    `distanceMin`/`distanceMax` (240/256, chosen to spawn "beyond the
-    worldborder," the same flawed border-relative reasoning the
-    deterministic wave system's own spawn code had, since fixed) always
-    exceeded that, so every horde spawn target landed in an unsimulated
-    chunk and never ticked or became visible. Reverted to the mod's own
-    real default (70/75, confirmed from the config's own comments) in
-    both the tracked `defaultconfigs/undeadnights-server.toml` and
-    directly in the live save's own runtime
-    `serverconfig/undeadnights-server.toml` (SERVER-type Forge configs
-    don't hot-reload - editing the per-save file directly is the
-    correct, established technique for an already-created save, same
-    as used earlier this session). Confidence basis: this exact 70/75
-    value was already confirmed working in a real sandbox test during
-    the original endless-phase build (see FEATURES.md's "Wave Horn"
-    section) - not a fresh guess.
-  - An unidentified mob that can turn invisible one-shot-killed the
-    user - **investigated, no literal invisible mob found**. Read the
-    real combat log directly: the player died 5 times total, 4 to
-    "Flesh Suffer" and 1 to "Flesh Hunter Two," both real, already-known
-    roster mobs - no unidentified or blank attacker anywhere in the log.
-    Decompiled Flesh Suffer's own entity class looking for an
-    invisibility ability: found a real retaliation effect instead (
-    Slowness VI for 2 seconds, applied to whoever melee-attacks it,
-    confirmed by decompiling vanilla's own `MobEffects.class` to
-    identify the exact SRG field, not guessed) - not invisibility, but
-    a real mechanic that could easily read as "got trapped and killed
-    before I could react," which may be what got described as
-    "invisible." Flesh Suffer's own real 25 attack damage is separately
-    nerfed below - if the user still experiences a literal invisible
-    attacker after that, it needs a fresh death with log access, not
-    guessed at from this window's log alone.
 - **Decoration quality**: placement itself read as "lame" — worth a
   look once visually confirmed, may need denser/more varied placement
   rather than a mod swap. (Chinese labels fixed, see "Built" below.)
@@ -118,20 +123,257 @@ below); Phase 5 not started:
 
 ## Built, awaiting your next playtest
 
-- **Starting base redesign (Red Mansion via `/place template`)** —
-  built, verified, and deployed 2026-09-01, direct response to "the
-  starter base and tower design is terrible." See FEATURES.md's
-  "Starting base" section, "Redesign" entry for full detail. Real
-  structure (`postapocalypse_structures:red_mansion`, 26×19×28)
-  replaces the old hand-typed 11×11 shell; two real placement bugs
-  (a 409-block wet_sponge foundation marker `/place template` doesn't
-  auto-strip, a floor-height mapping error) caught and fixed before
-  either ever reached a test; full compound redesigned around the
-  bigger footprint (gate offset from spawn, courtyard, watchtower
-  raised to clear the roofline, worldborder start 50→90 — shifts the
-  wave-8 ending border 166→~206 as a side effect, not a balance change).
-  Verified via a full end-to-end sandbox replay of the real login
-  sequence, not just individual pieces — no exceptions anywhere.
+- **Barbed Wire replaces Spikes** — built and deployed to the live
+  instance 2026-09-04, **not yet committed** — the peer build session
+  deliberately held the commit for review given a real save-compatibility
+  risk it caught along the way (see below). Full detail in FEATURES.md's
+  "Tier 1 defenses" section. What shipped:
+  - **Create: Crafts & Additions installed** (author MRHminer, real
+    slug `createaddition`), jar hash-verified into the live instance.
+  - `trapcraft:spikes` replaced everywhere: the "Sharpened Scrap" quest
+    task + both quest/chapter icons, and the decorative gate-line
+    placement (`createaddition:barbed_wire[vertical=false,facing=south]`,
+    confirmed real blockstate properties from the mod's own JSON).
+  - **Real crafting chain, decompiled and live-verified end to end**:
+    iron_ingot → Mechanical Press (over a Depot, not on top — the
+    mod's own ponder text says items go beneath) → iron_sheet → Rolling
+    Mill (items dropped on top) → iron_wire ×2 → crafting table
+    (diamond of 4 iron wires) → barbed_wire ×2.
+  - **Pre-placed rig**: a real Depot + Mechanical Press + Rolling Mill
+    inside Abandoned Brick House's back room (local x=4-6,z=9 —
+    confirmed genuinely clear floor/headroom via a fresh `/place
+    template` + block reads before touching anything). Press and Mill
+    face the same direction and conduct power directly to each other,
+    no shaft needed — confirmed live with a temporary creative motor
+    (real nonzero Speed on both in a single 3-block kinetic network).
+    The cell past the Mill is left open for the player's own Hand
+    Crank — that one genuinely can't be pre-placed already-turning, it
+    needs a real player right-clicking it.
+  - **Real save-compatibility risk caught before deploying**: the live
+    instance's quest save already had "Sharpened Scrap" completed under
+    its own task/chapter IDs, which had diverged from the repo's copy
+    of that snbt at some earlier point. Blindly overwriting live with
+    repo would have orphaned that real completed progress. Fixed by
+    editing the live file's item/icon/description in place (keeping its
+    real IDs), then syncing the repo copy back from that live file so
+    both now match exactly and the completed quest stays completed.
+  - **One real, honestly-unresolved item**: the Mechanical Press never
+    auto-fired in the scripted sandbox test — kinetic power and Depot
+    item-holding both confirmed correct, but Running/Ticks never
+    advanced even after 20+ seconds. Not chased further since it wasn't
+    the actual ask (the Rolling Mill, the one being pre-placed, is
+    fully verified working) — but this needs a real player to confirm
+    the Press actually processes when used themselves; if it doesn't,
+    that's a separate bug to open.
+  `packwiz refresh` run, hashes clean. **Held for review, not committed
+  yet** — waiting on you/the user before the peer commits.
+
+- **Toast Control + Pedestal destruction = game over** — built,
+  verified, and deployed 2026-09-04 (commits 3432c6b, ce75d1f).
+  - **Toast Control shipped** — real dependency the spec missed:
+    **Placebo** (Shadows_of_Fire's own library mod), not already in
+    this pack — caught by packwiz's own CurseForge dependency
+    resolution rather than missed silently, installed alongside.
+    Defaults confirmed by decompiling `ToastConfig.class` directly
+    rather than trusting the mod's own description: Recipe and
+    Tutorial toasts both default `blocked=true` already, zero config
+    needed.
+  - **Pedestal destruction = game over shipped exactly per spec** —
+    tick-poll against a stored coordinate (not event hooks), permanent
+    Wave Horn block, countdown cancel, night-lock undo, dramatic title
+    matching the pack's existing tone. The open blast-resistance
+    question got a real, tested answer, not a guess: grepped the whole
+    pack — `mobGriefing` is never touched anywhere, so it's still
+    vanilla default (`true`); the pedestal's own block definition sets
+    resistance 6.0 (the same as plain stone, not hardened). Then
+    actually blew one up in the sandbox — real TNT destroyed a placed
+    pedestal outright, confirmed via a live block-id readback. **No
+    config change needed — it's genuinely vulnerable as-is.**
+  Both **not yet confirmed by an actual playtest**.
+
+- **Loot bag iron/cobblestone bump + amulet/pedestal objective fix** —
+  built, verified, and deployed 2026-09-04 (commits b244ef0, 5293a3f).
+  - **Iron/cobblestone bump shipped exactly as specced** — real bonus
+    lesson: BountyBags generates a `config/bountybags/*.toml` from the
+    source JSON once and never re-reads it, so the live instance's
+    already-generated `uncommon_bag.toml` needed a direct edit too, same
+    gotcha the legendary-tier totem fix hit earlier.
+  - **Amulet/pedestal objective fix shipped exactly as proposed** — spawn
+    position and both mob-count checks now key off the pedestal
+    marker's stored position when `td_amuletOnPedestal` is true. The
+    open question got a real answer, not a guess: this pack had never
+    forceloaded anything before, and that was confirmed as a genuine
+    second bug — `simulationDistance` is 12 chunks (192 blocks) centered
+    on the player (from `options.txt`), so mobs spawned correctly at the
+    pedestal would've just frozen the moment the player wandered off.
+    Fixed with real `forceload add`/`remove` in `amulet_pedestal.js`
+    exactly where `td_amuletOnPedestal` toggles, sized to a 96-block
+    radius (169 chunks, checked directly against vanilla's 256-chunk
+    forceload cap rather than assumed safe). `PersistenceRequired:1b`
+    added to every wave-mob summon regardless, since a despawn-eligible
+    mob far from any player would've quietly undone the whole fix.
+    **Verified against the exact reported scenario**: a sandbox test
+    with the objective 500 blocks from a stand-in "far away player" —
+    8/8 mobs landed near the objective, zero near the fake player, and
+    all 8 were still alive and in place after a real 10-second wait
+    simulating the player staying away.
+  Both **not yet confirmed by an actual playtest**.
+
+- **Mob-tier loot progression + watchtower removal** — built, verified,
+  and deployed 2026-09-03 (commits 2faf4ef, f289af7). See FEATURES.md's
+  "Mob-tier loot progression" and "Watchtower — removal requested"
+  entries for full detail.
+  - **Loot bags reclassified exactly as specced**
+    (`loot_bag_drops.js`): Uncommon = trash floor (wither_skeleton
+    corrected into this tier), Rare = early roster-variety adds,
+    Epic = wave 6-7 elites, Legendary = the 3 finale mobs. Same drop
+    rates, only the mob→tier assignment changed.
+  - **Structure chest progression shipped with a different real
+    mechanism than the spec assumed** (`structure_loot_progression.js`)
+    — table-ID targeting, as originally proposed, wouldn't actually
+    have worked: decompiling confirmed Lost City ships **zero** chest
+    loot tables of its own across all 205 of its structure NBTs
+    (nothing to target), and Abandoned Urban's chests overwhelmingly
+    reuse plain vanilla tables (village/dungeon/stronghold/shipwreck)
+    shared with real vanilla structures elsewhere in the world —
+    targeting those IDs would have buffed ordinary vanilla loot too,
+    not just this pack's structures. Switched to targeting LootJS's
+    `LootContextType.CHEST` instead, which sidesteps both problems and
+    still covers postapocalypse_structures. Same proposed distance
+    bands (60/120) and same additive bonus-pool technique as before.
+    Verified via two independent `/loot spawn` rolls confirming
+    distance-gated bonus items (diamond/emerald; separately gold_block/
+    ender_pearl) landing on top of base loot.
+  - **Real sandbox-testing gotcha found and worked around, worth
+    remembering for future loot testing**: `/loot spawn` at a position
+    whose chunk was force-loaded the same tick silently produces
+    nothing at all (even the base vanilla table) — chunk generation
+    isn't synchronous within `forceload`'s own tick. Looked exactly
+    like a broken mechanism until isolated by re-testing after a real
+    60-tick settle.
+  - **Watchtower removed** — clean deletion exactly as pre-verified,
+    nothing else in the pack touched it.
+  All three **not yet confirmed by an actual playtest**.
+
+- **Wave mechanism: mobs not reaching the player — real root cause
+  found and fixed, 2026-09-02.** Investigated directly against the live
+  instance's `logs/latest.log` and player stats file first (zero mob
+  kills across waves 1-4 despite correct wave announcements and a
+  reuse-gate that looked consistent), which narrowed it to "the live
+  nearby-mob count reads zero all session" but couldn't distinguish
+  *why* without a real spawn-and-check test. That test found it:
+  **`Math.PI` (and `Math.E`) are undefined in this exact KubeJS/Rhino
+  build** — confirmed on a genuinely clean sandbox boot, at plain
+  top-level script scope, no event callback involved. `Math`'s methods
+  (`cos`/`sin`/`random`) all work fine; the constants specifically
+  don't. `wave_spawner.js`'s `randomPlayerRelativePosition()` computed
+  every mob's spawn angle from `Math.random() * 2 * Math.PI` — always
+  `NaN`, so every spawn position was `NaN,NaN`, so every `/summon` has
+  been silently failing since that function was written (`
+  runCommandSilent` suppresses command feedback, which is exactly why
+  this never showed up in any log). The staggered `pendingSpawns` queue
+  kept draining on its own schedule regardless of whether each entry's
+  summon actually succeeded, which is why the Wave Horn's reuse gate
+  looked like it was working correctly for a few seconds after every
+  use in every earlier investigation this pack has done — that was
+  real queue state, not real mobs. This was the real, dominant cause
+  underneath the entire "wave mobs sometimes/often don't spawn" history
+  — every other bug found chasing this symptom (the `hasTag()`
+  regression, Undead Nights' own autonomous horde system, chunk-gen-
+  storm timing at fresh-world login) was independently real and worth
+  its own fix, but this is the one that was always still there
+  underneath all of them.
+
+  Also found and fixed the identical bug in `amulet_pedestal.js`'s bob
+  effect (`Math.sin((2 * Math.PI * currentTick) / BOB_PERIOD_TICKS)`) —
+  the marker's up/down float has been computing `NaN` this whole time,
+  most likely a silent no-op rather than a visible error, which is why
+  it read as "doesn't move" rather than "broken." Grepped the whole
+  `pack/kubejs` tree for every other `Math.PI`/`Math.E` reference after
+  fixing both — none remain. Fixed by hardcoding the literal PI value
+  in both files instead of reading the (broken) built-in property.
+
+  Verified for real, not just by inspection: replicated the exact fixed
+  computation in a live sandbox test — 16/16 sample spawn positions
+  produced real (non-`NaN`) coordinates, and all 16 resulting mobs
+  persisted and landed within the 80-block radius the wave-clear gate
+  and hostile counter both check, with only modest real-terrain height
+  variance (-4 to +6.5 blocks). That result rules out the original
+  leading hypothesis (height-correction landing a mob far enough away
+  vertically to fall outside the 80-block 3D check near a tall or
+  underground structure) as the explanation for *this* report — the
+  terrain near the fixed spawn point isn't that hilly — though it
+  remains a real, separate, still-open risk worth a defensive sanity
+  clamp on the height delta if it ever gets reported for real terrain
+  elsewhere; not added speculatively since the confirmed bug alone
+  fully explains this report. Committed b7c66a4, deployed live. Needs a
+  real wave playtest to confirm.
+
+- **Structure & loot mod replacement** — built, verified, and deployed
+  2026-09-02 (commit fdfa521). Treasure2 + GottschCore removed (mods,
+  structure_set overrides, dead index entries), BountyBags + Lootr
+  installed, custom loot bag system fully migrated (4-tier mob mapping
+  by wave, drop rates 0.5/0.25/0.1/0.04). See FEATURES.md's "Structure
+  & loot mod replacement" entry for full detail. Sandbox-verified
+  clean; **not yet confirmed by an actual player session**. Two things
+  worth knowing before/while playtesting:
+  - **Lootr's staleness claim was wrong, corrected before install** —
+    it's actually a live, maintained Forge 1.20.1 mod (builds through
+    2025-11-26), not the 2023-abandoned one originally flagged. Real
+    open question instead: Forge's dedicated-server scanner flags it
+    client-only despite real server-side code in the jar — needs a real
+    check that per-player chest behavior actually works, not assumed.
+  - A real BountyBags bug (totem_of_undying over its internal max
+    count, would've silently fallen back to an emergency loot pool) was
+    caught and fixed before shipping, not after.
+  Piece 3 of the exploration-pacing retune (loot-tier-by-progression)
+  is now unblocked — buildable as a general LootJS distance/wave-based
+  system across the 3 remaining structure mods. Not started, ready to
+  sequence whenever you want it sent.
+- **Undead Nights native horde system disabled** — built and deployed
+  2026-09-02 (commit f928902), direct response to "wave system simply
+  broken now." Real bug, unrelated to the same day's other retunes: the
+  mod's own autonomous "Nights of the Undead" system was never actually
+  turned off, so a second, uncontrolled horde (invisible to the wave
+  counter) had been spawning every night on top of every deterministic
+  wave this whole time. See FEATURES.md's "Endless phase scaling"
+  section for the full root-cause writeup. Verified safe via decompiling
+  the mod's own config/horde-spawner classes before disabling — the
+  endless-phase `spawn_horde` command path is unaffected. Not yet
+  confirmed by an actual playtest.
+- **Exploration pacing retune (worldborder + structure spacing)** —
+  built, verified, and deployed 2026-09-02 (commit 6d8c50e). Direct
+  playtest feedback: structure generation too dense, worldborder
+  expanding too fast. See FEATURES.md's "Base expansion" (worldborder
+  curve, retune 2) and "Structure mod picks" ("Exploration pacing
+  retune" entry, structure spacing) for full detail. Worldborder now
+  `5 + 5*floor((waveNumber-1)/3)`, ending at border 125 by wave 8 (was
+  166, was 270 originally) with a genuinely flat wave 1-3 (+15 total).
+  Structure spacing loosened back on Treasure2's wishing-well set and
+  the non-Lost-City reachability mods, verified via a fresh sandbox
+  world with zero crashes/collisions. **Loot-tier-by-progression (the
+  3rd piece of this retune) is on hold, not built** — Treasure2's
+  rarity system turned out to need genuinely new LootJS logic, not a
+  data retune, and building it now risks being thrown away given the
+  fresh Treasure2-replacement question below. **Needs a fresh playtest
+  to confirm feel** — not yet seen by an actual player.
+- **Starting base redesign (Abandoned Brick House via `/place
+  template`)** — built, verified, and deployed 2026-09-01, direct
+  response to "the starter base and tower design is terrible." See
+  FEATURES.md's "Starting base" section, "Redesign" entry for full
+  detail. First shipped as Red Mansion (26×19×28), swapped same day
+  after follow-up feedback it was too big — all 4 of the structure
+  mod's buildings were decompiled and compared, Abandoned Brick House
+  (12×13×11) was the clear smallest and is what's live now. Compound
+  retuned to match: margins roughly halved, watchtower back to
+  `wallY0+16`, worldborder reverted 90→50 (restores the originally-
+  tuned wave-8 ending border of 166, not the mansion-driven ~206 — a
+  bonus of the revert, not a separate balance change). Same
+  `/place template` wet_sponge cleanup technique proven on the mansion
+  reused here (78 blocks this time); one more real bug (a grave marker
+  landing on the smaller building's own front wall) caught and fixed
+  before the sandbox test. Verified via a full end-to-end sandbox
+  replay of the real login sequence both times — no exceptions.
   **Needs a brand-new world to see** — same as every other spawn-time
   change this pack has made, doesn't apply retroactively to an existing
   save.
@@ -265,7 +507,14 @@ below); Phase 5 not started:
     instead of 270.
   - Flesh Suffer nerf: attack damage 25->12 via the same Attributes-NBT
     override technique already used for the ravager, at the mob's
-    summon point in `wave_spawner.js`.
+    summon point in `wave_spawner.js`. Also resolves the "invisible
+    mob one-shot me" report from the same feedback round — investigated
+    first, no literal invisible mob found (real combat log showed only
+    known roster mobs; Flesh Suffer's actual ability is a Slowness VI
+    melee-retaliation effect, not invisibility, which likely read as
+    "got trapped and killed before I could react"). If a genuinely
+    invisible attacker gets reported again after this nerf, it needs a
+    fresh death with log access, not assumed to be the same thing.
   - Basics chapter: "The Reckoning" and "No Turning Back" (the last 2
     quests) removed entirely from `basics.snbt` - confirmed nothing
     else depended on them before removing. Resolves the outstanding
