@@ -306,6 +306,75 @@ dropped." Two real, independent pieces:
   while that's being debugged live.
 - Queued to build, see QUEUE.md.
 
+**Modded crafting materials in loot — audited and specced 2026-09-06,
+direct question: "have the loot bags and loot chest loot tables been
+updated to include crafting materials from mods, i.e not just
+vanilla."** Checked for real, not assumed: grepped every namespaced
+item id across all 4 BountyBags tier tables
+(`data/bountybags/loot_tables/items/*.json`) and every
+`postapocalypse_structures` chest override
+(`data/postapocalypse_structures/loot_tables/chests/*.json`) plus
+`structure_loot_progression.js`'s own bonus pools — **100% vanilla
+items, zero modded-namespace entries anywhere**, even after the
+"vanilla-only" rule was retired (see above). The retirement has only
+been applied once so far, narrowly: adding raw `minecraft:andesite` to
+structure chests, which is itself a vanilla item — it just fixed a
+recipe that was completely uncraftable, not a design addition. Two
+separate findings from this audit:
+- **No other Andesite-style blocking gap exists.** Checked Tier 1
+  (Barbed Wire's iron_ingot-based chain) and Tier 2's re-recipes
+  (`tier2_recipes.js` — netherrack/quartz/redstone_block/iron_block/
+  planks/bow) against current loot — every real material either tier
+  needs is already in a live loot table. This isn't a bug fix, it's a
+  genuine design gap: no modded item (from Create, Create: Crafts &
+  Additions, Trapcraft, or Medieval Defense Turrets) has ever been
+  placed as a reward for killing something or finding a chest, only as
+  something the player crafts from vanilla inputs.
+- **Proposed addition, matching the loot-philosophy principle
+  ("killing mobs = tech progression") more directly than the Andesite
+  fix did**: layer real Create-family intermediate/output items into
+  the existing tiers as rare bonus finds — a lucky kill or a chest
+  further out can hand the player pre-fabricated pieces of the Barbed
+  Wire/Hand Crank chains, shortcutting (not replacing) the crafting
+  path. Same additive-bonus-roll technique already proven twice this
+  session (the jackpot roll above, `structure_loot_progression.js`'s
+  distance bands):
+  - **BountyBags Rare tier**: small bonus chance (~5%) of
+    `create:andesite_alloy` — a real shortcut toward "Turn the Crank"
+    (Hand Crank = 3 planks + 1 Andesite Alloy) for a player who hasn't
+    found raw andesite yet, on top of the existing Rare pool.
+  - **BountyBags Epic tier**: small bonus chance (~4%) of
+    `createaddition:iron_sheet` — skips the Mechanical Press step of
+    the Barbed Wire chain. Doubles as a real safety net, not just
+    flavor: the Press's auto-fire behavior is still an open,
+    unconfirmed bug (see "Barbed Wire replaces Spikes" below), so a
+    loot-sourced Iron Sheet gives a player a way past that chain even
+    if the Press turns out not to work when played for real.
+  - **BountyBags Legendary tier**: small bonus chance (~3%) of
+    `createaddition:iron_wire` ×2 — skips both the Press and the
+    Rolling Mill, one step short of a finished Barbed Wire.
+  - **`structure_loot_progression.js`'s mid-tier bonus pool** (60-120
+    blocks): add `create:andesite_alloy` alongside the existing
+    iron/gold/lapis/redstone/copper/emerald entries — positions the
+    processed alloy as a rarer exploration find sitting one tier above
+    raw andesite (which stays in the base structure chest tables,
+    unchanged).
+  Deliberately **not** touching Tier 2's re-recipes or extending into
+  Tier 3-4/Storage & Power materials — that system (Immersive
+  Engineering, Flux Networks, Sophisticated/Refined Storage) isn't
+  installed yet, so there are no real item ids to target; revisit this
+  same technique once it ships.
+- **Real verification needed before shipping, not assumed**: this
+  entry's item ids (`create:andesite_alloy`, `createaddition:iron_sheet`,
+  `createaddition:iron_wire`) are inferred from this doc's own earlier
+  prose describing the crafting chain, not independently re-confirmed
+  against the actual mod jars the way `createaddition:barbed_wire`'s
+  full blockstate was for the wall placement — same lesson as the Hand
+  Crank recipe correction: verify the exact registry ids directly
+  (decompile or `/give` a stack in a sandbox) before wiring them into
+  any loot table, don't trust the paraphrase.
+- Queued to build, see QUEUE.md.
+
 **Mob-tier loot progression — requested 2026-09-02, built and deployed
 2026-09-03 (commit 2faf4ef).** Direct follow-up once BountyBags (bags) and Lootr (chests) were both
 live: "put together a loot table and tiered system so that it feels
@@ -1637,6 +1706,38 @@ looking only — it can't move the village already generated on the
 current live save, and one seed's improvement doesn't guarantee every
 future seed lands equally far, just that this exact reported collision
 is resolved and the odds are meaningfully better going forward.
+
+**"Just sand" — real root cause found and fixed 2026-09-05.** Not a
+perception issue or a badlands-style spawn-point problem (the shape the
+report's own hypothesis expected) — the ground was literally
+`minecraft:sand` almost everywhere in the entire world, independent of
+biome. Confirmed by correlating real biome tags against real surface
+blocks at 441 sample points around the fixed spawn point, in a sandbox
+running this pack's actual worldgen config against the live save's own
+real seed: every savanna/plains sample came back sand. Root cause: the
+dimension override's `generator.settings` still referenced
+`kubejs:flat_desert` — a noise-settings file left over from the
+already-abandoned "Single Biome: Desert" experiment (2026-08-20), whose
+`surface_rule` places sand/sandstone unconditionally with no biome
+check at all. The `biome_source` half of the same file was correctly
+rebuilt into the real curated 7-biome `multi_noise` set during the
+2026-08-31 world-gen variety pass — but biome assignment and surface
+material are two independent systems on a `minecraft:noise` generator,
+and only one half got updated at the time. Fixed by extracting the
+real, authoritative vanilla `surface_rule`/`default_block` directly
+from this exact game version's client jar and splicing them into a new
+`kubejs:overworld_flat` noise-settings file (this pack's own
+deliberately-flat `noise`/`noise_router` section left untouched) —
+`flat_desert.json` deleted outright, including its now-misleading name.
+Re-verified the same 441-point correlation after the fix: zero sand
+outside real structure footprints, savanna/plains both resolve to
+grass_block/dirt/coarse_dirt as expected, full mod set still boots
+clean on the live save's real seed. **Real, honest limit**: worldgen
+changes only affect chunks generated from here on — the area the
+player has already explored around spawn was generated under the old
+broken settings and won't retroactively fix itself; needs either the
+border expanding well past what's already generated, or a fresh world,
+same limit every other worldgen change in this pack has had.
 
 **Aesthetic structure variety pass — requested 2026-09-04, sent to
 build 2026-09-05.** Direct feedback: "now that we have got the beginnings of

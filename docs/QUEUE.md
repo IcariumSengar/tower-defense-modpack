@@ -51,6 +51,27 @@ below); Phase 5 not started:
 - **Decoration quality**: placement itself read as "lame" — worth a
   look once visually confirmed, may need denser/more varied placement
   rather than a mod swap. (Chinese labels fixed, see "Built" below.)
+- **Modded crafting materials in loot — specced 2026-09-06, held, not
+  sent.** Direct user question ("have the loot bags/chests been updated
+  to include crafting materials from mods, not just vanilla") that
+  turned into a real audit + spec. Full detail in FEATURES.md's "Modded
+  crafting materials in loot" entry (under "Loot bags"). Audit found:
+  loot bags/chests are still 100% vanilla items, no other Andesite-style
+  blocking gap exists (Tier 1/Tier 2 recipes are fully covered by
+  existing vanilla loot already), but no modded item has ever been used
+  as a reward. Spec: bonus-chance rolls of real Create-family
+  intermediate items (`create:andesite_alloy` in Rare tier + the
+  structure mid-tier pool, `createaddition:iron_sheet` in Epic tier,
+  `createaddition:iron_wire` in Legendary tier) layered onto the
+  existing tiers as shortcuts through the Hand Crank/Barbed Wire chains,
+  not replacements. Same files as the jackpot item above
+  (`loot_bag_drops.js` + `structure_loot_progression.js`) — sensible to
+  build together in one pass if/when both go out. Item ids need real
+  verification against the actual mod jars before shipping (inferred
+  from this doc's own prose, not independently re-confirmed) — same
+  lesson as the Hand Crank recipe correction, don't trust the
+  paraphrase. **Waiting on explicit go-ahead before dispatch, per direct
+  instruction — do not send with the queue items above.**
 
 ## In progress (sent directly to the build session)
 
@@ -101,8 +122,8 @@ below); Phase 5 not started:
      Possible bonus, not claimed as fixed here: this may also explain why
      the separate pedestal mob-vulnerability config read as
      inconclusive — worth watching for on the same playtest.
-  2. **Village spacing — real root cause confirmed and fixed
-     2026-09-05, not yet committed.** Extracted the live save's own real
+  2. **Village spacing — real root cause confirmed, fixed, and
+     committed (490e090) 2026-09-05.** Extracted the live save's own real
      seed (`-705653274963918758`) directly from its `level.dat` and ran
      `/locate structure #minecraft:village` from the actual fixed spawn
      point (780, -150) in a sandbox running this pack's real worldgen
@@ -123,8 +144,7 @@ below); Phase 5 not started:
      current live save (structures don't relocate once generated), and a
      single seed test doesn't prove every future seed will land equally
      far, just that this exact reported scenario is now resolved and the
-     odds are substantially better going forward. Not committed yet,
-     same "hold for review" pattern as the mob-pathing fix.
+     odds are substantially better going forward.
   3. **The new pedestal dais reads badly in practice — real reference
      provided, not guessed this time.** Direct feedback, blunt: "looks
      like hot garbage," campfires specifically called out. User shared
@@ -148,15 +168,46 @@ below); Phase 5 not started:
      already in vanilla, no new mod needed: blackstone/polished
      blackstone/deepslate tiles/cracked deepslate tiles, mixed for the
      "old, uneven stone" texture the reference shows.
-  4. **World biome variety "looks kinda soulless, just sand"** — direct
-     contradiction of the user-confirmed-working multi_noise 7-biome
-     set. Could be the fixed spawn point landing in/near a
-     desert-heavy area again (same shape of problem as the earlier
-     badlands-blob issue, already fixed once at the old spawn point),
-     or a real regression, or just genuinely thin variety immediately
-     visible from spawn even though it exists further out. Needs a real
-     biome census near the actual current spawn point, not assumed —
-     same technique already used to diagnose the badlands blob.
+  4. **"Just sand" — real root cause found and fixed 2026-09-05, the
+     biggest single finding of this batch.** Not a perception issue, not
+     thin variety, and not a badlands-style spawn-point problem — the
+     ground was **literally sand almost everywhere in the entire world,
+     regardless of biome**, a genuine leftover bug. Confirmed by
+     correlating real biome tags against real surface blocks at 441
+     sample points in a sandbox (this pack's actual worldgen config,
+     the live save's real seed): every single savanna/plains sample
+     resolved to `minecraft:sand`. Root cause, found by reading the
+     dimension override directly: `data/minecraft/dimension/
+     overworld.json`'s `generator.settings` still pointed at
+     `kubejs:flat_desert` — a noise-settings file literally named for
+     the old, already-abandoned "Single Biome: Desert" experiment
+     (see the 2026-08-20 world-type history above), whose
+     `surface_rule` unconditionally places sand/sandstone everywhere
+     with no biome condition at all. The `biome_source` half of that
+     same dimension file *was* correctly rebuilt into the real curated
+     7-biome `multi_noise` set (2026-08-31's world-gen structure
+     variety pass) — but biome assignment and surface material are
+     two fully independent systems in a `minecraft:noise` generator,
+     and only one of them got updated. Fix: spliced the real,
+     authoritative vanilla `surface_rule` and `default_block`
+     (extracted directly from this exact game version's own client
+     jar) into a new `kubejs:overworld_flat` noise-settings file,
+     keeping this pack's own deliberately-flat `noise`/`noise_router`
+     section untouched — replaces `flat_desert.json` entirely (deleted,
+     including its misleading name) and the dimension override's
+     `settings` reference now points at the new file. **Verified for
+     real, not assumed correct just because it's "the real vanilla
+     data"**: re-ran the same 441-point biome/surface correlation after
+     the fix — zero sand outside real structure footprints, savanna and
+     plains both resolved to `grass_block`/`dirt`/`coarse_dirt` as
+     expected, full mod set still boots clean on the live save's exact
+     seed. **Real, honest limit — the one that matters most for the
+     current live save**: worldgen changes only affect chunks generated
+     from here on. The area around spawn the player has already explored
+     was generated under the old broken settings and will still show
+     sand until enough of the world border expands past what's already
+     generated, or a fresh world is started — this is not retroactive,
+     same limit as every other worldgen change this pack has shipped.
 - **Aesthetic structure variety pass** — sent to build 2026-09-05,
   user's go-ahead. Full detail in FEATURES.md, "Aesthetic structure
   variety pass" (under "World type"). Install **Philip's Ruins** and

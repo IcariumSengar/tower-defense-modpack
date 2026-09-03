@@ -2,7 +2,7 @@
   "type": "minecraft:overworld",
   "generator": {
     "type": "minecraft:noise",
-    "settings": "kubejs:flat_desert",
+    "settings": "kubejs:overworld_flat",
     "biome_source": {
       "type": "minecraft:multi_noise",
       "biomes": [
