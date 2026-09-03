@@ -11,38 +11,45 @@
 //
 // Tier design: BountyBags ships 4 regular tiers (Uncommon/Rare/Epic/
 // Legendary, no Common) plus 3 boss-exclusive bags this pack doesn't
-// use. The old system's 3 tiers (Common/Uncommon/Rare) mapped to wave-
-// of-first-appearance in 3 groups; rather than cramming that onto 3 of
-// BountyBags' 4 tiers and leaving Legendary dead, split into 4 groups
-// along the same wave-of-first-appearance logic, using the original
-// 5-wave campaign's own two designed halves (waves 1-3 "early roster",
-// 4-5 "the original campaign's toughest") plus the later 2026-08-29
-// TFTH-mob extension (waves 6-8) as its own top tier:
-//   - Wave 1 (zombie, skeleton) -> Uncommon
-//   - Waves 2-3 (spider, flesh_human, flesh_villager) -> Rare
-//   - Waves 4-5, the original campaign's finale roster (wither_skeleton,
-//     plaquecreaturetwo, ravager, flesh_suffer) -> Epic
-//   - Waves 6-8, the later extension roster (bruteplaquecreatureone,
-//     flesh_hunter_two, flesh_boomer, plaquethreelegcreature) -> Legendary
-// Also covers husk/drowned/creeper under Uncommon even though they're
-// not part of the curated wave roster, in case they show up some other
-// way (Epic Siege Mod, a future wave, etc.) - cheap to leave in, same
-// as the old system.
+// use.
+//
+// Reclassified 2026-09-03 (direct follow-up once BountyBags/Lootr were
+// live) - the original 2026-09-02 mapping grouped mobs by wave-of-
+// first-appearance, which put wither_skeleton in Epic tier even though
+// wave_spawner.js's own comments explicitly call it part of the "trash
+// floor" alongside zombie/skeleton/spider in every wave it appears in
+// (waves 4-8) - wave-of-first-appearance isn't the same thing as actual
+// toughness once a wave's roster mixes a new elite in with repeated
+// trash-floor mobs. Regrouped by real toughness instead, drawn from
+// each mob's own comments/attributes already documented in
+// wave_spawner.js:
+//   - Uncommon = the trash floor itself (zombie, skeleton, spider,
+//     wither_skeleton - all explicitly grouped as "trash floor" in
+//     wave_spawner.js's wave 5-8 comment), plus husk/drowned/creeper/
+//     zombie_villager for the same "not in the curated roster but cheap
+//     to cover" reasoning the old system used.
+//   - Rare = the early roster-variety adds that aren't trash-floor
+//     filler but aren't elites either (flesh_human, flesh_villager,
+//     plaquecreaturetwo).
+//   - Epic = the wave 6-7 elites introduced alongside the trash floor,
+//     not part of it (bruteplaquecreatureone, flesh_hunter_two,
+//     flesh_boomer).
+//   - Legendary = the 3 mobs wave_spawner.js's own comments explicitly
+//     call the designed finale/climax (ravager - "mini boss";
+//     flesh_suffer - TFTH's hardest hitter; plaquethreelegcreature -
+//     "the tankiest of the four," closing out wave 8 alongside the
+//     ravager).
+// Same drop rates as before - only which mob maps to which tier changed.
 //
 // Each mob group only ever rolls its own tier's bag (no cross-tier
-// entries) - a common zombie can never drop a Legendary bag - same
+// entries) - a trash-floor zombie can never drop a Legendary bag - same
 // standing rule as before: rarity gates both drop rate and which
 // enemies can roll which tier.
-//
-// Drop rate keeps roughly the same halving-per-tier shape the old
-// system used (0.5/0.25/0.1), extended one more step down for the new
-// top tier so Legendary stays a genuinely rare event even from a
-// wave-8 kill.
 
-const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:skeleton', 'minecraft:husk', 'minecraft:drowned', 'minecraft:creeper']
-const RARE_MOBS = ['minecraft:spider', 'the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager']
-const EPIC_MOBS = ['minecraft:wither_skeleton', 'minecraft:ravager', 'the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_suffer']
-const LEGENDARY_MOBS = ['the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:flesh_boomer', 'the_flesh_that_hates:plaquethreelegcreature']
+const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:skeleton', 'minecraft:spider', 'minecraft:wither_skeleton', 'minecraft:husk', 'minecraft:drowned', 'minecraft:creeper', 'minecraft:zombie_villager']
+const RARE_MOBS = ['the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager', 'the_flesh_that_hates:plaquecreaturetwo']
+const EPIC_MOBS = ['the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:flesh_boomer']
+const LEGENDARY_MOBS = ['minecraft:ravager', 'the_flesh_that_hates:flesh_suffer', 'the_flesh_that_hates:plaquethreelegcreature']
 
 // `LootJS.modifiers(...)` / `.addEntityLootModifier(id).randomChance(n).addLoot(id)`
 // - same confirmed-working pattern as the old system, just pointed at
