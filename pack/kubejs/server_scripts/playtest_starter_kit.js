@@ -327,6 +327,14 @@ PlayerEvents.loggedIn((event) => {
   const shrineX = x1 - 3
   const shrineZ = z1 - 3
   run(`setblock ${shrineX} ${wallY0} ${shrineZ} kubejs:amulet_pedestal`)
+  // Stored once here, independent of the amulet ever being placed on it
+  // (amulet_pedestal.js's own td_amuletMarkerBaseX/Y/Z only exist while
+  // the amulet is actually on the pedestal) - pedestal_destruction.js
+  // needs a permanent reference to check against regardless of amulet
+  // state. 2026-09-03, "if the pedestal is destroyed you lose."
+  data.putInt('td_pedestalX', shrineX)
+  data.putInt('td_pedestalY', wallY0)
+  data.putInt('td_pedestalZ', shrineZ)
 
   // Grave markers - plain vanilla oak_fence posts on small coarse_dirt
   // mounds, not a sign (avoids the 1.20.1 sign-NBT format entirely -

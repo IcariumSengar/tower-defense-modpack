@@ -234,6 +234,17 @@ function useWaveHorn(player) {
   var server = player.getServer()
   var data = player.persistentData
 
+  // Real permanent stop condition (2026-09-03, direct request: "if the
+  // pedestal is destroyed you lose") - checked before the cooldown dedup
+  // below since this should block every future use, not just get
+  // silently swallowed by it. Set once by pedestal_destruction.js and
+  // never cleared - the world stays playable after the loss, this is
+  // the only thing it locks.
+  if (data.getBoolean('td_pedestalDestroyed')) {
+    player.tell('§8§oThe horn has nothing left to call to.')
+    return
+  }
+
   // Cooldown dedup (20 ticks / 1 second), not just same-tick — both
   // ItemEvents.rightClicked and BlockEvents.rightClicked fire for one
   // physical click, and holding right-click generates repeated events
