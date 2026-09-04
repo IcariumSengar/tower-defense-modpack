@@ -220,13 +220,13 @@ var WAVE_MOB_TYPES = [
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
-  'the_flesh_that_hates:plaquethreelegcreature',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
   'mutantszombies:zombie_brute',
   'mutantszombies:mutant_brute',
   'mutantszombies:rotten_mutant',
+  'mutantszombies:crawler',
 ]
 
 // Self-healing marker (2026-09-05, real backward-compat need, not

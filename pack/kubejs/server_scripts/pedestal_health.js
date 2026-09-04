@@ -70,14 +70,40 @@ var PEDESTAL_WAVE_MOB_TYPES = [
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
-  'the_flesh_that_hates:plaquethreelegcreature',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
   'mutantszombies:zombie_brute',
   'mutantszombies:mutant_brute',
   'mutantszombies:rotten_mutant',
+  'mutantszombies:crawler',
 ]
+
+// Always-visible-in-range HP bossbar (2026-09-04, real playtest
+// feedback batch: "always-visible-in-range" chosen over "only when
+// looking at it" - Jade can't do a custom HP readout for a KubeJS
+// block's own persistent-data value without real Java code, so this
+// reuses the same "tick-poll + real vanilla command" pattern as
+// everything else in this file instead of a new client-rendering
+// surface). Real vanilla `/bossbar` - `players <selector>` each check
+// naturally shows/hides it per-player based on live distance, no manual
+// per-player tracking needed; safe to call redundantly (idempotent, no
+// different from `forceload add` elsewhere in this pack).
+var PEDESTAL_BOSSBAR_ID = 'kubejs:pedestal_health'
+var PEDESTAL_BOSSBAR_RANGE = 64
+
+function ensurePedestalBossbar(server, data) {
+  if (data.getBoolean('td_pedestalBossbarAdded')) return
+  data.putBoolean('td_pedestalBossbarAdded', true)
+  server.runCommandSilent(`bossbar add ${PEDESTAL_BOSSBAR_ID} "Pedestal"`)
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} color red`)
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max 200`)
+}
+
+function updatePedestalBossbar(server, health, x, z) {
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} value ${health}`)
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} players @a[x=${x},z=${z},distance=..${PEDESTAL_BOSSBAR_RANGE}]`)
+}
 
 function pedestalAttackDamage(mob) {
   try {
@@ -108,6 +134,8 @@ PlayerEvents.tick((event) => {
   var y = data.getInt('td_pedestalY') + 0.5
   var z = data.getInt('td_pedestalZ') + 0.5
 
+  ensurePedestalBossbar(player.getServer(), data)
+
   var damage = 0
   level.getEntities().forEach((e) => {
     if (!PEDESTAL_WAVE_MOB_TYPES.includes(`${e.type}`)) return
@@ -117,11 +145,15 @@ PlayerEvents.tick((event) => {
     if (dx * dx + dy * dy + dz * dz > PEDESTAL_MELEE_RANGE_SQ) return
     damage += pedestalAttackDamage(e)
   })
-  if (damage <= 0) return
+  if (damage <= 0) {
+    updatePedestalBossbar(player.getServer(), data.getInt('td_pedestalHealth'), data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
+    return
+  }
 
   var health = data.getInt('td_pedestalHealth') - damage
   if (health > 0) {
     data.putInt('td_pedestalHealth', health)
+    updatePedestalBossbar(player.getServer(), health, data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
     return
   }
 
@@ -136,6 +168,7 @@ PlayerEvents.tick((event) => {
   var by = data.getInt('td_pedestalY')
   var bz = data.getInt('td_pedestalZ')
   player.getServer().runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air destroy`)
+  player.getServer().runCommandSilent(`bossbar remove ${PEDESTAL_BOSSBAR_ID}`)
 
   triggerPedestalDestroyed(player)
 })

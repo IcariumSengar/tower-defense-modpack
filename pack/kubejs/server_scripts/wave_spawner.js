@@ -26,8 +26,15 @@
 // damage in its own attributes, presumably an explosion-based attack
 // like a creeper; reinforced walls are explosion-proof either way, see
 // docs/MODS.md's chokepoint-walls entry), plaquethreelegcreature
-// ("Flesh Hysterizer", 55/7/4 - the tankiest of the four, closes out
-// wave 8 alongside the returning ravager). flesh_howler was
+// ("Flesh Hysterizer", 55/7/4 - the tankiest of the four, closed out
+// wave 8 alongside the returning ravager). **Removed 2026-09-04**
+// (direct feedback, real playtest batch: it one-shot the pedestal via
+// pedestal_health.js's clustering-sum mechanic, and separately "I didnt
+// like the TFTH mob types" - not a numeric retune, a removal). Wave 8's
+// slot filled with `mutantszombies:crawler` instead (the Advanced Wall
+// Climber API mob, confirmed real-summonable but never given a wave
+// slot before this) - user's pick among the real pre-existing
+// candidates. flesh_howler was
 // deliberately left out - its own class has a CallForHelpGoal, an
 // unconfirmed "summons more mobs" risk that would break this pack's
 // deterministic per-wave mob count, and better-understood alternatives
@@ -164,7 +171,7 @@ var WAVES = [
   // the slot the original proposal gave "Flesh Unseen" - see the real
   // correction in this block's own header comment for why that mob was
   // dropped.
-  [['the_flesh_that_hates:plaquethreelegcreature', 1], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 2]],
+  [['mutantszombies:crawler', 1], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 2]],
 ]
 
 // Also the endless-phase horde roster's own mob set (see
@@ -187,13 +194,13 @@ var WAVE_MOB_TYPES = [
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
-  'the_flesh_that_hates:plaquethreelegcreature',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
   'mutantszombies:zombie_brute',
   'mutantszombies:mutant_brute',
   'mutantszombies:rotten_mutant',
+  'mutantszombies:crawler',
 ]
 
 // Staggered emergence + sound-first spawn cues (docs/IDEAS.md's

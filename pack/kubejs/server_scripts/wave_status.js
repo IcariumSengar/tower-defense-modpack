@@ -35,13 +35,13 @@ const HOSTILE_TYPES = [
   'the_flesh_that_hates:bruteplaquecreatureone',
   'the_flesh_that_hates:flesh_hunter_two',
   'the_flesh_that_hates:flesh_boomer',
-  'the_flesh_that_hates:plaquethreelegcreature',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
   'mutantszombies:zombie_brute',
   'mutantszombies:mutant_brute',
   'mutantszombies:rotten_mutant',
+  'mutantszombies:crawler',
 ]
 
 const RADIUS = 80
@@ -260,4 +260,46 @@ PlayerEvents.tick((event) => {
     data.putInt('td_countdownEndTick', level.getTime() + COUNTDOWN_TICKS)
     data.putBoolean('td_countdownActive', true)
   }
+})
+
+// Debug: force the current wave clear regardless of remaining mobs
+// (2026-09-04, real playtest feedback batch) - real, concrete need, not
+// just convenience: a mob stuck somewhere unreachable (wedged in
+// geometry, pathing failure) can soft-lock the whole run, since the
+// clear check above needs every real hostile actually dead. OP-gated
+// (level 2), same reasoning as the Wave Horn's own console-permission
+// pattern (wave_spawner.js) - a plain player-level command source isn't
+// guaranteed enough permission for what this needs to do.
+//
+// Deliberately does NOT set a "cleared" flag directly - that would be a
+// second, parallel clear-detection path to keep in sync with the real
+// one above forever. Instead just kills every real HOSTILE_TYPES entity
+// within the same RADIUS/waveObjective the real check already uses, so
+// the very next scheduled tick sees hostileCount===0 and fires the
+// EXACT same clear sequence (title, night-undo, fixed events, countdown)
+// on its own - reuses the existing path instead of duplicating it.
+ServerEvents.commandRegistry((event) => {
+  var Commands = event.commands
+  event.register(
+    Commands.literal('tdforceclear')
+      .requires((source) => source.hasPermission(2))
+      .executes((context) => {
+        var player = context.source.getPlayerOrException()
+        var level = context.source.getLevel()
+        var data = player.persistentData
+        var objective = waveObjective(player, data)
+        var killed = 0
+        level.getEntities().forEach((e) => {
+          if (!HOSTILE_TYPES.includes(`${e.type}`)) return
+          var dx = e.getX() - objective.x
+          var dy = e.getY() - objective.y
+          var dz = e.getZ() - objective.z
+          if (dx * dx + dy * dy + dz * dz > RADIUS * RADIUS) return
+          e.kill()
+          killed++
+        })
+        context.source.sendSuccess(() => Text.of(`§6[Wave] §aForce-cleared - killed ${killed} hostile(s).`), false)
+        return killed
+      })
+  )
 })

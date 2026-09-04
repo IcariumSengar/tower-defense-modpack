@@ -58,7 +58,7 @@
 const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager', 'minecraft:zombified_piglin', 'the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager', 'undeadnights:horde_zombie']
 const RARE_MOBS = ['the_flesh_that_hates:flesh_dog', 'the_flesh_that_hates:flesh_cow', 'the_flesh_that_hates:flesh_sheep', 'the_flesh_that_hates:flesh_pig', 'the_flesh_that_hates:flesh_vindicator', 'the_flesh_that_hates:flesh_pillager', 'the_flesh_that_hates:plaquecreatureone', 'the_flesh_that_hates:plaquecontaminator']
 const EPIC_MOBS = ['the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_boomer', 'undeadnights:elite_zombie', 'mutantszombies:spitter', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie']
-const LEGENDARY_MOBS = ['the_flesh_that_hates:plaquethreelegcreature', 'the_flesh_that_hates:flesh_suffer', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
+const LEGENDARY_MOBS = ['mutantszombies:crawler', 'the_flesh_that_hates:flesh_suffer', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
 // Legendary jackpot roll (2026-09-06, raised in the "some ideas..."
 // batch: "during any wave there is a slim chance of a Legendary Loot

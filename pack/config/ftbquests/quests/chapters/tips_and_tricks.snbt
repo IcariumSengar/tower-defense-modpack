@@ -1,0 +1,184 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "tips_and_tricks"
+	group: ""
+	icon: "minecraft:knowledge_book"
+	id: "A75528A8A9B6E2C2"
+	order_index: 1
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Press Z to zoom in - Just Zoom's own default keybind, no config needed."]
+			icon: "minecraft:spyglass"
+			id: "FB0521968FB8F218"
+			rewards: [{
+				id: "F4E268155D151F86"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "DC5D8B14A89AF0D7"
+				type: "checkmark"
+			}]
+			title: "Zoom In"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			description: ["Hover an item and press R to see a JEI recipe for it."]
+			icon: "minecraft:crafting_table"
+			id: "E2C952889AA1DD0D"
+			rewards: [{
+				id: "223B910590606981"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "F86B979C88ED616B"
+				type: "checkmark"
+			}]
+			title: "View a Recipe"
+			x: 1.0d
+			y: 0.0d
+		}
+		{
+			description: ["Hover an item and press U to see what it's used for."]
+			icon: "minecraft:furnace"
+			id: "94508327441E80E8"
+			rewards: [{
+				id: "A4441C569CD511AA"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "62DDF61B7C4B3FDB"
+				type: "checkmark"
+			}]
+			title: "See What It's Used For"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			description: ["Press M to open the full world map."]
+			icon: "minecraft:map"
+			id: "6A0B7CF30D95AD6B"
+			rewards: [{
+				id: "E0DBC00CBB939082"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "10A450115B33F714"
+				type: "checkmark"
+			}]
+			title: "Open the World Map"
+			x: 3.0d
+			y: 0.0d
+		}
+		{
+			description: ["Press Tab to open this quest book, any time."]
+			icon: "minecraft:book"
+			id: "A9179F342904A400"
+			rewards: [{
+				id: "715333AC29EA6276"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "A9C8750C2C150EAF"
+				type: "checkmark"
+			}]
+			title: "Open the Quest Book"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			description: ["Middle-click a container to auto-sort its items into it."]
+			icon: "minecraft:chest"
+			id: "3A3562742EB7477D"
+			rewards: [{
+				id: "ECD6C3B600572E91"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "E6F41D4490F1114C"
+				type: "checkmark"
+			}]
+			title: "Auto-Sort a Container"
+			x: 0.0d
+			y: 1.0d
+		}
+		{
+			description: ["Just look at a block or mob - no keybind needed, live info shows up on its own."]
+			icon: "minecraft:spider_eye"
+			id: "28BF317932C2A7C3"
+			rewards: [{
+				id: "DEFA43399D34C943"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0ADF201F7BB32D49"
+				type: "checkmark"
+			}]
+			title: "Look at Anything"
+			x: 1.0d
+			y: 1.0d
+		}
+		{
+			description: ["Right-click a loot bag to open it."]
+			icon: "bountybags:legendary_loot_bag"
+			id: "3A7685999BBC71CB"
+			rewards: [{
+				id: "EE85A8F5CDD77D51"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "26BDCD4E3CD8666B"
+				type: "checkmark"
+			}]
+			title: "Open a Loot Bag"
+			x: 2.0d
+			y: 1.0d
+		}
+		{
+			description: ["Open your inventory and find the Curios accessory slot - that's where the amulet goes, not the armor slots."]
+			icon: "minecraft:emerald"
+			id: "DF78BEC33DF4093E"
+			rewards: [{
+				id: "91F5DDD57046D697"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6AD2A5FAC4D469F2"
+				type: "checkmark"
+			}]
+			title: "Find the Curios Slot"
+			x: 3.0d
+			y: 1.0d
+		}
+		{
+			description: ["Set a Waystone, then teleport back to it from any other Waystone once unlocked."]
+			icon: "minecraft:ender_pearl"
+			id: "1F9FC168B58483E0"
+			rewards: [{
+				id: "C090EF041EBBE7B9"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "5EBEC728F98A85AB"
+				type: "checkmark"
+			}]
+			title: "Use a Waystone"
+			x: 4.0d
+			y: 1.0d
+		}
+	]
+	title: "Tips & Tricks"
+}

@@ -23,6 +23,19 @@ reflect actual current status.
 
 ## Ready to build
 
+**Polish/utility mod pass, 2026-09-04 — held, NOT sent to build.** Full
+spec in FEATURES.md's "Polish/utility mod pass, 2026-09-04" section
+(right before "Tried and explicitly retired"). All picks confirmed real
+Forge 1.20.1 builds: Sodium/Embeddium Dynamic Lights, Subtle Effects,
+Damage Numbers (luavixen's specifically, not the 2 similarly-named
+mods), FancyMenu + its Drippy Loading Screen addon, and
+EMF+ETF (real Forge infra, not Optifine) carrying 2 resource packs —
+Fresh Animations and Tissou's Zombie Pack (its TZP Plus Mutants
+companion deliberately dropped, wrong target mod). One real open
+question flagged for the peer to verify live, not guessed: whether
+Fresh Animations and Tissou's Zombie Pack actually layer cleanly
+together on the same zombie-family entities.
+
 **Real playtest feedback batch, 2026-09-04 — held, NOT sent to build.**
 Full spec for every item in FEATURES.md's "Real playtest feedback batch,
 2026-09-04" section (right before "Tried and explicitly retired"). Kept
@@ -35,27 +48,52 @@ is the single source of truth for what's decided vs. still needs a call
 — update the tag in place as each resolves, don't re-summarize from
 memory.
 
-1. [decided] Ditch doomsday decorations, AND uninstall the mod outright
-   (now fully unused) + delete its lang override.
+1. [done, shipped 2026-09-04] Ditch doomsday decorations, AND uninstall
+   the mod outright (now fully unused) + delete its lang override.
 2. [confirmed] Re:Entity Outliner — real Forge 1.20.1 build, direct fit.
-3. [decided] Cobwebs removed / grave markers removed entirely (flavor
-   tie-in to wave 5 knowingly dropped, not missed) / decorative barbed
-   wire line removed / entrance → 3-wide, no door.
-4. [decided] Pedestal HP bar — always-visible-in-range bossbar.
-5. [decided] Starter loot chests — remove all 8 entirely.
-6. [needs investigation] "Bed-like" blocks upstairs — not scripted, in
-   the house's own NBT, needs a decompile before it's even identified.
-7. [confirmed] Front wall pushed out 3 blocks.
-8. [decided] Reinforce the whole house — full uniform coverage, no
-   falloff.
+   Not yet installed - no install action requested in this batch.
+3. [done, shipped 2026-09-04] Cobwebs removed / grave markers removed
+   entirely (flavor tie-in to wave 5 knowingly dropped, not missed) /
+   decorative barbed wire line removed / entrance → 3-wide, no door.
+4. [done, shipped 2026-09-04] Pedestal HP bar — always-visible-in-range
+   bossbar (`kubejs:pedestal_health`, real vanilla `/bossbar`, red,
+   0-200). Verified live: every command (`add`/`color`/`max`/`value`/
+   `players`/`remove`) confirmed working via direct RCON test.
+5. [done, shipped 2026-09-04] Starter loot chests — all 5 real ones
+   removed (decompiled the structure's own NBT directly - the original
+   "8 chests/barrels" count doesn't match the real file, no chests
+   exist at all, only 5 barrels).
+6. [needs investigation] "Bed-like" blocks upstairs — **identified, not
+   yet decided.** Real vanilla `minecraft:spruce_trapdoor` x4 (a
+   trapdoor-bed decoration trick), not a mod-furniture block as
+   guessed, at local [3-6,5,4] in the structure's own NBT. Left in
+   place pending a real clear-or-reskin call.
+7. [done, shipped 2026-09-04] Front wall pushed out - implemented as a
+   +3 gate-to-pedestal buffer (z1-4 -> z1-7) paired with a matching +3
+   on COURTYARD_DEPTH so the rig/building gaps this layout depends on
+   stay exactly what they were. A naive pedestal-only shift would have
+   collided the kinetic rig with the building - caught before shipping.
+8. [not yet built] Reinforce the whole house — full uniform coverage,
+   no falloff. Needs a real full-building block-position scan + a real
+   check of SecurityCraft's own reinforced-block registry against the
+   house's exterior palette (bricks/granite/granite_wall/brick_stairs/
+   brick_slab) - substantially more NBT work than the furniture-removal
+   items above, not started yet.
 9. [decided] Revisit house structure — parked, not pursued now (keeps
    #6/#12's NBT-decompile work on the current house worth doing).
-10. [likely already works] Inventory Sorter middle-click — existing mod
-    already has both modules on; needs a live test, not a new mod.
-11. [confirmed goal] Crafting table → Crafting Station Improved — needs
-    real block id + NBT patch.
-12. [needs investigation] Cauldron + tripwire hook — same bucket as #6.
-13. [needs investigation] Iron rolling regression — needs live diagnosis.
+10. [likely already works, unconfirmed] Inventory Sorter middle-click —
+    real client-interaction check, can't be verified from this
+    environment (no real graphical client/player, the same blind spot
+    this session has hit before) - needs the user's own live test.
+11. [done, shipped 2026-09-04] Crafting table → Crafting Station
+    Improved (`craftingstation:crafting_station`, confirmed real via
+    the mod's own blockstate JSON - single-variant, no facing property
+    - and live-verified placeable in a sandbox).
+12. [done, shipped 2026-09-04] Cauldron + tripwire hook — both removed,
+    same NBT-decompile pass as #5/#6/#11 (real local coords: cauldron
+    [8,1,5], tripwire hook [8,2,5]).
+13. [needs investigation] Iron rolling regression — not yet diagnosed,
+    still needs a real live check against the current kinetic rig.
 14. [decided method] TFTH roster audit, not blanket removal — Flesh
     Hysterizer confirmed cut. **Peer to sandbox-summon + screenshot the
     remaining 7 TFTH mobs** (flesh_human, flesh_villager, flesh_dog,
@@ -63,14 +101,38 @@ memory.
     real, ready to send. **Same pass should also screenshot
     `mutantszombies:zombie_brute` and `mutant_brute` side by side** for
     #24 below.
-15. [decided] Gold roll bump — BountyBags Rare bag only, weight/count up
-    (exact numbers a first-pass build call, not pinned here).
-16. [needs investigation] World border on minimap — unconfirmed if
-    Xaero already does this.
-17. [confirmed goal] Quest book keybind → Tab — verify no real conflict
-    before shipping.
-18. [decided] Minimap defaults — north-lock on; hostile-only red dots,
-    tamed-hostile subcategory OFF too (hostile-only means hostile-only).
+15. [done, shipped 2026-09-04] Gold roll bump — BountyBags Rare bag,
+    weight 30→45, count 4-6→6-9 (roughly doubles expected gold per
+    hit, first-pass tuning number).
+16. [needs investigation, real limit] World border on minimap —
+    checked config (no toggle key exists for it either way, only an
+    unrelated "claim_border" opacity setting) - whether it actually
+    renders is a real client-visual check this environment can't
+    perform (no graphical client). Needs the user's own look in-game.
+17. [done, shipped 2026-09-04 on the live instance; real conflict
+    found, not fixed] Quest book keybind → Tab - already bound
+    correctly in the live `options.txt`. **Real conflict confirmed by
+    checking, not assumed**: vanilla's own player-list overlay
+    (`key.playerlist`) is ALSO bound to Tab on the same profile -
+    pressing Tab now triggers both actions. Not rebound unilaterally -
+    this pack's own live config already has several pre-existing
+    multi-bindings on other keys (three separate binds share 'u'
+    alone), so this isn't unprecedented, but it's a real, reportable
+    finding, not silently ignored. Also unresolved: whether/how to ship
+    this as tracked config for a fresh install - `options.txt` is
+    client-local state, not a mod config folder, and shipping it
+    wholesale would also lock in unrelated settings (video/sound/etc)
+    for every fresh install, a bigger footprint than intended for one
+    keybind. Flagged, not solved.
+18. [done, shipped 2026-09-04] Minimap defaults — north-lock on;
+    `displayed: false` set on every non-hostile category (players,
+    friendly, items, other_entities) plus hostile's own `tamed`
+    subcategory. **Real bug caught by decompiling Xaero's own
+    `RadarColor` enum, not assumed**: the "hostile" category had no
+    explicit color override at all, so it was inheriting YELLOW (index
+    14) from its parent, not red - the color-index legend matches
+    vanilla's 16 chat-color codes in declaration order (RED = index
+    12), added explicitly.
 19. [done, shipped 2026-09-04] Passive mobs still spawning — confirmed
     broader than horses, and fixed pack-wide. Real root cause: baked
     passive-mob entities directly in structure `.nbt` files (a
@@ -82,35 +144,58 @@ memory.
     above.
 20. [folded into #14] TFTH audit example — Flesh Brute I confirmed
     keeper.
-21. [decided] Loot bag open notification — **custom-built, hooked
-    directly to the loot bag's own open action**, not the Loot Journal
-    mod. Real reason: Loot Journal's own filtering can't be confirmed
-    from the outside to scope specifically to "loot bag opens only"
-    (vs. also firing on regular kill/mining pickups, which the user
-    explicitly doesn't want — "spammy"). A custom hook on the bag-open
-    event structurally can't fire on anything else, guaranteed correct
-    scope over an unverified mod filter. Format (chat/actionbar/toast)
-    still a build-time call.
-22. [decided] Debug wave-complete command — force the clear flag
-    regardless of remaining mobs (handles the actual soft-lock scenario
-    even if a mob is stuck somewhere unreachable/unloaded).
-23. [decided] Tips & tricks quest chapter — content confirmed (see list
-    below this checklist; F3 dropped per direct "no," everything else
-    kept).
+21. [done, shipped 2026-09-04] Loot bag open notification —
+    custom-built (`loot_bag_notification.js`), hooked directly to the
+    bag's own open action. **Real check done before building, not
+    assumed**: decompiled BountyBags' own `LootBagItem#use()` directly
+    - it sends exactly one real player-facing message (the luck-upgrade
+    notice) and never notifies on the actual loot contents (only
+    server-console debug logs) - confirms a custom hook was genuinely
+    needed. Real technique: `PlayerEvents.inventoryChanged` (confirmed
+    via decompile to fire per-slot with the resulting stack) collected
+    during a short window opened by the bag's own right-click, chat
+    message sent one tick later once the bag's fully-synchronous
+    granting has finished.
+22. [done, shipped 2026-09-04] Debug wave-complete command
+    (`/tdforceclear`, OP-gated) — kills every real hostile within the
+    same radius/objective the real clear-check already uses, so the
+    existing tick-based detection fires the normal clear sequence on
+    its own next pass rather than duplicating that logic. Verified
+    live: command registers and executes cleanly via RCON (rejected
+    only for the expected reason - no real player attached to a
+    console/RCON command source).
+23. [done, shipped 2026-09-04] Tips & tricks quest chapter — new
+    `tips_and_tricks.snbt` chapter, all 10 confirmed tips (see list
+    below), F3 dropped per direct "no." Verified live: fresh sandbox
+    boot loaded "2 chapters, 29 quests" (19 + 10), 0 FTB Quests errors
+    - real caution given this pack's own documented FTB Quests syntax
+    crash history.
 24. [decided: verify by screenshot] Other brute mob — folded into #14's
     screenshot pass, not guessed from the name.
-25. [decided] Flesh Hysterizer removed (same call as #14) — wave 8's
-    slot filled with `mutantszombies:crawler` (the Advanced Wall Climber
-    API mob), user's pick from the 4 real unused-candidate options.
+25. [done, shipped 2026-09-04] Flesh Hysterizer removed (same call as
+    #14) — wave 8's slot filled with `mutantszombies:crawler` (the
+    Advanced Wall Climber API mob), user's pick from the 4 real
+    unused-candidate options. Updated in all 5 files that duplicate the
+    mob roster (wave_spawner.js's WAVES + WAVE_MOB_TYPES, mob_aggro.js,
+    pedestal_health.js, wave_status.js, loot_bag_drops.js's
+    LEGENDARY_MOBS).
 26. [needs investigation, then a call] Barbed wire vs. Mutant Brute —
     diagnose the mechanic first, then pick a trap.
-27. [decided: new world each restart] Manual fresh-start trigger:
+27. [blocker resolved, flow not yet built] Manual fresh-start trigger:
     craftable/given item, same pattern as the Wave Horn. All-players-
     killed: **build the real multiplayer check**, not simplified to
     solo-player-death (user chose "plan for multiplayer" over the
-    simpler singleplayer-only option). **Real blocker, not a choice**:
-    whether FTB Quests progress survives a world switch — needs
-    investigation before either flow gets built.
+    simpler singleplayer-only option). **Real blocker answered
+    2026-09-04, not guessed**: compared the real `ftbquests/<uuid>.snbt`
+    progress file across two different save folders on the live
+    instance directly - genuinely different completion timestamps/task
+    counts despite the same player UUID, confirming progress is real
+    per-world save data, NOT shared or account-wide. "New world, keep
+    quest progress" needs a real export/import step, exactly as
+    suspected - it will never happen for free. Neither restart flow
+    itself is built yet (this was investigation only, the actual
+    mechanism - game-over trigger, quest export/import, fresh-start
+    item, multiplayer all-killed detection - is real remaining work).
 
 **Tips & Tricks chapter — confirmed content**, F3 dropped by direct
 "no," everything else kept:
@@ -129,10 +214,19 @@ memory.
 10. Waystones — set one, then teleport back to it from any other
     Waystone once unlocked.
 
-**Say the word and this goes out in whatever grouping makes sense** —
-the `[confirmed]`/`[decided]` items above (nearly everything now) could
-ship as one quick batch well ahead of the `[needs investigation]` ones
-(#6/#12/#13/#16/#26).
+**Real status as of 2026-09-04**: 15 of 27 items done and shipped
+(#1/#3/#4/#5/#7/#11/#12/#15/#17-partial/#18/#21/#22/#23/#25, plus #19
+already covered in "Fresh-world playtest, round 3" above). #27's real
+blocker is now answered (quest progress is per-world, needs a real
+export/import step) but the restart flow itself isn't built yet. Still
+open: #6 (identified, needs a clear-or-reskin decision), #8 (house
+reinforcement, real remaining NBT work), #9 (parked by design), #10/#16
+(real client-visual/interaction checks this environment can't perform -
+need the user's own in-game look), #13/#26 (need live diagnosis), #2
+(verified real, not installed - no install was actually requested).
+The screenshot pass for #14/#20/#24's TFTH/brute audit hasn't happened
+yet either - report back with real screenshots before cutting anything
+from the roster, per the user's own request.
 
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base

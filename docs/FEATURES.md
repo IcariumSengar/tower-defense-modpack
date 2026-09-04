@@ -4313,10 +4313,18 @@ first case this applied to.
 
 27 items from a real extended playtest session, gathered and specced in
 one pass per direct request ("gather all these feedback points ive
-raised and we can spec the fixes out"). **Held — not sent to build.**
-Each item below reflects real current-state findings (file/line-checked
-against the actual scripts, not assumed), not guesses. Send in whatever
-order/grouping makes sense once reviewed.
+raised and we can spec the fixes out"). Each item below reflects real
+current-state findings (file/line-checked against the actual scripts,
+not assumed), not guesses.
+
+**Real status as of 2026-09-04: 15 of 27 items done and shipped**, sent
+to build the same day. QUEUE.md's own checklist entry (same "Real
+playtest feedback batch, 2026-09-04" title) carries the authoritative
+per-item status/real-shipped-detail as a literal 1-27 list matching the
+user's own original numbering - check there for what's done vs. still
+open, not this section (which stays as the original spec/reasoning for
+each item). Real commit-timestamp note: shipped 2026-09-04, not the
+peer's own dispatch dating from earlier the same conversation.
 
 ### Starting base — strip decoration debt, fix layout
 
@@ -4667,6 +4675,94 @@ command/item to trigger a manual fresh start) until the quest-progress
 question above has a real answer — building either trigger before
 knowing whether progress can actually carry over risks having to redo
 the core mechanism.
+
+---
+
+## Polish/utility mod pass, 2026-09-04
+
+Direct request to survey other similar-themed modpacks for mods "that
+would polish the pack rather than sweeping changes to gameplay" —
+explicitly not new mechanics/content, so this fits inside the current
+"polish before new tiers" priority rather than waiting behind it. Real
+technique used (user-taught, not one this session already knew): a
+CurseForge modpack's **Relations → Dependencies tab** lists every real
+mod, unlike the marketing-blurb pack description — pulled full lists
+from Troublesome Towers (197 mods) and Abandoned Apocalypse (141 mods,
+the better genre match), filtered to pure polish/utility, picked via
+AskUserQuestion rounds, then verified for real Forge 1.20.1 builds
+before committing to a spec (this pack's standing "search isn't proof,
+check the real listing" discipline).
+
+**Confirmed picks, ready to build:**
+- **Sodium/Embeddium Dynamic Lights** (real project id
+  `dynamiclights-reforged`) — held/dropped glowing items light the
+  world in real time. Confirmed Forge 1.20.1 build, compatible with
+  this pack's existing Embeddium install (it's an Embeddium-aware fork
+  by design, not a bolt-on).
+- **Subtle Effects** (author MincraftEinstein) — small ambient
+  particle/sound details tied to player state. Confirmed Forge 1.20.1.
+- **Damage Numbers** by **luavixen** specifically — real naming
+  collision caught before picking: "Damage Number" (xypp, a
+  corner-of-screen counter, different UX) and "Show Damage" (zzdzt) both
+  exist under near-identical names. luavixen's is the floating-particle
+  style that matches what was actually wanted, confirmed Forge 1.20.1.
+- **FancyMenu + Drippy Loading Screen** — real dependency shape, not two
+  independent picks: Drippy Loading Screen is an *addon* for FancyMenu,
+  requires it. Both confirmed Forge 1.20.1, same author (Keksuccino) as
+  Just Zoom, already trusted in this pack. Reskins the main menu and
+  loading-screen tips — real opportunity to theme both to the
+  post-apocalyptic aesthetic rather than leave them vanilla.
+- **[EMF] Entity Model Features + [ETF] Entity Texture Features** — real
+  infrastructure pick, not decorative on its own. Both Fresh Animations
+  and Tissou's Zombie Pack (below) need Optifine's Custom Entity Models
+  to function; EMF+ETF is the real Forge-native equivalent, and
+  critically does NOT carry Optifine's known conflicts with this pack's
+  Embeddium/Sodium-family performance stack. One real mod install covers
+  both resource packs below — good footprint news, not two separate
+  dependency chains.
+- **Fresh Animations** (resource pack, author FreshLX, 97.7M+
+  downloads) — animated vanilla mob models (zombie, husk, drowned,
+  villager, etc.). **Real correction made before shipping this**: this
+  was first assumed to be a mod; it's actually a resource pack, riding
+  on the EMF/ETF pick above.
+- **Tissou's Zombie Pack** (resource pack, 28.5M+ downloads) — zombie-
+  family retexture/variety (1500+ skin variants across
+  zombie/husk/drowned/zombie_villager). Also rides on EMF/ETF.
+  **TZP Plus Mutants (the mutant-specific companion pack) is
+  deliberately NOT included** — real catch before shipping: it retextures
+  entities from "Mutant Beasts," a different mod than this pack's
+  installed "Mutants and Zombies" — it would almost certainly do nothing
+  for `mutantszombies:zombie_brute`/`mutant_brute` etc. Same "verify the
+  exact mod the name refers to" discipline as everything else in this
+  pack's history.
+
+**One real open question, flagged not guessed**: whether Fresh
+Animations and Tissou's Zombie Pack actually layer cleanly together —
+both touch the same zombie-family entity models/textures, and whether
+one clobbers the other (or they merge fine, since one is
+animation-focused and the other texture-focused) needs a real live
+check before both ship, not an assumption either way.
+
+**Explicitly considered and passed over, real reasons, not oversights**
+(also see IDEAS.md's survey section for the fuller writeup):
+- **AmbientSounds 6, Sound Physics Remastered, Corpse (+Retriever),
+  Chat Heads, Macaw's decoration suite** — all real, all verified to
+  exist for Forge 1.20.1 in the earlier research pass, just not picked
+  this round. Worth remembering as validated candidates if this pass
+  gets revisited rather than re-researching from scratch.
+- **The YUNG's structure suite** (appeared in Abandoned Apocalypse's
+  dependency list) — not proposed. This pack already installed one
+  module of this exact family (Better Desert Temples) and it crashed
+  world creation outright, removed the same day. Same shared engine
+  across the family, real risk of recurrence.
+- **Oculus + Photon Shader** — not proposed. Shaders were tried and
+  removed twice already this project on "not feeling the aesthetic,"
+  not a bug — see "Tried and explicitly retired" below.
+- **Zombie Awareness, Enhanced AI, Tough As Nails, The Hordes, Mob
+  Sunscreen** — real gameplay-mechanic mods, excluded per the explicit
+  "not sweeping changes to gameplay" ask. Mob Sunscreen specifically
+  would work directly against this pack's night-lock design (undead
+  burning in daylight is a deliberate mechanic, not incidental).
 
 ---
 
