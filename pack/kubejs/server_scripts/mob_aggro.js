@@ -167,6 +167,23 @@
 var GOAL_SELECTOR_TYPE = 'net.minecraft.world.entity.ai.goal.GoalSelector'
 var TARGET_GOAL_TYPE = 'net.minecraft.world.entity.ai.goal.target.TargetGoal'
 var ESM_TARGET_GOAL_TYPE = 'funwayguy.epicsiegemod.ai.ESM_EntityAINearestAttackableTarget'
+// Real live report, 2026-09-04: "spitter's path seems off," right after
+// the fix above shipped. Checked directly, not assumed - a sandbox
+// repro against a real spitter found the strip working exactly as
+// intended (only the 2 real re-targeting goals removed, its ranged
+// attack goal untouched). The real explanation: decompiling
+// ESM_EntityAIAttackRanged directly showed it reads the mob's own
+// current setTarget()-assigned target for its own logic - so once
+// forced onto the (stationary) pedestal, it does what it's actually
+// coded to do: stop closing distance once in firing range and strafe
+// side-to-side around that range instead of walking straight in. Real
+// decision (not guessed): force melee close-in against the pedestal
+// specifically, keep the strafe-and-shoot behavior intact against a
+// player. Spitter already has a real ESM_EntityAIAttackMelee goal
+// registered alongside the ranged one (confirmed live) - removing only
+// the ranged goal lets the already-present melee one take over on its
+// own, no new goal needs constructing via reflection.
+var ESM_RANGED_ATTACK_TYPE = 'funwayguy.epicsiegemod.ai.ESM_EntityAIAttackRanged'
 var GOAL_TYPE = 'net.minecraft.world.entity.ai.goal.Goal'
 
 // **Real, function-name-prefixed 2026-09-04** (part of the same live
@@ -234,15 +251,25 @@ function aggroResolveClass(anyMob, className) {
 
 // Runs exactly once per mob, guarded by the td_retarget_stripped tag
 // below - real reflection cost, not something to pay every throttled
-// tick for every mob.
+// tick for every mob. This function only ever runs from the
+// pedestal-targeting handler below, right before the mob's target is
+// forced onto the pedestal marker - so removing the ranged-attack goal
+// here is inherently scoped to "this mob is about to target the
+// pedestal," not applied unconditionally. If a future change ever adds
+// a real player-targeting path, it would call setTarget() from a
+// different place and never reach this function, so Spitter's
+// strafe-and-shoot behavior against an actual player is untouched.
 function stripAutoRetargeting(mob) {
   try {
     var targetGoalCls = aggroResolveClass(mob, TARGET_GOAL_TYPE)
-    // ESM's own class may not exist if Epic Siege Mod were ever removed -
-    // resolved separately and tolerated as null (falls back to the
-    // vanilla-only check) rather than aborting the whole strip.
+    // ESM's own classes may not exist if Epic Siege Mod were ever
+    // removed - each resolved separately and tolerated as null (falls
+    // back to skipping that specific check) rather than aborting the
+    // whole strip.
     var esmTargetGoalCls = null
     try { esmTargetGoalCls = aggroResolveClass(mob, ESM_TARGET_GOAL_TYPE) } catch (eEsm) {}
+    var esmRangedAttackCls = null
+    try { esmRangedAttackCls = aggroResolveClass(mob, ESM_RANGED_ATTACK_TYPE) } catch (eEsm2) {}
     var fields = aggroFindFieldsByType(mob.getClass(), GOAL_SELECTOR_TYPE)
     fields.forEach(function (field) {
       field.setAccessible(true)
@@ -272,7 +299,14 @@ function stripAutoRetargeting(mob) {
         // feature.
         var isRealTargetGoal = targetGoalCls.isInstance(goal)
         var isEsmTargetGoal = esmTargetGoalCls && esmTargetGoalCls.isInstance(goal)
-        if (isRealTargetGoal || isEsmTargetGoal) goalsToRemove.push(goal)
+        // Real live report, 2026-09-04: force melee close-in against the
+        // pedestal for ranged mobs (Spitter) instead of strafe-and-shoot
+        // - see the ESM_RANGED_ATTACK_TYPE comment above. Spitter already
+        // has a real melee attack goal registered alongside this one, so
+        // removing just the ranged goal is enough for the melee one to
+        // take over on its own.
+        var isEsmRangedAttack = esmRangedAttackCls && esmRangedAttackCls.isInstance(goal)
+        if (isRealTargetGoal || isEsmTargetGoal || isEsmRangedAttack) goalsToRemove.push(goal)
       }
       goalsToRemove.forEach(function (goal) { removeOne.invoke(selector, [goal]) })
     })

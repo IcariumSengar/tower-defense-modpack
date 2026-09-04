@@ -33,11 +33,18 @@ goal) is fully intact both before and after. Real explanation instead:
 that goal reads the mob's current `setTarget()`-assigned target for its
 own logic, so once locked onto the pedestal it does what it's actually
 coded to do - stop closing distance once in firing range and strafe
-side-to-side around that range rather than walking straight in. Real
-open design question, not a bug: should ranged mobs strafe-and-shoot at
-the pedestal (arguably correct for a "ranged siege" feel), or be forced
-to close to melee range against it specifically? Flagged for a decision,
-not guessed.
+side-to-side around that range rather than walking straight in.
+**Decision came back: force melee close-in against the pedestal
+specifically, keep strafe-and-shoot against a player — done.**
+`ESM_EntityAIAttackRanged` is now removed from the goal selector inside
+the same one-time strip that already runs when a mob's target is forced
+onto the pedestal (structural scoping, not a runtime check - the
+function only ever runs from that one call site). Spitter already has a
+real `ESM_EntityAIAttackMelee` goal registered alongside the ranged one,
+so removing just the ranged goal is enough for melee to take over on its
+own - no new goal needed. Verified live against a real spitter: ranged
+goal gone, melee goal + all other real behavior (swimming, wander,
+avoid-explosion, look-around) intact, zero exceptions.
 
 **2 more live reports, 2026-09-04 — both done, real numbers checked.**
 - **"Not getting enough gold still" (round 2, after item #15's per-bag
