@@ -23,6 +23,16 @@ reflect actual current status.
 
 ## Ready to build
 
+**New live report, 2026-09-04 (mid-playtest, right after the mob-pathing
+fix shipped):** "spitter's path seems off" — no more detail yet, user is
+actively playing. Flagged as a possible regression from the just-shipped
+`mob_aggro.js` fix (7d74545), since that fix widened the goal-selector
+strip to a second field it hadn't touched before, and Spitter
+(`mutantszombies:spitter`) most likely has its own special ranged/kiting
+AI (keep-distance behavior, not straight melee-charge) that could live in
+that same field and get over-stripped. Needs real diagnosis against
+Spitter's actual goal selector, not assumed.
+
 **REPRIORITIZED 2026-09-04 — mob pathing/aggression to the pedestal was
 the user's real #1, "the main bug bear."** Done, see item 3 below - real
 root cause (ESM splits its re-targeting goals across both selector
@@ -58,11 +68,12 @@ spacing-tuning:**
 
 **2 more real asks, dispatched 2026-09-04, alongside the 3 playtest
 findings above:**
-4. **Escalating time-between-waves, announced at a real checkpoint
-   ("say after wave 5").** Countdown gap should scale short-early,
-   longer-later, with a real title/chat announcement at the threshold,
-   not a silent number change. Exact current mechanism/value needs
-   checking first, first-pass curve numbers are the peer's call.
+4. **Escalating time-between-waves — done, commit pending this
+   session.** 90s at wave 1, +15s/wave, capped at the original 3min at
+   wave 7. Real title/chat announcement at wave 5 ("THE NIGHTS GROW
+   LONGER"), alongside the existing gear-removal beat there. Full curve
+   verified in a sandbox. Full detail in FEATURES.md's "Countdown
+   timer" entry.
 5. **Trapcraft's Spikes re-introduced as the weak Tier 1 interim trap,
    below Barbed Wire** (the harder-to-get goal stays, deliberately).
    Already installed, unused since Barbed Wire took over. Real fix

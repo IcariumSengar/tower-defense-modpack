@@ -976,12 +976,23 @@ itself happened to be 5 waves long. On removal: an on-screen title
 occupant. Implementation: `wave_status.js` (`GEAR_REMOVAL_WAVE`
 constant), gear tagged in `playtest_starter_kit.js`.
 
-**Countdown timer** — *live*. After a wave clears, a 3-minute countdown
-to the next wave displays on the action bar and auto-starts the next
-wave when it hits zero; using the horn manually at any point cancels it
-and starts immediately. Gives urgency without removing player agency.
+**Countdown timer** — *live*. After a wave clears, a countdown to the
+next wave displays on the action bar and auto-starts the next wave when
+it hits zero; using the horn manually at any point cancels it and
+starts immediately. Gives urgency without removing player agency.
 Implementation: display/auto-trigger in `wave_spawner.js`, started in
 `wave_status.js`.
+**Escalating, not flat, 2026-09-04 (real playtest feedback).** Used to
+be a flat 3 minutes every wave; now `countdownTicksForWave()` in
+`wave_status.js` ramps from 90s at wave 1 by +15s per wave cleared, up
+to the original 3-minute ceiling reached at wave 7 (one before the
+endless-phase handoff) - short and tense early, more breathing room
+later. A real title/chat announcement ("THE NIGHTS GROW LONGER") fires
+once at wave 5, alongside the existing gear-removal beat at the same
+wave (a real coincidence, not a dependency between the two) - so the
+pacing shift is a felt, announced moment, not a silently longer number.
+Verified: the curve's real output checked directly in a sandbox for
+waves 1-9 (1800, 2100, 2400, 2700, 3000, 3300, 3600, 3600, 3600 ticks).
 
 **Mob death effects — sent to build 2026-09-01.** Direct request: real
 death animations (limbs scatter, heads roll) instead of the vanilla

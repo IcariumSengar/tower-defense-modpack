@@ -91,6 +91,28 @@ const STARTER_GEAR_TAG = 'td_starter_gear'
 // within the same check can't double-fire it.
 const GEAR_REMOVAL_WAVE = 5
 
+// Escalating peacetime pacing (2026-09-04, real playtest feedback: the
+// flat 3-minute gap "should scale with wave number - short early on,
+// longer later," with a real announced checkpoint "say after wave 5,"
+// not just a silently longer number). First-pass curve, this session's
+// own call per the dispatch: short-and-tense early (1800 ticks/90s at
+// wave 1), ramping +300 ticks (15s) per wave cleared, capped at the
+// pack's original flat value (3600 ticks/3min) so late-game pacing
+// doesn't keep growing forever - reached at wave 7, one before the
+// endless-phase handoff. `PACING_ANNOUNCE_WAVE` is deliberately its own
+// constant, not reused from GEAR_REMOVAL_WAVE, even though they're the
+// same wave number right now - these are two independent narrative
+// beats that happen to coincide, not one dependent on the other.
+const COUNTDOWN_BASE_TICKS = 1800
+const COUNTDOWN_STEP_TICKS = 300
+const COUNTDOWN_MAX_TICKS = 3600
+const PACING_ANNOUNCE_WAVE = 5
+
+function countdownTicksForWave(waveNumber) {
+  var scaled = COUNTDOWN_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - 1)
+  return Math.min(scaled, COUNTDOWN_MAX_TICKS)
+}
+
 const FIXED_WAVE_EVENTS = [
   {
     wave: GEAR_REMOVAL_WAVE,
@@ -128,6 +150,19 @@ const FIXED_WAVE_EVENTS = [
       player.tell('§c§lIt\'s up to you now.')
     },
   },
+  {
+    wave: PACING_ANNOUNCE_WAVE,
+    flagKey: 'td_pacingAnnounced',
+    action: (player) => {
+      // Fires alongside the gear-removal beat above at the same wave
+      // right now (real coincidence, not a dependency - see the
+      // COUNTDOWN_* comment above) - a second, distinct on-screen
+      // moment is fine, they're about different things.
+      player.getServer().runCommandSilent(`title @a title {"text":"THE NIGHTS GROW LONGER","color":"gold","bold":true}`)
+      player.getServer().runCommandSilent(`title @a subtitle {"text":"You'll have more time to prepare from here on.","color":"gray"}`)
+      player.tell('§6[Wave] §eThe gap between waves keeps growing from here - use it.')
+    },
+  },
 ]
 
 // Roguelike permanent buff choice - built 2026-08-20, removed the same
@@ -149,7 +184,11 @@ const FIXED_WAVE_EVENTS = [
 // next wave"). Countdown display + auto-trigger live in wave_spawner.js
 // (see there for why), started here directly on wave-clear now that the
 // choice step that used to gate it is gone.
-const COUNTDOWN_TICKS = 3600
+//
+// **Escalating, not flat, 2026-09-04** - real playtest feedback, see
+// countdownTicksForWave() above. This used to be a flat 3600 (3
+// minutes) every wave; that's now COUNTDOWN_MAX_TICKS, the ceiling the
+// curve ramps up to rather than the constant value.
 
 // Same waveObjective() fix as wave_spawner.js (server_scripts don't
 // reliably share top-level scope across files, so it's redeclared here
@@ -256,7 +295,7 @@ PlayerEvents.tick((event) => {
     // (and wave-5 gear removal, if this was that wave) - no more choice
     // step to wait on. Display + auto-trigger live in wave_spawner.js,
     // see there for why.
-    data.putInt('td_countdownEndTick', level.getTime() + COUNTDOWN_TICKS)
+    data.putInt('td_countdownEndTick', level.getTime() + countdownTicksForWave(waveNumber))
     data.putBoolean('td_countdownActive', true)
   }
 })
