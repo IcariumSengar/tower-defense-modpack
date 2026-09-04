@@ -4757,6 +4757,34 @@ user.
   clearance issue), so "regressed" needs checking against what's
   actually live on the current save before assuming which of those (or
   a new third issue) is back, not re-guessed from the spec alone.
+  **Follow-up, real throughput complaint 2026-09-04, root-caused and
+  fixed the same day.** With the Hand Crank actually connected this
+  time, real play still found it insufficient - not a wiring bug, a
+  genuine throughput one. Real numbers, decompiled directly (not
+  guessed): `HandCrankBlock#getRotationSpeed() = 32` RPM while actively
+  cranked, but `HandCrankBlockEntity#inUse` decays from 10 to 0 every
+  tick and generated speed hits 0 the instant it does - each right-click
+  only sustains rotation for 10 ticks (0.5 real seconds) before needing
+  another click. This is Create's own designated ACTIVE power source
+  (cranking even costs the player hunger,
+  `player.causeFoodExhaustion(rotationSpeed * crankHungerMultiplier)`) -
+  not a passive one, and no gearing/ratio change fixes an on/off source.
+  `RollingMillBlockEntity#getProcessingSpeed()` is
+  `clamp(|RPM|/16, 1, 512)`; combined with the real default
+  `rolling_mill_processing_duration = 120` ticks
+  (`createaddition-common.toml`), that's 60 ticks (3 real seconds) per
+  item even with perfectly sustained 32 RPM cranking - worse in
+  practice given the decay. A genuinely passive source (Water Wheel)
+  would be the structurally "correct" fix but needs water access near
+  the rig, not verified here - flagged as a real possible follow-up,
+  not built blind. Fixed instead by cutting
+  `rolling_mill_processing_duration` to 40 (pack-wide - affects every
+  rolling recipe: iron/gold/copper/aluminum/electrum/steel/brass, not
+  just iron), so a couple of quick cranks processes an item instead of
+  several continuous seconds of clicking. Config now tracked in the
+  repo for the first time (`pack/config/createaddition-common.toml`)
+  since this is its first real divergence from default. Verified: clean
+  sandbox boot with the edited config, no load errors.
 - **Passive mobs still spawning.** This is the same open item already
   dispatched to build in the "Fresh-world playtest, round 3" batch (see
   above, "horses still spawning despite the passive-mob fix") — not a

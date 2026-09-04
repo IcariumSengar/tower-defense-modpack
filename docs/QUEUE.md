@@ -23,38 +23,38 @@ reflect actual current status.
 
 ## Ready to build
 
-**REPRIORITIZED 2026-09-04 — mob pathing/aggression to the pedestal is
-the user's real #1, "the main bug bear," wants to play again soon.**
-Moved ahead of TFTH removal/wave-countdown/Spikes below. Casts real
-doubt on the mob_aggro.js target-selector-stripping fix, only ever
-sandbox-verified before now - needs live diagnosis against the actual
-save: is the strip reliably taking effect on every wave mob, is the
-10-tick setTarget() reassertion strong/frequent enough, or is base
-layout itself obstructing pathing. User wants them "a little more
-aggressive."
+**REPRIORITIZED 2026-09-04 — mob pathing/aggression to the pedestal was
+the user's real #1, "the main bug bear."** Done, see item 3 below - real
+root cause (ESM splits its re-targeting goals across both selector
+fields, plus a genuine cross-file function-name collision between
+mob_aggro.js and playtest_starter_kit.js) found and fixed the same day,
+commit 7d74545.
 
 **Real playtest findings from actual play, dispatched 2026-09-04
 (after the structure/loot fixes shipped) — priority over background
 spacing-tuning:**
-1. **Remove all TFTH mobs entirely — supersedes the earlier "audit each
-   of the 7 remaining ones" plan (don't do that audit).** Replace with
-   equivalent-tier non-TFTH picks so variety doesn't shrink. Separately:
-   keep one specific TFTH death sound for atmosphere, applied to
-   higher-tier mobs only once TFTH mobs are gone. Real open question:
-   which exact sound, and whether to keep TFTH installed dormant just
-   for that asset vs. extract it and uninstall TFTH fully (footprint
-   tradeoff, flag don't decide silently).
+1. **Remove all TFTH mobs entirely — done, commit 18302f7.** Full
+   replacement mapping in wave_spawner.js's WAVES header comment. Sound-
+   for-atmosphere question and its footprint tradeoff still open, not
+   decided yet - see FEATURES.md.
 2. **Iron rolling still insufficient with the Hand Crank actually
-   connected — a real throughput complaint now, not the earlier
-   "is it connected" question.** Corrects investigation #13's finding
-   that "no regression, just connect a crank" - real play shows the
-   connected rate itself isn't enough. Needs real RPM/SU numbers, not
-   guessed.
-3. **Mobs not pathing to the pedestal reliably in real play — casts
-   real doubt on the mob_aggro.js target-selector-stripping fix**,
-   which was only ever sandbox-verified before now. User wants them
-   "a little more aggressive." Needs live diagnosis against the actual
-   save, not re-trusting the earlier sandbox result.
+   connected — done, commit pending this session.** Real numbers,
+   decompiled not guessed: Hand Crank is Create's own ACTIVE power
+   source (32 RPM but decays to 0 every 10 ticks/0.5s without
+   re-clicking, even costs the player hunger) - gearing can't fix an
+   on/off source. Fixed by cutting `rolling_mill_processing_duration`
+   120 → 40 in `createaddition-common.toml` (now tracked in repo for the
+   first time). Full numbers in FEATURES.md.
+3. **Mobs not pathing to the pedestal reliably in real play — done,
+   commit 7d74545.** Real root cause: ESM splits its
+   ESM_EntityAINearestAttackableTarget goals across BOTH of a mob's
+   target-goal-selector fields, and the old content-based check only
+   caught one; separately, mob_aggro.js and playtest_starter_kit.js had
+   a real cross-file function-name collision (top-level functions DO
+   share across server_scripts in this build) that was silently
+   corrupting mob_aggro.js's own reflection calls - the actual cause of
+   54 confirmed live errors. Both fixed, verified against 3 real mob
+   types in a sandbox. Full writeup in FEATURES.md.
 
 **2 more real asks, dispatched 2026-09-04, alongside the 3 playtest
 findings above:**
