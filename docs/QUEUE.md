@@ -25,30 +25,41 @@ reflect actual current status.
 
 **2 more real bugs, dispatched 2026-09-04, alongside the structure-
 proximity regression above:**
-1. **Big Lost City — full clean removal, real crash to fix first.**
-   User tried removing it manually (too-big structures), crashed the
-   game — likely dangling references from a non-packwiz removal, needs
-   live-instance diagnosis before a proper packwiz uninstall +
-   structure_set/config cleanup. FEATURES.md's "Aesthetic structure
-   variety pass" needs updating once done (Philip's Ruins stays).
-2. **PAUSED 2026-09-04 — user wants to playtest sooner, not wait for
-   this too.** Starter loot scattering on the floor at spawn — real
-   root-cause hypothesis, not vague. User's own sharp diagnosis: removal likely
-   used a post-placement `setblock ... air destroy` (matching an
-   existing pattern elsewhere in this codebase), which spills a
-   container's real contents as dropped items instead of cleanly
-   removing them. Real fix needs to strip the barrels/their loot table
-   from the structure's raw NBT before placement, not destroy them
-   after.
+1. **Big Lost City — full clean removal — done, shipped 2026-09-04
+   (commit bee3780).** User's manual jar deletion had left dangling
+   KubeJS override references (`Unbound values in registry
+   ResourceKey[...worldgen/structure]`, all 37 real ids) — real live
+   crash, root-caused against the live save directly. Fixed via proper
+   packwiz removal + `rm -rf` of all 62 structure/structure_set override
+   files + `packwiz refresh`, both repo and live instance. Philip's
+   Ruins confirmed untouched.
+2. **Starter loot scattering on the floor at spawn — done, shipped
+   2026-09-04.** User's own diagnosis was right, confirmed via direct
+   NBT inspection: the 5 real barrels (`abandoned_brick_house.nbt`)
+   carry a `LootTable` reference, not pre-filled `Items` — vanilla
+   resolves that lazily the first time anything queries the container,
+   including the game's own `Containers.dropContentsOnDestroy` path that
+   fires when `playtest_starter_kit.js`'s existing `setblock ... air`
+   removal loop runs. That lazy-resolve-then-drop, not a "destroy after"
+   ordering bug per se, was the real mechanism. Fixed by stripping the
+   `LootTable` tag from the raw structure NBT (new datapack override,
+   `pack/kubejs/data/postapocalypse_structures/structures/
+   abandoned_brick_house.nbt`, same convention as the earlier horse-entity
+   overrides) so the barrels are placed genuinely empty — confirmed
+   byte-identical to the original except those 5 block entities.
+   Verified live end-to-end: placed the template, confirmed
+   `Items: []`/no `LootTable` tag on all 5 barrels via `/data get
+   block`, ran the exact same removal sequence the real code uses, and
+   confirmed zero item entities on the ground afterward.
 
 **Polish/utility mod pass, 2026-09-04 — PAUSED 2026-09-04, 2 of 7 picks
 installed.** Direct call: "i just want a stable non structure heavy
 playthrough" — real bugs (structure-proximity regression, Big Lost City
-crash/removal, loot-scatter) take full priority over adding more
-surface area. Hold until those are confirmed fixed and a real
-playthrough happens; don't resume on its own. Full spec in FEATURES.md's
-"Polish/utility mod pass, 2026-09-04" section (right before "Tried and
-explicitly retired").
+crash/removal, loot-scatter) took full priority over adding more surface
+area. All 3 are now fixed (2026-09-04) — still holding until the user's
+had a real, confirmed playthrough on a fresh world; don't resume on its
+own before that. Full spec in FEATURES.md's "Polish/utility mod pass,
+2026-09-04" section (right before "Tried and explicitly retired").
 - [done] **Sodium/Embeddium Dynamic Lights** + its real dependency
   **Sodium/Embeddium Options API** - installed via packwiz, both jars
   downloaded and sha1-verified, deployed to the live instance.

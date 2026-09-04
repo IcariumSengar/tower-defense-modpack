@@ -4420,6 +4420,23 @@ peer's own dispatch dating from earlier the same conversation.
     decompile-then-clear technique as the cauldron/tripwire/bed items —
     find the chest/barrel positions in the NBT, clear them (or their
     `LootTable` tag specifically) after placement.
+    **Shipped 2026-09-04, but real correction along the way**: the doc's
+    own "8 chests" count was wrong against the actual file — only 5 real
+    barrels exist, no chests. The first pass removed them via
+    post-placement `setblock ... air` (matching the cauldron/tripwire
+    technique), which turned out to be the wrong half of "or their
+    `LootTable` tag specifically" above - a real live playtest found
+    loot scattering on the floor at spawn, because destroying a
+    `LootTable`-backed container makes vanilla resolve the table into
+    real items on the way out (`Containers.dropContentsOnDestroy` reads
+    each slot, which lazily unpacks the loot table) rather than dropping
+    nothing. Re-fixed by clearing the `LootTable` tag directly in the
+    raw NBT before placement instead (new datapack override,
+    `data/postapocalypse_structures/structures/abandoned_brick_house.nbt`)
+    - the exact "or their LootTable tag specifically" approach this spec
+    called out as an option originally. Verified live: barrels place
+    with `Items: []`/no `LootTable` tag, zero item entities on the
+    ground after the same removal sequence runs.
 - **Push the front wall out 3 blocks** so the pedestal (`centerX,
   centerZ = doorX, z1-4`, `:566-567`) isn't right at the opening —
   direct ask, a fixed 3-block shift to `z1`/gate-side geometry. Small,
