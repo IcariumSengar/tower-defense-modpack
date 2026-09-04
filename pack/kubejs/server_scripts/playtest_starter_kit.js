@@ -320,121 +320,44 @@ PlayerEvents.loggedIn((event) => {
   run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
   run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
 
-  // Circular stepped altar (2026-09-05, real rebuild - direct follow-up
-  // feedback on the square sandstone shrine above, blunt: "looks like
-  // hot garbage," campfires specifically called out. A real reference
-  // image was provided (described precisely since scripts can't see
-  // images): 2-3 concentric rings of stone steps, each ring slightly
-  // higher than the last, leading up to a raised central platform, with
-  // a stone plinth/column at the very center - where the pedestal sits -
-  // rising above that. Dark, uniform, cracked/tiled stone (closer to
-  // slate/basalt than sandstone), no fire props anywhere, a soft
-  // grass/moss edge where it meets the courtyard. A real shape-language
-  // change, not a material swap: square platform -> circular tiers,
-  // campfire-lit shrine -> dark stone altar.
-  //
-  // /fill and /setblock can't produce a true circle - approximates one
-  // as a small octagon at each ring radius (a square ring with its 4
-  // true diagonal corners omitted), the standard technique for "round"
-  // builds via commands, not a real blocker once expected going in.
-  //
-  // Radius 3, not 4 - a radius-4 footprint would have consumed the
-  // entire 8-row courtyard depth end to end (centerZ±4 = z1-8..z1-0),
-  // leaving no room for anything else. Radius 3 fits within
-  // centerZ±3 = z1-7..z1-1, leaving z1-8 as a buffer row before the
-  // building, and frees up the courtyard's side margins (checked
-  // against x0/x1 above, x0 = centerX-9) for the grave arc to flank
-  // the dais instead of sitting in front of or behind it - its old
-  // position, now occupied by the dais's own greater depth.
+  // Ground-level pedestal (2026-09-06) - second real rejection of the
+  // platform-based presentation in a row (square sandstone shrine ->
+  // circular dark-stone altar -> now this). Direct feedback: "the raised
+  // dais is just not looking great, ditch this and just have the
+  // pedestal placed in the yard." No platform, no plinth, no rings -
+  // don't propose a third elaborate build without being asked. Same
+  // centered plan-position as the circular altar it replaces
+  // (centerX = doorX, centerZ = z1-4) - COURTYARD_DEPTH stays 8, the
+  // grave arc and everything else below stays exactly where the
+  // circular-altar rework last put it, since none of it actually
+  // depended on the platform's own footprint, just on staying clear of
+  // it.
   const centerX = doorX
   const centerZ = z1 - 4
 
-  function octagonRing(radius) {
-    const cells = []
-    for (let dx = -radius; dx <= radius; dx++) {
-      for (let dz = -radius; dz <= radius; dz++) {
-        if (Math.max(Math.abs(dx), Math.abs(dz)) !== radius) continue
-        if (Math.abs(dx) === radius && Math.abs(dz) === radius) continue // corner cut
-        cells.push([dx, dz])
-      }
-    }
-    return cells
-  }
-
-  // Dark, uneven stone mix per the reference - blackstone/polished
-  // blackstone as the base, deepslate tiles and cracked deepslate tiles
-  // as weathering accents, same "mostly uniform, occasional accent"
-  // ratio already used for the perimeter walls' mossy/cracked patches.
-  function altarStoneBlock() {
-    const roll = Math.random()
-    if (roll < 0.1) return 'minecraft:cracked_deepslate_tiles'
-    if (roll < 0.3) return 'minecraft:deepslate_tiles'
-    if (roll < 0.55) return 'minecraft:polished_blackstone'
-    return 'minecraft:blackstone'
-  }
-
-  // Moss edge - a radius-4 shell, one wider than the dais itself, blends
-  // the dark stone into the courtyard's own stone_bricks floor rather
-  // than a hard material cutoff. A thin carpet layer on top of the
-  // existing floor, not a structural replacement.
-  octagonRing(4).forEach(([dx, dz]) => {
-    run(`setblock ${centerX + dx} ${wallY0} ${centerZ + dz} minecraft:moss_carpet`)
-  })
-
-  // Three concentric rings, each one block higher than the last moving
-  // inward - the vertical face between one ring and the next IS the
-  // step (a 1-block rise is climbable unaided, same reasoning the old
-  // platform's own riser used), no stair blocks needed around the whole
-  // circumference. One stair block on each riser, at the main
-  // south-facing approach axis only, softens the actual entry - matches
-  // the reference's "leading up to" framing without stairing the entire
-  // ring. Orientation reasoned from vanilla's stair-facing convention,
-  // not visually confirmed (no GUI access) - correct on the next real
-  // playtest if it reads backwards.
-  octagonRing(3).forEach(([dx, dz]) => {
-    run(`setblock ${centerX + dx} ${wallY0} ${centerZ + dz} ${altarStoneBlock()}`)
-  })
-  octagonRing(2).forEach(([dx, dz]) => {
-    if (dx === 0 && dz === 2) return // approach stair, placed separately below
-    run(`setblock ${centerX + dx} ${wallY0 + 1} ${centerZ + dz} ${altarStoneBlock()}`)
-  })
-  run(`setblock ${centerX} ${wallY0 + 1} ${centerZ + 2} minecraft:polished_blackstone_stairs[facing=north]`)
-
-  // Innermost ring + true center - the flat raised platform itself.
-  octagonRing(1).forEach(([dx, dz]) => {
-    if (dx === 0 && dz === 1) return // approach stair, placed separately below
-    run(`setblock ${centerX + dx} ${wallY0 + 2} ${centerZ + dz} ${altarStoneBlock()}`)
-  })
-  run(`setblock ${centerX} ${wallY0 + 2} ${centerZ + 1} minecraft:polished_blackstone_stairs[facing=north]`)
-  run(`setblock ${centerX} ${wallY0 + 2} ${centerZ} ${altarStoneBlock()}`)
-
-  // Plinth/column rising from the platform's own center, per the
-  // reference - the pedestal sits on top of it, not flush with the
-  // platform surface. Real block swap 2026-09-05 for the pedestal
-  // itself (docs/FEATURES.md "Pedestal visual upgrade"):
-  // `supplementaries:pedestal` replaces the custom
-  // `kubejs:amulet_pedestal` - a real Container block that renders
-  // whatever's placed in it natively, so the pack no longer hand-builds
-  // the floating-item visual. No blockstate properties needed for a
-  // plain freestanding placement - confirmed live.
-  run(`setblock ${centerX} ${wallY0 + 3} ${centerZ} minecraft:polished_blackstone`)
-  run(`setblock ${centerX} ${wallY0 + 4} ${centerZ} supplementaries:pedestal`)
+  run(`setblock ${centerX} ${wallY0} ${centerZ} supplementaries:pedestal`)
   // Stored once here, permanent regardless of amulet state -
-  // pedestal_destruction.js's own destruction check, amulet_pedestal.js's
-  // border-crossing poll, and every wave/mob-targeting reference below
-  // all key off this same fixed coordinate. 2026-09-03, "if the pedestal
-  // is destroyed you lose." Y grew wallY0+2 -> wallY0+4 with the new
-  // plinth/column - every reader of this data already treats it as an
-  // opaque stored coordinate, not a derived offset, so nothing else
-  // needed updating.
+  // pedestal_destruction.js's own block-gone check, pedestal_health.js's
+  // own HP tick, amulet_pedestal.js's border-crossing poll, and every
+  // wave/mob-targeting reference below all key off this same fixed
+  // coordinate. 2026-09-03, "if the pedestal is destroyed you lose." Y
+  // dropped back to wallY0 (ground level, no more plinth offset).
   data.putInt('td_pedestalX', centerX)
-  data.putInt('td_pedestalY', wallY0 + 4)
+  data.putInt('td_pedestalY', wallY0)
   data.putInt('td_pedestalZ', centerZ)
+
+  // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
+  // set once here, same pattern as td_pedestalX/Y/Z above, full at
+  // world-build time. Replaces reliance on Epic Siege Mod's own
+  // blockTargets AI, which stayed inconclusive even after the
+  // mob-pathing fix (mob_aggro.js) was meant to give it a fair shot.
+  data.putInt('td_pedestalHealth', 200)
 
   // No campfires or fire props anywhere in this build - direct request,
   // dropped entirely rather than reduced. The old braziers were called
   // out by name as part of what read badly ("hot garbage... campfires
-  // specifically") - this isn't an oversight, it's the ask.
+  // specifically") - this isn't an oversight, it's the ask, unchanged
+  // from the circular-altar rebuild this replaces.
 
   // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
   // note on the amulet objective fix): the pedestal is the permanent
@@ -457,9 +380,9 @@ PlayerEvents.loggedIn((event) => {
   // server restart or long absence. No HandItems - Supplementaries'
   // pedestal now renders its own contents natively, so this is a pure,
   // invisible targeting anchor, not a visual prop. One block above the
-  // pedestal's own position (now wallY0+4, see the altar rebuild above),
-  // not inside it.
-  run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 5} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
+  // pedestal's own position (back to wallY0+1, ground-level pedestal
+  // above), not inside it.
+  run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 1} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
 
   // Forceload is now a one-time permanent setup, not a toggle -
   // same 96-block/169-chunk radius already verified safe
@@ -486,6 +409,13 @@ PlayerEvents.loggedIn((event) => {
   // centerX-9, re-derived above) before picking it - 4 blocks clear of
   // the west wall, 2 blocks clear of the dais's own max extent
   // (centerX-3), a real gap either side, not assumed clear.
+  //
+  // Left here unchanged by the ground-level pedestal rework above
+  // (2026-09-06) - the dais footprint that motivated this position is
+  // gone, but the dispatch for that rework explicitly said graves stay
+  // "wherever the circular-dais rework last put it unless it
+  // specifically depended on the platform's footprint" - this doesn't,
+  // so it's untouched.
   const graveSpots = [
     [centerX - 5, centerZ - 2],
     [centerX - 5, centerZ],
@@ -559,33 +489,27 @@ PlayerEvents.loggedIn((event) => {
   // The Depot goes BENEATH the Press, not on top - confirmed from the
   // mod's own ponder text ("Input items can be dropped or placed on a
   // Depot under the Press"), the opposite of the Rolling Mill, which
-  // takes items dropped directly onto itself. Outdoors, "beneath" means
-  // the depot sits AT floorY (replacing one courtyard floor tile,
-  // already solid stone_bricks from the fill above) with the Press
-  // standing on top of it at wallY0 - the Mill sits at that same wallY0
-  // height on ordinary floor, no depot needed under it. Both kinetic
-  // blocks face the same direction (west, along this row's real open
-  // run) so they share a rotation axis and conduct power to each other
-  // through direct adjacency, no shaft needed - live-verified with a
-  // temporary creative motor: both blocks showed a real nonzero Speed
-  // and a single 3-block kinetic Network. Real gotcha hit during that
-  // same verification: /setblock-ing a block's facing property in
-  // place, without actually removing and replacing it, did not reliably
-  // rebuild Create's kinetic network - Speed read 0 until the blocks
-  // were cleared to air and placed fresh. Not a concern for this script
-  // (each cell is placed exactly once, into real air, every time), but
-  // worth knowing if this rig is ever hand-tuned again through repeated
-  // /setblock calls in a live test.
+  // takes items dropped directly onto itself.
   //
-  // The cell west of the Mill is left open on purpose (closer to
-  // center, away from the wall) - it's the next block in that same
-  // kinetic line, reserved for the player's own Hand Crank, which (like
-  // any hand-cranked source) needs a real player right-clicking it and
-  // can't be pre-placed already turning.
+  // **Real fix 2026-09-06**: the outdoor relocation above placed the
+  // Press directly on top of the Depot (one block up, zero clearance).
+  // Direct bug report: "the press and depot hasnt got a space in the
+  // middle which it needs to function" - the real requirement, per the
+  // user directly, is a full block of open air between them (Press TWO
+  // blocks above the Depot, not one). Confirmed live in a sandbox before
+  // shipping: a creative Motor powering the Press alone, an iron ingot
+  // fed onto the Depot via a hopper - at 1-block spacing the Press never
+  // engaged (Ticks stayed 0 for 20+ real seconds); moved to 2-block
+  // spacing, the same setup produced a real `Finished:1b`/`Mode:1` press
+  // cycle and the Depot's held item genuinely converted from
+  // `minecraft:iron_ingot` to `create:iron_sheet`. Mill stays at its old
+  // XZ (rigMillX, wallY0), still not face-adjacent to the Press either
+  // way - not reconnected to it, per "leave them physically disconnected
+  // for now."
   const rigZ = centerZ - 2
   const rigPressX = x1 - 2
   const rigMillX = x1 - 3
   run(`setblock ${rigMillX} ${wallY0} ${rigZ} createaddition:rolling_mill[facing=west]`)
-  run(`setblock ${rigPressX} ${wallY0} ${rigZ} create:mechanical_press[facing=west]`)
-  run(`setblock ${rigPressX} ${floorY} ${rigZ} create:depot`)
+  run(`setblock ${rigPressX} ${wallY0} ${rigZ} create:depot`)
+  run(`setblock ${rigPressX} ${wallY0 + 2} ${rigZ} create:mechanical_press[facing=west]`)
 })

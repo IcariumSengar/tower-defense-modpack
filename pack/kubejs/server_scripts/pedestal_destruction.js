@@ -36,6 +36,50 @@
 // this detection logic doesn't depend on the exact number either way:
 // it just checks the block is gone, whatever destroyed it.
 
+// Shared game-over sequence (2026-09-06, factored out so
+// pedestal_health.js's own HP-hitting-0 path can trigger the exact same
+// outcome as this file's own block-gone detection, per the dispatch:
+// "call the exact same destruction path... one outcome, two ways to
+// reach it"). Top-level function declarations share scope across
+// server_scripts files in this exact KubeJS/Rhino build - confirmed
+// directly in a sandbox before relying on it here (see
+// feedback_rhino_java_reflection_quirks.md for the same-session finding
+// that top-level names collide/share scope, not just an assumption).
+// Idempotent-safe to call twice (guarded by td_pedestalDestroyed at
+// each caller), but only ever actually called once in practice.
+function triggerPedestalDestroyed(player) {
+  var data = player.persistentData
+  data.putBoolean('td_pedestalDestroyed', true)
+
+  var server = player.getServer()
+
+  // Undo the night-lock if a wave was active when this happened - same
+  // "defeated" cleanup wave_status.js already does on a real wave clear,
+  // run here too since a destroyed pedestal ends the run regardless of
+  // whether a wave happens to be in progress.
+  if (data.getBoolean('td_inWave')) {
+    data.putBoolean('td_inWave', false)
+    server.runCommandSilent('time set day')
+    server.runCommandSilent('gamerule doDaylightCycle true')
+  }
+  // Also cancels any in-progress countdown to the next wave - nothing
+  // left to count down to.
+  data.putBoolean('td_countdownActive', false)
+
+  // Same "big on-screen title, chat is easy to miss mid-fight" pattern
+  // as every other major beat in this pack (wave-cleared, gear removal,
+  // wave-incoming) - matching tone against those, not inventing a new
+  // voice.
+  server.runCommandSilent('title @a title {"text":"THE PEDESTAL HAS FALLEN","color":"red","bold":true}')
+  server.runCommandSilent('title @a subtitle {"text":"Everything it was holding back is gone with it.","color":"gray"}')
+  player.tell('§c§lThe pedestal has fallen.')
+  player.tell('§7Whatever it was keeping in check has nothing left to answer to.')
+
+  // World stays fully playable after the loss - this only blocks the
+  // Wave Horn (checked at useWaveHorn()'s own top, wave_spawner.js),
+  // nothing else about the world changes or locks.
+}
+
 PlayerEvents.tick((event) => {
   var player = event.entity
   var data = player.persistentData
@@ -68,33 +112,5 @@ PlayerEvents.tick((event) => {
   var blockId = `${block.id}`
   if (blockId === 'supplementaries:pedestal' || blockId === 'kubejs:amulet_pedestal') return
 
-  data.putBoolean('td_pedestalDestroyed', true)
-
-  var server = player.getServer()
-
-  // Undo the night-lock if a wave was active when this happened - same
-  // "defeated" cleanup wave_status.js already does on a real wave clear,
-  // run here too since a destroyed pedestal ends the run regardless of
-  // whether a wave happens to be in progress.
-  if (data.getBoolean('td_inWave')) {
-    data.putBoolean('td_inWave', false)
-    server.runCommandSilent('time set day')
-    server.runCommandSilent('gamerule doDaylightCycle true')
-  }
-  // Also cancels any in-progress countdown to the next wave - nothing
-  // left to count down to.
-  data.putBoolean('td_countdownActive', false)
-
-  // Same "big on-screen title, chat is easy to miss mid-fight" pattern
-  // as every other major beat in this pack (wave-cleared, gear removal,
-  // wave-incoming) - matching tone against those, not inventing a new
-  // voice.
-  server.runCommandSilent('title @a title {"text":"THE PEDESTAL HAS FALLEN","color":"red","bold":true}')
-  server.runCommandSilent('title @a subtitle {"text":"Everything it was holding back is gone with it.","color":"gray"}')
-  player.tell('§c§lThe pedestal has fallen.')
-  player.tell('§7Whatever it was keeping in check has nothing left to answer to.')
-
-  // World stays fully playable after the loss - this only blocks the
-  // Wave Horn (checked at useWaveHorn()'s own top, wave_spawner.js),
-  // nothing else about the world changes or locks.
+  triggerPedestalDestroyed(player)
 })

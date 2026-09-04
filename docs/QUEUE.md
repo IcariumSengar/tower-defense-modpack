@@ -62,26 +62,59 @@ below); Phase 5 not started:
   "Loot bags"). No replacement item proposed — revisit once Tier 3-4/
   Storage & Power ships real components nothing at home can make.
   Superseded by the loot-table dead-weight audit below.
-- **Loot-table dead-weight audit — specced 2026-09-06, strip list
-  confirmed via AskUserQuestion, held, not sent.** Direct feedback: "a
-  lot of loot items... I dont see ever being useful... like minecart
-  rails or name tags." Full detail in FEATURES.md's "Loot-table
-  dead-weight audit" entry (under "Loot bags") — real source traced (not
-  this pack's own custom tables, which are clean; comes from Abandoned
-  Urban + real vanilla structures reusing stock vanilla loot tables
-  wholesale), real technique confirmed (LootJS's `removeLoot`, same
-  chest-type-level targeting already proven for the additive bonus
-  pools). Full confirmed strip list: the whole minecart/rail family,
-  name tags, horse gear, vanilla maps, leads, all music discs, and
-  elytra/End-city loot — see FEATURES.md for the complete id list. Real
-  open item for the build session: exact chest-type-modifier
-  `removeLoot` syntax needs verifying against the installed LootJS jar
-  before shipping, not assumed from the block-loot-modifier form.
-  **Waiting on explicit go-ahead before dispatch — do not send with the
-  queue items above.**
 
 ## In progress (sent directly to the build session)
 
+- **Second fresh-world playtest batch** — sent to build 2026-09-06,
+  user go-ahead, **priority — do this before the loot-table audit
+  below.** 4 items, full detail in FEATURES.md's "Second fresh-world
+  playtest batch" entry (under "Pedestal visual upgrade + mob-attack
+  vulnerability"):
+  1. **Done, shipped 2026-09-06.** Circular altar removed entirely,
+     pedestal placed directly at ground level (`wallY0`) at the same
+     centered plan-position, no platform/plinth/rings. Block placement +
+     marker armor stand confirmed live in a sandbox; the full
+     login-triggered build itself is unconfirmed in-game (same standing
+     blind spot as every other spawn-time build in this pack — no real
+     player can join the sandbox).
+  2. **Done, shipped 2026-09-06.** Real `td_pedestalHealth` (200, first
+     pass) + throttled tick check for wave mobs in melee range,
+     damage-per-hit read from each attacker's own real
+     `generic.attack_damage` attribute, calls the same destroy path as
+     `pedestal_destruction.js` at 0 HP. The two genuinely new mechanics
+     (the attribute read, and a new cross-file function call to share
+     that destroy path) were both confirmed working in a live sandbox
+     before shipping — the full `PlayerEvents.tick` wiring itself is
+     unconfirmed in-game, same blind spot as item 1.
+  3. **Blocked on a real user decision, not a build task right now** —
+     spawn census re-run on the live save's actual seed confirms the
+     plains bug, but the nearest thematic biome (savanna) is **520
+     blocks away**, not "a nearby tile." Since the whole base compound
+     derives from this one coordinate, this is really "relocate the
+     base" not "nudge the spawn point." See FEATURES.md's "Real finding
+     on item 3" for the 4 real options — needs your call before the
+     build session touches this one.
+  4. **Done, live-verified, shipped 2026-09-06.** Real fix was exactly
+     what the user said: Depot on the floor, Press 2 blocks above it.
+     Confirmed live (iron ingot → iron sheet actually processed) before
+     committing. Also closed the separate "Press never auto-fires" bug
+     — same root cause.
+- **Loot-table dead-weight audit** — sent to build 2026-09-06, user
+  go-ahead, **sequenced after the playtest batch above, not
+  simultaneously — user's own explicit instruction.** Strip list
+  confirmed via AskUserQuestion. Full detail in FEATURES.md's
+  "Loot-table dead-weight audit" entry (under "Loot bags") — real
+  source traced (not this pack's own custom tables, which are clean;
+  comes from Abandoned Urban + real vanilla structures reusing stock
+  vanilla loot tables wholesale), real technique confirmed (LootJS's
+  `removeLoot`, same chest-type-level targeting already proven for the
+  additive bonus pools). Full confirmed strip list: the whole
+  minecart/rail family, name tags, horse gear, vanilla maps, leads, all
+  music discs, and elytra/End-city loot — see FEATURES.md for the
+  complete id list. Real open item for the build session: exact
+  chest-type-modifier `removeLoot` syntax needs verifying against the
+  installed LootJS jar before shipping, not assumed from the
+  block-loot-modifier form.
 - **Legendary loot bag jackpot + beam visual** — sent to build
   2026-09-05, user gave standing authorization to line up and dispatch
   queue items without per-item confirmation while away. Full spec in

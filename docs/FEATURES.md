@@ -1849,6 +1849,11 @@ approach stair) landed exactly as intended, zero errors. **Real limit**:
 fresh-world only, same as every other spawn-time build in this pack —
 doesn't change the current live save's already-placed dais.
 
+**Rejected on second playtest, 2026-09-06 — see "Second fresh-world
+playtest batch" below.** Direct feedback: "the raised dais is just not
+looking great, ditch this and just have the pedestal placed in the
+yard." Ditching the elevated build entirely, not iterating on it again.
+
 **Aesthetic structure variety pass — requested 2026-09-04, sent to
 build 2026-09-05.** Direct feedback: "now that we have got the beginnings of
 structure gen/placement... the current one is just lacking." Researched
@@ -2303,6 +2308,183 @@ too, not just an explosion." Two real, separate pieces:
     unconfirmed, but worth checking on the next playtest rather than
     re-diagnosing from scratch.
 - **Built, deployed, and committed (f49f947) 2026-09-05.**
+
+**Second fresh-world playtest batch — reported 2026-09-06, 4 items,
+held, not sent.** Real feedback from actually playing the fresh world
+built by the roster pivot + first playtest batch's fixes.
+
+1. **Dais ditched — replace with pedestal at ground level.** Direct
+   feedback: "the raised dais is just not looking great, ditch this and
+   just have the pedestal placed in the yard." This is the *second*
+   real rejection of the pedestal's presentation (square sandstone
+   shrine → circular dark-stone altar → now this) — don't propose a
+   third elaborate build without being asked. Scope: remove the 3-ring
+   octagon build from `playtest_starter_kit.js` entirely (added in the
+   "Circular altar dais" entry above), place the Supplementaries
+   pedestal directly on the courtyard's existing ground level at the
+   same centered plan-position, no platform/plinth/rings. Grave arc and
+   everything else stays wherever the circular-dais rework last put it
+   unless it specifically depended on the platform's footprint.
+   - **Shipped 2026-09-06**: the whole 3-ring octagon build (rings,
+     moss edge, plinth) removed from `playtest_starter_kit.js`;
+     `supplementaries:pedestal` now placed directly at `wallY0` at the
+     same `centerX`/`centerZ`, `td_pedestalY` back to `wallY0` (no more
+     `+4` plinth offset), marker armor stand back to `wallY0+1`. Grave
+     arc left exactly where the circular-altar rework put it, per the
+     spec's own instruction — its old footprint reasoning is now stale
+     but the position itself doesn't overlap anything. `setblock
+     supplementaries:pedestal` and the marker summon both confirmed live
+     in a sandbox; the full login-triggered build itself is unconfirmed
+     in-game, same standing blind spot as every other spawn-time build
+     in this pack (no real player can join the test sandbox).
+2. **Pedestal needs real, working "health," not block-targeting.**
+   Direct ask: "is there a way to give it health like a player and this
+   is how the mobs destroy it." Real context the build session should
+   read first: Epic Siege Mod's `blockTargets` config was already
+   verified correct by decompile (see "Mob-attack vulnerability" above)
+   and even the mob-pathing fix's own hypothesis that it'd start working
+   once mobs stopped re-acquiring the player didn't pan out — this
+   report confirms it's still not damaging the pedestal. **Stop trying
+   to make ESM's block-targeting work — build a deterministic system
+   instead**, same spirit as this pack's own custom pedestal-destruction
+   tick-poll (`pedestal_destruction.js`) rather than relying on another
+   mod's opaque AI a second time:
+   - A real stored `td_pedestalHealth` value (persistent data, same
+     pattern as `td_pedestalX/Y/Z`), full at world-build time.
+   - A tick check (throttled, same pattern as `mob_aggro.js`) for wave
+     mobs within real melee range of the pedestal position — every
+     wave mob already targets it unconditionally, so "in range" is
+     sufficient, no need to check what they're currently swinging at.
+   - Damage per hit scaled off the attacking mob's own real
+     `attack_damage` attribute (already read/set for several mobs in
+     `wave_spawner.js`'s summon NBT) — tougher mobs should chip through
+     faster, matching the escalating-horde theme, not a flat number.
+   - At 0 health, call the exact same destruction path
+     `pedestal_destruction.js` already uses for explosion-based
+     destruction (the permanent `td_pedestalDestroyed` flag + game-over
+     sequence) — one outcome, two ways to reach it.
+   - Real open numbers, first pass: total pool and damage-per-hit aren't
+     picked here — size it so a single mob can't solo it in a few
+     seconds, but a real, un-defended horde genuinely can, matching "if
+     im not in the base to defend it then i lose the game." Needs a
+     real playtest to tune, same as every other numeric first-pass in
+     this pack.
+   - Leave the ESM `blockTargets` config in place (harmless either way,
+     already shipped) — this is an addition, not a rip-out.
+   - **Shipped 2026-09-06** as a new `pedestal_health.js`: real
+     `td_pedestalHealth` (200, first pass) set once in
+     `playtest_starter_kit.js` alongside `td_pedestalX/Y/Z`; a
+     once-per-second tick check sums `generic.attack_damage` off every
+     `WAVE_MOB_TYPES` mob within 3 blocks of the pedestal, subtracts it,
+     and at 0 breaks the actual block (`setblock ... air destroy`) before
+     calling the same `triggerPedestalDestroyed()` game-over sequence
+     `pedestal_destruction.js`'s own block-gone check uses — factored
+     that function out of `pedestal_destruction.js` for exactly this
+     reuse. Two genuinely new mechanics, both confirmed live in a
+     sandbox before shipping, not assumed: `mob.getAttribute('minecraft:
+     generic.attack_damage').getValue()` returned a real value (3, a
+     vanilla zombie's actual base damage) off a summoned zombie, and a
+     top-level function declared in `pedestal_destruction.js` resolved
+     as a real callable function (`typeof === 'function'`) from a
+     different file's script — this pack's own long-standing belief that
+     "server_scripts don't reliably share top-level scope" turns out to
+     only ever have been tested for plain values, not function
+     declarations specifically; this is the first real, deliberate
+     reliance on cross-file function sharing, tested first rather than
+     assumed. The full melee-range-plus-damage loop was also exercised
+     end to end against a real nearby zombie (in range: contributed 3
+     damage; a second zombie 50 blocks away: correctly contributed 0).
+     What's still unconfirmed: the actual `PlayerEvents.tick` wiring and
+     `persistentData` read/write cycle, same standing blind spot as
+     every other player-triggered flow in this pack (no real player can
+     join the test sandbox) — and the 200/attribute-scaled numbers
+     themselves are an explicit first pass, not tuned by a real fight
+     yet.
+3. **Spawn point lands in plains — thematically wrong.** Direct
+   feedback: "it spawned me in a plains biome...this doesnt fit the
+   theme." Real, not cosmetic: this pack's own aesthetic direction is
+   "abandoned/post-apocalyptic" (confirmed decision behind the
+   structure-mod aesthetic swap), and plains/sunflower_plains/meadow are
+   the odd ones out in the current curated 7-biome set (desert,
+   badlands, savanna, savanna_plateau, plains, sunflower_plains,
+   meadow) — genuinely too lush/green for the theme at the one tile that
+   matters most, the actual spawn point. Same technique as the earlier
+   badlands-blob and "just sand" investigations: run a real biome census
+   from the current fixed spawn point (780, -150) and relocate spawn to
+   a real desert/badlands/savanna tile nearby — **not** a change to the
+   biome set itself (variety elsewhere in the world is still wanted,
+   just not landing the player in the wrong one on login). If no
+   desert/badlands/savanna tile exists within a reasonable distance of
+   the current point, that's a real finding to report back, not a
+   reason to silently pick a worse spot.
+4. **Press/Rolling Mill: real placement fact from the user, not a
+   hypothesis to test.** Direct bug report: "the press and depot hasnt
+   got a space in the middle which it needs to function," followed by
+   the actual fix once the build session started investigating instead
+   of just applying it: "why is the build so obsessed with getting the
+   press to work! it works, just place it two blocks above the depot.
+   done." **The real, exact requirement: Depot on the floor, Mechanical
+   Press exactly 2 blocks above it** (1 block of clear air between them
+   for the item to drop through) — not a kinetic-network question, not
+   something to root-cause via git history or live hypothesis testing,
+   a plain placement fact. This also resolves the separate, previously
+   still-open "Mechanical Press never auto-fired in testing" item (see
+   "Barbed Wire replaces Spikes" below) — same missing clearance, one
+   fix for both. No investigation needed, just fix the block positions
+   and verify it fires.
+   - **Shipped and live-verified 2026-09-06**: rebuilt with Depot at
+     `wallY0`, Press at `wallY0+2` (1 block of clear air between), Mill
+     left physically separate, not connected to either. Verified for
+     real before committing: fed an iron ingot into the Depot via
+     hopper, Press showed `Finished:1b`/`Mode:1` after a few seconds and
+     the Depot's held item actually converted `minecraft:iron_ingot` →
+     `create:iron_sheet`. Control check at the old 1-block spacing never
+     engaged after 20+ seconds under the same setup — confirms this was
+     the whole bug, not just a plausible fix. This also closes the
+     separate, previously still-open "Press never auto-fires" item from
+     the Barbed Wire work below — same root cause, one fix.
+
+3 of 4 items in this batch are done (dais, pedestal HP, Press/Depot
+spacing — all shipped and at least partly live-verified 2026-09-06).
+Item 3 (spawn-biome relocation) is blocked on a real user decision, not
+a build task right now — see the spawn-biome real-distance finding
+below, a genuinely bigger decision than "move to a nearby tile."
+
+**Real finding on item 3 (spawn biome), 2026-09-06 — needs a real user
+decision, not a silent fix.** Peer caught its own sandbox was pinned to
+a stale seed and re-ran the census on the live save's actual seed
+(`1803464458889621616`) from the real live spawn point (`787,-147`,
+`spreadplayers`' own small wander off the nominal `780,-150`) — confirms
+the bug exactly, plains at 0 blocks. But the nearest thematically-fitting
+biome isn't close: **savanna at 520 blocks**, desert 1402, badlands
+1063, savanna_plateau 1704. A 520-block spawn relocation is a much
+bigger move than originally scoped ("a nearby tile") — and since the
+base compound, worldborder centering, and the whole "last bastion"
+build all derive from this single fixed coordinate (established in the
+original spawn-relocation work), moving spawn 520 blocks effectively
+relocates the entire base, not just where the player wakes up. **Real
+options, not decided here**:
+- Relocate spawn the full 520 blocks to the real savanna tile — biggest
+  disruption, cleanest thematic fit, exactly what was asked for if
+  "doesn't fit the theme" is the priority.
+- Re-run the spawn-selection process from scratch (same technique as
+  the original badlands-avoidance relocation) optimizing directly for
+  "lands in desert/badlands/savanna," rather than assuming the current
+  `(780,-150)` point plus a nearby correction — the current point was
+  chosen to avoid one bad biome, never actually optimized to land in a
+  good one, so a fresh search in a different direction might do much
+  better than 520 blocks.
+- Leave spawn where it is and accept the plains tile, focusing theme
+  fit on decoration/structure density near spawn instead of the raw
+  biome underneath it.
+- Retune the `multi_noise` climate parameters near this specific point
+  so it resolves to a different biome without moving spawn at all —
+  real risk: this pack has a documented crash history around
+  `multi_noise`/`noise_router` edits, not a change to make lightly for
+  a small subjective improvement.
+
+**Not sent yet — waiting on the user's go-ahead**, per the standing
+hold-for-approval rule.
 
 **Mob pathing regression — "mobs aren't pathing toward the pedestal at
 all" — found and fixed 2026-09-05, first fresh-world playtest of the
