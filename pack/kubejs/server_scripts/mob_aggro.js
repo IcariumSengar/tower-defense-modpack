@@ -124,11 +124,80 @@
 // its current goals is a real instance of TargetGoal (vanilla's own
 // common base class for every target-acquisition goal, including ESM's
 // replacements) - the goal selector never legitimately contains one.
+//
+// **That last assumption was real but WRONG, found 2026-09-04 doing the
+// live root-cause diagnosis this same report asked for.** A real user
+// death in their actual save, plus 54 confirmed
+// "stripAutoRetargeting failed" errors in the live log, prompted a
+// faithful sandbox repro against real summoned mobs (both a vanilla
+// zombie and one of today's new mutantszombies replacements) with
+// step-by-step tracing. Two distinct real bugs found, not one:
+// 1) ESM's own `ESM_EntityAINearestAttackableTarget` goal does NOT
+//    extend vanilla's `TargetGoal` - confirmed directly via
+//    `targetGoalCls.isInstance(goal)` returning false for it. Worse,
+//    ESM splits its own re-targeting goals across BOTH GoalSelector-
+//    typed fields, not just the "real" target selector: a live zombie's
+//    goal-selector-shaped field held 13 goals including attack/wander/
+//    dig/pillar behavior PLUS 2 stray ESM_EntityAINearestAttackableTarget
+//    instances and ESM_EntityTargetBlock (the pedestal-vulnerability
+//    goal, which must stay) all mixed together - none of those 13 are a
+//    real TargetGoal instance, so the old `isTargetSelector` check
+//    correctly found nothing there and skipped the WHOLE field,
+//    silently leaving those 2 re-targeting goals live and active. The
+//    OTHER field (the real target selector, holding vanilla
+//    HurtByTargetGoal plus 5-6 more ESM_EntityAINearestAttackableTarget)
+//    DID get correctly identified and fully stripped - so roughly a
+//    quarter of each mob's own re-targeting AI survived every "successful"
+//    strip, 100% reproducibly, not intermittently. Fixed below by
+//    checking every goal's real identity directly (real TargetGoal
+//    instance OR literally ESM_EntityAINearestAttackableTarget) instead
+//    of gating a whole selector by whether it "looks like" the target
+//    selector - ESM_EntityTargetBlock is explicitly excluded, it must
+//    keep running for the pedestal-vulnerability feature.
+// 2) The live log's 54 "Cannot call method 'getName' of undefined"
+//    errors did NOT reproduce against either a vanilla zombie or a
+//    mutantszombies mob in this same sandbox pass - real, not assumed:
+//    every reflection step (GoalSelector's own method scan included)
+//    resolved cleanly. That live log predates today's TFTH removal, when
+//    TFTH mobs were still being summoned - plausible this crash was
+//    specific to TFTH's own entity class hierarchy, which no longer
+//    spawns at all now. Flagging as likely-but-not-confirmed-resolved,
+//    not claiming it fixed outright - worth watching the next real
+//    playtest's log for a recurrence now that TFTH mobs can't spawn.
 var GOAL_SELECTOR_TYPE = 'net.minecraft.world.entity.ai.goal.GoalSelector'
 var TARGET_GOAL_TYPE = 'net.minecraft.world.entity.ai.goal.target.TargetGoal'
+var ESM_TARGET_GOAL_TYPE = 'funwayguy.epicsiegemod.ai.ESM_EntityAINearestAttackableTarget'
 var GOAL_TYPE = 'net.minecraft.world.entity.ai.goal.Goal'
 
-function findFieldsByType(startCls, typeName) {
+// **Real, function-name-prefixed 2026-09-04** (part of the same live
+// root-cause diagnosis as the per-goal fix above): these 3 helpers used
+// to be named findFieldsByType/findMethodByShape/resolveClass, plain
+// and unprefixed. playtest_starter_kit.js independently declares its
+// OWN findMethodByShape/resolveClass for its structure-proximity
+// reflection - its own comment there claims this is safe because
+// "server_scripts don't reliably share top-level var/const," but that's
+// only half the real rule: top-level FUNCTIONS in this exact KubeJS/
+// Rhino build DO reliably share across files, so the two same-named
+// functions were silently colliding in one shared global slot, and
+// whichever file's definition happened to load last (real, and not
+// necessarily stable across reboots) silently overwrote the other's -
+// playtest_starter_kit.js's own version uses an ARRAY 4th parameter
+// (`paramTypeNames`, plural, iterated by `.length`), genuinely
+// incompatible with this file's SINGLE-STRING 4th parameter. When
+// mob_aggro.js's own call lost that race, a JS string got iterated
+// character-by-character as if it were an array, indexing past the
+// real 1-element params array and calling .getName() on the resulting
+// undefined - a real, confirmed match for the "Cannot call method
+// 'getName' of undefined" error found live (54 occurrences in one
+// session's log) and reproduced directly in a sandbox once this exact
+// collision was suspected and tested for. This is very likely the real,
+// primary reason the whole stripAutoRetargeting fix never reliably held
+// up in real play despite passing its own original sandbox
+// verification - that verification predated playtest_starter_kit.js's
+// later structure-proximity work adding the colliding names. Prefixing
+// this file's own copies closes the collision for good, independent of
+// load order.
+function aggroFindFieldsByType(startCls, typeName) {
   var found = []
   var cls = startCls
   while (cls != null) {
@@ -141,7 +210,7 @@ function findFieldsByType(startCls, typeName) {
   return found
 }
 
-function findMethodByShape(cls, paramCount, retTypeName, paramTypeName) {
+function aggroFindMethodByShape(cls, paramCount, retTypeName, paramTypeName) {
   var methods = cls.getMethods()
   for (var i = 0; i < methods.length; i++) {
     var m = methods[i]
@@ -157,9 +226,9 @@ function findMethodByShape(cls, paramCount, retTypeName, paramTypeName) {
 // A Class object's own getClass() is always java.lang.Class - lets this
 // reach Class.forName(String) (a static method) without the disabled
 // `java.*` global, for any mob passed in.
-function resolveClass(anyMob, className) {
+function aggroResolveClass(anyMob, className) {
   var classOfClass = anyMob.getClass().getClass()
-  var forNameMethod = findMethodByShape(classOfClass, 1, 'java.lang.Class', 'java.lang.String')
+  var forNameMethod = aggroFindMethodByShape(classOfClass, 1, 'java.lang.Class', 'java.lang.String')
   return forNameMethod.invoke(null, [className])
 }
 
@@ -168,30 +237,44 @@ function resolveClass(anyMob, className) {
 // tick for every mob.
 function stripAutoRetargeting(mob) {
   try {
-    var targetGoalCls = resolveClass(mob, TARGET_GOAL_TYPE)
-    var fields = findFieldsByType(mob.getClass(), GOAL_SELECTOR_TYPE)
+    var targetGoalCls = aggroResolveClass(mob, TARGET_GOAL_TYPE)
+    // ESM's own class may not exist if Epic Siege Mod were ever removed -
+    // resolved separately and tolerated as null (falls back to the
+    // vanilla-only check) rather than aborting the whole strip.
+    var esmTargetGoalCls = null
+    try { esmTargetGoalCls = aggroResolveClass(mob, ESM_TARGET_GOAL_TYPE) } catch (eEsm) {}
+    var fields = aggroFindFieldsByType(mob.getClass(), GOAL_SELECTOR_TYPE)
     fields.forEach(function (field) {
       field.setAccessible(true)
       var selector = field.get(mob)
       var selCls = selector.getClass()
-      var availGetter = findMethodByShape(selCls, 0, 'java.util.Set', null)
-      var removeOne = findMethodByShape(selCls, 1, null, GOAL_TYPE)
+      var availGetter = aggroFindMethodByShape(selCls, 0, 'java.util.Set', null)
+      var removeOne = aggroFindMethodByShape(selCls, 1, null, GOAL_TYPE)
       if (!availGetter || !removeOne) return
 
       var wrappedGoals = availGetter.invoke(selector, [])
       var wgGetGoal = null
-      var goals = []
-      var isTargetSelector = false
+      var goalsToRemove = []
       var it = wrappedGoals.iterator()
       while (it.hasNext()) {
         var wrapped = it.next()
-        if (!wgGetGoal) wgGetGoal = findMethodByShape(wrapped.getClass(), 0, GOAL_TYPE, null)
+        if (!wgGetGoal) wgGetGoal = aggroFindMethodByShape(wrapped.getClass(), 0, GOAL_TYPE, null)
         var goal = wgGetGoal.invoke(wrapped, [])
-        goals.push(goal)
-        if (targetGoalCls.isInstance(goal)) isTargetSelector = true
+        // Per-goal identity check, not a whole-selector gate (2026-09-04
+        // fix - see the header comment above for the real bug this
+        // replaced): ESM splits its own re-targeting goals across BOTH
+        // selector fields, and its own goal class doesn't extend
+        // vanilla's TargetGoal, so a selector-level "does this look like
+        // the target selector" check silently missed some. Every goal in
+        // every GoalSelector-typed field is checked individually instead.
+        // ESM_EntityTargetBlock is deliberately NOT matched by either
+        // check - it must keep running for the pedestal-vulnerability
+        // feature.
+        var isRealTargetGoal = targetGoalCls.isInstance(goal)
+        var isEsmTargetGoal = esmTargetGoalCls && esmTargetGoalCls.isInstance(goal)
+        if (isRealTargetGoal || isEsmTargetGoal) goalsToRemove.push(goal)
       }
-      if (!isTargetSelector) return
-      goals.forEach(function (goal) { removeOne.invoke(selector, [goal]) })
+      goalsToRemove.forEach(function (goal) { removeOne.invoke(selector, [goal]) })
     })
   } catch (e) {
     // Never let a reflection failure break the whole tick handler -

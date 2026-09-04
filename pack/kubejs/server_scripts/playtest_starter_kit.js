@@ -199,11 +199,24 @@ function findMethodByShape(cls, paramCount, retTypeName, paramTypeNames) {
 // A Class object's own getClass() is always java.lang.Class - lets this
 // reach Class.forName(String) (a static method) without the disabled
 // `java.*` global, for any already-bound Java object passed in. Same
-// technique as mob_aggro.js's own resolveClass, redeclared here rather
-// than shared - this codebase's own established cross-file duplication
-// pattern (server_scripts don't reliably share top-level var/const, and
-// keeping each file self-contained beats a hidden load-order
-// dependency for something this small).
+// technique as mob_aggro.js's own (now aggroResolveClass).
+//
+// **Correction, 2026-09-04**: the note this replaced claimed redeclaring
+// per-file was safe because "server_scripts don't reliably share
+// top-level var/const" - true, but incomplete, and the missing half was
+// a real live bug for months. Top-level FUNCTIONS in this exact KubeJS/
+// Rhino build DO reliably share across files, so this file's own
+// findMethodByShape/resolveClass were silently colliding with
+// mob_aggro.js's identically-named (but incompatibly-shaped) versions
+// in one shared global slot - whichever file loaded last won, and
+// mob_aggro.js's own stripAutoRetargeting logic broke every time it
+// lost that race (real "Cannot call method 'getName' of undefined"
+// errors, 54 in one real session's log - see mob_aggro.js's own header
+// comment for the full diagnosis). Fixed there by prefixing its copies
+// (aggroFindMethodByShape etc). This file's names are left unprefixed
+// since nothing else currently collides with them, but the safe rule
+// going forward is: give every per-file redeclared FUNCTION a unique,
+// file-specific name, not just trust re-declaration alone to isolate it.
 function resolveClass(anyObj, className) {
   var classOfClass = anyObj.getClass().getClass()
   var forNameMethod = findMethodByShape(classOfClass, 1, 'java.lang.Class', ['java.lang.String'])

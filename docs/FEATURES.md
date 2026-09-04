@@ -2985,6 +2985,61 @@ in commit a9e6c1a. Diagnosed live, not guessed:
   fully close the loop, same as everything else in this pack shipped
   without a live player available.
 
+**That playtest happened 2026-09-04, and the fix didn't hold - real
+root cause found and fixed the same day, two distinct bugs, not one.**
+Direct report: mobs still not pathing to the pedestal reliably, plus a
+real player death in the live save. Live log showed 54 confirmed
+`stripAutoRetargeting failed: TypeError: Cannot call method "getName"
+of undefined` errors - contradicting the "verified end to end" note
+above.
+1. **ESM's own selector split, missed by the old content-based
+   selector-level check.** A faithful sandbox repro (real summoned
+   zombie/mutant_zombie, step-by-step tracing) found ESM splits its
+   `ESM_EntityAINearestAttackableTarget` goals across BOTH of a mob's
+   `GoalSelector`-typed fields, not just the "real" target selector -
+   one field held 13 goals (attack/wander/dig/pillar behavior) mixed
+   with 2 stray re-targeting goals AND `ESM_EntityTargetBlock`; none of
+   those 13 are real vanilla `TargetGoal` instances, so the old
+   "does this selector contain any TargetGoal" gate correctly found
+   nothing and skipped the WHOLE field, silently leaving those 2
+   goals live. The other field (holding vanilla `HurtByTargetGoal` +
+   5-6 more) DID get correctly identified and stripped - so roughly a
+   quarter of each mob's own re-targeting AI survived every
+   "successful" strip, 100% reproducibly. Fixed by checking every
+   goal's real identity individually (real `TargetGoal` instance OR
+   literally `ESM_EntityAINearestAttackableTarget`) instead of gating
+   a whole selector by content-sniffing - `ESM_EntityTargetBlock` is
+   deliberately excluded from both checks, it has to keep running for
+   the pedestal-vulnerability feature above.
+2. **The real cause of the 54 live errors: a genuine cross-file
+   function-name collision, not a one-off.** `mob_aggro.js` and
+   `playtest_starter_kit.js` each independently declared their own
+   top-level `findMethodByShape`/`resolveClass` (the established
+   "redeclare per file, server_scripts don't reliably share top-level
+   var/const" convention) - but that convention only covers half the
+   real rule: top-level FUNCTIONS in this exact KubeJS/Rhino build DO
+   reliably share across files, so the two same-named-but-differently-
+   shaped functions were silently colliding in one shared global slot.
+   `playtest_starter_kit.js`'s version takes an ARRAY 4th parameter
+   (added later, for its structure-proximity work); `mob_aggro.js`'s
+   takes a plain STRING. Whichever file loaded last won the shared
+   slot - when `mob_aggro.js`'s own call lost that race, a JS string
+   got iterated character-by-character as if it were an array, indexing
+   past the real params array and calling `.getName()` on `undefined` -
+   a real, reproduced match for the live error. This is very likely why
+   the fix above never held up despite passing its own sandbox
+   verification - that verification predated `playtest_starter_kit.js`
+   gaining the colliding names. Fixed by prefixing `mob_aggro.js`'s own
+   copies (`aggroFindFieldsByType`/`aggroFindMethodByShape`/
+   `aggroResolveClass`) so they can't collide with any other file's,
+   regardless of load order. **Verified live, both fixes together**:
+   summoned a real zombie, `mutantszombies:mutant_zombie`, and
+   `undeadnights:elite_zombie` in a sandbox, called the real (fixed)
+   `stripAutoRetargeting()` directly, and confirmed for all three -
+   every `ESM_EntityAINearestAttackableTarget` gone from both selector
+   fields, `ESM_EntityTargetBlock` and every real attack/movement goal
+   still present untouched, zero exceptions thrown.
+
 **Pedestal destruction = game over — requested 2026-09-04, built and
 deployed 2026-09-04 (commit ce75d1f).** Direct request, explicitly narrower than the parked Hardcore
 mode spec above: "start build on the 'if the pedestal is destroyed you
