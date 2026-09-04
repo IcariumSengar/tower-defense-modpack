@@ -1540,6 +1540,31 @@ disqualifying:
   heightmap projection, none dig underground at all. Spot-checked the
   largest piece's real `.nbt` size tag directly (`observatory.nbt`,
   37×30×47) — a real building, not a floating structure.
+- **"Missing chest loot" investigated 2026-09-04, no fix needed — the
+  diagnosis this was queued from was stale.** Re-decompiled all 34 real
+  `.nbt` files directly against the exact currently-installed jar
+  (confirmed via `pack/mods/abandoned-urban.pw.toml`'s file-id 5297465
+  — same build, not a version drift). Real, current result: **15
+  building pieces already carry a genuine `LootTable` NBT tag on a real
+  chest**, referencing valid vanilla tables (`minecraft:chests/
+  woodland_mansion`, `.../village/village_weaponsmith`,
+  `.../stronghold_corridor`, `.../abandoned_mineshaft`, etc. — read
+  directly from the decompressed NBT, not inferred). This actually
+  corroborates the "Loot chests: rarity scaling" entry above, written
+  earlier this session, which already noted "Abandoned Urban's chests
+  overwhelmingly reuse plain vanilla tables" — the two diagnoses were
+  never cross-checked against each other before now. Cross-checked
+  against the mod's own `template_pool` JSON to confirm all 15 pieces
+  are genuinely placed by real worldgen, not dead weight. The only
+  chestless files are decorative filler that wouldn't sensibly hold
+  loot (roads, rubble, wrecked vehicles) plus one dead, unreferenced
+  file (`gas_station.nbt` — its own structure pool actually points at
+  the already-looted `gas_station_loot.nbt` instead, confirmed by
+  reading the pool JSON). **No jigsaw processors built** — this pack
+  has a documented crash history from exactly that kind of change
+  ([[Radium chunk_region crash]] above), and there's no real gap left
+  to justify the risk. Full detail in QUEUE.md's "Abandoned Urban
+  missing chest loot" entry.
 - **Both new mods' default spacing checked and retuned moderately**,
   not aggressively — direct lesson from the crash sequence above.
   Defaults ranged 50-150 chunks (way past this world's border, same

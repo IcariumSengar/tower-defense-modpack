@@ -319,20 +319,38 @@ below); Phase 5 not started:
   **Real limit**: fresh-world only, doesn't retroactively affect the
   current live save's already-generated chunks. Unconfirmed in-game (no
   real playtest yet, sandbox-verified only).
-- **Abandoned Urban missing chest loot — RE-SENT 2026-09-06.** Same
-  situation as above — sent 2026-09-05, never landed, confirmed clean
-  re-send with no lost work. The existing diagnosis (33 of 34
-  structures have no chest at all, confirmed by decompiling all 34
-  `.nbt` files directly — only `gas_station_loot.nbt` has one) still
-  holds, nothing structure-gen-related has changed since that would
-  invalidate it. Real fix: a `processors` rule on the mod's own jigsaw
-  template pool entries to probabilistically inject chests into the
-  existing pieces — the standard vanilla technique, but real, and this
-  pack has a documented crash history from exactly this kind of change
-  (see FEATURES.md's "World type" section). **Structure spawners are
-  deliberately held back, not part of this dispatch** — user's own
-  sequencing: send spawners only after this and the aesthetic pass are
-  confirmed stable, not stacked into the same batch.
+- **Abandoned Urban missing chest loot — investigated 2026-09-04, no
+  fix needed, the old diagnosis was stale.** Re-decompiled all 34
+  `.nbt` files directly against the exact currently-installed jar
+  (`abandoned_urban-1.1.0-forge-1.20.1.jar`, file-id 5297465 — checked
+  the live `pack/mods/abandoned-urban.pw.toml` to confirm it's the same
+  build, not a version drift). Real, current result contradicts the
+  2026-08-31 diagnosis this was queued from: **15 of the mod's real
+  building pieces already carry a genuine `LootTable` NBT tag on a real
+  chest**, referencing valid vanilla tables (`minecraft:chests/
+  woodland_mansion`, `minecraft:chests/village/village_weaponsmith`,
+  `minecraft:chests/stronghold_corridor`, `minecraft:chests/
+  abandoned_mineshaft`, etc. — extracted and read directly, not
+  inferred from filenames). Cross-checked against the mod's own
+  `template_pool` JSON to confirm every one of those 15 pieces is
+  actually placed by real worldgen, not dead weight. The only
+  chestless files are genuinely decorative filler that wouldn't
+  sensibly hold loot (roads, rubble, wrecked vehicles, a couple minor
+  set-pieces) plus one dead, unreferenced file
+  (`gas_station.nbt` — the mod's own `gas_station` structure pool
+  actually points at the already-looted `gas_station_loot.nbt`
+  instead, confirmed by reading the pool JSON, so the chestless
+  variant is simply never placed). **No processors, no jigsaw surgery
+  built** — this pack has a documented crash history from exactly that
+  kind of change, and there's no real problem left to justify the risk.
+  Either the mod updated with more complete loot since the original
+  diagnosis, or that diagnosis checked for something narrower (e.g.
+  chest-block presence without decompressing far enough to see the
+  `LootTable` tag) — either way, the current jar doesn't need this fix.
+  **Structure spawners were held back pending this and the aesthetic
+  pass being confirmed stable** — the aesthetic pass shipped clean
+  (see above) and this item is now resolved, so that sequencing gate is
+  clear; spawners can be considered next if wanted.
 - **Savanna spawn + vegetation-clearing regression — done, real bug
   found and fixed 2026-09-06.** Diagnosed live on the actual reported
   world first, not guessed: the savanna_plateau landing was correct
