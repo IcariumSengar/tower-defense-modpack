@@ -92,8 +92,24 @@ memory.
 12. [done, shipped 2026-09-04] Cauldron + tripwire hook — both removed,
     same NBT-decompile pass as #5/#6/#11 (real local coords: cauldron
     [8,1,5], tripwire hook [8,2,5]).
-13. [needs investigation] Iron rolling regression — not yet diagnosed,
-    still needs a real live check against the current kinetic rig.
+13. [investigated 2026-09-04, no code regression found] Iron rolling
+    regression — checked git history first: the rig placement code
+    hasn't changed at all since the last confirmed-working commit
+    (46a884b, the 2-block Press/Depot clearance fix), ruling out a
+    script regression directly. Live-reverified the CURRENT exact
+    geometry end-to-end in a sandbox: a real iron_ingot dropped on the
+    Depot correctly converted to `create:iron_sheet` via the Press, and
+    the Rolling Mill correctly converted that sheet into 2x
+    `createaddition:iron_wire` - the full pipeline works when powered
+    from the correct kinetic input side. **Real remaining limit, not
+    solved**: the rig ships deliberately UNPOWERED by design ("the only
+    remaining player task is crafting a Hand Crank and connecting it")
+    - "regressed" most likely traces to the player's own manual crank
+    connection (whether it's connected, connected to the wrong spot, or
+    a hand crank's real low rotational speed making throughput feel
+    much slower than the creative-motor test conditions), which is an
+    interactive building step this environment can't test without a
+    real player.
 14. [decided method] TFTH roster audit, not blanket removal — Flesh
     Hysterizer confirmed cut. **Peer to sandbox-summon + screenshot the
     remaining 7 TFTH mobs** (flesh_human, flesh_villager, flesh_dog,
@@ -179,8 +195,31 @@ memory.
     mob roster (wave_spawner.js's WAVES + WAVE_MOB_TYPES, mob_aggro.js,
     pedestal_health.js, wave_status.js, loot_bag_drops.js's
     LEGENDARY_MOBS).
-26. [needs investigation, then a call] Barbed wire vs. Mutant Brute —
-    diagnose the mechanic first, then pick a trap.
+26. [investigated 2026-09-04, real numbers found] Barbed wire vs.
+    Mutant Brute — **not a resistance/immunity issue, checked directly
+    by decompiling `BarbedWireBlock#entityInside()`**: damage goes
+    through the real, standard `Entity#hurt()` pipeline via a genuine
+    (if custom) DamageSource, nothing mod-specific blocks it. Real
+    cause is simpler: `barbed_wire_damage = 2.0` (config, confirmed) vs.
+    Mutant Brute's real 120 max HP (confirmed live via
+    `/attribute ... base get`) - 60 hits to kill from wire alone,
+    genuinely negligible, not broken. **Real trap comparison, not
+    guessed** (decompiled each mod's own damage logic):
+    - **Trapcraft's Bear Trap**: only 1.0 dmg per ~1-2 real seconds
+      while a mob is caught, but it also adds a real `DoNothingGoal`
+      that holds the mob in place for the whole time it's trapped -
+      the actual value here is crowd control, not raw damage.
+      **Real pick to prioritize**, given the ask was specifically about
+      a tanky mob that's hard to whittle down - holding it still lets
+      other defenses (turrets, the player) actually focus it.
+    - **Medieval Defense Turrets' Landmine**
+      (`medievalturrets:landmine`): real 12.0 damage in one hit (6x
+      barbed wire, 12x a single bear-trap tick) - genuinely meaningful
+      burst, but single-use (consumed on trigger) and needs real
+      redstone wiring to fire, not a simple walkover trap.
+    - Archer Turret (`medievalturrets:archer_block`) not checked -
+      needs a real ammo/targeting setup this session didn't have time
+      to verify live, flagged as unchecked rather than guessed.
 27. [blocker resolved, flow not yet built] Manual fresh-start trigger:
     craftable/given item, same pattern as the Wave Horn. All-players-
     killed: **build the real multiplayer check**, not simplified to
@@ -216,17 +255,23 @@ memory.
 
 **Real status as of 2026-09-04**: 15 of 27 items done and shipped
 (#1/#3/#4/#5/#7/#11/#12/#15/#17-partial/#18/#21/#22/#23/#25, plus #19
-already covered in "Fresh-world playtest, round 3" above). #27's real
-blocker is now answered (quest progress is per-world, needs a real
-export/import step) but the restart flow itself isn't built yet. Still
-open: #6 (identified, needs a clear-or-reskin decision), #8 (house
-reinforcement, real remaining NBT work), #9 (parked by design), #10/#16
-(real client-visual/interaction checks this environment can't perform -
-need the user's own in-game look), #13/#26 (need live diagnosis), #2
-(verified real, not installed - no install was actually requested).
-The screenshot pass for #14/#20/#24's TFTH/brute audit hasn't happened
-yet either - report back with real screenshots before cutting anything
-from the roster, per the user's own request.
+already covered in "Fresh-world playtest, round 3" above). #13 and #26
+are now real investigated findings, not open questions - #13 found no
+code regression (the rig works end-to-end when powered, real remaining
+cause is the player's own hand-crank connection, an interactive step
+this environment can't test); #26 found the real numbers (barbed wire's
+2.0 dmg vs Mutant Brute's 120 HP, not a resistance issue) plus a real
+trap comparison recommending the Bear Trap's crowd-control value over
+raw damage. #27's real blocker is now answered too (quest progress is
+per-world, needs a real export/import step) but the restart flow itself
+isn't built yet. Still genuinely open: #6 (identified, needs a
+clear-or-reskin decision), #8 (house reinforcement, real remaining NBT
+work, not started), #9 (parked by design), #10/#16 (real client-visual/
+interaction checks this environment can't perform - need the user's own
+in-game look), #2 (verified real, not installed - no install was
+actually requested). The screenshot pass for #14/#20/#24's TFTH/brute
+audit hasn't happened yet either - report back with real screenshots
+before cutting anything from the roster, per the user's own request.
 
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
