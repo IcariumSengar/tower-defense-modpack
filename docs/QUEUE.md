@@ -23,15 +23,44 @@ reflect actual current status.
 
 ## Ready to build
 
-**New live report, 2026-09-04 (mid-playtest, right after the mob-pathing
-fix shipped):** "spitter's path seems off" — no more detail yet, user is
-actively playing. Flagged as a possible regression from the just-shipped
-`mob_aggro.js` fix (7d74545), since that fix widened the goal-selector
-strip to a second field it hadn't touched before, and Spitter
-(`mutantszombies:spitter`) most likely has its own special ranged/kiting
-AI (keep-distance behavior, not straight melee-charge) that could live in
-that same field and get over-stripped. Needs real diagnosis against
-Spitter's actual goal selector, not assumed.
+**Live report, 2026-09-04 (mid-playtest, right after the mob-pathing
+fix shipped) — checked, NOT a regression.** "spitter's path seems off."
+Summoned a real spitter in a sandbox and inspected its actual goal
+selector before/after the strip: only the 2 real
+`ESM_EntityAINearestAttackableTarget` goals were removed, exactly as
+intended - `ESM_EntityAIAttackRanged` (its real ranged/kiting attack
+goal) is fully intact both before and after. Real explanation instead:
+that goal reads the mob's current `setTarget()`-assigned target for its
+own logic, so once locked onto the pedestal it does what it's actually
+coded to do - stop closing distance once in firing range and strafe
+side-to-side around that range rather than walking straight in. Real
+open design question, not a bug: should ranged mobs strafe-and-shoot at
+the pedestal (arguably correct for a "ranged siege" feel), or be forced
+to close to melee range against it specifically? Flagged for a decision,
+not guessed.
+
+**2 more live reports, 2026-09-04 — both done, real numbers checked.**
+- **"Not getting enough gold still" (round 2, after item #15's per-bag
+  yield bump).** Real bottleneck was availability, not yield:
+  `gold_ingot`'s only source (loot_bag_drops.js's `RARE_MOBS`, 25%
+  chance) was down to exactly 1 mob (`mutantszombies:split_head_zombie`,
+  confirmed via the file directly), which only appeared in wave 4 (2
+  individuals) in the entire hand-authored campaign and was completely
+  absent from the endless-phase horde config - zero gold income past
+  wave 8. Fixed by adding it to wave 6 as well and to
+  `undeadnights_horde_mobs_config.json`'s `trash_horde` tier, so it has
+  a second hand-authored appearance and genuine ongoing endless-phase
+  presence instead of 2 individuals total.
+- **"The brutes are very tanky... should be coming in later waves,
+  seeing them from wave 7."** Real, already-documented cause: the TFTH-
+  removal mapping (18302f7) deliberately reused
+  `mutantszombies:mutant_brute`/`zombie_brute` a wave early to fill two
+  old TFTH slots - explicitly flagged in that commit's own comment as a
+  duplicate against their real wave-8 debut. Not a stat-nerf ask - fixed
+  by removing the early-wave duplicate (wave 7 now repeats already-
+  established mid-tier picks: a second Elite Zombie, more Horde Zombie,
+  another Spitter) so Mutant Brute/Zombie Brute's actual first
+  appearance is wave 8 again, untouched.
 
 **REPRIORITIZED 2026-09-04 — mob pathing/aggression to the pedestal was
 the user's real #1, "the main bug bear."** Done, see item 3 below - real

@@ -10,7 +10,8 @@
         {"mobId": "minecraft:husk", "spawnChance": "25", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "minecraft:drowned", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "minecraft:zombie_villager", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
-        {"mobId": "undeadnights:horde_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+        {"mobId": "undeadnights:horde_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:split_head_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
       ]
     },
     {

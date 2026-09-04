@@ -189,18 +189,17 @@
 //   `undeadnights:horde_zombie` **reused** (already this wave's other
 //   slot too) - "numbers-focused reinforcement" framing is the closest
 //   fit available.
-// - `flesh_hunter_two` "Flesh Hunter II" (45/6/4) ->
-//   `mutantszombies:mutant_brute` **reused early** (this mob's real
-//   first appearance was wave 8 - now also appears here). Deliberately
-//   NOT `undeadnights:demolition_zombie`: that mob's wave-8 debut is a
-//   real documented design beat (see the comment block above - first
-//   TNT-capable mob, timed to the endless-horde-config handoff), moving
-//   it earlier would break that on purpose, not by accident.
-// - `flesh_boomer` (20/0, an exploding mob with zero melee damage) ->
-//   `mutantszombies:zombie_brute` **reused** (already this wave's other
-//   slot). Real, flagged gap: nothing in either replacement mod has an
-//   explosion mechanic, so Flesh Boomer's actual archetype has no
-//   analog here - this is a straight tier-adjacent stat swap, not an
+// - `flesh_hunter_two` "Flesh Hunter II" (45/6/4) and `flesh_boomer`
+//   (20/0, an exploding mob with zero melee damage) originally reused
+//   `mutantszombies:mutant_brute`/`zombie_brute` a wave early at wave 7.
+//   **Reverted 2026-09-04**, real playtest feedback: "the brutes are
+//   very tanky... should be coming in later waves" - not a stat-nerf
+//   ask, the user just wanted their real wave-8 debut respected instead
+//   of an early duplicate. Wave 7 now repeats already-established
+//   mid-tier picks instead (see its own comment there) - Flesh Boomer's
+//   explosion archetype still has no real analog in either replacement
+//   mod, that gap stands regardless of which mob fills its old numeric
+//   slot.
 //   equivalent-behavior one.
 var WAVES = [
   [['minecraft:zombie', 4], ['minecraft:husk', 2], ['minecraft:zombie_villager', 1]],
@@ -217,12 +216,28 @@ var WAVES = [
   // wave - a real, intended "horde grows" beat, not filler. Horde Zombie
   // now also stands in for Flesh Brute I's slot (see roster header
   // comment) - x3 total this wave, real duplication.
-  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['undeadnights:horde_zombie', 3]],
-  // Mutants and Zombies debuts alongside a second Elite Zombie. Mutant
-  // Brute and Zombie Brute now also fill Flesh Hunter II's and Flesh
-  // Boomer's old slots (see roster header comment) - both previewed a
-  // wave early here, real duplication against their wave-8 return below.
-  [['mutantszombies:mutant_brute', 1], ['mutantszombies:zombie_brute', 2], ['undeadnights:elite_zombie', 1]],
+  // split_head_zombie added here 2026-09-04 (real playtest feedback,
+  // "not getting enough gold still") - it's the ONLY mob in loot_bag_
+  // drops.js's RARE_MOBS tier (gold_ingot's real source), and it only
+  // appeared in wave 4 before this - a real, confirmed availability
+  // bottleneck, not just a per-bag yield problem (that was already
+  // bumped once and still wasn't enough). A second hand-authored
+  // appearance here, plus the endless-phase addition in
+  // undeadnights_horde_mobs_config.json, gives it real ongoing
+  // presence instead of 2 individuals in the entire campaign.
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['undeadnights:horde_zombie', 3], ['mutantszombies:split_head_zombie', 2]],
+  // **Real fix, 2026-09-04**: this wave originally previewed Mutant
+  // Brute and Zombie Brute a wave early (filling Flesh Hunter II's and
+  // Flesh Boomer's old TFTH slots) - real playtest feedback found this
+  // landing wrong once played for real ("the brutes are very tanky...
+  // should be coming in later waves, seeing them from wave 7"). Not a
+  // stat-nerf ask - the user likes the mobs, just wants their real
+  // wave-8 debut respected instead of an early duplicate. Backfilled
+  // with more of what's already established by this point (a second
+  // Elite Zombie, more Horde Zombie reinforcements, another Spitter)
+  // rather than introducing anything new - Mutant Brute/Zombie Brute's
+  // actual first appearance is wave 8 below, untouched.
+  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 2], ['mutantszombies:spitter', 1]],
   // Toughest hand-authored mix, including the first appearance of
   // something that can genuinely breach the base's own defenses, not
   // just the player - Demolition Zombie, real TNT capability per
