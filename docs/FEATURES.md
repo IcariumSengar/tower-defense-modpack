@@ -4200,6 +4200,31 @@ bug, every fix) lives as comments directly in
 `playtest_starter_kit.js` itself. **Real limit**: fresh-world only,
 same as every other spawn-time change in this pack.
 
+**Real regression reported 2026-09-04, root-caused and fixed the same
+day**: a live playtest found the base structure spawning on top of other
+structures - directly contradicting the "verified" note above. Root
+cause, found via live instrumented diagnostic against the real save's
+exact seed: the check itself worked correctly, but Philip's Ruins' 14
+structure_sets were all packed at vanilla-village-tier density (16/8
+chunks), which made 100% of biome-matched wasteland candidates within
+the full 4000-block search fail the 200-block clearance check - and when
+the search came back empty, the login handler fell back to
+`spreadplayers 0 0` with zero structure-proximity protection at all.
+That unchecked fallback, not the 200-block number, is what actually
+produced the overlap. Fix: Philip's Ruins tripled in spacing/separation
+(16/8 → 48/24 chunks - `ancient_dungeon` and `desert_structures` alone
+had been the nearest structure for 67.5% of rejections),
+`abandoned_urban:motel` bumped similarly (24/12 → 40/20), and
+`findWastelandSpawn` now tracks the best real candidate seen during the
+search and returns that instead of surrendering to the unchecked origin
+fallback when nothing clears the full threshold - so that fallback path
+is now unreachable as long as any wasteland biome exists anywhere in the
+search radius. Verified live on the real seed: clean boot, real non-null
+result in ~1.2s. Shipped once it reached "stable boot, no literal
+overlap" per direct instruction, rather than chasing 0%-rejection -
+further spacing/threshold tuning continues as a background task. Same
+fresh-world-only limit as above applies to this fix too.
+
 **Eliminate passive mobs entirely — requested 2026-09-06, specced,
 ready to build.** Direct feedback: "passive mobs are spawning. I dont
 want passive mobs in the game at all." Real technical picture, not

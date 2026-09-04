@@ -407,13 +407,37 @@ function searchForBiome(level, startX, startZ, biomeList, maxRadius, isAcceptabl
 // desert+badlands are 2 of only 7 curated biomes in this pack's
 // multi_noise blend. If it still comes back null, the caller (below)
 // has a real, defined fallback - not left undefined.
+//
+// **Best-candidate fallback, real fix 2026-09-06**: a real live playtest
+// found the base structure spawning on top of other structures - traced
+// to this function returning null whenever every biome-matched candidate
+// fell short of STRUCTURE_MIN_DISTANCE, which sent the login handler down
+// its own fallback path (`spreadplayers 0 0`) with ZERO structure-proximity
+// protection at all - worse than just accepting the least-bad real
+// candidate. Every biome-matched candidate seen during the search (pass or
+// fail) is now tracked by its own structure distance; if none clear the
+// full threshold, the search returns whichever one had the most clearance
+// instead of surrendering to the unchecked origin fallback.
 function findWastelandSpawn(level, startX, startZ) {
   var structureDistanceAt = buildStructureProximityCheck(level)
+  var bestCandidate = null
+  var bestDistance = -1
   var isAcceptable = structureDistanceAt ? function (x, z) {
     var dist = structureDistanceAt(x, z)
-    return dist === null || dist >= STRUCTURE_MIN_DISTANCE
+    if (dist === null) return true
+    if (dist > bestDistance) {
+      bestDistance = dist
+      bestCandidate = [x, z]
+    }
+    return dist >= STRUCTURE_MIN_DISTANCE
   } : null
-  return searchForBiome(level, startX, startZ, BARE_WASTELAND_BIOMES, 4000, isAcceptable)
+  var found = searchForBiome(level, startX, startZ, BARE_WASTELAND_BIOMES, 4000, isAcceptable)
+  if (found) return found
+  if (bestCandidate) {
+    console.log('playtest_starter_kit.js: no wasteland spot cleared ' + STRUCTURE_MIN_DISTANCE + ' blocks of structure clearance within 4000 blocks, using best real candidate found (' + bestDistance + ' blocks clear) instead of the unchecked origin fallback')
+    return bestCandidate
+  }
+  return null
 }
 
 PlayerEvents.loggedIn((event) => {

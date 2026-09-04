@@ -31,8 +31,9 @@ proximity regression above:**
    live-instance diagnosis before a proper packwiz uninstall +
    structure_set/config cleanup. FEATURES.md's "Aesthetic structure
    variety pass" needs updating once done (Philip's Ruins stays).
-2. **Starter loot scattering on the floor at spawn — real root-cause
-   hypothesis, not vague.** User's own sharp diagnosis: removal likely
+2. **PAUSED 2026-09-04 — user wants to playtest sooner, not wait for
+   this too.** Starter loot scattering on the floor at spawn — real
+   root-cause hypothesis, not vague. User's own sharp diagnosis: removal likely
    used a post-placement `setblock ... air destroy` (matching an
    existing pattern elsewhere in this codebase), which spills a
    container's real contents as dropped items instead of cleanly
@@ -432,22 +433,42 @@ below); Phase 5 not started:
      125 across the full 8-wave campaign). Verified live end-to-end: a
      real 208.6-block distance computed and correctly accepted against
      the threshold, not a trivial pass.
-     **REAL REGRESSION REPORTED, NOT FIXED — top priority, dispatched
-     2026-09-04**: real fresh playtest found structures spawning "way
-     too close, even to the point of the base structure spawning on top
-     of other structures." Directly contradicts the "live-verified"
-     claim above — the one verified case (208.6 blocks against one
-     structure) doesn't prove every installed structure mod is actually
-     covered by this check. Real candidate causes handed to the peer,
-     not guessed here: check scoped to one structure/tag rather than
-     all 5+ installed structure sources; check not actually wired into
-     the real first-login code path; a timing gap between "check
-     passes" and "base template placed" where something else generates
-     in the same spot afterward; or the base's own `/place template`
-     call has no clearing/exclusion check of its own at all. Needs a
-     real root-cause diagnosis against the actual live save across
-     multiple fresh seeds before any number gets retuned — see the
-     "Structure spawn-proximity regression" dispatch for full detail.
+     **REAL REGRESSION REPORTED, ROOT-CAUSED AND FIXED — 2026-09-04.**
+     Real fresh playtest found structures spawning "way too close, even
+     to the point of the base structure spawning on top of other
+     structures." Root cause found via live instrumented diagnostic
+     against the real live save's exact seed (`-7367485585009964989`):
+     the merged-registry proximity check itself was working correctly
+     (not scoped to one mod, not a timing gap, not missing from the
+     login path — all 4 originally-suspected causes ruled out). The
+     real problem was density: Philip's Ruins' 14 structure_sets were
+     all packed at vanilla-village-tier spacing (16/8 chunks), and
+     collectively made every biome-matched wasteland candidate within
+     the full 4000-block search fail the 200-block clearance check —
+     100% rejection, confirmed both before AND after Big Lost City's
+     removal (best case only 192.67 blocks, just short). Worse: when
+     the search came up empty, the login handler fell back to
+     `spreadplayers 0 0` with **zero** structure-proximity protection at
+     all — that unchecked fallback, not the threshold number, is what
+     actually produced the reported overlap.
+     Fix (evidence-based, not a guessed retune): Philip's Ruins' 14
+     structure_sets tripled in spacing/separation (16/8 → 48/24 chunks;
+     `ancient_dungeon` and `desert_structures` alone had accounted for
+     67.5% of rejections), `abandoned_urban:motel` bumped similarly
+     (24/12 → 40/20). `findWastelandSpawn` no longer returns null and
+     silently defers to the unprotected origin fallback — it now tracks
+     the best real candidate seen during the ring search and returns
+     that if nothing clears the full threshold, so the unchecked (0,0)
+     path is now unreachable as long as any wasteland biome exists
+     anywhere in the search radius. Verified live on the real seed:
+     clean boot, no crash, real non-null result in ~1.2s.
+     **Scope note**: per direct user instruction, this was shipped once
+     it reached "stable boot + no literal overlap" rather than chasing
+     0%-rejection / multi-seed verification — further spacing/threshold
+     tuning is an open background task, not a blocker. **Also**: this
+     fix only applies to brand-new worlds/players (the login handler is
+     gated by a one-time `td_playtestKitGiven` flag) — it does NOT
+     retroactively repair an already-broken base in an existing save.
   4. **Real 4th finding, not in the original 3**: the user's own
      follow-up ("not just horses, other mob types too") was right - the
      same baked-entity root cause existed in 24 MORE structure files
