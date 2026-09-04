@@ -2292,6 +2292,23 @@ individually-reasoned pass over every one, not a blanket retune:
   in-game (no real playtest on a fresh world yet, only sandbox
   verification).
 
+**Big Lost City removed entirely, 2026-09-04 — real playtest verdict,
+not a retune.** Direct feedback: the structures are "just too big,"
+full removal wanted. **Real live crash found and fixed along the way**:
+the user's own attempt to remove it manually (deleting the jar
+directly, not through packwiz) left all 62 of this pack's own
+`kubejs/data/big_lost_city/` override files in place, referencing
+structures the now-missing mod no longer provides — the live instance's
+own `logs/latest.log` showed the real resulting crash directly:
+`IllegalStateException: Unbound values in registry ResourceKey[...
+worldgen/structure]: [big_lost_city:blackskyscraper, ...]` (all 37 real
+structure ids). Fixed by the full, correct removal: packwiz uninstall,
+every one of the 62 override files deleted (repo + live), `packwiz
+refresh` to purge the resulting stale `index.toml` entries. Verified
+live: fresh-world boot on the exact seed that was crashing now reaches
+`Done` clean. **Philip's Ruins stays** - nothing in the report
+suggested removing it too, and it wasn't implicated in the crash.
+
 **Structure variety after the YUNG's removal** — resolved 2026-08-31,
 see "Structure mod picks" further up in this "World type" section for
 the actual decision (When Dungeons Arise, Structory: Towers unheld,

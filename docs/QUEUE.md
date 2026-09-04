@@ -23,9 +23,31 @@ reflect actual current status.
 
 ## Ready to build
 
-**Polish/utility mod pass, 2026-09-04 — IN PROGRESS, 2 of 7 picks
-installed.** Full spec in FEATURES.md's "Polish/utility mod pass,
-2026-09-04" section (right before "Tried and explicitly retired").
+**2 more real bugs, dispatched 2026-09-04, alongside the structure-
+proximity regression above:**
+1. **Big Lost City — full clean removal, real crash to fix first.**
+   User tried removing it manually (too-big structures), crashed the
+   game — likely dangling references from a non-packwiz removal, needs
+   live-instance diagnosis before a proper packwiz uninstall +
+   structure_set/config cleanup. FEATURES.md's "Aesthetic structure
+   variety pass" needs updating once done (Philip's Ruins stays).
+2. **Starter loot scattering on the floor at spawn — real root-cause
+   hypothesis, not vague.** User's own sharp diagnosis: removal likely
+   used a post-placement `setblock ... air destroy` (matching an
+   existing pattern elsewhere in this codebase), which spills a
+   container's real contents as dropped items instead of cleanly
+   removing them. Real fix needs to strip the barrels/their loot table
+   from the structure's raw NBT before placement, not destroy them
+   after.
+
+**Polish/utility mod pass, 2026-09-04 — PAUSED 2026-09-04, 2 of 7 picks
+installed.** Direct call: "i just want a stable non structure heavy
+playthrough" — real bugs (structure-proximity regression, Big Lost City
+crash/removal, loot-scatter) take full priority over adding more
+surface area. Hold until those are confirmed fixed and a real
+playthrough happens; don't resume on its own. Full spec in FEATURES.md's
+"Polish/utility mod pass, 2026-09-04" section (right before "Tried and
+explicitly retired").
 - [done] **Sodium/Embeddium Dynamic Lights** + its real dependency
   **Sodium/Embeddium Options API** - installed via packwiz, both jars
   downloaded and sha1-verified, deployed to the live instance.
@@ -279,7 +301,9 @@ memory.
     - Archer Turret (`medievalturrets:archer_block`) not checked -
       needs a real ammo/targeting setup this session didn't have time
       to verify live, flagged as unchecked rather than guessed.
-27. [blocker resolved, flow not yet built] Manual fresh-start trigger:
+27. [blocker resolved, flow not yet built, PAUSED 2026-09-04 — stability
+    first, see the priority note at the top of "Ready to build"] Manual
+    fresh-start trigger:
     craftable/given item, same pattern as the Wave Horn. All-players-
     killed: **build the real multiplayer check**, not simplified to
     solo-player-death (user chose "plan for multiplayer" over the
@@ -408,6 +432,22 @@ below); Phase 5 not started:
      125 across the full 8-wave campaign). Verified live end-to-end: a
      real 208.6-block distance computed and correctly accepted against
      the threshold, not a trivial pass.
+     **REAL REGRESSION REPORTED, NOT FIXED — top priority, dispatched
+     2026-09-04**: real fresh playtest found structures spawning "way
+     too close, even to the point of the base structure spawning on top
+     of other structures." Directly contradicts the "live-verified"
+     claim above — the one verified case (208.6 blocks against one
+     structure) doesn't prove every installed structure mod is actually
+     covered by this check. Real candidate causes handed to the peer,
+     not guessed here: check scoped to one structure/tag rather than
+     all 5+ installed structure sources; check not actually wired into
+     the real first-login code path; a timing gap between "check
+     passes" and "base template placed" where something else generates
+     in the same spot afterward; or the base's own `/place template`
+     call has no clearing/exclusion check of its own at all. Needs a
+     real root-cause diagnosis against the actual live save across
+     multiple fresh seeds before any number gets retuned — see the
+     "Structure spawn-proximity regression" dispatch for full detail.
   4. **Real 4th finding, not in the original 3**: the user's own
      follow-up ("not just horses, other mob types too") was right - the
      same baked-entity root cause existed in 24 MORE structure files
