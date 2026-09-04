@@ -411,6 +411,27 @@ confirmed directly yet (the block-loot-modifier form,
 confirmed real; the chest-context equivalent needs a real check against
 the installed jar, not assumed identical).
 
+**Shipped 2026-09-06 as `loot_dead_weight_strip.js`.** Syntax confirmed
+by decompiling the installed jar directly (javap), not assumed from the
+block-modifier form: `LootContextJS` (the same `context` object
+`structure_loot_progression.js` already calls `context.addLoot(...)`
+on) has its own real public `removeLoot(ItemFilter)` method.
+`ItemFilter` itself auto-converts from a plain JS value via LootJS's own
+`ofItemFilter()` (also decompiled) - anything not already an `ItemFilter`
+goes through `IngredientJS.of()`, the same conversion this pack's
+`Ingredient` syntax already relies on everywhere else, so a plain JS
+array of item-id/tag strings works with zero special construction. Music
+discs stripped via the real `#minecraft:music_discs` tag (confirmed
+present in the vanilla 1.20.1 client jar) instead of hand-listing every
+disc id - covers every vanilla disc plus anything a mod tags into it
+later. Verified live in a sandbox before shipping: rolled
+`minecraft:chests/abandoned_mineshaft` (a real vanilla table confirmed
+by its own JSON to include `rail`/`powered_rail`/`detector_rail`/
+`activator_rail`/`name_tag`) 10 times - zero of those ids appeared
+across the whole batch, while unrelated items (iron, diamonds, torches,
+this pack's own bonus-pool rolls) came through untouched, confirming the
+strip works without breaking the additive pools running alongside it.
+
 **Candidate strip list — first pass, needs your confirmation on where
 the line sits, not shipping on my own judgment call alone**: items with
 no real function anywhere in this pack's actual mechanics as they
@@ -453,8 +474,8 @@ the game's own item registry/tag at build time, not guessed one by
 one) — real verification still needed on the exact chest-type-modifier
 `removeLoot` syntax before shipping (see above), same as always.
 
-**Ready to queue** — strip list confirmed, technique confirmed real,
-only the exact removal syntax needs verifying at build time.
+**Shipped 2026-09-06** — see the postscript above under "Real technique
+confirmed" for the real syntax and live verification.
 
 **Mob-tier loot progression — requested 2026-09-02, built and deployed
 2026-09-03 (commit 2faf4ef).** Direct follow-up once BountyBags (bags) and Lootr (chests) were both

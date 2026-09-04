@@ -99,22 +99,16 @@ below); Phase 5 not started:
      Confirmed live (iron ingot → iron sheet actually processed) before
      committing. Also closed the separate "Press never auto-fires" bug
      — same root cause.
-- **Loot-table dead-weight audit** — sent to build 2026-09-06, user
-  go-ahead, **sequenced after the playtest batch above, not
-  simultaneously — user's own explicit instruction.** Strip list
-  confirmed via AskUserQuestion. Full detail in FEATURES.md's
-  "Loot-table dead-weight audit" entry (under "Loot bags") — real
-  source traced (not this pack's own custom tables, which are clean;
-  comes from Abandoned Urban + real vanilla structures reusing stock
-  vanilla loot tables wholesale), real technique confirmed (LootJS's
-  `removeLoot`, same chest-type-level targeting already proven for the
-  additive bonus pools). Full confirmed strip list: the whole
-  minecart/rail family, name tags, horse gear, vanilla maps, leads, all
-  music discs, and elytra/End-city loot — see FEATURES.md for the
-  complete id list. Real open item for the build session: exact
-  chest-type-modifier `removeLoot` syntax needs verifying against the
-  installed LootJS jar before shipping, not assumed from the
-  block-loot-modifier form.
+- **Loot-table dead-weight audit — done, shipped 2026-09-06.** New
+  `loot_dead_weight_strip.js`. Real chest-context `removeLoot(ItemFilter)`
+  syntax confirmed by decompiling the installed LootJS jar directly
+  (matches `context.addLoot(...)`'s own object, auto-converts a plain JS
+  array via the same `Ingredient`-style conversion used everywhere else
+  in this pack). Live-verified: rolled the real vanilla
+  `abandoned_mineshaft` table (confirmed by its own JSON to include
+  rails/name_tag) 10 times, zero stripped ids appeared, unrelated loot
+  (including this pack's own bonus pools) unaffected. Full strip list in
+  FEATURES.md's "Loot-table dead-weight audit" entry.
 - **Legendary loot bag jackpot + beam visual** — sent to build
   2026-09-05, user gave standing authorization to line up and dispatch
   queue items without per-item confirmation while away. Full spec in
