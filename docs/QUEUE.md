@@ -65,6 +65,40 @@ below); Phase 5 not started:
 
 ## In progress (sent directly to the build session)
 
+- **Seed-independent world-gen — done, shipped 2026-09-06.** Full
+  writeup in FEATURES.md's "Seed-independent world-gen" entry (under
+  "World type").
+  1. New `data/kubejs/tags/worldgen/biome/wasteland.json` shipped as
+     the real documented asset; the runtime search itself checks a
+     parallel plain array since `Holder<Biome>#is(String)` turned out
+     not to do real tag lookups in this KubeJS build (tested directly,
+     not assumed).
+  2. `findWastelandSpawn()` replaces the hardcoded coordinate - a real
+     ring-search from world origin using `level.getBiome(...)`
+     directly, not `/locate` text-parsing or the internal-Java-method
+     route originally flagged as likely - `getBiome` alone was already
+     fast (~0.3ms/call) and simple enough. Verified live on the exact
+     seed this bug was just reported on: found real savanna 864 blocks
+     from origin in 145ms, where the old hardcoded point was still
+     plains.
+  3. Terrain-flatness check (9-point sample across the footprint, level
+     if variance > 1 block) - the logic itself is verified by reading
+     and a live sandbox check confirmed no false-positive on flat
+     ground, but hasn't actually been exercised against a genuinely
+     uneven footprint yet.
+  **Real deployment note, worth repeating to the user**: needs a full
+  game restart (not just relaunching, and not just `/reload` -
+  confirmed directly that worldgen tags don't hot-reload) AND a
+  genuinely fresh world.
+- **Suppress Supplementaries' "Amendments not installed" startup
+  screen** — sent to build 2026-09-06, user go-ahead. Full spec in
+  FEATURES.md (right after "Disable recipe-unlock toasts"). Real cause
+  decompiled directly: the mod's own default is to show this screen;
+  ship `pack/config/supplementaries-client.toml` with
+  `no_amendments_screen = true` (new file, doesn't exist yet) so it's
+  suppressed from a genuinely fresh install, not just this instance
+  (which only suppresses it now because "Don't show this again" was
+  clicked locally). Small, zero-risk, client-UI-only change.
 - **Legendary loot bag jackpot + beam visual — mostly shipped
   2026-09-06, one real limit found.** Full spec in FEATURES.md's
   "Legendary loot bag jackpot + beam-of-light visual" entry (under

@@ -200,6 +200,34 @@ it during install, not a manual check. Defaults confirmed by decompiling
 description: Recipe and Tutorial toasts both default `blocked=true`
 already, zero config needed, as claimed.
 
+**Suppress Supplementaries' "Amendments not installed" startup screen —
+requested 2026-09-06, specced, ready to build.** Direct feedback: a
+real screenshot of the warning screen shown on game launch, plus "I
+think its cumbersome for a user" and wanting it gone permanently,
+including on a genuinely fresh load. **Real root cause, decompiled from
+the installed jar, not guessed**: `ClientEvents.onFirstScreen()` shows
+this screen unless either Amendments is actually installed or
+`ClientConfigs$General.NO_AMENDMENTS_WARN` (the real config key,
+`no_amendments_screen`) is `true` — and that config's own real default,
+confirmed from the mod's static initializer, is **`false`** (shown by
+default). This pack's own live instance currently reads `true` only
+because the value got flipped locally at some point (most likely the
+in-game "Don't show this again" button, which the WelcomeMessageScreen
+class exposes as a real callback) — that's a per-instance, manually-set
+state, not something this pack actually ships, so it wouldn't survive a
+genuinely fresh install/reinstall the way the user's "including on a
+fresh load" ask requires. **Real, minimal fix**: ship
+`no_amendments_screen = true` in this pack's own tracked
+`pack/config/supplementaries-client.toml` under `[general]` (this file
+doesn't exist in `pack/config/` yet — this pack has always relied on
+the mod's own generated default until now), same pattern already used
+for every other pre-set mod config in this pack (Toast Control's
+Placebo config, Epic Siege Mod's config, etc.). This pack doesn't use
+Optifine, so `no_optifine_warn_screen` isn't relevant here, but it's
+worth setting too while in this file for the same "cumbersome popup"
+reason, if any Optifine-alike shows up later. Zero risk — pure client
+UI suppression, no gameplay/world-gen surface at all.
+
 **Loot bags** — *retired 2026-09-02, replaced by BountyBags*. Used to
 be a hand-rolled 3-tier system (Common/Uncommon/Rare); replaced outright
 per direct feedback ("I dont like the custom loot bags") as part of the
@@ -1169,6 +1197,139 @@ piece heights; when WDA was later removed for aesthetic reasons (see
 "Structure mod picks" below), both numbers were re-checked against the
 mods actually still installed and left unchanged — still good coverage,
 not stale leftovers from a removed mod.
+
+**Seed-independent world-gen — raised 2026-09-06, real root-cause found,
+specced, ready to build.** Direct feedback after a long run of
+world-gen playtest fixes: "its been super hard to get a clean world gen
+with all the elements that make the game functional... How can we nail
+this down such that every new world doesn't fall short." **Real root
+cause, traced through the actual code, not a vague "world-gen is
+finicky" explanation**: every spawn-point fix this pack has ever shipped
+— the original badlands-avoidance move, the plains-to-savanna move, all
+of it — was found by running a real biome census **against one specific
+seed** (the live save's own seed, read from its `level.dat`) and then
+**hardcoding the resulting coordinate as a literal constant** in
+`playtest_starter_kit.js` (currently `spreadplayers 1171 -499 1 8 false
+@a`). This pack never enforces a fixed world seed — a genuinely new
+world (any other player, or this same player starting fresh) gets a
+random seed, and a hardcoded coordinate tuned for one seed's noise
+pattern has no reason to land in the same biome, or on flat ground, on
+a different one. Every "fix" so far has correctly solved the *reported
+instance*, never the *underlying seed-dependence* — which is exactly
+why the same shape of bug (wrong biome, clipped base) keeps recurring
+under a different disguise.
+
+**Real fix — three real pieces, replacing hardcoded coordinates with
+logic that runs fresh for whatever seed the world actually has**:
+1. **A real wasteland biome tag** (new file,
+   `kubejs/data/kubejs/tags/worldgen/biome/wasteland.json` or similar —
+   exact path/namespace convention to match whatever this pack already
+   uses for its other custom tags) listing exactly the 4
+   wasteland-appropriate biomes from the curated set: desert, badlands,
+   savanna, savanna_plateau. Deliberately custom, not a vanilla tag like
+   `#minecraft:is_badlands` — vanilla's tags may pull in biome variants
+   (eroded/wooded badlands, etc.) this pack's `multi_noise` set doesn't
+   actually register, which would make the search look for something
+   that can never be found.
+2. **Runtime biome search, not a manual dev-time lookup.** Replace the
+   hardcoded `spreadplayers` target with a real programmatic search
+   (from a fixed, seed-independent anchor — world origin `(0,0)` is the
+   natural choice) for the nearest biome matching the new tag, run once
+   on first login (already naturally gated by the existing
+   `td_playtestKitGiven` flag, so this doesn't re-run on every login,
+   just world creation). **Real implementation note, not pinned down
+   here**: `runCommandSilent('locate biome ...')` suppresses the
+   command's own feedback, which is where vanilla's `/locate` normally
+   reports its result — parsing chat/feedback text back out is fragile.
+   The more robust path is very likely a direct call to the same real
+   vanilla Java method `/locate biome` itself calls internally (a
+   `Level`/`ServerLevel` biome-search method, exact signature not
+   guessed here) — this pack has already proven this exact kind of
+   direct-Java-method approach works from KubeJS (`mob_aggro.js`'s
+   target-selector reflection). Verify the real method against the
+   actual running classes before committing to an approach, same
+   standing lesson as always. Once a real point is found, keep using
+   the already-proven `spreadplayers` heightmap-snap exactly as now —
+   that part is solid, seed-agnostic, and shouldn't change.
+3. **Real terrain-flatness verification for the base build, not an
+   assumption.** `playtest_starter_kit.js` currently reads the ground
+   height at one single point (right after `spreadplayers`) and reuses
+   that one Y (`wallY0`/`floorY`) across the *entire* ~20×23 building
+   footprint — real risk of clipping on any seed where the terrain
+   isn't dead flat across that whole area. **Real, important tension to
+   resolve, not just assumed away**: this doc's own "World type" section
+   above claims `final_density` is a pure Y-only gradient, "every column
+   evaluates to the exact same surface height by construction" — but
+   real empirical testing this session (the recent spawn-relocation
+   verification, and earlier wave-mob-spawn height-correction work) has
+   repeatedly found genuine height variance (~2.5 to ~7 blocks) in
+   practice. Trust the empirical finding over the theoretical claim —
+   add a real defensive check: sample real heightmap values across the
+   planned footprint (corners + midpoints, not just the one spawn point)
+   before building, and if variance exceeds a small tolerance, level the
+   footprint (clear bumps, fill dips) to one clean Y before placing
+   walls — same spirit as the `/place template` wet-sponge clearing
+   technique already proven elsewhere in this pack, adapted for the
+   `/fill`-based build here.
+
+**Deliberately lower priority, not blocking this spec**: structure
+distancing from spawn is already in much better shape than the other
+two pieces — spacing/separation are statistical rules baked into
+generation itself (this pack's own retuned `structure_set` files, the
+doubled village spacing), so they already apply correctly to any seed,
+not just the one they were verified against. A real "verify nothing
+landed too close, reroll the spawn search if so" check would add
+defense-in-depth but isn't required for this fix to be a real
+improvement — flag as a possible follow-up, not part of this dispatch.
+
+**Built and verified 2026-09-06, all three pieces.**
+- New `data/kubejs/tags/worldgen/biome/wasteland.json` (desert,
+  badlands, savanna, savanna_plateau). Real gotcha hit and worked
+  around: `Holder<Biome>#is(String)` in this exact KubeJS build does
+  NOT do real tag-membership checks - tested directly, `.is
+  ('#kubejs:wasteland')` throws (tries to parse the `#` as a literal
+  namespace character) and `.is('kubejs:wasteland')` (no hash) silently
+  returns `false` even for a real member biome. The tag file ships as
+  the real, documented, reusable datapack asset; the actual runtime
+  search checks a plain parallel array (`WASTELAND_BIOMES` in
+  `playtest_starter_kit.js`) instead, kept in sync by comment. Also
+  confirmed directly: worldgen-registry datapack files like this one
+  are NOT picked up by `/reload` - only a real, full server/game
+  restart loads them, unlike recipes/loot tables/most tags.
+- `findWastelandSpawn(level, startX, startZ)` replaces the hardcoded
+  `spreadplayers 1171 -499 ...` - a real ring-by-ring outward search
+  from world origin `(0,0)` using `level.getBiome([x,64,z]).key()
+  .location()`, checked against `WASTELAND_BIOMES`. Verified live and
+  fast: confirmed `getBiome` resolves correctly and near-instantly
+  (~0.3ms/call) even thousands of blocks from anything ever
+  loaded/visited (it's a pure `multi_noise` sampling-function lookup,
+  not real chunk generation) - a 441-point grid took 141ms total. Ran
+  the real search on the exact seed this bug was just reported on
+  (`-278431851093979538`, where the old hardcoded point was STILL
+  plains): found real savanna at `(864,864)` in 145ms, confirmed by a
+  second independent `getBiome` check at that exact result. This is the
+  real, structural fix - not another one-off coordinate patch that
+  would fail again on the next fresh world.
+- Terrain-flatness check: samples the real `MOTION_BLOCKING` height
+  (same heightmap the grass-plant fix above already uses) at the
+  footprint's 4 corners + 4 edge midpoints + center, and when any
+  sample deviates from the spawn point's own height by more than 1
+  block, clears a generous band above (bumps) and fills solid below
+  (dips) across the whole footprint before the existing floor fill lays
+  the real walkable surface. Not yet exercised against a genuinely
+  uneven real footprint (the sandbox verification point happened to be
+  reasonably flat) - the sampling/leveling logic itself is straight
+  code, verified by reading, but the "did it actually trigger and fix a
+  real bump" case is unconfirmed in-game, same standing blind spot as
+  every other player-triggered flow in this pack.
+- **Real deployment note**: this needs BOTH a full game restart (not
+  just relaunching into the same client session, and not just a
+  `/reload` - the new worldgen tag specifically needs a real restart to
+  load, confirmed directly) AND a genuinely fresh world (the whole
+  build is still gated behind the one-time `td_playtestKitGiven` login
+  flag) before it does anything - starting a new world in an
+  already-running client session that was open before this shipped
+  would still use stale registry data.
 
 **"Reads as entirely desert" investigation, 2026-08-31 — real finding,
 not a biome_source bug.** Diagnosed by copying the actual live save into

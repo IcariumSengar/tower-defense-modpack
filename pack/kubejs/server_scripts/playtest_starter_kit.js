@@ -64,6 +64,66 @@ function starterGearNbt(extra) {
   return `{${extraPart}td_starter_gear:1b,display:{Lore:[${lore}]}}`
 }
 
+// Seed-independent spawn-biome search (2026-09-06) - real replacement
+// for a hardcoded fixed coordinate. Root cause, traced through this
+// exact bug recurring twice: every previous spawn-relocation fix
+// (badlands-avoidance, plains-to-savanna) was found by censusing ONE
+// specific seed and hardcoding the resulting X/Z as a literal constant
+// - but this pack never pins a world seed, so a genuinely new world
+// (any fresh save) gets a random one with zero reason to land that same
+// coordinate in the same biome. Confirmed directly: the very next fresh
+// world after the savanna relocation shipped landed right back in
+// plains at that exact point, on a totally different seed. Real fix:
+// search for a real matching biome at LOGIN TIME, on whatever the
+// actual seed turns out to be, instead of trusting a number picked in
+// advance for a different world.
+//
+// Same 4 biomes as data/kubejs/tags/worldgen/biome/wasteland.json, kept
+// as a plain array here rather than a live tag lookup -
+// `Holder<Biome>#is(String)` in this exact KubeJS build only resolves a
+// literal biome id, not real tag membership (tested directly: threw on
+// the '#kubejs:wasteland' form, silently returned false without the
+// '#') - the tag file ships as the real documented/reusable asset, this
+// array is what the runtime search actually checks against. Keep both
+// in sync if this roster ever changes.
+const WASTELAND_BIOMES = ['minecraft:desert', 'minecraft:badlands', 'minecraft:savanna', 'minecraft:savanna_plateau']
+
+// `level.getBiome([x, y, z])` is a real, fast, pure lookup - confirmed
+// directly in a sandbox to resolve correctly (and near-instantly, ~0.3ms
+// per call) even thousands of blocks from anything ever loaded/visited,
+// since biome data comes straight from the multi_noise sampling
+// function, not from actually generating terrain. `.key().location()`
+// gives the clean `minecraft:plains`-style id (confirmed via a real
+// probe; the raw object's own `.toString()`/`.id` are either useless or
+// undefined in this build).
+function biomeIdAt(level, x, z) {
+  return `${level.getBiome([x, 64, z]).key().location()}`
+}
+
+// Ring-by-ring outward search from a seed-independent anchor (world
+// origin) - cheap enough to run synchronously during login (a real
+// sandbox timing test: 441 lookups in 141ms), and correct for whatever
+// the actual seed is, unlike a hardcoded coordinate. Step 48 keeps the
+// ring count (and worst-case call count) reasonable while still being
+// fine-grained enough not to skip over a real biome patch; maxRadius
+// 2000 is generous relative to every real distance measured so far in
+// this pack's own biome-census history (520-1700 blocks) without
+// letting a genuinely pathological seed run away with login time.
+function findWastelandSpawn(level, startX, startZ) {
+  if (WASTELAND_BIOMES.includes(biomeIdAt(level, startX, startZ))) return [startX, startZ]
+  const step = 48
+  const maxRadius = 2000
+  for (let r = step; r <= maxRadius; r += step) {
+    for (let dx = -r; dx <= r; dx += step) {
+      for (let dz = -r; dz <= r; dz += step) {
+        if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue // ring only, not a full grid
+        if (WASTELAND_BIOMES.includes(biomeIdAt(level, startX + dx, startZ + dz))) return [startX + dx, startZ + dz]
+      }
+    }
+  }
+  return null // real finding to report, not a reason to silently pick a worse spot
+}
+
 PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
@@ -87,46 +147,61 @@ PlayerEvents.loggedIn((event) => {
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
-  // Snap onto solid ground — heightmap-aware, avoids voids/liquids,
-  // unlike a raw teleport to a guessed Y. Small maxRange (8) keeps this
-  // close enough to the target to still read as "the same fixed spot"
-  // every world, while giving the command room to find a valid column
-  // if the exact target happens to be an edge case.
-  //
-  // Fixed spawn target moved 2026-09-01 (direct request, real diagnosis
-  // in docs/FEATURES.md's "World type" section): the original (0,0)
-  // landed the whole base inside a huge contiguous badlands blob (72.8%
-  // of a 320x320-block sample, 0% desert). (780,-150) was picked from a
-  // real RCON grid census: badlands stayed 300-500+ blocks away and
-  // desert 650+ blocks away from every point checked, with plains
-  // genuinely close (0 blocks).
-  //
-  // **Moved again 2026-09-06** (direct feedback: "it spawned me in a
-  // plains biome...this doesnt fit the theme" - this pack's own
-  // "abandoned/post-apocalyptic" direction). Real biome census re-run on
-  // the LIVE SAVE's actual seed (an earlier sandbox had drifted onto a
-  // stale one - caught before trusting its numbers) found the nearest
-  // desert/badlands/savanna tile from (780,-150) was 520 blocks away,
-  // not "a nearby tile" - genuinely a relocate-the-base decision, not a
-  // nudge, so it was put to the user rather than picked unilaterally.
-  // User picked the full move via AskUserQuestion: **(1171,-499)**, a
-  // real savanna tile confirmed on the live seed - `/locate biome` finds
-  // savanna at 0 blocks from this exact point, and every point sampled
-  // in an 8-block radius around it independently also reads savanna
-  // (not a knife-edge sliver at a biome boundary). Everything else
-  // (setworldspawn, worldborder center, the whole Watchpost build below)
-  // already derives from the x/y/z read back right after this one
-  // command - confirmed by reading the rest of this function before
-  // changing this line, not assumed - so moving just this target
-  // coordinate relocates the entire base cleanly with it, same as the
-  // 2026-09-01 move did.
-  event.server.runCommandSilent('spreadplayers 1171 -499 1 8 false @a')
+  // Spawn-biome target history, condensed (full real writeup in
+  // docs/FEATURES.md's "Seed-independent world-gen" entry): (0,0) landed
+  // in a badlands blob -> hardcoded (780,-150) -> that turned out to be
+  // plains, hardcoded (1171,-499) after a real census against the live
+  // save's own seed -> the VERY NEXT fresh world landed back in plains
+  // at that exact point too, because it rolled a different seed and a
+  // hardcoded coordinate tuned for one seed's noise pattern has no
+  // reason to hold on another. **Real, structural fix 2026-09-06**:
+  // search for a real wasteland-tagged biome at LOGIN TIME instead of
+  // trusting a number picked in advance - see `findWastelandSpawn()`
+  // above. World origin (0,0) is the anchor precisely because it's
+  // seed-independent - no reason to prefer one arbitrary point over
+  // another when the search itself now does the real work.
+  const wastelandTarget = findWastelandSpawn(player.getLevel(), 0, 0)
+  if (wastelandTarget) {
+    event.server.runCommandSilent(`spreadplayers ${wastelandTarget[0]} ${wastelandTarget[1]} 1 8 false @a`)
+  } else {
+    // Real, honest fallback - a search radius of 2000 blocks turning up
+    // nothing is itself a finding worth surfacing (unusual seed, or the
+    // curated biome set is oddly sparse near origin), not silently
+    // pretending it worked. Falls back to world origin - still
+    // heightmap-snapped, still gets a working base, just not guaranteed
+    // to be in-theme this one time.
+    console.log('playtest_starter_kit.js: no wasteland biome found within 2000 blocks of origin, falling back to (0,0)')
+    event.server.runCommandSilent('spreadplayers 0 0 1 8 false @a')
+  }
 
   // Ground truth read AFTER spreadplayers — this is where the player is
   // actually now standing, on real terrain, not a guess.
+  //
+  // **Real bug found and fixed 2026-09-06, direct playtest report:
+  // "my entire base is floating 1 block off the ground."** Used to read
+  // `Math.floor(player.getY())` here directly - wrong whenever the
+  // landing column happens to have a decorative, non-collidable plant
+  // (`minecraft:grass`, the 1.20.1 single-block tall-grass, confirmed
+  // live at the actual reported column) sitting on top of the real
+  // ground. `/spreadplayers` places the player using a heightmap that
+  // counts that plant as "the surface," one block above where real
+  // collision/gravity would actually settle them - and since this read
+  // happens the same tick, immediately after the teleport, gravity never
+  // gets a chance to correct it before every wall/floor/pedestal Y in
+  // this whole function gets derived from the inflated number. Confirmed
+  // directly on the exact real live-save column this bug was reported
+  // from: `Math.floor(player.getY())` gave 3, but the real settled
+  // player position after actual play (read from the save's own player
+  // data) was 2, and vanilla's own real `MOTION_BLOCKING` heightmap
+  // (which explicitly excludes non-collidable blocks like this one, by
+  // design - the same value real gravity converges to) also gives 2.
+  // Fixed by reading the real heightmap instead of the player's own
+  // possibly-not-yet-settled Y - correct regardless of what's growing on
+  // the landing tile, no hand-maintained "which plants don't count" list
+  // needed.
   const x = Math.floor(player.getX())
-  const y = Math.floor(player.getY())
   const z = Math.floor(player.getZ())
+  const y = player.getLevel().getHeight('MOTION_BLOCKING', x, z)
 
   // Pin every future respawn to this exact point (docs/IDEAS.md's
   // "Fixed spawn" plan) - spawnRadius 0 removes vanilla's default ~10
@@ -204,6 +279,47 @@ PlayerEvents.loggedIn((event) => {
   const x0 = buildingX0 - SIDE_MARGIN
   const x1 = buildingX1 + SIDE_MARGIN
   const z0 = buildingZ0 - BACK_MARGIN
+
+  // Real terrain-flatness verification across the WHOLE footprint, not
+  // an assumption (2026-09-06, same seed-independence dispatch as the
+  // wasteland search above). This pack's own "World type" doc section
+  // claims `final_density` is a pure Y-only gradient ("every column
+  // evaluates to the exact same surface height by construction") - real
+  // empirical testing has repeatedly found genuine variance (~2.5-7
+  // blocks) despite that claim (the savanna-relocation terrain checks,
+  // earlier wave-mob-spawn height-correction work) - this trusts what's
+  // actually been measured, not the theoretical claim. Samples real
+  // `MOTION_BLOCKING` height (the same heightmap wallY0/floorY above
+  // already use, post the grass-plant fix) at the footprint's 4 corners
+  // + 4 edge midpoints + center, not just the single spawn point.
+  const flatnessSamplePoints = [
+    [x0, z0], [x1, z0], [x0, z1], [x1, z1],
+    [Math.floor((x0 + x1) / 2), z0], [Math.floor((x0 + x1) / 2), z1],
+    [x0, Math.floor((z0 + z1) / 2)], [x1, Math.floor((z0 + z1) / 2)],
+    [Math.floor((x0 + x1) / 2), Math.floor((z0 + z1) / 2)],
+  ]
+  let maxTerrainDeviation = 0
+  flatnessSamplePoints.forEach(([sx, sz]) => {
+    const sampleY = player.getLevel().getHeight('MOTION_BLOCKING', sx, sz)
+    maxTerrainDeviation = Math.max(maxTerrainDeviation, Math.abs(sampleY - wallY0))
+  })
+  // Tolerance of 1 - a single block of unevenness is invisible once the
+  // floor fill below covers it; more than that and the compound would
+  // visibly clip into a rise or float over a dip somewhere across its
+  // own footprint (exactly the reported bug, just at a different point
+  // than the one already fixed above). Levels the whole footprint to
+  // one clean Y first when it's over tolerance - clear a generous band
+  // above (bumps: trees, natural rises) and fill solid below (dips:
+  // gaps, low points) - same "carve first, build after" spirit as the
+  // `/place template` wet-sponge clearing already proven elsewhere in
+  // this pack, adapted for this file's own `/fill`-based build. The
+  // real floor fill immediately below still lays the actual walkable
+  // surface on top either way.
+  if (maxTerrainDeviation > 1) {
+    console.log(`playtest_starter_kit.js: terrain variance ${maxTerrainDeviation} blocks across the base footprint, leveling before build`)
+    run(`fill ${x0} ${floorY + 1} ${z0} ${x1} ${floorY + 16} ${z1} minecraft:air`)
+    run(`fill ${x0} ${floorY - 6} ${z0} ${x1} ${floorY - 1} ${z1} minecraft:stone`)
+  }
 
   // No foundation dig / headroom clear needed - back on Superflat
   // (2026-08-20, reverted from Single Biome: Desert - real terrain
