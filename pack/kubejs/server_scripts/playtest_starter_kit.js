@@ -976,15 +976,16 @@ PlayerEvents.loggedIn((event) => {
     run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
   })
 
-  // Real, non-obvious finding while looking for the "bed-like blocks
-  // upstairs" - NOT a mod-furniture block as guessed, plain vanilla
-  // `minecraft:spruce_trapdoor` x4 in a 2x2 arrangement at local
-  // [3,5,4]-[6,5,4] (a classic trapdoor-bed decoration trick), one real
-  // floor up from the ground-floor crafting table/cauldron. Left
-  // in place, not removed here - the spec explicitly said this needs a
-  // real decision ("confirming what block it actually is before
-  // deciding whether to clear it or reskin it"), not a guess. Flagged
-  // for a real call, not acted on unilaterally.
+  // "Bed-like blocks upstairs" - real, non-obvious finding while
+  // investigating, not a mod-furniture block as guessed: plain vanilla
+  // `minecraft:spruce_trapdoor` x4 in a row at local [3,5,4]-[6,5,4] (a
+  // classic trapdoor-bed decoration trick), one real floor up from the
+  // ground-floor crafting table/cauldron. Identified first, flagged for
+  // a real decision rather than guessed at - user's call 2026-09-04:
+  // clear it, not reskin.
+  ;[3, 4, 5, 6].forEach((lx) => {
+    run(`setblock ${buildingX0 + lx} ${floorY + 5} ${buildingZ0 + 4} minecraft:air`)
+  })
 
   // House reinforcement (2026-09-04, real playtest feedback batch,
   // direct ask: "reinforce the whole house... full uniform coverage"

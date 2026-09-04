@@ -63,11 +63,11 @@ memory.
    removed (decompiled the structure's own NBT directly - the original
    "8 chests/barrels" count doesn't match the real file, no chests
    exist at all, only 5 barrels).
-6. [needs investigation] "Bed-like" blocks upstairs — **identified, not
-   yet decided.** Real vanilla `minecraft:spruce_trapdoor` x4 (a
-   trapdoor-bed decoration trick), not a mod-furniture block as
-   guessed, at local [3-6,5,4] in the structure's own NBT. Left in
-   place pending a real clear-or-reskin call.
+6. [done, shipped 2026-09-04] "Bed-like" blocks upstairs — identified
+   as real vanilla `minecraft:spruce_trapdoor` x4 (a trapdoor-bed
+   decoration trick), not a mod-furniture block as guessed, at local
+   [3-6,5,4] in the structure's own NBT. User's call: cleared, not
+   reskinned - same as the rest of this batch's decoration-debt strip.
 7. [done, shipped 2026-09-04] Front wall pushed out - implemented as a
    +3 gate-to-pedestal buffer (z1-4 -> z1-7) paired with a matching +3
    on COURTYARD_DEPTH so the rig/building gaps this layout depends on
@@ -128,13 +128,18 @@ memory.
     much slower than the creative-motor test conditions), which is an
     interactive building step this environment can't test without a
     real player.
-14. [decided method] TFTH roster audit, not blanket removal — Flesh
-    Hysterizer confirmed cut. **Peer to sandbox-summon + screenshot the
-    remaining 7 TFTH mobs** (flesh_human, flesh_villager, flesh_dog,
-    plaquecreaturetwo, flesh_suffer, flesh_hunter_two, flesh_boomer) —
-    real, ready to send. **Same pass should also screenshot
-    `mutantszombies:zombie_brute` and `mutant_brute` side by side** for
-    #24 below.
+14. [decided method, real prep done] TFTH roster audit, not blanket
+    removal — Flesh Hysterizer confirmed cut. **Screenshot pass ruled
+    out 2026-09-04** - this environment has no graphical client (same
+    blind spot as #10/#16), so an actual visual audit isn't achievable
+    from here. Instead did the real, cheap check that IS possible: live
+    `/summon`-tested all 7 remaining TFTH mobs - all genuinely
+    registered and summonable, no dead/renamed ids. **Real, useful find
+    along the way**: `plaquecreaturetwo`'s actual in-game display name
+    is "Flesh Hunter One," not something matching its own registry id -
+    worth knowing before the user goes looking for it by a name that
+    won't appear anywhere in-game. The user will do the real visual
+    keep/cut call themselves next time they're in-game.
 15. [done, shipped 2026-09-04] Gold roll bump — BountyBags Rare bag,
     weight 30→45, count 4-6→6-9 (roughly doubles expected gold per
     hit, first-pass tuning number).
@@ -143,21 +148,20 @@ memory.
     unrelated "claim_border" opacity setting) - whether it actually
     renders is a real client-visual check this environment can't
     perform (no graphical client). Needs the user's own look in-game.
-17. [done, shipped 2026-09-04 on the live instance; real conflict
-    found, not fixed] Quest book keybind → Tab - already bound
+17. [done, shipped 2026-09-04] Quest book keybind → Tab - already bound
     correctly in the live `options.txt`. **Real conflict confirmed by
     checking, not assumed**: vanilla's own player-list overlay
     (`key.playerlist`) is ALSO bound to Tab on the same profile -
-    pressing Tab now triggers both actions. Not rebound unilaterally -
-    this pack's own live config already has several pre-existing
-    multi-bindings on other keys (three separate binds share 'u'
-    alone), so this isn't unprecedented, but it's a real, reportable
-    finding, not silently ignored. Also unresolved: whether/how to ship
-    this as tracked config for a fresh install - `options.txt` is
+    pressing Tab now triggers both actions. Flagged, not rebound
+    unilaterally - this pack's own live config already has several
+    pre-existing multi-bindings on other keys (three separate binds
+    share 'u' alone), so this isn't unprecedented. **User's call
+    2026-09-04: keep Tab as-is, accept losing the vanilla player-list
+    overlay** - no rebind needed. Shipping this as tracked config for a
+    fresh install is still a real open question (`options.txt` is
     client-local state, not a mod config folder, and shipping it
-    wholesale would also lock in unrelated settings (video/sound/etc)
-    for every fresh install, a bigger footprint than intended for one
-    keybind. Flagged, not solved.
+    wholesale would lock in unrelated settings too) but not blocking -
+    the live instance already has the right binding.
 18. [done, shipped 2026-09-04] Minimap defaults — north-lock on;
     `displayed: false` set on every non-hostile category (players,
     friendly, items, other_entities) plus hostile's own `tamed`
@@ -204,8 +208,15 @@ memory.
     boot loaded "2 chapters, 29 quests" (19 + 10), 0 FTB Quests errors
     - real caution given this pack's own documented FTB Quests syntax
     crash history.
-24. [decided: verify by screenshot] Other brute mob — folded into #14's
-    screenshot pass, not guessed from the name.
+24. [real prep done, verify by eye] Other brute mob — same screenshot
+    ruled out as #14, real non-visual data gathered instead: both
+    `mutantszombies:zombie_brute` and `mutant_brute` confirmed
+    summonable, plus their real distinguishing stats (live-checked, not
+    guessed) - Zombie Brute: 100 HP / 16 attack; Mutant Brute: 120 HP /
+    18 attack (tougher and hits harder). The name itself is a real clue
+    too - "Zombie Brute" is the more zombie-like one by naming alone,
+    not verified visually. Final identification still the user's own
+    call in-game.
 25. [done, shipped 2026-09-04] Flesh Hysterizer removed (same call as
     #14) — wave 8's slot filled with `mutantszombies:crawler` (the
     Advanced Wall Climber API mob), user's pick from the 4 real
@@ -271,26 +282,27 @@ memory.
 10. Waystones — set one, then teleport back to it from any other
     Waystone once unlocked.
 
-**Real status as of 2026-09-04**: 16 of 27 items done and shipped
-(#1/#3/#4/#5/#7/#8/#11/#12/#15/#17-partial/#18/#21/#22/#23/#25, plus
-#19 already covered in "Fresh-world playtest, round 3" above). #13 and
-#26 are now real investigated findings, not open questions - #13 found
-no code regression (the rig works end-to-end when powered, real
-remaining cause is the player's own hand-crank connection, an
-interactive step this environment can't test); #26 found the real
-numbers (barbed wire's 2.0 dmg vs Mutant Brute's 120 HP, not a
-resistance issue) plus a real trap comparison recommending the Bear
-Trap's crowd-control value over raw damage. #27's real blocker is now
-answered too (quest progress is per-world, needs a real export/import
-step) but the restart flow itself isn't built yet. Still genuinely
-open: #6 (identified, needs a
-clear-or-reskin decision), #9 (parked by design), #10/#16 (real
+**Real status as of 2026-09-04**: 17 of 27 items done and shipped
+(#1/#3/#4/#5/#6/#7/#8/#11/#12/#15/#17/#18/#21/#22/#23/#25, plus #19
+already covered in "Fresh-world playtest, round 3" above). #13 and #26
+are real investigated findings, not open questions - #13 found no code
+regression (the rig works end-to-end when powered, real remaining cause
+is the player's own hand-crank connection, an interactive step this
+environment can't test); #26 found the real numbers (barbed wire's 2.0
+dmg vs Mutant Brute's 120 HP, not a resistance issue) plus a real trap
+comparison recommending the Bear Trap's crowd-control value over raw
+damage. #27's real blocker is answered too (quest progress is
+per-world, needs a real export/import step) but the restart flow itself
+isn't built yet - the one substantial remaining build item from this
+batch. #14/#20/#24's screenshot pass was ruled out (no graphical client
+in this environment, same blind spot as #10/#16) - real non-visual prep
+done instead: all 7 TFTH mobs and both brute variants confirmed real
+and summonable, plus the brutes' real distinguishing stats gathered
+live. The user does the final visual keep/cut call themselves in-game.
+Still genuinely open: #9 (parked by design), #10/#16 (real
 client-visual/interaction checks this environment can't perform - need
-the user's own
-in-game look), #2 (verified real, not installed - no install was
-actually requested). The screenshot pass for #14/#20/#24's TFTH/brute
-audit hasn't happened yet either - report back with real screenshots
-before cutting anything from the roster, per the user's own request.
+the user's own in-game look), #2 (verified real, not installed - no
+install was actually requested).
 
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
