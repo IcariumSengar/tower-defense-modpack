@@ -78,7 +78,7 @@ function starterGearNbt(extra) {
 // actual seed turns out to be, instead of trusting a number picked in
 // advance for a different world.
 //
-// Same 4 biomes as data/kubejs/tags/worldgen/biome/wasteland.json, kept
+// Same 2 biomes as data/kubejs/tags/worldgen/biome/wasteland.json, kept
 // as a plain array here rather than a live tag lookup -
 // `Holder<Biome>#is(String)` in this exact KubeJS build only resolves a
 // literal biome id, not real tag membership (tested directly: threw on
@@ -87,15 +87,16 @@ function starterGearNbt(extra) {
 // array is what the runtime search actually checks against. Keep both
 // in sync if this roster ever changes.
 //
-// Split into a preferred BARE pair and a fallback pair (2026-09-06,
-// direct feedback: "Can we have less trees on spawn, its not much of a
-// wasteland when there are flowers, trees, grass everywhere!") - desert
-// and badlands are naturally barren in vanilla, savanna/savanna_plateau
-// carry real acacia trees and tall grass. The search below tries the
-// bare pair first and only falls back to the leafier pair if nothing
-// bare enough turns up within a reasonable range.
+// Savanna/savanna_plateau dropped entirely 2026-09-06 (real follow-up
+// playtest, on a genuine fresh world: "savanna is still looking far too
+// green. lose this biome, stick with wasteland feel."). The earlier
+// bare-first-then-leafy-fallback search only ever deprioritized savanna
+// - it never stopped landing there when desert/badlands weren't close
+// enough, and the vegetation-clearing pass was always local-radius-only,
+// never able to fix savanna's real problem (its green grass-block ground
+// color and visible horizon past the cleared radius, not just its
+// foliage). Desert/badlands are now the only acceptable outcome.
 const BARE_WASTELAND_BIOMES = ['minecraft:desert', 'minecraft:badlands']
-const LEAFY_WASTELAND_BIOMES = ['minecraft:savanna', 'minecraft:savanna_plateau']
 
 // `level.getBiome([x, y, z])` is a real, fast, pure lookup - confirmed
 // directly in a sandbox to resolve correctly (and near-instantly, ~0.3ms
@@ -109,19 +110,279 @@ function biomeIdAt(level, x, z) {
   return `${level.getBiome([x, 64, z]).key().location()}`
 }
 
+// Real structure-proximity check (2026-09-06 follow-up: "the generated
+// structures have spawned right outside my base" - the spawn search
+// only ever checked biome, never checked for a nearby structure, so it
+// had no way to avoid this). Real, direct-API technique, same spirit as
+// the biome check above, not parsing command feedback text: vanilla's
+// own `ChunkGenerator#findNearestMapStructure` - the exact method
+// `/locate structure` itself calls internally, a pure deterministic
+// lookup that works without needing the area actually generated, same
+// category as `getBiome`.
+//
+// Real Java reflection required to reach it, every step live-verified
+// in a sandbox before trusting it, not guessed:
+// - This exact method's real runtime name in this build is
+//   SRG-obfuscated (`m_223037_`, found by dumping every 5-param method
+//   on the chunk generator's class and matching by parameter shape -
+//   ServerLevel/HolderSet/BlockPos/int/boolean -> Pair) even though
+//   sibling methods on Level/ServerLevel (getChunkSource/getGenerator)
+//   resolve to clean names directly by dot-syntax. This build's
+//   clean-name coverage is inconsistent per-method, not a simple
+//   "vanilla methods work / don't" rule - has to be checked per method.
+// - Building the required `HolderSet<Structure>` argument took several
+//   live-corrected wrong turns: `Registry#wrapAsHolder(T)` (the
+//   obvious-looking shortcut once you already have a raw Structure
+//   object) throws "This registry can't create intrusive holders" for
+//   datapack-driven registries like Structure - that path only works
+//   for the handful of core registries vanilla special-cases
+//   (Block/Item/EntityType). Real fix: enumerate the registry directly
+//   via `Registry#holders()` (a `Stream<Holder.Reference<T>>` of every
+//   currently-registered structure) instead of looking any up by id -
+//   simpler AND more complete than a hand-curated id list, can't miss a
+//   structure mod's id through a typo, and stays correct automatically
+//   if the mod roster ever changes. Structures outside this pack's
+//   curated biome set (ocean/nether/end ones) are harmless to include -
+//   they simply can never be found nearby, since they can't generate in
+//   this pack's biome_source at all.
+// - `Stream#toList()` threw a real `IllegalAccessException` when
+//   reflected off the stream's own concrete class
+//   (`java.util.stream.ReferencePipeline`) - a Java module-system
+//   gotcha, that impl class isn't exported by the `java.base` module
+//   even though `toList()` itself is public. Fixed by reflecting the
+//   method off the public `Stream` INTERFACE class instead of the
+//   concrete implementation.
+// - Raw `Method#invoke()`/`Constructor#newInstance()` need REAL boxed
+//   Java primitives, not bare JS numbers/booleans - confirmed live via
+//   a genuine "argument type mismatch" `IllegalArgumentException` from
+//   passing a plain JS number for `BlockPos`'s `int` constructor params.
+//   Rhino's usual automatic coercion only applies to normal dot-syntax
+//   calls, not manual reflection invocation (the same underlying
+//   limitation mob_aggro.js already hit for functional-interface
+//   coercion). Fixed via `Integer.valueOf(String)`/
+//   `Boolean.valueOf(String)`, since a JS string DOES pass through
+//   reflection cleanly (proven working elsewhere in this same chain).
+//
+// `STRUCTURE_MIN_DISTANCE` (200 blocks) is sized against this pack's own
+// real worldborder growth curve (`base_expansion.js`), not guessed:
+// starting diameter 50 + the full 8-wave campaign's cumulative growth
+// (5+5+5+10+10+10+15+15 = 75) caps at diameter 125 - comfortably under
+// 200 even counting the full designed campaign's end state, with margin
+// left over for early endless-phase growth beyond that.
+//
+// Cost: the whole reflection chain (registry lookup + enumerating every
+// registered structure, 135 on this pack's real mod set + one
+// `findNearestMapStructure` call) measured live at ~1.6s - but that
+// setup only happens ONCE per login (`buildStructureProximityCheck`
+// below), reused across every ring-search candidate; only the cheap
+// final `findNearestMapStructure` call itself repeats per candidate.
+var STRUCTURE_MIN_DISTANCE = 200
+
+function findMethodByShape(cls, paramCount, retTypeName, paramTypeNames) {
+  var all = cls.getMethods()
+  for (var i = 0; i < all.length; i++) {
+    var m = all[i]
+    var params = m.getParameterTypes()
+    if (params.length !== paramCount) continue
+    if (retTypeName && `${m.getReturnType().getName()}` !== retTypeName) continue
+    var ok = true
+    if (paramTypeNames) {
+      for (var j = 0; j < paramTypeNames.length; j++) {
+        if (paramTypeNames[j] && `${params[j].getName()}` !== paramTypeNames[j]) ok = false
+      }
+    }
+    if (ok) return m
+  }
+  return null
+}
+
+// A Class object's own getClass() is always java.lang.Class - lets this
+// reach Class.forName(String) (a static method) without the disabled
+// `java.*` global, for any already-bound Java object passed in. Same
+// technique as mob_aggro.js's own resolveClass, redeclared here rather
+// than shared - this codebase's own established cross-file duplication
+// pattern (server_scripts don't reliably share top-level var/const, and
+// keeping each file self-contained beats a hidden load-order
+// dependency for something this small).
+function resolveClass(anyObj, className) {
+  var classOfClass = anyObj.getClass().getClass()
+  var forNameMethod = findMethodByShape(classOfClass, 1, 'java.lang.Class', ['java.lang.String'])
+  return forNameMethod.invoke(null, [className])
+}
+
+// Real second ambiguity caught by the same live audit that found the
+// holders() bug above: `java.lang.Integer` has THREE real 1-arg(String)
+// methods returning Integer - `valueOf` (wanted), `decode` (also parses
+// hex/octal prefixes, would silently misparse some inputs), and
+// `getInteger` (reads a JVM SYSTEM PROPERTY named by the string - not a
+// numeric parse at all, returns null for any of our real inputs). Same
+// unspecified-`getMethods()`-order risk as before, so name is checked
+// explicitly here too, not just shape - java.lang.Integer is a plain,
+// unobfuscated core JDK class, so matching by its real clean method name
+// is exactly as reliable as shape-matching, not a step down in rigor.
+function findMethodByNameAndShape(cls, name, paramCount, retTypeName, paramTypeNames) {
+  var all = cls.getMethods()
+  for (var i = 0; i < all.length; i++) {
+    var m = all[i]
+    if (m.getName() !== name) continue
+    var params = m.getParameterTypes()
+    if (params.length !== paramCount) continue
+    if (retTypeName && `${m.getReturnType().getName()}` !== retTypeName) continue
+    var ok = true
+    if (paramTypeNames) {
+      for (var j = 0; j < paramTypeNames.length; j++) {
+        if (paramTypeNames[j] && `${params[j].getName()}` !== paramTypeNames[j]) ok = false
+      }
+    }
+    if (ok) return m
+  }
+  return null
+}
+
+function boxInt(anyObj, n) {
+  var intCls = resolveClass(anyObj, 'java.lang.Integer')
+  var valueOf = findMethodByNameAndShape(intCls, 'valueOf', 1, 'java.lang.Integer', ['java.lang.String'])
+  return valueOf.invoke(null, [`${n}`])
+}
+function boxBool(anyObj, b) {
+  var boolCls = resolveClass(anyObj, 'java.lang.Boolean')
+  var valueOf = findMethodByNameAndShape(boolCls, 'valueOf', 1, 'java.lang.Boolean', ['java.lang.String'])
+  return valueOf.invoke(null, [`${b}`])
+}
+
+// Builds the real find-nearest-structure closure ONCE (not per
+// candidate point) - every reflection lookup below only runs one time;
+// only the returned function's own `invoke()` call repeats per
+// candidate. Returns null (logged) if anything in the chain fails -
+// never lets a reflection break spawn placement entirely, same
+// resilience philosophy as mob_aggro.js's stripAutoRetargeting: the
+// caller falls back to a biome-only search rather than being unable to
+// spawn the player at all.
+function buildStructureProximityCheck(level) {
+  try {
+    var rlCls = resolveClass(level, 'net.minecraft.resources.ResourceLocation')
+    var rlCtor = null
+    var rlCtors = rlCls.getConstructors()
+    for (var i = 0; i < rlCtors.length; i++) {
+      var ps = rlCtors[i].getParameterTypes()
+      if (ps.length === 1 && `${ps[0].getName()}` === 'java.lang.String') rlCtor = rlCtors[i]
+    }
+
+    var rkCls = resolveClass(level, 'net.minecraft.resources.ResourceKey')
+    var createRegistryKeyMethod = findMethodByShape(rkCls, 1, null, ['net.minecraft.resources.ResourceLocation'])
+    var structureRegistryKey = createRegistryKeyMethod.invoke(null, [rlCtor.newInstance(['minecraft:worldgen/structure'])])
+
+    var ra = level.registryAccess()
+    var registryOrThrow = findMethodByShape(ra.getClass(), 1, 'net.minecraft.core.Registry', ['net.minecraft.resources.ResourceKey'])
+    var structureRegistry = registryOrThrow.invoke(ra, [structureRegistryKey])
+
+    // Every currently-registered structure, as real Holder.Reference
+    // objects directly - see the header comment above for why this
+    // beats a hand-curated id list.
+    //
+    // Real bug caught by a live end-to-end test, not assumed safe from
+    // the isolated reflection probe alone: `Class#getMethods()`'s
+    // ordering is explicitly unspecified by the JLS, and this registry
+    // class has FOUR real 0-arg Stream-returning methods, not one -
+    // `Stream<Pair<TagKey<T>, HolderSet.Named<T>>>` (getTags),
+    // `Stream<TagKey<T>>` (getTagNames), `Stream<Holder.Reference<T>>`
+    // (holders - the one actually wanted), and `Stream<T>` (stream, raw
+    // values). A plain `paramCount+returnType` shape match, or even a
+    // loose `.includes('Holder')` check against the generic signature
+    // (the tags stream's `HolderSet.Named` also contains the substring
+    // "Holder"!), picked a different one of these between separate JVM
+    // launches depending on `getMethods()`'s own unspecified ordering -
+    // worked in one boot, then threw a real "Pair cannot be cast to
+    // Holder" in the very next one, same code, same mod set, once the
+    // tags-stream method happened to win instead. Fixed with a precise
+    // discriminator: the exact nested-class name `Holder$Reference` in
+    // the real GENERIC return type string (`getGenericReturnType()`,
+    // which survives erasure unlike `getReturnType()`) - the ONLY one of
+    // the 4 real candidates whose signature contains that exact string.
+    var regMethodsForHolders = structureRegistry.getClass().getMethods()
+    var holdersMethod = null
+    for (var hi = 0; hi < regMethodsForHolders.length; hi++) {
+      var hm = regMethodsForHolders[hi]
+      if (hm.getParameterTypes().length !== 0) continue
+      if (`${hm.getReturnType().getName()}` !== 'java.util.stream.Stream') continue
+      if (!`${hm.getGenericReturnType()}`.includes('Holder$Reference')) continue
+      holdersMethod = hm
+    }
+    var holdersStream = holdersMethod.invoke(structureRegistry, [])
+    var streamCls = resolveClass(level, 'java.util.stream.Stream')
+    var toListMethod = findMethodByShape(streamCls, 0, 'java.util.List', null)
+    var holdersList = toListMethod.invoke(holdersStream, [])
+
+    var holderSetCls = resolveClass(level, 'net.minecraft.core.HolderSet')
+    var directMethod = findMethodByShape(holderSetCls, 1, null, ['java.util.List'])
+    var allStructuresHolderSet = directMethod.invoke(null, [holdersList])
+
+    var gen = level.getChunkSource().getGenerator()
+    var genMethods = gen.getClass().getMethods()
+    var findNearestMethod = null
+    for (var i = 0; i < genMethods.length; i++) {
+      var m = genMethods[i]
+      var ps = m.getParameterTypes()
+      if (ps.length === 5 && `${ps[3].getName()}` === 'int' && `${ps[4].getName()}` === 'boolean') findNearestMethod = m
+    }
+
+    var bpCls = resolveClass(level, 'net.minecraft.core.BlockPos')
+    var bpCtor = null
+    var bpCtors = bpCls.getConstructors()
+    for (var i = 0; i < bpCtors.length; i++) {
+      var ps = bpCtors[i].getParameterTypes()
+      if (ps.length === 3 && `${ps[0].getName()}` === 'int') bpCtor = bpCtors[i]
+    }
+
+    // +2 chunks of margin past the exact block-distance threshold, so a
+    // structure just past STRUCTURE_MIN_DISTANCE in blocks isn't missed
+    // by a search radius that's rounded down in chunks.
+    var searchRadiusChunks = boxInt(level, Math.ceil(STRUCTURE_MIN_DISTANCE / 16) + 2)
+    var skipKnown = boxBool(level, false)
+
+    // Real distance (blocks) to the nearest structure of any kind, or
+    // null if none within the search radius - the caller compares this
+    // against STRUCTURE_MIN_DISTANCE itself, since findNearestMapStructure's
+    // own searchRadius argument is in CHUNKS and only bounds the search -
+    // it doesn't guarantee the result is within any particular block
+    // distance, that still has to be computed from the real returned
+    // position.
+    return function (x, z) {
+      var pos = bpCtor.newInstance([boxInt(level, x), boxInt(level, 64), boxInt(level, z)])
+      var result = findNearestMethod.invoke(gen, [level, allStructuresHolderSet, pos, searchRadiusChunks, skipKnown])
+      if (result == null) return null
+      var foundPos = result.getFirst()
+      var dx = foundPos.getX() - x
+      var dz = foundPos.getZ() - z
+      return Math.sqrt(dx * dx + dz * dz)
+    }
+  } catch (e) {
+    console.log('playtest_starter_kit.js: structure-proximity check unavailable (' + e + '), spawn search will skip it and fall back to biome-only')
+    return null
+  }
+}
+
 // Ring-by-ring outward search from a given anchor for any biome in
 // `biomeList` - cheap enough to run synchronously during login (a real
 // sandbox timing test: 441 lookups in 141ms). Step 48 keeps the ring
 // count (and worst-case call count) reasonable while still being
-// fine-grained enough not to skip over a real biome patch.
-function searchForBiome(level, startX, startZ, biomeList, maxRadius) {
+// fine-grained enough not to skip over a real biome patch. `isAcceptable`
+// (optional) runs only on cells that already matched the biome, and can
+// reject an otherwise-matching candidate to keep searching - used by the
+// structure-proximity check below.
+function searchForBiome(level, startX, startZ, biomeList, maxRadius, isAcceptable) {
   const step = 48
-  if (biomeList.includes(biomeIdAt(level, startX, startZ))) return [startX, startZ]
+  function candidateOk(x, z) {
+    if (!biomeList.includes(biomeIdAt(level, x, z))) return false
+    if (isAcceptable && !isAcceptable(x, z)) return false
+    return true
+  }
+  if (candidateOk(startX, startZ)) return [startX, startZ]
   for (let r = step; r <= maxRadius; r += step) {
     for (let dx = -r; dx <= r; dx += step) {
       for (let dz = -r; dz <= r; dz += step) {
         if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue // ring only, not a full grid
-        if (biomeList.includes(biomeIdAt(level, startX + dx, startZ + dz))) return [startX + dx, startZ + dz]
+        if (candidateOk(startX + dx, startZ + dz)) return [startX + dx, startZ + dz]
       }
     }
   }
@@ -130,21 +391,29 @@ function searchForBiome(level, startX, startZ, biomeList, maxRadius) {
 
 // Seed-independent from a seed-independent anchor (world origin) -
 // correct for whatever the actual seed is, unlike a hardcoded
-// coordinate. Tries the bare pair out to a real "reasonable range" first
-// (1200 - comfortably past every close-range distance measured in this
-// pack's own biome-census history, e.g. the 864-block savanna hit that
-// shipped the seed-independent search itself); only falls back to the
-// leafy pair (searched out to the same 2000-block ceiling the original
-// single-pass search used) if nothing barren enough turned up. Costs a
-// real but small extra worst-case delay (re-scanning 0-1200 a second
-// time for the fallback) - acceptable for a one-time login event, not
-// worth the added complexity of merging both scans into one pass.
+// coordinate. **Radius widened to 4000 (from 1200) 2026-09-06** - real
+// consequence of dropping the leafy fallback above, handled
+// deliberately, not ignored: the old radius was sized assuming a safety
+// net existed if it came up short. With no net, the radius itself has to
+// be trusted to actually find desert/badlands - 4000 is directly
+// informed by real data already measured in this pack's own history, not
+// picked arbitrarily: the vegetation Y-range fix found desert/badlands
+// sitting ~3650 blocks from a real savanna_plateau landing point on one
+// actual save. Worst-case cost at this radius (only paid if genuinely
+// nothing barren turns up anywhere within it, which would itself be a
+// real finding about the seed, not the expected path): ~27,900
+// `getBiome` calls at this file's own measured ~0.3ms/call, ~8.4s - a
+// one-time login cost, acceptable for how rare that case should be given
+// desert+badlands are 2 of only 7 curated biomes in this pack's
+// multi_noise blend. If it still comes back null, the caller (below)
+// has a real, defined fallback - not left undefined.
 function findWastelandSpawn(level, startX, startZ) {
-  const bareHit = searchForBiome(level, startX, startZ, BARE_WASTELAND_BIOMES, 1200)
-  if (bareHit) return bareHit
-  // Real finding to report if this also comes back null, not a reason
-  // to silently pick a worse spot - see the caller's own fallback below.
-  return searchForBiome(level, startX, startZ, LEAFY_WASTELAND_BIOMES.concat(BARE_WASTELAND_BIOMES), 2000)
+  var structureDistanceAt = buildStructureProximityCheck(level)
+  var isAcceptable = structureDistanceAt ? function (x, z) {
+    var dist = structureDistanceAt(x, z)
+    return dist === null || dist >= STRUCTURE_MIN_DISTANCE
+  } : null
+  return searchForBiome(level, startX, startZ, BARE_WASTELAND_BIOMES, 4000, isAcceptable)
 }
 
 PlayerEvents.loggedIn((event) => {
@@ -182,23 +451,26 @@ PlayerEvents.loggedIn((event) => {
   // trusting a number picked in advance - see `findWastelandSpawn()`
   // above. World origin (0,0) is the anchor precisely because it's
   // seed-independent - no reason to prefer one arbitrary point over
-  // another when the search itself now does the real work. **Biased
-  // toward desert/badlands 2026-09-06** (direct feedback: "Can we have
-  // less trees on spawn, its not much of a wasteland when there are
-  // flowers, trees, grass everywhere!" - savanna/savanna_plateau carry
-  // real vanilla acacia trees and tall grass, unlike the barer pair) -
-  // see `findWastelandSpawn()`'s own two-phase search above.
+  // another when the search itself now does the real work.
+  // **Savanna/savanna_plateau dropped entirely 2026-09-06** (real
+  // follow-up playtest: "savanna is still looking far too green. lose
+  // this biome, stick with wasteland feel.") - desert/badlands are now
+  // the only acceptable outcome, see `findWastelandSpawn()` above for
+  // the widened radius that makes that safe.
   const wastelandTarget = findWastelandSpawn(player.getLevel(), 0, 0)
   if (wastelandTarget) {
     event.server.runCommandSilent(`spreadplayers ${wastelandTarget[0]} ${wastelandTarget[1]} 1 8 false @a`)
   } else {
-    // Real, honest fallback - a search radius of 2000 blocks turning up
-    // nothing is itself a finding worth surfacing (unusual seed, or the
-    // curated biome set is oddly sparse near origin), not silently
-    // pretending it worked. Falls back to world origin - still
-    // heightmap-snapped, still gets a working base, just not guaranteed
-    // to be in-theme this one time.
-    console.log('playtest_starter_kit.js: no wasteland biome found within 2000 blocks of origin, falling back to (0,0)')
+    // Real, honest fallback - a search radius of 4000 blocks turning up
+    // neither desert nor badlands is itself a finding worth surfacing
+    // (unusual seed, or the curated biome set is oddly sparse near
+    // origin), not silently pretending it worked. Falls back to world
+    // origin - still heightmap-snapped, still gets a working base, just
+    // not guaranteed to be in-theme this one time. Deliberately does NOT
+    // fall back to savanna/savanna_plateau - that fallback is exactly
+    // what this fix removed, reinstating it here would silently undo it
+    // in the one case it's most likely to matter.
+    console.log('playtest_starter_kit.js: no desert/badlands biome found within 4000 blocks of origin, falling back to (0,0)')
     event.server.runCommandSilent('spreadplayers 0 0 1 8 false @a')
   }
 

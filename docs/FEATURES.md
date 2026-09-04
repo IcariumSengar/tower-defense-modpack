@@ -4008,6 +4008,181 @@ genuinely fresh world (documented deployment note above) — confirm the
 report actually came from a world created after that restart before
 looking for a code bug.
 
+**Resolved as a real scope gap, not a bug in what shipped — direct
+follow-up 2026-09-06.** Confirmed on a genuine fresh world: "savanna is
+still looking far too green. lose this biome, stick with wasteland
+feel." Real root cause: the earlier fix only *deprioritized* savanna/
+savanna_plateau (tries desert/badlands first), it never removed them —
+so the search still lands there whenever desert/badlands aren't close
+enough, exactly as designed at the time. And vegetation-clearing only
+ever addressed a radius around the compound; it was never going to fix
+the green grass-block ground and visible landscape stretching to the
+horizon beyond that, since savanna's real problem is its base terrain
+color, not just its foliage. **Real fix: drop savanna/savanna_plateau
+from the search entirely** — `wasteland.json` and
+`playtest_starter_kit.js`'s `LEAFY_WASTELAND_BIOMES` fallback both go,
+leaving desert/badlands as the only acceptable outcome. **Real
+consequence to handle, not ignore**: without the savanna fallback, the
+search needs to be trusted to actually find desert/badlands on its own
+— the existing 1200-block radius was sized assuming a fallback existed
+if it failed. Needs a real, generously wider radius (`getBiome` calls
+are cheap, ~0.3ms each per the original verification, so a much larger
+search is affordable) and a real answer for what happens if genuinely
+nothing is found even at that radius — don't leave that case undefined.
+
+**Shipped 2026-09-04 (real commit date, not the dispatch's own
+2026-09-06 dating).** `LEAFY_WASTELAND_BIOMES` removed entirely from
+both `wasteland.json` and `playtest_starter_kit.js`; `findWastelandSpawn`
+now searches only `BARE_WASTELAND_BIOMES` (desert/badlands), radius
+widened 1200 → 4000 — sized against real data already in this pack's own
+history, not guessed (the vegetation Y-range fix found desert/badlands
+sitting ~3650 blocks from a real savanna_plateau landing point on one
+actual save). The existing origin-fallback (log + spawn at (0,0)) is the
+real, defined answer if the widened search still comes back null - not
+left undefined, and deliberately does NOT fall back to
+savanna/savanna_plateau, since reinstating that would silently undo the
+whole fix. Verified live: multiple real fresh-world sandbox runs each
+found a genuine desert biome only, at real distances up to ~3600 blocks
+from origin (confirming the widened radius was actually necessary, not
+just generous). **Real limit**: fresh-world only, doesn't retroactively
+change the current live save's spawn.
+
+**Real bug, needs live diagnosis — horses still spawning despite the
+passive-mob fix.** Direct report: "horses are spawning, remove them."
+Checked `no_passive_mobs.js` directly before assuming what the bug is:
+`minecraft:horse` is already in `PASSIVE_MOB_TYPES` — this is not a
+missed-entry gap like it might look like from the outside. Something is
+spawning horses through a path the `EntityEvents.spawned` hook doesn't
+catch (structure-placed horses in a village/stable are a real candidate
+worth checking first, given this pack's structure mods, since NBT-piece
+entity placement may not fire through the same spawn event vanilla's
+own natural-spawn/chunk-population paths do — not confirmed, a
+starting hypothesis, not the diagnosis). Needs real live investigation
+against the actual reported case, not another guess at the mob list.
+
+**Diagnosed and fixed 2026-09-04, hypothesis confirmed exactly right.**
+First isolated the natural-spawn path from the structure-placement path
+via live testing, not assumed: forced real chunk generation in a fresh
+desert area (where the widened spawn search above actually lands) and
+confirmed `no_passive_mobs.js` DOES reliably catch and discard horses
+spawned through the normal chunk-population pass (10/10 caught live,
+same mechanism already verified for cows/sheep/etc). The real bug: **The
+Lost City's `villages_city_main_tile1.nbt`** (one specific village piece,
+confirmed the only offender across every currently-installed structure
+mod - checked all of Philip's Ruins/Big Lost City/Abandoned Urban/
+postapocalypse_structures/the_lost_city's real structure NBTs directly,
+205+ files) bakes 3 real horse entities directly into its structure
+template as saved entity NBT (id/UUID/Age/Motion tags), placed via
+`StructureTemplate#placeInWorld`'s entity-placement step when that piece
+generates - a genuinely different code path from natural spawning that
+doesn't fire `EntityEvents.spawned` at all (checked KubeJS's real
+`EntityEvents`/`LevelEvents`/`WorldgenEvents` bindings directly by
+decompiling the class - no catch-all "entity joined level" event is
+exposed at all in this build, so there was no event-based fix
+available). **Real fix, surgical not sweeping**: parsed the real
+structure NBT with `prismarine-nbt`, found the entity list has 20 real
+entries (11 villagers, a painting, item frames, an armor stand, and the
+3 horses - a normal, intentional village layout, not something to
+delete wholesale), stripped only the 3 `minecraft:horse` entries, and
+shipped the rewritten file as a `pack/kubejs/data/the_lost_city/
+structures/villages_city_main_tile1.nbt` override - same datapack-layer
+override mechanism already used for every JSON worldgen file this
+session, just for a binary NBT resource instead. Verified byte-for-byte
+that blocks/palette/size are completely unchanged, only the entity list
+differs. **Verified live, not just offline**: booted a sandbox with the
+override loaded, placed the real template directly (`/place template
+the_lost_city:villages_city_main_tile1`), confirmed real villagers still
+present (`VILLAGER_FOUND`) and zero horses anywhere in the world
+afterward (`NO_HORSES_ANYWHERE`).
+
+**Broader than horses, confirmed by the user's own follow-up: "not just
+horses, other mob types too."** Real, not a surprise once the horse
+root cause was understood - if one structure mod's authors baked
+atmospheric animals into their .nbt files, others likely did too. Wrote
+a general version of the horse fix (`strip_passive_mobs.js`, scratchpad
+tool, not shipped as a pack script) that parses every structure `.nbt`
+across all 5 currently-installed structure mods with `prismarine-nbt`
+and strips any entity matching `no_passive_mobs.js`'s own real
+`PASSIVE_MOB_TYPES` list, not just horses. Real, much wider result than
+expected: **25 files across 3 mods**, not 1:
+- **the_lost_city** (7 files): `farm1/2/3.nbt` (real farm pens - 4 pigs,
+  6 sheep, 4 cows), `t_big_house.nbt` + `t_big_house_template.nbt` (1 bat
+  each), `villages_city_main_tile1.nbt` (3 horses, the original find),
+  `villages_city_main_tile2.nbt` (3 chickens).
+- **big_lost_city** (22 files): almost entirely atmospheric bats in
+  skyscraper interiors (1-19 per file, real author decoration for
+  "abandoned building" mood) plus a handful of glow_squids in a couple
+  of the taller ones.
+- **abandoned_urban** (1 file): `bigrig.nbt`, 2 bats.
+- **philipsruins**: checked, genuinely clean - zero baked passive mobs
+  anywhere in that mod.
+Every rewritten file verified byte-identical on blocks/palette/size
+(spot-checked across all 3 affected mods, only the entity list differs)
+and the full batch verified via a clean sandbox boot with zero errors
+tied to any of the 25 overrides. Shipped as `pack/kubejs/data/
+{the_lost_city,big_lost_city,abandoned_urban}/structures/` overrides,
+same datapack-layer mechanism as the single-file horse fix above, just
+at real scale once the actual scope was checked instead of assumed.
+
+**Real gap, previously flagged as optional and deprioritized —
+structures generating right next to spawn.** Direct report: "the
+generated structures have spawned right outside my base." This was
+explicitly called out as a possible follow-up when the seed-independent
+spawn search was first specced ("a real 'verify nothing landed too
+close, reroll if so' check would add defense-in-depth but isn't
+required") — that was wrong to defer; a spawn point search that only
+checks biome, never checks for a nearby structure, has no way to avoid
+exactly this. **Real fix: the spawn-point search needs a real
+structure-proximity check as part of what makes a candidate point
+acceptable**, not just a biome match — reject a candidate near an
+already-generated (or about-to-generate) structure and keep searching,
+using the same kind of real, direct-API lookup already proven for the
+biome search rather than parsing command feedback text. Exact technique
+and minimum safe distance left for the build session to verify, not
+guessed here.
+
+**Shipped 2026-09-04.** Real technique: vanilla's own
+`ChunkGenerator#findNearestMapStructure` - the exact method `/locate
+structure` itself calls internally, reached via real Java reflection
+since its runtime name is SRG-obfuscated in this build
+(`m_223037_`, found by matching every 5-param method on the generator
+class by parameter shape). Every step of the reflection chain was
+live-verified before trusting it, including two real bugs caught and
+fixed along the way, not assumed safe from an isolated probe:
+- `Registry#wrapAsHolder(T)` (the obvious-looking shortcut once you
+  already have a raw Structure object) throws "This registry can't
+  create intrusive holders" for datapack-driven registries - only works
+  for a few core registries vanilla special-cases. Fixed by enumerating
+  every currently-registered structure directly via `Registry#holders()`
+  instead of looking any up by id - simpler and more complete than a
+  hand-curated list, can't miss a mod's structure through a typo.
+- **Real, non-obvious bug**: `Class#getMethods()`'s ordering is
+  explicitly unspecified by the JLS, and the Structure registry has FOUR
+  real 0-arg Stream-returning methods (`getTags`, `getTagNames`,
+  `holders`, `stream`) - a plain shape match, even a loose
+  `.includes('Holder')` check against the generic signature (the tags
+  stream's `HolderSet.Named` also contains that substring), picked a
+  different one between separate JVM launches: worked in one boot, threw
+  a real "Pair cannot be cast to Holder" in the very next one, same code,
+  same mod set. Fixed with a precise discriminator - the exact nested
+  class name `Holder$Reference` in the real generic return type string.
+  A second, same-shaped ambiguity was found and fixed the same way in
+  `java.lang.Integer` (`valueOf`/`decode`/`getInteger` all share the
+  1-arg(String)->Integer shape; `getInteger` reads a JVM system property
+  and would have silently returned null) - checked by name, not shape
+  alone, once the pattern was known to be real.
+`STRUCTURE_MIN_DISTANCE` set to 200 blocks, justified against this
+pack's own real worldgen border-growth curve (`base_expansion.js`): the
+full 8-wave campaign's cumulative growth caps the worldborder diameter
+at 125, comfortably under 200. **Verified live end-to-end**: a real
+sandbox run found a genuine desert spawn candidate and computed a real
+208.6-block distance to the nearest of the pack's 135 registered
+structures, correctly accepting it against the threshold - not a trivial
+always-pass case. Full technical writeup (every reflection step, every
+bug, every fix) lives as comments directly in
+`playtest_starter_kit.js` itself. **Real limit**: fresh-world only,
+same as every other spawn-time change in this pack.
+
 **Eliminate passive mobs entirely — requested 2026-09-06, specced,
 ready to build.** Direct feedback: "passive mobs are spawning. I dont
 want passive mobs in the game at all." Real technical picture, not
@@ -4131,6 +4306,367 @@ craftable items, each one gets its own quest (one task, one specific
 item), grouped into that tier's own chapter, rather than one quest with
 a paragraph naming everything. The Tier 1/Tier 2 chapters above are the
 first case this applied to.
+
+---
+
+## Real playtest feedback batch, 2026-09-04
+
+27 items from a real extended playtest session, gathered and specced in
+one pass per direct request ("gather all these feedback points ive
+raised and we can spec the fixes out"). **Held — not sent to build.**
+Each item below reflects real current-state findings (file/line-checked
+against the actual scripts, not assumed), not guesses. Send in whatever
+order/grouping makes sense once reviewed.
+
+### Starting base — strip decoration debt, fix layout
+
+- **Ditch the doomsday decorations.** `doomsday_decoration` is only
+  placed in exactly 2 spots — flanking the gate
+  (`playtest_starter_kit.js:545-546`, a `barrel` and a `woodencrate`).
+  Removing both means the mod becomes fully unused in the pack (its only
+  other footprint is the lang-file override for those same 8 keys,
+  `pack/kubejs/assets/doomsday_decoration/lang/en_us.json`) — **real
+  bonus**: this is a genuine candidate to uninstall the mod outright and
+  delete the lang override with it, not just stop placing its blocks,
+  matching the standing "keep footprint small" principle.
+- **Starter base structure trims** (all in `playtest_starter_kit.js`):
+  - Cobweb debris on the weak wall section (`:511`) — remove.
+  - The "weird dirt blocks with a fence on top" are the grave markers
+    (`graveSpots`, `:650-658` — `coarse_dirt` + `oak_fence`, 3 of them).
+    Worth flagging before cutting: these carry real flavor-text intent
+    ("whoever held this before you," tied to wave 5's gear-removal beat)
+    — removing them is fine if it's purely a look call, just confirming
+    it's not a case of not recognizing what they were for.
+  - The decorative Barbed Wire line just outside the gate (`:547-550`,
+    `createaddition:barbed_wire`) — this is cosmetic-only dressing, not
+    the real craftable Tier 1 defense item (that stays, it's the
+    player's own crafted output). Remove the decorative line.
+  - Entrance: currently a single vanilla `oak_door` at `doorX, z1`
+    (`:517-518`), 1 wide. Change to a genuinely open 3-wide, 3-tall gap
+    (`doorX-1` through `doorX+1`, `wallY0` through `wallY0+2`), no door
+    block at all.
+  - **Cauldron, tripwire hook, and the "bed-like" blocks upstairs are
+    NOT placed by this script** — they're not in
+    `playtest_starter_kit.js` anywhere. They must be baked into the
+    Abandoned Brick House structure's own NBT (`/place template
+    postapocalypse_structures:abandoned_brick_house`, `:685`), the same
+    way the wet_sponge foundation layer and the original mis-read Press
+    spot were. Needs the same technique already proven for those two:
+    decompile `abandoned_brick_house.nbt` directly to find the real
+    local coordinates, then a targeted `/setblock`-to-air (or `/fill
+    replace`) pass after the `/place template` call — not guessed
+    coordinates. The "bed-like blocks" are probably a decorative
+    mod-furniture block reading as a bed, not an actual bed — worth
+    confirming what block it actually is before deciding whether to
+    clear it or reskin it.
+  - Loot: the building's 8 chests/barrels already carry real vanilla
+    `LootTable` refs (`postapocalypse_structures:chests/{trash,cobwebs,
+    food}` — this pack's own earlier loot buff already touched these
+    tables). Direct ask: **remove the starter-base chests altogether**,
+    not just nerf their tables — reads as "loot lives outside the
+    border, not at home," consistent with the standing "loot shouldn't
+    hand out shortcuts to what's already at home" principle (see "Loot
+    bags" section). Same
+    decompile-then-clear technique as the cauldron/tripwire/bed items —
+    find the chest/barrel positions in the NBT, clear them (or their
+    `LootTable` tag specifically) after placement.
+- **Push the front wall out 3 blocks** so the pedestal (`centerX,
+  centerZ = doorX, z1-4`, `:566-567`) isn't right at the opening —
+  direct ask, a fixed 3-block shift to `z1`/gate-side geometry. Small,
+  mechanical change to the existing wall-footprint math.
+- **Reinforce the whole house — decided, full uniform coverage, not the
+  walls' falloff pattern.** Current state: SecurityCraft reinforcement is
+  *only* on the perimeter courtyard walls (falloff-by-distance-from-gate,
+  `:457-506`) — the Abandoned Brick House itself (the actual building)
+  has zero SecurityCraft coverage, since it's a `/place template` stamp
+  of the mod's own NBT (real brick/wood materials, not swappable in bulk
+  without checking what SecurityCraft actually has reinforced
+  equivalents for). Asked falloff-like-the-walls vs. full uniform
+  coverage, given the house is "kinda the permanent fixture throughout
+  the game"; chose full uniform. Needs the same NBT-read to find the
+  house's actual exterior wall block palette, then swap every block that
+  has a real SecurityCraft reinforced equivalent — no distance falloff.
+  Blocks with no reinforced equivalent (likely brick/specific wood) stay
+  as-is; flag honestly which parts of the house end up covered vs. not,
+  rather than silently claiming full coverage if the material palette
+  doesn't fully map.
+- **Revisit the house structure itself** — floated as a maybe ("I may
+  also want to revisit this house structure to something a little
+  cooler"), not a firm ask yet. Parking as an open idea rather than
+  speccing a swap now: worth a look at the other buildings already
+  available across the installed structure mods (Abandoned Urban,
+  Philip's Ruins, Big Lost City) the same way the original Red
+  Mansion → Abandoned Brick House swap compared options, if/when this
+  gets picked up for real.
+- **Crafting table → Crafting Station Improved.** The building's
+  pre-furnished crafting table (same NBT-furniture situation as the
+  cauldron/tripwire/bed items above — not scripted, needs the same
+  decompile-then-patch technique) should become Crafting Station
+  Improved's own bench block instead of vanilla `crafting_table`. Real
+  block id to confirm from the installed mod's registry before writing
+  the patch, not guessed.
+- **Remove the cauldron and tripwire hook** — grouped with the other
+  NBT-furniture items above, same technique needed.
+
+### Pedestal
+
+- **Visible health bar near the pedestal — decided, always-visible in
+  range, not look-only.** Real technical picture: Jade is already
+  installed (`config/jade/` on the live instance) but its info panels
+  come from registered Java providers — there's no config-only way to
+  add a custom HP readout for a KubeJS block's own persistent-data value
+  through Jade without real Java code, so it's not a fit here. Asked
+  always-visible-in-range vs. only-when-looking-at-it; chose
+  always-visible. Real vanilla boss bar (`/bossbar` family),
+  shown/updated from the same throttled tick poll `pedestal_health.js`
+  already runs, visible whenever the player is within some real distance
+  of the pedestal — matches this pack's established "tick-poll + real
+  vanilla command" pattern, no new client-rendering surface needed.
+- **Wave 8's Flesh Hysterizer one-shot the pedestal — resolved by direct
+  decision, not a numeric retune.** Asked which fix direction
+  (rate-limit clustering damage / scale pedestal HP / retune this mob's
+  damage); real answer: "remove the mob. remember i said i didnt like
+  the TFTH mob types." Same decision as the roster audit below —
+  `the_flesh_that_hates:plaquethreelegcreature` ("Flesh Hysterizer,"
+  55/7/4) is cut from wave 8 (`wave_spawner.js:167`) and every other
+  place `WAVE_MOB_TYPES`/`PEDESTAL_WAVE_MOB_TYPES`/`HOSTILE_TYPES` is
+  duplicated (`mob_aggro.js`, `pedestal_health.js`, `wave_status.js`,
+  `loot_bag_drops.js`'s `LEGENDARY_MOBS`). The clustering-sum mechanic
+  in `pedestal_health.js` itself (every mob in range contributes its
+  full attack_damage every second) stays as-is — not proven to be a
+  problem once the specific overtuned/disliked mob is gone, no need to
+  add rate-limiting speculatively. Needs a real replacement pick for
+  wave 8's slot so the "toughest hand-authored mix" doesn't just get
+  weaker — see the roster audit below for a concrete, already-verified
+  candidate.
+
+### Mob roster audit
+
+Direct ask: "the flesh that hates mobs I dont really like... can you
+list the roster to make sure it doesnt leave a gap in variety" —
+followed immediately by "I actually like the brute mob so thats an
+example of doing an audit," and separately flagging "another brute mob
+not from TFTH that looks more zombie like." Reads as a per-mob visual
+audit, not a blanket TFTH removal — the user has already named 2
+keepers, and (see the pedestal entry above) has since confirmed a third
+decision directly: cut `plaquethreelegcreature` ("Flesh Hysterizer,"
+55/7/4) outright, not just retune it. Current TFTH roster in
+`WAVE_MOB_TYPES` (`wave_spawner.js:177-197`), 9 mobs: `flesh_human`,
+`flesh_villager`, `flesh_dog`, `plaquecreaturetwo`, `flesh_suffer`,
+`bruteplaquecreatureone` ("Flesh Brute I," 45/4/5 — **confirmed
+keeper**), `flesh_hunter_two`, `flesh_boomer`,
+~~`plaquethreelegcreature`~~ (**confirmed cut**). The "other brute... not
+from TFTH" is almost certainly one of Mutants and Zombies'
+`mutantszombies:zombie_brute` or `mutantszombies:mutant_brute` — both
+real, both already in the roster; needs the user to confirm which one
+by name/appearance, not guessed here. **Real spec for the remaining 7
+TFTH mobs' audit**: the cleanest way to actually judge "does this look
+right" is a live in-game look, not a name-based guess from this end —
+either the peer summons each of the remaining 7 TFTH mobs in a sandbox
+and screenshots them, or the user eyeballs them next session
+(`/summon the_flesh_that_hates:<id>` for each). Whichever TFTH mobs get
+cut, replace them with equivalent-tier picks from the already-approved
+non-TFTH sources so wave variety/count doesn't shrink — same "replace,
+don't just delete" pattern the original Flesh Unseen substitution used.
+
+**Wave 8's now-empty slot (from cutting Flesh Hysterizer) — real
+candidates, not yet picked.** Two mobs from Mutants and Zombies were
+verified real and summonable during the original roster-pivot pass but
+never actually given a wave slot — a real, pre-existing gap, not
+something new: `mutantszombies:spitter`/`blister_zombie`/
+`split_head_zombie` are already classified as Epic-tier loot
+(`loot_bag_drops.js`'s `EPIC_MOBS`, `:60`) despite never appearing in any
+`WAVES` entry, and `mutantszombies:crawler` (the mob the Advanced Wall
+Climber API dependency exists for) was confirmed real-summoned during
+verification but was never added to a loot tier *or* a wave slot either.
+Any of these four would slot naturally into wave 8 without installing
+anything new — genuine choice, not a technical question, left for the
+user.
+
+- **Barbed wire isn't damaging Mutant Brutes.** Real open question, not
+  diagnosed yet: `createaddition:barbed_wire` is a Create Crafts &
+  Additions block with its own built-in damage mechanic (presumably a
+  contact-damage tick, not something this pack's own scripts control) —
+  needs checking whether that mechanic has a damage-type/resistance
+  interaction that Mutant Brute (or "brute"-class mobs generally) is
+  immune to, versus just not being strong enough to matter against a
+  higher-HP mob (which would read as "working as intended, wrong
+  expectation" rather than a bug). Real follow-up question in the
+  request itself — "what other trap should i be prioritizing to damage
+  it" — needs Trapcraft's Spikes/Bear Trap (both still installed,
+  replaced only as the *decorative* gate dressing, not removed from the
+  mod list) and Medieval Defense Turrets checked against the same
+  question before recommending one, not guessed.
+
+### Loot
+
+- **Boost the gold ingot roll.** The amulet's real recipe
+  (`amulet_pedestal.js:77-83`) costs 8 `gold_ingot` — a hollow ring, no
+  substitute material. Current gold sources: BountyBags Rare tier
+  (`rare.json`, weight 30/~163 total across a 3-roll pool, 4-6 per hit),
+  `structure_loot_progression.js`'s bonus pool (weight 20, 2-3 per hit),
+  plus base vanilla amounts in the Abandoned Brick House's own
+  `food`/`cobwebs` chest tables. Direct ask is to let players reach 8
+  gold sooner — bump one or more of these (Rare tier's weight/count is
+  the most central one, since it's not gated by distance-from-base like
+  the structure bonus pool is) rather than touching the recipe itself.
+  Exact numbers not chosen here — first-pass tuning call for whoever
+  builds it, same as every other numeric tuning item in this pack.
+- **Notify the player what they got when opening a loot bag.** Real
+  open question: BountyBags' own vanilla "gift" loot-table type
+  (confirmed the format from `rare.json`'s `"type":
+  "minecraft:gift"`) drops items into the inventory directly — need to
+  check whether the mod itself already fires a chat/toast message on
+  open (a real per-mod behavior to check, not assume either way) before
+  building a custom notification. If it doesn't, a KubeJS item-use or
+  inventory-change hook comparing before/after contents (or reading the
+  loot table's own roll result directly, if BountyBags exposes that to
+  an event) would need to print the gained items — exact hook TBD,
+  needs the mod's real API checked first.
+
+### QoL / UX
+
+- **Mob outline mod.** User named "Re:Entity Outliner" directly — real
+  check (not assumed from the name matching): it **does** have a real
+  Forge 1.20.1 build (author SioGabx, CurseForge listing confirmed,
+  86.5K+ downloads), not Fabric-only as might be assumed from some
+  older listings. Client-side only, custom keybinds to open an entity
+  selector and toggle outlining, glows selected entity types through
+  obstructions at any distance — matches the ask (highlighting wave
+  mobs) directly. Needs the standard verification pass before install
+  (real file hash, exact Forge 1.20.1/MC 1.20.1 file, no stray
+  dependency) but no alternative-mod research needed — this is a direct
+  hit.
+   Sources: [Re:Entity Outliner (CurseForge)](https://www.curseforge.com/minecraft/mc-mods/re-entity-outliner), [GitHub — SioGabx/ReEntityOutliner](https://github.com/SioGabx/ReEntityOutliner)
+- **Middle-mouse-click inventory sort — likely already works, needs
+  live confirmation before installing anything new.** Real finding: the
+  mod already installed for this pack's Phase 4 QOL batch is "Inventory
+  Sorter" by **cpw** (`config/inventorysorter-client.toml`, both
+  `sortingmodule` and `wheelmovemodule` already `true`) — and cpw's
+  Inventory Sorter's own real feature set is documented as including
+  middle-click sorting and mousewheel item-move out of the box. That
+  means the ask may already be satisfied by what's installed, not
+  missing — "Inventory Sorter Buttons" (a different, separate mod) would
+  likely be redundant and risk a real conflict (two mods hooking the
+  same click). **Real next step: confirm live whether middle-click
+  already sorts with the current config** before installing anything
+  else — don't add a second mod on the assumption the first doesn't do
+  it.
+- **World border rendered on the minimap/world map.** Real open
+  question, not confirmed either way: Xaero's Minimap and World Map (the
+  world-map plugin) may already render the world border automatically
+  by default with no config toggle needed — genuinely unchecked here,
+  needs a live look before assuming a setting or a different mod is
+  required.
+- **Quest book keybind → Tab, permanently.** Needs a real shipped config
+  override, same technique as the Supplementaries Amendments-popup fix
+  (build from the live instance's own generated file, not hand-typed) —
+  FTB Quests' keybind isn't a packwiz-tracked config file yet (none
+  found under `pack/config/ftbquests/`), so this needs pulling the real
+  key from the live instance's `options.txt` (`key_*` line) once set
+  once in-game, then shipping that as tracked config so it applies on a
+  fresh install too — same "diagnose/build from the live instance"
+  pattern as everything else that only materializes after a real client
+  launch.
+- **Minimap default settings.** Two real, confirmed config keys exist
+  already (live instance, `config/xaero/minimap/profiles/default.cfg`):
+  `minimap_north_locked = false` → flip to `true` for always-face-north.
+  Dot colors: the real per-category structure exists too
+  (`default_radar_categories_client.json` — hostile/friendly/players/
+  items are all separate categories with their own `settingOverrides`,
+  including a `displayed` flag per category). Direct ask: red dots for
+  hostile mobs only, nothing else — set `displayed: false` on every
+  non-hostile category (players/friendly/items/other_entities) rather
+  than a blanket radar-off, and confirm hostile's own dot color reads as
+  red (real key present, `"color"` is a numeric Xaero color-index, not a
+  hex value — same "don't assume, read the real serialized format"
+  lesson as the Loot Beams color config). Same "build from the real
+  generated file, ship as tracked config" pattern as the keybind item
+  above.
+- **Debug command: force-complete the current wave.** Real, concrete
+  need (not just convenience) — mobs spawning somewhere unreachable can
+  soft-lock the whole run, since wave-clear detection needs every
+  `WAVE_MOB_TYPES` entity actually dead. Spec: an OP-gated custom
+  command (`ServerEvents.commandRegistry`, level-2-gated same as the
+  Wave Horn's own console-permission pattern) that mass-kills every
+  `WAVE_MOB_TYPES` entity within a large radius of the pedestal, letting
+  whatever `wave_status.js` already uses to detect "all hostiles dead"
+  fire normally — reuses the existing clear-detection path rather than
+  building a second one.
+- **Tips & tricks quest chapter — content confirmed.** New chapter,
+  checkmark-style quests, one per tip, per the standing "one quest per
+  distinct item" rule below. Full confirmed content list in QUEUE.md's
+  checklist entry (item 23) — 10 tips: Z to zoom (confirmed default per
+  Just Zoom's own `KeyMappings.class`), R/U for JEI, M for the world map,
+  Tab for the quest book (once the keybind item above ships),
+  middle-click to auto-sort a container (once the Inventory Sorter item
+  above is confirmed live), Jade's look-at-anything info (no keybind),
+  right-click to open a loot bag, the Curios accessory slot for the
+  amulet, and setting/using Waystones. **F3 dropped by direct user
+  "no"** — not an oversight, deliberately excluded. Matches the standing
+  "quest book must stay in sync with what's actually buildable/usable"
+  principle (IDEAS.md) — this is onboarding for mechanics that already
+  exist, not new game content, so it fits within the current "polish,
+  don't add tiers" priority rather than fighting it.
+
+### Systemic bugs, still open
+
+- **Iron rolling regressed — "not seeing iron being rolled often."**
+  Needs a real live diagnosis against the current kinetic rig (Press →
+  Depot → Rolling Mill, `playtest_starter_kit.js:698+` and the
+  2-block-clearance fix from the last playtest batch) — this pack has
+  already hit two separate real bugs in this exact pipeline (the
+  original wrong-room placement, then the Press-never-auto-fired/
+  clearance issue), so "regressed" needs checking against what's
+  actually live on the current save before assuming which of those (or
+  a new third issue) is back, not re-guessed from the spec alone.
+- **Passive mobs still spawning.** This is the same open item already
+  dispatched to build in the "Fresh-world playtest, round 3" batch (see
+  above, "horses still spawning despite the passive-mob fix") — not a
+  new bug, a confirmation that it's still unresolved as of this
+  playtest. No new spec needed here; just flagging it's still live and
+  should stay prioritized until the peer's diagnosis lands.
+
+### Elegant game-restart flow
+
+Direct ask, explicitly called out as needing real nuance: two distinct
+restart flows, not one —
+1. **Game-over restart** (pedestal destroyed, or all players killed): "a
+   new spawn... keep the quest book progress." Triggered by an actual
+   loss state this pack already detects (`triggerPedestalDestroyed()`,
+   shared across `pedestal_destruction.js`/`pedestal_health.js`; an
+   all-players-killed check would be new, not built yet).
+2. **Total fresh start**: full reset, quests included — presumably a
+   deliberate player-triggered option, not loss-gated.
+
+**Recommended default approach, not asking the user to choose — this is
+just the pack's own already-established pattern applied consistently**:
+every spawn-time build in this pack (base, pedestal, spawn-point search)
+only runs its full setup on a genuinely fresh world's first login — so
+"new spawn" for the game-over restart most naturally means generating an
+actual new world and re-running that existing first-login build path,
+not trying to reset live world state in place (which would be new,
+much riskier surface area — clearing structures, mobs, wave state,
+worldborder, forceloads by hand with no precedent in this codebase).
+
+**The one real, hard open technical question, not guessed**: whether FTB
+Quests' progress data is stored per-world (typical FTB Quests behavior —
+`world/data/ftbquests/` or similar, tied to the save) or in a way that
+could survive a world switch on its own. If it's world-local (likely),
+"new world, keep quest progress" needs a real export/import step —
+reading the current save's quest-progress file and writing it into the
+new world's save at first login — not something that happens for free
+just by keeping the same FTB Quests config. This needs a real check
+against how this exact installed FTB Quests version actually persists
+progress before the game-over flow can be built, not assumed either
+direction. The "total fresh start" flow is simpler by comparison — new
+world, skip the progress-import step entirely.
+
+Not further specced (mechanism for detecting all-players-killed, exact
+command/item to trigger a manual fresh start) until the quest-progress
+question above has a real answer — building either trigger before
+knowing whether progress can actually carry over risks having to redo
+the core mechanism.
 
 ---
 

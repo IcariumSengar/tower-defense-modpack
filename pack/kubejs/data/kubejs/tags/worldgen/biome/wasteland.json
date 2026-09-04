@@ -1,8 +1,6 @@
 {
   "values": [
     "minecraft:desert",
-    "minecraft:badlands",
-    "minecraft:savanna",
-    "minecraft:savanna_plateau"
+    "minecraft:badlands"
   ]
 }

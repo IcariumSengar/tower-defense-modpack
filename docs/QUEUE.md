@@ -23,6 +23,117 @@ reflect actual current status.
 
 ## Ready to build
 
+**Real playtest feedback batch, 2026-09-04 — held, NOT sent to build.**
+Full spec for every item in FEATURES.md's "Real playtest feedback batch,
+2026-09-04" section (right before "Tried and explicitly retired"). Kept
+here as a literal checklist matching the user's own original 1-27
+numbering, not a thematic regroup — the thematic version of this entry
+(replaced 2026-09-04) buried items badly enough that #14/#20/#24/#25 (4
+separate original points, all really one mob-roster decision) read as
+"touched on a handful of things" instead of 27 tracked items. This list
+is the single source of truth for what's decided vs. still needs a call
+— update the tag in place as each resolves, don't re-summarize from
+memory.
+
+1. [decided] Ditch doomsday decorations, AND uninstall the mod outright
+   (now fully unused) + delete its lang override.
+2. [confirmed] Re:Entity Outliner — real Forge 1.20.1 build, direct fit.
+3. [decided] Cobwebs removed / grave markers removed entirely (flavor
+   tie-in to wave 5 knowingly dropped, not missed) / decorative barbed
+   wire line removed / entrance → 3-wide, no door.
+4. [decided] Pedestal HP bar — always-visible-in-range bossbar.
+5. [decided] Starter loot chests — remove all 8 entirely.
+6. [needs investigation] "Bed-like" blocks upstairs — not scripted, in
+   the house's own NBT, needs a decompile before it's even identified.
+7. [confirmed] Front wall pushed out 3 blocks.
+8. [decided] Reinforce the whole house — full uniform coverage, no
+   falloff.
+9. [decided] Revisit house structure — parked, not pursued now (keeps
+   #6/#12's NBT-decompile work on the current house worth doing).
+10. [likely already works] Inventory Sorter middle-click — existing mod
+    already has both modules on; needs a live test, not a new mod.
+11. [confirmed goal] Crafting table → Crafting Station Improved — needs
+    real block id + NBT patch.
+12. [needs investigation] Cauldron + tripwire hook — same bucket as #6.
+13. [needs investigation] Iron rolling regression — needs live diagnosis.
+14. [decided method] TFTH roster audit, not blanket removal — Flesh
+    Hysterizer confirmed cut. **Peer to sandbox-summon + screenshot the
+    remaining 7 TFTH mobs** (flesh_human, flesh_villager, flesh_dog,
+    plaquecreaturetwo, flesh_suffer, flesh_hunter_two, flesh_boomer) —
+    real, ready to send. **Same pass should also screenshot
+    `mutantszombies:zombie_brute` and `mutant_brute` side by side** for
+    #24 below.
+15. [decided] Gold roll bump — BountyBags Rare bag only, weight/count up
+    (exact numbers a first-pass build call, not pinned here).
+16. [needs investigation] World border on minimap — unconfirmed if
+    Xaero already does this.
+17. [confirmed goal] Quest book keybind → Tab — verify no real conflict
+    before shipping.
+18. [decided] Minimap defaults — north-lock on; hostile-only red dots,
+    tamed-hostile subcategory OFF too (hostile-only means hostile-only).
+19. [done, shipped 2026-09-04] Passive mobs still spawning — confirmed
+    broader than horses, and fixed pack-wide. Real root cause: baked
+    passive-mob entities directly in structure `.nbt` files (a
+    placement path that bypasses `no_passive_mobs.js`'s spawn-event
+    hook entirely), not a gap in the mob id list itself. Scanned and
+    stripped across all 5 installed structure mods: 25 files fixed (24
+    beyond the original single horse file), Philip's Ruins confirmed
+    clean. Full writeup in the "Fresh-world playtest, round 3" entry
+    above.
+20. [folded into #14] TFTH audit example — Flesh Brute I confirmed
+    keeper.
+21. [decided] Loot bag open notification — **custom-built, hooked
+    directly to the loot bag's own open action**, not the Loot Journal
+    mod. Real reason: Loot Journal's own filtering can't be confirmed
+    from the outside to scope specifically to "loot bag opens only"
+    (vs. also firing on regular kill/mining pickups, which the user
+    explicitly doesn't want — "spammy"). A custom hook on the bag-open
+    event structurally can't fire on anything else, guaranteed correct
+    scope over an unverified mod filter. Format (chat/actionbar/toast)
+    still a build-time call.
+22. [decided] Debug wave-complete command — force the clear flag
+    regardless of remaining mobs (handles the actual soft-lock scenario
+    even if a mob is stuck somewhere unreachable/unloaded).
+23. [decided] Tips & tricks quest chapter — content confirmed (see list
+    below this checklist; F3 dropped per direct "no," everything else
+    kept).
+24. [decided: verify by screenshot] Other brute mob — folded into #14's
+    screenshot pass, not guessed from the name.
+25. [decided] Flesh Hysterizer removed (same call as #14) — wave 8's
+    slot filled with `mutantszombies:crawler` (the Advanced Wall Climber
+    API mob), user's pick from the 4 real unused-candidate options.
+26. [needs investigation, then a call] Barbed wire vs. Mutant Brute —
+    diagnose the mechanic first, then pick a trap.
+27. [decided: new world each restart] Manual fresh-start trigger:
+    craftable/given item, same pattern as the Wave Horn. All-players-
+    killed: **build the real multiplayer check**, not simplified to
+    solo-player-death (user chose "plan for multiplayer" over the
+    simpler singleplayer-only option). **Real blocker, not a choice**:
+    whether FTB Quests progress survives a world switch — needs
+    investigation before either flow gets built.
+
+**Tips & Tricks chapter — confirmed content**, F3 dropped by direct
+"no," everything else kept:
+1. Z — zoom in (Just Zoom).
+2. R — view a JEI recipe for the item you're hovering.
+3. U — see what uses the item you're hovering (JEI).
+4. M — open the full world map (Xaero World Map).
+5. Tab — open the quest book (once #17 ships).
+6. Middle-click a container — auto-sort its items (once #10's confirmed
+   live).
+7. Just look at a block or mob — Jade shows live info with no keybind
+   needed.
+8. Right-click a loot bag to open it.
+9. Open your inventory and find the Curios accessory slot — that's
+   where the amulet goes, not the armor slots.
+10. Waystones — set one, then teleport back to it from any other
+    Waystone once unlocked.
+
+**Say the word and this goes out in whatever grouping makes sense** —
+the `[confirmed]`/`[decided]` items above (nearly everything now) could
+ship as one quick batch well ahead of the `[needs investigation]` ones
+(#6/#12/#13/#16/#26).
+
 **2026-09-01 playtest feedback batch** — real extended playtest, first
 one to exercise the endless-phase scaling, Tier 2, and the base
 redesign together. Sequenced 2026-09-01 (user-confirmed order). Phases
@@ -65,6 +176,48 @@ below); Phase 5 not started:
 
 ## In progress (sent directly to the build session)
 
+- **Fresh-world playtest, round 3 — done, shipped 2026-09-04 (real
+  commit date, not the dispatch's own 2026-09-06 dating).** Full detail
+  in FEATURES.md right after "Real playtest report, 2026-09-06" (under
+  "Reduce vegetation near spawn"). All 3 original items done and
+  live-verified, plus a real 4th finding along the way:
+  1. **Savanna/savanna_plateau removed entirely** from the spawn search
+     (both `wasteland.json` and `playtest_starter_kit.js`), radius
+     widened 1200 → 4000 blocks (justified against real prior data in
+     this pack's own history, not guessed). Verified live: multiple
+     fresh-world runs each found real desert-only spawns, at distances
+     up to ~3600 blocks confirming the wider radius was actually needed.
+  2. **Horses root-caused, not just patched**: confirmed the existing
+     `no_passive_mobs.js` hook DOES catch natural chunk-population
+     spawns (10/10 live); the real bug was baked-in horse entities in
+     one of The Lost City's own structure NBTs, a placement path that
+     doesn't fire KubeJS's spawn event at all (checked - no catch-all
+     "entity joined" event exists in this KubeJS build). Fixed by
+     surgically stripping the 3 horse entities from that one file's real
+     NBT data via `prismarine-nbt`, leaving its 17 other real entities
+     (villagers, decor) untouched. Verified live: placed the real
+     template, confirmed villagers present, zero horses anywhere.
+  3. **Structure-proximity check** added to the spawn search via real
+     reflection into vanilla's `findNearestMapStructure` (SRG-obfuscated
+     in this build). Caught and fixed 2 real ambiguous-reflection bugs
+     along the way (`Class#getMethods()`'s ordering is unspecified by
+     the JLS - a naive shape match picked the wrong same-shaped method
+     between separate boots, twice, for two different classes) before
+     trusting it. `STRUCTURE_MIN_DISTANCE = 200` blocks, justified
+     against this pack's own real border-growth curve (caps at diameter
+     125 across the full 8-wave campaign). Verified live end-to-end: a
+     real 208.6-block distance computed and correctly accepted against
+     the threshold, not a trivial pass.
+  4. **Real 4th finding, not in the original 3**: the user's own
+     follow-up ("not just horses, other mob types too") was right - the
+     same baked-entity root cause existed in 24 MORE structure files
+     across 2 more mods (big_lost_city's skyscrapers are full of
+     atmospheric bats, the_lost_city has 3 farm pens plus a couple more
+     houses). Same general scan + strip technique applied pack-wide
+     across all 5 installed structure mods (Philip's Ruins checked
+     clean). 25 files total, all verified byte-identical except entity
+     lists, full batch boot-tested clean before shipping. See item #19
+     in the "Real playtest feedback batch" checklist below - now done.
 - **Seed-independent world-gen — done, shipped 2026-09-06.** Full
   writeup in FEATURES.md's "Seed-independent world-gen" entry (under
   "World type").
@@ -1009,6 +1162,15 @@ below); Phase 5 not started:
   playtests since.
 
 ## On hold — deliberately not queued right now
+
+**Priority reset, 2026-09-06** — direct instruction: "I want the early
+to mid game be solid enough to sink some proper playtesting in rather
+than see a bunch of bugs and visual noise... the extra tiers and
+mechanics can wait." Everything in this section (new tiers, new
+mechanics, new mob content) is explicitly deprioritized behind a real
+extended playtest of what already exists — don't propose or build
+anything here unless the user brings it back up themselves. Bugs/visual
+polish surfaced by that playtest take priority over all of it.
 
 - **Storage & power system** — fully specced 2026-09-01 (see
   FEATURES.md's "Defense" section, "Storage & power system" entry).
