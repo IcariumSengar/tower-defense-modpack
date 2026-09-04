@@ -945,11 +945,6 @@ hash = "5240c62752415b5d66d4beffec4fe98c253eba8ebcbb2a5c1097fc3ad3de0b00"
 metafile = true
 
 [[files]]
-file = "mods/subtle-effects.pw.toml"
-hash = "d21d512e29de5776df8b79e3f9678f68149b6106690eea9ae6ef32526965eb8d"
-metafile = true
-
-[[files]]
 file = "mods/supplementaries.pw.toml"
 hash = "148bc9c5989ac676d91b6f07a5e871d7b5d11c1b7b46fe30c3894c1512069a88"
 metafile = true

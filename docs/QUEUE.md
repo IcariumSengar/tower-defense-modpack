@@ -29,7 +29,25 @@ installed.** Full spec in FEATURES.md's "Polish/utility mod pass,
 - [done] **Sodium/Embeddium Dynamic Lights** + its real dependency
   **Sodium/Embeddium Options API** - installed via packwiz, both jars
   downloaded and sha1-verified, deployed to the live instance.
-- [done] **Subtle Effects** - installed, verified, deployed.
+- [reverted, real incompatibility found] **Subtle Effects** - initially
+  installed and deployed, but a genuine full-mod-set sandbox boot test
+  (prompted by a direct "is it safe to launch" check, not run
+  proactively enough beforehand - real process gap, noted) caught a
+  real crash: `Mod 'subtle_effects' requires forge 47.4.14 or above.
+  Currently, forge is 47.4.10`. Checked the real `mods.toml` in the
+  installed jar directly to confirm the exact version floor, then
+  checked the 2 next-older CurseForge releases (1.14.2, 1.14.1) the
+  same way - **both carry the identical `[47.4.14,)` requirement**, so
+  this isn't a recent regression to dodge by downgrading, the mod
+  genuinely needs a newer Forge than this pack is pinned to across its
+  whole recent history. Removed entirely (packwiz + live jar + sandbox)
+  rather than bump this pack's own pinned Forge version unilaterally -
+  that's a real, separate decision (bumping 47.4.10→47.4.14+ is a much
+  smaller ask than the NeoForge migration this pack has already
+  deliberately deferred, but still a real call, not mine to make
+  silently for one polish mod). Re-verified clean: a full fresh-world
+  boot with the complete corrected mod set reached "Done," 16/16 KubeJS
+  scripts with 0 errors, FTB Quests loaded its full 29 quests.
 - [real blocker found, not guessed past] **Damage Numbers by
   luavixen** - genuinely harder to pin down than expected. Two separate
   CurseForge search attempts (`damage numbers`, then the exact slug
