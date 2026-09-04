@@ -10,7 +10,7 @@
 	quest_links: [ ]
 	quests: [
 		{
-			description: ["Whoever was here before you didn't make it, but they left the place standing - that's not nothing. Sound the horn when you're actually ready, not before. Never did figure out where the horde comes from before it shows up here. Worth keeping an eye out, if you're the type."]
+			description: ["Whoever was here before you didn't make it, but they left the place standing - that's not nothing. Sound the horn when you're actually ready, not before. Once you do, they're coming, and they don't stop until the wave's cleared."]
 			icon: {
 				Count: 1
 				id: "minecraft:netherite_sword"
@@ -33,7 +33,7 @@
 			y: 0.0d
 		}
 		{
-			description: ["That sword and armor aren't permanent - you'll lose them a few waves in, five if I've got it right. Get real use out of them while you can, because whatever you find after has to carry you the rest of the way. Never worked out why five specifically. Felt too exact to be random."]
+			description: ["That sword and armor aren't permanent - you'll lose them a few waves in, five to be exact. Get real use out of them while you can, because whatever you find after has to carry you the rest of the way."]
 			icon: "minecraft:clock"
 			id: "70DA454A61DDC3A1"
 			rewards: [{
@@ -77,7 +77,7 @@
 		}
 		{
 			dependencies: ["42E42312C8B61976"]
-			description: ["Five's not much, but it'll tell you fast whether your gear can actually handle this. Count resets every wave. Never found a real ceiling on how many of these this place can throw at you - not sure there is one."]
+			description: ["Five's not much, but it'll tell you fast whether your gear can actually handle this. Count resets every wave. The numbers only go up from here, so don't get comfortable."]
 			icon: "minecraft:zombie_head"
 			id: "7F675AEBC7301832"
 			rewards: [{
@@ -96,7 +96,7 @@
 			y: 0.0d
 		}
 		{
-			description: ["Bags don't always drop, but when they do, grab them - better loot seems to come off tougher kills, near as I can tell. Never pinned down the actual odds."]
+			description: ["Bags don't always drop, but when they do, grab them - better loot comes off tougher kills. Worth going after the harder targets for that reason alone."]
 			icon: "bountybags:uncommon_loot_bag"
 			id: "3BFCD0E4AA8C5B36"
 			tasks: [{
@@ -128,7 +128,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["The shrine's been empty a while - whoever wore this before isn't coming back for it. Melt down enough gold and you can make another; the recipe's simple once you've got the materials. I still don't know exactly what it does once it's on, only that it's worth building the stand for."]
+			description: ["The shrine's been empty a while - whoever wore this before isn't coming back for it. Melt down enough gold and you can make another; the recipe's simple once you've got the materials. Wear it and you get stronger, and you can cross the border without the world pushing you back. Leave it on the stand and you lose that, but nothing else changes about what's coming for this place."]
 			icon: "kubejs:amulet"
 			id: "7D3A5F912E6C0B48"
 			rewards: [{
@@ -168,9 +168,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: [
-				"Wire it right and it does two things at once - cuts and slows anything that tries to push through. Needs power to make, not just a workbench; the rig for that's already set up in here somewhere. Never seen barbed wire do more than that, but I only ever wired up the one line."
-			]
+			description: ["Wire it right and it does two things at once - cuts and slows anything that tries to push through. Needs power to make, not just a workbench; the rig for that's already set up in here somewhere."]
 			icon: "createaddition:barbed_wire"
 			id: "1454951A7FB14A26"
 			rewards: [{
@@ -193,7 +191,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["A Bear Trap won't kill on its own, but it holds whatever steps in it in place - long enough for you or something else to finish the job. Resets itself once it's sprung, near as I can tell, so it's not a one-time thing. Never tested how many times before it actually gives out."]
+			description: ["A Bear Trap won't kill on its own, but it holds whatever steps in it in place - long enough for you or something else to finish the job. Resets itself once it's sprung, so it's not a one-time thing."]
 			icon: "trapcraft:bear_trap"
 			id: "3F6D91E4A2C7B850"
 			rewards: [{
@@ -216,13 +214,11 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: [
-				"Whoever built the press and mill in here never got around to powering them - there's an open slot where a crank should sit. Take some planks and an Andesite Alloy to it and it'll finish the job; the andesite itself never seems to turn up close to home, only out in the old structures past the wall. Never checked whether it's just this stretch of desert, or the whole wasteland's picked clean of it near any real ground."
-			]
+			description: ["Whoever built the press and mill in here never got around to powering them - there's an open slot where a crank should sit. Take some planks and an Andesite Alloy to it and it'll finish the job. The andesite itself doesn't turn up close to home - you'll need to search the old structures out past the wall for it."]
 			icon: "create:hand_crank"
 			id: "30DB900D8BD39277"
 			rewards: [{
-				id: "BAB27AB4EEE39EC3"
+				id: "2F71CD6D28876113"
 				type: "xp"
 				xp: 10
 			}]
@@ -259,7 +255,7 @@
 		}
 		{
 			dependencies: ["7D3A5F912E6C0B48"]
-			description: ["The stand's been waiting a long time for something to hold. Set the pendant down and the wall stops being a wall - for you, anyway. Everything out there stops watching you and starts watching it instead. No more mending, no more warmth, but nothing's stopping you from walking past that line. Just remember what you're leaving unguarded."]
+			description: ["The stand's been waiting a long time for something to hold. Set the pendant down and the wall stops being a wall - for you, anyway. You lose whatever it was giving you, but you can cross the border now. Just remember the pedestal's what's being watched, not you - don't leave it standing alone too long."]
 			icon: "supplementaries:pedestal"
 			id: "4B8F2D6A93E7C051"
 			tasks: [{
@@ -272,7 +268,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["Wire an Igniter to redstone and it lights the ground on a signal - undead catch fast, and fire keeps working after you've moved on to the next thing. Worth knowing it'll ignite anything flammable nearby too, not just what you're aiming at. Never traced exactly how far it spreads."]
+			description: ["Wire an Igniter to redstone and it lights the ground on a signal - undead catch fast, and fire keeps working after you've moved on to the next thing. It'll ignite anything flammable nearby too, not just what you're aiming at, so mind what's next to it."]
 			icon: "trapcraft:igniter"
 			id: "60D8DCF2E4CB570F"
 			rewards: [{
@@ -295,7 +291,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["A Fan pushes anything caught in front of it, on a signal - mobs, items, doesn't discriminate. Point it right and it does the aiming for you, funneling things into whatever's actually going to finish them off. Still working out the best angle myself."]
+			description: ["A Fan pushes anything caught in front of it, on a signal - mobs, items, doesn't discriminate. Point it right and it does the aiming for you, funneling things into whatever's actually going to finish them off."]
 			icon: "trapcraft:fan"
 			id: "22F3265BCDFA63B5"
 			rewards: [{
@@ -318,7 +314,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["A Magnetic Chest pulls in anything dropped nearby once it's wired up - saves you walking back after a fight to collect what's left. Range seems to depend on the chest itself, not the signal. Never measured it exactly."]
+			description: ["A Magnetic Chest pulls in anything dropped nearby once it's wired up - saves you walking back after a fight to collect what's left. Range depends on the chest itself, not the signal."]
 			icon: "trapcraft:magnetic_chest"
 			id: "573EEB3757B78B97"
 			rewards: [{
@@ -341,7 +337,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["An Auto-Turret keeps firing on its own once it's placed and stocked with arrows - it'll pick targets in range without you doing anything. First thing in this place that can actually watch a wall while you're somewhere else. Haven't tested what happens if it runs dry mid-wave."]
+			description: ["An Auto-Turret keeps firing on its own once it's placed and stocked with arrows - it'll pick targets in range without you doing anything. First thing in this place that can actually watch a wall while you're somewhere else. Keep it stocked or it's just decoration."]
 			icon: "medievalturrets:bow_turret_item"
 			id: "74779308DEED321D"
 			rewards: [{
@@ -365,8 +361,14 @@
 		{
 			dependencies: ["689899208FC0ADF0"]
 			description: ["Five waves was as far as whoever held this post before you got. You've matched that, and the gear's finally given out - it was never going to last past this point anyway. Everything from here is genuinely unwritten; nobody's diary goes further than this."]
-			icon: "minecraft:netherite_chestplate"
-			id: "F58E263493C23094"
+			icon: {
+				Count: 1
+				id: "minecraft:netherite_chestplate"
+				tag: {
+					Damage: 0
+				}
+			}
+			id: "03C4E700B07CBC15"
 			tasks: [{
 				id: "530B75E9DB0F03E9"
 				type: "checkmark"
@@ -376,10 +378,9 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["F58E263493C23094"]
 			description: ["Eight was the last wave anyone bothered planning for - after this, it just keeps escalating, no ceiling anyone's found yet. Whatever gear and defenses you've built by now are what you're taking into it. I don't know how far it actually goes. Maybe you'll be the one who finds out."]
 			icon: "minecraft:nether_star"
-			id: "9AFCCB27E483832B"
+			id: "12A50E9FD97A8427"
 			tasks: [{
 				id: "0D083E83110799B5"
 				type: "checkmark"

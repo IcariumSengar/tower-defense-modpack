@@ -3757,6 +3757,180 @@ Fuller quest book plan (Loot Tiers / Map Expansion / Shop chapters,
 FTB Quests trade-quest or QuestShop-based shop) is still just a vision,
 not scoped — see IDEAS.md.
 
+**Tone rework, round 2 — the "ends on an open question" rule itself was
+the problem, not the execution. Requested 2026-09-06, drafted and
+confirmed by the user, ready to build.** Direct feedback on the shipped
+book, read in full rather than as isolated drafts: "i hate the flvour
+text on the quests. it doenst sound human. be a bit more literal rather
+than crytic all the time." Real diagnosis, not a vague "make it
+better": the round-1 house style above mandated that **every** entry
+"ends on a genuine open question the writer doesn't have the answer
+to" — a rule applied uniformly across all 19 quests produces exactly
+what it sounds like, a repeated formula (11 of 19 quests literally end
+with some variant of "never worked out/tested/traced/checked X") that
+reads as artificial precisely because it's so consistent. The individual
+sentences read fine in isolation (which is why the round-1 drafts got a
+"looks good" at the time); the pattern only becomes obvious reading all
+19 back to back in the real book, which is exactly what happened here.
+**Fix**: drop "every entry must end on an open question" as a mandatory
+rule. Keep the found-diary voice and the device itself (a genuine
+unresolved question is still fine, and still true to several real
+things about this pack — no known endless-phase ceiling, etc.) but use
+it occasionally, not universally — most entries should just end on a
+complete, practical thought. Confirmed via drafted before/after examples
+(Borrowed Time, Turn the Crank, Not Just Jewelry) — user confirmed the
+direction ("quest book fine... send it").
+
+**Full revised text, all 19 quests, replacing every description in
+`campaign.snbt` below (quest IDs are the real, unchanged snbt ids —
+only the `description` field text changes, nothing else: no id/title/
+task/reward/dependency/position changes anywhere in this pass)**:
+1. `46AB9754465218CF` *"You're On Your Own"*: "Whoever was here before
+   you didn't make it, but they left the place standing — that's not
+   nothing. Sound the horn when you're actually ready, not before. Once
+   you do, they're coming, and they don't stop until the wave's
+   cleared."
+2. `70DA454A61DDC3A1` *"Borrowed Time"*: "That sword and armor aren't
+   permanent — you'll lose them a few waves in, five to be exact. Get
+   real use out of them while you can, because whatever you find after
+   has to carry you the rest of the way."
+3. `42E42312C8B61976` *"Sound the Horn"*: unchanged — already solid,
+   no tic to remove.
+4. `7F675AEBC7301832` *"Thin the Horde"*: "Five's not much, but it'll
+   tell you fast whether your gear can actually handle this. Count
+   resets every wave. The numbers only go up from here, so don't get
+   comfortable."
+5. `3BFCD0E4AA8C5B36` *"Spoils of War"*: "Bags don't always drop, but
+   when they do, grab them — better loot comes off tougher kills.
+   Worth going after the harder targets for that reason alone."
+6. `538A1BBC9A1B8EAC` *"Open It"*: unchanged — a real, specific
+   anecdote, not a vague hedge, already reads human.
+7. `7D3A5F912E6C0B48` *"Not Just Jewelry"*: "The shrine's been empty a
+   while — whoever wore this before isn't coming back for it. Melt down
+   enough gold and you can make another; the recipe's simple once
+   you've got the materials. Wear it and you get stronger, and you can
+   cross the border without the world pushing you back. Leave it on the
+   stand and you lose that, but nothing else changes about what's
+   coming for this place."
+8. `216966530DE6E3DB` *"A Stone That Remembers"*: unchanged — already a
+   complete thought, not an unresolved hedge.
+9. `1454951A7FB14A26` *"Sharpened Scrap"*: "Wire it right and it does
+   two things at once — cuts and slows anything that tries to push
+   through. Needs power to make, not just a workbench; the rig for
+   that's already set up in here somewhere."
+10. `3F6D91E4A2C7B850` *"Something Crueler"*: "A Bear Trap won't kill on
+    its own, but it holds whatever steps in it in place — long enough
+    for you or something else to finish the job. Resets itself once
+    it's sprung, so it's not a one-time thing."
+11. `30DB900D8BD39277` *"Turn the Crank"*: "Whoever built the press and
+    mill in here never got around to powering them — there's an open
+    slot where a crank should sit. Take some planks and an Andesite
+    Alloy to it and it'll finish the job. The andesite itself doesn't
+    turn up close to home — you'll need to search the old structures
+    out past the wall for it."
+12. `689899208FC0ADF0` *"Watch the Walls Grow"*: unchanged — already
+    solid.
+13. `4B8F2D6A93E7C051` *"Leave It Behind"*: "The stand's been waiting a
+    long time for something to hold. Set the pendant down and the wall
+    stops being a wall — for you, anyway. You lose whatever it was
+    giving you, but you can cross the border now. Just remember the
+    pedestal's what's being watched, not you — don't leave it standing
+    alone too long."
+14. `60D8DCF2E4CB570F` *"Spark and Flame"*: "Wire an Igniter to redstone
+    and it lights the ground on a signal — undead catch fast, and fire
+    keeps working after you've moved on to the next thing. It'll ignite
+    anything flammable nearby too, not just what you're aiming at, so
+    mind what's next to it."
+15. `22F3265BCDFA63B5` *"Herd Them In"*: "A Fan pushes anything caught
+    in front of it, on a signal — mobs, items, doesn't discriminate.
+    Point it right and it does the aiming for you, funneling things
+    into whatever's actually going to finish them off."
+16. `573EEB3757B78B97` *"Waste Not"*: "A Magnetic Chest pulls in
+    anything dropped nearby once it's wired up — saves you walking back
+    after a fight to collect what's left. Range depends on the chest
+    itself, not the signal."
+17. `74779308DEED321D` *"Wired for War"*: "An Auto-Turret keeps firing
+    on its own once it's placed and stocked with arrows — it'll pick
+    targets in range without you doing anything. First thing in this
+    place that can actually watch a wall while you're somewhere else.
+    Keep it stocked or it's just decoration."
+18. `F58E263493C23094` *"The Reckoning"*: unchanged — already a
+    complete, real statement, not evasive.
+19. `9AFCCB27E483832B` *"No Turning Back"*: unchanged — the "I don't
+    know how far it actually goes" line is an honest fact about the
+    endless phase's real design (no authored ceiling), not a hedge
+    being used as a crutch; keeping open questions where they're
+    genuinely true is the point, just not applying it to all 19.
+
+**Sent to build.**
+
+**Shipped 2026-09-06.** Applied all 13 real text changes to
+`campaign.snbt`. **Real catch made before deploying, not after**: the
+repo's own tracked copy of `campaign.snbt` had silently drifted from
+the live instance's real file - 3 real divergences found by diffing
+them (a different reward id on "Turn the Crank", and completely
+different quest ids plus a missing `dependencies` line on "The
+Reckoning"/"No Turning Back", most likely from an in-game FTB Quests
+editor interaction at some point). None of the diverged ids had player
+progress recorded against them in the live save's own progress file
+(checked directly, not assumed), so nothing was actually at risk this
+time - but editing the repo's stale copy and deploying it over the live
+file would have silently reset those 3 quests' ids, exactly the
+"orphan real completed progress" risk this pack has hit before (see
+the Barbed Wire work's own quest-id sync). Applied the 13 text edits to
+the real live file instead, then synced that corrected version back to
+the repo so both match exactly again.
+
+**Reduce vegetation near spawn — requested 2026-09-06, specced, sent to
+build.** Direct feedback: "Can we have less trees on spawn, its not
+much of a wasteland when there are flowers, trees, grass everywhere!"
+Real cause: the seed-independent spawn search (above) picks the nearest
+of desert/badlands/savanna/savanna_plateau — and unlike desert/badlands
+(naturally barren in vanilla), savanna and savanna_plateau have real
+vanilla trees (acacia) and tall grass, which is very likely what got
+found on the reported world. Two real, complementary pieces, not
+either/or:
+1. **Bias the search order toward desert/badlands first**, only
+   falling back to savanna/savanna_plateau if nothing in the barer pair
+   is within a reasonable range — addresses the root cause directly.
+2. **A real vegetation-clearing pass around the base compound** at
+   build time, regardless of which of the 4 biomes ends up being used —
+   strip grass/tall_grass/flowers/small foliage (and trees, if any
+   generated within range) in a radius around the compound. Same safe,
+   already-proven imperative-clearing technique as the terrain-flatness
+   leveling pass just shipped (`/fill`/`/setblock`, not a worldgen
+   registry edit) — deliberately not touching biome feature-placement
+   JSON, which this pack has a documented crash-risk history around.
+Exact radius/threshold not pinned down here — first-pass numbers,
+tunable after a real playtest, same as every other new constant in this
+pack.
+
+**Shipped 2026-09-06, both pieces, verified live.**
+- `findWastelandSpawn()` split into a two-phase search:
+  `BARE_WASTELAND_BIOMES` (desert/badlands) tried first out to 1200
+  blocks, only falling back to `LEAFY_WASTELAND_BIOMES` (savanna/
+  savanna_plateau, unioned with the bare pair) out to 2000 if nothing
+  bare turned up. Verified live on the real current seed
+  (`790635723259132656`, the save this exact bug was reported from):
+  desert was 2150 blocks from origin and badlands 5113 (both correctly
+  beyond the 1200 bare-search radius), so the search correctly fell
+  through to the leafy pair and found savanna_plateau at 1267 blocks -
+  confirmed by cross-checking against vanilla's own `/locate biome`.
+- Vegetation-clearing pass added, keyed by a real block-id list, using
+  `/fill ... replace` per block type (removes only matched blocks,
+  leaves solid ground untouched - confirmed live: ground stayed solid
+  after clearing). **Real bug caught and fixed before shipping**: the
+  first-pass block list included `minecraft:short_grass` - wrong for
+  this exact 1.20.1 build, where the single-block grass plant is still
+  named plain `minecraft:grass` (the rename to `short_grass` didn't
+  happen until 1.20.3+). Caught via a direct `/setblock` validity test
+  (`short_grass` alone threw "Unknown block type", everything else in
+  the list passed) before it ever shipped silently broken. Verified the
+  corrected full list live: placed real grass/tall_grass/dandelion/
+  acacia_log/acacia_leaves, ran the exact shipped fill/replace
+  commands, confirmed every one cleared to air while the ground block
+  underneath stayed solid.
+
 **Standing process, not a one-off**: the quest book is the tutorial —
 whenever a new mechanic gets fleshed out to "planned" status in this
 file, check whether it needs a new quest (or a refinement to an

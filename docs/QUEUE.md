@@ -101,6 +101,26 @@ below); Phase 5 not started:
   installed via packwiz, both jars sha1-verified, real Forge 1.20.1/MC
   1.20.1 compatibility confirmed from the mod's own `mods.toml`. Full
   mod set (68 mods) boots clean.
+- **Quest tone rework, round 2 — done, shipped 2026-09-06.** All 13
+  real description edits applied. **Real catch made mid-build**: the
+  repo's own `campaign.snbt` had silently drifted from the live
+  instance's real file (a different reward id, and 2 completely
+  different quest ids plus a missing dependency, most likely from an
+  in-game FTB Quests editor interaction) - checked the live save's
+  progress file first, confirmed no completed progress was keyed to the
+  diverged ids, then applied the text edits to the real live file and
+  synced that back to the repo, instead of deploying the repo's stale
+  ids over live and silently orphaning them.
+- **Reduce vegetation near spawn — done, shipped 2026-09-06.** Both
+  pieces live-verified. Search now tries desert/badlands first (1200
+  blocks) before falling back to savanna/savanna_plateau (2000) -
+  confirmed correct on the real current seed (desert/badlands genuinely
+  too far, fell through to savanna_plateau as expected). Vegetation
+  list verified block-by-block live: caught and fixed a real bug before
+  shipping (`minecraft:short_grass` isn't valid in this 1.20.1 build,
+  it's still plain `minecraft:grass` here - the rename came in 1.20.3+)
+  and confirmed the corrected list clears real placed vegetation to air
+  while leaving solid ground untouched.
 - **Legendary loot bag jackpot + beam visual — mostly shipped
   2026-09-06, one real limit found.** Full spec in FEATURES.md's
   "Legendary loot bag jackpot + beam-of-light visual" entry (under

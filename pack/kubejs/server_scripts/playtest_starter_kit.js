@@ -86,7 +86,16 @@ function starterGearNbt(extra) {
 // '#') - the tag file ships as the real documented/reusable asset, this
 // array is what the runtime search actually checks against. Keep both
 // in sync if this roster ever changes.
-const WASTELAND_BIOMES = ['minecraft:desert', 'minecraft:badlands', 'minecraft:savanna', 'minecraft:savanna_plateau']
+//
+// Split into a preferred BARE pair and a fallback pair (2026-09-06,
+// direct feedback: "Can we have less trees on spawn, its not much of a
+// wasteland when there are flowers, trees, grass everywhere!") - desert
+// and badlands are naturally barren in vanilla, savanna/savanna_plateau
+// carry real acacia trees and tall grass. The search below tries the
+// bare pair first and only falls back to the leafier pair if nothing
+// bare enough turns up within a reasonable range.
+const BARE_WASTELAND_BIOMES = ['minecraft:desert', 'minecraft:badlands']
+const LEAFY_WASTELAND_BIOMES = ['minecraft:savanna', 'minecraft:savanna_plateau']
 
 // `level.getBiome([x, y, z])` is a real, fast, pure lookup - confirmed
 // directly in a sandbox to resolve correctly (and near-instantly, ~0.3ms
@@ -100,28 +109,42 @@ function biomeIdAt(level, x, z) {
   return `${level.getBiome([x, 64, z]).key().location()}`
 }
 
-// Ring-by-ring outward search from a seed-independent anchor (world
-// origin) - cheap enough to run synchronously during login (a real
-// sandbox timing test: 441 lookups in 141ms), and correct for whatever
-// the actual seed is, unlike a hardcoded coordinate. Step 48 keeps the
-// ring count (and worst-case call count) reasonable while still being
-// fine-grained enough not to skip over a real biome patch; maxRadius
-// 2000 is generous relative to every real distance measured so far in
-// this pack's own biome-census history (520-1700 blocks) without
-// letting a genuinely pathological seed run away with login time.
-function findWastelandSpawn(level, startX, startZ) {
-  if (WASTELAND_BIOMES.includes(biomeIdAt(level, startX, startZ))) return [startX, startZ]
+// Ring-by-ring outward search from a given anchor for any biome in
+// `biomeList` - cheap enough to run synchronously during login (a real
+// sandbox timing test: 441 lookups in 141ms). Step 48 keeps the ring
+// count (and worst-case call count) reasonable while still being
+// fine-grained enough not to skip over a real biome patch.
+function searchForBiome(level, startX, startZ, biomeList, maxRadius) {
   const step = 48
-  const maxRadius = 2000
+  if (biomeList.includes(biomeIdAt(level, startX, startZ))) return [startX, startZ]
   for (let r = step; r <= maxRadius; r += step) {
     for (let dx = -r; dx <= r; dx += step) {
       for (let dz = -r; dz <= r; dz += step) {
         if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue // ring only, not a full grid
-        if (WASTELAND_BIOMES.includes(biomeIdAt(level, startX + dx, startZ + dz))) return [startX + dx, startZ + dz]
+        if (biomeList.includes(biomeIdAt(level, startX + dx, startZ + dz))) return [startX + dx, startZ + dz]
       }
     }
   }
-  return null // real finding to report, not a reason to silently pick a worse spot
+  return null
+}
+
+// Seed-independent from a seed-independent anchor (world origin) -
+// correct for whatever the actual seed is, unlike a hardcoded
+// coordinate. Tries the bare pair out to a real "reasonable range" first
+// (1200 - comfortably past every close-range distance measured in this
+// pack's own biome-census history, e.g. the 864-block savanna hit that
+// shipped the seed-independent search itself); only falls back to the
+// leafy pair (searched out to the same 2000-block ceiling the original
+// single-pass search used) if nothing barren enough turned up. Costs a
+// real but small extra worst-case delay (re-scanning 0-1200 a second
+// time for the fallback) - acceptable for a one-time login event, not
+// worth the added complexity of merging both scans into one pass.
+function findWastelandSpawn(level, startX, startZ) {
+  const bareHit = searchForBiome(level, startX, startZ, BARE_WASTELAND_BIOMES, 1200)
+  if (bareHit) return bareHit
+  // Real finding to report if this also comes back null, not a reason
+  // to silently pick a worse spot - see the caller's own fallback below.
+  return searchForBiome(level, startX, startZ, LEAFY_WASTELAND_BIOMES.concat(BARE_WASTELAND_BIOMES), 2000)
 }
 
 PlayerEvents.loggedIn((event) => {
@@ -159,7 +182,12 @@ PlayerEvents.loggedIn((event) => {
   // trusting a number picked in advance - see `findWastelandSpawn()`
   // above. World origin (0,0) is the anchor precisely because it's
   // seed-independent - no reason to prefer one arbitrary point over
-  // another when the search itself now does the real work.
+  // another when the search itself now does the real work. **Biased
+  // toward desert/badlands 2026-09-06** (direct feedback: "Can we have
+  // less trees on spawn, its not much of a wasteland when there are
+  // flowers, trees, grass everywhere!" - savanna/savanna_plateau carry
+  // real vanilla acacia trees and tall grass, unlike the barer pair) -
+  // see `findWastelandSpawn()`'s own two-phase search above.
   const wastelandTarget = findWastelandSpawn(player.getLevel(), 0, 0)
   if (wastelandTarget) {
     event.server.runCommandSilent(`spreadplayers ${wastelandTarget[0]} ${wastelandTarget[1]} 1 8 false @a`)
@@ -320,6 +348,45 @@ PlayerEvents.loggedIn((event) => {
     run(`fill ${x0} ${floorY + 1} ${z0} ${x1} ${floorY + 16} ${z1} minecraft:air`)
     run(`fill ${x0} ${floorY - 6} ${z0} ${x1} ${floorY - 1} ${z1} minecraft:stone`)
   }
+
+  // Real vegetation-clearing pass (2026-09-06, direct feedback: "Can we
+  // have less trees on spawn, its not much of a wasteland when there
+  // are flowers, trees, grass everywhere!"). The desert/badlands bias
+  // above (`findWastelandSpawn`) addresses the root cause, but runs
+  // regardless of which of the 4 wasteland biomes actually gets picked
+  // - savanna/savanna_plateau are still real, allowed fallbacks, and
+  // even desert/badlands can carry occasional decoration this pack
+  // hasn't specifically catalogued. Strips real vegetation by block id
+  // via `/fill ... replace`, the same safe imperative technique (not a
+  // worldgen registry edit) as the terrain-leveling pass just above -
+  // deliberately not touching biome feature-placement JSON, which this
+  // pack has a documented crash-risk history around.
+  //
+  // Covers a wider margin than the footprint itself (courtyard bounds
+  // ± `VEGETATION_CLEAR_MARGIN`) since "near spawn" means the ground
+  // the player actually sees on login, not just where walls end up.
+  // Vertical range (floorY+1 to floorY+12) covers ground-level plants
+  // through a full acacia tree's real height. First-pass margin/height,
+  // tunable after a real playtest like every other new constant here.
+  const VEGETATION_CLEAR_MARGIN = 8
+  const VEGETATION_BLOCKS = [
+    'minecraft:grass', 'minecraft:fern', 'minecraft:large_fern',
+    'minecraft:tall_grass', 'minecraft:dead_bush', 'minecraft:dandelion',
+    'minecraft:poppy', 'minecraft:allium', 'minecraft:azure_bluet',
+    'minecraft:red_tulip', 'minecraft:orange_tulip', 'minecraft:white_tulip',
+    'minecraft:pink_tulip', 'minecraft:oxeye_daisy', 'minecraft:cornflower',
+    'minecraft:lily_of_the_valley', 'minecraft:sunflower',
+    'minecraft:acacia_log', 'minecraft:acacia_wood', 'minecraft:acacia_leaves',
+    'minecraft:oak_log', 'minecraft:oak_wood', 'minecraft:oak_leaves',
+    'minecraft:vine',
+  ]
+  const vx0 = x0 - VEGETATION_CLEAR_MARGIN
+  const vx1 = x1 + VEGETATION_CLEAR_MARGIN
+  const vz0 = z0 - VEGETATION_CLEAR_MARGIN
+  const vz1 = z1 + VEGETATION_CLEAR_MARGIN
+  VEGETATION_BLOCKS.forEach((block) => {
+    run(`fill ${vx0} ${floorY + 1} ${vz0} ${vx1} ${floorY + 12} ${vz1} minecraft:air replace ${block}`)
+  })
 
   // No foundation dig / headroom clear needed - back on Superflat
   // (2026-08-20, reverted from Single Biome: Desert - real terrain
