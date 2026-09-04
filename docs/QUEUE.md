@@ -73,12 +73,30 @@ memory.
    on COURTYARD_DEPTH so the rig/building gaps this layout depends on
    stay exactly what they were. A naive pedestal-only shift would have
    collided the kinetic rig with the building - caught before shipping.
-8. [not yet built] Reinforce the whole house — full uniform coverage,
-   no falloff. Needs a real full-building block-position scan + a real
-   check of SecurityCraft's own reinforced-block registry against the
-   house's exterior palette (bricks/granite/granite_wall/brick_stairs/
-   brick_slab) - substantially more NBT work than the furniture-removal
-   items above, not started yet.
+8. [done, shipped 2026-09-04] Reinforce the whole house — full uniform
+   coverage, no falloff. **Real scope correction found while building,
+   not assumed**: the structure's true solid wall shell doesn't sit at
+   its own bounding-box edges (x=0/11, z=0/10 - checked first, found
+   zero real wall blocks there) - the actual walls are 2 blocks further
+   in (x=2/9, z=2/9), the outer ring being a real porch/eave overhang.
+   Decompiled the real NBT to find all 283 blocks on those 4 wall
+   planes, matched each against SecurityCraft's own 495 real
+   reinforced-block ids (checked directly - confirmed there is NO plain
+   `reinforced_terracotta`, only the 16 dyed-color variants), and
+   preserved every block's own exact orientation (facing/axis/slab
+   type/wall connection state) from its real NBT properties rather than
+   a blanket `/fill` (which would have flattened every stairs/slab/wall
+   block to one uniform orientation). **Real, honest result: 212 of 283
+   wall blocks (75%) covered.** Real gaps, not silently claimed as
+   covered: plain terracotta (36 blocks, no reinforced equivalent
+   exists at all), oak_leaves (18) and vine (17, both genuinely
+   decorative). Only covers the 4 wall planes, not the roof (a real,
+   stated scope limit). Verified live end-to-end: all 212 real
+   `/setblock` commands executed via RCON batch with zero errors at the
+   script's own real computed coordinates, spot-confirmed a real
+   `reinforced_bricks` block present at its exact expected position,
+   and the complete file (200+ new lines) reboots clean with 0 KubeJS
+   errors.
 9. [decided] Revisit house structure — parked, not pursued now (keeps
    #6/#12's NBT-decompile work on the current house worth doing).
 10. [likely already works, unconfirmed] Inventory Sorter middle-click —
@@ -253,21 +271,22 @@ memory.
 10. Waystones — set one, then teleport back to it from any other
     Waystone once unlocked.
 
-**Real status as of 2026-09-04**: 15 of 27 items done and shipped
-(#1/#3/#4/#5/#7/#11/#12/#15/#17-partial/#18/#21/#22/#23/#25, plus #19
-already covered in "Fresh-world playtest, round 3" above). #13 and #26
-are now real investigated findings, not open questions - #13 found no
-code regression (the rig works end-to-end when powered, real remaining
-cause is the player's own hand-crank connection, an interactive step
-this environment can't test); #26 found the real numbers (barbed wire's
-2.0 dmg vs Mutant Brute's 120 HP, not a resistance issue) plus a real
-trap comparison recommending the Bear Trap's crowd-control value over
-raw damage. #27's real blocker is now answered too (quest progress is
-per-world, needs a real export/import step) but the restart flow itself
-isn't built yet. Still genuinely open: #6 (identified, needs a
-clear-or-reskin decision), #8 (house reinforcement, real remaining NBT
-work, not started), #9 (parked by design), #10/#16 (real client-visual/
-interaction checks this environment can't perform - need the user's own
+**Real status as of 2026-09-04**: 16 of 27 items done and shipped
+(#1/#3/#4/#5/#7/#8/#11/#12/#15/#17-partial/#18/#21/#22/#23/#25, plus
+#19 already covered in "Fresh-world playtest, round 3" above). #13 and
+#26 are now real investigated findings, not open questions - #13 found
+no code regression (the rig works end-to-end when powered, real
+remaining cause is the player's own hand-crank connection, an
+interactive step this environment can't test); #26 found the real
+numbers (barbed wire's 2.0 dmg vs Mutant Brute's 120 HP, not a
+resistance issue) plus a real trap comparison recommending the Bear
+Trap's crowd-control value over raw damage. #27's real blocker is now
+answered too (quest progress is per-world, needs a real export/import
+step) but the restart flow itself isn't built yet. Still genuinely
+open: #6 (identified, needs a
+clear-or-reskin decision), #9 (parked by design), #10/#16 (real
+client-visual/interaction checks this environment can't perform - need
+the user's own
 in-game look), #2 (verified real, not installed - no install was
 actually requested). The screenshot pass for #14/#20/#24's TFTH/brute
 audit hasn't happened yet either - report back with real screenshots
