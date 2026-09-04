@@ -26,8 +26,12 @@
 // tables too, and matches the actual design intent (loot gets better
 // with exploration distance) more directly than an incomplete table
 // allowlist would have.
-var SPAWN_X = 780
-var SPAWN_Z = -150
+// Kept in sync with playtest_starter_kit.js's own fixed-spawn target -
+// moved 2026-09-06 along with it (savanna relocation, real user
+// decision after the plains-spawn report - see that file's own header
+// comment for the full writeup).
+var SPAWN_X = 1171
+var SPAWN_Z = -499
 
 var MID_TIER_RADIUS = 60
 var HIGH_TIER_RADIUS = 120

@@ -2504,8 +2504,32 @@ options, not decided here**:
   `multi_noise`/`noise_router` edits, not a change to make lightly for
   a small subjective improvement.
 
-**Not sent yet — waiting on the user's go-ahead**, per the standing
-hold-for-approval rule.
+**Decided via AskUserQuestion 2026-09-06: relocate the full 520 blocks**
+to the real savanna tile — biggest disruption of the 4 options, but the
+cleanest thematic fit, and matches the original ask directly. This
+moves the base compound/worldborder centering along with it, same as
+every other spawn-coordinate change this pack has made. Sent to build.
+
+**Shipped 2026-09-06.** `spreadplayers` target in
+`playtest_starter_kit.js` moved from `780,-150` to `1171,-499` (the
+exact savanna tile `/locate biome` found); `structure_loot_progression.js`'s
+own `SPAWN_X`/`SPAWN_Z` (used for the distance-gated chest loot bonus)
+moved to match, same "kept in sync" pattern as every other duplicated
+constant in this pack. Everything else (worldworld spawn, worldborder
+center, the whole base build) still derives from the x/y/z read back
+right after the `spreadplayers` call, unchanged mechanism from the
+2026-09-01 move - only the target coordinate changed. Re-verified the
+target on the live save's real seed right before shipping (same
+`1803464458889621616`, not the earlier stale sandbox seed): confirmed
+savanna at 0 blocks from `(1171,-499)` and at every point sampled in an
+8-block radius around it (not a knife-edge sliver at a biome boundary),
+and real terrain across the planned base footprint (roughly 20×23
+blocks around the point) is flat within ~2.5 blocks everywhere sampled
+- safe to build the fixed-Y compound on, same as the terrain check this
+pack's spawn-relocation work has done every time. The actual
+login-triggered base build at the new coordinate is unconfirmed in-game
+- same standing blind spot as every other spawn-time build in this
+pack (no real player can join the test sandbox).
 
 **Mob pathing regression — "mobs aren't pathing toward the pedestal at
 all" — found and fixed 2026-09-05, first fresh-world playtest of the

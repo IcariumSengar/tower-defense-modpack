@@ -87,26 +87,40 @@ PlayerEvents.loggedIn((event) => {
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
-  // Snap onto solid ground near world origin (0,0) — heightmap-aware,
-  // avoids voids/liquids, unlike a raw teleport to a guessed Y. Small
-  // maxRange (8) keeps this close enough to true origin to still read
-  // as "the same fixed spot" every world, while giving the command room
-  // to find a valid column if (0,0) exactly happens to be an edge case.
+  // Snap onto solid ground — heightmap-aware, avoids voids/liquids,
+  // unlike a raw teleport to a guessed Y. Small maxRange (8) keeps this
+  // close enough to the target to still read as "the same fixed spot"
+  // every world, while giving the command room to find a valid column
+  // if the exact target happens to be an edge case.
+  //
   // Fixed spawn target moved 2026-09-01 (direct request, real diagnosis
   // in docs/FEATURES.md's "World type" section): the original (0,0)
   // landed the whole base inside a huge contiguous badlands blob (72.8%
-  // of a 320x320-block sample, 0% desert - not a biome_source bug,
-  // just this seed's bad luck for that exact point). (780,-150) was
-  // picked from a real RCON grid census, not guessed: badlands stays
-  // 300-500+ blocks away and desert 650+ blocks away from every point
-  // checked in a 200-block neighborhood around it, with plains/savanna
-  // genuinely close (plains at 0 blocks, savanna 45 blocks). Everything
-  // else (setworldspawn, worldborder center, the whole Watchpost build
-  // below) already derives from the x/y/z read back right after this
-  // one command - confirmed by reading the rest of this function before
+  // of a 320x320-block sample, 0% desert). (780,-150) was picked from a
+  // real RCON grid census: badlands stayed 300-500+ blocks away and
+  // desert 650+ blocks away from every point checked, with plains
+  // genuinely close (0 blocks).
+  //
+  // **Moved again 2026-09-06** (direct feedback: "it spawned me in a
+  // plains biome...this doesnt fit the theme" - this pack's own
+  // "abandoned/post-apocalyptic" direction). Real biome census re-run on
+  // the LIVE SAVE's actual seed (an earlier sandbox had drifted onto a
+  // stale one - caught before trusting its numbers) found the nearest
+  // desert/badlands/savanna tile from (780,-150) was 520 blocks away,
+  // not "a nearby tile" - genuinely a relocate-the-base decision, not a
+  // nudge, so it was put to the user rather than picked unilaterally.
+  // User picked the full move via AskUserQuestion: **(1171,-499)**, a
+  // real savanna tile confirmed on the live seed - `/locate biome` finds
+  // savanna at 0 blocks from this exact point, and every point sampled
+  // in an 8-block radius around it independently also reads savanna
+  // (not a knife-edge sliver at a biome boundary). Everything else
+  // (setworldspawn, worldborder center, the whole Watchpost build below)
+  // already derives from the x/y/z read back right after this one
+  // command - confirmed by reading the rest of this function before
   // changing this line, not assumed - so moving just this target
-  // coordinate relocates the entire base cleanly with it.
-  event.server.runCommandSilent('spreadplayers 780 -150 1 8 false @a')
+  // coordinate relocates the entire base cleanly with it, same as the
+  // 2026-09-01 move did.
+  event.server.runCommandSilent('spreadplayers 1171 -499 1 8 false @a')
 
   // Ground truth read AFTER spreadplayers — this is where the player is
   // actually now standing, on real terrain, not a guess.

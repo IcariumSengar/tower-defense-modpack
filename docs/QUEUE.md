@@ -86,14 +86,15 @@ below); Phase 5 not started:
      that destroy path) were both confirmed working in a live sandbox
      before shipping — the full `PlayerEvents.tick` wiring itself is
      unconfirmed in-game, same blind spot as item 1.
-  3. **Blocked on a real user decision, not a build task right now** —
-     spawn census re-run on the live save's actual seed confirms the
-     plains bug, but the nearest thematic biome (savanna) is **520
-     blocks away**, not "a nearby tile." Since the whole base compound
-     derives from this one coordinate, this is really "relocate the
-     base" not "nudge the spawn point." See FEATURES.md's "Real finding
-     on item 3" for the 4 real options — needs your call before the
-     build session touches this one.
+  3. **Done, shipped 2026-09-06.** User picked the full 520-block move
+     via AskUserQuestion. Spawn target moved to `(1171,-499)`, the real
+     savanna tile the census found — re-verified on the live save's
+     actual seed right before shipping (savanna confirmed at every point
+     sampled in an 8-block radius, not a boundary sliver; real terrain
+     across the planned base footprint flat within ~2.5 blocks). Also
+     moved `structure_loot_progression.js`'s `SPAWN_X`/`SPAWN_Z` to
+     match. Fresh-world build itself unconfirmed in-game, same blind
+     spot as items 1/2.
   4. **Done, live-verified, shipped 2026-09-06.** Real fix was exactly
      what the user said: Depot on the floor, Press 2 blocks above it.
      Confirmed live (iron ingot → iron sheet actually processed) before
