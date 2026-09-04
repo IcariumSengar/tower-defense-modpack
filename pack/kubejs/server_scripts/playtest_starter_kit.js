@@ -561,7 +561,16 @@ PlayerEvents.loggedIn((event) => {
   // measurement in this file (walls, gate, building) already derives
   // from this constant, so the whole compound just grows northward with
   // it - no other coordinate needed a manual adjustment.
-  const COURTYARD_DEPTH = 8
+  // 8 → 11 (2026-09-04, real playtest feedback batch: "push the front
+  // wall out 3 blocks so the pedestal isn't right at the opening") -
+  // matched by the same +3 on the pedestal's own gate-offset below, so
+  // every OTHER relative gap this constant feeds (rig-to-building,
+  // pedestal-to-building) stays exactly what it was - only the
+  // gate-to-pedestal buffer actually grows. Checked, not assumed: a
+  // naive +3 on just the pedestal offset alone (without this) would have
+  // put the kinetic rig's own Z coordinate exactly on the building's
+  // front wall line - caught before shipping, not live.
+  const COURTYARD_DEPTH = 11
   const SIDE_MARGIN = 3
   const BACK_MARGIN = 2
   // Gate sits 2 blocks north of the player's own spawn point, not on
@@ -769,52 +778,54 @@ PlayerEvents.loggedIn((event) => {
       run(`setblock ${x1} ${wy} ${wz} ${perimeterWallBlock(x1, wz)}`)
     }
   }
-  // Debris propping the weak section - cobweb along its shortened top
-  // (where the missing third row would be) and a scatter of gravel/
-  // rubble just outside, like it's never been properly rebuilt.
-  for (let wz = WEAK_WALL_Z0; wz <= WEAK_WALL_Z1; wz++) {
-    run(`setblock ${x0} ${wallY1} ${wz} minecraft:cobweb`)
-  }
+  // Cobweb debris removed 2026-09-04 (direct ask, real playtest feedback
+  // batch) - the gravel/rubble scatter below stays, only the cobweb line
+  // along the weak section's shortened top is gone.
   run(`setblock ${x0 - 1} ${wallY0} ${z0} minecraft:gravel`)
   run(`setblock ${x0 - 1} ${wallY0} ${z0 + 1} minecraft:cobblestone`)
   run(`setblock ${x0 - 1} ${wallY0} ${z0 + 2} minecraft:gravel`)
 
-  run(`setblock ${doorX} ${wallY0} ${z1} minecraft:oak_door[facing=south,half=lower]`)
-  run(`setblock ${doorX} ${wallY0 + 1} ${z1} minecraft:oak_door[facing=south,half=upper]`)
+  // Entrance changed 2026-09-04 (direct ask, real playtest feedback
+  // batch): genuinely open 3-wide, 3-tall gap, no door block at all -
+  // was a single 1-wide oak_door.
+  for (let wx = doorX - 1; wx <= doorX + 1; wx++) {
+    for (let wy = wallY0; wy <= wallY0 + 2; wy++) {
+      run(`setblock ${wx} ${wy} ${z1} minecraft:air`)
+    }
+  }
 
   // Gate dressing - the visible fault line, heaviest fought-over spot
   // (docs/FEATURES.md's "Starting base"): improvised defense props
-  // (Zcraft Decoration barrels/crates as cover) flanking the door, and
-  // a Barbed Wire line just outside - placed purely decoratively via
-  // /setblock, independent of the real craftable Tier 1 barbed wire
-  // (see docs/MODS.md's Trapcraft replacement entry), no power/wiring
-  // implied. Switched from Trapcraft's Spikes 2026-09-03 (direct
-  // request: Barbed Wire replaces Spikes as the Tier 1 defense item) -
-  // createaddition:barbed_wire needs both `vertical` and `facing`
-  // blockstate properties (confirmed from the mod's own blockstate
-  // JSON, not guessed); vertical=false is the ground-laid variant this
-  // decorative line wants, matching how the old Spikes line sat.
+  // (Zcraft Decoration barrels/crates as cover) flanking the door.
   // Registry names confirmed from each mod's own jar before
   // writing this, blockstates checked for facing requirements - AND,
   // real gap caught by that check alone: `hesco_sandwall`/`barbed_wire_1`
   // both had real blockstate JSON *and* real lang entries, but turned
   // out to be orphaned assets with no actual registered block behind
   // them (`/setblock` rejected both as "Unknown block type" in a live
-  // sandbox test) - ships `sfz_shuiniqiang` (Concrete Wall) and
-  // `sfz_lantiepiweilan` (Broken Iron Fence) instead, both confirmed
-  // real via the same live test. Lesson: a blockstate file existing is
-  // NOT sufficient proof a block is placeable - `/setblock` it for real
-  // before trusting an ID, same bar as everything else this session.
+  // sandbox test) - ships `sfz_shuiniqiang` (Concrete Wall) instead,
+  // confirmed real via the same live test. Lesson: a blockstate file
+  // existing is NOT sufficient proof a block is placeable - `/setblock`
+  // it for real before trusting an ID, same bar as everything else this
+  // session.
+  //
+  // **Doomsday Decoration removed entirely 2026-09-04** (direct ask,
+  // real playtest feedback batch) - this was its only footprint in the
+  // whole pack (`doomsday_decoration:barrel`/`woodencrate`), so the mod
+  // itself is now fully unused; uninstalled outright (packwiz + live
+  // jar removed) rather than just dropping these two placements, per
+  // the standing "keep footprint small" principle. Its lang override
+  // (`pack/kubejs/assets/doomsday_decoration/lang/en_us.json`) deleted
+  // with it.
+  //
+  // **Decorative Barbed Wire line removed entirely 2026-09-04** (direct
+  // ask) - was purely cosmetic dressing here (`createaddition:
+  // barbed_wire`, independent of the real craftable Tier 1 defense
+  // item, which is untouched). `sfz_lantiepiweilan` (Broken Iron Fence)
+  // outer posts removed with it, since they only ever framed the wire
+  // line they no longer flank.
   run(`setblock ${doorX - 2} ${wallY0} ${z1 + 1} zcraft_decorations:sfz_shuiniqiang[facing=south]`)
   run(`setblock ${doorX + 2} ${wallY0} ${z1 + 1} zcraft_decorations:sfz_shuiniqiang[facing=south]`)
-  run(`setblock ${doorX - 1} ${wallY0} ${z1 + 1} doomsday_decoration:barrel[facing=south]`)
-  run(`setblock ${doorX + 1} ${wallY0} ${z1 + 1} doomsday_decoration:woodencrate[facing=south]`)
-  for (let wx = x0; wx <= x1; wx++) {
-    if (Math.abs(wx - doorX) <= 1) continue
-    run(`setblock ${wx} ${wallY0} ${z1 + 2} createaddition:barbed_wire[vertical=false,facing=south]`)
-  }
-  run(`setblock ${doorX - 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
-  run(`setblock ${doorX + 2} ${wallY0} ${z1 + 3} zcraft_decorations:sfz_lantiepiweilan[facing=south]`)
 
   // Ground-level pedestal (2026-09-06) - second real rejection of the
   // platform-based presentation in a row (square sandstone shrine ->
@@ -823,13 +834,20 @@ PlayerEvents.loggedIn((event) => {
   // pedestal placed in the yard." No platform, no plinth, no rings -
   // don't propose a third elaborate build without being asked. Same
   // centered plan-position as the circular altar it replaces
-  // (centerX = doorX, centerZ = z1-4) - COURTYARD_DEPTH stays 8, the
-  // grave arc and everything else below stays exactly where the
-  // circular-altar rework last put it, since none of it actually
+  // (centerX = doorX, centerZ = z1-4, later widened to z1-7 - see the
+  // COURTYARD_DEPTH comment above) - the grave arc and everything else
+  // below stays exactly where the circular-altar rework last put it,
+  // since none of it actually
   // depended on the platform's own footprint, just on staying clear of
   // it.
+  // Gate-to-pedestal buffer widened 3 blocks 2026-09-04 (direct ask:
+  // "push the front wall out 3 blocks so the pedestal isn't right at
+  // the opening") - paired with the same +3 on COURTYARD_DEPTH above, so
+  // the pedestal-to-building and rig-to-building gaps this whole layout
+  // already depends on stay exactly what they were; only the
+  // gate-to-pedestal distance actually grows (4 -> 7 blocks).
   const centerX = doorX
-  const centerZ = z1 - 4
+  const centerZ = z1 - 7
 
   run(`setblock ${centerX} ${wallY0} ${centerZ} supplementaries:pedestal`)
   // Stored once here, permanent regardless of amulet state -
@@ -889,38 +907,12 @@ PlayerEvents.loggedIn((event) => {
   // accepted cost of "the base is always genuinely at stake."
   run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
 
-  // Grave markers - plain vanilla oak_fence posts on small coarse_dirt
-  // mounds, not a sign (avoids the 1.20.1 sign-NBT format entirely -
-  // this pack already has one real crash history with guessed NBT
-  // syntax, see docs/FEATURES.md's FTB Quests `#`-tag entry, not worth
-  // repeating for a purely cosmetic prop). Reinforces the existing
-  // "whoever held this before you" wave-5 gear-removal flavor text
-  // (wave_status.js) rather than being generic clutter.
-  //
-  // Relocated to the dais's west flank 2026-09-05 - the circular altar
-  // rebuild's own radius-3 footprint (centerX±3, centerZ±3) now spans
-  // the courtyard's full front-to-back depth, unlike the old 3x3
-  // platform, so the graves' old front/back position would sit directly
-  // on top of dais blocks now. centerX-5 checked against x0 (=
-  // centerX-9, re-derived above) before picking it - 4 blocks clear of
-  // the west wall, 2 blocks clear of the dais's own max extent
-  // (centerX-3), a real gap either side, not assumed clear.
-  //
-  // Left here unchanged by the ground-level pedestal rework above
-  // (2026-09-06) - the dais footprint that motivated this position is
-  // gone, but the dispatch for that rework explicitly said graves stay
-  // "wherever the circular-dais rework last put it unless it
-  // specifically depended on the platform's footprint" - this doesn't,
-  // so it's untouched.
-  const graveSpots = [
-    [centerX - 5, centerZ - 2],
-    [centerX - 5, centerZ],
-    [centerX - 5, centerZ + 2],
-  ]
-  graveSpots.forEach(([gx, gz]) => {
-    run(`setblock ${gx} ${wallY0} ${gz} minecraft:coarse_dirt`)
-    run(`setblock ${gx} ${wallY0 + 1} ${gz} minecraft:oak_fence`)
-  })
+  // Grave markers removed entirely 2026-09-04 (direct ask, real
+  // playtest feedback batch) - a knowing call, not a missed-context
+  // one: these carried real flavor-text intent (reinforcing "whoever
+  // held this before you," wave 5's gear-removal beat in
+  // wave_status.js) and that tie-in is being dropped on purpose, per
+  // explicit confirmation, not because it went unrecognized.
 
   // Abandoned Brick House (2026-09-01, docs/FEATURES.md's "Redesign
   // direction" - replaces the old hand-built single-room shack with a
@@ -959,6 +951,40 @@ PlayerEvents.loggedIn((event) => {
   // floor footprint. Replace-mode fill over just that one Y layer swaps
   // it for the same stone_bricks the rest of the compound floor uses.
   run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
+
+  // Real playtest feedback batch, 2026-09-04 - furniture baked into this
+  // structure's own NBT, not scripted (same class of fix as the
+  // wet_sponge layer above). Decompiled the real NBT directly to find
+  // local coordinates rather than guessing - **real correction to the
+  // original spec while doing so**: the doc's own count of "8 chests/
+  // barrels" is wrong against the actual file. There are no chests at
+  // all, and only 5 barrels total (2x `chests/food` at [8,3,6]/[8,3,7],
+  // 1x `chests/trash` at [3,5,5], 2x `chests/cobwebs` at [3,6,5]/
+  // [3,7,5]) - removing all 5 real ones, not a guessed 8.
+  //
+  // Crafting table -> Crafting Station Improved's real block
+  // (`craftingstation:crafting_station`, confirmed from the mod's own
+  // blockstate JSON - single-variant, no facing property needed).
+  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station`)
+  // Cauldron + tripwire hook - direct removal request.
+  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 5} minecraft:air`)
+  run(`setblock ${buildingX0 + 8} ${floorY + 2} ${buildingZ0 + 5} minecraft:air`)
+  // Starter loot chests/barrels - direct ask, remove all of them
+  // entirely, not just nerf their tables ("loot lives outside the
+  // border, not at home").
+  ;[[8, 3, 6], [8, 3, 7], [3, 5, 5], [3, 6, 5], [3, 7, 5]].forEach(([lx, ly, lz]) => {
+    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
+  })
+
+  // Real, non-obvious finding while looking for the "bed-like blocks
+  // upstairs" - NOT a mod-furniture block as guessed, plain vanilla
+  // `minecraft:spruce_trapdoor` x4 in a 2x2 arrangement at local
+  // [3,5,4]-[6,5,4] (a classic trapdoor-bed decoration trick), one real
+  // floor up from the ground-floor crafting table/cauldron. Left
+  // in place, not removed here - the spec explicitly said this needs a
+  // real decision ("confirming what block it actually is before
+  // deciding whether to clear it or reskin it"), not a guess. Flagged
+  // for a real call, not acted on unilaterally.
 
   // Pre-placed Tier 1 kinetic rig (2026-09-03, direct request: pre-place
   // a finished Rolling Mill "same way it already ships with a furnace
