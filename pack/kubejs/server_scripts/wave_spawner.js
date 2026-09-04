@@ -148,20 +148,81 @@
 // is culminating. Witches were removed entirely 2026-08-29 (unrelated
 // to this pivot, predates it) - see docs/IDEAS.md's "Mob roster
 // exclusions" note.
+//
+// **TFTH removed entirely, 2026-09-04** - direct real playtest feedback,
+// full roster removal (not a per-mob audit as originally planned) but
+// the mod's most distinctive death sound is being kept for atmosphere
+// (see mob_aggro.js/pedestal_health.js for where that lands). Real
+// constraint found while picking replacements: decompiling Undead
+// Nights + Mutants and Zombies' own entity registries directly turned
+// up only 5 mob types in either mod that weren't already used somewhere
+// in this roster - `mutantszombies:blister_zombie`/`split_head_zombie`/
+// `spitter`/`mutant_zombie` and vanilla `zombified_piglin` (skipped -
+// its real attributes come from an inherited class this pack didn't
+// chase down, not a guessed number). 8 TFTH mobs needed replacing, so
+// 4 of them reuse an already-scheduled type in an earlier/additional
+// wave instead of introducing something new - real, not silently
+// papered over. Every fresh pick's real stats (MAX_HEALTH/ATTACK_DAMAGE/
+// ARMOR) came from decompiling each mob's own `createAttributes()`, not
+// guessed, then tier-matched against TFTH.toml's own real base values
+// for the mob being replaced (Global Modifier confirmed 1.0, so the
+// config file's numbers are the actual live ones):
+// - `flesh_human` (TFTH: 20/4/1) -> `mutantszombies:mutant_zombie`
+//   (24/5/0.6) - closest fresh early-tier match.
+// - `flesh_villager` (22/4/1) -> `mutantszombies:blister_zombie`
+//   (24/5/0.6) - same tier, distinct fresh identity from mutant_zombie.
+// - `flesh_dog` (25/6/0) -> `mutantszombies:split_head_zombie`
+//   (24/6/0.5) - real attack-damage match (6 vs 6).
+// - `plaquecreaturetwo` "Flesh Hunter I" (50/7/6, the toughest
+//   non-boss original) -> `mutantszombies:spitter` (75/4-ranged/5.0) -
+//   real HP/armor upgrade even against the original, ranged instead of
+//   melee but a genuine step up in toughness, fits the "hunter" framing.
+// - `flesh_suffer` (40/25, nerfed to 12 here after a real combat
+//   incident/4)`) -> `undeadnights:elite_zombie` **reused** (already
+//   this wave's other slot - real duplication, not a fresh identity).
+//   Elite Zombie's own documented framing ("hits harder... real
+//   distinct stat block") is the closest existing match to what Flesh
+//   Suffer represented; the custom damage nerf isn't carried over since
+//   Elite Zombie's damage is Undead Nights' own tuned value, not a known
+//   one-shot risk in this pack.
+// - `bruteplaquecreatureone` "Flesh Brute I" (45/4/5) ->
+//   `undeadnights:horde_zombie` **reused** (already this wave's other
+//   slot too) - "numbers-focused reinforcement" framing is the closest
+//   fit available.
+// - `flesh_hunter_two` "Flesh Hunter II" (45/6/4) ->
+//   `mutantszombies:mutant_brute` **reused early** (this mob's real
+//   first appearance was wave 8 - now also appears here). Deliberately
+//   NOT `undeadnights:demolition_zombie`: that mob's wave-8 debut is a
+//   real documented design beat (see the comment block above - first
+//   TNT-capable mob, timed to the endless-horde-config handoff), moving
+//   it earlier would break that on purpose, not by accident.
+// - `flesh_boomer` (20/0, an exploding mob with zero melee damage) ->
+//   `mutantszombies:zombie_brute` **reused** (already this wave's other
+//   slot). Real, flagged gap: nothing in either replacement mod has an
+//   explosion mechanic, so Flesh Boomer's actual archetype has no
+//   analog here - this is a straight tier-adjacent stat swap, not an
+//   equivalent-behavior one.
 var WAVES = [
   [['minecraft:zombie', 4], ['minecraft:husk', 2], ['minecraft:zombie_villager', 1]],
-  [['minecraft:zombie', 3], ['minecraft:husk', 2], ['minecraft:drowned', 2], ['the_flesh_that_hates:flesh_human', 2]],
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['minecraft:drowned', 1], ['the_flesh_that_hates:flesh_human', 2], ['the_flesh_that_hates:flesh_villager', 2]],
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['the_flesh_that_hates:flesh_villager', 1], ['the_flesh_that_hates:flesh_dog', 2], ['the_flesh_that_hates:plaquecreaturetwo', 1]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 2], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['mutantszombies:blister_zombie', 1], ['mutantszombies:split_head_zombie', 2], ['mutantszombies:spitter', 1]],
   // Elite Zombie (Undead Nights' own, real distinct stat block per its
   // own bytecode - slower but hits harder than Horde Zombie) replaces
-  // the ravager as this wave's toughest mob.
-  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['the_flesh_that_hates:plaquecreaturetwo', 1], ['the_flesh_that_hates:flesh_suffer', 1], ['undeadnights:elite_zombie', 1]],
+  // the ravager as this wave's toughest mob. Now doing double duty as
+  // both its own slot and Flesh Suffer's replacement (see the roster
+  // header comment above) - a real duplication, not a fresh identity.
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['mutantszombies:spitter', 1], ['undeadnights:elite_zombie', 2]],
   // Undead Nights' own zombies arrive as a numbers-focused reinforcement
-  // wave - a real, intended "horde grows" beat, not filler.
-  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['the_flesh_that_hates:bruteplaquecreatureone', 1], ['undeadnights:horde_zombie', 2]],
-  // Mutants and Zombies debuts alongside a second Elite Zombie.
-  [['the_flesh_that_hates:flesh_hunter_two', 1], ['the_flesh_that_hates:flesh_boomer', 1], ['mutantszombies:zombie_brute', 1], ['undeadnights:elite_zombie', 1]],
+  // wave - a real, intended "horde grows" beat, not filler. Horde Zombie
+  // now also stands in for Flesh Brute I's slot (see roster header
+  // comment) - x3 total this wave, real duplication.
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['undeadnights:horde_zombie', 3]],
+  // Mutants and Zombies debuts alongside a second Elite Zombie. Mutant
+  // Brute and Zombie Brute now also fill Flesh Hunter II's and Flesh
+  // Boomer's old slots (see roster header comment) - both previewed a
+  // wave early here, real duplication against their wave-8 return below.
+  [['mutantszombies:mutant_brute', 1], ['mutantszombies:zombie_brute', 2], ['undeadnights:elite_zombie', 1]],
   // Toughest hand-authored mix, including the first appearance of
   // something that can genuinely breach the base's own defenses, not
   // just the player - Demolition Zombie, real TNT capability per
@@ -186,14 +247,10 @@ var WAVE_MOB_TYPES = [
   'minecraft:husk',
   'minecraft:drowned',
   'minecraft:zombie_villager',
-  'the_flesh_that_hates:flesh_human',
-  'the_flesh_that_hates:flesh_villager',
-  'the_flesh_that_hates:flesh_dog',
-  'the_flesh_that_hates:plaquecreaturetwo',
-  'the_flesh_that_hates:flesh_suffer',
-  'the_flesh_that_hates:bruteplaquecreatureone',
-  'the_flesh_that_hates:flesh_hunter_two',
-  'the_flesh_that_hates:flesh_boomer',
+  'mutantszombies:mutant_zombie',
+  'mutantszombies:blister_zombie',
+  'mutantszombies:split_head_zombie',
+  'mutantszombies:spitter',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
@@ -574,13 +631,11 @@ PlayerEvents.tick(function (event) {
       // its own hordes via an opaque command - so they can't carry this
       // tag; nearbyWaveMobCount/wave_status.js fall back to type-only
       // matching specifically when waveNumber > WAVES.length.
-      // Flesh Suffer-specific nerf (2026-09-01, real playtest feedback -
-      // the real combat log shows it killed the player 4 separate times
-      // at wave 5). TFTH.toml's own base value is 25 attack damage,
-      // easily a one-shot against starter iron armor - cut to 12,
-      // matching the ravager's own post-nerf value above for
-      // consistency, via the same Attributes-NBT override technique.
-      var isFleshSuffer = spawn.mobType === 'the_flesh_that_hates:flesh_suffer'
+      // Flesh Suffer-specific attack-damage nerf (2026-09-01, real
+      // combat incident) removed 2026-09-04 along with the mob itself -
+      // TFTH fully removed from the roster (see the WAVES header comment
+      // above). Its replacement (undeadnights:elite_zombie) uses its own
+      // mod-tuned damage value, not a known one-shot risk here.
       // PersistenceRequired:1b added 2026-09-02, part of the same
       // amulet-objective fix as waveObjective() above - "regardless of
       // player position" (docs/FEATURES.md's own stated design intent)
@@ -590,9 +645,7 @@ PlayerEvents.tick(function (event) {
       // it. Applies to every wave mob now, not just the amulet case -
       // no real downside outside it either, since td_wave_mob-tagged
       // mobs are meant to be fought, not left to quietly disappear.
-      var summonNbt = isFleshSuffer
-        ? '{Attributes:[{Name:"generic.follow_range",Base:128},{Name:"generic.attack_damage",Base:12}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
-        : '{Attributes:[{Name:"generic.follow_range",Base:128}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
+      var summonNbt = '{Attributes:[{Name:"generic.follow_range",Base:128}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
       // td_justSpawned added and removed within this same synchronous
       // block, so the very next spawn processed (even same tick, even
       // same mob type) can never see a stale tag from this one.

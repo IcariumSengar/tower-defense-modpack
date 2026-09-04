@@ -207,19 +207,18 @@ function stripAutoRetargeting(mob) {
 // this codebase's established cross-file duplication pattern - server_
 // scripts don't reliably share top-level scope). Keep both in sync, plus
 // wave_status.js's HOSTILE_TYPES, if this roster changes again.
+// TFTH removed entirely 2026-09-04 (real playtest feedback) - see
+// wave_spawner.js's WAVES header comment for the full replacement
+// mapping/rationale.
 var WAVE_MOB_TYPES = [
   'minecraft:zombie',
   'minecraft:husk',
   'minecraft:drowned',
   'minecraft:zombie_villager',
-  'the_flesh_that_hates:flesh_human',
-  'the_flesh_that_hates:flesh_villager',
-  'the_flesh_that_hates:flesh_dog',
-  'the_flesh_that_hates:plaquecreaturetwo',
-  'the_flesh_that_hates:flesh_suffer',
-  'the_flesh_that_hates:bruteplaquecreatureone',
-  'the_flesh_that_hates:flesh_hunter_two',
-  'the_flesh_that_hates:flesh_boomer',
+  'mutantszombies:mutant_zombie',
+  'mutantszombies:blister_zombie',
+  'mutantszombies:split_head_zombie',
+  'mutantszombies:spitter',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',

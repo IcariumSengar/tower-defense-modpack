@@ -55,10 +55,27 @@
 // loot coverage, same "not in the curated roster but cheap to cover"
 // reasoning the old system already used for husk/drowned/creeper.
 // `mutantszombies:*` ids confirmed from ModEntities.class directly.
-const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager', 'minecraft:zombified_piglin', 'the_flesh_that_hates:flesh_human', 'the_flesh_that_hates:flesh_villager', 'undeadnights:horde_zombie']
-const RARE_MOBS = ['the_flesh_that_hates:flesh_dog', 'the_flesh_that_hates:flesh_cow', 'the_flesh_that_hates:flesh_sheep', 'the_flesh_that_hates:flesh_pig', 'the_flesh_that_hates:flesh_vindicator', 'the_flesh_that_hates:flesh_pillager', 'the_flesh_that_hates:plaquecreatureone', 'the_flesh_that_hates:plaquecontaminator']
-const EPIC_MOBS = ['the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_boomer', 'undeadnights:elite_zombie', 'mutantszombies:spitter', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie']
-const LEGENDARY_MOBS = ['mutantszombies:crawler', 'the_flesh_that_hates:flesh_suffer', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
+// TFTH removed entirely 2026-09-04 (real playtest feedback) - see
+// wave_spawner.js's WAVES header comment for the full replacement
+// mapping. Real re-tiering, not a 1-for-1 id swap: blister_zombie and
+// split_head_zombie moved DOWN from Epic to Uncommon/Rare, since their
+// real roster role (see wave_spawner.js) is now early-wave trash, not
+// an elite - an Epic bag dropping from a wave-3 kill would be a real
+// balance bug. flesh_dog/cow/sheep/pig/vindicator/pillager/
+// plaquecreatureone/plaquecontaminator are gone without replacement -
+// confirmed real dead weight, not live variety: TFTH's own autonomous
+// spawning is fully disabled in TFTH.toml (enableGermStageMobSpawn,
+// enableIncubatorSpawn, enableStructuresSpawn all already false), so
+// only flesh_dog (spawned via wave_spawner.js) was ever actually
+// reachable - the rest could never be killed, so removing them doesn't
+// shrink anything real. Epic thins from 8 entries to 2 as a real,
+// honest consequence - there isn't a 3rd genuinely mid-tough identity
+// left in the roster after TFTH's removal, not papered over with a
+// forced duplicate.
+const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager', 'minecraft:zombified_piglin', 'mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'undeadnights:horde_zombie']
+const RARE_MOBS = ['mutantszombies:split_head_zombie']
+const EPIC_MOBS = ['undeadnights:elite_zombie', 'mutantszombies:spitter']
+const LEGENDARY_MOBS = ['mutantszombies:crawler', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
 // Legendary jackpot roll (2026-09-06, raised in the "some ideas..."
 // batch: "during any wave there is a slim chance of a Legendary Loot

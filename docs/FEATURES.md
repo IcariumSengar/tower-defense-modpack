@@ -4535,6 +4535,21 @@ and screenshots them, or the user eyeballs them next session
 cut, replace them with equivalent-tier picks from the already-approved
 non-TFTH sources so wave variety/count doesn't shrink — same "replace,
 don't just delete" pattern the original Flesh Unseen substitution used.
+**Superseded 2026-09-04**: real playtest feedback skipped the per-mob
+audit entirely in favor of removing TFTH from the roster outright (one
+death sound kept for atmosphere - separate open item, see below). Full
+replacement mapping/rationale lives as a comment directly in
+wave_spawner.js's WAVES header. Real gaps found and fixed in the same
+pass, not just the 5 files originally scoped: TFTH ids were ALSO
+present in `config/undeadnights_horde_mobs_config.json` (the endless-
+phase horde pool - would have kept spawning TFTH mobs post-wave-8 even
+after the roster removal) and `config/epicsiegemod-common.toml`'s own
+`targetingMobs` (which, separately, was missing `mutantszombies:crawler`
+entirely even before today - a real pre-existing gap, now fixed
+alongside the TFTH cleanup). `plaquethreelegcreature`'s "confirmed cut"
+above turned out to be incomplete too - it was still present in both of
+those same 2 files, meaning the original Flesh Hysterizer removal never
+actually reached full completion.
 
 **Wave 8's now-empty slot (from cutting Flesh Hysterizer) — real
 candidates, not yet picked.** Two mobs from Mutants and Zombies were

@@ -23,6 +23,55 @@ reflect actual current status.
 
 ## Ready to build
 
+**REPRIORITIZED 2026-09-04 — mob pathing/aggression to the pedestal is
+the user's real #1, "the main bug bear," wants to play again soon.**
+Moved ahead of TFTH removal/wave-countdown/Spikes below. Casts real
+doubt on the mob_aggro.js target-selector-stripping fix, only ever
+sandbox-verified before now - needs live diagnosis against the actual
+save: is the strip reliably taking effect on every wave mob, is the
+10-tick setTarget() reassertion strong/frequent enough, or is base
+layout itself obstructing pathing. User wants them "a little more
+aggressive."
+
+**Real playtest findings from actual play, dispatched 2026-09-04
+(after the structure/loot fixes shipped) — priority over background
+spacing-tuning:**
+1. **Remove all TFTH mobs entirely — supersedes the earlier "audit each
+   of the 7 remaining ones" plan (don't do that audit).** Replace with
+   equivalent-tier non-TFTH picks so variety doesn't shrink. Separately:
+   keep one specific TFTH death sound for atmosphere, applied to
+   higher-tier mobs only once TFTH mobs are gone. Real open question:
+   which exact sound, and whether to keep TFTH installed dormant just
+   for that asset vs. extract it and uninstall TFTH fully (footprint
+   tradeoff, flag don't decide silently).
+2. **Iron rolling still insufficient with the Hand Crank actually
+   connected — a real throughput complaint now, not the earlier
+   "is it connected" question.** Corrects investigation #13's finding
+   that "no regression, just connect a crank" - real play shows the
+   connected rate itself isn't enough. Needs real RPM/SU numbers, not
+   guessed.
+3. **Mobs not pathing to the pedestal reliably in real play — casts
+   real doubt on the mob_aggro.js target-selector-stripping fix**,
+   which was only ever sandbox-verified before now. User wants them
+   "a little more aggressive." Needs live diagnosis against the actual
+   save, not re-trusting the earlier sandbox result.
+
+**2 more real asks, dispatched 2026-09-04, alongside the 3 playtest
+findings above:**
+4. **Escalating time-between-waves, announced at a real checkpoint
+   ("say after wave 5").** Countdown gap should scale short-early,
+   longer-later, with a real title/chat announcement at the threshold,
+   not a silent number change. Exact current mechanism/value needs
+   checking first, first-pass curve numbers are the peer's call.
+5. **Trapcraft's Spikes re-introduced as the weak Tier 1 interim trap,
+   below Barbed Wire** (the harder-to-get goal stays, deliberately).
+   Already installed, unused since Barbed Wire took over. Real fix
+   needed for "damage AND slow": Spikes alone only damages, no slow -
+   pair with plain vanilla cobweb (zero-cost, genuinely slows) rather
+   than a single do-everything block. Confirm the mod's own recipe is
+   actually cheap/simple as wanted, override via KubeJS if not. New
+   Tier 1 quest for it alongside the existing ones (one quest per item).
+
 **2 more real bugs, dispatched 2026-09-04, alongside the structure-
 proximity regression above:**
 1. **Big Lost City — full clean removal — done, shipped 2026-09-04
