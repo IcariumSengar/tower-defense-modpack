@@ -306,6 +306,56 @@ dropped." Two real, independent pieces:
   while that's being debugged live.
 - Queued to build, see QUEUE.md.
 
+**Built 2026-09-06 — jackpot roll and mod install both real and
+verified, the config piece has a genuine environmental limit.**
+- Jackpot roll shipped exactly as specced (`ALL_WAVE_MOBS` = the union
+  of all 4 tier arrays, one extra 2% `randomChance` call per mob id).
+  Verified live, not just a clean boot: 100 plain `minecraft:zombie`
+  kills (previously incapable of ever dropping Legendary) in a sandbox
+  produced 5 legendary bag drops - real proof a trash-floor kill can
+  now jackpot.
+- Loot Beams: Refork installed via packwiz - pulled 3.4.7 (packwiz
+  always grabs latest; the 3.2.10 originally checked no longer exists
+  as the current file, but it's the same real mod/author/Forge-1.20.1
+  target, just a newer build). Real dependency chain packwiz resolved:
+  Nirvana Library, Common Network, Fzzy Config, Kotlin for Forge - all
+  downloaded and sha1-verified against packwiz's own recorded hashes
+  before being placed in the live instance. Full mod set (66 mods now)
+  boots clean, 0 KubeJS errors. Confirmed via the jar's own
+  `META-INF/mods.toml` (not assumed): real Forge `[47.3.0,)` dependency
+  (this pack runs 47.4.10) and Minecraft `1.20.1` exactly, with the
+  `nirvana_lib` dependency explicitly marked `side = "CLIENT"` -
+  consistent with the file page's own "client-side" claim even though
+  packwiz's own generic metadata just says "both".
+- **Real answer found on the open rarity question, decompiled not
+  guessed**: `bountybags:legendary_loot_bag` is registered with plain
+  vanilla `Rarity.EPIC` - the exact same rarity this pack's own
+  `epic_loot_bag` already uses (BountyBags never bothered distinguishing
+  "legendary" from "epic" since vanilla's own `Rarity` enum only has 4
+  tiers and stops at EPIC). Without an override, the jackpot bag would
+  beam the same color as a completely ordinary epic bag drop - a real
+  problem, not a hypothetical one, for a feature whose entire point is
+  "unmistakable." Found the exact real config field to fix it
+  (decompiled Loot Beams' own `LightConfig$CustomColorSetting` class):
+  `color_override_by_name`, a real per-item color map keyed by resource
+  location - `bountybags:legendary_loot_bag` just needs one entry with a
+  distinct, high-tier color, no need to touch the more involved custom-
+  rarity-tier system at all.
+- **Real, honest limit**: that config file couldn't be generated or
+  verified from this build session's own sandbox. Confirmed directly,
+  not assumed: a full clean boot with the new mod chain installed
+  produced every other mod's own config file except this one (Fzzy
+  Config's TOML output only happens on a real client launch, not a
+  dedicated server boot) - the same category of client-only blind spot
+  already established for Mob Dismemberment, just hitting config
+  generation instead of gameplay logic this time. Hand-writing a guess
+  at the file risked either being silently wrong or getting overwritten
+  by Fzzy Config's own regeneration - worse than leaving it honestly
+  open. Real path to close it: once the game is launched normally
+  (which will happen regardless, for actual play), the real file will
+  exist and the one override entry can be added with confidence instead
+  of guessed.
+
 **Modded crafting materials in loot — audited and specced 2026-09-06,
 direct question: "have the loot bags and loot chest loot tables been
 updated to include crafting materials from mods, i.e not just

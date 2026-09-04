@@ -65,64 +65,40 @@ below); Phase 5 not started:
 
 ## In progress (sent directly to the build session)
 
-- **Second fresh-world playtest batch** — sent to build 2026-09-06,
-  user go-ahead, **priority — do this before the loot-table audit
-  below.** 4 items, full detail in FEATURES.md's "Second fresh-world
-  playtest batch" entry (under "Pedestal visual upgrade + mob-attack
-  vulnerability"):
-  1. **Done, shipped 2026-09-06.** Circular altar removed entirely,
-     pedestal placed directly at ground level (`wallY0`) at the same
-     centered plan-position, no platform/plinth/rings. Block placement +
-     marker armor stand confirmed live in a sandbox; the full
-     login-triggered build itself is unconfirmed in-game (same standing
-     blind spot as every other spawn-time build in this pack — no real
-     player can join the sandbox).
-  2. **Done, shipped 2026-09-06.** Real `td_pedestalHealth` (200, first
-     pass) + throttled tick check for wave mobs in melee range,
-     damage-per-hit read from each attacker's own real
-     `generic.attack_damage` attribute, calls the same destroy path as
-     `pedestal_destruction.js` at 0 HP. The two genuinely new mechanics
-     (the attribute read, and a new cross-file function call to share
-     that destroy path) were both confirmed working in a live sandbox
-     before shipping — the full `PlayerEvents.tick` wiring itself is
-     unconfirmed in-game, same blind spot as item 1.
-  3. **Done, shipped 2026-09-06.** User picked the full 520-block move
-     via AskUserQuestion. Spawn target moved to `(1171,-499)`, the real
-     savanna tile the census found — re-verified on the live save's
-     actual seed right before shipping (savanna confirmed at every point
-     sampled in an 8-block radius, not a boundary sliver; real terrain
-     across the planned base footprint flat within ~2.5 blocks). Also
-     moved `structure_loot_progression.js`'s `SPAWN_X`/`SPAWN_Z` to
-     match. Fresh-world build itself unconfirmed in-game, same blind
-     spot as items 1/2.
-  4. **Done, live-verified, shipped 2026-09-06.** Real fix was exactly
-     what the user said: Depot on the floor, Press 2 blocks above it.
-     Confirmed live (iron ingot → iron sheet actually processed) before
-     committing. Also closed the separate "Press never auto-fires" bug
-     — same root cause.
-- **Loot-table dead-weight audit — done, shipped 2026-09-06.** New
-  `loot_dead_weight_strip.js`. Real chest-context `removeLoot(ItemFilter)`
-  syntax confirmed by decompiling the installed LootJS jar directly
-  (matches `context.addLoot(...)`'s own object, auto-converts a plain JS
-  array via the same `Ingredient`-style conversion used everywhere else
-  in this pack). Live-verified: rolled the real vanilla
-  `abandoned_mineshaft` table (confirmed by its own JSON to include
-  rails/name_tag) 10 times, zero stripped ids appeared, unrelated loot
-  (including this pack's own bonus pools) unaffected. Full strip list in
-  FEATURES.md's "Loot-table dead-weight audit" entry.
-- **Legendary loot bag jackpot + beam visual** — sent to build
-  2026-09-05, user gave standing authorization to line up and dispatch
-  queue items without per-item confirmation while away. Full spec in
-  FEATURES.md's "Legendary loot bag jackpot + beam-of-light visual"
-  entry (under "Loot bags"): a flat 2% bonus-roll on every wave mob kill
-  (any tier) for `bountybags:legendary_loot_bag`, additive to the
-  existing tier-gated drops, plus installing **Loot Beams: Refork**
-  (verified fresh, Forge 1.20.1, uploaded 2025-11-29) for the beam
-  visual, with a config check for whether the modded bag item needs an
-  explicit rarity entry. Deliberately scoped to `loot_bag_drops.js`
-  only — no touches to `wave_spawner.js`/`wave_status.js`/
-  `mob_aggro.js`, since those are mid-debugging for the fresh-world
-  mob-pathing regression right now.
+- **Legendary loot bag jackpot + beam visual — mostly shipped
+  2026-09-06, one real limit found.** Full spec in FEATURES.md's
+  "Legendary loot bag jackpot + beam-of-light visual" entry (under
+  "Loot bags").
+  - **Jackpot roll: done, live-verified.** `loot_bag_drops.js` now
+    layers a second, independent 2% `randomChance` roll for
+    `bountybags:legendary_loot_bag` across every wave mob (all 4 tiers),
+    on top of the existing per-tier gating, unchanged. Verified live:
+    killed 100 plain trash-floor zombies (a mob that could never roll
+    Legendary before this) in a sandbox — 5 legendary bags dropped,
+    consistent with the 2% rate, real proof the jackpot mechanic works.
+  - **Loot Beams: Refork — installed, boots clean.** Packwiz pulled
+    3.4.7 (newer than the 3.2.10 originally verified — same real mod,
+    same Forge 1.20.1/uploaded-fresh status, just current). Real
+    dependency chain: Nirvana Library, Common Network, Fzzy Config,
+    Kotlin for Forge (all downloaded + sha1-verified). Full mod set
+    boots with 0 KubeJS errors.
+  - **Real open item confirmed, not resolved**: decompiled BountyBags'
+    own item registry — `legendary_loot_bag` is registered with plain
+    vanilla `Rarity.EPIC`, the *same* rarity as this pack's own regular
+    `epic_loot_bag`. Without a color override, the jackpot bag would
+    beam identically to an ordinary epic bag drop, defeating the whole
+    "unmistakable" point. Found the exact real fix (decompiled Loot
+    Beams' own config class): `LightConfig.customColorSetting.
+    color_override_by_name`, keyed by `bountybags:legendary_loot_bag`.
+    **Genuinely can't generate or verify this file from the build
+    session's sandbox** — it's a dedicated-server-only environment and
+    this mod's config (Fzzy Config) only writes its default file on a
+    real client launch, confirmed by a clean boot producing every other
+    mod's own config except this one. Real path to close this: once you
+    launch the game normally, the file will generate on its own — send
+    the build session the generated file (or just confirm it exists) and
+    the exact override entry can be added with real confidence instead
+    of a guessed hand-write.
 - **Fresh-world playtest batch, 2026-09-05 — sent to build.** Real
   feedback from the first actual playtest of the new fresh-world
   pedestal redesign, 4 items:
@@ -282,6 +258,42 @@ below); Phase 5 not started:
 
 ## Built, awaiting your next playtest
 
+- **Second fresh-world playtest batch + loot-table dead-weight audit**
+  — built, verified, and deployed 2026-09-06 (commits 46a884b, e0b4939,
+  7e468b7). Full detail in FEATURES.md's "Second fresh-world playtest
+  batch" and "Loot-table dead-weight audit" entries (under "Pedestal
+  visual upgrade + mob-attack vulnerability" and "Loot bags"). Five
+  pieces, all shipped:
+  1. Dais ditched entirely — pedestal now sits directly at ground level
+     in the yard, no platform.
+  2. Real pedestal HP (`td_pedestalHealth`, 200 first-pass) with a
+     throttled tick check for wave mobs in melee range, damage-per-hit
+     read from each attacker's own real attack stat, same destroy path
+     as the existing explosion-based system at 0 HP — a deterministic
+     replacement for relying on Epic Siege Mod's inconclusive
+     block-targeting.
+  3. Spawn relocated the full 520 blocks to `(1171,-499)`, a real
+     savanna tile (re-verified on the live save's actual seed right
+     before shipping — a real patch, not a boundary sliver; terrain
+     flat within ~2.5 blocks across the planned base footprint) — user's
+     own pick via AskUserQuestion over 3 smaller-disruption alternatives.
+  4. Press/Depot spacing fixed exactly per the user's own direct
+     instruction (Press 2 blocks above the Depot) — live-verified
+     (a real iron ingot → iron sheet conversion happened) before
+     committing, and this closed the separate long-open "Press never
+     auto-fires" bug too, same root cause.
+  5. Loot dead-weight strip (`loot_dead_weight_strip.js`) — rails,
+     name tags, horse gear, vanilla maps, leads, music discs, elytra/
+     End-city loot all removed from every chest, custom or vanilla.
+     Real `removeLoot(ItemFilter)` syntax confirmed by decompiling the
+     installed LootJS jar rather than assumed; live-verified against a
+     real vanilla `abandoned_mineshaft` roll (10x, zero stripped ids
+     came through, this pack's own bonus pools unaffected).
+  **Fresh-world pieces (1-3) are unconfirmed in-game** — same standing
+  blind spot as every other spawn-time build in this pack, no real
+  player can join the build session's sandbox. Piece 4 is confirmed
+  live. Piece 5 applies immediately to the current save too, not just
+  fresh worlds.
 - **Full zombie-apocalypse roster pivot** — built, verified, and
   deployed 2026-09-06. Full detail in FEATURES.md's "Full
   zombie-apocalypse roster pivot" entry (under "Mob roster &

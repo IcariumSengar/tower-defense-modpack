@@ -246,7 +246,11 @@ hash = "2b1c228e73659760fd5401ed6ee884f560d9be673f64da7c140d7660f0f100e6"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "6a9175c86bba991179b32b64837c671290a6825b06df9976f7b4db921b1a692b"
+hash = "e89624904af4226aff9143e202e3a88d3af69844a05387a488160152d6f0ddd8"
+
+[[files]]
+file = "kubejs/server_scripts/loot_dead_weight_strip.js"
+hash = "99715326d3fc31180b27440c608743297dd867821c4de8828fc17805192f90bc"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
@@ -254,15 +258,19 @@ hash = "307f8f8475a741ff528c04240a20109a4895ecd51a0a2609654dbac17178302b"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_destruction.js"
-hash = "be5f59fe23fe827896fa97dfde1b2908fc762cc961da944b7964ea305ffd375d"
+hash = "11d9a2875b91efe705ef0f6a8a0280ca7265c3774800293a3d1bc02372afbf72"
+
+[[files]]
+file = "kubejs/server_scripts/pedestal_health.js"
+hash = "7c75952749054fdf1807f10ad7f62efce814f6b5762458cc0e185a7aef56ae7f"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "c3bb18d874666229ef3e4999da03d25e8b6167fc99609f9f52ae96fdf32c8c35"
+hash = "168250bf7d077b1efa10d8b147ec6c51a8a269c0248fb348d047a48e35d5b2b5"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
-hash = "4caba46603d96e93847a03c34fe36abeeaa5f4a082d5ef10e216825720895883"
+hash = "1711062971ad58ecf099bde2cc3acdc08bda942113679e4b3179c7c54562bc65"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
@@ -335,6 +343,11 @@ metafile = true
 [[files]]
 file = "mods/clumps.pw.toml"
 hash = "903352ffbd84d4b95fed905893f4715d9c3f88ec9fff6fb06f6e359e0b839dc3"
+metafile = true
+
+[[files]]
+file = "mods/common-network.pw.toml"
+hash = "12b4c157fc2d65ed665c939442e5e0dd0727e018026855e2baf33e8b52e937ad"
 metafile = true
 
 [[files]]
@@ -413,6 +426,11 @@ hash = "9431efe84c183e51c3180c9806450ff799be884895bc87606138f6ac0c228141"
 metafile = true
 
 [[files]]
+file = "mods/fzzy-config.pw.toml"
+hash = "82c1bd758e0562f94f461b297930876b64c2e99feea47b3815efb3da02e0a059"
+metafile = true
+
+[[files]]
 file = "mods/geckolib.pw.toml"
 hash = "898fd2704dd260ae8f3dc20b4416439751f0a9e76367c4f0bbdac886b6987802"
 metafile = true
@@ -443,6 +461,11 @@ hash = "90a70141bcec839b6a1aa647c91f97bb7b33b6b9e6ce6b3b18a4113aa7dff636"
 metafile = true
 
 [[files]]
+file = "mods/kotlin-for-forge.pw.toml"
+hash = "1678327ac50408273c1828b631929128d3fdfd54cda7b2e823ce9352495a68ff"
+metafile = true
+
+[[files]]
 file = "mods/kubejs-curios.pw.toml"
 hash = "61c3166eb46728d599273ca32216707321f9283347021f83798261cf5ef2d295"
 metafile = true
@@ -450,6 +473,11 @@ metafile = true
 [[files]]
 file = "mods/kubejs.pw.toml"
 hash = "ed086cdfde6ba4bb175468a76f3df3b9517aea3fe95b09bed0f1fa70f7caeb6a"
+metafile = true
+
+[[files]]
+file = "mods/loot-beams-refork.pw.toml"
+hash = "d8b301df6637ec6903af1ed0dc67f52da6a42794a3ae631b170fd89d800b7ba4"
 metafile = true
 
 [[files]]
@@ -485,6 +513,11 @@ metafile = true
 [[files]]
 file = "mods/mutants-and-zombies.pw.toml"
 hash = "64c9b936bc91993a8b5a9593af92056b95df5d86b618103e03d1df4b6597f81c"
+metafile = true
+
+[[files]]
+file = "mods/nirvana-library.pw.toml"
+hash = "4bcd6d46a7e00dfcd8b49f9cf95d4e3051ab605a94ed35e6b3d12c24ada7521d"
 metafile = true
 
 [[files]]

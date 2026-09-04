@@ -60,6 +60,19 @@ const RARE_MOBS = ['the_flesh_that_hates:flesh_dog', 'the_flesh_that_hates:flesh
 const EPIC_MOBS = ['the_flesh_that_hates:plaquecreaturetwo', 'the_flesh_that_hates:flesh_hunter_two', 'the_flesh_that_hates:bruteplaquecreatureone', 'the_flesh_that_hates:flesh_boomer', 'undeadnights:elite_zombie', 'mutantszombies:spitter', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie']
 const LEGENDARY_MOBS = ['the_flesh_that_hates:plaquethreelegcreature', 'the_flesh_that_hates:flesh_suffer', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
+// Legendary jackpot roll (2026-09-06, raised in the "some ideas..."
+// batch: "during any wave there is a slim chance of a Legendary Loot
+// bag being dropped"). Additive to the per-tier gating above, not a
+// replacement - every wave mob, regardless of its own tier, gets a
+// SECOND independent roll at a flat 2% to also drop a bonus
+// `bountybags:legendary_loot_bag`. This is what makes it read as a
+// jackpot: a trash-floor zombie kill can genuinely pay off big, not
+// just the wave-8 finale mobs that already roll Legendary on their own
+// terms. Deliberately kept in this file only - no touches to
+// wave_spawner.js/wave_status.js/mob_aggro.js.
+const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
+const JACKPOT_CHANCE = 0.02
+
 // `LootJS.modifiers(...)` / `.addEntityLootModifier(id).randomChance(n).addLoot(id)`
 // - same confirmed-working pattern as the old system, just pointed at
 // bountybags:*_loot_bag instead of the custom kubejs:* items.
@@ -78,5 +91,9 @@ LootJS.modifiers((event) => {
 
   LEGENDARY_MOBS.forEach((id) => {
     event.addEntityLootModifier(id).randomChance(0.04).addLoot('bountybags:legendary_loot_bag')
+  })
+
+  ALL_WAVE_MOBS.forEach((id) => {
+    event.addEntityLootModifier(id).randomChance(JACKPOT_CHANCE).addLoot('bountybags:legendary_loot_bag')
   })
 })
