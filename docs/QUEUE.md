@@ -23,18 +23,30 @@ reflect actual current status.
 
 ## Ready to build
 
-**Polish/utility mod pass, 2026-09-04 — held, NOT sent to build.** Full
-spec in FEATURES.md's "Polish/utility mod pass, 2026-09-04" section
-(right before "Tried and explicitly retired"). All picks confirmed real
-Forge 1.20.1 builds: Sodium/Embeddium Dynamic Lights, Subtle Effects,
-Damage Numbers (luavixen's specifically, not the 2 similarly-named
-mods), FancyMenu + its Drippy Loading Screen addon, and
-EMF+ETF (real Forge infra, not Optifine) carrying 2 resource packs —
-Fresh Animations and Tissou's Zombie Pack (its TZP Plus Mutants
-companion deliberately dropped, wrong target mod). One real open
-question flagged for the peer to verify live, not guessed: whether
-Fresh Animations and Tissou's Zombie Pack actually layer cleanly
-together on the same zombie-family entities.
+**Polish/utility mod pass, 2026-09-04 — IN PROGRESS, 2 of 7 picks
+installed.** Full spec in FEATURES.md's "Polish/utility mod pass,
+2026-09-04" section (right before "Tried and explicitly retired").
+- [done] **Sodium/Embeddium Dynamic Lights** + its real dependency
+  **Sodium/Embeddium Options API** - installed via packwiz, both jars
+  downloaded and sha1-verified, deployed to the live instance.
+- [done] **Subtle Effects** - installed, verified, deployed.
+- [real blocker found, not guessed past] **Damage Numbers by
+  luavixen** - genuinely harder to pin down than expected. Two separate
+  CurseForge search attempts (`damage numbers`, then the exact slug
+  `damagenumbers`) both resolved to the SAME wrong project - confirmed
+  by checking the real project-id in each resulting `.pw.toml`, not
+  just eyeballing the filename: both are project 1022853, **mel1x's
+  mod** ("Fabric mod... floating damage values" per its own CurseForge
+  page - wrong author AND wrong loader), not luavixen's. Removed both
+  wrong installs before anything reached the live instance. Real
+  candidates confirmed to exist by name+author via a proper CurseForge
+  search (luavixen's "Damage Numbers," "adds simple damage number
+  particles when any entity takes damage") but its own real slug/URL
+  and Forge 1.20.1 file availability still need a direct check, not
+  another guessed slug.
+- [not started] FancyMenu + Drippy Loading Screen, EMF + ETF, Fresh
+  Animations, Tissou's Zombie Pack, and the real live layering check
+  between the two resource packs.
 
 **Real playtest feedback batch, 2026-09-04 — held, NOT sent to build.**
 Full spec for every item in FEATURES.md's "Real playtest feedback batch,

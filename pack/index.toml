@@ -630,7 +630,7 @@ hash = "c935f408ea0b054a89e3f7f6863d1f5aeeea5ad8f66eecf945510d90a5d43279"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "0d86acf91128531aa61eab496aca9596ae0f464b1ca292ccb41b8d4125ceac68"
+hash = "ca8945ca3abe89c50ff7cf2f2dc76a75e93192daa45c373559665a550d33f243"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -755,8 +755,13 @@ hash = "9eefd607e0d54ec444e798ccdeede1a09a3939440bd1e11c11b84c07a5134be2"
 metafile = true
 
 [[files]]
+file = "mods/dynamiclights-reforged.pw.toml"
+hash = "8f2270a50a633db681826cbfb691e6efdb25e1e0c4702125c13d525b52fe229f"
+metafile = true
+
+[[files]]
 file = "mods/embeddium.pw.toml"
-hash = "5ec0c37f3f4ad07a40c10376668bca80334ddb7ad2bab06eb4de8f7aac339c8e"
+hash = "9ddb37809dbf50f17ccfca4039149524ec0ed8f5838441a94fbb1de3a780c9b5"
 metafile = true
 
 [[files]]
@@ -932,6 +937,16 @@ metafile = true
 [[files]]
 file = "mods/selene.pw.toml"
 hash = "2720aee58db6299559f89ea9dc8b1d573b8324f2b4af1e594c5239607585487b"
+metafile = true
+
+[[files]]
+file = "mods/sodium-options-api.pw.toml"
+hash = "5240c62752415b5d66d4beffec4fe98c253eba8ebcbb2a5c1097fc3ad3de0b00"
+metafile = true
+
+[[files]]
+file = "mods/subtle-effects.pw.toml"
+hash = "d21d512e29de5776df8b79e3f9678f68149b6106690eea9ae6ef32526965eb8d"
 metafile = true
 
 [[files]]
