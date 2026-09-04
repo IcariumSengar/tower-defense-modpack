@@ -121,8 +121,9 @@ below); Phase 5 not started:
   it's still plain `minecraft:grass` here - the rename came in 1.20.3+)
   and confirmed the corrected list clears real placed vegetation to air
   while leaving solid ground untouched.
-- **Legendary loot bag jackpot + beam visual — mostly shipped
-  2026-09-06, one real limit found.** Full spec in FEATURES.md's
+- **Legendary loot bag jackpot + beam visual — done, shipped
+  2026-09-06, one detail needs an in-game log check to fully confirm.**
+  Full spec in FEATURES.md's
   "Legendary loot bag jackpot + beam-of-light visual" entry (under
   "Loot bags").
   - **Jackpot roll: done, live-verified.** `loot_bag_drops.js` now
@@ -293,23 +294,58 @@ below); Phase 5 not started:
      sand until enough of the world border expands past what's already
      generated, or a fresh world is started — this is not retroactive,
      same limit as every other worldgen change this pack has shipped.
-- **Aesthetic structure variety pass** — sent to build 2026-09-05,
-  user's go-ahead. Full detail in FEATURES.md, "Aesthetic structure
-  variety pass" (under "World type"). Install **Philip's Ruins** and
-  **Big Lost City — Apocalyptic Structures!**. Dependency
-  re-verification, spacing retune to the current border curve, and a
-  loot-table-opacity check all left for the build session.
-- **Abandoned Urban missing chest loot** — sent to build 2026-09-05,
-  user's go-ahead. 33 of its 34 structures have no chest at all
-  (confirmed by decompiling all 34 `.nbt` files directly — only
-  `gas_station_loot.nbt` has one). Real fix: a `processors` rule on the
-  mod's own jigsaw template pool entries to probabilistically inject
-  chests into the existing pieces — the standard vanilla technique, but
-  real, and this pack has a documented crash history from exactly this
-  kind of change (see FEATURES.md's "World type" section). **Structure
-  spawners are deliberately held back, not part of this dispatch** —
-  user's own sequencing: send spawners only after this and the
-  aesthetic pass are confirmed stable, not stacked into the same batch.
+- **Aesthetic structure variety pass — RE-SENT 2026-09-06.** Originally
+  sent 2026-09-05 with real user go-ahead, but never actually landed —
+  a real audit on 2026-09-06 (git log had zero commits for it) found it
+  had silently fallen through a peer-session gap and was never picked
+  up. Build session confirmed clean re-send: no lost work, and the
+  spec's border-curve reference (125 by wave 8) re-checked directly
+  against the current `base_expansion.js` and confirmed still accurate,
+  no re-derivation needed. Full detail in FEATURES.md, "Aesthetic
+  structure variety pass" (under "World type"). Install **Philip's
+  Ruins** and **Big Lost City — Apocalyptic Structures!**. Dependency
+  re-verification, spacing retune, and a loot-table-opacity check all
+  left for the build session.
+- **Abandoned Urban missing chest loot — RE-SENT 2026-09-06.** Same
+  situation as above — sent 2026-09-05, never landed, confirmed clean
+  re-send with no lost work. The existing diagnosis (33 of 34
+  structures have no chest at all, confirmed by decompiling all 34
+  `.nbt` files directly — only `gas_station_loot.nbt` has one) still
+  holds, nothing structure-gen-related has changed since that would
+  invalidate it. Real fix: a `processors` rule on the mod's own jigsaw
+  template pool entries to probabilistically inject chests into the
+  existing pieces — the standard vanilla technique, but real, and this
+  pack has a documented crash history from exactly this kind of change
+  (see FEATURES.md's "World type" section). **Structure spawners are
+  deliberately held back, not part of this dispatch** — user's own
+  sequencing: send spawners only after this and the aesthetic pass are
+  confirmed stable, not stacked into the same batch.
+- **Savanna spawn + vegetation-clearing regression — done, real bug
+  found and fixed 2026-09-06.** Diagnosed live on the actual reported
+  world first, not guessed: the savanna_plateau landing was correct
+  (desert/badlands genuinely 3600+ blocks away on that seed, fallback
+  worked as designed). Real bug: the vegetation-clearing pass's Y-range
+  only started at `floorY+1` - on genuinely uneven plateau terrain,
+  real trees can be rooted well below `floorY` (confirmed: trunks as
+  low as Y5-8 against a `floorY` of 11), entirely missing the old
+  range. Extended to `floorY-16` through `floorY+16` (chunked to stay
+  under vanilla's `/fill` block limit). Verified live on the exact
+  reported coordinates: both previously-uncleared trees now clear
+  correctly, real ground stayed untouched.
+- **Eliminate passive mobs entirely — done, shipped 2026-09-06.** New
+  `no_passive_mobs.js`. Went with an explicit 30-id passive-animal list
+  rather than a `MobCategory` filter (this build's `EntityType`
+  registrations are fully SRG-obfuscated with no clean id→category
+  mapping to decompile, so sidestepped the question instead of forcing
+  it - villagers/golems/wandering traders are simply never in the
+  list). **Real finding from live verification**: the theoretically
+  better hook (`EntityEvents.checkSpawn`, pre-spawn cancel) doesn't
+  actually fire for vanilla's natural chunk-population spawn pathway in
+  this build - confirmed with a diagnostic logger against real fresh
+  chunk generation, zero log lines despite real cows/sheep spawning
+  every time. Switched to `EntityEvents.spawned` + `entity.discard()`,
+  confirmed both firing and actually removing entities. Final check
+  across 8 mob types in a freshly generated area: zero present.
 
 ## Built, awaiting your next playtest
 

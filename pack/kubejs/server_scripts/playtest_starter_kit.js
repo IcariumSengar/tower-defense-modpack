@@ -365,9 +365,11 @@ PlayerEvents.loggedIn((event) => {
   // Covers a wider margin than the footprint itself (courtyard bounds
   // ± `VEGETATION_CLEAR_MARGIN`) since "near spawn" means the ground
   // the player actually sees on login, not just where walls end up.
-  // Vertical range (floorY+1 to floorY+12) covers ground-level plants
-  // through a full acacia tree's real height. First-pass margin/height,
-  // tunable after a real playtest like every other new constant here.
+  // Vertical range spans well below and above `floorY` (see the real
+  // bug writeup just below the block list) to catch vegetation rooted
+  // in genuinely uneven terrain, not just what's visible from directly
+  // above the build floor. First-pass margin/height, tunable after a
+  // real playtest like every other new constant here.
   const VEGETATION_CLEAR_MARGIN = 8
   const VEGETATION_BLOCKS = [
     'minecraft:grass', 'minecraft:fern', 'minecraft:large_fern',
@@ -384,8 +386,33 @@ PlayerEvents.loggedIn((event) => {
   const vx1 = x1 + VEGETATION_CLEAR_MARGIN
   const vz0 = z0 - VEGETATION_CLEAR_MARGIN
   const vz1 = z1 + VEGETATION_CLEAR_MARGIN
+
+  // **Real bug found and fixed 2026-09-06, direct playtest report on
+  // this exact fix: "im spawning in a Savannah and the vegetation still
+  // there."** Diagnosed live, not guessed: the savanna_plateau fallback
+  // itself is correct (desert/badlands were genuinely 3600+ blocks away
+  // on that world's real seed, well beyond the bare-pair search
+  // radius) - the real bug was this range only clearing from `floorY+1`
+  // upward. On genuinely uneven plateau terrain, `floorY` itself can
+  // land well above where a nearby tree is actually rooted - confirmed
+  // directly on the reported world: `floorY` was 11, but real acacia
+  // trunks inside this exact vegetation margin were rooted as low as Y
+  // 5-8, entirely below the old range, so they were never touched.
+  // Extended well below `floorY` too, not just above - matches the
+  // spirit of the terrain-leveling pass above (which already reaches
+  // down to `floorY-6` for solid-ground fill) but goes further since
+  // clearing vegetation doesn't need to also guarantee a solid floor
+  // underneath it. Split into fixed-size Y chunks to stay under
+  // vanilla's real 32768-block-per-`/fill` limit - the full
+  // margin+height volume here can exceed that in one call.
+  const VEGETATION_Y_LOW = floorY - 16
+  const VEGETATION_Y_HIGH = floorY + 16
+  const VEGETATION_Y_CHUNK = 16
   VEGETATION_BLOCKS.forEach((block) => {
-    run(`fill ${vx0} ${floorY + 1} ${vz0} ${vx1} ${floorY + 12} ${vz1} minecraft:air replace ${block}`)
+    for (let yStart = VEGETATION_Y_LOW; yStart <= VEGETATION_Y_HIGH; yStart += VEGETATION_Y_CHUNK) {
+      const yEnd = Math.min(yStart + VEGETATION_Y_CHUNK - 1, VEGETATION_Y_HIGH)
+      run(`fill ${vx0} ${yStart} ${vz0} ${vx1} ${yEnd} ${vz1} minecraft:air replace ${block}`)
+    }
   })
 
   // No foundation dig / headroom clear needed - back on Superflat

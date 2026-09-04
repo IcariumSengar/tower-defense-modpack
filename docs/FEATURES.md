@@ -3905,6 +3905,86 @@ Exact radius/threshold not pinned down here — first-pass numbers,
 tunable after a real playtest, same as every other new constant in this
 pack.
 
+**Real playtest report, 2026-09-06 — still landing in savanna with
+vegetation present, needs live investigation, not assumed fixed.**
+Direct feedback: "im spawning in a Savannah and the vegetation still
+there." This could be either a real regression in the shipped fix, or
+the fix working exactly as designed (savanna genuinely was the nearest
+wasteland biome on this world, desert/badlands genuinely out of range —
+the search's own documented fallback behavior, not a bug) with the
+vegetation-clearing piece specifically failing to run or not covering
+what's actually there. Needs a real diagnosis against whatever save
+this was reported on (same live-instance-first technique as always) —
+not re-guessed from the spec alone. **Real, easy-to-miss candidate
+worth checking first**: this fix needs both a full restart and a
+genuinely fresh world (documented deployment note above) — confirm the
+report actually came from a world created after that restart before
+looking for a code bug.
+
+**Eliminate passive mobs entirely — requested 2026-09-06, specced,
+ready to build.** Direct feedback: "passive mobs are spawning. I dont
+want passive mobs in the game at all." Real technical picture, not
+assumed: `doMobSpawning false` (already set at first login in
+`playtest_starter_kit.js`) blocks vanilla's *ongoing* per-tick natural
+spawn cycle, but does **not** block the separate, one-time animal
+population pass vanilla runs when a chunk is *first generated* — a
+different mechanic entirely. That's very likely what's actually being
+seen: leftover animals from initial chunk generation, not new ongoing
+spawns, meaning the existing gamerule was never going to catch this on
+its own. Also, "at all" has to mean not just at spawn but everywhere the
+player ever explores, since new chunks keep getting this same one-time
+population pass as the world expands. **Real fix, technique to verify,
+not guessed**: hook a real spawn-time KubeJS event (e.g.
+`EntityEvents.spawned`, exact API to confirm) and discard/remove the
+entity immediately if it matches a passive-mob check — event-driven,
+so it costs nothing when nothing spawns, unlike a recurring tick-based
+scan (this pack's own standing performance-scrutiny principle). **Real
+open question, needs a decompiled check before shipping, not a
+guess**: whether to filter by each entity's real vanilla `MobCategory`
+(`CREATURE`/`AMBIENT`/`WATER_CREATURE`/etc.) or an explicit list of
+real animal type ids. The category approach is more complete
+(automatically covers anything with the right category, modded animals
+included) but carries a real risk of also matching things this pack
+does NOT want removed — villagers specifically need checking, since
+TFTH's own "Flesh Villager" mechanic corrupts real villagers, so
+deleting them on spawn could quietly break that interaction; iron
+golems/wandering traders need the same check. An explicit passive-
+animal id list (cow/sheep/pig/chicken/horse/rabbit/etc.) is slower to
+write but has zero risk of an unintended match — pick whichever the
+real `MobCategory` check confirms is safe, don't guess which one is
+correct without checking.
+
+**Shipped 2026-09-06, new `no_passive_mobs.js`, two real findings from
+live verification, not shipped on the first guess.**
+- **The category question resolved by sidestepping it, not answering
+  it.** `EntityType`'s own static registrations in this exact build are
+  fully SRG-obfuscated field names with no clean id→category mapping to
+  decompile - rather than force that lookup, went straight to an
+  explicit passive-animal id list (30 real ids: cow, sheep, pig,
+  chicken, rabbit, horse, donkey, mule, llama, trader_llama, cat,
+  ocelot, parrot, turtle, cod, salmon, pufferfish, tropical_fish, squid,
+  glow_squid, axolotl, bat, panda, goat, frog, tadpole, sniffer,
+  strider, allay, mooshroom). Villagers/iron golems/wandering traders
+  are simply never in the list, so there's no overlap risk regardless
+  of their real category. Deliberately excludes genuinely neutral/
+  conditionally-hostile mobs (wolf, fox, dolphin, polar_bear, bee) -
+  "passive" doesn't obviously cover something that can still attack
+  back.
+- **Real finding: the theoretically better hook doesn't actually work
+  for this spawn path in this build.** Tried `EntityEvents.checkSpawn`
+  first (backed by `CheckLivingEntitySpawnEventJS`, real `.hasResult()`/
+  `event.cancel()` support confirmed by decompiling the class) since
+  denying a spawn before the entity exists is strictly better than
+  discard-after. Verified live with a diagnostic logger: forced fresh
+  chunk generation in open plains multiple times, real cows/sheep spawned
+  every time, and the `checkSpawn` handler's own log line never fired
+  once - it simply isn't invoked for vanilla's natural chunk-population
+  spawn pathway here (`/summon`-triggered spawns don't reach it either).
+  Switched to `EntityEvents.spawned` + `entity.discard()` instead -
+  confirmed both firing reliably and actually removing the entity in the
+  same live test. Final check across 8 mob types (cow/sheep/pig/chicken/
+  horse/rabbit/llama/goat) in a freshly generated area: zero present.
+
 **Shipped 2026-09-06, both pieces, verified live.**
 - `findWastelandSpawn()` split into a two-phase search:
   `BARE_WASTELAND_BIOMES` (desert/badlands) tried first out to 1200
@@ -3930,6 +4010,26 @@ pack.
   acacia_log/acacia_leaves, ran the exact shipped fill/replace
   commands, confirmed every one cleared to air while the ground block
   underneath stayed solid.
+
+**Real follow-up bug found and fixed 2026-09-06, direct playtest report
+on this exact fix: "im spawning in a Savannah and the vegetation still
+there."** Diagnosed live on the actual reported world before assuming
+anything was broken - confirmed the savanna_plateau landing itself was
+correct (desert/badlands were genuinely 3600+ blocks away on that
+world's real seed, well beyond the bare-pair search radius, so the
+fallback behaved exactly as designed). The real bug: the clearing
+pass's Y-range only started at `floorY+1`. On genuinely uneven plateau
+terrain, `floorY` can land well above where a nearby tree is actually
+rooted - confirmed directly on the reported world: `floorY` was 11, but
+real acacia trunks inside the vegetation margin were rooted as low as Y
+5-8, entirely below the old range, so they were never touched. Fixed by
+extending the range well below `floorY` too (`floorY-16` to
+`floorY+16`), split into fixed-size Y chunks to stay under vanilla's
+real 32768-block-per-`/fill` limit (the full margin+height volume can
+exceed that in one call). Verified live on the exact reported world and
+coordinates: 2 real trees that survived the original clearing pass both
+cleared to air under the fixed range, while real solid ground several
+blocks below stayed untouched.
 
 **Standing process, not a one-off**: the quest book is the tutorial —
 whenever a new mechanic gets fleshed out to "planned" status in this
