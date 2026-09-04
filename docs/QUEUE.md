@@ -91,14 +91,16 @@ below); Phase 5 not started:
   confirmed directly that worldgen tags don't hot-reload) AND a
   genuinely fresh world.
 - **Suppress Supplementaries' "Amendments not installed" startup
-  screen** — sent to build 2026-09-06, user go-ahead. Full spec in
-  FEATURES.md (right after "Disable recipe-unlock toasts"). Real cause
-  decompiled directly: the mod's own default is to show this screen;
-  ship `pack/config/supplementaries-client.toml` with
-  `no_amendments_screen = true` (new file, doesn't exist yet) so it's
-  suppressed from a genuinely fresh install, not just this instance
-  (which only suppresses it now because "Don't show this again" was
-  clicked locally). Small, zero-risk, client-UI-only change.
+  screen — done, shipped 2026-09-06.** New `pack/config/
+  supplementaries-client.toml`, built from the real generated file
+  already on the live instance rather than hand-typed, with
+  `no_amendments_screen`/`no_optifine_warn_screen` both `true`. Live
+  instance's own copy edited to match.
+- **Suppress vanilla's "experimental settings" world-creation warning —
+  done, shipped 2026-09-06.** Hide Experimental Warning + Collective
+  installed via packwiz, both jars sha1-verified, real Forge 1.20.1/MC
+  1.20.1 compatibility confirmed from the mod's own `mods.toml`. Full
+  mod set (68 mods) boots clean.
 - **Legendary loot bag jackpot + beam visual — mostly shipped
   2026-09-06, one real limit found.** Full spec in FEATURES.md's
   "Legendary loot bag jackpot + beam-of-light visual" entry (under
@@ -116,23 +118,22 @@ below); Phase 5 not started:
     dependency chain: Nirvana Library, Common Network, Fzzy Config,
     Kotlin for Forge (all downloaded + sha1-verified). Full mod set
     boots with 0 KubeJS errors.
-  - **Real open item confirmed, not resolved**: decompiled BountyBags'
-    own item registry — `legendary_loot_bag` is registered with plain
-    vanilla `Rarity.EPIC`, the *same* rarity as this pack's own regular
-    `epic_loot_bag`. Without a color override, the jackpot bag would
-    beam identically to an ordinary epic bag drop, defeating the whole
-    "unmistakable" point. Found the exact real fix (decompiled Loot
-    Beams' own config class): `LightConfig.customColorSetting.
-    color_override_by_name`, keyed by `bountybags:legendary_loot_bag`.
-    **Genuinely can't generate or verify this file from the build
-    session's sandbox** — it's a dedicated-server-only environment and
-    this mod's config (Fzzy Config) only writes its default file on a
-    real client launch, confirmed by a clean boot producing every other
-    mod's own config except this one. Real path to close this: once you
-    launch the game normally, the file will generate on its own — send
-    the build session the generated file (or just confirm it exists) and
-    the exact override entry can be added with real confidence instead
-    of a guessed hand-write.
+  - **Color override + equipment-filter question — both done, shipped
+    2026-09-06** now that the peer relayed the real generated
+    `config/lootbeams/light_config.toml`. `enable_custom_color` flipped
+    to `true`; the color itself is a real per-channel `r`/`g`/`b`
+    sub-table (decompiled `ColorHolder`'s own serializer — a hex string
+    would have been wrong). The equipment-filter concern is resolved,
+    not just deferred: decompiled the actual render-gating chain and
+    confirmed a working color override makes an item render
+    unconditionally (`ModifyContext(true)` → `hasBeenModified()` → an
+    unconditional `true` branch in `checkRenderable`), regardless of
+    `only_equipment`/`whitelist_by_name`. Shipped as `pack/config/
+    lootbeams/light_config.toml` + the live instance's own copy edited
+    to match. **Real residual limit, worth a look at the client log
+    next launch**: the exact TOML syntax for a populated color map is a
+    good-faith reconstruction from the decompiled schema, not a
+    verified round-trip — the one real example seen was the empty map.
 - **Fresh-world playtest batch, 2026-09-05 — sent to build.** Real
   feedback from the first actual playtest of the new fresh-world
   pedestal redesign, 4 items:

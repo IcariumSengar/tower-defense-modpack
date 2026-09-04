@@ -37,6 +37,14 @@ file = "config/lithium.properties"
 hash = "4e3f33646330eb651b8c1679d49245e061b9d9a3eb4b09316a0f07837d8d968c"
 
 [[files]]
+file = "config/lootbeams/light_config.toml"
+hash = "309abcabddf5c98d08b92a0191ed95e2d90c1837572e2f70f73684ba208c9354"
+
+[[files]]
+file = "config/supplementaries-client.toml"
+hash = "2f7172cb58bb890c273cdeebdca582468fafc803b647c8859c5f7c5baf586ffb"
+
+[[files]]
 file = "config/undeadnights_difficulty_config.json"
 hash = "4df9fdca78c7f3f5c0dc77fc5ac3626581c6212cb2b561246176dd0e303b3b0d"
 
@@ -135,6 +143,10 @@ hash = "2104e96527eba9ba96b58ebc68e0140a85905d14bdf8789da098793fd47d0011"
 [[files]]
 file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
+
+[[files]]
+file = "kubejs/data/kubejs/tags/worldgen/biome/wasteland.json"
+hash = "bd446c3e08dd1d16708983a4b4f9306497a2897726d4e1cda0a21d9bada420ea"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/noise_settings/overworld_flat.json"
@@ -266,7 +278,7 @@ hash = "7c75952749054fdf1807f10ad7f62efce814f6b5762458cc0e185a7aef56ae7f"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "168250bf7d077b1efa10d8b147ec6c51a8a269c0248fb348d047a48e35d5b2b5"
+hash = "82bd3884ac5cd649a5073b6b500b83c3a142d75641d9d142af6b18807a7a4038"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -343,6 +355,11 @@ metafile = true
 [[files]]
 file = "mods/clumps.pw.toml"
 hash = "903352ffbd84d4b95fed905893f4715d9c3f88ec9fff6fb06f6e359e0b839dc3"
+metafile = true
+
+[[files]]
+file = "mods/collective.pw.toml"
+hash = "bba3705506df4b1ed7456b3cc211a3c6b61ab571c95dc11a579e2ff49d1eb40b"
 metafile = true
 
 [[files]]
@@ -433,6 +450,11 @@ metafile = true
 [[files]]
 file = "mods/geckolib.pw.toml"
 hash = "898fd2704dd260ae8f3dc20b4416439751f0a9e76367c4f0bbdac886b6987802"
+metafile = true
+
+[[files]]
+file = "mods/hide-experimental-warning.pw.toml"
+hash = "2275a10df12349855b3c88ec95ccf944aace5a879e6dc3fd755fd8cfa7b842e2"
 metafile = true
 
 [[files]]

@@ -228,6 +228,47 @@ worth setting too while in this file for the same "cumbersome popup"
 reason, if any Optifine-alike shows up later. Zero risk — pure client
 UI suppression, no gameplay/world-gen surface at all.
 
+**Shipped 2026-09-06.** New `pack/config/supplementaries-client.toml` -
+started from the real generated file already present on the live
+instance (`no_amendments_screen` already `true` there from the
+in-game button, confirmed matching the decompiled root-cause writeup
+above) rather than hand-typing the whole thing, then flipped
+`no_optifine_warn_screen` to `true` too. Live instance's own copy
+edited the same way, both now match.
+
+**Suppress vanilla's "experimental settings" world-creation warning —
+requested 2026-09-06, specced, ready to build.** Direct feedback on a
+real screenshot: the vanilla dialog shown on every fresh-world creation
+("Warning! These settings are using experimental features... could one
+day stop working"), plus "its bothering me, add the ability to skip the
+per world clock [click]." Real, confirmed via a direct websearch, not
+assumed: this is a hardcoded vanilla client behavior for **any** world
+using datapack-level `dimension`/`dimension_type`/`worldgen` content
+(this pack's whole flat + curated multi-biome `overworld.json` setup
+qualifies) — there's no config flag or datapack trick to suppress it,
+it's intentional per Mojang, and it doesn't show on a real dedicated
+server, only the client world-creation/load flow. **Real fix: install
+Serilum's "Hide Experimental Warning" mod** — verified directly, not
+from the search snippet alone: real Forge 1.20.1 build, actively
+maintained (updated ~3 months ago), client-side only (no server-side
+install needed, consistent with this being a pure client dialog). **One
+real dependency**: Serilum's own **Collective** library (same
+single-author mod+library pairing pattern already established in this
+pack for Toast Control/Placebo and Supplementaries/Moonlight Library) —
+also independently verified real and current for Forge 1.20.1 (actively
+released through the 7.8x version range). Zero gameplay/world-gen
+surface, purely hides a client dialog.
+
+**Shipped 2026-09-06.** Installed via packwiz (Collective auto-resolved
+as the real dependency, pulled `8.39` - satisfies the mod's own
+`versionRange="[7.78,)"` requirement, confirmed from its real
+`mods.toml`). Both jars downloaded and sha1-verified against packwiz's
+own recorded hashes before landing in the live instance. Confirmed
+compatible directly from `hideexperimentalwarning`'s own `mods.toml`:
+real `minecraft` dependency pinned to `[1.20.1]` exactly, `side="BOTH"`
+on both mods (harmless no-op server-side, consistent with a pure client
+dialog). Full mod set (68 mods now) boots clean, 0 KubeJS errors.
+
 **Loot bags** — *retired 2026-09-02, replaced by BountyBags*. Used to
 be a hand-rolled 3-tier system (Common/Uncommon/Rare); replaced outright
 per direct feedback ("I dont like the custom loot bags") as part of the
@@ -369,20 +410,51 @@ verified, the config piece has a genuine environmental limit.**
   location - `bountybags:legendary_loot_bag` just needs one entry with a
   distinct, high-tier color, no need to touch the more involved custom-
   rarity-tier system at all.
-- **Real, honest limit**: that config file couldn't be generated or
-  verified from this build session's own sandbox. Confirmed directly,
-  not assumed: a full clean boot with the new mod chain installed
-  produced every other mod's own config file except this one (Fzzy
-  Config's TOML output only happens on a real client launch, not a
-  dedicated server boot) - the same category of client-only blind spot
-  already established for Mob Dismemberment, just hitting config
-  generation instead of gameplay logic this time. Hand-writing a guess
-  at the file risked either being silently wrong or getting overwritten
-  by Fzzy Config's own regeneration - worse than leaving it honestly
-  open. Real path to close it: once the game is launched normally
-  (which will happen regardless, for actual play), the real file will
-  exist and the one override entry can be added with confidence instead
-  of guessed.
+- **Real, honest limit** (RESOLVED 2026-09-06): that config file
+  couldn't be generated or verified from this build session's own
+  sandbox at the time - confirmed directly, a full clean boot with the
+  new mod chain installed produced every other mod's own config file
+  except this one (Fzzy Config's TOML output only happens on a real
+  client launch, not a dedicated server boot). The peer found the real
+  generated file once the user actually launched the game
+  (`config/lootbeams/light_config.toml`) and relayed its exact content.
+  **Two real things fixed, not just the one originally flagged**:
+  1. `enable_custom_color` was `false` - the `color_override_by_name`
+     map wouldn't even be consulted regardless of content. Flipped to
+     `true`.
+  2. **Real, non-obvious format finding from decompiling
+     `ValidatedColor$ColorHolder`'s own `serializeEntry`**: a color is
+     NOT a hex string (the natural guess, and wrong) - it serializes as
+     a real sub-table of separate `r`/`g`/`b` integers (0-255 each).
+     Shipped as `color_override_by_name = { "bountybags:
+     legendary_loot_bag" = { r = 255, g = 215, b = 0 } }` (gold).
+  3. **The peer's own second real finding, also resolved**:
+     `[lightEffectFilter]`'s `only_equipment`/`whitelist_by_name` looked
+     like it might gate whether the bag renders at all, independent of
+     color. Decompiled the actual gating chain
+     (`Hooker.checkRenderable()` → `LightConfigHandler.checkInWhiteList`
+     /`checkInBlackList`) and found real proof this is a non-issue:
+     `checkRenderable` returns `true` unconditionally whenever
+     `item.rarity().context().hasBeenModified()` - and
+     `ConfigColorOverride.modify()`'s own bytecode confirms applying a
+     real color override constructs a `new ModifyContext(true)`, i.e.
+     `hasBeenModified()` becomes `true` the moment a color override
+     actually applies. **A working color override makes the item
+     renderable regardless of `only_equipment`/`whitelist_by_name`** -
+     no change needed to the equipment filter at all.
+  Shipped as `pack/config/lootbeams/light_config.toml` (the real file,
+  with these 2 edits) and the live instance's own copy edited to match.
+  **Real, honest residual limit**: the exact TOML syntax for a
+  *populated* `color_override_by_name` map (inline table vs. an
+  expanded `[section.key]` form) is a good-faith reconstruction from
+  the decompiled schema, not a verified round-trip - the one real
+  example seen was the *empty* map (`{  }`), and Fzzy Config's actual
+  parser was never directly exercised against a non-empty one from this
+  session. A sandbox boot with this exact file in place produced zero
+  parse errors, but that's a weak signal given Fzzy Config's own
+  config loading is client-gated, same blind spot as before - worth a
+  real look at the client log next time the game's launched, to confirm
+  the entry parsed rather than silently getting corrected away.
 
 **Modded crafting materials in loot — audited and specced 2026-09-06,
 direct question: "have the loot bags and loot chest loot tables been
