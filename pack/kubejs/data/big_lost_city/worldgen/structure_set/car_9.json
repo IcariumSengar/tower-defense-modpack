@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "big_lost_city:car_9",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 4096,
+    "separation": 1,
+    "salt": 778348982
+  }
+}

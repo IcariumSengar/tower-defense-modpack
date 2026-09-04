@@ -1,0 +1,22 @@
+{
+  "structures": [
+    {
+      "structure": "big_lost_city:tent_1",
+      "weight": 1
+    },
+    {
+      "structure": "big_lost_city:tent_2",
+      "weight": 1
+    },
+    {
+      "structure": "big_lost_city:tent_3",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 16,
+    "separation": 8,
+    "salt": 219704546
+  }
+}

@@ -1,0 +1,13 @@
+name = "Big Lost City - Apocalyptic Structures!"
+filename = "big_lost_city-1.0.1-forge-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "17bbff748612b3498c58b130421d3aa813365aef"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8110094
+project-id = 1472594

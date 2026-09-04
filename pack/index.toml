@@ -348,6 +348,11 @@ hash = "4171835454f8a0fbb6dc9b4cafa6661babb96fa598d3686515a9a4e9355bcf8b"
 metafile = true
 
 [[files]]
+file = "mods/big-lost-city.pw.toml"
+hash = "fd19bf499c9b1a237729fa3d4aee16fdd118c21baf0c03c663cde266b4f12662"
+metafile = true
+
+[[files]]
 file = "mods/bounty-bags.pw.toml"
 hash = "aa120eb0ebb78e5a0e7467cdecf22687a456e79b43ca7c6f3deac268075bedc6"
 metafile = true
@@ -560,6 +565,11 @@ metafile = true
 [[files]]
 file = "mods/rhino.pw.toml"
 hash = "ca4411ac6d8a9a892948bb63cd0ba52ae5523ca5e257632d6ae8c933b660c5ee"
+metafile = true
+
+[[files]]
+file = "mods/ruins.pw.toml"
+hash = "5ff3faccf12802ab9daf52a5e396aa7cbf0d11918d61a49dbd087a36a1da83c1"
 metafile = true
 
 [[files]]

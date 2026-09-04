@@ -294,18 +294,31 @@ below); Phase 5 not started:
      sand until enough of the world border expands past what's already
      generated, or a fresh world is started — this is not retroactive,
      same limit as every other worldgen change this pack has shipped.
-- **Aesthetic structure variety pass — RE-SENT 2026-09-06.** Originally
-  sent 2026-09-05 with real user go-ahead, but never actually landed —
-  a real audit on 2026-09-06 (git log had zero commits for it) found it
-  had silently fallen through a peer-session gap and was never picked
-  up. Build session confirmed clean re-send: no lost work, and the
-  spec's border-curve reference (125 by wave 8) re-checked directly
-  against the current `base_expansion.js` and confirmed still accurate,
-  no re-derivation needed. Full detail in FEATURES.md, "Aesthetic
-  structure variety pass" (under "World type"). Install **Philip's
-  Ruins** and **Big Lost City — Apocalyptic Structures!**. Dependency
-  re-verification, spacing retune, and a loot-table-opacity check all
-  left for the build session.
+- **Aesthetic structure variety pass — done, shipped 2026-09-04
+  (real commit-timestamp check — not the 2026-09-06 dispatch dating
+  below).** Originally sent 2026-09-05 with real user go-ahead, fell
+  through a peer-session gap, re-sent 2026-09-06 and this time actually
+  built. Installed **Philip's Ruins** and **Big Lost City — Apocalyptic
+  Structures!**, both dependency-free. Real scope surprise: 55 total new
+  structure_sets between the two mods (not anticipated by the original
+  spec) — handled with an individually-reasoned pass, not a blanket
+  retune: 14 Philip's Ruins sets retuned to 16/8-chunk spacing, 6 left
+  untouched for zero real biome overlap; Big Lost City's heavily
+  duplicated car_N/deco_N/tent_N variant clusters (27 structures)
+  consolidated into 3 weighted pools rather than shipped as 27 separate
+  active sets, given this pack's own documented jigsaw crash history.
+  **Real bug caught by the sandbox boot-test**: the first pass made
+  redundant variants "inert" via `spacing = 999999` — crashed registry
+  load (`outside of range [0:4096]`, vanilla's real codec cap). Fixed to
+  `4096`, re-verified clean. Full-restart sandbox boot confirmed clean
+  (`Done (29.325s)!`, zero errors tied to either mod), `/locate
+  structure` confirmed real generation for a pool, a retuned individual
+  set, and a Ruins set. Both mods use standard vanilla-format loot
+  tables, not an opaque system — LootJS-controllable. Full detail in
+  FEATURES.md, "Aesthetic structure variety pass" (under "World type").
+  **Real limit**: fresh-world only, doesn't retroactively affect the
+  current live save's already-generated chunks. Unconfirmed in-game (no
+  real playtest yet, sandbox-verified only).
 - **Abandoned Urban missing chest loot — RE-SENT 2026-09-06.** Same
   situation as above — sent 2026-09-05, never landed, confirmed clean
   re-send with no lost work. The existing diagnosis (33 of 34

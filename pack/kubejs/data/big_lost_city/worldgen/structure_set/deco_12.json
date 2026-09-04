@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "big_lost_city:deco_12",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 4096,
+    "separation": 1,
+    "salt": 1643651443
+  }
+}

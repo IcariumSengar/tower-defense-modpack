@@ -2205,6 +2205,68 @@ picked, confirmed with the user:
   fine).
 - **Not yet implemented** — sent to the build session as a spec.
 
+**Shipped 2026-09-04 — re-sent 2026-09-06 per the peer's own dispatch
+dating, this time actually built.** (Real commit-timestamp check: this
+work landed 2026-09-04, not 2026-09-06 — the peer's dispatch date is
+kept here as their own record, but don't treat it as this session's
+actual wall-clock date.)
+Both mods installed (packwiz + sha1-verified live jar deploy), dependency-
+free per each mod's own `mods.toml` (no mandatory deps, unlike the
+already-ruled-out Berezka Abandoned Structures). Real scope turned out
+much larger than the spec anticipated: installing both surfaced 55 total
+structure_sets (20 from Philip's Ruins, 35 from Big Lost City) — most
+never checked in the original research pass. Handled with a real,
+individually-reasoned pass over every one, not a blanket retune:
+- **14 Philip's Ruins sets** (ancient_crypt/dungeon/ruins/towers,
+  antiquus_crypta, desert_structures, field_stone_ruins ×2,
+  level_one/two/three_ruins, lost_soul_city, nether_ruins,
+  underground_structures) retuned to 16/8-chunk spacing/separation —
+  denser than the 24/12-chunk precedent since this pack's live border
+  curve is smaller now, still well short of vanilla defaults.
+- **6 sets left untouched deliberately**, zero real biome overlap
+  against this pack's curated 7-biome set: `end_ruins` (End-only),
+  `nether_structures` (real Nether biomes), `ocean_ruins`/
+  `ocean_fortress_main` (no ocean biomes exist in this pack's
+  biome_source), `pumpkin_ruins` (forest/swamp), `rare_ruin` (jungle/
+  mangrove_swamp).
+- **Big Lost City's car_N/deco_N/tent_N variant clusters** (10/14/3
+  duplicate-shaped structures each) consolidated into 3 single weighted-
+  pool sets (`car_1`, `deco_1`, `tent_1` now each reference all their
+  own variants at equal weight) rather than shipping all 27 as separate
+  active structure_sets — this pack's own documented jigsaw
+  race-condition crash history (Radium chunk_region crash) made 55
+  simultaneous structure_sets a real risk, not a hypothetical one.
+- **13 Big Lost City standalone landmarks** (skyscraper variants,
+  house_1-3, ferriswheel, powerplant, store_1, warehouse) individually
+  retuned to 16/8-chunk spacing, same as the Ruins sets.
+- **Real bug caught by the sandbox boot-test, not shipped blind**: the
+  first consolidation pass made the 24 now-redundant car_2-10/deco_2-14/
+  tent_2-3 sets "inert" via `spacing = 999999`. Registry load crashed
+  every time: `Value 999999 outside of range [0:4096]` — vanilla's
+  `RandomSpreadStructurePlacement` codec caps both spacing and
+  separation at 4096. Fixed to `spacing = 4096, separation = 1` (as
+  inert as the format allows), re-tested, clean boot.
+- **Verified live, not assumed**: full-restart fresh-world sandbox boot
+  reached `Done (29.325s)!` with zero errors or warnings referencing
+  `big_lost_city`/`philipsruins`/`structure_set` (the only errors in the
+  boot log are the pre-existing, unrelated Zcraft loot-table parse
+  issue). `/locate structure` confirmed real generation for all three
+  categories: a consolidated pool (`big_lost_city:car_1`, 852 blocks
+  out), a retuned individual set (`big_lost_city:powerplant`, 213
+  blocks out), and a Philip's Ruins set (`philipsruins:ancient_ruins`,
+  only 80 blocks out — consistent with the 16/8-chunk retune).
+- **Loot-table format checked, not assumed**: both mods use standard
+  vanilla-format datapack `loot_tables/` JSON (Philip's Ruins: ~13 named
+  chest tables, one per structure family; Big Lost City: 4 tiered chest
+  tables) — fully LootJS-controllable, not an opaque system like
+  Treasure2's. Resolves the open question from the original spec.
+- Deployed to the live instance's `kubejs/data/`. **Real limit**: like
+  every other structure_set retune this pack has shipped, only affects
+  chunks generated after this point — doesn't retroactively change
+  structures already placed in the current live save. Unconfirmed
+  in-game (no real playtest on a fresh world yet, only sandbox
+  verification).
+
 **Structure variety after the YUNG's removal** — resolved 2026-08-31,
 see "Structure mod picks" further up in this "World type" section for
 the actual decision (When Dungeons Arise, Structory: Towers unheld,
