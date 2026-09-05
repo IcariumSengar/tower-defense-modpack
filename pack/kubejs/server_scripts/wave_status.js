@@ -337,6 +337,11 @@ PlayerEvents.tick((event) => {
     // PEDESTAL_MAX_HEALTH directly from this file.
     healPedestalByPercent(player, data, 0.2)
 
+    // Wave-8+ speed-clear bonus airdrop (2026-09-05) - see wave_airdrop.js
+    // for the full mechanism. No-ops below wave 8 or if the timing data
+    // isn't there yet.
+    maybeTriggerWaveAirdrop(player, data, waveNumber)
+
     // Undo wave_spawner.js's night lock — back to day and a normally
     // advancing clock during the peaceful gap before the next horn use.
     player.getServer().runCommandSilent('time set day')

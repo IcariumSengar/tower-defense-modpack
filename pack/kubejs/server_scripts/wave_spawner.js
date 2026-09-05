@@ -843,6 +843,21 @@ PlayerEvents.tick(function (event) {
     }
   })
 
+  // Real signal for wave_airdrop.js's clear-time check (2026-09-05): the
+  // tick every queued mob for this wave has actually emerged, not wave
+  // start - doesn't penalize the player for this file's own staggered
+  // spawn-in time on big wave-8+ mob counts. Written to persistentData
+  // (not a shared top-level var) since that's this codebase's proven
+  // cross-file communication idiom - see pedestal_health.js's own
+  // functions for the other sanctioned one (shared top-level FUNCTIONS).
+  // The guard above (`if (pendingSpawns.length === 0) return`) means this
+  // block only ever runs when the queue was non-empty at tick start, so
+  // an empty result here always means "just finished," not "was already
+  // empty."
+  if (stillPending.length === 0) {
+    player.persistentData.putInt('td_waveSpawnCompleteTick', currentTick)
+  }
+
   pendingSpawns = stillPending
 })
 

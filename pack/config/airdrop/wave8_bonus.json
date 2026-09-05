@@ -1,0 +1,9 @@
+{
+  "type": "single_pool",
+  "pool_name": "wave8_bonus",
+  "items": [
+    { "slot": 0, "nbt": "{id:\"bountybags:legendary_loot_bag\",Count:1b}" },
+    { "slot": 1, "nbt": "{id:\"minecraft:netherite_scrap\",Count:4b}" },
+    { "slot": 2, "nbt": "{id:\"minecraft:diamond_block\",Count:4b}" }
+  ]
+}
