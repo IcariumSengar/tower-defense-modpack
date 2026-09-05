@@ -23,6 +23,33 @@ reflect actual current status.
 
 ## Ready to build
 
+**Endless-phase horde SIZE, not just toughness — done.** Direct
+feedback once the wave-9 fix actually let mobs spawn: "I want the waves
+to feel frantic, actual hordes of zombies... difficulty scaling is a
+mix of stronger mobs but MAINLY quantity." Real mechanism decompiled
+directly (`SpawnProcess.spawnHordeImplementation`, config variant 2 -
+the one this pack uses): per mob entry,
+`scaledCount = round(countMin × (1 + hordeScale) × hordeSizeScaleFactor)`,
+then each entry independently rolls its own `spawnChance`. Every entry
+in every horde has `countMin = countMax = 1`, `hordeScale` is 0
+(dynamic scaling disabled), and the old `hordeSizeScaleFactor` curve
+started at 1.0 and only crossed whole-number thresholds around level
+10+ - so at low-mid endless levels, `scaledCount` mostly rounded to 1
+per entry regardless of the "scaling," and each entry's own spawn-chance
+thinned it further. Computed real expected mob counts per horde spawn
+(not guessed): old curve gave ~1.1 mobs at level 1, ~3.5 by level 40.
+Retuned `hordeSizeScaleFactor` to start at 3 and ramp +0.3/level,
+capped at 12 (reached level 31) - same real math now gives ~3.5 mobs at
+level 1, ~13.8 at level 40 (roughly 3-4x across the board). Deliberately
+left per-entry `countMin`/`countMax` and the attribute scale factors
+(health/damage/speed) untouched - one clear lever, not two compounding
+at once, and toughness scaling wasn't the complaint. Verified: clean
+sandbox boot with the edited config. Real cross-thread note: this
+increases concurrent mob count in endless phase, directly relevant to
+the separately-queued FPS investigation - factor this into that
+baseline once picked up, not evaluated against the old, thinner horde
+sizes.
+
 **Andesite "medium hard to find" target — done.** Direct user ask, not
 just a complaint. Real checks before touching anything: in-chest odds
 were already fine (andesite weight 4 of 15 in trash.json's main pool,
