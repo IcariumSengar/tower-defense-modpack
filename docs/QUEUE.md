@@ -341,9 +341,36 @@ mechanic investigation) — drop that, just scrap the combo claim.**
     avoid ladders on exterior walls specifically, since they create an
     attractive-but-unreliable path node that snags mob pathing; a
     non-climbable block in the same spot doesn't have this problem.
-23. Open ask: maze-like mob funneling near the front choke point —
-    investigate whether Create's fan can redirect pathing, or other
-    physical-layout techniques.
+23. **Investigated, real answer - not built (a real new-build decision,
+    not just a bug fix, held for a real layout proposal first).**
+    Decompiled Create's `AirCurrent.class` directly to answer the real
+    question: fan push is a genuine per-tick velocity ADDITION
+    (`entity.setDeltaMovement(currentMotion + flowVector * 0.125 *
+    falloff)`), applied on top of whatever the mob's own AI pathing
+    already wants - vanilla's real movement model sums external forces
+    with AI-desired movement, it doesn't get overridden. So a fan
+    genuinely CAN affect a mob's real trajectory, not just a cosmetic
+    knockback that gets instantly walked off. **But the direction
+    matters a lot**: pushing a mob PERPENDICULAR to where its
+    pathfinder wants to go (a "diverter") would fight the mob's own
+    movement every tick - a real, if modest (0.125/tick), continuous
+    shove it would keep re-approaching against, exactly the "walks back
+    into it" failure mode originally worried about. Pushing a mob ALONG
+    the direction it's already trying to go (a "conveyor," reinforcing
+    an existing corridor rather than diverting across it) has no such
+    fight - the two forces add cleanly.
+    **Real recommendation**: a maze built from plain walls/corridors is
+    the actually-reliable primary technique here, not fans - real
+    vanilla A*-style pathfinding already computes the genuine shortest
+    route through whatever layout exists (the currently-observed
+    choke-point bottleneck at the front door IS this same mechanism
+    already working, proof it's a real, zero-new-mechanic option).
+    Fans fit best as a flavor/pacing addition along an already-built
+    corridor (speeding mobs through a kill-zone, not steering them into
+    one) - not as the primary redirect mechanism. Real next step, if
+    wanted: a concrete corridor/maze layout proposal for the actual
+    courtyard, not more mechanism research - that's a real build
+    decision on its own, not bundled into this investigation.
 24. **Done.** "Turn the Crank" no longer requires possessing (or
     finding andesite to craft) a `create:hand_crank` at all - task
     changed to a plain checkmark, reward changed from 8 andesite to the
