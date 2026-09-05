@@ -23,6 +23,25 @@ reflect actual current status.
 
 ## Ready to build
 
+**Andesite "medium hard to find" target — done.** Direct user ask, not
+just a complaint. Real checks before touching anything: in-chest odds
+were already fine (andesite weight 4 of 15 in trash.json's main pool,
+~27% per roll, ~54% cumulative across its 1-4 rolls - not stripped by
+loot_dead_weight_strip.js, nothing else touches it). The real gate was
+structure exposure: all 4 postapocalypse_structures sets
+(abandoned_brick_house, redhouse, red_mansion, yellowhouse - the 3
+loot tables live across all of them) were still at their original,
+untouched 30/15-chunk spacing (480/240 blocks average) - never touched
+by the earlier structure-density-fix pass, and genuinely sparse relative
+to this pack's early-game explorable radius. Retuned to 16/8 chunks
+(256/128 blocks). Verified live via vanilla `/locate`: nearest
+redhouse/yellowhouse/red_mansion now 107-137 blocks from a fresh
+origin - comfortably reachable within a few waves' worldborder growth.
+(abandoned_brick_house is also the player's own base template - its
+natural copies read as "found a similar abandoned house," not a bug;
+its 48-block real distance in the same test is still covered by the
+existing spawn-proximity safety check, not a new risk.)
+
 **Player-danger fix ("retaliate + block path") — decided and done.**
 Real side effect of the mob-pathing fix (7d74545): stripping every
 TargetGoal instance also removed vanilla's own `HurtByTargetGoal`, so
