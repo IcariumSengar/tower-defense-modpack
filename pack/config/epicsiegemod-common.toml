@@ -42,7 +42,7 @@
 	#pivot - same full current roster as targetingMobs below, so
 	#block-breaking behavior is consistent across the mobs players
 	#actually fight now, not just vanilla zombies.
-	diggerMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
+	diggerMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "zombiesmore:boomer_zombie", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#List of blocks that digger mobs are forbidden from digging (Format: 'minecraft:wool' prefix with # if mentioning a block tag)
 	diggingBlacklist = []
 	#The item given to a digger 5% of the time [default: minecraft:iron_pickaxe]
@@ -58,7 +58,7 @@
 	demolitionMobs = []
 	#List of mobs that can pillar up and build stairs [default: [minecraft:zombie]
 	#Extended 2026-09-05, same real gap/fix as diggerMobs above.
-	buildingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
+	buildingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "zombiesmore:boomer_zombie", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#If mobs should be allowed to grief blocks [default: false]
 	griefing = false
 	#List of mobs that aren't allowed to grief
@@ -76,7 +76,7 @@
 	jumpHeight = 0.4
 	#List of mobs that can jump/leap at their target [default: [minecraft:zombie]
 	#Extended 2026-09-05, same real gap/fix as diggerMobs above.
-	jumpingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
+	jumpingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "zombiesmore:boomer_zombie", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#If mobs should be allowed to target blocks for the mobs to actively target [default: true]
 	blockTargeting = true
 	#If the block targeting should be as important as targeting entities (When enabled the goal gets added to the targetSelector instead of the goalSelector) [default: true]
@@ -100,7 +100,7 @@
 	#separate JS-side target-selector strip. Directly relevant to the
 	#real "mobs aren't pathing to the pedestal reliably" report - this
 	#config, not just mob_aggro.js, gates ESM's own block-targeting goal.
-	targetingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
+	targetingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "zombiesmore:boomer_zombie", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#What blocks will be targeted for removal when idle (Format: 'minecraft:wool' prefix with # if mentioning a block tag)
 	#Real cleanup 2026-09-05: `kubejs:amulet_pedestal`/`supplementaries:
 	#pedestal` removed - confirmed genuinely inert, not a working

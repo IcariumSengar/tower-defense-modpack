@@ -23,6 +23,20 @@ reflect actual current status.
 
 ## Ready to build
 
+**Held worldgen batch, 2026-09-05 — 3 items, dedicated later pass, not
+queued now:**
+1. Structure-proximity check may measure a structure's origin point
+   instead of its actual nearest edge — real fix would be
+   distance-to-nearest-perimeter-point instead of point-to-point.
+2. World depth reduction (~5 blocks to bedrock).
+3. More structure variety — density/distance already feels right, just
+   want more visual variety so the map doesn't look uniform. Real
+   candidates found: **Abandoned Watchtowers** (MasterOWS, 1.4M
+   downloads, Forge 1.20.1 v7.0) and **Abandoned Structures** (Berezka —
+   same trusted author as The Lost City's dependency). Needs careful
+   spacing work so new structures slot into the existing density budget
+   rather than adding to it, not just installed at default spacing.
+
 **Pedestal-under-attack alert — done, built 2026-09-05, real priority
 item (a lost run: "all of it silent and unknown to me").** The existing
 HP bossbar is distance-limited by design (ambient status only), useless
@@ -200,7 +214,23 @@ mechanic investigation) — drop that, just scrap the combo claim.**
    needs a more specific description of what it actually looks like
    (a screenshot, or "which quest/which part of the screen") to chase
    further.
-9. Not started.
+9. **Done.** Installed "Zombies More" (CaraAleatorio7, CurseForge project
+   957379, file zombiesmore-2.1.5-forge-1.20.1.jar, hash-verified before
+   installing). Confirmed the real `zombiesmore:boomer_zombie` id via
+   the mod's own lang file and decompiled its entity class directly:
+   extends vanilla `Monster` (so every existing roster-list config
+   still covers it, no special-casing needed), 20 HP/5 attack
+   damage/0.5 armor (notably lower raw stats than Spitter's own
+   75/4-ranged/5.0 - the real danger is its `AreaEffectCloud`-based
+   poison mist on death, confirmed in its own death-handling code, not
+   the mod's marketing text). Replaced every real Spitter reference
+   across the whole pack (WAVES, all 4 roster-list copies, the
+   endless-phase "other types" tier, loot_bag_drops.js's Epic tier,
+   flesh_death_sound.js, and every epicsiegemod-common.toml mob list) -
+   left the historical comments describing the original TFTH -> Spitter
+   decision untouched, since those document real past context, not live
+   config. Verified via a clean sandbox boot (0 script errors) and a
+   real `/summon zombiesmore:boomer_zombie` test before deploying.
 10. Not started.
 11. **Done.** Starting HP 200→300 (`PEDESTAL_MAX_HEALTH`, one named
     constant now instead of a bare `200` duplicated in 3 places), +20%

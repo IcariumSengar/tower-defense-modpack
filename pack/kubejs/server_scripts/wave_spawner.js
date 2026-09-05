@@ -201,6 +201,25 @@
 //   mod, that gap stands regardless of which mob fills its old numeric
 //   slot.
 //   equivalent-behavior one.
+// Spitter -> Boomer Zombie, 2026-09-05 (direct decision - new mod
+// install, "Zombies More" by CaraAleatorio7, real Forge 1.20.1 build,
+// hash-verified before installing). Real id `zombiesmore:boomer_zombie`,
+// confirmed via the mod's own lang file (not guessed) - decompiled its
+// entity class directly too: extends vanilla `Monster` (same as every
+// other mob in this roster, so ESM/Arrow Turret targeting and every
+// existing roster-list config still covers it with no special-casing
+// needed), 20 HP / 5 attack damage / 0.5 armor (real stats, notably
+// lower raw stats than Spitter's own 75/4-ranged/5.0 - the real danger
+// here is its own special ability, not raw combat stats), and a real
+// `AreaEffectCloud`-based poison mist on death (confirmed in its own
+// death-handling code, not assumed from the mod's marketing text).
+// Replaced everywhere Spitter appeared in the live roster (WAVES,
+// WAVE_MOB_TYPES, the endless-phase "other types" tier, loot_bag_drops.js's
+// Epic tier, flesh_death_sound.js, mob_aggro.js/pedestal_health.js/
+// wave_status.js's own roster copies, and every epicsiegemod-common.toml
+// mob list) - old historical comments describing the original TFTH ->
+// Spitter replacement decision left untouched, since those document a
+// real past decision, not live configuration.
 // Modest across-the-board bump, 2026-09-05 (real playtest feedback:
 // "waves 1-8 felt too easy") - trash-floor counts only (zombie/husk/
 // drowned/blister_zombie/horde_zombie), NOT the Rare (split_head_zombie)
@@ -214,13 +233,13 @@ var WAVES = [
   [['minecraft:zombie', 5], ['minecraft:husk', 3], ['minecraft:zombie_villager', 1]],
   [['minecraft:zombie', 4], ['minecraft:husk', 3], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 3]],
   [['minecraft:zombie', 3], ['minecraft:husk', 3], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 3]],
-  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2], ['mutantszombies:spitter', 1]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2], ['zombiesmore:boomer_zombie', 1]],
   // Elite Zombie (Undead Nights' own, real distinct stat block per its
   // own bytecode - slower but hits harder than Horde Zombie) replaces
   // the ravager as this wave's toughest mob. Now doing double duty as
   // both its own slot and Flesh Suffer's replacement (see the roster
   // header comment above) - a real duplication, not a fresh identity.
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['mutantszombies:spitter', 1], ['undeadnights:elite_zombie', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['zombiesmore:boomer_zombie', 1], ['undeadnights:elite_zombie', 2]],
   // Undead Nights' own zombies arrive as a numbers-focused reinforcement
   // wave - a real, intended "horde grows" beat, not filler. Horde Zombie
   // now also stands in for Flesh Brute I's slot (see roster header
@@ -246,7 +265,7 @@ var WAVES = [
   // Elite Zombie, more Horde Zombie reinforcements, another Spitter)
   // rather than introducing anything new - Mutant Brute/Zombie Brute's
   // actual first appearance is wave 8 below, untouched.
-  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 3], ['mutantszombies:spitter', 1]],
+  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 3], ['zombiesmore:boomer_zombie', 1]],
   // Toughest hand-authored mix, including the first appearance of
   // something that can genuinely breach the base's own defenses, not
   // just the player - Demolition Zombie, real TNT capability per
@@ -274,7 +293,7 @@ var WAVE_MOB_TYPES = [
   'mutantszombies:mutant_zombie',
   'mutantszombies:blister_zombie',
   'mutantszombies:split_head_zombie',
-  'mutantszombies:spitter',
+  'zombiesmore:boomer_zombie',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
@@ -300,7 +319,7 @@ var WAVE_MOB_TYPES = [
 // n climbs").
 var ENDLESS_OTHER_TIERS = [
   ['minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager'],
-  ['mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie', 'mutantszombies:spitter'],
+  ['mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie', 'zombiesmore:boomer_zombie'],
   ['undeadnights:elite_zombie', 'undeadnights:horde_zombie', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute', 'mutantszombies:rotten_mutant', 'mutantszombies:crawler'],
 ]
 

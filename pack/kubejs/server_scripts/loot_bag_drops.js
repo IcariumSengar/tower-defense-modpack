@@ -74,7 +74,7 @@
 // forced duplicate.
 const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager', 'minecraft:zombified_piglin', 'mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'undeadnights:horde_zombie']
 const RARE_MOBS = ['mutantszombies:split_head_zombie']
-const EPIC_MOBS = ['undeadnights:elite_zombie', 'mutantszombies:spitter']
+const EPIC_MOBS = ['undeadnights:elite_zombie', 'zombiesmore:boomer_zombie']
 const LEGENDARY_MOBS = ['mutantszombies:crawler', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
 // Legendary jackpot roll (2026-09-06, raised in the "some ideas..."

@@ -23,7 +23,7 @@
 // that matters).
 var HIGH_TIER_DEATH_SOUND_TYPES = [
   'undeadnights:elite_zombie',
-  'mutantszombies:spitter',
+  'zombiesmore:boomer_zombie',
   'mutantszombies:crawler',
   'undeadnights:demolition_zombie',
   'mutantszombies:zombie_brute',

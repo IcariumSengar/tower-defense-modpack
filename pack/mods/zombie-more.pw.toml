@@ -1,0 +1,13 @@
+name = "Zombies More"
+filename = "zombiesmore-2.1.5-forge-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "4018970fb6024a3848d98c432b7b54b95b9afcca"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5900446
+project-id = 957379

@@ -33,7 +33,7 @@ const HOSTILE_TYPES = [
   'mutantszombies:mutant_zombie',
   'mutantszombies:blister_zombie',
   'mutantszombies:split_head_zombie',
-  'mutantszombies:spitter',
+  'zombiesmore:boomer_zombie',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',

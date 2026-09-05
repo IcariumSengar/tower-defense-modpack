@@ -766,3 +766,8 @@ metafile = true
 file = "mods/xaeros-world-map.pw.toml"
 hash = "8f3f44cd5163ea06ff18e15693bbf8e3f55c3a56e1c1e55e8763bec8977099bb"
 metafile = true
+
+[[files]]
+file = "mods/zombie-more.pw.toml"
+hash = "ddcce00664237a752f97fa97c26cc7a14946427e3978e06f55789c1d29273e56"
+metafile = true
