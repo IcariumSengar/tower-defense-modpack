@@ -5,14 +5,6 @@ file = "config/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
-file = "config/TFTH-Data.toml"
-hash = "cea608bbe07dc6a3bcdaf2148a57172e83f604c10a2ee28ac928d866a043a0af"
-
-[[files]]
-file = "config/TFTH.toml"
-hash = "8f6814a973aaceaef3dd4a5f922c41886f0135c15c2ae3571697d905fdfffe95"
-
-[[files]]
 file = "config/bountybags-common.toml"
 hash = "108c4151cb64cc39375bb6ff0d7108abe7645dfaf62bc2f696ab76f008c194c0"
 
@@ -22,7 +14,7 @@ hash = "2884ac3a44f6b6f6cf18b0c7d1a2d3fafca0c72b69c0d52df9c8b503053be949"
 
 [[files]]
 file = "config/epicsiegemod-common.toml"
-hash = "05048db6405c78c6e074dab73748fd98d20e7cba19d41021adb8f9c6711d6a88"
+hash = "ffae63356c2099fd984ece8441e6683d66d9f7c9304ce7d311632719872b8eb2"
 
 [[files]]
 file = "config/ftbquests/quests/chapter_groups.snbt"
@@ -30,7 +22,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "7b53a1d87f5ae067a29de310e463e5c9a2340d4bef95a2d4b61141c27b7146f0"
+hash = "6455c976456bf4e22831b1f56afdbb290bc4354e562ff857ff9a69c7ab25c5c4"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -386,7 +378,7 @@ hash = "99715326d3fc31180b27440c608743297dd867821c4de8828fc17805192f90bc"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "16b45c1f81b0553f38c5dded580ff3d7e5ccdecfd21331153d1e0b72569b052a"
+hash = "ad3804b72ce85737032f781e4ede0706ff638a97f1393dbc99b64f23b7d64a63"
 
 [[files]]
 file = "kubejs/server_scripts/no_passive_mobs.js"
@@ -409,12 +401,16 @@ file = "kubejs/server_scripts/structure_loot_progression.js"
 hash = "1711062971ad58ecf099bde2cc3acdc08bda942113679e4b3179c7c54562bc65"
 
 [[files]]
+file = "kubejs/server_scripts/tier1_recipes.js"
+hash = "d1b70d049f468e332199d059c0dae6d3bc42991fbd15b8bc11f0182c0bcf6afc"
+
+[[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
 hash = "f76f5876026465418347da9c107effebaf37928d14003d0b83f94b4f52160380"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "2e608e6fb81c23fae8f4d2a0b125b09760c8ad364c8692039bb4bb24030ab87c"
+hash = "3b53249cc83bb2df8f806d29168bb63966357cac5b3b879845000cdcaa411e52"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"

@@ -395,13 +395,22 @@ findings above:**
    verified in a sandbox. Full detail in FEATURES.md's "Countdown
    timer" entry.
 5. **Trapcraft's Spikes re-introduced as the weak Tier 1 interim trap,
-   below Barbed Wire** (the harder-to-get goal stays, deliberately).
-   Already installed, unused since Barbed Wire took over. Real fix
-   needed for "damage AND slow": Spikes alone only damages, no slow -
-   pair with plain vanilla cobweb (zero-cost, genuinely slows) rather
-   than a single do-everything block. Confirm the mod's own recipe is
-   actually cheap/simple as wanted, override via KubeJS if not. New
-   Tier 1 quest for it alongside the existing ones (one quest per item).
+   below Barbed Wire — done, built and deployed 2026-09-05.** Real stock
+   recipe (5 iron ingots, decompiled from the jar) was too steep for
+   "weak/cheap interim" - retuned via new `tier1_recipes.js` (mirrors
+   `tier2_recipes.js`'s pattern) to 4 sticks + 1 iron ingot, the cheapest
+   defense item in the pack. "Damage AND slow" resolved by pairing with
+   plain vanilla cobweb (its own real slow effect) rather than a code
+   change - `SpikesBlock.java` only ever damages, confirmed by
+   decompiling it, so the new quest's own description spells the
+   cobweb pairing out to the player directly instead of leaving it
+   silent. New quest "Better Than Nothing" added to `campaign.snbt`
+   (fresh id, no collision with any existing progress - purely
+   additive). Verified via clean sandbox boot (0 script errors, 0 failed
+   recipes, FTB Quests logged the expected 31-quest count) and deployed;
+   `packwiz refresh` run, hashes clean. Full detail in FEATURES.md's
+   "Trapcraft Spikes re-introduced" entry under Tier 1 defenses. **Not
+   yet confirmed by a real playtest.**
 
 **2 more real bugs, dispatched 2026-09-04, alongside the structure-
 proximity regression above:**

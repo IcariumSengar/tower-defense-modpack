@@ -222,6 +222,37 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
+			description: ["Iron tips lashed to a stick frame - not much, but it hurts whatever steps on it, and it costs almost nothing. Lay a stretch of cobweb down first and you have a real chokepoint: the web holds them still, the spikes finish the job. Something to lean on before you have built anything sturdier."]
+			icon: "trapcraft:spikes"
+			id: "67A7BF98D2C077DE"
+			rewards: [
+				{
+					id: "5594A3487B739F3D"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+				{
+					count: 2
+					id: "6FCD715A4DB932C5"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Turn scrap into defenses"
+			tasks: [{
+				consume_items: false
+				id: "1D65A5F1829C7DD2"
+				item: "trapcraft:spikes"
+				type: "item"
+			}]
+			title: "Better Than Nothing"
+			x: 13.0d
+			y: -0.5d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
 			description: ["Wire it right and it does two things at once - cuts and slows anything that tries to push through. Needs power to make, not just a workbench; the rig for that's already set up in here somewhere."]
 			icon: "createaddition:barbed_wire"
 			id: "1454951A7FB14A26"

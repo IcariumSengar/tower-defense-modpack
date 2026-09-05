@@ -3532,7 +3532,9 @@ custom code. Current build:
 - **That direct check landed 2026-09-04: "the spikes is kinda
   rubbish."** Same "replaced on feel, not function" verdict the
   original custom Spike Trap got — see "Barbed Wire replaces Spikes"
-  below for the fix.
+  below for the fix. Spikes itself came back 2026-09-05 as a
+  deliberately weaker, cheaper interim option below Barbed Wire, not a
+  reversal — see "Trapcraft Spikes re-introduced" further down.
 
 **Barbed Wire replaces Spikes — requested 2026-09-04, built, deployed,
 and committed (8e1ed02; the rig's final outdoor position landed later
@@ -3617,6 +3619,42 @@ directly, not assumed:
 - **`packwiz refresh` run, all hashes clean. Deployed and committed**
   (8e1ed02) — held for review first given the quest-ID divergence risk
   above, then committed once the user gave the go-ahead.
+
+**Trapcraft Spikes re-introduced as a weak Tier 1 interim trap, below
+Barbed Wire** — *live*, 2026-09-05. This was item 5 of an original
+5-item batch (docs/QUEUE.md), repeatedly bumped behind live bug reports
+until now; the mod block was never uninstalled, just left with no recipe
+or quest of its own once Barbed Wire took over as the "real" Tier 1
+defense above.
+- **Recipe retuned, not left stock**: Trapcraft's own shipped recipe
+  (`data/trapcraft/recipes/spikes.json`, confirmed by decompiling the
+  jar) is 5 iron ingots and nothing else — too steep for "weak/cheap
+  interim," especially sitting beside Bear Trap's 3 iron + 3 stone
+  pressure plates in the same chapter. New KubeJS override
+  (`tier1_recipes.js`, mirroring `tier2_recipes.js`'s
+  remove-then-`event.shaped` pattern): 4 sticks + 1 iron ingot — the
+  cheapest defense item in the pack, by design, since it's meant to be
+  available before Bear Trap or Barbed Wire's Create rig are built.
+- **"Damage AND slow" resolved by pairing, not a code change**:
+  `SpikesBlock.java`'s own decompiled logic only ever damages (2.0f
+  base + a velocity-based bonus on contact, or a flat 20.0f on a 5+
+  block fall) — no slow effect exists on the block itself. Rather than
+  bolt one on, the fix is pairing it with plain vanilla cobweb (its own
+  real movement-speed reduction already does the slowing half) — the
+  new quest's description spells this out directly to the player as the
+  intended combo, instead of leaving it as a silent, undiscoverable
+  expectation.
+- **New Tier 1 quest, "Better Than Nothing"** (`campaign.snbt`,
+  `id: "67A7BF98D2C077DE"`) — same dependency root and visual cluster
+  as "Sharpened Scrap"/"Something Crueler," slotted between them and
+  "Not Just Jewelry" (x=13, y=-0.5). Rewards 1 XP level + 2 iron ingots —
+  intentionally modest, and the iron reward nudges the player toward
+  affording Bear Trap or the Barbed Wire rig next.
+- Verified via a clean sandbox boot: KubeJS loaded all scripts with 0
+  errors, recipe processing reported "0 failed recipes," and FTB Quests
+  logged the expected 31-quest count (was 30) with no parse errors.
+  Deployed to the live instance's script/quest files (`packwiz refresh`
+  run, hashes clean) — **not yet confirmed by a real playtest.**
 
 **Machine progression, Tier 2** — *live* (2026-08-31). Semi-automated,
 redstone-powered, still fragile — the next rung up from Tier 1, and the
