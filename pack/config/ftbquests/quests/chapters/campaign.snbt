@@ -300,7 +300,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Whoever built the press and mill in here never got around to powering them - there's an open slot where a crank should sit. Take some planks and an Andesite Alloy to it and it'll finish the job. The andesite itself doesn't turn up close to home - you'll need to search the old structures out past the wall for it."]
+			description: ["Whoever built the press and mill in here never got around to powering them - there's an open slot where a crank should sit. Here's one already made - set it in place and it'll finish the job."]
 			icon: "create:hand_crank"
 			id: "30DB900D8BD39277"
 			rewards: [
@@ -310,20 +310,18 @@
 					xp: 10
 				}
 				{
-					count: 8
+					count: 1
 					id: "C98B0A210AD669D6"
-					item: "minecraft:andesite"
+					item: "create:hand_crank"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
 			size: 1.5d
-			subtitle: "Search the wasteland for the andesite"
+			subtitle: "Get the mill running"
 			tasks: [{
-				consume_items: false
 				id: "210CD7D6975E275B"
-				item: "create:hand_crank"
-				type: "item"
+				type: "checkmark"
 			}]
 			title: "Turn the Crank"
 			x: 13.0d

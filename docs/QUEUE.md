@@ -165,10 +165,12 @@ mechanic investigation) — drop that, just scrap the combo claim.**
 23. Open ask: maze-like mob funneling near the front choke point —
     investigate whether Create's fan can redirect pathing, or other
     physical-layout techniques.
-24. Likely root cause: "Turn the Crank"'s andesite reward is in
-    postapocalypse_structures tables, not Lootr-managed chests (a
-    different system) — user's checking the wrong chest type. Proposed
-    fix: give the Hand Crank itself as a quest reward directly.
+24. **Done.** "Turn the Crank" no longer requires possessing (or
+    finding andesite to craft) a `create:hand_crank` at all - task
+    changed to a plain checkmark, reward changed from 8 andesite to the
+    hand_crank itself directly, so the Lootr-vs-custom-table chest
+    confusion can't block it anymore. Andesite itself untouched
+    elsewhere (still real, lootable loot for other uses).
 
 **Two live bug reports, dispatched alongside the 25-item batch above -
 done/investigated 2026-09-05:**
