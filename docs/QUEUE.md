@@ -111,7 +111,42 @@ mechanic investigation) — drop that, just scrap the combo claim.**
    graph first: exactly one other quest ("Thin the Horde") depended on
    it - dependency removed, it's now a standalone quest with no
    prerequisite, and the repeatable quest has zero dependents.
-3. Not started - queued behind the maze-funneling/pathing items.
+3. **Real live behavioral test done, real root cause found and fixed -
+   not just confirmed unconfirmed.** Built a real controlled test in the
+   sandbox: an enclosed cobblestone room with a real ESM blockTarget (a
+   vanilla candle) sealed inside, a real digger-capable wave mob (the
+   extended roster from the earlier ESM config fix) sealed right outside
+   the wall. **Real confound caught and fixed first**: the first
+   attempt's test mob silently burned to death in daylight before
+   anything could be observed - redone with `time set night`/
+   `doDaylightCycle false`. With that fixed: the mob moved once at the
+   start, then sat completely stationary for 80+ real seconds - zero
+   wall damage, confirmed via repeated `/setblock ... keep` checks
+   (fails while the block is still solid). Matches the live report
+   exactly ("I've just been able to wall off the base and it's easy").
+   **Real root cause, confirmed by decompiling `ESM_EntityAIDigging.
+   canUse()` directly**: it requires `digger.getNavigation().isDone()`
+   before it will even consider digging - the mob's own pathfinding has
+   to have genuinely given up first. `mob_aggro.js`'s own forced-
+   targeting handler was calling `e.setTarget(...)` unconditionally
+   every 10 ticks, even when the target hadn't changed - very likely
+   kept re-triggering the mob's attack-goal pathfinding attempt against
+   the same unreachable target, so the navigator never settled into
+   "done" long enough for the digger goal's precondition to pass. Fixed
+   by comparing the mob's current target (by UUID, not object identity -
+   KubeJS entity wrappers aren't guaranteed to be the same object across
+   reads) against the desired one and only calling `setTarget()` when it
+   actually needs to change - still re-asserts every 10 ticks if
+   something else changed the target (the original "enforce forced
+   targeting" safety net), just skips the redundant call otherwise.
+   **Real limitation, stated plainly**: verifying this fix actually
+   restores digging behavior needs a real player - `mob_aggro.js`'s
+   targeting loop is a `PlayerEvents.tick` handler that can't run at all
+   in a headless sandbox with no player connected, so this is a
+   well-evidenced hypothesis fix grounded in the real decompiled
+   precondition, not an end-to-end confirmed one. Needs a real playtest.
+   Connects to #13+25's cobblestone-scarcity fix (already shipped) for a
+   different angle on the same complaint.
 4. **Done.** "Spoils of War" and "Open It" both now reward 4 gold
    ingots each (guaranteed, not RNG) - stacks with the gold_nugget fix
    from the last batch, closing the gold gap faster and more reliably.

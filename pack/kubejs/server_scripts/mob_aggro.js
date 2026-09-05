@@ -443,6 +443,32 @@ PlayerEvents.tick(function (event) {
     var dy = e.getY() - player.getY()
     var dz = e.getZ() - player.getZ()
     var isBlockingPath = dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
-    e.setTarget(isBlockingPath ? player : aggroTarget)
+    var desiredTarget = isBlockingPath ? player : aggroTarget
+
+    // Real fix, 2026-09-05 (live report + a real controlled sandbox
+    // test: "walling off the base is easy" - wave-6+ digger/climber
+    // mobs never actually breach a wall despite the correctly-extended
+    // ESM roster config). Root cause, confirmed by decompiling
+    // ESM_EntityAIDigging.canUse() directly: it requires
+    // `digger.getNavigation().isDone()` before it will even consider
+    // digging - i.e. the mob's own pathfinding has to have genuinely
+    // given up first. Calling setTarget() unconditionally every 10
+    // ticks (this handler's own throttle), even when the target hasn't
+    // actually changed, very likely keeps re-triggering the mob's
+    // attack-goal pathfinding attempt against the same unreachable
+    // target - so the navigator never settles into "done" long enough
+    // for the digger goal's own precondition to pass. Comparing by UUID
+    // rather than object identity - KubeJS entity wrappers aren't
+    // guaranteed to be the same object across two separate
+    // getTarget()/variable reads even for the same real underlying
+    // entity. Still re-asserts every 10 ticks if something else
+    // actually changed the target (the original "enforce forced
+    // targeting" safety net this handler exists for), just skips the
+    // call entirely when nothing needs to change.
+    var currentTarget = e.getTarget()
+    var currentTargetUuid = currentTarget ? `${currentTarget.uuid}` : null
+    if (currentTargetUuid !== `${desiredTarget.uuid}`) {
+      e.setTarget(desiredTarget)
+    }
   })
 })
