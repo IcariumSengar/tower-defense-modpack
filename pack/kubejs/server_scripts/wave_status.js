@@ -155,15 +155,59 @@ const FIXED_WAVE_EVENTS = [
     flagKey: 'td_pacingAnnounced',
     action: (player) => {
       // Fires alongside the gear-removal beat above at the same wave
-      // right now (real coincidence, not a dependency - see the
-      // COUNTDOWN_* comment above) - a second, distinct on-screen
-      // moment is fine, they're about different things.
-      player.getServer().runCommandSilent(`title @a title {"text":"THE NIGHTS GROW LONGER","color":"gold","bold":true}`)
-      player.getServer().runCommandSilent(`title @a subtitle {"text":"You'll have more time to prepare from here on.","color":"gray"}`)
+      // (real coincidence, not a dependency - see the COUNTDOWN_*
+      // comment above). Real bug fixed 2026-09-05 (live report: reads
+      // as one instant message, not two): both this event and
+      // GEAR_REMOVAL_WAVE's own action call `/title @a title` in the
+      // same forEach pass, same tick - vanilla's title system resets
+      // the fade-in/stay/fade-out timer on every new `/title` call, so
+      // this one's title instantly overwrote gear-removal's before it
+      // could actually be read. Queued via pendingDelayedTitles instead
+      // of firing immediately - see that array's own comment below for
+      // the delay and why.
+      queueDelayedTitle(player, 'THE NIGHTS GROW LONGER', "You'll have more time to prepare from here on.")
       player.tell('§6[Wave] §eThe gap between waves keeps growing from here - use it.')
     },
   },
 ]
+
+// Delayed-title queue (2026-09-05) - lets a SECOND title/subtitle pair
+// display sequentially after a first one instead of instantly
+// overwriting it, same problem `/title` always has when called twice in
+// one tick. DELAY_TICKS (100 = 5s) covers vanilla's own default title
+// timing (10 ticks fade-in + 70 ticks stay + 20 ticks fade-out = 100
+// ticks total, confirmed vanilla default via `/title @a times`'s own
+// documented defaults, not guessed) - long enough for the first title to
+// fully play out (fade in, hold, fade out) before the second one begins,
+// rather than an arbitrary short gap that would just move the
+// overwrite-collision earlier instead of removing it.
+var pendingDelayedTitles = [] // {fireTick, title, subtitle}
+var DELAYED_TITLE_TICKS = 100
+
+function queueDelayedTitle(player, title, subtitle) {
+  pendingDelayedTitles.push({
+    fireTick: player.getLevel().getTime() + DELAYED_TITLE_TICKS,
+    title: title,
+    subtitle: subtitle,
+  })
+}
+
+PlayerEvents.tick((event) => {
+  if (pendingDelayedTitles.length === 0) return
+  const player = event.player
+  const currentTick = player.getLevel().getTime()
+  const stillPending = []
+  pendingDelayedTitles.forEach((entry) => {
+    if (currentTick < entry.fireTick) {
+      stillPending.push(entry)
+      return
+    }
+    const server = player.getServer()
+    server.runCommandSilent(`title @a title {"text":"${entry.title}","color":"gold","bold":true}`)
+    server.runCommandSilent(`title @a subtitle {"text":"${entry.subtitle}","color":"gray"}`)
+  })
+  pendingDelayedTitles = stillPending
+})
 
 // Roguelike permanent buff choice - built 2026-08-20, removed the same
 // day. The clickable /tellraw chat menu never reliably resolved (the
@@ -341,7 +385,23 @@ ServerEvents.commandRegistry((event) => {
           e.kill()
           killed++
         })
-        context.source.sendSuccess(() => Text.of(`§6[Wave] §aForce-cleared - killed ${killed} hostile(s).`), false)
+        // Real bug found 2026-09-05 (live report: "no longer works"):
+        // this used `context.source.sendSuccess(() => Text.of(...), ...)`
+        // - `Text` is not a real KubeJS global anywhere else in this
+        // codebase (checked - zero other uses of Text/Component
+        // construction in the whole pack), and this command's own git
+        // history shows this line was never touched since the command
+        // was first written, meaning it was very likely never actually
+        // verified with a real player at all, not a regression from
+        // today's edits. `getPlayerOrException()` throwing from a
+        // non-player source (e.g. console/RCON) produces the exact same
+        // generic "An unexpected error occurred" message a broken
+        // `Text` reference would for a real player, so this couldn't be
+        // distinguished by a headless sandbox test - fixed by switching
+        // to `player.tell(...)`, the same proven-working chat-message
+        // API this file and every sibling script already use everywhere
+        // else, instead of an unverified Component-building call.
+        player.tell(`§6[Wave] §aForce-cleared - killed ${killed} hostile(s).`)
         return killed
       })
   )

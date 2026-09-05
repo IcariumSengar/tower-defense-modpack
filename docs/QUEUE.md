@@ -26,35 +26,53 @@ reflect actual current status.
 **New live feedback batch, 2026-09-05, 25 items, literal numbering —
 sent to build. #19 cancels/supersedes the previous batch's #3 (cobweb
 mechanic investigation) — drop that, just scrap the combo claim.**
-1. "Borrowed Time" spoils the wave-5 gear loss — rewrite as a subtle
-   hint. Wave-5 announcement → 2 sequential popups with a real pause.
-2. "Sound the Horn" duplicated — keep only the repeatable one, not a
-   dependency for anything else.
-3. Real live-behavior check: wave 6+ digger/climber/builder mobs aren't
-   actually breaching walls despite the earlier ESM config fix —
-   connects to #13/#25's cobblestone-scarcity fix below.
-4. "Spoils of War"/"Open It" → reward gold ingots (fold into the gold
-   economy work from the previous batch's #7-8).
-5. A little more mobs in waves 1-8, felt too easy.
-6. Real UX bug: player spawns once then visibly re-spawns to the real
-   position — investigate making world-ready happen before first spawn.
-7. Crafting Station Improved's connected-inventories setting → default
-   true. Connects to #8/#21 (same theme).
-8. Quest book ch.2 formatting bug — real diagnosis needed. New quest
-   explaining connected-inventories (pairs with #7).
-9. **Decided**: install "Zombies More" (CaraAleatorio7), replace
-   Spitter with Boomer Zombie (poison mist on death).
-10. Real gap: "Inventory Sorter Buttons" was never actually installed,
-    only plain Inventory Sorter — find/install the real shift-click
-    deposit-all mod this time.
-11. **Decided**: quick fix only — pedestal starting HP up, +20% heal
-    per wave clear. Bigger upgrade-point system parked in IDEAS.md.
-12. New Tips & Tricks quest: JEI's "A" key.
+1. **Done.** "Borrowed Time" rewritten as a subtle hint ("look close and
+   you can already see the wear starting to show") - no explicit "wave
+   5" mention anymore. Wave-5 announcement split into two genuinely
+   sequential title/subtitle pairs with a real 5-second pause between
+   them (`pendingDelayedTitles` queue in `wave_status.js`) - real bug
+   found: it and the gear-removal beat both fired `/title` in the same
+   tick, so the second one instantly overwrote the first before it
+   could be read; that's fixed now, not just made "more sequential."
+2. **Done.** Removed the original one-time "Sound the Horn" quest
+   entirely, kept the repeatable "Lost the Horn?" as the sole horn
+   quest (its own description rewritten to be self-contained, no longer
+   references the deleted quest by name). Checked the real dependency
+   graph first: exactly one other quest ("Thin the Horde") depended on
+   it - dependency removed, it's now a standalone quest with no
+   prerequisite, and the repeatable quest has zero dependents.
+3. Not started - queued behind the maze-funneling/pathing items.
+4. **Done.** "Spoils of War" and "Open It" both now reward 4 gold
+   ingots each (guaranteed, not RNG) - stacks with the gold_nugget fix
+   from the last batch, closing the gold gap faster and more reliably.
+5. **Done.** Modest bump across all 8 waves - trash-floor counts only
+   (zombie/husk/drowned/blister_zombie/horde_zombie), deliberately left
+   every Rare (split_head_zombie) and Epic (spitter/elite_zombie) count
+   untouched so it doesn't perturb the gold-economy calibration from the
+   last batch.
+6. Not started.
+7. **Done, and it turned out to already be true.** Decompiled Crafting
+   Station Improved's real `Configs$Server` class directly -
+   `sideInventories` ("display side inventories in crafting grid," the
+   real connected-inventories feature) already defaults to `true` in
+   the mod's own stock code, and nothing in this pack overrides it.
+   Nothing to fix - just reinforces that #8's explainer quest is the
+   real gap (the feature works, players don't know it exists).
+8. Not started.
+9. Not started.
+10. Not started.
+11. Not started - **also gained a 3rd healing option since this was
+    queued**: nether star right-click = full (100%) heal, alongside
+    golden carrot's 10% (see #14).
+12. Not started - needs confirming JEI's real default "A" key binding
+    before writing the quest text, not guessed.
 13+25. Cobblestone loot too common (confirmed: 45 weight, heaviest in
     Uncommon pool) — dial back hard so wood becomes the real early
     defense material by necessity, not an AI change.
-14. Golden carrot right-click heals pedestal 10%. Plain carrots also
-    confirmed absent from loot — decide whether to add.
+14. Golden carrot right-click heals pedestal 10%. **Addition**: nether
+    star right-click heals to full (100%) - same right-click handler,
+    the rare/premium full-heal option. Plain carrots also confirmed
+    absent from loot — decide whether to add.
 15. Real gap: trap kills (Spikes etc.) don't drop loot like player
     kills do (wave-8 brute/Spikes dropped nothing) — fix so there's no
     difference.
@@ -73,6 +91,31 @@ mechanic investigation) — drop that, just scrap the combo claim.**
     postapocalypse_structures tables, not Lootr-managed chests (a
     different system) — user's checking the wrong chest type. Proposed
     fix: give the Hand Crank itself as a quest reward directly.
+
+**Two live bug reports, dispatched alongside the 25-item batch above -
+done/investigated 2026-09-05:**
+- **`/tdforceclear` "no longer works" — real bug found, likely fixed,
+  not fully confirmable remotely.** Not a regression from today's edits
+  (git history shows this line untouched since the command was first
+  written). Real cause: `context.source.sendSuccess(() => Text.of(...),
+  false)` - `Text` is not a real global anywhere else in this codebase
+  (this is the pack's only custom command registration, zero other
+  Component-building calls exist to have proven it). A non-player RCON
+  test throws the exact same generic "unexpected error" message this
+  bug would, so a headless sandbox genuinely can't distinguish the two
+  failure modes - fixed by switching to `player.tell(...)`, the same
+  proven chat call used everywhere else in this pack. Needs a real
+  player to confirm.
+- **Z-key zoom "kinda flaky" — real investigation, keybind/mod-conflict
+  theories ruled out.** Checked live `options.txt` directly: nothing
+  else is bound to Z. None of the 4 newly-installed client mods
+  (Dynamic Lights, Damage Numbers, Pick Up Notifier, Xaero's World
+  Border) register any keybind at all - checked each one's lang file
+  directly, zero hits. Just Zoom's own config has no cooldown/toggle
+  setting that would explain intermittent failure. Not resolved further
+  than that - a deeper mixin-level interaction or a mundane window-
+  focus quirk are the remaining real possibilities, not chased given
+  how minor this is.
 **8-item batch — done, built/deployed 2026-09-05 (except #2, held).**
 1. **Waystone rendering — real root cause found and fixed.** Decompiled
    `WaystoneBlock`/`WaystoneBlockBase` directly: `waystones:waystone` is

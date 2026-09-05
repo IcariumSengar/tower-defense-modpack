@@ -201,17 +201,26 @@
 //   mod, that gap stands regardless of which mob fills its old numeric
 //   slot.
 //   equivalent-behavior one.
+// Modest across-the-board bump, 2026-09-05 (real playtest feedback:
+// "waves 1-8 felt too easy") - trash-floor counts only (zombie/husk/
+// drowned/blister_zombie/horde_zombie), NOT the Rare (split_head_zombie)
+// or Epic (spitter/elite_zombie) tier counts, deliberately - those feed
+// directly into the same-day gold-economy fix's own worked math
+// (docs/QUEUE.md's "gold still not enough" writeup), and bumping them
+// here would silently invalidate that calibration. Not the endless-
+// phase's explosive per-level growth - just "a little more," per the
+// direct ask, not a difficulty overhaul.
 var WAVES = [
-  [['minecraft:zombie', 4], ['minecraft:husk', 2], ['minecraft:zombie_villager', 1]],
-  [['minecraft:zombie', 3], ['minecraft:husk', 2], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 2]],
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 2]],
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['mutantszombies:blister_zombie', 1], ['mutantszombies:split_head_zombie', 2], ['mutantszombies:spitter', 1]],
+  [['minecraft:zombie', 5], ['minecraft:husk', 3], ['minecraft:zombie_villager', 1]],
+  [['minecraft:zombie', 4], ['minecraft:husk', 3], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 3]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 3]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2], ['mutantszombies:spitter', 1]],
   // Elite Zombie (Undead Nights' own, real distinct stat block per its
   // own bytecode - slower but hits harder than Horde Zombie) replaces
   // the ravager as this wave's toughest mob. Now doing double duty as
   // both its own slot and Flesh Suffer's replacement (see the roster
   // header comment above) - a real duplication, not a fresh identity.
-  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['mutantszombies:spitter', 1], ['undeadnights:elite_zombie', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['mutantszombies:spitter', 1], ['undeadnights:elite_zombie', 2]],
   // Undead Nights' own zombies arrive as a numbers-focused reinforcement
   // wave - a real, intended "horde grows" beat, not filler. Horde Zombie
   // now also stands in for Flesh Brute I's slot (see roster header
@@ -225,7 +234,7 @@ var WAVES = [
   // appearance here, plus the endless-phase addition in
   // undeadnights_horde_mobs_config.json, gives it real ongoing
   // presence instead of 2 individuals in the entire campaign.
-  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['undeadnights:horde_zombie', 3], ['mutantszombies:split_head_zombie', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['undeadnights:horde_zombie', 4], ['mutantszombies:split_head_zombie', 2]],
   // **Real fix, 2026-09-04**: this wave originally previewed Mutant
   // Brute and Zombie Brute a wave early (filling Flesh Hunter II's and
   // Flesh Boomer's old TFTH slots) - real playtest feedback found this
@@ -237,7 +246,7 @@ var WAVES = [
   // Elite Zombie, more Horde Zombie reinforcements, another Spitter)
   // rather than introducing anything new - Mutant Brute/Zombie Brute's
   // actual first appearance is wave 8 below, untouched.
-  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 2], ['mutantszombies:spitter', 1]],
+  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 3], ['mutantszombies:spitter', 1]],
   // Toughest hand-authored mix, including the first appearance of
   // something that can genuinely breach the base's own defenses, not
   // just the player - Demolition Zombie, real TNT capability per
@@ -247,7 +256,7 @@ var WAVES = [
   // the slot the original proposal gave "Flesh Unseen" - see the real
   // correction in this block's own header comment for why that mob was
   // dropped.
-  [['mutantszombies:crawler', 1], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 2]],
+  [['mutantszombies:crawler', 1], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 3]],
 ]
 
 // Also the endless-phase horde roster's own mob set (see

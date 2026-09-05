@@ -41,7 +41,7 @@
 			y: 0.0d
 		}
 		{
-			description: ["That sword and armor aren't permanent - you'll lose them a few waves in, five to be exact. Get real use out of them while you can, because whatever you find after has to carry you the rest of the way."]
+			description: ["That sword and armor aren't yours to keep - look close and you can already see the wear starting to show. Get real use out of them while they still hold together, because whatever you find after has to carry you the rest of the way."]
 			icon: "minecraft:clock"
 			id: "70DA454A61DDC3A1"
 			rewards: [
@@ -66,33 +66,6 @@
 			y: 0.0d
 		}
 		{
-			description: ["Right-click it when you want the next wave - it won't come on its own until the timer runs out, so take the gap if you need to patch up or restock. I'd rather choose my moment than get caught mid-repair."]
-			icon: "kubejs:wave_horn"
-			id: "42E42312C8B61976"
-			rewards: [
-				{
-					count: 4
-					id: "24A66E75C30766A0"
-					item: "minecraft:cobblestone"
-					type: "item"
-				}
-				{
-					count: 4
-					id: "47321F7EAFB51D23"
-					item: "minecraft:oak_log"
-					type: "item"
-				}
-			]
-			tasks: [{
-				id: "581F189F7A4A833B"
-				type: "checkmark"
-			}]
-			title: "Sound the Horn"
-			x: 4.0d
-			y: 0.0d
-		}
-		{
-			dependencies: ["42E42312C8B61976"]
 			description: ["Five's not much, but it'll tell you fast whether your gear can actually handle this. Count resets every wave. The numbers only go up from here, so don't get comfortable."]
 			icon: "minecraft:zombie_head"
 			id: "7F675AEBC7301832"
@@ -128,6 +101,12 @@
 				id: "F7DF023D7AD78BE4"
 				item: "minecraft:emerald"
 				type: "item"
+			}
+			{
+				count: 4
+				id: "80F9C1D996680B95"
+				item: "minecraft:gold_ingot"
+				type: "item"
 			}]
 			tasks: [{
 				consume_items: false
@@ -153,6 +132,12 @@
 					count: 2
 					id: "AB71671B6AE1AAD1"
 					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "AE85176DBD4A39E5"
+					item: "minecraft:gold_ingot"
 					type: "item"
 				}
 			]
@@ -566,7 +551,7 @@
 		}
 		{
 			can_repeat: "true"
-			description: ["Right-click it to call the next wave when you're ready - see \"Sound the Horn\" if you haven't worked that out yet. Lost yours somewhere, or want a spare before things get hairy? Claim this again whenever you need another - it doesn't run out."]
+			description: ["Right-click it to call the next wave when you're ready - it won't come on its own until the timer runs out. Lost yours somewhere, or want a spare before things get hairy? Claim this again whenever you need another - it doesn't run out."]
 			icon: "kubejs:wave_horn"
 			id: "B69DA4CE08B1C6A5"
 			repeat_cooldown: 60
