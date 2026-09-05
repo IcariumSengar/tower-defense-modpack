@@ -492,6 +492,28 @@ PlayerEvents.loggedIn((event) => {
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
 
+  // Real UX fix, 2026-09-05 (live report: the player visibly spawns
+  // once at the vanilla default point, then gets teleported to the
+  // real wasteland base moments later - reads as a jarring double
+  // spawn). Real investigation: `PlayerEvents.loggedIn` only fires
+  // AFTER vanilla has already placed the player entity in the world -
+  // there is no earlier Forge/vanilla hook that runs before that first
+  // placement, so the world/terrain genuinely can't be "ready first."
+  // Everything below this point (the biome search, up to 4000 blocks,
+  // plus the full base build - walls, structure placement, loot) runs
+  // synchronously inside this one handler and takes real, measurable
+  // time, during which the player's client is still rendering
+  // whatever real (wrong) terrain they were first placed on. Can't
+  // eliminate the double-teleport, but can make it read as one clean
+  // spawn instead of a correction: an immediate, near-instant safety
+  // hop straight up to a fixed neutral altitude (sky, nothing
+  // identifiable to notice snapping away from) before any of the slow
+  // work starts, with a short slow_falling grant as a safety net in
+  // case of any lag - by the time the real spreadplayers teleport below
+  // lands, the player was already looking at sky, not a real landscape.
+  event.server.runCommandSilent('effect give @a minecraft:slow_falling 10 0 true')
+  player.teleportTo(player.getX(), 300, player.getZ())
+
   // Real live ask, 2026-09-05: a persistently visible HUD element for
   // waves cleared, not just a one-off chat/title message. Plain vanilla
   // scoreboard sidebar - real, idempotent objective creation (a second

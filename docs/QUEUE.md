@@ -155,7 +155,24 @@ mechanic investigation) — drop that, just scrap the combo claim.**
    every Rare (split_head_zombie) and Epic (spitter/elite_zombie) count
    untouched so it doesn't perturb the gold-economy calibration from the
    last batch.
-6. Not started.
+6. **Done, real technical question answered.** Confirmed:
+   `PlayerEvents.loggedIn` only fires AFTER vanilla has already placed
+   the player entity in the world - there's no earlier Forge/vanilla
+   hook, so "make the world ready before the player is first placed" at
+   all isn't actually possible. The biome search (up to 4000 blocks)
+   plus the full base build then run synchronously inside that same
+   handler, taking real, measurable time while the player's client
+   keeps rendering wherever they were first placed - that's the real
+   double-spawn. Can't eliminate the double-teleport, but made it read
+   as one clean spawn: an immediate, near-instant hop straight up to a
+   fixed neutral altitude (sky, nothing identifiable to notice snapping
+   away from) with a short slow_falling safety net, before any of the
+   slow work starts - by the time the real spreadplayers teleport lands,
+   the player was already looking at sky, not a real landscape. Fresh
+   worlds only (same as every other fix inside this login gate) - can't
+   help the current live save, which is already past its own first
+   login. Can't verify the actual visual effect without a real client -
+   verified the code loads clean, not the felt experience.
 7. **Done, and it turned out to already be true.** Decompiled Crafting
    Station Improved's real `Configs$Server` class directly -
    `sideInventories` ("display side inventories in crafting grid," the
