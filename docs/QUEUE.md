@@ -23,6 +23,68 @@ reflect actual current status.
 
 ## Ready to build
 
+**CRITICAL: endless phase (wave 9+) completely non-functional since
+2026-09-02 — done, real root cause found and fixed.** Live report:
+"wave 9, nothing spawned in at all." Decompiled `HordeSpawner.tick()`
+directly (Undead Nights' own class) - the 2026-09-02 fix that set
+`undeadNightsEnabled = false` (to stop this pack's own night-locking
+from also tripping the mod's autonomous horde-night system) only ever
+checked whether `SpawnHordeCommand`'s own method read that flag (it
+doesn't). It never checked `HordeSpawner.tick()` itself - the method
+that actually processes the pending-horde queue that command adds to -
+whose very FIRST line is `if (!getUndeadNightsEnabled()) return 0`.
+Every `/undeadnights spawn_horde` call (wave_spawner.js's own endless-
+phase trigger) was queuing a real request that nothing ever consumed.
+Every endless wave has been vacuously "clearing" with zero real mobs the
+entire time - not a regression from today's churn, a real gap since
+that earlier fix shipped.
+Fix: re-enabled `undeadNightsEnabled`, and closed the 3 real autonomous
+trigger paths inside that same method at their own source instead -
+`chanceForHordeNight = 0` and `enableRandomHordes = false` across all 40
+levels in `undeadnights_difficulty_config.json`, `hordeZombiesSpawnNaturally
+= false` in `undeadnights-server.toml` (a third, independent "stray
+zombie" 3%-per-tick path, otherwise still live). This also directly
+covers the separate Lure Effect disable request (same file, same
+all-40-levels edit): `enableLureHordeEffect`/`lureHordeEffectSpawnsHorde`/
+`strongLureHordeEffectSpawnsHorde` all set false.
+**Real deployment note**: `undeadnights-server.toml` is a Forge
+SERVER-type config, baked into the save at world creation
+(`saves/<world>/serverconfig/`) - fixed directly in the user's own live
+save, not just defaultconfigs, but still needs them to exit and reload
+that SAME world (not a fresh one) for it to take effect. Real expected
+side effect once they do: their save has backed-up pending-horde
+requests from the wave 10-19 horn-spam - likely a noticeable batch of
+mobs materializing at once rather than a clean single wave, not a bug.
+Verified: clean sandbox boot with all edited configs, no load errors -
+full player-triggered confirmation still pending their next login (same
+real-player blind spot as every other player-input-dependent fix this
+session).
+
+**New live feedback batch, 2026-09-05 (mid-playtest), 7 items, literal
+numbering — sent to build, full dispatch detail in the peer thread:**
+1. HUD element showing waves cleared — mechanism is the peer's call.
+2. Loot bag notification should render "in a cooler way," not plain
+   chat — real investigation needed first: does any ALREADY-installed
+   mod have a genuine themeable toast/overlay, or does the custom
+   chat-based `loot_bag_notification.js` stay as-is. Report back, don't
+   guess.
+3. Quest reward audit — XP-only rewards aren't satisfying, want
+   tangible benefits tied to the quest's theme ("traps give iron" as
+   the example). Checked first: NOT all 19 quests are XP-only already
+   (7 confirmed have real item rewards too) — the real gap is the
+   handful that are XP-only. Peer to propose a full replacement list
+   and report back before committing (held for review).
+4. Crafting table (Crafting Station Improved) spawns waterlogged in the
+   starter base — bug fix.
+5. Pre-place a Waystone in the yard on new world (same convention as
+   the pedestal/rig) + reward one on Tier 1 completion (peer to confirm
+   which quest is really "Tier 1 complete" from the dependency graph).
+6. Repeatable quest granting a free `kubejs:wave_horn`, framed as "in
+   case you lose it," doubles as the quest explaining what it does.
+7. Play a sound on wave start — vanilla bell ring for now
+   (`minecraft:block.bell.use`), explicit placeholder for a scarier
+   sound later.
+
 **Live report, 2026-09-04 (mid-playtest, right after the mob-pathing
 fix shipped) — checked, NOT a regression.** "spitter's path seems off."
 Summoned a real spitter in a sandbox and inspected its actual goal

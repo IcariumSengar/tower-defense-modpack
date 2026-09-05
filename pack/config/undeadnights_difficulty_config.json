@@ -26,7 +26,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -52,8 +52,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -63,13 +63,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -79,7 +79,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -105,8 +105,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.17,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -116,13 +116,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -132,7 +132,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -158,8 +158,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.17,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -169,13 +169,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -185,7 +185,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -211,8 +211,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -222,13 +222,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -238,7 +238,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -264,8 +264,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -275,13 +275,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -291,7 +291,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -317,8 +317,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.5,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -328,13 +328,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -344,7 +344,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -370,8 +370,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.5,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -381,13 +381,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -397,7 +397,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -423,8 +423,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.67,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
@@ -434,13 +434,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -450,7 +450,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -476,8 +476,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.67,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -487,13 +487,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -503,7 +503,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -529,8 +529,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.83,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -540,13 +540,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -556,7 +556,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -582,8 +582,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 1.83,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -593,13 +593,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -609,7 +609,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -635,8 +635,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -646,13 +646,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -662,7 +662,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -688,8 +688,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -699,13 +699,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -715,7 +715,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -741,8 +741,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.17,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -752,13 +752,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -768,7 +768,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -794,8 +794,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.17,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -805,13 +805,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -821,7 +821,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -847,8 +847,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -858,13 +858,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -874,7 +874,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -900,8 +900,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -911,13 +911,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -927,7 +927,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -953,8 +953,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.5,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -964,13 +964,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -980,7 +980,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1006,8 +1006,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.5,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -1017,13 +1017,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1033,7 +1033,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1059,8 +1059,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.67,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           2,
@@ -1070,13 +1070,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1086,7 +1086,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1112,8 +1112,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.67,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1122,13 +1122,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1138,7 +1138,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1164,8 +1164,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.83,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1174,13 +1174,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1190,7 +1190,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1216,8 +1216,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 2.83,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1226,13 +1226,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1242,7 +1242,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1268,8 +1268,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1278,13 +1278,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1294,7 +1294,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1320,8 +1320,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1330,13 +1330,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1346,7 +1346,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1372,8 +1372,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.17,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1382,13 +1382,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1398,7 +1398,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1424,8 +1424,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.17,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1434,13 +1434,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1450,7 +1450,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1476,8 +1476,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1486,13 +1486,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1502,7 +1502,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1528,8 +1528,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1538,13 +1538,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1554,7 +1554,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1580,8 +1580,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1590,13 +1590,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1606,7 +1606,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1632,8 +1632,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1642,13 +1642,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1658,7 +1658,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1684,8 +1684,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1694,13 +1694,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1710,7 +1710,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1736,8 +1736,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1746,13 +1746,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1762,7 +1762,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1788,8 +1788,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1798,13 +1798,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1814,7 +1814,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1840,8 +1840,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1850,13 +1850,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1866,7 +1866,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1892,8 +1892,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1902,13 +1902,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1918,7 +1918,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1944,8 +1944,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -1954,13 +1954,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -1970,7 +1970,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -1996,8 +1996,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -2006,13 +2006,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -2022,7 +2022,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -2048,8 +2048,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -2058,13 +2058,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     },
     {
@@ -2074,7 +2074,7 @@
       "chanceForDifficultyLevelSwitch": 100,
       "difficultySettingsHordeNights": {
         "daysBetweenHordeNights": 5,
-        "chanceForHordeNight": 100,
+        "chanceForHordeNight": 0,
         "spawnAdditionalWaves": true,
         "requirePreviousWaveClear": false,
         "cooldownBetweenWaves": 45,
@@ -2100,8 +2100,8 @@
       },
       "difficultySettingsHordes": {
         "hordeSizeScaleFactor": 3.33,
-        "enableRandomHordes": true,
-        "chanceForRandomHorde": 100,
+        "enableRandomHordes": false,
+        "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           3
@@ -2110,13 +2110,13 @@
         "bossHordeId": 4
       },
       "difficultySettingsLureEffect": {
-        "enableLureHordeEffect": true,
+        "enableLureHordeEffect": false,
         "nonHordeZombiesCanCauseLureHordeEffect": true,
         "chanceForLureHordeEffect": 0.07,
         "durationForLureHordeEffect": 60,
-        "lureHordeEffectSpawnsHorde": true,
+        "lureHordeEffectSpawnsHorde": false,
         "chanceForLureEffectToSpawnHorde": 0.2,
-        "strongLureHordeEffectSpawnsHorde": true
+        "strongLureHordeEffectSpawnsHorde": false
       }
     }
   ],
