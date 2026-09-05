@@ -261,6 +261,21 @@ mechanic investigation) — drop that, just scrap the combo claim.**
     current facts, not proceeding unilaterally given the unchanged real
     bug/dependency history.
 
+    **Installed, 2026-09-05: user confirmed after seeing the full
+    picture above, accepting the Kotlin For Forge chain and both
+    unfixed bugs.** Real bonus finding while wiring this up: Kotlin For
+    Forge was already present in the pack the whole time - it was
+    re-added in a later commit (for Loot Beams: Refork) after the
+    original 2026-08-29 removal, and its hash on the live instance
+    matched packwiz's freshly-resolved expectation exactly. So this
+    install did NOT introduce a new mod-loader dependency, just the 2
+    IPN jars on top of infrastructure another mod already needs -
+    meaningfully cheaper than the "3-mod chain" framing used when this
+    was first removed. Same 1.10.20 build re-verified above. Sandbox
+    boot clean (0 KubeJS errors, no IPN-specific exceptions), both jars
+    hash-verified on deploy to the live instance. **Needs a full client
+    restart** (new mod jars, not just a world/server reload).
+
 **Original investigation, superseded above but kept for context:** Also found a real bonus bug while checking the
     already-installed Inventory Sorter first (in case it already had
     this and just needed enabling, matching #7's pattern): its own
