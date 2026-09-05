@@ -23,6 +23,32 @@ reflect actual current status.
 
 ## Ready to build
 
+**Real bug found chasing the "hordes still feel small at wave 27"
+report — sequential horde-type selection never actually cycled.** Not
+the horde-SIZE bug (that curve is confirmed correctly written and
+loaded - checked live level 19's real hordeSizeScaleFactor=8.4,
+matches the retuned formula exactly; automatic difficulty progression
+is also confirmed OFF in the live save, ruling out a silent
+day-based override). Real, separate, confirmed bug instead: decompiled
+`DifficultyLevelCommand.setDifficulty()` directly - every call, even a
+redundant one re-setting the SAME level, unconditionally resets Undead
+Nights' own sequential horde-selection index
+(`serverState.setPossibleHordesIndex(-1)`). `wave_spawner.js` used to
+call `/undeadnights difficulty set` on every single wave regardless of
+whether the level had actually changed, so that index reset every wave
+too - `listOfPossibleHordes` always resolved its first entry, never
+cycling through the later hordes (elite_horde/boss_horde) the way the
+mod intends. Fixed by only calling `difficulty set` when the computed
+level actually differs from the last one sent. Could NOT confirm or
+rule out the "stuck at level 1's exact horde size" claim through static
+analysis alone - real per-entry RNG variance at level 19 (~8.4 expected
+total, but each of 6+ entries independently rolls its own count and
+spawn chance) can plausibly land as low as "a few mobs" on any given
+real horde by chance. Real, cheap next step if it's still reported:
+have the user run `/undeadnights difficulty query` themselves right
+after a wave - a real player command that reports the mod's own current
+level directly, not inferred.
+
 **Endless-phase horde SIZE, not just toughness — done.** Direct
 feedback once the wave-9 fix actually let mobs spawn: "I want the waves
 to feel frantic, actual hordes of zombies... difficulty scaling is a
@@ -124,30 +150,60 @@ full player-triggered confirmation still pending their next login (same
 real-player blind spot as every other player-input-dependent fix this
 session).
 
-**New live feedback batch, 2026-09-05 (mid-playtest), 7 items, literal
-numbering — sent to build, full dispatch detail in the peer thread:**
-1. HUD element showing waves cleared — mechanism is the peer's call.
-2. Loot bag notification should render "in a cooler way," not plain
-   chat — real investigation needed first: does any ALREADY-installed
-   mod have a genuine themeable toast/overlay, or does the custom
-   chat-based `loot_bag_notification.js` stay as-is. Report back, don't
-   guess.
-3. Quest reward audit — XP-only rewards aren't satisfying, want
-   tangible benefits tied to the quest's theme ("traps give iron" as
-   the example). Checked first: NOT all 19 quests are XP-only already
-   (7 confirmed have real item rewards too) — the real gap is the
-   handful that are XP-only. Peer to propose a full replacement list
-   and report back before committing (held for review).
-4. Crafting table (Crafting Station Improved) spawns waterlogged in the
-   starter base — bug fix.
-5. Pre-place a Waystone in the yard on new world (same convention as
-   the pedestal/rig) + reward one on Tier 1 completion (peer to confirm
-   which quest is really "Tier 1 complete" from the dependency graph).
-6. Repeatable quest granting a free `kubejs:wave_horn`, framed as "in
-   case you lose it," doubles as the quest explaining what it does.
-7. Play a sound on wave start — vanilla bell ring for now
-   (`minecraft:block.bell.use`), explicit placeholder for a scarier
-   sound later.
+**7-item live feedback batch — all done.**
+1. HUD element for waves cleared - done, plain vanilla scoreboard
+   sidebar (`td_waves_cleared`), objective created once at login
+   (playtest_starter_kit.js), real value set every time a wave is
+   actually marked cleared (wave_status.js). Verified live via RCON.
+2. Loot bag notification "cooler" rendering - investigated, no genuine
+   fit among already-installed mods (ToastControl is a filter/reposition
+   layer over vanilla's own toast triggers, can't push custom text; Jade
+   is unrelated). Real candidate found afterward: **Pick Up Notifier**
+   by Fuzs, not yet installed - real Forge 1.20.1 build confirmed to
+   exist, genuine theming. Needs its own investigation before building
+   (native pickup-event hook vs. BountyBags granting items directly into
+   inventory, not via walk-over pickup) - not started yet, queued.
+3. Quest reward audit - done, all 19 original quests + the new
+   repeatable one reviewed; found the real gap was much bigger than
+   first estimated (only 1 of 19 quests already had a tangible reward,
+   not 6 - the others were mistaking "the task requires this item" for
+   "the reward gives this item"). Full proposed table approved as
+   written and built exactly as proposed - real item rewards alongside
+   existing XP on every quest, tied thematically to what each quest is
+   about ("traps give iron" pattern). Verified live: FTB Quests loads
+   the edited file with 0 errors.
+4. Crafting table waterlogged bug - investigated thoroughly, could NOT
+   reproduce or find a real cause. `craftingstation:crafting_station`'s
+   blockstate has zero properties (confirmed via its real blockstate
+   JSON and its real block-entity data after a live placement) - it
+   cannot be waterlogged, full stop. No water source anywhere in the
+   raw structure NBT near that position either. Reporting as a null
+   result rather than guessing a fix - possibly a visual misread, or a
+   different cause not reproducible from static data alone.
+5. Pre-place a Waystone + Tier 1 completion reward - done. Waystone
+   placed in the yard next to the pedestal at login
+   (playtest_starter_kit.js), same pre-placement convention. Tier-1-
+   complete quest identified from the real dependency graph (not
+   assumed): "The Reckoning" - the quest whose own text says "Five
+   waves was as far as whoever held this post before you got... you've
+   matched that" - real narrative gate at the wave-5 milestone, gets a
+   bonus `waystones:waystone` reward alongside its XP/golden_apple.
+   Verified live via RCON: real waystone places with a genuine UUID
+   (mod registers it immediately as a valid destination).
+6. Repeatable "in case you lose it" wave_horn quest - done, new quest
+   "Lost the Horn?", `can_repeat: true`, 60-second cooldown (checked
+   FTB Quests' own Quest.class directly for the real field names/units -
+   `repeat_cooldown` is real seconds, not ticks). Description explains
+   what the horn does, doubling as documentation per the ask.
+7. Wave-start sound - done, vanilla `block.bell.use` wired to both
+   wave-start announcement points (hand-authored 1-8 and endless 9+),
+   explicit placeholder per the ask.
+
+**7-item live feedback batch, 2026-09-05 — original dispatch, see the
+"all done" writeup near the top of this file for real results.** Item
+2 (loot bag notification) is the one real exception - investigated, no
+fit found among what was already installed, still open pending the
+Pick Up Notifier investigation.
 
 **Live report, 2026-09-04 (mid-playtest, right after the mob-pathing
 fix shipped) — checked, NOT a regression.** "spitter's path seems off."

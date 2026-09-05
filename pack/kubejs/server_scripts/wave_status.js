@@ -275,6 +275,11 @@ PlayerEvents.tick((event) => {
     // Big on-screen title, same reasoning as wave_spawner.js's "incoming"
     // one — chat is easy to miss mid-fight.
     player.getServer().runCommandSilent(`title @a title {"text":"WAVE ${waveNumber} CLEARED","color":"green","bold":true}`)
+    // Real live ask, 2026-09-05: persistent HUD element for waves
+    // cleared, not just this title/chat moment - the sidebar objective
+    // itself is created once at login in playtest_starter_kit.js, real
+    // value set here every time a wave is actually marked cleared.
+    player.getServer().runCommandSilent(`scoreboard players set @a td_waves_cleared ${waveNumber}`)
     // Undo wave_spawner.js's night lock — back to day and a normally
     // advancing clock during the peaceful gap before the next horn use.
     player.getServer().runCommandSilent('time set day')

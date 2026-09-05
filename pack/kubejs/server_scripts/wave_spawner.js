@@ -448,11 +448,32 @@ function useWaveHorn(player) {
   //   docs/FEATURES.md's "Wave Horn" section for the full story).
   if (waveNumber > WAVES.length) {
     var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
-    server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
+    // Real bug found 2026-09-05 (live report: horde size/type reads
+    // "stuck" well past the wave it should have grown at): decompiled
+    // DifficultyLevelCommand.setDifficulty() directly - every single
+    // call, even one that re-sets the SAME level, unconditionally resets
+    // UndeadNights' own sequential horde-selection index
+    // (serverState.setPossibleHordesIndex(-1)). Since this command used
+    // to run on every wave regardless of whether the level actually
+    // changed, that index got reset every wave too - real, confirmed
+    // effect: listOfPossibleHordes always resolves its first entry,
+    // never actually cycling through the rest as the mod intends. Now
+    // only calling `difficulty set` when the level genuinely changes.
+    // (`data` is already in scope from this function's own top - see
+    // useWaveHorn()'s own opening lines.)
+    if (data.getInt('td_lastEndlessLevel') !== endlessLevel) {
+      data.putInt('td_lastEndlessLevel', endlessLevel)
+      server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
+    }
     server.runCommandSilent(`execute as @a at @s run undeadnights spawn_horde`)
     player.tell(`§6[Wave Horn] §fWave ${waveNumber} incoming! (endless horde, difficulty ${endlessLevel})`)
     server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}","color":"gold","bold":true}`)
     server.runCommandSilent(`title @a subtitle {"text":"An endless horde approaches...","color":"white"}`)
+    // Real placeholder sound, 2026-09-05 - direct ask: something audible
+    // at the exact wave-start moment, vanilla bell for now, explicitly
+    // swappable for something scarier later. Wired here too, not just
+    // the hand-authored path below - every wave start, not just 1-8.
+    server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
     return
   }
 
@@ -564,6 +585,10 @@ function useWaveHorn(player) {
   // rather than an unverified KubeJS-specific title API.
   server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
+  // Real placeholder sound, 2026-09-05 - direct ask: play something when
+  // a wave starts, vanilla bell for now, explicitly a placeholder the
+  // user may swap for something scarier later.
+  server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
 }
 
 // Covers right-clicking with nothing targeted (rare on Superflat, but

@@ -467,6 +467,17 @@ PlayerEvents.loggedIn((event) => {
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
 
+  // Real live ask, 2026-09-05: a persistently visible HUD element for
+  // waves cleared, not just a one-off chat/title message. Plain vanilla
+  // scoreboard sidebar - real, idempotent objective creation (a second
+  // `objectives add` with the same name is a real no-op error, silenced
+  // since this only runs once per player anyway via the gate above).
+  // wave_status.js sets the real value each time a wave is marked
+  // cleared.
+  player.getServer().runCommandSilent('scoreboard objectives add td_waves_cleared dummy {"text":"Waves Cleared"}')
+  player.getServer().runCommandSilent('scoreboard objectives setdisplay sidebar td_waves_cleared')
+  player.getServer().runCommandSilent('scoreboard players set @a td_waves_cleared 0')
+
   player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
   player.give(Item.of('kubejs:wave_horn', 1))
   player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
@@ -887,6 +898,11 @@ PlayerEvents.loggedIn((event) => {
   const centerZ = z1 - 7
 
   run(`setblock ${centerX} ${wallY0} ${centerZ} supplementaries:pedestal`)
+  // Real live ask, 2026-09-05: pre-place a Waystone in the yard on a
+  // fresh world, same pre-placement convention as the pedestal/kinetic
+  // rig above - one real, findable Waystone from the start, distinct
+  // position from the pedestal itself so the two don't overlap.
+  run(`setblock ${centerX + 3} ${wallY0} ${centerZ} waystones:waystone`)
   // Stored once here, permanent regardless of amulet state -
   // pedestal_destruction.js's own block-gone check, pedestal_health.js's
   // own HP tick, amulet_pedestal.js's border-crossing poll, and every
