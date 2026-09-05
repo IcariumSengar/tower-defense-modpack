@@ -180,7 +180,26 @@ mechanic investigation) — drop that, just scrap the combo claim.**
    the mod's own stock code, and nothing in this pack overrides it.
    Nothing to fix - just reinforces that #8's explainer quest is the
    real gap (the feature works, players don't know it exists).
-8. Not started.
+8. **Half done - the connected-inventory quest, not the formatting bug.**
+   New quest "Reach Further" explaining the crafting station's real
+   connected-inventory behavior (pairs with #7's finding that it's
+   already on by default) added to the campaign chapter, depends on the
+   same early root every other Tier 1 quest uses since the station is
+   pre-placed at world start, not crafted. **The ch.2 formatting bug
+   itself remains unconfirmed** - checked every structural angle
+   available without a client: `chapter_groups.snbt`/`data.snbt` are
+   both clean, `tips_and_tricks.snbt` (chapter index 1, "chapter 2" in a
+   1-indexed UI) has no coordinate overlaps, no unescaped special
+   characters in any description, and every referenced icon item id
+   (including the ones that looked most likely to be wrong) is
+   confirmed real via the source mod's own lang file. Every sandbox
+   boot this whole session has shown 0 parse errors at the exact
+   expected quest count too, ruling out a structural SNBT bug. This is
+   a real investigation ceiling, not a shrug - whatever's actually wrong
+   is either a rendering-only issue invisible to file inspection, or
+   needs a more specific description of what it actually looks like
+   (a screenshot, or "which quest/which part of the screen") to chase
+   further.
 9. Not started.
 10. Not started.
 11. **Done.** Starting HP 200→300 (`PEDESTAL_MAX_HEALTH`, one named
