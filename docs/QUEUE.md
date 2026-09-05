@@ -203,9 +203,25 @@ mechanic investigation) — drop that, just scrap the combo claim.**
     `healPedestalBy`/`healPedestalByPercent` functions as #11's
     per-wave heal. Plain carrots still confirmed absent from loot —
     decide whether to add.
-15. Real gap: trap kills (Spikes etc.) don't drop loot like player
-    kills do (wave-8 brute/Spikes dropped nothing) — fix so there's no
-    difference.
+15. **Investigated, real test says this isn't a bug - the hypothesis is
+    wrong.** Killed 20 real zombies via non-player-attributed damage
+    (`/damage ... minecraft:generic`, the same category of damage
+    source a trap deals - no entity attribution at all) in a live
+    sandbox test. Result: 8 Uncommon Bounty Bags dropped (40%,
+    statistically consistent with the real configured 50% chance for a
+    sample this size) and 10 rotten flesh (50%, matches vanilla). Loot
+    bags genuinely do drop from non-player kills - `loot_bag_drops.js`'s
+    `randomChance()` modifiers don't check damage source at all. **Real
+    likely explanation for the original report instead**: the
+    wave-8 brute that "dropped nothing" is a `LEGENDARY_MOBS` entry -
+    that tier's real per-kill drop chance is 4%, so "no drop from one
+    kill" is the expected outcome 96% of the time, not evidence of a
+    trap-specific bug. A single observation at a 4% rate can't
+    distinguish "working as designed" from "actually broken" - would
+    need many more trap-kills of the same tier to say anything
+    statistically meaningful, and this test already covers the more
+    common Uncommon-tier case that would show a systemic bug far more
+    obviously. No code change made.
 16. Endless-phase tuning: 2 brutes at wave 9/level 1 is too early —
     push heavier "m"-pool types toward later endless levels.
 17+18+20. Confirmed gaps: netherrack, arrows, nether quartz missing
