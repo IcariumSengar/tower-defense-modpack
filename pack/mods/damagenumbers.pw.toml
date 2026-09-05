@@ -1,0 +1,13 @@
+name = "Damage Numbers"
+filename = "damagenumbers-1.4.0-forge.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "72ba3a970e2a112aee0b66b825b15720ba3c38e3"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5475417
+project-id = 1022853

@@ -23,6 +23,37 @@ reflect actual current status.
 
 ## Ready to build
 
+**Damage Numbers, Pick Up Notifier, and Xaero's World Border — done,
+built and deployed 2026-09-05.** Three small polish items, closes out
+the queued Pick Up Notifier/minimap investigations plus a re-attempt of
+the long-stuck Damage Numbers pick:
+- **Damage Numbers** (luavixen, CurseForge project 1022853) — the
+  earlier "wrong mel1x mod" conclusion was a real mistake, re-verified
+  via Modrinth's API that this project is genuinely luavixen's own.
+  Installed clean, no mandatory dependencies, loads fine on a dedicated
+  server (unlike Mob Dismemberment).
+- **Pick Up Notifier**, scoped to loot bag opens only — real reflection
+  integration built (not the mod's native pickup hook, which can never
+  fire for a direct-to-inventory grant), verified end-to-end via a live
+  sandbox diagnostic (every class/field/method resolved, message object
+  actually constructed). Needs Puzzles Lib as an added dependency. Full
+  writeup in FEATURES.md's "Pick Up Notifier + world border on minimap"
+  entry.
+- **Xaero's World Border** (Modrinth, third-party addon by "Alazi," not
+  the real Xaero) — installed via `packwiz modrinth add` since it's
+  Modrinth-only; caught and reverted an unintended side effect where
+  packwiz's dependency resolution silently switched the already-
+  installed Xaero's World Map from CurseForge to Modrinth sourcing.
+
+All three verified via clean sandbox boots and deployed to the live
+instance's actual mod/script files. **Real deployment note: mods only
+load at full game launch, not on a world/server reload** - this needs
+the whole Minecraft client closed and relaunched via the CurseForge
+launcher, not just an exit-to-title, to actually take effect. Not yet
+confirmed by a real playtest (particle rendering, popup appearance, and
+border rendering are all client-visual checks a dedicated sandbox can't
+verify).
+
 **New endless-phase design, 2026-09-05 — replaces relying on
 hordeSizeScaleFactor for mob COUNT, `spawn_horde` stays for flavor.**
 Real finding: `spawn_horde`'s horde tiers have spawnChance values summing

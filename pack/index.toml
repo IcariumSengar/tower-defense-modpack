@@ -370,7 +370,7 @@ hash = "bb7083c59af13eb5b8defb2f3dd884fc344548aab6bb69db65e99b410d4cda8f"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
-hash = "1b5f7026e0f5df44ac3806e144732590d22137b0c5c1ea61ed6ab813e32e0f5d"
+hash = "63d3ca638b303663d832bf2101ae063695cd01fc45da1f0cb29f868a9c00b075"
 
 [[files]]
 file = "kubejs/server_scripts/loot_dead_weight_strip.js"
@@ -515,6 +515,11 @@ metafile = true
 [[files]]
 file = "mods/curios.pw.toml"
 hash = "9eefd607e0d54ec444e798ccdeede1a09a3939440bd1e11c11b84c07a5134be2"
+metafile = true
+
+[[files]]
+file = "mods/damagenumbers.pw.toml"
+hash = "b7dd0ce1cb24804bea5f68f24e0a5555ea5d2895ece34968426bef1b239bdfb5"
 metafile = true
 
 [[files]]
@@ -668,8 +673,18 @@ hash = "1588f074af0ca7a5145fd676faf3e14381bb96d1383a3dfbaac7398b1dc6e2fd"
 metafile = true
 
 [[files]]
+file = "mods/pick-up-notifier.pw.toml"
+hash = "0fd5b27087ffe34d22dbdbdec6cae53f0a58b839ab8e4c423a5255f2b406e27b"
+metafile = true
+
+[[files]]
 file = "mods/placebo.pw.toml"
 hash = "045d582e2c534c5bb96d7336b4ae2cd12692c6de29b19ae5f1dbfd8759c03b03"
+metafile = true
+
+[[files]]
+file = "mods/puzzles-lib.pw.toml"
+hash = "5ca42f4c23aee558ed76923d4fb92ecee736ebacb53790445c09d46bd9ccb27e"
 metafile = true
 
 [[files]]
@@ -743,8 +758,13 @@ hash = "20beda5f9b049a2352334a0f8dd8de122e7399f8a446d8f78aeecba85d99bbdc"
 metafile = true
 
 [[files]]
+file = "mods/xaeros-world-border.pw.toml"
+hash = "6c4c89f23e7f14eb78651114f27791d11776e96bce56dbccc225db488239d973"
+metafile = true
+
+[[files]]
 file = "mods/xaeros-world-map.pw.toml"
-hash = "c7d38bde9d8255b52786ab99e29ca0198fb0e407af3e638fad6a7807070361b8"
+hash = "8f3f44cd5163ea06ff18e15693bbf8e3f55c3a56e1c1e55e8763bec8977099bb"
 metafile = true
 
 [[files]]

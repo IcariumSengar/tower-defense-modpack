@@ -1,0 +1,13 @@
+name = "Xaero's World Border"
+filename = "xaeroworldborder-1.0.0.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/vfOkGQEG/versions/z9DhUpQg/xaeroworldborder-1.0.0.jar"
+hash-format = "sha512"
+hash = "1e069738baa169058bba028fac1c908aabad018cd9e76662d2e0515d3f2e3eab1c21109119554a5b3c46287359cdbc5c1886b719a0899216f7ef4ec70803e452"
+
+[update]
+[update.modrinth]
+mod-id = "vfOkGQEG"
+version = "z9DhUpQg"

@@ -4948,6 +4948,21 @@ check the real listing" discipline).
   corner-of-screen counter, different UX) and "Show Damage" (zzdzt) both
   exist under near-identical names. luavixen's is the floating-particle
   style that matches what was actually wanted, confirmed Forge 1.20.1.
+  **Shipped 2026-09-05** — the first two install attempts genuinely hit
+  the wrong "mel1x" mod under the same filename (see "Polish mod pass,
+  partial" below); re-verified this time directly via Modrinth's API
+  (not a collapsed CurseForge UI page) that CurseForge project 1022853
+  is luavixen's own real project (confirmed author, `foxgirl.dev` link),
+  not a naming collision after all — the earlier "wrong mod" conclusion
+  was a real mistake, not an actual squatter. Installed via
+  `packwiz curseforge add --addon-id 1022853` (file 1.4.0-forge,
+  hash-verified against the CDN download). Real mods.toml check: zero
+  mandatory dependencies beyond Forge/Minecraft, `side` not restricted
+  to CLIENT at the mod level (only its optional config-screen dependency
+  is client-only) — loaded cleanly in a dedicated sandbox boot without
+  being skipped, unlike Mob Dismemberment before it. Actual particle
+  rendering can only be confirmed by the user in a real client — a
+  dedicated server can verify "doesn't crash," not "numbers appear."
 - **FancyMenu + Drippy Loading Screen** — real dependency shape, not two
   independent picks: Drippy Loading Screen is an *addon* for FancyMenu,
   requires it. Both confirmed Forge 1.20.1, same author (Keksuccino) as
@@ -5005,6 +5020,98 @@ check before both ship, not an assumption either way.
   "not sweeping changes to gameplay" ask. Mob Sunscreen specifically
   would work directly against this pack's night-lock design (undead
   burning in daylight is a deliberate mechanic, not incidental).
+
+---
+
+## Pick Up Notifier + world border on minimap, 2026-09-05
+
+Two small QoL investigations, both landed with a real implementation
+rather than staying open questions.
+
+**Pick Up Notifier, loot-bag-opens scoped** — *live*. Direct ask: make
+loot bag notifications "cooler," specifically via this mod, not a
+generic overhaul. Real problem found first, not assumed: decompiled the
+mod's actual shipped 1.20.1 jar (`ForgeItemPickupHandler.class`) and
+confirmed its only native triggers are vanilla
+`EntityItemPickupEvent`/`PlayerEvent.ItemPickupEvent`, both firing
+exclusively when a player walks over a dropped `ItemEntity`. BountyBags
+grants loot bag contents straight into inventory (no `ItemEntity`
+involved, confirmed in `loot_bag_notification.js`'s own header), so the
+native hook could never fire for a bag open on its own.
+
+No documented/stable API exists to bridge this (no `api` package
+anywhere in the mod), but a real, public-by-accident internal hook does:
+`PickUpNotifier.NETWORK` (public static field) +
+`S2CTakeItemStackMessage(ItemStack)` (public constructor, needs only an
+`ItemStack`, no `ItemEntity`) — its handler calls straight into
+`AddEntriesHandler.addItemEntry(Minecraft, ItemStack)`, the same call a
+real walked-over pickup triggers. Reached via this pack's established
+Class.forName reflection bootstrap (java.* is disabled in this Rhino
+sandbox — same technique as `mob_aggro.js`'s `resolveClass`, redeclared
+with a `pun` prefix in `loot_bag_notification.js` to avoid a repeat of
+that file's real cross-file name collision). `NetworkHandlerV2.sendTo`
+is resolved from the public **interface** class specifically, not the
+network instance's own concrete class (confirmed via live diagnostic to
+be `fuzs.puzzleslib.impl.network.NetworkHandlerForgeV2`, package-private)
+— a Method obtained from a non-public declaring class throws
+`IllegalAccessException` on `invoke()` even when the method itself is
+public. Also resolved by exact method NAME rather than this codebase's
+usual shape-based finder: `sendToAllExcept(MessageV2, ServerPlayer)` has
+the identical erased shape to `sendTo` (same arg count, same param
+types, same return type) — a real, confirmed ambiguity.
+
+Needs **Puzzles Lib** as an added dependency (Fuzss's shared library,
+199M+ downloads, real Forge 1.20.1 build, low risk). Hooked directly
+into `loot_bag_notification.js`'s existing `PlayerEvents.inventoryChanged`
+aggregation — fires per real granted stack, using the exact same event
+data already driving the chat summary. The chat summary itself was kept
+rather than replaced, since its bag-name framing
+("§6[Uncommon Bounty Bag]") isn't something Pick Up Notifier's own
+on-screen list conveys; revisit if the two together read as redundant in
+real play.
+
+**Verified end-to-end via a live sandbox diagnostic, not just "no
+errors"**: a temporary `ServerEvents.loaded` hook confirmed every class
+resolved (`PickUpNotifier`, `S2CTakeItemStackMessage`, `ItemStack`,
+`NetworkHandlerV2`, `MessageV2`, `ServerPlayer`), the exact
+`sendTo(MessageV2, ServerPlayer)` method resolved with no ambiguity, the
+real `NETWORK` field returned a genuine `NetworkHandlerForgeV2`
+instance, and a real `S2CTakeItemStackMessage` was successfully
+constructed from a KubeJS `Item.of(...)` stack (confirmed to already be
+a real `net.minecraft.world.item.ItemStack` via LiveConnect, not a
+wrapper needing conversion). The one piece not exercised by this
+headless test is the final packet send to an actual connected player —
+that part is standard Forge networking with no remaining unknowns, and
+needs a real playtest to confirm the on-screen popup actually appears.
+
+**World border on minimap** — investigated, a real gap confirmed, not
+built (open decision, see below). Decompiled every class in both
+installed Xaero jars (Minimap 26.4.2, World Map 1.45.0) for any
+`WorldBorder` reference at all — zero matches in either, confirmed via a
+full bytecode string scan (validated against a known-present string
+first to rule out a scanning miss). Neither mod has any code path that
+reads the vanilla world border; this isn't a hidden config toggle, the
+capability doesn't exist in either mod as installed.
+
+Real fix identified: **Xaero's World Border** (Modrinth `xaeros-world-
+border`, real Forge 1.20.1 build v1.0.0, published 2026-04-26, MIT
+license) — small addon, only dependency is Xaero's World Map (already
+installed). Not made by the real Xaero (`thexaero`) — a different, much
+smaller third-party author ("Alazi," 825 downloads, 2 followers, no
+public source repo). Modrinth-only, not on CurseForge (confirmed via a
+direct 404 on the expected CurseForge slug) — installed via
+`packwiz modrinth add`, a deviation from this pack's usual CurseForge-
+first convention for this one entry. **Real process catch**: packwiz's
+automatic dependency resolution re-added the already-installed Xaero's
+World Map through Modrinth too, silently switching its `pack/mods/
+xaeros-world-map.pw.toml` from its original CurseForge source to
+Modrinth (same file/version, so functionally inert, but an unintended
+side effect on an unrelated, already-working entry) — reverted that one
+file back to its original CurseForge-sourced state before committing.
+Verified via a clean sandbox boot (no crash, no change to the pre-
+existing client-only-mod-skip count). **Not yet confirmed by a real
+playtest** — same "can't verify client rendering from a dedicated
+server" ceiling as the other visual mods this session.
 
 ---
 
