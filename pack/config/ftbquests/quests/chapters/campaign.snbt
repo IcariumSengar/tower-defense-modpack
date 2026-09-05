@@ -222,7 +222,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Iron tips lashed to a stick frame - not much, but it hurts whatever steps on it, and it costs almost nothing. Lay a stretch of cobweb down first and you have a real chokepoint: the web holds them still, the spikes finish the job. Something to lean on before you have built anything sturdier."]
+			description: ["Iron tips lashed to a stick frame - not much, but it hurts whatever steps on it, and it costs almost nothing. Something to lean on before you have built anything sturdier."]
 			icon: "trapcraft:spikes"
 			id: "67A7BF98D2C077DE"
 			rewards: [

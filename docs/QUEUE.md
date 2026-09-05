@@ -23,6 +23,170 @@ reflect actual current status.
 
 ## Ready to build
 
+**New live feedback batch, 2026-09-05, 25 items, literal numbering —
+sent to build. #19 cancels/supersedes the previous batch's #3 (cobweb
+mechanic investigation) — drop that, just scrap the combo claim.**
+1. "Borrowed Time" spoils the wave-5 gear loss — rewrite as a subtle
+   hint. Wave-5 announcement → 2 sequential popups with a real pause.
+2. "Sound the Horn" duplicated — keep only the repeatable one, not a
+   dependency for anything else.
+3. Real live-behavior check: wave 6+ digger/climber/builder mobs aren't
+   actually breaching walls despite the earlier ESM config fix —
+   connects to #13/#25's cobblestone-scarcity fix below.
+4. "Spoils of War"/"Open It" → reward gold ingots (fold into the gold
+   economy work from the previous batch's #7-8).
+5. A little more mobs in waves 1-8, felt too easy.
+6. Real UX bug: player spawns once then visibly re-spawns to the real
+   position — investigate making world-ready happen before first spawn.
+7. Crafting Station Improved's connected-inventories setting → default
+   true. Connects to #8/#21 (same theme).
+8. Quest book ch.2 formatting bug — real diagnosis needed. New quest
+   explaining connected-inventories (pairs with #7).
+9. **Decided**: install "Zombies More" (CaraAleatorio7), replace
+   Spitter with Boomer Zombie (poison mist on death).
+10. Real gap: "Inventory Sorter Buttons" was never actually installed,
+    only plain Inventory Sorter — find/install the real shift-click
+    deposit-all mod this time.
+11. **Decided**: quick fix only — pedestal starting HP up, +20% heal
+    per wave clear. Bigger upgrade-point system parked in IDEAS.md.
+12. New Tips & Tricks quest: JEI's "A" key.
+13+25. Cobblestone loot too common (confirmed: 45 weight, heaviest in
+    Uncommon pool) — dial back hard so wood becomes the real early
+    defense material by necessity, not an AI change.
+14. Golden carrot right-click heals pedestal 10%. Plain carrots also
+    confirmed absent from loot — decide whether to add.
+15. Real gap: trap kills (Spikes etc.) don't drop loot like player
+    kills do (wave-8 brute/Spikes dropped nothing) — fix so there's no
+    difference.
+16. Endless-phase tuning: 2 brutes at wave 9/level 1 is too early —
+    push heavier "m"-pool types toward later endless levels.
+17+18+20. Confirmed gaps: netherrack, arrows, nether quartz missing
+    from every custom loot table — add all three somewhere sensible.
+21. Arrow Turret + Magnetic Chest feel janky — write a real quest-book
+    explainer once mechanics are actually confirmed, not guessed.
+22. Player-placed ladders on the outside wall cause mob pathing
+    stuck-ness — same category as #3/#6.
+23. Open ask: maze-like mob funneling near the front choke point —
+    investigate whether Create's fan can redirect pathing, or other
+    physical-layout techniques.
+24. Likely root cause: "Turn the Crank"'s andesite reward is in
+    postapocalypse_structures tables, not Lootr-managed chests (a
+    different system) — user's checking the wrong chest type. Proposed
+    fix: give the Hand Crank itself as a quest reward directly.
+**8-item batch — done, built/deployed 2026-09-05 (except #2, held).**
+1. **Waystone rendering — real root cause found and fixed.** Decompiled
+   `WaystoneBlock`/`WaystoneBlockBase` directly: `waystones:waystone` is
+   a real door/bed-style two-block structure (`half=lower`/`half=upper`,
+   confirmed from the mod's own blockstates JSON - separate
+   waystone_bottom/waystone_top models per half). A real player
+   placement triggers the mod's own code to set the block ABOVE to
+   `half=upper`; the pre-placement script's bare `/setblock` only ever
+   created the registered default state (`half=lower`) and never
+   touched the space above at all - nothing was ever placed there,
+   matching "only the bottom block visible" exactly. Fixed by setting
+   both halves explicitly in `playtest_starter_kit.js`. Registration as
+   a real teleport target is unaffected (confirmed via
+   `WaystoneBlockEntityBase.onLoad()` - self-registers on block-entity
+   load regardless of placement method). Fresh-world fix only - not
+   retroactive for the live save (needs re-placing manually if the
+   user wants the existing world's waystone fixed too).
+2. **Still HELD** — world depth reduction, parked with the other
+   worldgen-risk item for a dedicated later pass.
+3. **Cobweb mechanic verified live, quest text updated - then fully
+   superseded by the new batch's #19 (combo idea scrapped entirely).**
+   Confirmed via a live sandbox test (summoned a real zombie inside a
+   cobweb, checked `ActiveEffects` - empty list, confirming cobweb's
+   slow is a purely positional per-tick collision effect with no status
+   effect involved, so it cannot linger once a mob leaves the block).
+   First rewrote the "Better Than Nothing" quest text to describe it as
+   two sequential obstacles rather than a combo; **then the new batch's
+   #19 asked to drop the cobweb pairing from this quest entirely** ("this
+   is what barbed wire does... keep this as a trap progression thing") -
+   text now describes Spikes as a plain standalone weak trap, no cobweb
+   mention at all. Re-verified via a second sandbox boot (FTB Quests
+   still loads all 31 quests, 0 parse errors) before redeploying.
+4. **Zcraft Decoration removed entirely.** Only real footprint was 2
+   `sfz_shuiniqiang` (Concrete Wall) props flanking the gate - removed
+   from fresh-world placement, mod uninstalled (packwiz + live jar).
+   **Live-save risk handled**: existing saves that already built their
+   base have those 2 blocks placed and would see them turn into real
+   "missing block" placeholders once the mod's gone - added a one-time
+   migration (`td_zcraftCleanupDone`, runs on login regardless of
+   `td_playtestKitGiven` state) that recomputes the exact 2 coordinates
+   from this file's own persisted `td_pedestalX/Y/Z` (an exact algebraic
+   identity within the same function, not a re-derivation through
+   historically-changed constants - confirmed safe) and sets them to
+   air. Could not behaviorally verify the migration in the sandbox (no
+   real player has ever logged into the test world, so the login-gated
+   code path never runs headless) - verified by code review only.
+5. **Crafting table waterlogging - re-investigated against the correct
+   data source, real root cause still not found, but the block's own
+   innocence is now doubly confirmed.** The earlier check looked at the
+   wrong thing: this table isn't baked into the structure's NBT at all -
+   it's the structure's own baked vanilla `minecraft:crafting_table`
+   (confirmed a real furniture piece at local (5,1,4)), overwritten by a
+   live `/setblock` to `craftingstation:crafting_station` after the
+   structure generates. Re-confirmed directly from the CURRENT live
+   jar's blockstate JSON: still zero properties, still structurally
+   incapable of holding `waterlogged`. Checked the structure's own known
+   `wet_sponge` placeholder issue (the existing floor-wide replace-fill)
+   - doesn't reach this position, and the position itself sits on plain
+   andesite, not wet_sponge. No water/wet_sponge block exists in the
+   structure's own NBT within a 1-block radius of the table either.
+   **Remaining real possibility, can't check without the live save**:
+   real generated terrain water intersecting the structure at this
+   specific world's seed, unrelated to structure content entirely - this
+   pack never pins a seed, so no sandbox recreation of this exact
+   world is possible. Needs the user to look at what's actually adjacent
+   in their own game (a 5-second visual check) or run
+   `/data get block ~ ~ ~` while standing on it, to actually resolve
+   this - can't be determined remotely without touching their live save.
+6. **Green terracotta + snow patch removed.** Real structure NBT check:
+   a 3x2 `minecraft:green_terracotta` roof patch at local y=5 with 2
+   real snow layers stacked directly on top at local y=6 (a "mossy
+   roof with snow" accent), distinct from the plain `minecraft:terracotta`
+   weathering used everywhere else on the same roof. Fixed by converting
+   the green terracotta to plain terracotta (matching the rest of the
+   roof, not a structural hole) and the snow to air. Fresh-world fix
+   only, same live-save-migration-math caveat as #4 but NOT applied
+   here since this ask didn't request retroactive handling and the
+   coordinate derivation would need to pass through several historically-
+   changed constants (real, higher risk than #4's exact-identity case) -
+   flagging this instead of silently deciding to risk it.
+7-8. **Real structural root cause found for "gold still not enough,"
+   not just another blind bump.** Full economy audit: the amulet costs
+   8 gold_ingot (its only real recipe, confirmed from
+   `amulet_pedestal.js`), a hard one-time gate since border-crossing is
+   locked to `td_amuletOnPedestal` (confirmed from `amulet_border.js`)
+   with NO other exception. Of the loot-bag tiers, only Rare
+   (gold_ingot, ~6 expected/bag) and Epic (gold_block, ~10
+   ingot-equivalent/bag) carry any gold at all - **Uncommon, the tier
+   dropping from the actual trash-floor mobs a player kills constantly,
+   had ZERO gold**. Worse: Rare bags are gated behind a SINGLE mob type
+   (`split_head_zombie`) appearing only 4 times total across the entire
+   8-wave campaign at a 25% drop chance - expected ~1 Rare bag (~6
+   ingots) by wave 8, already short of the 8-ingot amulet cost, before
+   variance (real ~32% chance of getting *zero* Rare bags at all by
+   wave 8). The two OTHER real gold channels
+   (`structure_loot_progression.js`'s MID/HIGH_TIER pools) are
+   structurally unreachable before the amulet exists at all - both
+   trigger at 60+/120+ blocks from spawn, both outside the starting
+   50-diameter border, which only the amulet can cross. This is a real
+   chicken-and-egg gate, not just a yield problem - explains why the
+   previous 2 rounds (doubling Rare-bag yield, fixing split_head_zombie
+   availability) never fully closed the gap: both improved richness
+   per-roll or mob availability, neither addressed that only 4 total
+   *rolls* exist campaign-wide. Fixed by adding `gold_nugget` to the
+   Uncommon pool (weight 20, count 6-15) sized via a worked estimate
+   (cumulative Uncommon-mob kills by wave, expected bags at the
+   existing 50% drop chance) to make the amulet realistically
+   affordable by roughly wave 4-6 - meaningfully earlier and far less
+   RNG-dependent than the previous "hope for a Rare bag by wave 8"
+   reality, without oversizing a single Uncommon entry into
+   implausibility. Verified end-to-end via `/loot spawn` in a live
+   sandbox - a real `gold_nugget` item entity actually dropped from the
+   modified table, not just valid JSON.
+
 **Damage Numbers, Pick Up Notifier, and Xaero's World Border — done,
 built and deployed 2026-09-05.** Three small polish items, closes out
 the queued Pick Up Notifier/minimap investigations plus a re-attempt of

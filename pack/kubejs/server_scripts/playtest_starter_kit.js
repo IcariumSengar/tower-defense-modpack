@@ -457,6 +457,31 @@ PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
 
+  // Real live bug fixed 2026-09-05: Zcraft Decoration removed entirely
+  // (direct report - its concrete blocks were getting mobs stuck
+  // pathing near them). Full uninstall (mod + this function's own
+  // placement further down), but any save that already built its
+  // starter base (td_playtestKitGiven true) also already has the 2 real
+  // zcraft_decorations:sfz_shuiniqiang blocks placed at the gate - once
+  // the mod's gone those become real "missing block" placeholders on
+  // next load, not just an unplaced decoration. This runs BEFORE the
+  // td_playtestKitGiven early-return below on purpose, gated by its own
+  // separate flag, since that gate only covers fresh worlds and this
+  // needs to also reach already-built ones. Recomputes the 2 known
+  // coordinates from this file's own persisted td_pedestalX/Y/Z (same
+  // doorX/wallY0/z1 relationship the base-building code below uses:
+  // doorX = td_pedestalX, wallY0 = td_pedestalY, z1 = td_pedestalZ + 7)
+  // and blindly overwrites them with air regardless of what's actually
+  // there now - safe either way, a fresh world never had anything there.
+  if (!data.getBoolean('td_zcraftCleanupDone') && data.getBoolean('td_playtestKitGiven')) {
+    data.putBoolean('td_zcraftCleanupDone', true)
+    var oldDoorX = data.getInt('td_pedestalX')
+    var oldWallY0 = data.getInt('td_pedestalY')
+    var oldZ1 = data.getInt('td_pedestalZ') + 7
+    player.getServer().runCommandSilent(`setblock ${oldDoorX - 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+    player.getServer().runCommandSilent(`setblock ${oldDoorX + 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+  }
+
   // The amulet is NO LONGER starter gear (reversed 2026-09-01,
   // docs/FEATURES.md's "The amulet" - "the pedestal is pre-built, the
   // amulet is crafted"). It now has a real crafting recipe
@@ -872,8 +897,17 @@ PlayerEvents.loggedIn((event) => {
   // item, which is untouched). `sfz_lantiepiweilan` (Broken Iron Fence)
   // outer posts removed with it, since they only ever framed the wire
   // line they no longer flank.
-  run(`setblock ${doorX - 2} ${wallY0} ${z1 + 1} zcraft_decorations:sfz_shuiniqiang[facing=south]`)
-  run(`setblock ${doorX + 2} ${wallY0} ${z1 + 1} zcraft_decorations:sfz_shuiniqiang[facing=south]`)
+  //
+  // **sfz_shuiniqiang (Concrete Wall) removed entirely 2026-09-05**
+  // (direct report: Zcraft Decoration's concrete blocks were getting
+  // mobs stuck pathing near them, a real bug, not a feel complaint).
+  // Whole mod uninstalled - this was its only footprint in the pack,
+  // same "keep footprint small" precedent as the Doomsday Decoration
+  // removal above. No replacement placed here - revisit this gate-
+  // dressing spot (and similar decoration mods) during a future
+  // dedicated decoration/aesthetics pass, not now. Existing saves that
+  // already placed these 2 blocks are cleaned up separately, see the
+  // td_zcraftCleanupDone migration near the top of this function.
 
   // Ground-level pedestal (2026-09-06) - second real rejection of the
   // platform-based presentation in a row (square sandstone shrine ->
@@ -902,7 +936,22 @@ PlayerEvents.loggedIn((event) => {
   // fresh world, same pre-placement convention as the pedestal/kinetic
   // rig above - one real, findable Waystone from the start, distinct
   // position from the pedestal itself so the two don't overlap.
-  run(`setblock ${centerX + 3} ${wallY0} ${centerZ} waystones:waystone`)
+  //
+  // Real bug fixed 2026-09-05 (live report: "only the bottom block is
+  // visible, top lights up ghost-block style with no texture"). Root
+  // cause, confirmed by decompiling WaystoneBlock/WaystoneBlockBase
+  // directly: waystones:waystone is a real two-block structure, same
+  // door/bed-style half=lower/half=upper blockstate pair, confirmed
+  // from the mod's own blockstates/waystone.json (separate
+  // waystone_bottom/waystone_top models per half). A real player
+  // placing one triggers the mod's own placement code, which explicitly
+  // sets the block ABOVE to half=upper - a bare /setblock only ever
+  // creates the block's registered default state (facing=north,
+  // half=lower), and never touches the space above at all, so nothing
+  // was ever placed there. Fixed by setting both halves explicitly,
+  // matching what real placement does.
+  run(`setblock ${centerX + 3} ${wallY0} ${centerZ} waystones:waystone[facing=north,half=lower]`)
+  run(`setblock ${centerX + 3} ${wallY0 + 1} ${centerZ} waystones:waystone[facing=north,half=upper]`)
   // Stored once here, permanent regardless of amulet state -
   // pedestal_destruction.js's own block-gone check, pedestal_health.js's
   // own HP tick, amulet_pedestal.js's border-crossing poll, and every
@@ -1026,6 +1075,26 @@ PlayerEvents.loggedIn((event) => {
   // entirely, not just nerf their tables ("loot lives outside the
   // border, not at home").
   ;[[8, 3, 6], [8, 3, 7], [3, 5, 5], [3, 6, 5], [3, 7, 5]].forEach(([lx, ly, lz]) => {
+    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
+  })
+
+  // Green terracotta + snow patch - direct removal request 2026-09-05.
+  // Real structure NBT check first, not guessed: the building's roof
+  // uses plain minecraft:terracotta as a weathered-roofing motif at many
+  // points, but one 3x2 section at local y=5 ([6-8],5,[6-7]) is
+  // minecraft:green_terracotta instead, with 2 real snow layers stacked
+  // directly on top of it at local (8,6,6)/(8,6,7) - a "mossy patch with
+  // snow" roof accent. Removing the snow layers alone would leave green
+  // terracotta exposed underneath (still wrong per the ask); removing
+  // the green terracotta alone would leave the snow floating with
+  // nothing solid under it. Fixed both together: green_terracotta
+  // becomes plain terracotta (matching the roof's own established
+  // weathered color everywhere else in this same structure, not a new
+  // material), snow becomes air.
+  ;[[6, 5, 6], [6, 5, 7], [7, 5, 6], [7, 5, 7], [8, 5, 6], [8, 5, 7]].forEach(([lx, ly, lz]) => {
+    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:terracotta`)
+  })
+  ;[[8, 6, 6], [8, 6, 7]].forEach(([lx, ly, lz]) => {
     run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
   })
 

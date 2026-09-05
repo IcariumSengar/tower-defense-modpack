@@ -22,7 +22,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "6455c976456bf4e22831b1f56afdbb290bc4354e562ff857ff9a69c7ab25c5c4"
+hash = "b59ba439c4df519c129c4a6ca8442cb31780395a04d7db54f1766055c2f34e54"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -146,7 +146,7 @@ hash = "a57cce3c3b76457c1226caddb1938c26bb46037a4c6a0baa6b9c64ca887e787d"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/uncommon.json"
-hash = "f351237f2bfe2d30117038ddf807fea7ea4eec13f5f5b0df9aae4cfa42d2a20f"
+hash = "f9ed73ee053a50e414f6291e529916e3bee57392ab0ad3e9f0cda84b5074c9f0"
 
 [[files]]
 file = "kubejs/data/curios/tags/items/necklace.json"
@@ -394,7 +394,7 @@ hash = "c91f25b484ba9c95a0012af2030679556f1de4e57ee8b38546fbaaccd3ece82a"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "cff24888409c77d36dd5589d3c3e0f1e9f25033148402089a4e5f212ecf9e29b"
+hash = "657b2a208762dc1582766589d6d2efae29507b006b61e827aa711f09f0412ccd"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -765,9 +765,4 @@ metafile = true
 [[files]]
 file = "mods/xaeros-world-map.pw.toml"
 hash = "8f3f44cd5163ea06ff18e15693bbf8e3f55c3a56e1c1e55e8763bec8977099bb"
-metafile = true
-
-[[files]]
-file = "mods/zcraft-decoration.pw.toml"
-hash = "cef81cf950c5460176fa73e9d6cb89196dcfaae360903055dd1e51acfcdcf75f"
 metafile = true
