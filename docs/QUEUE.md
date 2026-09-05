@@ -210,10 +210,42 @@ mechanic investigation) — drop that, just scrap the combo claim.**
     push heavier "m"-pool types toward later endless levels.
 17+18+20. Confirmed gaps: netherrack, arrows, nether quartz missing
     from every custom loot table — add all three somewhere sensible.
-21. Arrow Turret + Magnetic Chest feel janky — write a real quest-book
-    explainer once mechanics are actually confirmed, not guessed.
-22. Player-placed ladders on the outside wall cause mob pathing
-    stuck-ness — same category as #3/#6.
+21. **Done - real root cause found: the existing quest text was
+    factually wrong, not missing.** Decompiled both mods' real classes
+    directly rather than guessing:
+    - **Magnetic Chest**: the existing "Waste Not" quest said it needs
+      to be "wired up" - false. Its real tick logic pulls any dropped
+      item within a hardcoded 10 blocks, every tick, with zero redstone/
+      power check anywhere in the code. Fixed the quest text to say so.
+    - **Arrow Turret**: the existing "Herd Them In" quest said "keep it
+      stocked [with arrows] or it's just decoration" - false. Its real
+      attack code spawns arrows directly (`new Arrow(...)`), never
+      drawing from any inventory - genuinely unlimited ammo. Also found
+      two real, previously-undocumented quirks worth telling the
+      player: it spawns facing a random direction until it finds a
+      target, and it has a real `RandomStrollGoal` that can walk it off
+      its placed position when idle - a real reason a "turret" might
+      seem to wander. Also confirmed (real, positive finding, not
+      assumed): its targeting goal checks vanilla's `Monster` class,
+      and every custom wave mob in this pack's roster (both Undead
+      Nights' and Mutants and Zombies' entities, checked directly) does
+      extend `Monster` - so it does correctly target the actual
+      roster, that was never the problem. Rewrote the quest text to
+      match reality instead of writing a new quest.
+22. **Investigated - a real, well-known vanilla limitation, not a bug
+    in this pack's own scripts.** Most vanilla mob pathfinders treat
+    ladders as a real climbable node when planning a route, but don't
+    reliably execute the actual climb for most mob types - the same
+    long-documented vanilla behavior behind villagers getting stuck at
+    the base of ladders (a widely-corroborated, real Minecraft AI
+    limitation, not specific to this pack, Radium, or ESM - checked
+    Radium's own changelog/issue history for a ladder-specific
+    regression first, found nothing). Not something fixable via a
+    script without writing a custom pathfinder override (real scope
+    creep for a player-placed-block issue) - practical recommendation:
+    avoid ladders on exterior walls specifically, since they create an
+    attractive-but-unreliable path node that snags mob pathing; a
+    non-climbable block in the same spot doesn't have this problem.
 23. Open ask: maze-like mob funneling near the front choke point —
     investigate whether Create's fan can redirect pathing, or other
     physical-layout techniques.

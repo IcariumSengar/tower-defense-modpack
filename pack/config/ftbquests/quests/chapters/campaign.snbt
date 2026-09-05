@@ -436,7 +436,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["A Magnetic Chest pulls in anything dropped nearby once it's wired up - saves you walking back after a fight to collect what's left. Range depends on the chest itself, not the signal."]
+			description: ["A Magnetic Chest pulls in anything dropped within about 10 blocks, automatically, the moment it's placed - no wiring, no redstone, nothing to hook up. Saves you walking back after a fight to collect what's left."]
 			icon: "trapcraft:magnetic_chest"
 			id: "573EEB3757B78B97"
 			rewards: [
@@ -467,7 +467,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["An Auto-Turret keeps firing on its own once it's placed and stocked with arrows - it'll pick targets in range without you doing anything. First thing in this place that can actually watch a wall while you're somewhere else. Keep it stocked or it's just decoration."]
+			description: ["An Auto-Turret picks its own targets in range and fires without you doing anything, real unlimited ammo despite how it looks - nothing to restock. First thing in this place that can actually watch a wall while you're somewhere else. It spawns facing a random direction until it finds something to shoot, and it can wander off its post if nothing's around to fight for a while - don't expect it to hold one fixed spot forever."]
 			icon: "medievalturrets:bow_turret_item"
 			id: "74779308DEED321D"
 			rewards: [
