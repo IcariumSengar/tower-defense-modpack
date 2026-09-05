@@ -262,9 +262,25 @@ commit 7d74545.
 (after the structure/loot fixes shipped) — priority over background
 spacing-tuning:**
 1. **Remove all TFTH mobs entirely — done, commit 18302f7.** Full
-   replacement mapping in wave_spawner.js's WAVES header comment. Sound-
-   for-atmosphere question and its footprint tradeoff still open, not
-   decided yet - see FEATURES.md.
+   replacement mapping in wave_spawner.js's WAVES header comment.
+   **Sound-for-atmosphere question — decided and done.** User's call:
+   extract the one asset, uninstall TFTH fully, no dormant mod. Picked
+   `suffer_death.ogg` from TFTH's own real sound registry - Flesh
+   Suffer was this pack's own documented most dangerous removed mob
+   (a real combat log showed it killing the player 4 times at wave 5,
+   before a damage nerf), the clearest "distinctive/atmospheric" fit,
+   not a guess. Extracted into this pack's own resource pack
+   (`kubejs:flesh_suffer_death`, new `flesh_death_sound.js`), wired to
+   play on death for the roster's own higher-tier mobs only (loot_bag_
+   drops.js's EPIC_MOBS/LEGENDARY_MOBS tiers) via a real, decompile-
+   confirmed KubeJS event (`EntityEvents.death`). TFTH fully removed:
+   packwiz uninstalled, both config files deleted, live jar removed.
+   Verified live: clean sandbox boot with TFTH genuinely absent (0
+   KubeJS script errors, the new sound script loads fine) - the one
+   real warning ("Missing data pack mod:the_flesh_that_hates") is just
+   that reused sandbox world's own stale datapack-list metadata, not a
+   crash or a real problem; confirmed zero TFTH references remain
+   anywhere in the live instance's actual config/script files.
 2. **Iron rolling still insufficient with the Hand Crank actually
    connected — done, commit pending this session.** Real numbers,
    decompiled not guessed: Hand Crank is Create's own ACTIVE power

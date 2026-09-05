@@ -1,0 +1,10 @@
+{
+  "flesh_suffer_death": {
+    "sounds": [
+      {
+        "name": "kubejs:flesh_suffer_death",
+        "stream": false
+      }
+    ]
+  }
+}
