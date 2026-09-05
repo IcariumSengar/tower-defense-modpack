@@ -275,6 +275,40 @@ var WAVE_MOB_TYPES = [
   'mutantszombies:crawler',
 ]
 
+// Endless-phase deterministic baseline layer (2026-09-05, design
+// finalized after 3 real clarification rounds with the peer session -
+// full writeup in docs/QUEUE.md's "New endless-phase design" entry).
+// spawn_horde's own horde tiers are a single weighted pick per call
+// (spawnChance sums to 100 per tier, confirmed by decompiling
+// SpawnProcess.class), never able to hit a deterministic mob-count
+// target - this is an ADDITIVE second layer guaranteeing a real minimum
+// count every endless wave, on top of spawn_horde's unchanged own call
+// (same attribute scaling, same randomness/flavor value it already had).
+// "Other types" tiers below, light to heavy, same real ids as
+// WAVE_MOB_TYPES above just grouped by toughness, so
+// pickEndlessOtherType can weight heavier types in more as the endless
+// level climbs (direct ask: "weighted so tougher types show up more as
+// n climbs").
+var ENDLESS_OTHER_TIERS = [
+  ['minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager'],
+  ['mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie', 'mutantszombies:spitter'],
+  ['undeadnights:elite_zombie', 'undeadnights:horde_zombie', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute', 'mutantszombies:rotten_mutant', 'mutantszombies:crawler'],
+]
+
+function pickEndlessOtherType(waveNumber) {
+  // Weight shift is keyed on endlessLevel (1-40), not the raw wave
+  // number - anchors the curve to the same 1-40 scale
+  // hordeSizeScaleFactor/undeadnights_difficulty_config.json already use,
+  // rather than stretching arbitrarily for a very long campaign.
+  var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
+  var weights = [Math.max(5, 40 - endlessLevel), 30, Math.min(60, endlessLevel * 2)]
+  var totalWeight = weights[0] + weights[1] + weights[2]
+  var roll = Math.random() * totalWeight
+  var tierIndex = roll < weights[0] ? 0 : roll < weights[0] + weights[1] ? 1 : 2
+  var tier = ENDLESS_OTHER_TIERS[tierIndex]
+  return tier[Math.floor(Math.random() * tier.length)]
+}
+
 // Staggered emergence + sound-first spawn cues (docs/IDEAS.md's
 // "Atmosphere & Wave Feel", Spawn Behavior). Design doc claimed this
 // already existed via "delayed/scheduled spawns" - checked, it didn't;
@@ -446,40 +480,12 @@ function useWaveHorn(player) {
   //   Forge config that only loads at world start and can't be
   //   rewritten live - confirmed by direct sandboxed testing, see
   //   docs/FEATURES.md's "Wave Horn" section for the full story).
-  if (waveNumber > WAVES.length) {
-    var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
-    // Real bug found 2026-09-05 (live report: horde size/type reads
-    // "stuck" well past the wave it should have grown at): decompiled
-    // DifficultyLevelCommand.setDifficulty() directly - every single
-    // call, even one that re-sets the SAME level, unconditionally resets
-    // UndeadNights' own sequential horde-selection index
-    // (serverState.setPossibleHordesIndex(-1)). Since this command used
-    // to run on every wave regardless of whether the level actually
-    // changed, that index got reset every wave too - real, confirmed
-    // effect: listOfPossibleHordes always resolves its first entry,
-    // never actually cycling through the rest as the mod intends. Now
-    // only calling `difficulty set` when the level genuinely changes.
-    // (`data` is already in scope from this function's own top - see
-    // useWaveHorn()'s own opening lines.)
-    if (data.getInt('td_lastEndlessLevel') !== endlessLevel) {
-      data.putInt('td_lastEndlessLevel', endlessLevel)
-      server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
-    }
-    server.runCommandSilent(`execute as @a at @s run undeadnights spawn_horde`)
-    player.tell(`§6[Wave Horn] §fWave ${waveNumber} incoming! (endless horde, difficulty ${endlessLevel})`)
-    server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}","color":"gold","bold":true}`)
-    server.runCommandSilent(`title @a subtitle {"text":"An endless horde approaches...","color":"white"}`)
-    // Real placeholder sound, 2026-09-05 - direct ask: something audible
-    // at the exact wave-start moment, vanilla bell for now, explicitly
-    // swappable for something scarier later. Wired here too, not just
-    // the hand-authored path below - every wave start, not just 1-8.
-    server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
-    return
-  }
-
-  var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
-  var totalMobs = 0
-
+  //
+  // Moved up from below the endless-phase branch (2026-09-05) so the
+  // endless-phase baseline-mob layer added below can reuse the exact
+  // same position/stagger helpers as the hand-authored wave branch,
+  // rather than duplicating them.
+  //
   // Fixed distance from the OBJECTIVE (the pedestal while the amulet
   // sits on it, else the player - see waveObjective() above), not the
   // worldborder edge (rewritten 2026-09-01, real bug found in playtest:
@@ -491,7 +497,7 @@ function useWaveHorn(player) {
   // spawning literally millions of blocks away and never arriving, read
   // in-game as "the horn says a horde spawned but nothing shows up."
   // Both this system and the endless-phase system (wave_spawner.js's
-  // `undeadnights spawn_horde` branch above, which already uses a fixed
+  // `undeadnights spawn_horde` branch below, which already uses a fixed
   // distanceMin/distanceMax band around the player via
   // defaultconfigs/undeadnights-server.toml, unaffected by the amulet -
   // that's Undead Nights' own separate spawn positioning, out of scope
@@ -546,6 +552,94 @@ function useWaveHorn(player) {
       z: Math.floor(objective.z + Math.sin(angle) * distance),
     }
   }
+
+  if (waveNumber > WAVES.length) {
+    var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
+    // Real bug found 2026-09-05 (live report: horde size/type reads
+    // "stuck" well past the wave it should have grown at): decompiled
+    // DifficultyLevelCommand.setDifficulty() directly - every single
+    // call, even one that re-sets the SAME level, unconditionally resets
+    // UndeadNights' own sequential horde-selection index
+    // (serverState.setPossibleHordesIndex(-1)). Since this command used
+    // to run on every wave regardless of whether the level actually
+    // changed, that index got reset every wave too - real, confirmed
+    // effect: listOfPossibleHordes always resolves its first entry,
+    // never actually cycling through the rest as the mod intends. Now
+    // only calling `difficulty set` when the level genuinely changes.
+    // (`data` is already in scope from this function's own top - see
+    // useWaveHorn()'s own opening lines.)
+    if (data.getInt('td_lastEndlessLevel') !== endlessLevel) {
+      data.putInt('td_lastEndlessLevel', endlessLevel)
+      server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
+    }
+    server.runCommandSilent(`execute as @a at @s run undeadnights spawn_horde`)
+
+    // Deterministic baseline layer, additive on top of spawn_horde above
+    // (see ENDLESS_OTHER_TIERS/pickEndlessOtherType's own comment for the
+    // full design writeup). n = waveNumber (the real overall wave number,
+    // confirmed against docs/QUEUE.md's own worked table - NOT
+    // endlessLevel, which is anchored to the 1-40 difficulty scale
+    // instead and used only for the other-type weighting above).
+    //   z = round(10 + n*1.054^n)  -- vanilla zombie count
+    //   m = round(5 + n*1.01^n)    -- "other types," tier-weighted
+    // Reuses this same function's own randomObjectiveRelativePosition/
+    // pendingSpawns/staggerGapForWave - front-loaded continuous stream at
+    // wave start (staggerGapForWave's own 4-tick/0.2s floor is already
+    // reached by wave 9, so every endless wave drains at that pace) until
+    // the full total is queued, then stops - NOT paced out across the
+    // whole countdown window (an earlier version of this spec called for
+    // that; corrected by the peer before this was built). No performance
+    // gate required per direct instruction - spreading spawns over time
+    // inherently avoids the concentrated-tick-load concern that would
+    // have needed measuring first; the separate, already-queued general
+    // FPS/world-load investigation is unrelated and still stands on its
+    // own.
+    var baselineZombieCount = Math.round(10 + waveNumber * Math.pow(1.054, waveNumber))
+    var baselineOtherCount = Math.round(5 + waveNumber * Math.pow(1.01, waveNumber))
+    var baselineStaggerGap = staggerGapForWave(waveNumber)
+    var baselineIndex = 0
+    for (var zi = 0; zi < baselineZombieCount; zi++) {
+      var zPos = randomObjectiveRelativePosition()
+      var zSpawnTick = currentTick + baselineIndex * baselineStaggerGap
+      pendingSpawns.push({
+        mobType: 'minecraft:zombie',
+        x: zPos.x,
+        y: Math.floor(objective.y),
+        z: zPos.z,
+        spawnTick: zSpawnTick,
+        soundTick: zSpawnTick - SOUND_LEAD_TICKS,
+        soundPlayed: false,
+      })
+      baselineIndex++
+    }
+    for (var mi = 0; mi < baselineOtherCount; mi++) {
+      var mPos = randomObjectiveRelativePosition()
+      var mSpawnTick = currentTick + baselineIndex * baselineStaggerGap
+      pendingSpawns.push({
+        mobType: pickEndlessOtherType(waveNumber),
+        x: mPos.x,
+        y: Math.floor(objective.y),
+        z: mPos.z,
+        spawnTick: mSpawnTick,
+        soundTick: mSpawnTick - SOUND_LEAD_TICKS,
+        soundPlayed: false,
+      })
+      baselineIndex++
+    }
+
+    player.tell(`§6[Wave Horn] §fWave ${waveNumber} incoming! (endless horde, difficulty ${endlessLevel}, +${baselineZombieCount + baselineOtherCount} baseline)`)
+    server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}","color":"gold","bold":true}`)
+    server.runCommandSilent(`title @a subtitle {"text":"An endless horde approaches...","color":"white"}`)
+    // Real placeholder sound, 2026-09-05 - direct ask: something audible
+    // at the exact wave-start moment, vanilla bell for now, explicitly
+    // swappable for something scarier later. Wired here too, not just
+    // the hand-authored path below - every wave start, not just 1-8.
+    server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
+    return
+  }
+
+  var composition = WAVES[Math.min(waveNumber, WAVES.length) - 1]
+  var totalMobs = 0
 
   // Staggered instead of all-at-once - each mob gets a queued spawn
   // tick (staggerGap apart, tightening at higher waveNumber) and a sound

@@ -63,8 +63,9 @@ baseline count every endless wave:
 | 30 | 155 | 45 | 200 |
 
 Additive, not a replacement — spawn_horde's own mobs land on top of this
-baseline. Sent to build; peer sent 2 follow-up clarifications on the
-spawning model since, both folded in here:
+baseline. **Built and deployed 2026-09-05.** Peer sent 2 follow-up
+clarifications on the spawning model before this was built, both folded
+into the shipped version:
 - **Not a burst, and not paced across the whole wave either.** Final
   model: mobs stream in continuously starting at wave start, at
   whatever pace the game allows, until the calculated total (z+m) for
@@ -84,6 +85,29 @@ spawning model since, both folded in here:
   measurement before shipping" requirement no longer applies here — the
   separate, already-queued general FPS/world-load investigation still
   stands on its own below, just not as a gate on this.
+
+Implementation, in `wave_spawner.js`'s endless-phase branch: `n` is the
+real `waveNumber` (confirmed against the table above, not `endlessLevel`
+— e.g. n=9 gives z=24/m=15, n=30 gives z=155/m=45, both match exactly).
+"Other types" draw from 3 new toughness tiers (`ENDLESS_OTHER_TIERS`),
+weighted by `endlessLevel` (1-40, not raw waveNumber) so heavier tiers
+phase in as the difficulty climbs. Reuses the exact same
+`randomObjectiveRelativePosition`/`pendingSpawns`/`staggerGapForWave`
+machinery waves 1-8 already use (moved `PI`/`SPAWN_DISTANCE_MIN/MAX`/
+`randomObjectiveRelativePosition` above the endless branch so both paths
+share them) rather than a bespoke queue — `staggerGapForWave`'s own
+4-tick/0.2s floor is already reached by wave 9, so every endless wave's
+baseline layer drains at that same continuous pace (≈40s for a 200-mob
+wave 30), front-loaded at wave start, exactly matching the "stream in,
+then stop" spec. `spawn_horde` itself untouched. Verified via a clean
+sandbox boot (`node --check` clean, KubeJS loaded 18/18 server scripts
+with 0 errors) and deployed to the live instance's script file — **not
+yet confirmed by an actual endless-phase playtest** (needs a real wave
+9+ run to see the baseline mobs actually arrive and stream in as
+intended). Live client was running during deployment; the copied
+`.js` file is inert until the next full world/server reload, per this
+pack's own established KubeJS load-once behavior — flag this to the user
+explicitly before they judge results.
 
 **Real bug found chasing the "hordes still feel small at wave 27"
 report — sequential horde-type selection never actually cycled.** Not
