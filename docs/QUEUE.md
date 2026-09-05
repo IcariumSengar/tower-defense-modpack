@@ -231,7 +231,37 @@ mechanic investigation) — drop that, just scrap the combo claim.**
    decision untouched, since those document real past context, not live
    config. Verified via a clean sandbox boot (0 script errors) and a
    real `/summon zombiesmore:boomer_zombie` test before deploying.
-10. Not started.
+10. **Investigated thoroughly - a real, well-evidenced open question,
+    not a clean pick.** Also found a real bonus bug while checking the
+    already-installed Inventory Sorter first (in case it already had
+    this and just needed enabling, matching #7's pattern): its own
+    "Move-all items"/spacebar module is a REAL DEAD STUB in the exact
+    installed version - decompiled `AllItemsHandler.class` directly,
+    its `accept()` method is completely empty, despite the mod's own
+    lang file still describing it as a working feature. Checked 7 real
+    candidates for a genuine replacement, verified via Modrinth/
+    CurseForge APIs directly rather than trusting search summaries
+    (caught one, "Chest Deposit," as a real naming collision - a
+    same-named Fabric mod for a completely different, much newer
+    Minecraft version): Chest Deposit, QuickStack, Sorting Daemon,
+    Quick Stack To Nearby Chests, and Stack To Nearby Chests (868K
+    downloads) are ALL Fabric/Quilt-only, no Forge 1.20.1 build exists
+    for any of them - a real, consistent pattern across this whole
+    feature category right now, not just bad luck. **Inventory
+    Profiles Next has a real Forge 1.20.1 build, but was already tried
+    in this exact pack and removed 2026-08-29** (own project memory) -
+    a 3-mod dependency chain (IPN + libIPN + Kotlin for Forge) for one
+    QoL feature, with 2 real, never-fully-confirmed-fixed bugs (a Mouse
+    Tweaks conflict, a recurring hover-highlight bug that came back
+    after being "fixed" once already) - re-adding it would repeat a
+    real, documented past decision without addressing why it left.
+    **Only real remaining candidate**: "Quick Transfer" by "LongName" -
+    genuine Forge 1.20.1 build confirmed, but very small (1,275
+    downloads) and very new (published this year), and its real
+    mechanic is shift+drag-to-transfer-hovered-items rather than a
+    single click/keypress to deposit everything matching at once.
+    Flagging back rather than installing unilaterally - this is a
+    genuine "small new mod or nothing" choice, not a confident pick.
 11. **Done.** Starting HP 200→300 (`PEDESTAL_MAX_HEALTH`, one named
     constant now instead of a bare `200` duplicated in 3 places), +20%
     heal on every real wave clear (`healPedestalByPercent`, called
