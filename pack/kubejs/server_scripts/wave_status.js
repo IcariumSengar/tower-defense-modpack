@@ -324,6 +324,19 @@ PlayerEvents.tick((event) => {
     // itself is created once at login in playtest_starter_kit.js, real
     // value set here every time a wave is actually marked cleared.
     player.getServer().runCommandSilent(`scoreboard players set @a td_waves_cleared ${waveNumber}`)
+
+    // Pedestal heal per wave clear (2026-09-05, direct ask - quick-fix
+    // scope only, the bigger upgrade-point system stays parked in
+    // IDEAS.md). +20% of max HP, via pedestal_health.js's own shared
+    // healPedestalByPercent() - top-level FUNCTIONS reliably share scope
+    // across server_scripts in this exact build (confirmed directly, see
+    // pedestal_health.js's own header comment for the real sandbox test
+    // that established the exception) - but top-level var/const do NOT
+    // (this pack's own longer-standing, separately-confirmed rule), so
+    // this deliberately calls a function rather than reading
+    // PEDESTAL_MAX_HEALTH directly from this file.
+    healPedestalByPercent(player, data, 0.2)
+
     // Undo wave_spawner.js's night lock — back to day and a normally
     // advancing clock during the peaceful gap before the next horn use.
     player.getServer().runCommandSilent('time set day')

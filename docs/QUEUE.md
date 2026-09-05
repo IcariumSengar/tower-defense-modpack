@@ -131,18 +131,26 @@ mechanic investigation) — drop that, just scrap the combo claim.**
 8. Not started.
 9. Not started.
 10. Not started.
-11. Not started - **also gained a 3rd healing option since this was
-    queued**: nether star right-click = full (100%) heal, alongside
-    golden carrot's 10% (see #14).
+11. **Done.** Starting HP 200→300 (`PEDESTAL_MAX_HEALTH`, one named
+    constant now instead of a bare `200` duplicated in 3 places), +20%
+    heal on every real wave clear (`healPedestalByPercent`, called
+    cross-file from `wave_status.js` - confirmed via a live sandbox
+    diagnostic that this actually resolves, not assumed). Bigger
+    upgrade-point system stays parked in IDEAS.md, not built.
 12. Not started - needs confirming JEI's real default "A" key binding
     before writing the quest text, not guessed.
 13+25. Cobblestone loot too common (confirmed: 45 weight, heaviest in
     Uncommon pool) — dial back hard so wood becomes the real early
     defense material by necessity, not an AI change.
-14. Golden carrot right-click heals pedestal 10%. **Addition**: nether
-    star right-click heals to full (100%) - same right-click handler,
-    the rare/premium full-heal option. Plain carrots also confirmed
-    absent from loot — decide whether to add.
+14. **Done** (the heal mechanic; carrots-in-loot still open). Golden
+    carrot right-click heals the pedestal 10%, nether star heals to
+    full (100%) - one `BlockEvents.rightClicked('supplementaries:
+    pedestal', ...)` handler, cancels the event so Supplementaries'
+    own native "place item on pedestal" behavior doesn't also fire
+    (that's reserved for the amulet). Shares the same
+    `healPedestalBy`/`healPedestalByPercent` functions as #11's
+    per-wave heal. Plain carrots still confirmed absent from loot —
+    decide whether to add.
 15. Real gap: trap kills (Spikes etc.) don't drop loot like player
     kills do (wave-8 brute/Spikes dropped nothing) — fix so there's no
     difference.

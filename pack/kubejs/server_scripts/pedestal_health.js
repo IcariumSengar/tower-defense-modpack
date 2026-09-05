@@ -91,12 +91,19 @@ var PEDESTAL_WAVE_MOB_TYPES = [
 var PEDESTAL_BOSSBAR_ID = 'kubejs:pedestal_health'
 var PEDESTAL_BOSSBAR_RANGE = 64
 
+// Named constant, 2026-09-05 (was a bare 200 literal duplicated in 3
+// places - here, the bossbar max just below, and
+// playtest_starter_kit.js's own starting td_pedestalHealth set, which
+// must match this). Bumped 200 -> 300 same day (direct ask: "pedestal
+// starting HP up").
+var PEDESTAL_MAX_HEALTH = 300
+
 function ensurePedestalBossbar(server, data) {
   if (data.getBoolean('td_pedestalBossbarAdded')) return
   data.putBoolean('td_pedestalBossbarAdded', true)
   server.runCommandSilent(`bossbar add ${PEDESTAL_BOSSBAR_ID} "Pedestal"`)
   server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} color red`)
-  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max 200`)
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max ${PEDESTAL_MAX_HEALTH}`)
 }
 
 function updatePedestalBossbar(server, health, x, z) {
@@ -150,6 +157,69 @@ function firePedestalAlert(server, tier) {
   server.runCommandSilent(`execute as @a at @s run playsound ${PEDESTAL_ALERT_SOUND} hostile @s ~ ~ ~ 1 1`)
 }
 
+// Real heal mechanics, 2026-09-05 (quick-fix scope only, per direct
+// instruction - the bigger "upgrade points for health/armor/thorns"
+// idea stays parked in IDEAS.md, not built here). Shared by both the
+// golden carrot/nether star right-click handler below and wave_status.js's
+// own +20%-per-wave-clear heal (a top-level function, reachable
+// cross-file - same confirmed-shared-scope exception this file's own
+// triggerPedestalDestroyed() call already relies on, see this file's
+// header comment for the real sandbox test that established it).
+// Resets td_pedestalAlertTier DOWN when a heal actually raises health
+// past a previously-alerted tier boundary, so a later re-attack can
+// alert again from the new, lower baseline instead of staying silent
+// because a higher tier was already "used up" - the alert system's own
+// comment promised this when it was built.
+function healPedestalBy(player, data, amount) {
+  if (data.getBoolean('td_pedestalDestroyed')) return false
+  if (!data.contains('td_pedestalHealth')) return false
+  var current = data.getInt('td_pedestalHealth')
+  if (current <= 0) return false
+  var newHealth = Math.min(PEDESTAL_MAX_HEALTH, current + amount)
+  data.putInt('td_pedestalHealth', newHealth)
+  var newTier = pedestalAlertTierForHealth(newHealth, PEDESTAL_MAX_HEALTH)
+  if (newTier < data.getInt('td_pedestalAlertTier')) {
+    data.putInt('td_pedestalAlertTier', newTier)
+  }
+  updatePedestalBossbar(player.getServer(), newHealth, data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
+  return true
+}
+
+// Percent-of-max wrapper, used by callers (wave_status.js's own
+// +20%-per-wave-clear heal) that can't safely reference
+// PEDESTAL_MAX_HEALTH directly - top-level var/const does NOT reliably
+// share scope across server_scripts in this build, only top-level
+// FUNCTION declarations do (see this file's header comment for the real
+// sandbox test behind that distinction). Keeps the actual max-HP number
+// defined in exactly one place.
+function healPedestalByPercent(player, data, percent) {
+  return healPedestalBy(player, data, Math.round(PEDESTAL_MAX_HEALTH * percent))
+}
+
+// Golden carrot = 10% heal, nether star = full (100%) heal - the rare/
+// premium option, direct ask. Cancels the event so Supplementaries'
+// own native "place held item on the pedestal" behavior doesn't also
+// happen (that's reserved for the amulet - a carrot or star displayed
+// there would look wrong and would confuse amulet_pedestal.js's own
+// container poll, which specifically checks for kubejs:amulet).
+BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
+  var player = event.entity
+  var stack = event.item
+  var itemId = `${stack.id}`
+  var data = player.persistentData
+  if (itemId === 'minecraft:golden_carrot') {
+    if (!healPedestalByPercent(player, data, 0.1)) return
+    event.cancel()
+    stack.shrink(1)
+    player.tell("§d[Pedestal] §fThe carrot's glow seeps into the stone. It holds a little steadier.")
+  } else if (itemId === 'minecraft:nether_star') {
+    if (!healPedestalByPercent(player, data, 1.0)) return
+    event.cancel()
+    stack.shrink(1)
+    player.tell('§d[Pedestal] §fSomething ancient answers. The pedestal is whole again.')
+  }
+})
+
 function pedestalAttackDamage(mob) {
   try {
     var attr = mob.getAttribute('minecraft:generic.attack_damage')
@@ -199,7 +269,7 @@ PlayerEvents.tick((event) => {
   if (health > 0) {
     data.putInt('td_pedestalHealth', health)
     updatePedestalBossbar(player.getServer(), health, data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
-    var newAlertTier = pedestalAlertTierForHealth(health, 200)
+    var newAlertTier = pedestalAlertTierForHealth(health, PEDESTAL_MAX_HEALTH)
     if (newAlertTier > data.getInt('td_pedestalAlertTier')) {
       data.putInt('td_pedestalAlertTier', newAlertTier)
       firePedestalAlert(player.getServer(), newAlertTier)

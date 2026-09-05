@@ -967,7 +967,10 @@ PlayerEvents.loggedIn((event) => {
   // world-build time. Replaces reliance on Epic Siege Mod's own
   // blockTargets AI, which stayed inconclusive even after the
   // mob-pathing fix (mob_aggro.js) was meant to give it a fair shot.
-  data.putInt('td_pedestalHealth', 200)
+  // Bumped 200 -> 300 (2026-09-05, direct ask: "pedestal starting HP
+  // up") - must match PEDESTAL_MAX_HEALTH in pedestal_health.js, this
+  // pack's own established cross-file-constant duplication convention.
+  data.putInt('td_pedestalHealth', 300)
 
   // No campfires or fire props anywhere in this build - direct request,
   // dropped entirely rather than reduced. The old braziers were called
