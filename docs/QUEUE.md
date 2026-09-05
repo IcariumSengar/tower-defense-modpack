@@ -23,6 +23,24 @@ reflect actual current status.
 
 ## Ready to build
 
+**Player-danger fix ("retaliate + block path") — decided and done.**
+Real side effect of the mob-pathing fix (7d74545): stripping every
+TargetGoal instance also removed vanilla's own `HurtByTargetGoal`, so
+mobs beelining for the pedestal completely ignored the player even
+mid-combat. Decision: mobs keep prioritizing the pedestal, but (a)
+fight back if hit, (b) actually attack a player standing in melee
+range instead of pathing through them. Fixed both without touching the
+pedestal-priority guarantee: `HurtByTargetGoal` is now explicitly
+excluded from the strip (kept alive - real vanilla retaliate-when-hit,
+no custom logic needed), and the existing 10-tick reassertion loop now
+checks distance to the player first (3.5-block melee-block range) and
+targets the player instead of the pedestal for that cycle if they're
+that close, reverting back to the pedestal the very next cycle once
+they're not. Verified live: a real zombie's `HurtByTargetGoal` survives
+the strip (target selector goes from 7 goals to exactly 1, that one),
+while every ESM re-targeting goal is still correctly removed, zero
+exceptions.
+
 **CRITICAL: endless phase (wave 9+) completely non-functional since
 2026-09-02 — done, real root cause found and fixed.** Live report:
 "wave 9, nothing spawned in at all." Decompiled `HordeSpawner.tick()`

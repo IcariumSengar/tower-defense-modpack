@@ -167,6 +167,20 @@
 var GOAL_SELECTOR_TYPE = 'net.minecraft.world.entity.ai.goal.GoalSelector'
 var TARGET_GOAL_TYPE = 'net.minecraft.world.entity.ai.goal.target.TargetGoal'
 var ESM_TARGET_GOAL_TYPE = 'funwayguy.epicsiegemod.ai.ESM_EntityAINearestAttackableTarget'
+// Real live decision, 2026-09-04: "retaliate + block path" - stripping
+// EVERY real TargetGoal instance (the original, blunt approach) also
+// removed vanilla's own HurtByTargetGoal, which is what makes a mob
+// fight back when the player hits it - a real, reported side effect
+// ("mobs beelining for the pedestal now completely ignore the player,
+// even mid-combat"). HurtByTargetGoal is now explicitly excluded from
+// the strip below - kept alive so retaliation-when-hit still works via
+// vanilla's own tested mechanic, without needing to hand-build that
+// behavior. This file's own 10-tick setTarget(pedestal) reassertion
+// still wins back the objective shortly after the player stops hitting
+// the mob (whatever HurtByTargetGoal set the target to only holds until
+// the next reassertion), so "objective priority holds once the player
+// stops directly interfering" is preserved.
+var HURT_BY_TARGET_TYPE = 'net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal'
 // Real live report, 2026-09-04: "spitter's path seems off," right after
 // the fix above shipped. Checked directly, not assumed - a sandbox
 // repro against a real spitter found the strip working exactly as
@@ -270,6 +284,7 @@ function stripAutoRetargeting(mob) {
     try { esmTargetGoalCls = aggroResolveClass(mob, ESM_TARGET_GOAL_TYPE) } catch (eEsm) {}
     var esmRangedAttackCls = null
     try { esmRangedAttackCls = aggroResolveClass(mob, ESM_RANGED_ATTACK_TYPE) } catch (eEsm2) {}
+    var hurtByTargetCls = aggroResolveClass(mob, HURT_BY_TARGET_TYPE)
     var fields = aggroFindFieldsByType(mob.getClass(), GOAL_SELECTOR_TYPE)
     fields.forEach(function (field) {
       field.setAccessible(true)
@@ -297,7 +312,10 @@ function stripAutoRetargeting(mob) {
         // ESM_EntityTargetBlock is deliberately NOT matched by either
         // check - it must keep running for the pedestal-vulnerability
         // feature.
-        var isRealTargetGoal = targetGoalCls.isInstance(goal)
+        // HurtByTargetGoal excluded explicitly (see HURT_BY_TARGET_TYPE's
+        // own comment above) - it's a real TargetGoal instance, but kept
+        // alive on purpose now for retaliate-when-hit.
+        var isRealTargetGoal = targetGoalCls.isInstance(goal) && !hurtByTargetCls.isInstance(goal)
         var isEsmTargetGoal = esmTargetGoalCls && esmTargetGoalCls.isInstance(goal)
         // Real live report, 2026-09-04: force melee close-in against the
         // pedestal for ranged mobs (Spitter) instead of strafe-and-shoot
@@ -389,6 +407,22 @@ PlayerEvents.tick(function (event) {
   })
   if (!aggroTarget) return
 
+  // Real live decision, 2026-09-04: "retaliate + block path" - part 2.
+  // HurtByTargetGoal (kept alive above) covers "fight back if hit," but
+  // a player who just stands in a mob's way without ever hitting it
+  // would still get silently walked through, since the mob's forced
+  // target is always the pedestal regardless of who's physically
+  // blocking the path. MELEE_BLOCK_RANGE (3.5 blocks - a little past
+  // vanilla's own ~3-block melee reach, real margin for movement between
+  // this handler's 10-tick throttle) checks distance to THIS player
+  // specifically, not a level-wide nearest-player search - this pack is
+  // single-player-focused (see base_expansion.js's own notes on the
+  // same assumption), so re-using the handler's own `player` is
+  // equivalent and cheaper. Reverts to the pedestal again on the very
+  // next 10-tick cycle once the player is no longer in range - same
+  // "objective priority holds once the player stops interfering" shape
+  // as the HurtByTargetGoal side above.
+  var MELEE_BLOCK_RANGE = 3.5
   level.getEntities().forEach(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
     // One-time per mob (any spawn origin - the deterministic wave_spawner.js
@@ -399,6 +433,10 @@ PlayerEvents.tick(function (event) {
       stripAutoRetargeting(e)
       e.getTags().add('td_retarget_stripped')
     }
-    e.setTarget(aggroTarget)
+    var dx = e.getX() - player.getX()
+    var dy = e.getY() - player.getY()
+    var dz = e.getZ() - player.getZ()
+    var isBlockingPath = dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
+    e.setTarget(isBlockingPath ? player : aggroTarget)
   })
 })
