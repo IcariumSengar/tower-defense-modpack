@@ -1,0 +1,140 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "bounties"
+	group: ""
+	icon: "bountybags:legendary_loot_bag"
+	id: "32583EA8E824D51C"
+	order_index: 2
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Every hostile you put down counts toward this, not just wave kills - turrets and traps get credit too. Twenty-five down. Just the start."]
+			icon: "minecraft:rotten_flesh"
+			id: "B1824D758BD5259D"
+			rewards: [
+				{
+					id: "0B03B6486BCDFA0A"
+					type: "xp_levels"
+					xp_levels: 5
+				}
+				{
+					count: 8
+					id: "CF8DFC7225F517C0"
+					item: "minecraft:gold_ingot"
+					type: "item"
+				}
+			]
+			tasks: [{
+				id: "42F2080CC88FFF1F"
+				type: "checkmark"
+			}]
+			title: "First Blood"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			description: ["A hundred kills. The horde doesn't get thinner, but your aim is getting better."]
+			icon: "minecraft:iron_sword"
+			id: "730D290220164ACC"
+			rewards: [
+				{
+					id: "02ED631B6C61EDFA"
+					type: "xp_levels"
+					xp_levels: 10
+				}
+				{
+					count: 2
+					id: "0E510FEF00F269EE"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+			]
+			tasks: [{
+				id: "A690E47C2C2FFDB5"
+				type: "checkmark"
+			}]
+			title: "Exterminator"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			description: ["Three hundred. This stopped being self-defense a while ago."]
+			icon: "minecraft:diamond_sword"
+			id: "C7A7064EA80C63C1"
+			rewards: [
+				{
+					id: "DBD0BD27F9A2AE98"
+					type: "xp_levels"
+					xp_levels: 15
+				}
+				{
+					count: 2
+					id: "4F0F9E11439DD724"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+			]
+			tasks: [{
+				id: "57C0DB55E9655079"
+				type: "checkmark"
+			}]
+			title: "Culling"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			description: ["Seven hundred fifty kills. Whatever is still coming at you, you're built for it now."]
+			icon: "minecraft:netherite_sword"
+			id: "716E054554316AE5"
+			rewards: [
+				{
+					id: "7F52A5324A25C675"
+					type: "xp_levels"
+					xp_levels: 20
+				}
+				{
+					count: 1
+					id: "E20C2DD434AA49FD"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					count: 1
+					id: "82AFACFF977AA3F0"
+					item: "minecraft:golden_apple"
+					type: "item"
+				}
+			]
+			tasks: [{
+				id: "81F132C101C25BDA"
+				type: "checkmark"
+			}]
+			title: "Reaper"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			can_repeat: "true"
+			description: ["Fifteen hundred kills, and counting. There's no ceiling on this one - claim it again every fifteen hundred after, for as long as they keep coming."]
+			icon: "bountybags:legendary_loot_bag"
+			id: "6C33E795D76D13CF"
+			repeat_cooldown: 1
+			rewards: [{
+				count: 1
+				id: "0FDBC49878804E0D"
+				item: "bountybags:legendary_loot_bag"
+				type: "item"
+			}]
+			tasks: [{
+				id: "1355429CD45AF725"
+				type: "checkmark"
+			}]
+			title: "Zombie Masher"
+			x: 8.0d
+			y: 0.0d
+		}
+	]
+	title: "Bounties"
+}
