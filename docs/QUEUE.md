@@ -23,6 +23,68 @@ reflect actual current status.
 
 ## Ready to build
 
+**New endless-phase design, 2026-09-05 — replaces relying on
+hordeSizeScaleFactor for mob COUNT, `spawn_horde` stays for flavor.**
+Real finding: `spawn_horde`'s horde tiers have spawnChance values summing
+to 100 per tier — a weighted single pick per call, not an independent
+roll per entry, so it was never able to hit a deterministic two-part
+(zombie vs. other-type) composition target. Resolved design: keep
+calling `spawn_horde` unchanged (same attribute scaling, same
+randomness/flavor value), ADD a second additive layer guaranteeing a
+baseline count every endless wave:
+- `z = round(10 + n·1.054^n)` — vanilla `minecraft:zombie` count
+- `m = round(5 + n·1.01^n)` — "other types," drawn from the existing
+  tiered roster pools, weighted so tougher types show up more as n climbs
+- `n` = real wave number
+
+| Wave | z | m | Total |
+|---|---|---|---|
+| 9 | 24 | 15 | 39 |
+| 10 | 27 | 16 | 43 |
+| 11 | 30 | 17 | 47 |
+| 12 | 33 | 19 | 52 |
+| 13 | 36 | 20 | 56 |
+| 14 | 39 | 21 | 60 |
+| 15 | 43 | 22 | 65 |
+| 16 | 47 | 24 | 71 |
+| 17 | 52 | 25 | 77 |
+| 18 | 56 | 27 | 83 |
+| 19 | 62 | 28 | 90 |
+| 20 | 67 | 29 | 96 |
+| 21 | 73 | 31 | 104 |
+| 22 | 80 | 32 | 112 |
+| 23 | 87 | 34 | 121 |
+| 24 | 95 | 35 | 130 |
+| 25 | 103 | 37 | 140 |
+| 26 | 112 | 39 | 151 |
+| 27 | 122 | 40 | 162 |
+| 28 | 132 | 42 | 174 |
+| 29 | 143 | 44 | 187 |
+| 30 | 155 | 45 | 200 |
+
+Additive, not a replacement — spawn_horde's own mobs land on top of this
+baseline. Sent to build; peer sent 2 follow-up clarifications on the
+spawning model since, both folded in here:
+- **Not a burst, and not paced across the whole wave either.** Final
+  model: mobs stream in continuously starting at wave start, at
+  whatever pace the game allows, until the calculated total (z+m) for
+  that wave is reached — then stop; no more spawn until the next wave
+  triggers. Reuse the existing `pendingSpawns` staggered-drain queue
+  technique from waves 1-8, just don't rush it artificially — let it
+  genuinely feel like a continuous stream, not a burst, but don't
+  stretch it to fill the whole countdown window either (that was a
+  since-corrected earlier version of this instruction).
+- Spawn target is the pedestal (unconditional-targeting redesign's real
+  live objective) — "the amulet" in the original user framing is almost
+  certainly old habit from when the amulet gated the objective, worth a
+  quick sanity check but not worth blocking on.
+- **Performance gate dropped for this specific feature, direct
+  instruction**: since spawns trickle in over time rather than landing
+  concentrated in one tick, the earlier "needs real tick-time
+  measurement before shipping" requirement no longer applies here — the
+  separate, already-queued general FPS/world-load investigation still
+  stands on its own below, just not as a gate on this.
+
 **Real bug found chasing the "hordes still feel small at wave 27"
 report — sequential horde-type selection never actually cycled.** Not
 the horde-SIZE bug (that curve is confirmed correctly written and
@@ -1189,6 +1251,21 @@ below); Phase 5 not started:
   normal play.** `diggerMobs` (whether wave mobs already partially bite
   through obstacles via a separate mechanism) is still fully open too,
   not reached.
+  - **Superseded, 2026-09-05**: this whole mechanism is confirmed dead
+    weight now. `pedestal_health.js`'s own header comment already
+    documents that the real playtest showed this `blockTargets` path
+    still wasn't damaging the pedestal even after the mob-pathing fix —
+    real pedestal HP damage is that file's own separate proximity-poll
+    system, unrelated to ESM entirely. Removed both pedestal block ids
+    from `blockTargets` (back to the mod's stock `["#minecraft:candles"]`
+    default) and corrected the misleading "must keep running for the
+    pedestal-vulnerability feature" comment in `mob_aggro.js` that had
+    justified leaving `ESM_EntityTargetBlock` unstripped. Same pass also
+    closed the real `diggerMobs` gap flagged above, extending it (and
+    `buildingMobs`/`jumpingMobs`, same gap) from just `minecraft:zombie`
+    to the full 15-mob current wave roster, matching `targetingMobs`.
+    Verified via a clean sandbox boot; deployed to the live instance;
+    committed.
 - **Pedestal: unconditional targeting + visual retrofit + compound
   redesign** — built, deployed, and committed (a9e6c1a) 2026-09-05.
   Full detail in FEATURES.md's "Superseded 2026-09-05" entry. All three
@@ -1493,10 +1570,19 @@ below); Phase 5 not started:
   worth knowing before/while playtesting:
   - **Lootr's staleness claim was wrong, corrected before install** —
     it's actually a live, maintained Forge 1.20.1 mod (builds through
-    2025-11-26), not the 2023-abandoned one originally flagged. Real
-    open question instead: Forge's dedicated-server scanner flags it
-    client-only despite real server-side code in the jar — needs a real
-    check that per-player chest behavior actually works, not assumed.
+    2025-11-26), not the 2023-abandoned one originally flagged.
+  - **Lootr per-player chest behavior confirmed real, 2026-09-05** —
+    Forge's dedicated-server scanner flags it client-only despite real
+    server-side code in the jar; decompiled `ChestData.class` directly
+    to check rather than assume. Confirmed genuinely per-player:
+    `ChestData` (one real chest) holds `Map<UUID, SpecialChestInventory>`,
+    and `createInventory(ServerPlayer, ...)` generates an independent
+    loot roll (`filler.unpackLootTable(...)`) the first time each
+    distinct player UUID opens it, cached in that map thereafter via
+    `getInventory(ServerPlayer)`/`getInventory(UUID)`. This is real
+    server-authoritative `SavedData`, not a client-only visual trick —
+    the scanner's flag was a false concern. No code change needed; no
+    further live test warranted beyond this source-level confirmation.
   - A real BountyBags bug (totem_of_undying over its internal max
     count, would've silently fallen back to an emergency loot pool) was
     caught and fixed before shipping, not after.

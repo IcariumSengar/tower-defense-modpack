@@ -310,8 +310,14 @@ function stripAutoRetargeting(mob) {
         // the target selector" check silently missed some. Every goal in
         // every GoalSelector-typed field is checked individually instead.
         // ESM_EntityTargetBlock is deliberately NOT matched by either
-        // check - it must keep running for the pedestal-vulnerability
-        // feature.
+        // check. **Correction, 2026-09-05**: this was originally kept
+        // alive because it was assumed to drive real pedestal damage -
+        // confirmed false, per pedestal_health.js's own header comment
+        // ("real playtest confirmed it's still not damaging the
+        // pedestal"). Real pedestal damage is that file's own separate
+        // proximity-poll system, unrelated to this goal. Left
+        // unstripped anyway since it's harmless (an idle mob just walks
+        // up to the pedestal) and touching it has no real upside.
         // HurtByTargetGoal excluded explicitly (see HURT_BY_TARGET_TYPE's
         // own comment above) - it's a real TargetGoal instance, but kept
         // alive on purpose now for retaliate-when-hit.

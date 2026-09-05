@@ -37,7 +37,12 @@
 #Advanced settings
 [Advanced]
 	#List of mobs that can dig through blocks [default: [minecraft:zombie]
-	diggerMobs = ["minecraft:zombie"]
+	#Extended 2026-09-05, real correctness check: this still only listed
+	#plain zombie, real gap left over from the zombie-apocalypse roster
+	#pivot - same full current roster as targetingMobs below, so
+	#block-breaking behavior is consistent across the mobs players
+	#actually fight now, not just vanilla zombies.
+	diggerMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#List of blocks that digger mobs are forbidden from digging (Format: 'minecraft:wool' prefix with # if mentioning a block tag)
 	diggingBlacklist = []
 	#The item given to a digger 5% of the time [default: minecraft:iron_pickaxe]
@@ -52,7 +57,8 @@
 	#List of mobs that can drop live TNT [default: [minecraft:zombie]
 	demolitionMobs = []
 	#List of mobs that can pillar up and build stairs [default: [minecraft:zombie]
-	buildingMobs = ["minecraft:zombie"]
+	#Extended 2026-09-05, same real gap/fix as diggerMobs above.
+	buildingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#If mobs should be allowed to grief blocks [default: false]
 	griefing = false
 	#List of mobs that aren't allowed to grief
@@ -69,7 +75,8 @@
 	#Range: 0.01 ~ 8.0
 	jumpHeight = 0.4
 	#List of mobs that can jump/leap at their target [default: [minecraft:zombie]
-	jumpingMobs = ["minecraft:zombie"]
+	#Extended 2026-09-05, same real gap/fix as diggerMobs above.
+	jumpingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#If mobs should be allowed to target blocks for the mobs to actively target [default: true]
 	blockTargeting = true
 	#If the block targeting should be as important as targeting entities (When enabled the goal gets added to the targetSelector instead of the goalSelector) [default: true]
@@ -95,7 +102,16 @@
 	#config, not just mob_aggro.js, gates ESM's own block-targeting goal.
 	targetingMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "mutantszombies:spitter", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#What blocks will be targeted for removal when idle (Format: 'minecraft:wool' prefix with # if mentioning a block tag)
-	blockTargets = ["#minecraft:candles", "kubejs:amulet_pedestal", "supplementaries:pedestal"]
+	#Real cleanup 2026-09-05: `kubejs:amulet_pedestal`/`supplementaries:
+	#pedestal` removed - confirmed genuinely inert, not a working
+	#mechanism, via pedestal_health.js's own header comment (direct
+	#quote: "stayed inconclusive even after the mob-pathing fix... Real
+	#playtest confirmed it's still not damaging the pedestal"). Real
+	#pedestal damage is pedestal_health.js's own separate proximity-poll
+	#system, unrelated to this config entirely - leaving these ids here
+	#implied ESM was doing real work it wasn't, a real footgun for a
+	#future reader. Back to the mod's real stock default.
+	blockTargets = ["#minecraft:candles"]
 
 #Other settings
 [Other]
