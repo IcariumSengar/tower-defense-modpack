@@ -231,8 +231,37 @@ mechanic investigation) — drop that, just scrap the combo claim.**
    decision untouched, since those document real past context, not live
    config. Verified via a clean sandbox boot (0 script errors) and a
    real `/summon zombiesmore:boomer_zombie` test before deploying.
-10. **Investigated thoroughly - a real, well-evidenced open question,
-    not a clean pick.** Also found a real bonus bug while checking the
+10. **Update, 2026-09-05: user wants to try Inventory Profiles Next
+    specifically despite the documented history - re-verified current
+    state before any reinstall, per direct instruction, rather than
+    assume it's unchanged.** Real findings: the Kotlin For Forge
+    dependency is still 100% required today - not a soft/optional
+    dependency but the mod's own `modLoader="kotlinforforge"`
+    declaration in `libIPN`'s real `mods.toml` (confirmed by downloading
+    and inspecting the actual current jar, hash-verified, not assumed
+    from an old memory). The current latest Forge 1.20.1 build
+    (1.10.20, published 2026-02-02 - genuinely the newest available,
+    nothing has shipped for the 1.20.1 track since, real development
+    has moved to 1.21.x/26.x) predates this pack's own 2026-08-29
+    removal decision by about 7 months, and its changelog history
+    (versions 1.10.11 through 1.10.20) shows no fix mentioning Mouse
+    Tweaks or hover/highlight behavior - no evidence either of the 2
+    documented bugs has been addressed. **Also checked the user's
+    belief about a sort-button keybind - it's half right**: IPN does
+    have a real "Sort" button (confirmed via its own lang file: "Show
+    the 'Sort' Button," a real config-toggleable feature), but it's a
+    clickable ON-SCREEN GUI button overlaid on the inventory/container
+    screen, not a keyboard keybind - confirmed no real keybind exists
+    (zero `key.*` lang entries, and the jar's only keybind-adjacent
+    class is a mixin accessor for reading vanilla's own KeyMapping
+    state, not a registered new keybind of its own). Reverted the
+    investigative packwiz add (checked real dependencies/hashes this
+    way, cleaner than guessing) rather than leaving it half-installed -
+    holding for a real go/no-go now that the user has the actual
+    current facts, not proceeding unilaterally given the unchanged real
+    bug/dependency history.
+
+**Original investigation, superseded above but kept for context:** Also found a real bonus bug while checking the
     already-installed Inventory Sorter first (in case it already had
     this and just needed enabling, matching #7's pattern): its own
     "Move-all items"/spacebar module is a REAL DEAD STUB in the exact
