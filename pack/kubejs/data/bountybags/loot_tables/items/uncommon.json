@@ -4,7 +4,7 @@
     {
       "rolls": 3,
       "entries": [
-        { "type": "minecraft:item", "name": "minecraft:cobblestone", "weight": 45, "functions": [{ "function": "minecraft:set_count", "count": { "min": 12, "max": 24 } }] },
+        { "type": "minecraft:item", "name": "minecraft:cobblestone", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 6, "max": 12 } }] },
         { "type": "minecraft:item", "name": "minecraft:oak_log", "weight": 40, "functions": [{ "function": "minecraft:set_count", "count": { "min": 4, "max": 8 } }] },
         { "type": "minecraft:item", "name": "minecraft:bread", "weight": 25, "functions": [{ "function": "minecraft:set_count", "count": { "min": 3, "max": 6 } }] },
         { "type": "minecraft:item", "name": "minecraft:iron_nugget", "weight": 30, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] },
@@ -19,7 +19,9 @@
         { "type": "minecraft:item", "name": "minecraft:copper_ingot", "weight": 15, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] },
         { "type": "minecraft:item", "name": "minecraft:iron_ingot", "weight": 22, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] },
         { "type": "minecraft:item", "name": "minecraft:lapis_lazuli", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] },
-        { "type": "minecraft:item", "name": "minecraft:gold_nugget", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 6, "max": 15 } }] }
+        { "type": "minecraft:item", "name": "minecraft:gold_nugget", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 6, "max": 15 } }] },
+        { "type": "minecraft:item", "name": "minecraft:netherrack", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 8, "max": 16 } }] },
+        { "type": "minecraft:item", "name": "minecraft:arrow", "weight": 25, "functions": [{ "function": "minecraft:set_count", "count": { "min": 8, "max": 16 } }] }
       ]
     }
   ]

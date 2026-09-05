@@ -500,14 +500,8 @@
 		}
 		{
 			dependencies: ["689899208FC0ADF0"]
-			description: ["Five waves was as far as whoever held this post before you got. You've matched that, and the gear's finally given out - it was never going to last past this point anyway. Everything from here is genuinely unwritten; nobody's diary goes further than this."]
-			icon: {
-				Count: 1
-				id: "minecraft:netherite_chestplate"
-				tag: {
-					Damage: 0
-				}
-			}
+			description: ["Five waves was as far as whoever held this post before you got. You have matched that, and the gear has finally given out - it was never going to last past this point anyway. Eight was the last wave anyone bothered planning for - after that, it just keeps escalating, no ceiling anyone has found yet. Whatever gear and defenses you have built by now are what you are taking into it. I do not know how far it actually goes. Maybe you will be the one who finds out."]
+			icon: "minecraft:nether_star"
 			id: "03C4E700B07CBC15"
 			rewards: [
 				{
@@ -522,6 +516,12 @@
 					item: "waystones:waystone"
 					type: "item"
 				}
+				{
+					count: 1
+					id: "5A2E82C7BB547506"
+					item: "minecraft:totem_of_undying"
+					type: "item"
+				}
 			]
 			tasks: [{
 				id: "530B75E9DB0F03E9"
@@ -529,24 +529,6 @@
 			}]
 			title: "The Reckoning"
 			x: 22.0d
-			y: 0.0d
-		}
-		{
-			description: ["Eight was the last wave anyone bothered planning for - after this, it just keeps escalating, no ceiling anyone's found yet. Whatever gear and defenses you've built by now are what you're taking into it. I don't know how far it actually goes. Maybe you'll be the one who finds out."]
-			icon: "minecraft:nether_star"
-			id: "12A50E9FD97A8427"
-			rewards: [{
-				count: 1
-				id: "5A2E82C7BB547506"
-				item: "minecraft:totem_of_undying"
-				type: "item"
-			}]
-			tasks: [{
-				id: "0D083E83110799B5"
-				type: "checkmark"
-			}]
-			title: "No Turning Back"
-			x: 24.0d
 			y: 0.0d
 		}
 		{

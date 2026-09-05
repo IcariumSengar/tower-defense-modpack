@@ -23,6 +23,76 @@ reflect actual current status.
 
 ## Ready to build
 
+**Pedestal-under-attack alert — done, built 2026-09-05, real priority
+item (a lost run: "all of it silent and unknown to me").** The existing
+HP bossbar is distance-limited by design (ambient status only), useless
+as a warning for a player fighting elsewhere - exactly the scenario that
+cost the run. Added a distance-independent broadcast alert in
+`pedestal_health.js`: title/subtitle + a sound run via
+`execute as @a at @s` (plays at each player's own position, no distance
+falloff, so it's audible regardless of where they are). Tier-gated, not
+per-hit, so a sustained attack doesn't spam - fires only when health
+drops into a new, more severe tier than the last alert (first damage
+taken, then 50%/25%/10% of max), via strict `newTier > lastAlertTier`
+so it also goes quiet again correctly once a future heal (item #11
+below, not yet built) pushes health back up. Verified via a live
+sandbox diagnostic: all 6 tier boundaries computed correctly, and
+`firePedestalAlert()` itself runs with no exception. Deployed.
+
+**Xaero's World Border line thickness — checked, not fixable via
+config.** Confirmed live and working (full map screen, not minimap -
+correct per the user). The "too thick" line is two hardcoded literal
+draws (4.0/2.0 px) in the addon's own compiled
+`WorldBorderElementRenderer.class`, no config file or exposed setting
+exists at all - confirmed by decompiling it directly, not guessed from
+an absent config file alone. Not fixable without bytecode-patching a
+third-party mod (real, avoidable maintenance burden this pack hasn't
+taken on elsewhere) - leaving as-is unless the user feels strongly.
+
+**Pick Up Notifier — confirmed working live, old chat summary
+removed.** The real popup integration built in the last batch is
+confirmed working by the user. Removed the now-redundant custom chat
+message ("You got: X, Y, Z") from `loot_bag_notification.js` - both
+existed to answer the same question, kept only the real popup.
+`pendingBagOpens` itself stays (still the real scoping gate limiting
+Pick Up Notifier calls to actual bag-open windows, not every inventory
+change) - simplified to drop the now-unused items/bagName aggregation
+that only existed to build the removed chat text.
+
+**3 more items from the 25-item batch — done 2026-09-05:**
+- #13+25 (cobblestone scarcity): cut from weight 45→10 and count
+  12-24→6-12 in the Uncommon loot pool - both frequency and per-hit
+  yield reduced, so oak_log (unchanged, weight 40) becomes the clearly
+  dominant early material by comparison, matching "wood by necessity."
+- #16 (endless-phase brute tuning): tier 2 (both brute types plus
+  elite_zombie/horde_zombie/demolition_zombie/rotten_mutant/crawler) is
+  now hard-gated to zero weight below endless level 5, not just
+  low-probability - a player literally cannot see one before that
+  level, confirmed via the same real math that explained the original
+  "2 brutes at level 1" report (a real, if unlucky, ~7-8% chance under
+  the old formula).
+- #17+18+20 (missing loot): netherrack and arrows added to the Uncommon
+  tier. **Real correction to the batch's own claim**: nether quartz was
+  NOT actually missing - `minecraft:quartz` (the real item id for it)
+  was already in the Rare tier the whole time, confirmed by direct
+  file read. Flagging this rather than adding a silent duplicate.
+- #12 (JEI tip): new Tips & Tricks quest for the "A" key, confirmed via
+  decompiling JEI's own `InternalKeyMappings` directly - GLFW key 65
+  ('A') is bound to `key.jei.bookmark` ("Add/Remove Bookmark," hover an
+  item + press A), not guessed from the lang file alone.
+
+**Quest merge — done 2026-09-05** (separate request, not part of the
+25-item batch): "The Reckoning" (wave-5 gear-out) and "No Turning Back"
+(wave-8/endless intro) merged into one quest, keeping "The Reckoning"'s
+id and its real dependency on "Watch the Walls Grow." All 3 rewards
+kept (golden apple, waystone, totem of undying). Checked the real
+dependency graph first - neither quest had any other dependent, so
+nothing orphaned.
+
+All of the above verified via a clean sandbox boot (0 script errors,
+correct 30-quest count after the merge/additions) and deployed to the
+live instance.
+
 **New live feedback batch, 2026-09-05, 25 items, literal numbering —
 sent to build. #19 cancels/supersedes the previous batch's #3 (cobweb
 mechanic investigation) — drop that, just scrap the combo claim.**

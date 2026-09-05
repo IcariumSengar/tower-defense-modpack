@@ -104,6 +104,52 @@ function updatePedestalBossbar(server, health, x, z) {
   server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} players @a[x=${x},z=${z},distance=..${PEDESTAL_BOSSBAR_RANGE}]`)
 }
 
+// Distance-independent under-attack alert (2026-09-05, direct ask - a
+// real lost run: a crawler slipped in and destroyed the pedestal while
+// the player was off fighting a horde elsewhere, with zero warning -
+// "all of it silent and unknown to me"). The bossbar above is
+// deliberately distance-limited (only shows within
+// PEDESTAL_BOSSBAR_RANGE) - fine for ambient status, useless as an
+// alert for a player who isn't nearby, which is exactly the scenario
+// that needs one most. This broadcasts to every player (`@a`,
+// title/subtitle + a sound run via `execute as @a at @s` so it plays at
+// each player's own position with no distance falloff, not the
+// pedestal's - the whole point is it must be heard from anywhere).
+//
+// Tier-based, not per-hit - a sustained horde attack deals damage every
+// single check (once/second), so alerting on every hit would spam
+// during exactly the moments that matter most. Alerts fire only when
+// HEALTH DROPS INTO a new, more severe tier than the last one already
+// alerted (first damage taken at all, then 50%/25%/10% of max) -
+// checked via strict `newTier > lastAlertTier`, so this naturally goes
+// quiet again if a future heal (item #11, not yet built - that code
+// should update td_pedestalAlertTier down to match, so a later re-attack
+// can re-alert from the lower baseline) pushes health back up.
+var PEDESTAL_ALERT_SOUND = 'minecraft:block.anvil.land'
+
+function pedestalAlertTierForHealth(health, maxHealth) {
+  if (health <= maxHealth * 0.1) return 4
+  if (health <= maxHealth * 0.25) return 3
+  if (health <= maxHealth * 0.5) return 2
+  if (health < maxHealth) return 1
+  return 0
+}
+
+var PEDESTAL_ALERT_MESSAGES = {
+  1: ['THE PEDESTAL IS UNDER ATTACK', 'Something has found it - get back now.'],
+  2: ['THE PEDESTAL IS HALFWAY GONE', "It won't hold much longer."],
+  3: ['THE PEDESTAL IS CRITICAL', 'Get back NOW.'],
+  4: ['THE PEDESTAL IS ABOUT TO FALL', 'This is it - move!'],
+}
+
+function firePedestalAlert(server, tier) {
+  var msg = PEDESTAL_ALERT_MESSAGES[tier]
+  if (!msg) return
+  server.runCommandSilent(`title @a title {"text":"${msg[0]}","color":"red","bold":true}`)
+  server.runCommandSilent(`title @a subtitle {"text":"${msg[1]}","color":"gold"}`)
+  server.runCommandSilent(`execute as @a at @s run playsound ${PEDESTAL_ALERT_SOUND} hostile @s ~ ~ ~ 1 1`)
+}
+
 function pedestalAttackDamage(mob) {
   try {
     var attr = mob.getAttribute('minecraft:generic.attack_damage')
@@ -153,9 +199,15 @@ PlayerEvents.tick((event) => {
   if (health > 0) {
     data.putInt('td_pedestalHealth', health)
     updatePedestalBossbar(player.getServer(), health, data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
+    var newAlertTier = pedestalAlertTierForHealth(health, 200)
+    if (newAlertTier > data.getInt('td_pedestalAlertTier')) {
+      data.putInt('td_pedestalAlertTier', newAlertTier)
+      firePedestalAlert(player.getServer(), newAlertTier)
+    }
     return
   }
 
+  firePedestalAlert(player.getServer(), 4)
   data.putInt('td_pedestalHealth', 0)
 
   // Visually match "the pedestal has fallen" - break the actual block

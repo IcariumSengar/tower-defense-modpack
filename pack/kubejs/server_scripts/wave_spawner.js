@@ -304,13 +304,29 @@ var ENDLESS_OTHER_TIERS = [
   ['undeadnights:elite_zombie', 'undeadnights:horde_zombie', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute', 'mutantszombies:rotten_mutant', 'mutantszombies:crawler'],
 ]
 
+// Real tuning fix, 2026-09-05 (direct live report: 2 Zombie/Mutant
+// Brutes spawned at wave 9/endless level 1, "too tanky that early").
+// Original tier-2 weight (min(60, endlessLevel*2)) gave a small but real
+// nonzero chance even at level 1 (weight 2 of ~71 total, ~2.8% per pick)
+// - with baseline `m` at ~15 picks for wave 9, a real ~7-8% chance of
+// hitting 2+ brutes purely by binomial variance, matching what was
+// reported. Not "reduce the odds," the ask was "push toward later
+// levels" - tier 2 (which includes both confirmed tank mobs,
+// zombie_brute/mutant_brute, alongside elite_zombie/horde_zombie/
+// demolition_zombie/rotten_mutant/crawler) is now HARD-GATED to zero
+// weight below BRUTE_TIER_MIN_LEVEL, not just low-probability - a
+// player literally cannot see one from this pool before that level,
+// then it ramps up steadily past it.
+var BRUTE_TIER_MIN_LEVEL = 5
+
 function pickEndlessOtherType(waveNumber) {
   // Weight shift is keyed on endlessLevel (1-40), not the raw wave
   // number - anchors the curve to the same 1-40 scale
   // hordeSizeScaleFactor/undeadnights_difficulty_config.json already use,
   // rather than stretching arbitrarily for a very long campaign.
   var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
-  var weights = [Math.max(5, 40 - endlessLevel), 30, Math.min(60, endlessLevel * 2)]
+  var tier2Weight = endlessLevel < BRUTE_TIER_MIN_LEVEL ? 0 : Math.min(60, (endlessLevel - BRUTE_TIER_MIN_LEVEL + 1) * 3)
+  var weights = [Math.max(5, 40 - endlessLevel), 30, tier2Weight]
   var totalWeight = weights[0] + weights[1] + weights[2]
   var roll = Math.random() * totalWeight
   var tierIndex = roll < weights[0] ? 0 : roll < weights[0] + weights[1] ? 1 : 2

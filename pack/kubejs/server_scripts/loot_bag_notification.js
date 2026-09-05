@@ -133,6 +133,15 @@ function notifyPickUpNotifier(player, stack) {
   }
 }
 
+// Real chat-summary text (bagName/items aggregation, the tick handler
+// that reported "You got: X, Y, Z") removed 2026-09-05 - confirmed live
+// that the Pick Up Notifier popup below actually works, making the
+// custom chat summary redundant (both existed to answer the same "what
+// did I get" question). pendingBagOpens itself stays - it's still the
+// real scoping gate keeping notifyPickUpNotifier() below limited to
+// items granted during an actual bag-open window, not every inventory
+// change ever (the whole "scoped to loot bags only" design intent from
+// when this was built - see this function's own header above).
 var pendingBagOpens = {}
 
 ItemEvents.rightClicked((event) => {
@@ -140,8 +149,6 @@ ItemEvents.rightClicked((event) => {
   if (!LOOT_BAG_NAMES[id]) return
   var uuid = `${event.entity.uuid}`
   pendingBagOpens[uuid] = {
-    bagName: LOOT_BAG_NAMES[id],
-    items: {},
     startTick: event.entity.getLevel().getTime(),
   }
 })
@@ -152,15 +159,15 @@ PlayerEvents.inventoryChanged((event) => {
   if (!pending) return
   var stack = event.getItem()
   if (stack.isEmpty()) return
-  var itemId = `${stack.id}`
-  pending.items[itemId] = (pending.items[itemId] || 0) + stack.getCount()
   notifyPickUpNotifier(event.entity, stack)
 })
 
-// Reports one tick after the bag's own right-click - real granting is
-// synchronous within that same tick, so by the next tick every
-// inventoryChanged event it produced has already fired and been
-// collected above.
+// Closes the bag-open window one tick after the right-click - real
+// granting is synchronous within that same tick, so by the next tick
+// every inventoryChanged event it produced has already fired and been
+// handled above. No longer builds/sends anything on its own (see the
+// removal note above) - just bounds pendingBagOpens so it doesn't grow
+// unboundedly.
 PlayerEvents.tick((event) => {
   var uuid = `${event.player.uuid}`
   var pending = pendingBagOpens[uuid]
@@ -168,9 +175,4 @@ PlayerEvents.tick((event) => {
   var level = event.player.getLevel()
   if (level.getTime() - pending.startTick < 1) return
   delete pendingBagOpens[uuid]
-
-  var itemIds = Object.keys(pending.items)
-  if (itemIds.length === 0) return
-  var summary = itemIds.map((id) => `${pending.items[id]}x ${id.split(':')[1]}`).join(', ')
-  event.player.tell(`§6[${pending.bagName}] §aYou got: ${summary}`)
 })

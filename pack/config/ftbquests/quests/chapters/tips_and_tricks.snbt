@@ -179,6 +179,23 @@
 			x: 4.0d
 			y: 1.0d
 		}
+		{
+			description: ["Hover an item and press A to bookmark it - pins it to its own row for quick access later, no more digging through the full list for something you use constantly."]
+			icon: "minecraft:nether_star"
+			id: "DF7085CA374CB1CB"
+			rewards: [{
+				id: "DA1AF05C49822249"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "AFE9438C0F52C2F0"
+				type: "checkmark"
+			}]
+			title: "Bookmark an Item"
+			x: 0.0d
+			y: 2.0d
+		}
 	]
 	title: "Tips & Tricks"
 }
