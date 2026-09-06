@@ -23,19 +23,58 @@ reflect actual current status.
 
 ## Ready to build
 
-**Held worldgen batch, 2026-09-05 — 3 items, dedicated later pass, not
-queued now:**
-1. Structure-proximity check may measure a structure's origin point
-   instead of its actual nearest edge — real fix would be
-   distance-to-nearest-perimeter-point instead of point-to-point.
-2. World depth reduction (~5 blocks to bedrock).
-3. More structure variety — density/distance already feels right, just
-   want more visual variety so the map doesn't look uniform. Real
-   candidates found: **Abandoned Watchtowers** (MasterOWS, 1.4M
-   downloads, Forge 1.20.1 v7.0) and **Abandoned Structures** (Berezka —
-   same trusted author as The Lost City's dependency). Needs careful
-   spacing work so new structures slot into the existing density budget
-   rather than adding to it, not just installed at default spacing.
+**Held worldgen batch, dispatched 2026-09-06 overnight (user unavailable
+to review same-night; working through in order per direct instruction,
+documenting reasoning for the morning):**
+1. **Done, commit cd18e9b.** Structure-proximity check really was
+   measuring a structure's origin chunk corner, not its nearest edge -
+   confirmed by decompiling ChunkGenerator/StructurePlacement directly.
+   Fixed to look up the real StructureStart and measure to the nearest
+   point on its actual BoundingBox (a real point-to-AABB distance,
+   clamped per axis). Along the way, found that reflection against
+   vanilla classes in this build sees SRG method names, not official
+   Mojang ones, even against this pack's own bundled mapping file -
+   every method resolved by "real" official name came back null on a
+   live boot until switched to the exact SRG identifiers (verified
+   against each method's real decompiled body, not just its shape).
+   Generalizes no_passive_mobs.js's existing EntityType-specific
+   finding to vanilla reflection in general. Sandbox-verified across 5
+   real coordinates: 4 computed a correct bounding-box distance
+   (including a correct 0 for a point actually inside a structure), 1
+   hit a real vanilla edge case (a piece-less StructureStart) and
+   correctly degraded to the old fallback instead of crashing.
+2. **Held, not started - real risk, not just caution.** "~5 blocks to
+   bedrock" reads as a literal world min_y/height reduction (shrink how
+   much diggable stone exists below the surface), but this world's
+   actual surface height is genuinely variable per-column - confirmed
+   by checking playtest_starter_kit.js's own spawn logic, which
+   computes floor Y at runtime from a real heightmap query, not a fixed
+   constant. A min_y cut deep enough to be safe under every biome's
+   lowest real terrain point (savanna/desert/badlands elevations
+   haven't been surveyed) risks either clipping terrain generation
+   entirely in a low spot, or leaving less than 5 blocks under it -
+   exactly the kind of subtle, hard-to-spot-until-a-real-playtest
+   mistake that already caused one real world-creation crash in this
+   pack's history (the earlier noise+fixed rebuild). A wrong version
+   here fails much worse than not shipping it - either a crash on world
+   creation, or a broken floor the user finds mid-session with no one
+   to flag it to overnight. Real options for whoever picks this up:
+   survey actual terrain-height range across the pack's real biome set
+   first (a concrete, boundable task) and pick a min_y with a real
+   safety margin under the lowest point found, or get the user's own
+   call on whether "5 blocks" should be measured from the base/spawn
+   point specifically rather than globally (a much smaller, safer
+   change - a `stone_depth`-based surface_rule addition near the base
+   only, not a dimension-wide min_y cut). Not guessing at either
+   overnight.
+3. **In progress.** More structure variety - density/distance already
+   feels right, just want more visual variety so the map doesn't look
+   uniform. Real candidates found: **Abandoned Watchtowers** (MasterOWS,
+   1.4M downloads, Forge 1.20.1 v7.0) and **Abandoned Structures**
+   (Berezka — same trusted author as The Lost City's dependency). Needs
+   careful spacing work so new structures slot into the existing
+   density budget rather than adding to it, not just installed at
+   default spacing.
 
 **Pedestal-under-attack alert — done, built 2026-09-05, real priority
 item (a lost run: "all of it silent and unknown to me").** The existing
