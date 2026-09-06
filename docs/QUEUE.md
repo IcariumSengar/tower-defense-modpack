@@ -1858,6 +1858,9 @@ below); Phase 5 not started:
   imports at boot, `airdrop summon` spawns a real lootable crate.
   **Both new mods (Inventory Profiles Next + the airdrop mod) need a
   full client restart to show up - not just a world/server reload.**
+  **User decision, 2026-09-06: keep random-in-border as-is, no change.**
+  Random landing stays intentional (encourages exploring the base's
+  surroundings), not revisited further.
 - **Second fresh-world playtest batch + loot-table dead-weight audit**
   — built, verified, and deployed 2026-09-06 (commits 46a884b, e0b4939,
   7e468b7). Full detail in FEATURES.md's "Second fresh-world playtest
