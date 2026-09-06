@@ -67,14 +67,31 @@ documenting reasoning for the morning):**
    change - a `stone_depth`-based surface_rule addition near the base
    only, not a dimension-wide min_y cut). Not guessing at either
    overnight.
-3. **In progress.** More structure variety - density/distance already
-   feels right, just want more visual variety so the map doesn't look
-   uniform. Real candidates found: **Abandoned Watchtowers** (MasterOWS,
-   1.4M downloads, Forge 1.20.1 v7.0) and **Abandoned Structures**
-   (Berezka — same trusted author as The Lost City's dependency). Needs
-   careful spacing work so new structures slot into the existing
-   density budget rather than adding to it, not just installed at
-   default spacing.
+3. **Done, commit dc87f16.** Installed both Abandoned Watchtowers
+   (MasterOWS) and Abandoned Structures (Berezka). Checked real biome
+   fit before installing rather than assuming: this pack's actual biome
+   set is badlands/desert/meadow/plains/savanna/savanna_plateau/
+   sunflower_plains (read straight from the dimension file). Watchtowers
+   targets plains/forest/birch_forest/flower_forest/taiga - only
+   "plains" overlaps, so real but limited. Abandoned Structures targets
+   the `#berezka_api:is_plains` tag, which covers plains,
+   sunflower_plains, AND meadow (confirmed by reading the tag's actual
+   contents from the already-installed Berezka API dependency) - a
+   solid fit.
+   **Real judgment call on spacing, not a precise fit**: retuned all 6
+   new structure_sets to spacing 80-120, distinctly sparser than this
+   pack's existing "background variety" tier (the philipsruins family
+   sits at 48/24), since each structure_set is its own independent
+   placement grid with no shared budget - adding 6 more at the existing
+   tier would be a real density increase even with no single type
+   feeling common. This doesn't perfectly net to zero (would need
+   touching the other ~39 already-tuned sets, too risky to rebalance
+   blind overnight) but keeps the net addition small. Worth a real
+   playtest opinion on whether it reads as "just right" or still a
+   touch busy.
+   Verified via a genuine fresh-world creation in the sandbox (not just
+   a reload) - clean boot, and all 6 new structures individually
+   confirmed real via `/locate`.
 
 **Pedestal-under-attack alert — done, built 2026-09-05, real priority
 item (a lost run: "all of it silent and unknown to me").** The existing
