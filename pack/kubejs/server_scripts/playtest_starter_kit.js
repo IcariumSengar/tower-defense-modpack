@@ -353,6 +353,60 @@ function buildStructureProximityCheck(level) {
     var searchRadiusChunks = boxInt(level, Math.ceil(STRUCTURE_MIN_DISTANCE / 16) + 2)
     var skipKnown = boxBool(level, false)
 
+    // Real fix (2026-09-06 follow-up to the follow-up): decompiled
+    // ChunkGenerator/StructurePlacement directly and confirmed
+    // findNearestMapStructure's own returned BlockPos is the structure's
+    // ORIGIN CHUNK CORNER (StructurePlacement.getLocatePos ->
+    // ChunkPos.getMinBlockX/Z, no size adjustment at all) - not any point
+    // on the structure's real footprint. Fine for a small structure; for
+    // a large multi-chunk one (a city, a big dungeon) the true nearest
+    // edge can be dozens of blocks closer than this origin point
+    // suggests, which is exactly the kind of gap that could let a
+    // structure read as comfortably clear via this check while actually
+    // sitting right next to (or under) the spot chosen. Real fix: look
+    // up the actual StructureStart at that origin (structure starts are
+    // always placed from their own origin chunk, so this reliably finds
+    // it) and measure to the nearest point on its real BoundingBox
+    // instead.
+    //
+    // **Real finding, not assumed - named by SRG identifier, not by
+    // clean name.** First attempt used the real official-mapping names
+    // (minX/maxX/getBoundingBox/etc, cross-checked against this exact
+    // build's own bundled Mojang mapping file) via
+    // findMethodByNameAndShape - every single one resolved to null on a
+    // live sandbox boot. A diagnostic dump of BoundingBox's own
+    // `getMethods()` at runtime showed why: reflection here sees SRG
+    // names (`m_162395_`, `m_162399_`, ...), not official ones. This is
+    // the same gap no_passive_mobs.js already documented for EntityType
+    // ("fully SRG-obfuscated with no clean id->category mapping"), just
+    // not previously known to be a GENERAL property of raw reflection
+    // against vanilla classes in this build rather than an EntityType-
+    // specific quirk - Forge's compile-time remapping only rewrites
+    // bytecode that CALLS these methods directly (mod Java source, or
+    // this pack's own already-working shape-only lookups, which never
+    // needed a name at all), not what a live `getMethods()` scan
+    // reports back to a script. Every SRG id below was cross-verified by
+    // reading the actual decompiled method BODY (not just its shape) to
+    // confirm which of several same-shaped candidates it really is -
+    // StructureManager alone has two different (BlockPos,Structure)
+    // methods (getStructureAt vs. getStructureWithPieceAt) that shape
+    // matching alone can't tell apart.
+    var structureManager = level.structureManager()
+    var holderCls = resolveClass(level, 'net.minecraft.core.Holder')
+    var holderValueMethod = findMethodByNameAndShape(holderCls, 'm_203334_', 0, null, null)
+    var getStructureAtMethod = findMethodByNameAndShape(
+      structureManager.getClass(), 'm_220494_', 2, null,
+      ['net.minecraft.core.BlockPos', 'net.minecraft.world.level.levelgen.structure.Structure']
+    )
+    var structureStartCls = resolveClass(level, 'net.minecraft.world.level.levelgen.structure.StructureStart')
+    var isValidMethod = findMethodByNameAndShape(structureStartCls, 'm_73606_', 0, 'boolean', null)
+    var getBoundingBoxMethod = findMethodByNameAndShape(structureStartCls, 'm_73601_', 0, 'net.minecraft.world.level.levelgen.structure.BoundingBox', null)
+    var boundingBoxCls = resolveClass(level, 'net.minecraft.world.level.levelgen.structure.BoundingBox')
+    var minXMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162395_', 0, 'int', null)
+    var maxXMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162399_', 0, 'int', null)
+    var minZMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162398_', 0, 'int', null)
+    var maxZMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162401_', 0, 'int', null)
+
     // Real distance (blocks) to the nearest structure of any kind, or
     // null if none within the search radius - the caller compares this
     // against STRUCTURE_MIN_DISTANCE itself, since findNearestMapStructure's
@@ -365,6 +419,32 @@ function buildStructureProximityCheck(level) {
       var result = findNearestMethod.invoke(gen, [level, allStructuresHolderSet, pos, searchRadiusChunks, skipKnown])
       if (result == null) return null
       var foundPos = result.getFirst()
+      var structureHolder = result.getSecond()
+
+      try {
+        var structure = holderValueMethod.invoke(structureHolder, [])
+        var structureStart = getStructureAtMethod.invoke(structureManager, [foundPos, structure])
+        if (structureStart != null && isValidMethod.invoke(structureStart, [])) {
+          var bbox = getBoundingBoxMethod.invoke(structureStart, [])
+          var minX = minXMethod.invoke(bbox, [])
+          var maxX = maxXMethod.invoke(bbox, [])
+          var minZ = minZMethod.invoke(bbox, [])
+          var maxZ = maxZMethod.invoke(bbox, [])
+          var clampedX = Math.max(minX, Math.min(x, maxX))
+          var clampedZ = Math.max(minZ, Math.min(z, maxZ))
+          var edx = x - clampedX
+          var edz = z - clampedZ
+          return Math.sqrt(edx * edx + edz * edz)
+        }
+      } catch (e) {
+        console.log('playtest_starter_kit.js: bounding-box lookup failed (' + e + '), falling back to origin-point distance for this candidate')
+      }
+
+      // Fallback if the bounding-box lookup didn't resolve (shouldn't
+      // normally happen given a structure start is always at its own
+      // origin chunk, but this is reflection reaching into internal
+      // generation state, not a stable public API) - degrade to the old
+      // origin-point distance rather than breaking the whole search.
       var dx = foundPos.getX() - x
       var dz = foundPos.getZ() - z
       return Math.sqrt(dx * dx + dz * dz)
