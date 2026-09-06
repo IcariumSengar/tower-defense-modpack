@@ -1762,6 +1762,46 @@ below); Phase 5 not started:
 
 ## Built, awaiting your next playtest
 
+- **Bounties quest chapter — built, sandbox-verified 2026-09-05 (commit
+  273dde5).** New chapter, 5 tiers on a persistent kill count: First Blood
+  (25), Exterminator (100), Culling (300), Reaper (750), Zombie Masher
+  (1500, repeatable every +1500 after - the endless-phase grind target).
+  Turret and trap kills count, not just direct combat, per direct
+  request. Decompiled every trap currently in the pack (Trapcraft Spikes/
+  Bear Trap, Create Addition's Barbed Wire) and found none of them attach
+  a killer entity to their damage source at all, so classifies by the
+  damage TYPE's real registry id instead (confirmed live that
+  `source.typeHolder().unwrapKey().get().location()` works from Rhino
+  even though getEntity()/getMsgId() don't) - a small blocklist excludes
+  genuinely no-cause deaths (fire, drowning, falling, etc.), everything
+  else counts by default, so any future trap/turret is included with
+  zero code changes. MobCategory-based hostile detection isn't reachable
+  from Rhino either (same gap, confirmed live) - hostile-mob-id list
+  stays hand-maintained, same as every other copy of it in this
+  codebase. Sandbox-verified: 20/20 scripts load clean, FTB Quests loads
+  the new chapter with no parse errors (3 chapters, 36 quests). Full
+  quest-completion flow needs a real client to confirm.
+- **Wave-8+ speed-clear bonus airdrop — built, sandbox-verified
+  2026-09-05 (commit 766be2e).** Installed Paojiao134's Airdrop (real
+  Forge 1.20.1 command support, confirmed via decompile - the other
+  candidate, Simply Airdrops, has no commands at all). Clear a wave
+  within 180s of its mobs finishing spawning (estimate, not measured -
+  adjust once real wave-8+ clear times are known) and a crate drops with
+  a curated haul (legendary loot bag, netherite scrap, diamond blocks).
+  **Real behavior found via decompile + live test**: the mod's own
+  border-integration logic picks a random spot inside the CURRENT world
+  border once one exists, ignoring the command's position entirely - a
+  positioned summon silently did nothing until a real border was in
+  place, then worked. Since this pack always has a real border within
+  moments of a fresh join, the crate lands somewhere inside the player's
+  own currently-expanded territory, not pinned to the pedestal - decided
+  not to fight this with a worldborder trick (touching the real border
+  programmatically felt too risky to do solo overnight, and the
+  behavior is a reasonable fit for this pack's own border-centered
+  design anyway). Sandbox-verified end to end: mod loads clean, pool
+  imports at boot, `airdrop summon` spawns a real lootable crate.
+  **Both new mods (Inventory Profiles Next + the airdrop mod) need a
+  full client restart to show up - not just a world/server reload.**
 - **Second fresh-world playtest batch + loot-table dead-weight audit**
   — built, verified, and deployed 2026-09-06 (commits 46a884b, e0b4939,
   7e468b7). Full detail in FEATURES.md's "Second fresh-world playtest
