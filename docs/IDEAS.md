@@ -21,50 +21,205 @@ fit) rather than leaving them describing an outdated state.
 
 ---
 
-## Power system (Tier 3-4 machines)
+## Pedestal upgrades: health, armor, thorns as progression
 
-Not started — Tier 1-2 machines are deliberately fuel-free by design,
-so this only "switches on" once Tier 3 exists.
-- Wireless power (no cables, place a machine and it draws automatically)
-  is the intended feel. Reference: **Flux Networks** (closest match —
-  cross-dimension, per-network config). Alternatives: Wireless Networks
-  mod, RFTools Power Cells (linked cells = shared pool).
-- Open question: shared power pool/capacity limit, or unlimited draw
-  once a generator exists? Unresolved.
+Raised 2026-09-05 during a live playtest ("the pedestal should have
+some more starting health... it would be cool if we could think about
+how upgrading the pedestal's health, armor, thorns is part of the
+game"). The immediate quick fix (higher starting HP, +20% heal per wave
+clear) shipped separately — this entry is just the parked bigger idea:
+a real upgrade-point system where the player spends some currency/
+resource to raise the pedestal's max HP, add damage reduction (armor),
+and/or reflect damage back at attackers (thorns), across multiple
+purchasable tiers. Not scoped: what currency (gold? a dedicated point
+resource earned per wave?), how many tiers, whether upgrades are
+permanent or lost/reset like gear on wave 5, and how this interacts with
+the pedestal's mob-attack-vulnerability config. Revisit once the current
+playtest priorities clear.
+
+## Survey of similar-themed modpacks, 2026-09-04
+
+**Round 1 resolved 2026-09-04 — moved to FEATURES.md's "Polish/utility
+mod pass" entry.** Direct follow-up correction after the first pass
+(gameplay-mechanic finds) missed the actual ask: "dont like any of
+these... im thinking of mods/utilities/resource packs etc that would
+polish the pack rather than sweeping changes to gameplay." Real fix,
+also user-taught: use a CurseForge modpack's own **Relations →
+Dependencies tab** to get the real, complete mod list, not the
+marketing-blurb description — this surfaces far better candidates and
+is the technique to reuse for any future pack survey. Pulled full
+dependency lists from Troublesome Towers (197 mods) and Abandoned
+Apocalypse (141 mods, better genre fit), filtered for pure polish/
+utility (no new mobs, mechanics, or content systems), confirmed via
+AskUserQuestion rounds. Full picks + real Forge-1.20.1-availability
+verification + 2 real gotchas caught (a 3-way "Damage Numbers" naming
+collision; Fresh Animations/Tissou's Zombie Pack both being resource
+packs, not mods, needing EMF+ETF as real Forge infrastructure instead
+of Optifine) in FEATURES.md.
+
+Original framing preserved below for context on the caveat/process.
+**One correction to the "parked" note in it**: that applied to the
+gameplay-mechanic ideas the first pass surfaced (noise/light-attracts-
+hordes, player-side infection, player-count-scaling — all still
+genuinely parked, unchanged). It does NOT apply to the actual polish/
+utility mod picks that came out of round 1 above — those are real
+polish work, which is exactly what the current "polish before new
+tiers" priority asks for, not something waiting behind it.
+
+Direct request: look at other zombie-apocalypse/horde-defense modpacks
+for mods/mechanics we haven't considered. **Real caveat up front**: most
+CurseForge modpack pages have thin, marketing-style descriptions, not
+itemized mod lists — this is a partial survey built from what could
+actually be verified, not exhaustive.
+
+**Concrete, verified candidates:**
+- **Open Modular Turrets Reborn** — see "Machine progression, Tier 3-4"
+  above, real Forge 1.20.1 build confirmed, strong Tier 3 Auto-Turret
+  candidate.
+- **A siren/alarm block as a wave-start cue** — several real alarm/siren
+  mods exist for 1.20.1 (Orva Alarms and Sirens confirmed 1.20.1; PAM;
+  Alarms & Sirens on Modrinth), but every one of them is a
+  redstone-triggered cosmetic block, not an actual mob-detection system
+  — there's no mod that does "auto-detect approaching horde and sound
+  an alarm." The real idea worth keeping: our own wave-start hook
+  (`wave_spawner.js`) already exists and could trigger a real siren
+  block via a KubeJS-flipped lever/redstone signal at wave start,
+  layering a genuine alarm sound on top of the existing Wave Horn cue
+  using an off-the-shelf block instead of building new sound assets —
+  cheap, small-footprint, matches "prefer a mod's mechanic wholesale."
+
+**Mechanics seen in other packs, not mod recommendations — food for
+thought, not scoped:**
+- **Noise/light-attracts-hordes** ("Mustard Virus" modpack's own
+  framing: infected mobs "attracted to light, sound, and movement") —
+  would be a genuinely new mechanic (not a mod install), real tension
+  with base lighting/redstone/machine noise. Interesting fit for this
+  pack's "stay home and craft vs. venture out" choice (loud machines at
+  home could have a real cost), but this is new-mechanic-category work,
+  parked behind the current priority same as everything else.
+- **Infection-on-hit for the player** (seen in "Cursed Walking," "The
+  Hordes," and others as a genre staple) — TFTH's own infection system
+  already exists in this pack's mob roster but has never been extended
+  to the player; several packs build a whole progression around it.
+  Worth a real look at what TFTH itself might already support for
+  player-side infection before reaching for a different mod, given
+  TFTH's already installed.
+- **Player-count-scaled horde difficulty** (Troublesome Towers, Wave
+  Defense) — not relevant to a currently-singleplayer-assumed pack (see
+  the multiplayer all-players-killed decision in the current playtest
+  batch — this pack is drifting toward at least considering multiplayer
+  more seriously), but if that direction firms up, several packs already
+  have real, working patterns for this worth studying rather than
+  designing from scratch.
+
+**Packs surveyed, real findings (not all panned out):**
+- **Troublesome Towers** — closest thematic match to "tower defense +
+  expanding world border" of anything found; genuinely parallel design
+  (players defend one base inside a growing world border against an
+  evolving hostile faction). Its actual mod list wasn't published in
+  enough detail to extract concrete picks beyond the general shape
+  already confirming our own approach isn't a strange one.
+- **Cursed Walking** — zombie-phase escalation (runner zombies, brutes,
+  in later phases) matches our own wave-escalation shape closely, but
+  its actual defense-mod stack leans hard into firearms (Timeless and
+  Classic guns, Marbled's Arsenal/Melees) — a real aesthetic mismatch
+  with this pack's medieval-leaning Tier 1-2 (Trapcraft, Medieval
+  Defense Turrets), not recommended to pull from directly.
+  Considered and set aside for that reason, not missed.
+- **Wave Defense** (skyblock-flavored) — real mod picks worth noting:
+  Open Modular Turrets (its pre-Reborn, dead branch — see above for the
+  live one), Utility Mobs, Quiverbow/Quivermob (gun-themed, same
+  aesthetic-mismatch concern as Cursed Walking above).
+- Several other packs surfaced by name only, no real mod-list detail
+  extractable (Zombie Hordes, Abandoned Apocalypse, ZombieCraft,
+  PwrDown's Zombie Apocalypse, The Last Survivor, Mustard Virus,
+  Crafting Dead) — Crafting Dead in particular is PvP-multiplayer-
+  server-focused, a different genre fit than this pack's structure.
+
+**Worth a deeper pass later, not done here**: this was a first, fairly
+shallow survey (a handful of web searches, most modpack pages too thin
+to extract real mod lists from). If this direction is worth more time,
+a more thorough pass would mean actually opening each pack's full
+manifest/mod list (via a packwiz-style export or the pack's own
+changelog) rather than relying on marketing descriptions — genuinely
+more work, not done speculatively here.
+
+## Power system — moved to FEATURES.md 2026-09-01
+
+**Decided and fleshed out**: Immersive Engineering (generation) + Flux
+Networks (wireless distribution), tied to a new Refined
+Storage/Sophisticated Storage storage system in the same design pass —
+see FEATURES.md's "Storage & power system" entry under "Defense" for
+the full spec. Parked in QUEUE.md, not yet sent to build. The shared-
+pool-vs-unlimited-draw question from the original note here is still
+genuinely unresolved — carried forward into that entry rather than
+answered.
 
 ## Machine progression, Tier 3-4
 
 Tier 1 (Trapcraft) and Tier 2 (Trapcraft's Igniter/Fan/Magnetic Chest +
 Medieval Defense Turrets) are both specced now — see FEATURES.md. Tier
 3-4 are still just the original design-note sketch, not scoped:
-- **Tier 3 — powered** (needs the power system above): Tesla Coil
-  (chain-lightning), Auto-Turret, Flame Thrower Emplacement.
+- **Tier 3 — powered** (power system now resolved, see above): Tesla
+  Coil (chain-lightning) — **Immersive Engineering's own Tesla Coil is
+  now already in the pack once the power system above is built**, no
+  separate install needed for this piece specifically. Auto-Turret,
+  Flame Thrower Emplacement still unscoped.
 - **Tier 4 — elite/endgame**: AoE Devastator, Chain-Tesla Network.
 - Design lever, still valid: Tier 1-2 degrade from overuse (rebuild
   resource sink), Tier 3-4 need active power/fuel (different
   maintenance pressure) — two different flavors of resource tension for
-  early vs. late game.
-- Reference mods for these, never evaluated against actual flat/desert
-  world-gen or footprint cost: Thermal Expansion, Mekanism, Industrial
-  Foregoing (tiered component templates), IC2-style Tesla Coil vs.
-  Immersive Engineering Tesla Coil for the Tier 3 defense piece
-  specifically. **TurretCraft and K-Turrets** were also researched for
-  Tier 2's turret slot and passed over as too feature-rich for it
-  (smart auto-targeting, ammo GUIs, combat drones) — worth reconsidering
+  early vs. late game. **Whether the new power system retroactively
+  powers Tier 1-2 too is explicitly not decided** — see FEATURES.md's
+  entry — default assumption is it stays Tier 3-4 only, preserving this
+  split, unless told otherwise.
+- Reference mods for the rest of Tier 3-4, never evaluated against
+  actual flat/desert world-gen or footprint cost: Thermal Expansion,
+  Mekanism, Industrial Foregoing (tiered component templates).
+  **TurretCraft and K-Turrets** were also researched for Tier 2's
+  turret slot and passed over as too feature-rich for it (smart
+  auto-targeting, ammo GUIs, combat drones) — worth reconsidering
   either of them for Tier 3's Auto-Turret instead of researching fresh.
+  **New candidate, found via the 2026-09-04 similar-modpack survey (see
+  below): Open Modular Turrets Reborn** — real Forge 1.20.1 build
+  confirmed (the original Open Modular Turrets stops at 1.12.2; "Reborn"
+  is a from-scratch 1.20.1 revival, self-contained, no external
+  dependencies, its own reworked progression system). Not yet compared
+  against TurretCraft/K-Turrets on the specific "too feature-rich for
+  Tier 2, might be right for Tier 3" axis — worth a real look when Tier
+  3 gets picked up.
 
-## Deferred: custom loot materials, beyond vanilla-only
+## Custom loot materials, beyond vanilla-only — rule retired 2026-09-05, this draft tier structure is now live design material, not deferred
 
-The loot bag system is vanilla-materials-only by design (see
-FEATURES.md) — "we'll get to custom loot at some point" is still the
-standing call, not revisited. If it ever is, the original draft tier
-structure: Scrap/Bone Shards/Rotten Sinew (Tier 1) → Refined
-Alloy/Charged Dust/Venom Sacs (Tier 2) → Core Fragments/Volatile
-Essence (Tier 3), plus a Disassembler-style mechanic to break excess
-loot down a tier. **Trapcraft may already solve the Disassembler part**
-now that it's installed for Tier 1 traps — worth checking its own
-recycling-adjacent mechanics before building one from scratch, given
-it's already in the pack for a different reason.
+**Stale until 2026-09-06**: this section used to say the loot system was
+vanilla-materials-only "by design" and that was still the standing call
+— that's no longer true and hadn't been swept here when it changed.
+Real timeline: the vanilla-only rule was retired 2026-09-05, direct
+quote, "I want the game to feel like killing mobs means progressing
+your tech" (see FEATURES.md's "Loot bags" section) — custom/modded
+items are explicitly allowed now, especially top-tier rewards. **First
+attempted application retracted same day it was specced (2026-09-06)**:
+bonus rolls of Create-family items (`create:andesite_alloy`,
+`createaddition:iron_sheet`/`iron_wire`) — pulled after a real
+correction, see the new "Loot shouldn't hand out shortcuts to what a
+placed home machine already makes" working principle below. Nothing
+modded has actually shipped into loot yet; still open until Tier 3-4
+ships real components nothing at home can make.
+
+The original draft tier structure below was written before any of that
+existed — it's **entirely custom invented materials** (not from any
+installed mod), a different, bigger idea than the modded-Create-items
+approach that's actually shipping now: Scrap/Bone Shards/Rotten Sinew
+(Tier 1) → Refined Alloy/Charged Dust/Venom Sacs (Tier 2) → Core
+Fragments/Volatile Essence (Tier 3), plus a Disassembler-style mechanic
+to break excess loot down a tier. Worth a real decision at some point:
+does this pack want *both* (real modded items as shortcuts/rewards, plus
+a wholly invented material economy on top), or does the modded-items
+approach already scratch this itch and the invented-tier idea should be
+dropped? Not decided either way. **Trapcraft may already solve the
+Disassembler part** now that it's installed for Tier 1 traps — worth
+checking its own recycling-adjacent mechanics before building one from
+scratch, given it's already in the pack for a different reason.
 
 ## Biomes O' Plenty — richer multi-biome path (resolved differently, not pursued)
 
@@ -122,23 +277,22 @@ genuine custom Container/Menu via `StartupEvents.registry('menu', ...)`
 core alone — needs an in-game check, not another search). Parked, not
 being pursued right now per direct request.
 
-## Keeping the designed (waves 1-8) campaign interesting — unranked ideas
+## Keeping the hand-authored ramp (waves 1-8) interesting — unranked ideas
 
-Note: item 2 below (a distinct wave-8 finale) is partly superseded by
-the endless phase scaling work in progress — waves 9+ becoming a real,
-escalating system of their own already gives wave 8 a natural "and now
-it gets serious" pivot it didn't have when it just repeated forever.
-Still worth a dedicated finale beat on top of that, not a replacement.
+**Dropped 2026-09-06**: the "distinct wave 8 finale mechanic" idea that
+used to live here. Stale premise — waves 1-8 aren't a self-contained
+campaign with wave 8 as its ending, they're the hand-authored ramp
+before the endless phase (already built, 40 escalating difficulty
+levels) takes over and keeps going forever. There's no ending for a
+finale mechanic to attach to. See FEATURES.md's "Full zombie-apocalypse
+roster pivot" for the corrected framing.
 
-1. Smaller narrative beats mid-campaign (a diary page, a distant
-   explosion, a radio crackle at wave 3 or 4), not saving all the story
-   for the wave-5/wave-8 beats that already exist.
-2. A genuine, distinct wave 8 finale mechanic beyond a scaled
-   composition — it's the real end of the designed campaign (that role
-   used to belong to wave 5 before the campaign grew).
-3. A supply-drop event during the peacetime countdown gap — gives the
+1. Smaller narrative beats mid-ramp (a diary page, a distant explosion,
+   a radio crackle at wave 3 or 4), not saving all the story for the
+   wave-5 beat that already exists.
+2. A supply-drop event during the peacetime countdown gap — gives the
    3-minute wait a reason to move around instead of standing still.
-4. A rotating wave modifier ("faster mobs this wave," "no sound cue
+3. A rotating wave modifier ("faster mobs this wave," "no sound cue
    this wave") — cheap variety layered on existing systems, no new
    content needed.
 
@@ -201,14 +355,27 @@ Mostly still genuinely open:
 - Full machine list beyond Tier 1 — more types likely as Tier 2-4 get
   designed.
 - Power system: shared pool/capacity limit, or unlimited draw?
-- Whether the vanilla-materials-only loot decision sits comfortably
-  with a scrap/salvage aesthetic long-term, or whether that's the real
-  argument for eventually revisiting custom materials.
+- **Resolved 2026-09-05** — the vanilla-materials-only loot rule was
+  retired, not just questioned; see the "Custom loot materials" section
+  above. What's still genuinely open is the *shape* of what replaces it
+  (modded items as shortcuts vs. a wholly invented material economy vs.
+  both).
 
 ---
 
 ## Working principles (apply these going forward, don't re-litigate)
 
+- **Loot shouldn't hand out shortcuts to what a placed home machine
+  already makes** — direct principle (2026-09-06): the pack is built
+  around a real choice between staying home (crafting/building with
+  placed machines and mob-kill materials) and venturing beyond the
+  world border into dangerous structures (leaving the base unguarded
+  for things you can't get any other way). Putting a home machine's own
+  output in a loot bag/chest as a "bonus shortcut" collapses that
+  choice instead of rewarding it. Caught when a proposed spec put the
+  Press/Rolling Mill's own outputs (Iron Sheet/Iron Wire) in loot bags —
+  retracted, see FEATURES.md's "Modded crafting materials in loot."
+  Applies to any future loot spec, not just that one.
 - **Keep footprint small** — default to the leaner option for anything
   proposed on this session's own initiative; call out footprint cost
   before suggesting something bulky.
@@ -242,14 +409,29 @@ Mostly still genuinely open:
   was actually intended, every time.** Recurred often enough to be a
   pattern, not a one-off: the Pure Suffering branch mismatch, the two
   same-named-but-different-API "KubeJS-Curios" projects, the
-  Quest_play/berezka "Abandoned structures" naming collision, and (same
-  report) both new post-apocalyptic structure mods — one whose Modrinth
-  listing under that exact name is a different, wrong mod entirely (the
-  real one is CurseForge-only), the other where Modrinth surfaces a
-  different author's "remaster." The fix each time was the same: confirm
-  the real listing directly (author, platform, and — best case — a
-  hash/checksum match against what's actually pinned) rather than
-  trusting the first search result with a matching name.
+  Quest_play/berezka "Abandoned structures" naming collision, both new
+  post-apocalyptic structure mods in that same report, and (2026-09-01)
+  a "Controlling" search that surfaced an unrelated vampire roleplay mod
+  and a "Mob Dismemberment" search that surfaced the wrong loader's
+  variant. The fix each time was the same: confirm the real listing
+  directly (author, platform, and — best case — a hash/checksum match
+  against what's actually pinned) rather than trusting the first search
+  result with a matching name. **Root cause, not just symptom**:
+  CurseForge's own search matches against a mod's description text, not
+  just its title — a completely unrelated mod can rank for a query if
+  the right words appear anywhere in its blurb. Searching isn't a
+  substitute for opening the actual project page.
+- **A dedicated-server sandbox test doesn't cover client-only mods
+  correctly, since this pack's live instance actually runs as an
+  integrated singleplayer client, not a real dedicated server.** Mob
+  Dismemberment crashed the sandbox outright (referenced a client-only
+  vanilla class during common setup) purely because the test harness
+  always launches as a true dedicated server — a real, structural blind
+  spot in that testing method, not a bug in the mod. The actual fix was
+  correcting packwiz's `side` metadata (defaulted to `"both"`, should be
+  `"client"`) and excluding the mod from server-sandbox retests, not
+  anything about the mod itself. Worth remembering for any future
+  client-only addition (shaders, HUD mods, visual effects).
 - **A crash report's own Details/Feature section names the actual
   structure/mod involved — read that line first, before speculating
   about which recently-added thing is responsible.** Cost a full round
