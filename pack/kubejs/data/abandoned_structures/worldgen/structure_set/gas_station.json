@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "abandoned_structures:gas_station",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "berezka_api:berezkas_structure_placement",
+    "spacing": 80,
+    "separation": 32,
+    "salt": 512251957
+  }
+}

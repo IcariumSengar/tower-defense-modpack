@@ -438,8 +438,18 @@ hash = "1663acb65340088490f63c0288cedcbe5a63d5e3ec97d8dd8ace593703627820"
 metafile = true
 
 [[files]]
+file = "mods/abandoned-structures.pw.toml"
+hash = "ffd66c098137b00a69ab47e9d5589790e33d62f29c9790c406dc2530e0d32297"
+metafile = true
+
+[[files]]
 file = "mods/abandoned-urban.pw.toml"
 hash = "a4ca16a107eca67cd789363e67b823e985f2732145a5a7199bc104d3832c45d6"
+metafile = true
+
+[[files]]
+file = "mods/abandoned-watchtowers.pw.toml"
+hash = "b7c88d8a2b58f8729e735cd858459b96b33c851a94263118a6763e7c4dfd3118"
 metafile = true
 
 [[files]]

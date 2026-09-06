@@ -1,0 +1,13 @@
+name = "Abandoned Watchtowers"
+filename = "Abandoned Watchtowers 7.0 Forge 1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "9d6d9a9d4c601155d73e84d12d8acb858699d5ce"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7776825
+project-id = 1274025
