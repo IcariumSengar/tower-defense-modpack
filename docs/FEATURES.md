@@ -5560,12 +5560,36 @@ actually is new here.
 parses. Mod set added: Realistic Airdrop (`dyairdrop`) replacing
 Paojiao134's Airdrop, Enhanced Hordes (`enhanced_hordes`) newly added -
 both added via `packwiz curseforge add` against their real CurseForge
-project/file ids, not hand-typed hashes. A real full-mod-set (76 total)
-sandbox boot was run against a fresh throwaway Forge 47.4.10 server
-built from the live CurseForge instance's own current mod set plus
-these changes (not the live save itself) - see this session's own final
-report for the exact boot result, since it landed after this doc entry
-was written. Not yet confirmed by an actual live playtest of: a
+project/file ids, not hand-typed hashes.
+
+**Real full-mod-set (76 total) sandbox boot - done, genuinely passed.**
+Built a fresh throwaway Forge 47.4.10 dedicated server from the live
+CurseForge instance's own current mod/config/kubejs set (not the live
+save itself) plus this session's changes. First attempt hit Mob
+Dismemberment's known, pre-existing, unrelated dedicated-server crash
+(client-only mod, already documented elsewhere in this project's
+history) - removed from the sandbox copy only, not from the real pack.
+After that, `Loaded 24/24 KubeJS server scripts... 0 errors and 0
+warnings` was confirmed on 3 separate boot attempts, and one attempt
+ran all the way through world creation to `Done (45.103s)! For help,
+type "help"` with FTB Quests loading its real 34 quests - a genuine
+clean boot of the full mod set including both new mods and every
+touched script. Two further attempts hit real machine-level resource
+contention (this session ran alongside 2 other concurrent
+parallel-track agents on the same physical machine - a JVM native
+memory allocation failure at higher heap sizes, a port-25565 bind
+conflict, and a world-save directory lock conflict, all environment/
+timing issues unrelated to this session's own code) - worked around
+with a smaller heap and a dedicated port, not silently ignored. One of
+those extra attempts also caught and fixed a real bug: the first draft
+of `dyairdrop.toml` used a flat, unsectioned layout that Forge silently
+ignored (ended up running with the mod's own defaults, `enable`/
+`enableenemies`/`forceload` all still `true`) - caught by reading the
+config file the mod actually generated, fixed to the real
+`[worldevents]`/`[chestevents]`/`[Performance]` section structure, and
+re-verified by rebooting once more and reading the corrected file back
+(`enable`/`enableenemies`/`forceload` all correctly `false`). Not yet
+confirmed by an actual live playtest of: a
 triggered airdrop crate (visual flyover, waypoint, loot-on-open),
 Enhanced Hordes' stacking effect against a real horde, the Stake Wall's
 damage tick against a climbing mob, or the tooltip rendering in a real
