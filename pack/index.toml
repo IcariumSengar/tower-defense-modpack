@@ -5,16 +5,16 @@ file = "config/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
-file = "config/airdrop/wave8_bonus.json"
-hash = "c826a792e20fb2cc22d1e2bbe016471198acb81f64814af03517f8af28e020ef"
-
-[[files]]
 file = "config/bountybags-common.toml"
 hash = "108c4151cb64cc39375bb6ff0d7108abe7645dfaf62bc2f696ab76f008c194c0"
 
 [[files]]
 file = "config/createaddition-common.toml"
 hash = "2884ac3a44f6b6f6cf18b0c7d1a2d3fafca0c72b69c0d52df9c8b503053be949"
+
+[[files]]
+file = "config/dyairdrop.toml"
+hash = "bee952e4e6628c590169afd2e4dc6aa95f5f5c5ca0ffcc7887272dfed1605563"
 
 [[files]]
 file = "config/epicsiegemod-common.toml"
@@ -109,6 +109,10 @@ file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "kubejs/client_scripts/tooltip_tier_colors.js"
+hash = "2960b892cdd20d8b0745d6b12e14cdcd5d563d539791b5d46414a6dfd2d2f51d"
+
+[[files]]
 file = "kubejs/data/abandoned_structures/worldgen/structure_set/gas_station.json"
 hash = "ee4e9b665a4210faf964f28aad853945a5f2f8ec41c2074af15ef582a33d3144"
 
@@ -183,6 +187,10 @@ hash = "2104e96527eba9ba96b58ebc68e0140a85905d14bdf8789da098793fd47d0011"
 [[files]]
 file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json"
+hash = "8ad8a12a9059bb5bf1d4a9a2419fc7bafe2630faf05686444c01495a3e05f429"
 
 [[files]]
 file = "kubejs/data/kubejs/tags/worldgen/biome/wasteland.json"
@@ -442,7 +450,7 @@ hash = "77be807c20863c62d761056d72fb65efc8493306ccefc43c8055a75873bb86d7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "de792f33f826b952ec64ecb873264ca48347ad79cc5f8b70de0af1f71df3bac9"
+hash = "bae82c7981530fc8472acb4560e5868c0303d9d623b1d8641a21642f67b80a02"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -450,7 +458,7 @@ hash = "77237e15e2ae30ff13b23b55524778bfe572cc12f7259163906a5be62fea9b2d"
 
 [[files]]
 file = "kubejs/server_scripts/tier1_recipes.js"
-hash = "8d293463ddc399bb98bbae1e8146ab2862589ce7e096687c04c3b074d70dc043"
+hash = "e1479e8d69841ebf416f0ea7b953e20df932da722013837252e3e08b6d3daf1b"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
@@ -458,7 +466,7 @@ hash = "c046ba5ba967f93c4f99b443ce5e9133b9abe303071cd2f25d732c2220007c50"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
-hash = "a5c88bab84889b1f45fbf54e3c3dcbe492fc82ab8a9a479f4f41398c3d6f35dc"
+hash = "a82551e0f93a1605bad87765674964cee47d849d28978ce191022d8a4ee2c98e"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
@@ -466,7 +474,7 @@ hash = "ee43c20e267fde7724011cea364d14b9a023718976e2d256f917b56899b3f2c8"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "2258c8290cbb116a2766c0596f310d0653b3fa3183b3e77199e34c49b6e416c4"
+hash = "fffb8d5e63a03ace224fe150d3349a910eec813c382889f22cf57203d1f9f08b"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"

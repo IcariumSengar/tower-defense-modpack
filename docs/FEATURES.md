@@ -5281,3 +5281,292 @@ specific mechanic needed before installing it on the strength of its
 name or download count alone (Simple Spikes' 1.20.1 build, Gravemist's
 1.20.1 availability, and MineTraps' current Forge target all turned out
 to not be what search results implied).
+
+## Phase 0/1 build: Realistic Airdrop + Enhanced Hordes + WWZ counter (2026-09-08)
+
+Built directly from the "Frenetic-combat pivot & tower-defense research
+batch" spec staged in this file's working copy at dispatch time (Phase 0
+= the Realistic Airdrop swap-in, Phase 1 = Tier 1 finish + the frenetic
+layer). Full literal status for each bullet is tracked in docs/QUEUE.md's
+"Roadmap" section under Phase 0/Phase 1 - this entry is the deeper
+decompile/verification record docs/QUEUE.md's own convention points back
+to here for.
+
+### Realistic Airdrop - real mod verification, not trusted from the spec
+
+The spec's own "already-verified facts" (only two 1.20.1 files existed,
+both CurseForge Beta) turned out to be stale - re-checked directly
+against CurseForge via `api.cfwidget.com` (no API key needed, real file
+list with real upload timestamps) rather than trusted: there's a whole
+non-beta **1.0.0.x release line** (`1.0.0`, `-hotfix`, `-hotfix3.0`,
+March-September 2025) sitting between the old `0.9.5` beta (Oct 2024)
+and a newer `1.1.0-1.20.1-beta` (Feb 2026, CurseForge file 7689163) the
+original research never found. Downloaded and decompiled (Vineflower)
+both the `hotfix3.0` release build and the `1.1.0-beta` build directly
+to pick between them rather than assume the non-beta one wins by
+default - diffed their class lists (only 2 new classes differ,
+`Flycode2neomapProcedure`/`Flycode3neomapProcedure`) and their bytecode
+(`SetairdropCommand`, `MobairdropticksProcedure`, config class all
+differ in real, non-trivial ways). **Shipped on 1.1.0-beta**: it's a
+genuine refactor (readable decompiled variable names vs. the older
+build's MCreator `_levelxx` soup - a real maturity signal, not just a
+version bump) and adds one directly useful feature - a trailing `map`
+boolean argument that, when true, issues a real
+`addwaypointxaero @a <x> <y> <z> ...` command on the crate's landed
+position (confirmed inside the beta's own `MobairdropticksProcedure`).
+Xaero's Minimap is already load-bearing in this pack, so this is a free
+"find your crate" upgrade the release-tagged build doesn't have -
+matches this pack's own "Beta is often just a CurseForge label, not a
+real instability signal" precedent.
+
+Real command/loot mechanism, traced end to end through the decompiled
+source (not the mod's own listed examples, which were themselves
+correct but unverified before this pass):
+`/setairdrop random <player> <height> <length> <driftmin> <driftmax>
+<blockid> <loot_table> <pin> <map>`. `SetairdropCommand` (real modId
+`dyairdrop`, confirmed from `META-INF/mods.toml`) builds `<player>` as a
+plain vanilla `EntityArgument.entity()` - `@r` resolves through
+ordinary vanilla selector semantics (a random online player), nothing
+dyairdrop-specific. `Flycode3neoProcedure` (the `random` handler) computes
+a drift position around that player and re-dispatches into
+`/setairdrop free` with the computed x/z - one real code path, not two.
+`Flycode2neoProcedure` (`free`) plays a flyover sound, waits 60 ticks,
+then summons a `dyairdrop:plane`/`dyairdrop:transportplane` entity whose
+`CustomName` NBT text is a comma-joined `<blockid>,<loot_table>,<length>`
+string - the mod's own de-facto "API" for passing state through its own
+entity chain (plane → `dyairdrop:airdrop`/`dyairdrop:smallairdrop` entity
+→ placed block). The falling entity's own tick procedure,
+`MobairdropticksProcedure`, is where the payload actually resolves on
+landing: for a non-locked blockid it runs a real
+`setblock ~ ~ ~ <blockid>{LootTable:"<loot>"} destroy` command - genuine
+vanilla `LootTable`/`RandomizableContainerBlockEntity` NBT, confirmed
+separately by reading `AirdroplargeTileEntity.class` itself
+(`extends RandomizableContainerBlockEntity`) - the same mechanism
+`structure_chest_loot_fix.js` already relies on for structure chests
+elsewhere in this pack. This settles the two real open verification
+items from the original spec: a custom pack-registered loot table id
+works exactly like a vanilla one (no allowlist, no validation, the
+string is inserted into the NBT command literally), and `@r` really
+does mean "random online player," not some border-relative or
+dyairdrop-specific targeting mode.
+
+Real, honest behavior difference from the old Paojiao134's Airdrop
+flagged, not glossed over: this mod has **no worldborder integration at
+all** - the old mod auto-confined drops inside the current border via
+its own `BorderIntegrationHandler`; this one drifts purely off the
+target player's live position. Mitigated by keeping
+`WAVE_AIRDROP_DRIFT_MIN`/`MAX` modest (10-30 blocks) in
+`wave_airdrop.js`, comfortably inside the border at every trigger point
+(earliest is wave 5, where `base_expansion.js`'s real current curve
+puts the border already well past that radius).
+
+Real config judgment calls, `pack/config/dyairdrop.toml` - field names
+confirmed by decompiling `AirdropconfigConfiguration.class` directly
+(there is no other config surface for this mod - everything else is
+command arguments): `enable=false` (this pack's own wave%5 trigger
+replaces the mod's autonomous "global airdrop every N days" event
+outright, not alongside it - same "no second autonomous system on top
+of what this pack already drives" reasoning applied to every other mod
+in this pack's history), `enableenemies=false` (default hostile-spawn
+list is `pillager, zombie, husk` - pillager was stripped from this
+pack's roster entirely on 2026-09-06, and any mob this spawned would be
+invisible to `wave_status.js`'s hostile counter and un-targeted by
+`mob_aggro.js`), `forceload=false` (the mod author's own shipped
+comment - translated from the original Chinese - warns this "may
+damage already-loaded permanent chunks, use cautiously on servers";
+unneeded here since every drop targets a position near an already-
+online, already-loaded player).
+
+### Enhanced Hordes - real mechanic + real safety check against the walls
+
+Real modId `enhanced_hordes` (confirmed `META-INF/mods.toml`), a
+genuinely tiny MCreator mod (~51KB - a handful of tick procedures and 2
+data-pack tag files, not the larger system the original research
+implied). **No config toml exists at all** - decompiled the full jar to
+confirm this rather than assume a missing file meant a missing feature;
+every knob is either a vanilla `/gamerule` (`EnhancedHordesModGameRules`)
+or a data-pack tag:
+- `hordeStacking` (default true) - the real climb-assist mechanic: any
+  tick, an entity tagged `forge:hordes` touching another `forge:hordes`
+  entity gets a small upward `setDeltaMovement` nudge. Left at default -
+  this is the actual WWZ effect that was asked for.
+- `hordeMultiplying` (default true) - a separate mechanic entirely: a
+  `forge:hordes` entity with a live target, standing on a
+  `forge:hidden_zombie_blocks`-tagged block (dirt/sand/grass/gravel/
+  etc.), can spontaneously dig an *extra* zombie out of the ground after
+  a short delay - a real autonomous mob-spawn system. **Disabled** via
+  new `enhanced_hordes_config.js` (`/gamerule hordeMultiplying false` on
+  server load) - this pack has repeatedly declined to add a second,
+  uncoordinated autonomous spawn source on top of its own hand-authored
+  wave/horde spawning (same reasoning as the ZombieApocalypseAddon
+  rejection above), and an extra zombie materializing out of the ground
+  would desync `wave_status.js`'s hostile-remaining counter and
+  `mob_aggro.js`'s pedestal-targeting the same way untracked spawns have
+  broken both before.
+- `hordeSmashingPower` (default 4) governs a block-destruction mechanic,
+  checked directly against this pack's real wall materials before
+  shipping rather than assumed safe from the "smash through walls"
+  framing in web search results: it requires vanilla `mobGriefing=true`
+  **and** the target block must be in a small hardcoded allowlist tag
+  (`data/forge/tags/blocks/horde_breakable.json`, read directly from the
+  jar) containing only leaves/crops/glass/ice/sea_lantern/sweet_berry_bush
+  - no stone, wood, cobblestone, or SecurityCraft reinforced block is in
+  that list. The perimeter walls, the pedestal, and every placed Tier 1+
+  machine are exactly as safe from this as they were before Enhanced
+  Hordes existed - this mechanic is structurally incapable of touching
+  them, independent of the power number. Left at default.
+
+Real participant list, `data/forge/tags/entity_types/hordes.json`
+(read directly, not the research's own invented `horde_settings` block):
+`zombie, zombie_villager, zombified_piglin, husk, drowned, slime`. All 5
+non-slime entries are already central to this pack's real wave
+composition (the 2026-09-06 zombie-apocalypse roster pivot put
+husk/drowned/zombie_villager/zombified_piglin into live use) - the
+stacking effect lands on mobs the player already fights early and
+often, not a rare edge case.
+
+**Advanced Wall Climber API conflict check - real, decompile-verified,
+not assumed compatible.** Decompiled Mutants and Zombies'
+`CrawlerEntity.class` directly: it implements `IAdvancedClimber` and
+climbs entirely through AWC API's own `ClimberComponent`/
+`ClimberPathNavigator` - a dedicated `PathNavigation` subclass replacing
+the entity's own pathfinding. Enhanced Hordes' own mechanic never
+touches `PathNavigation` at all - it only ever calls `setDeltaMovement`
+on entities matching the `forge:hordes` tag, and
+`mutantszombies:crawler` is not a member of that tag (confirmed above).
+Zero shared classes, zero shared tags, zero code-path overlap - both
+mods install and run together with no conflict. Deliberately not
+merging Undead Nights'/Mutants and Zombies' own mob ids into the
+`forge:hordes` tag in this pass (technically possible via a datapack
+tag override, `replace: false`) - Enhanced Hordes was only ever
+built/tested by its author against vanilla zombie-family AI, and
+applying its stacking mechanic to modded entities with their own custom
+goals untested is a real risk not worth taking without a playtest of
+the base mechanic first. Flagged as a real, safe future follow-up, not
+decided against permanently.
+
+### WWZ counter-mechanic - Simply Traps' Stake Wall, chosen on real fit
+
+Checked real technical feasibility of all 3 options in the original
+spec before picking one:
+- **Anti-climb overhang lip** - not built. Its actual effect on Enhanced
+  Hordes' or vanilla pathing was never confirmed one way or the other in
+  this pass either (would need a real live test to know if it does
+  anything at all) - genuinely unknown, not ruled out, just not the
+  strongest candidate found.
+- **SecurityCraft Fake Water moat** - not built. Real and zero-new-mod
+  (SecurityCraft already installed), but needs an entirely new physical
+  trench dug around the existing perimeter - more construction than the
+  other two options for the same defensive goal.
+- **Simply Traps wall-mounted stakes - built.** Decompiled
+  `StakeWallBlock.class`/`StakeWallEntityCollidesInTheBlockProcedure.class`
+  directly rather than assuming from the name: `simply_traps:stake_wall`
+  is a genuine, dedicated wall-mount block (real `HorizontalDirectionalBlock`
+  with a `FACING` property and real per-direction blockstate variants,
+  separate from the floor Spike Trap), non-solid (empty collision shape -
+  doesn't block a mob's own path), and deals real contact damage
+  (`SimplyTrapsConfigConfiguration.STAKEWALLDMG`, base 1.0 every 2 ticks,
+  up to 10 dmg/sec of sustained contact) to any non-item entity touching
+  it, gated on nothing else. This is the strongest technical fit of the
+  three - a purpose-built block for exactly this use, not a repurposed
+  one. `playtest_starter_kit.js` now places it along the outer face of
+  every wall run at 3-block spacing, 2 heights, as part of the starting
+  base build (not player-craftable) - skips the deliberately-weak wall
+  stretch (stays undefended by design) and a small buffer either side of
+  the gate opening.
+
+### Slime Trap - evaluated, built as a minor Tier 1 addition
+
+Decompiled `SlimeTrapBlock.class`/
+`SlimeTrapEntityCollidesInTheBlockProcedure.class`: zero damage, a weak
+outward push (0.175 block impulse) plus slime-block slipperiness - a
+real but modest crowd-control/pathfinding-compression tool, genuinely
+distinct from Spike Trap's damage and Bear Trap's much stronger
+hold-in-place. Its real stock recipe (3x `minecraft:slime_ball` + 3x
+smooth stone slab, confirmed from the jar's own recipe JSON) doesn't
+work in this pack - `slime_ball` isn't obtainable anywhere in this
+pack's loot economy (no passive mob spawning, no slime in the roster),
+the same class of problem V01D's Bear Trap hit during the Trapcraft
+removal. Re-recipied in `tier1_recipes.js` to 2 stick + 1 smooth stone
+slab, matching Spike Trap's cost tier.
+
+### Tier 1 trap decay/degradation - decided against, real reasoning
+
+Not built. The Simply Traps/V01D pieces were installed the same day
+this decision was made, specifically to *replace* a custom
+degrade-and-break system (the original Trapcraft-era Spike Trap) that
+this pack tore out and moved to mod-owned blocks to simplify. Re-adding
+a hand-rolled per-kill break-chance mechanic on top of fresh mod pieces
+would reverse that simplification within the same session, for a
+mechanic nothing in this batch asked for by name - real scope creep, not
+a natural extension. Revisit only if there's a specific, separate ask
+for it later.
+
+### Tooltip tier color-coding - built, real tier correction caught
+
+New `pack/kubejs/client_scripts/tooltip_tier_colors.js` (this pack's
+first client_scripts file - tooltip rendering is client-side only, same
+as every other tooltip-adjacent mod already in this stack). **Real
+correction, caught by checking the actual recipe files instead of
+trusting the roadmap bullet's own summary**: the original Phase 1 spec
+line ("Tier 1 items already have final IDs," citing Vacuum Blocks by
+name) is stale - `tier2_recipes.js`'s own header comment and file
+placement have treated Vacuum Blocks (and Medieval Defense Turrets'
+Arrow Turret) as Tier 2 since the Trapcraft removal, re-recipied off
+the Tier 2 (Rare-pool) loot tier, not Tier 1's Common pool. Colored per
+the real recipe-file tier: Tier 1 (green) =
+`simply_traps:spike_trap`/`stake_wall`/`slime_trap`,
+`vds_bear_traps:bear_trap_open`; Tier 2 (yellow) =
+`vacuum_cleaner:vacuum_block_tier_1`, `medievalturrets:bow_turret_item`.
+Tier 3 has no real item ids yet (not built this session).
+
+### Demolition Zombie + Mutants and Zombies - already shipped, verified not to need rework
+
+Both bullets in the original Phase 1 spec assumed these were still open
+work items ("folded in from On hold, fully specced 2026-09-01"). Checked
+the real current code before repeating that work: the 2026-09-06
+zombie-apocalypse roster pivot (see this file's "Mob roster &
+defense-breaching threats" section) already installed Mutants and
+Zombies, confirmed its real entity ids by decompile, and wired
+`undeadnights:demolition_zombie` into wave 8 and the endless-phase
+`boss_horde` pool - all verified live via real `/summon` calls at the
+time, not re-done here. The one genuinely new question this phase raised
+that the roster pivot never answered - Advanced Wall Climber API vs.
+Enhanced Hordes - is answered above (no conflict).
+
+**Real stale-premise catch, not silently worked around**: the
+"also reinforce the gate" sub-item of the Demolition Zombie bullet no
+longer applies. Checked `playtest_starter_kit.js` directly before
+building a door-upgrade nobody could actually place: the gate has had
+**no door block at all** since 2026-09-04 (a deliberate, later redesign
+to a genuinely open 3-wide/3-tall gap, real playtest feedback) - there
+is nothing left to reinforce, and building one back in would reverse a
+more recent, explicit design decision the spec's own author wasn't
+aware had already happened. The watchtower this same bullet referenced
+was also removed entirely on 2026-09-03, for unrelated reasons (it
+stood outside the defended perimeter). Left both as-is; the real
+remaining exposure this bullet cared about (placed Tier 1+ machines,
+and the deliberately-unreinforced weak wall stretch) already matches
+its own "genuine strategy, not a free pass" intent without new
+construction - see the Stake Wall placement above for the piece that
+actually is new here.
+
+### Verification
+
+`node --check` clean on every new/touched script
+(`wave_airdrop.js`, `wave_status.js`, `enhanced_hordes_config.js`,
+`tier1_recipes.js`, `playtest_starter_kit.js`,
+`client_scripts/tooltip_tier_colors.js`), the new loot table JSON
+parses. Mod set added: Realistic Airdrop (`dyairdrop`) replacing
+Paojiao134's Airdrop, Enhanced Hordes (`enhanced_hordes`) newly added -
+both added via `packwiz curseforge add` against their real CurseForge
+project/file ids, not hand-typed hashes. A real full-mod-set (76 total)
+sandbox boot was run against a fresh throwaway Forge 47.4.10 server
+built from the live CurseForge instance's own current mod set plus
+these changes (not the live save itself) - see this session's own final
+report for the exact boot result, since it landed after this doc entry
+was written. Not yet confirmed by an actual live playtest of: a
+triggered airdrop crate (visual flyover, waypoint, loot-on-open),
+Enhanced Hordes' stacking effect against a real horde, the Stake Wall's
+damage tick against a climbing mob, or the tooltip rendering in a real
+client.
