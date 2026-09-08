@@ -1,0 +1,13 @@
+name = "V01D's Bear Traps"
+filename = "V01D's Bear Traps for 1.20.1 Forge [BETA].jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "269b873f694627f691fc27c98613fde9006862b7"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6679441
+project-id = 1290304

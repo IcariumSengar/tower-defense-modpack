@@ -207,8 +207,8 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Iron tips lashed to a stick frame - not much, but it hurts whatever steps on it, and it costs almost nothing. Something to lean on before you have built anything sturdier."]
-			icon: "trapcraft:spikes"
+			description: ["Iron bars set into stone - not much, but it hurts whatever steps on it, and it costs almost nothing. Something to lean on before you have built anything sturdier."]
+			icon: "simply_traps:spike_trap"
 			id: "67A7BF98D2C077DE"
 			rewards: [
 				{
@@ -229,7 +229,7 @@
 			tasks: [{
 				consume_items: false
 				id: "1D65A5F1829C7DD2"
-				item: "trapcraft:spikes"
+				item: "simply_traps:spike_trap"
 				type: "item"
 			}]
 			title: "Better Than Nothing"
@@ -269,8 +269,8 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["A Bear Trap won't kill on its own, but it holds whatever steps in it in place - long enough for you or something else to finish the job. Resets itself once it's sprung, so it's not a one-time thing."]
-			icon: "trapcraft:bear_trap"
+			description: ["A Bear Trap won't kill on its own, but it holds whatever steps in it in place - long enough for you or something else to finish the job. Reset it by hand once it's sprung."]
+			icon: "vds_bear_traps:bear_trap_open"
 			id: "3F6D91E4A2C7B850"
 			rewards: [
 				{
@@ -291,7 +291,7 @@
 			tasks: [{
 				consume_items: false
 				id: "5D7488609EA3E850"
-				item: "trapcraft:bear_trap"
+				item: "vds_bear_traps:bear_trap_open"
 				type: "item"
 			}]
 			title: "Something Crueler"
@@ -374,70 +374,8 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["Wire an Igniter to redstone and it lights the ground on a signal - undead catch fast, and fire keeps working after you've moved on to the next thing. It'll ignite anything flammable nearby too, not just what you're aiming at, so mind what's next to it."]
-			icon: "trapcraft:igniter"
-			id: "60D8DCF2E4CB570F"
-			rewards: [
-				{
-					id: "4491B1785A049FFB"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-				{
-					count: 8
-					id: "4C3AC23715EC7026"
-					item: "minecraft:redstone"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "2308FBFB34BD44ED"
-				item: "trapcraft:igniter"
-				type: "item"
-			}]
-			title: "Spark and Flame"
-			x: 19.0d
-			y: 1.5d
-		}
-		{
-			dependencies: ["1454951A7FB14A26"]
-			description: ["A Fan pushes anything caught in front of it, on a signal - mobs, items, doesn't discriminate. Point it right and it does the aiming for you, funneling things into whatever's actually going to finish them off."]
-			icon: "trapcraft:fan"
-			id: "22F3265BCDFA63B5"
-			rewards: [
-				{
-					id: "29DB799954472846"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-				{
-					count: 8
-					id: "29C2C86563F18758"
-					item: "minecraft:redstone"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "113A0DEA5FD00904"
-				item: "trapcraft:fan"
-				type: "item"
-			}]
-			title: "Herd Them In"
-			x: 19.0d
-			y: 3.0d
-		}
-		{
-			dependencies: ["1454951A7FB14A26"]
-			description: ["A Magnetic Chest pulls in anything dropped within about 10 blocks, automatically, the moment it's placed - no wiring, no redstone, nothing to hook up. Saves you walking back after a fight to collect what's left."]
-			icon: "trapcraft:magnetic_chest"
+			description: ["Pulls dropped items in from straight ahead of it - point it at a hopper feeding a chest and drops walk themselves in. Not a wide net like whatever the last owner had rigged; aim it where the fighting actually happens."]
+			icon: "vacuum_cleaner:vacuum_block_tier_1"
 			id: "573EEB3757B78B97"
 			rewards: [
 				{
@@ -458,7 +396,7 @@
 			tasks: [{
 				consume_items: false
 				id: "26CCD7A04ABD1646"
-				item: "trapcraft:magnetic_chest"
+				item: "vacuum_cleaner:vacuum_block_tier_1"
 				type: "item"
 			}]
 			title: "Waste Not"

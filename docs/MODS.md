@@ -35,7 +35,9 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | FTB Library | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge) | 2001.2.13 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 | FTB Teams | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge) | 2001.3.2 (1.20.1 Forge) | Hard dependency of FTB Quests | — | required |
 | FTB XMod Compat | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ftb-xmod-compat) | 2.1.2 (1.20.1 Forge) | Added 2026-08-29 so clicking an item in a quest jumps to its JEI recipe — does nothing by itself, only bridges FTB Quests/JEI/KubeJS when it detects them installed | Both hard dependencies (FTB Library, Architectury) already satisfied by what's installed; no new dependency chain | testing |
-| Trapcraft | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trapcraft) | 2.10.2 (1.20.1 Forge) | Added 2026-08-29 to replace the custom Tier 1 machines (Spikes, Bear Trap) after direct playtest feedback that the custom design "sucked" — see the "Tier 1 replaced with Trapcraft" entry under Custom glue below | Standalone, no hard dependency beyond Forge/Minecraft | testing |
+| Simply Traps | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/simply-traps) | 1.7 (1.20.1 Forge) | Added 2026-09-08, replaces Trapcraft's Spikes (`spike_trap`) — see "Trapcraft dropped entirely" in FEATURES.md | Standalone, no dependencies | testing |
+| V01D's Bear Traps | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/v01ds-bear-traps) | BETA build (1.20.1 Forge) | Added 2026-09-08, replaces Trapcraft's Bear Trap (`bear_trap_open`). Ships with no crafting recipe at all (world-gen only, confirmed by decompile) — a KubeJS recipe was added from scratch in `tier1_recipes.js` | Standalone, no dependencies | testing |
+| Vacuum Blocks | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/vacuum-blocks) | 1.20.1 build, 2023-08-21 (1.20.1 Forge) | Added 2026-09-08, replaces Trapcraft's Magnetic Chest (`vacuum_block_tier_1`). **Real mechanic difference, verified by decompile**: directional pull into a connected hopper, not the old single-block omnidirectional radius — a first candidate (Smart Storage) was ruled out first after decompiling it found no item-collection logic anywhere in the jar despite its store description claiming one | Standalone, no dependencies | testing |
 | Treasure2 | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/treasure2) | 4.0.5 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — desert ruins/wishing wells + general surface/dungeon structures, 18+ tiered locked treasure chests including Mimic Chests. Confirmed directly from its own structure JSONs that these actually target the `minecraft:desert` biome this world uses | Requires GottschCore (added alongside it) | testing |
 | GottschCore | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/gottschcore) | 2.8.0 (1.20.1 Forge) | Hard dependency of Treasure2 | — | required |
 | Create | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/create) | 6.0.8 (1.20.1 Forge) | Added 2026-08-30 for the Schematicannon/Schematic-and-Quill/Schematic Table — the base-expansion-into-rooms mechanic (see FEATURES.md's "Base expansion into rooms/corridors"). Full mod, not an extraction — see the Custom glue entry below for why the planned "standalone" extraction was rejected | Jar-in-jars Flywheel, Ponder, Registrate, and MixinExtras itself (`META-INF/jarjar/`, confirmed from the jar directly) — no separate packwiz entries needed for any of them. Optional JEI integration satisfied by the JEI version already installed | testing |
@@ -43,6 +45,19 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | KubeJS-Curios | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/kubejs-curios) | 1.0.4 (1.20.1 Forge) | Added 2026-08-30 alongside Curios API — bridges Curios' equip/unequip/tick-while-worn hooks to KubeJS scripts. CurseForge project 1255211, author zhaijineet — a *different*, same-named project (Prunoideae/KubeJS-Curios) also exists with a different API; installed the one the actual CurseForge listing links to, not assumed from the name | Requires Curios API, Architectury API, KubeJS, Rhino — all already present, packwiz added no new dependency chain | testing |
 
 ## Removed mods
+
+- **Trapcraft** (CurseForge, 2.10.2, 1.20.1 Forge) — removed 2026-09-08,
+  direct feedback: didn't like its traps, wanted the Magnetic Chest's
+  mechanic kept but moved to a different mod. Full removal, not a
+  partial trim: Spikes, Bear Trap, Igniter, Fan, and Magnetic Chest all
+  gone. Replacements: Simply Traps + V01D's Bear Traps for the two Tier
+  1 traps, Vacuum Blocks for the Magnetic Chest's role (see the new
+  table rows above); Igniter and Fan were cut with no replacement (no
+  real mod found for either, and both were thin content - one item-task
+  quest each). Full writeup, including the real research trail (a
+  user-supplied mod-research dump had 3 wrong claims, all caught by
+  checking the real CurseForge files list before trusting the text) in
+  FEATURES.md's "Trapcraft dropped entirely" entry.
 
 - **YUNG's Better Desert Temples** + its hard dependency **YUNG's API**
   (CurseForge, 3.0.3 / 4.0.6, 1.20.1 Forge) — added 2026-08-30 for the

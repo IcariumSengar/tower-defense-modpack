@@ -77,40 +77,49 @@ const RARE_MOBS = ['mutantszombies:split_head_zombie']
 const EPIC_MOBS = ['undeadnights:elite_zombie', 'zombiesmore:boomer_zombie']
 const LEGENDARY_MOBS = ['mutantszombies:crawler', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
-// Legendary jackpot roll (2026-09-06, raised in the "some ideas..."
-// batch: "during any wave there is a slim chance of a Legendary Loot
-// bag being dropped"). Additive to the per-tier gating above, not a
-// replacement - every wave mob, regardless of its own tier, gets a
-// SECOND independent roll at a flat 2% to also drop a bonus
-// `bountybags:legendary_loot_bag`. This is what makes it read as a
-// jackpot: a trash-floor zombie kill can genuinely pay off big, not
-// just the wave-8 finale mobs that already roll Legendary on their own
-// terms. Deliberately kept in this file only - no touches to
-// wave_spawner.js/wave_status.js/mob_aggro.js.
+// **Redesigned 2026-09-08, direct ask - real design change, not a
+// tuning pass.** Old system (kept above in git history, not here)
+// gated bag TIER by mob tier - only RARE_MOBS/EPIC_MOBS/LEGENDARY_MOBS
+// (a small, tougher subset of the roster) could ever roll a Rare/Epic/
+// Legendary bag at all, on top of the flat 2% Legendary "jackpot" any
+// mob could roll. Correctly-diagnosed complaint: since higher tiers
+// were gated behind mobs that are themselves rare across the campaign,
+// the player rarely got a real shot at a good bag. Fix: every wave mob
+// kill, regardless of type, gets an independent roll at EACH tier's own
+// flat absolute chance - same "generalize the jackpot's shape to every
+// tier" idea the user asked for, just implemented as 4 independent
+// per-tier rolls (matching this file's own existing LootJS idiom -
+// randomChance().addLoot() per tier) rather than a single roll-then-
+// subdivide, since LootJS's simple API doesn't have a clean built-in
+// "roll once, pick a weighted outcome" primitive and the old jackpot
+// mechanic already worked exactly this way (independent rolls that CAN
+// double up on the same kill, extremely rarely - a feature, reads as an
+// extra-lucky jackpot, not a bug).
+//
+// Numbers, worked estimate (not a first guess): target was preserving
+// Uncommon's existing ~50% per-kill rate exactly, since that's the
+// tier the gold_nugget economy fix (2026-09-05) was calibrated against
+// - changing it would re-break pacing that was hard-won. Rare/Epic
+// raised from "basically inaccessible outside 1-2 specific mob types"
+// to a real flat shot on every kill; Legendary held at 2%, matching the
+// old jackpot's own rate almost exactly (was 4% tier-gated + 2% jackpot
+// for the 4 Legendary-tier mobs specifically, ~2% blended average
+// pack-wide since those mobs are a small fraction of total kills).
+// Real, deliberate trade-off: total loot volume across the whole
+// roster rises, since mob types that previously couldn't roll Rare/
+// Epic/Legendary at all now can, on top of keeping their own existing
+// odds. That's the actual point of the fix, not a side effect to hide.
 const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
-const JACKPOT_CHANCE = 0.02
 
 // `LootJS.modifiers(...)` / `.addEntityLootModifier(id).randomChance(n).addLoot(id)`
 // - same confirmed-working pattern as the old system, just pointed at
-// bountybags:*_loot_bag instead of the custom kubejs:* items.
+// bountybags:*_loot_bag instead of the custom kubejs:* items, and now
+// applied to every wave mob instead of a tier-specific subset.
 LootJS.modifiers((event) => {
-  UNCOMMON_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.5).addLoot('bountybags:uncommon_loot_bag')
-  })
-
-  RARE_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.25).addLoot('bountybags:rare_loot_bag')
-  })
-
-  EPIC_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.1).addLoot('bountybags:epic_loot_bag')
-  })
-
-  LEGENDARY_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.04).addLoot('bountybags:legendary_loot_bag')
-  })
-
   ALL_WAVE_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(JACKPOT_CHANCE).addLoot('bountybags:legendary_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.5).addLoot('bountybags:uncommon_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.15).addLoot('bountybags:rare_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.07).addLoot('bountybags:epic_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.02).addLoot('bountybags:legendary_loot_bag')
   })
 })

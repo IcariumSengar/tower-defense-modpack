@@ -30,7 +30,7 @@ hash = "98be53928db0536795792d19ddf238824d256db8bff1951c0fcc9c445ec1dc9c"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "21d33f3ad469e4b1c2132112e8a1c0d4faca6ec968c48df97012e024d37b0edd"
+hash = "9bd5c78017671f636157c70787690ca6f48d0092634a0d99abe092a108c6dd4d"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -409,8 +409,12 @@ file = "kubejs/server_scripts/flesh_death_sound.js"
 hash = "efe4663da4fb931fa85c7bbf4b8d129d6405007c1aebac6f075aa994afa7817f"
 
 [[files]]
+file = "kubejs/server_scripts/ladder_climb_assist.js"
+hash = "5f3adb347ab499dcb9303392082e48c99b5c8f9b4eedf1a221e76d21fb0a07c3"
+
+[[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "facc188f18aa4983a03f4aaa1061e94e2a4f0934d1222be9422eda6b66a80275"
+hash = "f2de379ec1249a92bd4cf304d5705773822d1196ccabef8ec498d3d511e56616"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
@@ -446,11 +450,11 @@ hash = "77237e15e2ae30ff13b23b55524778bfe572cc12f7259163906a5be62fea9b2d"
 
 [[files]]
 file = "kubejs/server_scripts/tier1_recipes.js"
-hash = "d1b70d049f468e332199d059c0dae6d3bc42991fbd15b8bc11f0182c0bcf6afc"
+hash = "8d293463ddc399bb98bbae1e8146ab2862589ce7e096687c04c3b074d70dc043"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
-hash = "f76f5876026465418347da9c107effebaf37928d14003d0b83f94b4f52160380"
+hash = "c046ba5ba967f93c4f99b443ce5e9133b9abe303071cd2f25d732c2220007c50"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
@@ -781,6 +785,11 @@ hash = "2720aee58db6299559f89ea9dc8b1d573b8324f2b4af1e594c5239607585487b"
 metafile = true
 
 [[files]]
+file = "mods/simply-traps.pw.toml"
+hash = "2a632372b5101ac10a01b1c94414b4d466c0ebf60c40bf487e325dacbe9c4ac6"
+metafile = true
+
+[[files]]
 file = "mods/sodium-options-api.pw.toml"
 hash = "5240c62752415b5d66d4beffec4fe98c253eba8ebcbb2a5c1097fc3ad3de0b00"
 metafile = true
@@ -801,11 +810,6 @@ hash = "1195cdfa90ac4ef4d5ebed8dbca1df990cf58b0a0fe3b9b965ccefa0cfd5a2e3"
 metafile = true
 
 [[files]]
-file = "mods/trapcraft.pw.toml"
-hash = "69b6ab59ddf2325278735aa5bf1b5be68a436b6327dd68d00516071b387f92ae"
-metafile = true
-
-[[files]]
 file = "mods/undead-nights.pw.toml"
 hash = "42b5c040a2abe394deb5969b4ff4a07cb1bd4f6a6e93484c4f82696918ef9aab"
 metafile = true
@@ -813,6 +817,16 @@ metafile = true
 [[files]]
 file = "mods/unnamed-desert.pw.toml"
 hash = "9568578696b5f826331e2a7b225b5d4e55fcd29869293a653c0646276dd7b00b"
+metafile = true
+
+[[files]]
+file = "mods/v01ds-bear-traps.pw.toml"
+hash = "2292c6e9ac836023b6c0eab2284bfc2052cc243db5679c6dc1367f114e6069bf"
+metafile = true
+
+[[files]]
+file = "mods/vacuum-blocks.pw.toml"
+hash = "bf40c6adb748a411237b1115deefdc78255c11ce02aad00bbd497783c7971c51"
 metafile = true
 
 [[files]]
