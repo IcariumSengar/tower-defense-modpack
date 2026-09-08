@@ -1,0 +1,35 @@
+#Realistic Airdrop (dyairdrop) config - real field names/defaults confirmed
+#by decompiling AirdropconfigConfiguration.class directly (1.1.0-1.20.1-beta
+#build, CurseForge file 7689163) before writing this, not guessed from the
+#mod's own page. Only the fields this pack actually wants changed are set
+#below; everything else stays at the mod's own shipped default.
+#
+#enable=false: this pack drives every airdrop itself via wave_airdrop.js's
+#own wave%5===0 trigger (/setairdrop random @r ...). The mod's own built-in
+#"global airdrop event" (unconditionally on by default, fires automatically
+#every `gap` in-game days near a random player) is a second, autonomous
+#airdrop source this pack does not want layered on top of its own - same
+#"check for autonomous world-altering systems" caution already applied to
+#every other mob/mechanic mod in this pack. Disabling it here does not
+#affect the /setairdrop command path at all (confirmed via decompile - the
+#command handlers never read this flag).
+enable = false
+
+#enableenemies=false: the mod's own default behavior spawns hostile mobs
+#(default list: pillager, zombie, husk) near an uncollected crate after
+#`enemyarrivetime` minutes. This pack already stripped every non-zombie-
+#family mob from its roster (2026-09-06 roster pivot - pillager would be a
+#regression), and any mob this spawns would be untracked by
+#wave_status.js's own hostile-remaining counter and un-targeted by
+#mob_aggro.js's pedestal-redirect - a second, uncoordinated mob-spawn
+#system on top of this pack's own carefully tuned wave/horde spawning.
+#The airdrop is a wave-clear reward, not a new threat generator.
+enableenemies = false
+
+#forceload=false: the mod author's own comment on this field (translated
+#from the shipped Chinese: "may damage already-loaded permanent chunks,
+#use cautiously on servers") is a real flagged risk this pack doesn't need
+#to take - every /setairdrop call here targets a position near a currently
+#online player (via `random @r` + a small drift), whose own chunks are
+#already loaded by normal player-tracking distance.
+forceload = false

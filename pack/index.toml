@@ -543,6 +543,11 @@ hash = "9ddb37809dbf50f17ccfca4039149524ec0ed8f5838441a94fbb1de3a780c9b5"
 metafile = true
 
 [[files]]
+file = "mods/enhanced-hordes.pw.toml"
+hash = "af72d77fb4f36572f76cf9941d9ef678e62cc29b75dc9db7ce0d678418919fcf"
+metafile = true
+
+[[files]]
 file = "mods/entityculling.pw.toml"
 hash = "fbad2488da791994cbb4a0541e2dd22c536dbe6ca8f7edfdd9af12120e283fd2"
 metafile = true
@@ -683,11 +688,6 @@ hash = "1588f074af0ca7a5145fd676faf3e14381bb96d1383a3dfbaac7398b1dc6e2fd"
 metafile = true
 
 [[files]]
-file = "mods/paojiao134s-airdrop.pw.toml"
-hash = "73c072830b7c3d5305739e258b7602967b7cf1638dbe38264dd103868d3cc6f5"
-metafile = true
-
-[[files]]
 file = "mods/pick-up-notifier.pw.toml"
 hash = "0fd5b27087ffe34d22dbdbdec6cae53f0a58b839ab8e4c423a5255f2b406e27b"
 metafile = true
@@ -705,6 +705,11 @@ metafile = true
 [[files]]
 file = "mods/radium.pw.toml"
 hash = "ae4d739bbdb025651a884093de72addac0865525b39e603fb575031a59987763"
+metafile = true
+
+[[files]]
+file = "mods/realistic-airdrop.pw.toml"
+hash = "b61b484e3703b1614b32a9401e3d4819c769673d05c7dd648aa5e507529e6ae2"
 metafile = true
 
 [[files]]

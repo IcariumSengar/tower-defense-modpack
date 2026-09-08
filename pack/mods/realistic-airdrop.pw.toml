@@ -1,0 +1,13 @@
+name = "Realistic Airdrop"
+filename = "dyairdrop-1.1.0-1.20.1-beta.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "c5d6bd36d83dd23afa7a0a9ed34d49f2099ab590"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7689163
+project-id = 1116182
