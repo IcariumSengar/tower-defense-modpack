@@ -7,8 +7,8 @@
   "default_block": { "Name": "minecraft:stone" },
   "default_fluid": { "Name": "minecraft:water", "Properties": { "level": "0" } },
   "noise": {
-    "min_y": -64,
-    "height": 384,
+    "min_y": -16,
+    "height": 336,
     "size_horizontal": 1,
     "size_vertical": 1
   },
