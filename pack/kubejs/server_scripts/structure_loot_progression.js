@@ -52,6 +52,10 @@ var HIGH_TIER_POOL = [
   { item: 'minecraft:netherite_scrap', weight: 10, min: 1, max: 1 },
   { item: 'minecraft:diamond_block', weight: 6, min: 1, max: 1 },
   { item: 'minecraft:ender_pearl', weight: 12, min: 2, max: 4 },
+  // 2026-09-08, direct ask: a rare structure-chest find, not a bag
+  // reward. Weight 4, deliberately rarer than diamond_block's 6 -
+  // "you'll find it if you are lucky in a structure."
+  { item: 'minecraft:netherite_upgrade_smithing_template', weight: 4, min: 1, max: 1 },
 ]
 
 function weightedRoll(pool) {

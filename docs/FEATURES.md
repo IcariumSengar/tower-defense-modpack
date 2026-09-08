@@ -3694,6 +3694,82 @@ actual gate the loot tier was missing.
   FTB Quests logging "3 chapters, 17 quests" — the exact expected count
   (11 Basics + 2 Tier 1 + 4 Tier 2).
 
+**Trapcraft dropped entirely — decided 2026-09-08, spec ready, NOT YET
+BUILT, holding for explicit dispatch.** Direct feedback: doesn't like
+Trapcraft's traps, but wants to keep the Magnetic Chest's *mechanic*
+specifically — moved off Trapcraft onto a different mod, not kept as-is.
+Scope confirmed directly with the user as "everything Trapcraft," not
+just the traps — so this removes all 5 pieces currently wired in:
+`trapcraft:spikes`, `trapcraft:bear_trap` (Tier 1), `trapcraft:igniter`,
+`trapcraft:fan`, `trapcraft:magnetic_chest` (Tier 2).
+
+**Correction to the user's own pasted research before it went further**:
+that research named "Defensive Traps" (CurseForge, modid `defenses`) as
+a Tier 1 spike/bear-trap replacement. Checked directly, not taken on
+faith — **it has no Forge 1.20.1 build at all**, only NeoForge (1.21.1,
+1.20.6) files exist on its real CurseForge files list. Ruled out. Worth
+remembering the rest of that pasted research (Tier 2 turret mods, Tier 3
+Tesla/flamethrower mods, boss-wave/bossbar/music KubeJS templates) was
+read as background only, not verified or actioned — it also proposes
+new tiers/mechanics this pack already has covered (Medieval Defense
+Turrets already fills the Tier 2 automated-turret role) or that conflict
+with the current stabilize-before-new-tiers priority; not part of this
+entry.
+
+**Real replacements verified (mod page/API checked directly per mod,
+not assumed from search summaries):**
+- **Tier 1 spikes** → **Simply Traps** (CurseForge, real
+  `simply_traps-1.7-forge-1.20.1.jar`, Sept 2025, no dependencies) — use
+  its Spike Trap/Stakes piece only. Its own barbed-wire item is
+  deliberately NOT used — would duplicate Create: Crafts & Additions'
+  barbed wire, already this pack's real Tier 1 wall-piercing defense.
+- **Tier 1 bear_trap** → **V01D's Bear Traps** (CurseForge, real Forge
+  1.20.1 beta build, June 2025, no dependencies) — genuinely holds a mob
+  in place on trigger, same role as the current one.
+- **Tier 2 igniter/fan** → **cut, not replaced**. No standalone mod
+  found that fits either role on a real Forge 1.20.1 build. Recommended
+  over continuing the search: both were only ever two simple item-task
+  quests ("Spark and Flame," "Herd Them In") with no deeper mechanic
+  built on top; Tier 2's real automated-defense identity is already
+  Medieval Defense Turrets; and this pack's own earlier fan/`AirCurrent`
+  investigation (2026-09-05 batch, item 23) already concluded mazes/
+  walls are the real mob-redirect mechanism here, not fans — cutting
+  these loses two thin quests, not real defensive capability.
+- **Magnetic Chest** → candidate: **Smart Storage**'s "Smart Label" —
+  attaches to any vanilla chest and gives it filtered magnetic pickup of
+  nearby dropped items, rather than being its own dedicated block. Real
+  Forge 1.20.1 build confirmed via Modrinth's version API (published
+  2026-07-28, no dependencies). Checked and ruled out first: Vacuum
+  Chest (real mod, but stale — last build is 1.19.2 from 2022), Magnetite
+  Block (Fabric-only, no Forge build), Vacuum Blocks (real Forge 1.20.1
+  build, but directional-into-a-hopper-only, a meaningfully weaker
+  mechanic than the omnidirectional pull being replaced). **Real caveat,
+  not glossed over**: Smart Storage is brand new and small (37 downloads
+  total at verification time), single author, and its own page states no
+  specific pickup range for the magnetic-collection feature — needs a
+  real hands-on sandbox check of actual range/behavior before trusting
+  it over what it's replacing, same rigor as every other mod pick in
+  this pack.
+
+**What building this actually touches** (for whoever picks it up):
+`tier1_recipes.js` and `tier2_recipes.js` (drop the Trapcraft
+re-recipes, add new ones only if the replacement mods' stock recipes
+don't already fit this pack's tiering), the `kubejs:tier1_machines`
+item tag, and 5 quest entries in `campaign.snbt` (spikes → Simply Traps
+item, bear_trap → V01D's item, magnetic_chest → Smart Storage's item,
+igniter/fan quests removed — check for orphaned dependents first, same
+as every other quest removal in this pack's history). **Real risk to
+check before touching `campaign.snbt`**: this exact chapter has already
+diverged between the live save and the repo copy once before (the
+Barbed Wire swap, 2026-09-04) — pull real current IDs from the live
+save's own quest-progress file, don't blindly overwrite from the repo.
+Also update `MODS.md`'s Trapcraft entry and this file's own "Tier 1
+defenses"/"Machine progression, Tier 2" entries above once built (mark
+Trapcraft-era text superseded, don't delete the history).
+
+Nothing installed, uninstalled, or edited yet — spec only, holding for
+an explicit go-ahead before dispatch.
+
 **Machine progression (Tier 3-4)** — see IDEAS.md for the still-unscoped
 elite/endgame tier list (AoE Devastator, Chain-Tesla Network). Tier 3
 itself now has a real power system to depend on — see "Storage & power

@@ -1,0 +1,24 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "frequency": 0.5,
+    "spacing": 24,
+    "separation": 12,
+    "salt": 1515342,
+    "exclusion_zone": {
+      "chunk_count": 10,
+      "other_set": "minecraft:villages"
+    }
+  },
+
+  "structures": [
+    {
+      "structure": "u_desert:pillager_outpost/standard",
+      "weight": 3
+    },
+    {
+      "structure": "u_desert:pillager_outpost/abandoned",
+      "weight": 1
+    }
+  ]
+}

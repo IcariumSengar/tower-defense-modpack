@@ -189,6 +189,48 @@ Medieval Defense Turrets) are both specced now — see FEATURES.md. Tier
   Tier 2, might be right for Tier 3" axis — worth a real look when Tier
   3 gets picked up.
 
+**More candidates surfaced 2026-09-08, from a user-supplied research
+dump — each individually verified against a real CurseForge/Modrinth
+files list before being logged here, not taken on the dump's own word
+(3 of its claims turned out wrong — see below). Reconnaissance only,
+nothing built or installed from this:**
+- **Advanced Tower Defense** — real, confirmed: 50+ turrets, genuine
+  Forge 1.20.1 build, actively updated (last update within days of
+  checking). Its **Anvil Launcher** (drops anvils on grouped enemies
+  from above) is genuinely novel — nothing like it in the current stack.
+  Its basic Arrow Turret/Musket Sentry would be redundant with the
+  already-live, quest-integrated Medieval Defense Turrets though — this
+  is a "supplement Tier 2/3 with one specific piece" candidate, not a
+  Tier 2 replacement.
+- **Tower Defense Units** ("The Angerer" taunt totem, Sniping Turret) —
+  **ruled out**. Real files list tops out at 1.18.2; no 1.20.1 build
+  exists at all, despite the dump's confidence.
+- **Immersive Intelligence** (chemical/liquid turret, HMG sentry, an
+  Immersive Engineering addon) — **ruled out**. Confirmed 1.12.2 only,
+  no 1.20.1 port exists.
+- **Create: Crafts & Additions' own Tesla Coil** — real, and **already
+  installed** (this pack has `createaddition` since the Barbed Wire
+  swap). Chain-lightning-style: redstone-signal-activated, damages/slows
+  nearby mobs, can also passively charge FE items placed under it.
+  Genuinely zero-install-cost Tier 3 candidate — but it **overlaps**
+  with the Tesla Coil slot above that already assumes Immersive
+  Engineering's own version once the power system gets built; worth a
+  real pick between the two (or using both for different roles) when
+  Tier 3 actually gets picked up, not decided here.
+- The dump also included a large batch of generic KubeJS tutorial
+  scripts (recipe-gating templates, tooltip injection, a trap-decay/
+  weathering mechanic, hit/muzzle-flash particle-and-sound effects, a
+  custom boss-wave spawner with a vanilla bossbar and streamed custom
+  music, an FTB Quests chapter template) — read, not adopted. Mostly
+  generic patterns that don't reflect this pack's own established,
+  hard-won techniques (real event-cancellation vs. entity-discard
+  timing, the wave_spawner.js throttle pattern, SRG-vs-official
+  reflection naming) and duplicate systems this pack already has working
+  a different way — Undead Nights' 4 named hordes already covers "named
+  boss enemy," the live FTB Quests book already covers "quest chapter,"
+  the pedestal's own bossbar already covers "boss-style health UI."
+  Not something to build from as a template.
+
 ## Custom loot materials, beyond vanilla-only — rule retired 2026-09-05, this draft tier structure is now live design material, not deferred
 
 **Stale until 2026-09-06**: this section used to say the loot system was

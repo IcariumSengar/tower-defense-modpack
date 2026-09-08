@@ -21,7 +21,499 @@ reflect actual current status.
 
 ---
 
+## Roadmap: tier-by-tier feature-rich buildout (2026-09-08)
+
+**Status: user has playtested and is happy with everything shipped so
+far — the 2026-09-06 "polish before new tiers" gate is explicitly
+lifted for this content**, per [[feedback_polish_before_new_tiers]]
+(now superseded) and [[project_frenetic_pivot_and_research_batch]].
+Direct instruction: focus on getting the game "feature rich," organized
+tier by tier, each tier shipping with its full bells-and-whistles - not
+just the core mechanic. This section is the ordered build plan for
+everything decided/specced in FEATURES.md's "Frenetic-combat pivot &
+tower-defense research batch" section (2026-09-08) plus the
+already-parked Storage & Power system, which now has a real reason to
+move: Tier 3 can't ship its Tesla Coil without it.
+
+**Scope note, updated 2026-09-08**: Hardcore mode, Demolition Zombie,
+and Mutants-variety mob content were older, separate specs (2026-09-01)
+not originally part of this research batch - user explicitly asked to
+fold them in, now placed at Phase 1 (Demolition Zombie, Mutants
+variety) and Phase 5 (Hardcore mode) below, on the same "spec-only,
+not dispatched" footing as everything else here.
+
+**Dispatched 2026-09-08** to the build session (`tower-defense-modpack-ca`)
+as 3 parallel tracks: Track A (Phase 0+1), Track B (Phase 3), Track C
+(Phase 2→4→5-boss-half, internally sequenced). Not sent piecemeal -
+one dispatch covering the whole roadmap, user wants to check back in
+once when it's finished rather than approve each item. Each phase
+lists real open forks that need a decision before it's actually
+buildable, not just a to-do list. Send phases individually as they're
+ready - see "Can these run in parallel?" below, the ordering isn't as
+linear as phase numbers suggest.
+
+**Can these run in parallel? Yes, mostly - checked real file/system
+overlap, not assumed.** Phase numbers are priority order, not a strict
+build sequence:
+- **Phase 0, Phase 1, and Phase 2 are fully parallel-safe** - different
+  mods, different script files, no shared state. Real precedent check:
+  the pack's actual built Tier 1→2 recipe (Medieval Defense Turrets'
+  Arrow Turret) is a plain re-recipe (`bow + planks + iron_block`), it
+  does NOT consume a Tier 1 item - so there's no established
+  "each tier consumes the previous tier's item" pattern that would
+  force Phase 3 to wait on Phase 2's real item IDs either, unless that
+  gating is deliberately wanted as a new design choice.
+- **Phase 3's mod-install + Tesla Coil basic setup can start in
+  parallel with Phase 2** for the same reason. Its Flamethrower Nozzles
+  sub-item needs its own internal damage-check first, not a cross-phase
+  block.
+- **Phase 4's core system (boss spawn, bossbar, music) is fully
+  parallel-safe** - vanilla-command-driven, no dependency on any other
+  phase's items. Only its boss-kill-loot detail references the
+  shrapnel item from Phase 2 - a soft dependency, resolved by just
+  deciding shrapnel's real item ID early rather than blocking all of
+  Phase 4 on Phase 2 finishing.
+- **Phase 5 (Hardcore mode) splits cleanly**: the crafting-recipe Totem
+  of Undying source is parallel-safe with everything; the boss-kill-drop
+  source genuinely needs Phase 4's boss system to exist first.
+- **Phase 6 (Bounty shop)** is parallel-safe but low-priority and needs
+  real design work before it's buildable regardless of what else is in
+  flight.
+- **Internal-only ordering** (not cross-phase): Phase 2's ammo-economy/
+  SecurityCraft-module-recipe/combat-feedback sub-items all need real
+  Advanced Tower Defense item IDs confirmed first - that's a first-step
+  inside Phase 2, not a blocker on anything else.
+
+### Phase 0 — Realistic Airdrop swap-in (independent, any time)
+
+Fully decided: replace Paojiao134's Airdrop outright. See this file's
+prior entry (item 5 of the 2026-09-06 batch, above the Roadmap) and
+FEATURES.md for the real command syntax and open verification items
+(mod namespace, `@r` targeting semantics, custom loot table support,
+beta-build stability check). No dependency on any other phase - can go
+first as a quick, self-contained win.
+
+**Trigger condition changed 2026-09-08, direct instruction**: every
+5th wave (`waveNumber % 5 === 0`) on wave-clear, replacing the old
+speed-clear-bonus design entirely - not layered alongside it. **Real
+current code being replaced**, `wave_airdrop.js`: `WAVE_AIRDROP_MIN_WAVE
+= 8` + `WAVE_AIRDROP_TIME_LIMIT_TICKS = 3600` (180s) gated
+`maybeTriggerWaveAirdrop()` on clearing a wave 8+ within 180s of its
+mobs finishing spawning - a skill-based speed bonus. New design drops
+both constants and the elapsed-time check entirely; the function
+becomes an unconditional `if (waveNumber % 5 !== 0) return` at the same
+wave-clear call site (`wave_status.js`'s existing call into this
+function - unchanged). **Real knock-on cleanup**: the whole
+`PlayerEvents.tick` countdown-display block (the "⏱ Airdrop window:
+m:ss" actionbar text) becomes dead code once there's no time window to
+count down - remove it, don't leave it silently unreachable. The
+"SUPPLIES INBOUND" title/chat message on trigger stays as-is,
+independent of the trigger condition. **Explicitly provisional** - "I
+may come back to this mechanic to see if there is a better gameplay
+feel that lends itself to the airdrop" - don't treat every-5th-wave as
+final/locked once built.
+
+### Phase 1 — Tier 1 finish + the frenetic layer
+
+Tier 1's core (Simply Traps spikes, V01D bear trap, Vacuum Blocks
+magnet chest) already shipped via the Trapcraft removal. What's left:
+- **Enhanced Hordes install** - WWZ-style zombie stacking/climbing,
+  unconditional (not late-gated). Real work: full-mod-set sandbox boot
+  (interacts with Undead Nights + this pack's own spawn logic), real
+  config schema read directly before tuning, a real FPS/TPS check under
+  a stacked-horde scenario.
+- **WWZ counter-mechanics** - real open fork, needs a decision: which
+  (if any) of anti-climb lip / SecurityCraft Fake Water moat / Simply
+  Traps wall-mounted stakes actually gets built, so the frenetic pivot
+  doesn't silently mean "walls do nothing."
+- **Tier 1 trap decay/degradation** - per-kill % break chance on the
+  Simply Traps/V01D pieces. Real open question: does this fit the
+  "keep it lightweight" stance, or is it scope creep on a system just
+  simplified today - needs a explicit decision.
+- **Simply Traps' Slime Trap** - unevaluated feature of an
+  already-installed mod, check whether it adds real value over what
+  Tier 1 already has.
+- **Tooltip tier color-coding** - can start here since Tier 1 items
+  already have final IDs; extend to Tier 2/3 as their items land.
+- **Defense-breaching enemies (Demolition Zombie)** - folded in from
+  "On hold," fully specced 2026-09-01. Undead Nights' own Demolition
+  Zombie (already installed, currently unused) as a late-wave threat
+  that can genuinely destroy the gate/watchtower/placed machines via
+  real TNT - confirmed the reinforced perimeter walls themselves can
+  never be the breach point (SecurityCraft's explosion immunity is
+  unconditional), so this targets what's actually vulnerable instead.
+  Also reinforce the gate (was left plain as "unnecessary complexity"
+  before there was a real threat to it). Real fit here: pairs naturally
+  with Enhanced Hordes and the WWZ counter-mechanics above - both are
+  about the wall/gate defense getting genuinely tested, not a free
+  pass. Exact numbers (TNT count, spawn weight, introduction wave)
+  still open.
+- **Mutants and Zombies (more zombie-family variety)** - folded in from
+  "On hold," fully specced 2026-09-01. 8 real zombie-family mobs
+  (Zombie Brute, Crawler, Spitter, Blister Zombie, Split Head Zombie,
+  Mutant Brute, Rotten Mutant, Mutant Zombie), same author as the
+  already-trusted Undead Nights, confirmed to add no autonomous
+  wave/horde systems of its own. One clean dependency (Advanced Wall
+  Climber API, confirmed real Forge 1.20.1) - worth checking this
+  doesn't overlap/conflict with Enhanced Hordes' own climbing physics
+  above, both touch wall-climbing behavior. Mutant Monsters (the more
+  famous alternative) checked and ruled out - no Forge 1.20.1 build.
+  Still needs: deciding which waves/hordes these mobs join, any
+  loot/stat re-recipe work (same treatment TFTH mobs got).
+
+### Phase 2 — Tier 2: automated turrets + economy
+
+**Depends on**: real Advanced Tower Defense block/item IDs confirmed
+first (everything else in this phase needs them).
+- **Advanced Tower Defense's Musket Sentry + Anvil Launcher**, added
+  alongside the already-live Medieval Defense Turrets (MDT's Arrow
+  Turret stays untouched). Real work: verify ATD's actual IDs/recipes
+  from its own shipped data, re-recipe/tier-gate via the established
+  `event.remove`+`event.shaped` pattern, real quest slot in the
+  existing turret section of `campaign.snbt`.
+- **Ammo economy recipes** - iron_bolt from flint/barbed_wire/iron,
+  bonus arrows from iron_spikes/feather/stick (the research's examples,
+  needs real ATD ammo item IDs first).
+- **Shrapnel/scrap folded into loot bag tables** - real open fork:
+  craft-material (feeds ammo recipes) or pure flavor loot - decide
+  alongside the ammo-recipe design above, not independently.
+- **SecurityCraft modules as turret-recipe components** - Redstone/
+  Smart/Speed Module as real recipe ingredients for MDT/ATD turrets,
+  giving SecurityCraft a second identity beyond walls. Not scoped in
+  detail - needs turret IDs first.
+- **Turret combat-feedback effects** - muzzle flash (on fire), ballistic
+  impact (on hit), and bullet tracer trail (mid-flight) - three
+  separate trigger points, all depend on real turret/projectile IDs.
+- **Tooltip tier color-coding**, extended to Tier 2 items.
+
+### Phase 3 — Tier 3: power + energetic weapons
+
+**Depends on**: Storage & Power system built first - the Tesla Coil has
+no power source without it.
+- **Storage & power system** (moved here from "On hold," fully specced
+  2026-09-01) - Sophisticated Storage (+ Sophisticated Core), Refined
+  Storage, Immersive Engineering (power generation - also resolves the
+  Tesla Coil candidate), Flux Networks (wireless distribution). Real
+  footprint: IE is a full standalone tech mod, the biggest single
+  addition besides full Create. 3 of 4 mods' exact dependency lists
+  still need fetching directly from their own relations pages before
+  installing (only Sophisticated Storage's was checked).
+- **Create's own Tesla Coil** - the actual Tier 3 defense machine,
+  chain-lightning, powered via the chain above (not Create: Crafts &
+  Additions' Tesla Coil - already ruled out as the wrong pick).
+- **Flamethrower Mechanics (Create Nozzles + lava)** - parallel/
+  alternative Tier 3 option, no new mod needed. Real open question:
+  does a Nozzle's vanilla fire-stream actually damage mobs meaningfully
+  - needs a real check, not assumed - and whether it's an alternative
+  choice or a required second machine alongside the Tesla Coil.
+- **Tesla Coil hit cinematics** - electric-spark particles + thunder/
+  conduit sound (optionally a custom `tesla_zap.ogg`) on Tesla damage.
+- **Performance tip**: cap Embeddium's max particle count - relevant
+  here specifically, since mass Tesla-electrocution of an
+  Enhanced-Hordes-stacked horde (Phase 1) is a real stutter risk.
+- **Tooltip tier color-coding**, extended to Tier 3 items; new quests
+  for Tier 3 items in `campaign.snbt`.
+
+### Phase 4 — Boss wave capstone system
+
+**Depends on**: benefits from Tier 2/3 items existing (for gear/loot
+context) but isn't hard-blocked - could run in parallel with Phase 3.
+- **Cadence decision** - which wave(s) get a boss. Resolves the same
+  open fork already sitting in IDEAS.md ("Wave-clear reward: a
+  building/machine places itself in the base... maybe only boss waves —
+  cadence never decided") - decide both together, not separately.
+- **Boss mob spawn** - custom stats, full netherite gear equip, zero
+  drop chance so gear isn't farmable.
+- **Boss bar** - real vanilla `/bossbar`, HP-tracked via a throttled
+  tick handler (same idiom as `wave_status.js`'s actionbar counter).
+- **Custom boss music** - real `.ogg` + `sounds.json` registration,
+  `playsound`/`stopsound` commands, no mod needed.
+- **Boss-kill loot** - `securitycraft:universal_block_reinforcer` +
+  bonus shrapnel, consistent with the Phase 2 loot-bag fold-in decision.
+- Screenshake is cut - no real Forge 1.20.1 mod exists (verified
+  Fabric-only), not part of this phase.
+
+### Phase 5 — Hardcore mode (independent toggle)
+
+Folded in from "On hold," fully specced 2026-09-01 (see FEATURES.md's
+"Hardcore mode" section). Real permadeath (player death or pedestal
+destruction) softened by Totems of Undying, obtainable two ways: a rare
+boss-kill drop and a new (vanilla has none) hard crafting recipe. Built
+fully custom via KubeJS, not vanilla's native Hardcore flag - confirmed
+that flag can't be turned on after world creation, no command/datapack
+path exists. Optional toggle, not the pack's new default - endless-phase
+scaling means every hardcore run eventually ends in death regardless of
+skill, fine for opt-in but not a forced default. Pedestal deliberately
+stays unhardened - defending it is meant to be real stakes, not
+background scenery. **Real soft dependency**: the boss-kill-drop totem
+source needs Phase 4's boss system to exist first; the crafting-recipe
+source doesn't, so this could ship partially ahead of Phase 4 if wanted,
+full design lands better once Phase 4 is in.
+
+### Phase 6 — Exploratory, no committed design
+
+- **Bounty shop (FTB Quests spend economy)** - FTB Quests has no native
+  "deposit currency, buy item" mechanic; would need real custom
+  scripting to detect deposits and grant rewards, a genuinely new
+  technique for this pack. Only pick this up if there's real appetite
+  for it once Phases 1-5 land.
+
 ## Ready to build
+
+**9-item live feedback batch — built directly 2026-09-08, literal
+numbering. All code/quest-file changes done, syntax-checked, not yet
+confirmed by a real playtest:**
+1. **Done.** Bounty quest tasks (`bounties.snbt`, all 5: First Blood/
+   Exterminator/Culling/Reaper/Zombie Masher) were completable by just
+   clicking the checkbox, bypassing the real kill requirement entirely -
+   decompiled `CheckmarkTask.canSubmit()` directly, it's hardcoded
+   `return true`, no config exists to change that. Switched all 5 to
+   `type: "custom"` instead - `CustomTask` defaults `enableButton=false`
+   (no player click possible) and `check=null` (no periodic auto-check
+   either), completely inert until something external drives it -
+   `bounty_kills.js`'s existing `ftbquests change_progress ... complete`
+   commands keep working unchanged (Task's own type-agnostic
+   `forceProgress()`, doesn't care what task type it's hitting).
+2. **Done.** Hints & Tips chapter title (`tips_and_tricks.snbt`) was
+   `"Tips & Tricks"` - FTB Quests treats `&` as a color-code shorthand
+   prefix, and `& T` isn't a valid code, producing the "invalid
+   formatting" error. Only `&` anywhere in the whole `ftbquests/` config
+   tree. Changed to `"Tips and Tricks"`.
+3. **Done.** Wave-cleared popup (`wave_status.js`) font "slightly
+   smaller" - switched from `title` (big) to an empty title + `subtitle`
+   (vanilla's smaller fixed HUD text), same real "subtitle only shows
+   alongside an active title lifecycle" mechanic used for item 4.
+4. **Done.** Pedestal damage-alert popup (`pedestal_health.js`'s
+   `firePedestalAlert`) "way too large, reduce a lot" - dropped the big
+   bold title line entirely (empty title + subtitle-only for the
+   headline), moved the flavor line to a real `tellraw` chat message
+   instead of dropping it, since chat won't get overwritten by
+   `wave_status.js`'s own actionbar-based hostile counter the way a
+   second title/subtitle call would.
+5. **Done.** Advanced crafting table spawning with water in it - real
+   root cause, not guessed: decompiled `CraftingStationBlock.class`
+   directly, it's a real `SimpleWaterloggedBlock`. The structure's own
+   NBT has a water source at this exact coordinate (a kitchen sink
+   feature); `/setblock` replacing water with a waterloggable block
+   auto-inherits `waterlogged=true`, same as hand-placing into water.
+   Fixed with an explicit `[waterlogged=false]` in
+   `playtest_starter_kit.js`'s setblock call - didn't need the "just use
+   a normal crafting table" fallback.
+6. **Done.** Mobs stuck stationary at the world border, not pathing -
+   real root cause, confirmed by the actual numbers: the border starts at
+   size 50 (half-width 25) and `base_expansion.js`'s own curve only
+   reaches half-width 55 by wave 8, while `wave_spawner.js`'s spawn
+   distance was a fixed 40-60 block radius - every hand-authored wave has
+   been spawning mobs outside the border still active at that point,
+   where vanilla's own border collision (applies to all entities, not
+   just players, independent of the border-damage config) physically
+   holds them at the edge. Spawn distance is now clamped to the border's
+   own live half-width (minus a safety margin), recomputed every horn
+   use, instead of the fixed band - scales automatically as the border
+   grows.
+7. **Done.** "Reach Further" quest (Crafting Station's connected-
+   inventory explainer) moved from `campaign.snbt` to
+   `tips_and_tricks.snbt` - same quest/task IDs preserved (checked the
+   live save's own progress file first, confirmed unstarted, safe to
+   move), dependency on "Open It" dropped since every other tips-chapter
+   entry is standalone.
+8. **Done.** Boomer Zombie now does real block damage on detonation, not
+   just its existing poison-cloud/knockback. Decompiled Zombies More
+   directly: the mod's own `BoomerChargedOnInitialEntitySpawnProcedure`
+   already calls a real `level.explode(power 4.0f)` ~4 seconds after the
+   original zombie dies/collides, but with
+   `Level.ExplosionInteraction.NONE` hardcoded - zero block destruction
+   by deliberate mod-author choice, no config exists. New file
+   `boomer_zombie_explosion.js` adds an independent, real block-
+   destroying explosion (0-fuse TNT, same "prefer a real vanilla command"
+   idiom as the rest of this codebase) timed to the same +80-tick mark
+   and captured spawn position the mod's own detonation uses, so it reads
+   as one explosion, not two. Reinforced SecurityCraft walls stay
+   explosion-immune regardless, same as every other explosive threat in
+   this pack.
+9. **Done.** Nether star pedestal-heal bug - real root cause: the old
+   `BlockEvents.rightClicked` handler tried to both consume the item
+   (`event.cancel()` + `stack.shrink(1)`) and stop Supplementaries' own
+   native "place held item on the pedestal" interaction from also
+   happening on the same click - `event.cancel()` doesn't reliably
+   suppress that (client-predicted placement beats the cancel), so both
+   systems raced for the same item, producing exactly the reported
+   symptom (visibly placed, then "disappears" into a phantom slot on
+   take-back - same add/remove desync class as the earlier rabbit-ghost
+   bug). Fixed the same way `amulet_pedestal.js` already solves the
+   identical problem for the amulet: stopped intercepting the click
+   entirely, poll the pedestal's own real Container slot instead
+   (`getDisplayedItem()`), and consume it for real via
+   `setDisplayedItem(air)` - a real setter on Moonlight's
+   `ItemDisplayTile` (decompiled directly), the pedestal's own single
+   source of truth for "is an item here," never two competing paths
+   again.
+
+**Drop Trapcraft entirely — done, commit a92468c (2026-09-08).** Real
+final picks differed slightly from the spec above (both replacements
+below were caught during build, not guessed): `trapcraft:spikes` →
+Simply Traps' `spike_trap`; `trapcraft:bear_trap` → V01D's Bear Traps'
+`bear_trap_open` (ships with zero crafting recipe, one added from
+scratch); `trapcraft:igniter`/`trapcraft:fan` cut with no replacement
+(no real mod exists for either); `trapcraft:magnetic_chest` →
+**Vacuum Blocks'** `vacuum_block_tier_1`, not Smart Storage as
+originally proposed - Smart Storage was ruled out after decompiling
+found no real item-collection logic anywhere in its jar despite its
+store description. 2 FTB Quests entries removed (Spark and Flame, Herd
+Them In), 3 updated in place keeping original task IDs so live-save
+progress on 2 of them stayed intact. Verified via real sandbox boot
+(23/23 scripts, 0 errors; 34 quests, 0 parse errors; 0 failed recipes)
+before committing.
+
+**7-item live feedback batch — dispatched 2026-09-08, literal numbering:**
+1. **Done, 2026-09-08, syntax-checked, not yet playtest-confirmed.**
+   Pedestal heal needs a visible animation/cue. User's real report:
+   "the item stays suspended on the pedestal, and it's not till I tried
+   to take it off that it was obvious that the item had been consumed."
+   Real current code (`pedestal_health.js`'s `BlockEvents.rightClicked`
+   handler) already does `event.cancel()` + `stack.shrink(1)` for both
+   golden carrot and nether star - the item IS consumed correctly and
+   never actually placed on the pedestal (that display is reserved for
+   the amulet only). The only feedback right now is a plain chat message
+   - add a real visible/audible cue at the moment of heal (particles at
+   the pedestal position + a sound), same general idea as the existing
+   pedestal-alert system's title+sound pattern, so it's obvious without
+   needing to inspect. Keep the existing chat message too, this is
+   additive. **Shipped as `totem_of_undying` particles + a
+   `block.beacon.power_select` sound at the pedestal, fired from
+   `healPedestalBy()` so it covers both the right-click heal and the
+   wave-clear heal below with one change.**
+2. **Done, 2026-09-08.** Wave-clear pedestal heal: 20% → 5%. Direct
+   number change, `wave_status.js`'s
+   `healPedestalByPercent(player, data, 0.2)` call - change the `0.2` to
+   `0.05`. No other logic changes.
+3. **Done, 2026-09-08, syntax-checked.** Countdown-between-waves pacing
+   change - user confirmed the shape, ready to build. Current formula
+   (`wave_status.js`,
+   `countdownTicksForWave`): `min(1800 + 300*(waveNumber-1), 3600)`
+   ticks - wave 1 = 90s, +15s/wave, capped at 180s (3 min) by wave 7. The
+   wave-5 "you'll have more time to prepare from here on" title
+   (`wave_status.js` ~line 168) currently fires at a wave that's still
+   only 150s (2.5 min) under this formula - user wants it to actually
+   mean something: 4 minutes at wave 5, then continued gradual growth
+   afterward (the old cap flattened exactly where the user wants it to
+   keep climbing).
+   **Confirmed shape: kink at wave 5.** Waves 1-4 stay exactly as they
+   are now, wave 5 becomes a new fixed 4-minute baseline, growth
+   continues from there with no cap - matches "you'll have more time to
+   prepare FROM HERE ON" literally, only the back half of the campaign
+   changes pace. Concrete formula:
+   ```
+   function countdownTicksForWave(waveNumber) {
+     if (waveNumber < 5) return 1800 + 300 * (waveNumber - 1) // unchanged: 90s→135s
+     return 4800 + 300 * (waveNumber - 5) // wave 5 = 4min, +15s/wave after, no cap
+   }
+   ```
+   Real thing to double check before shipping: `COUNTDOWN_MAX_TICKS`
+   (3600) is referenced elsewhere in the codebase too (`wave_airdrop.js`'s
+   own header comment cites it as a pacing reference for the airdrop
+   timer) - confirm removing/changing the cap here doesn't need a
+   matching update there, or that it was just borrowed as a rough scale
+   and stays independent.
+4. **Done, 2026-09-08.** Netherite Upgrade Smithing Template as a rare structure-chest find
+   (not a bag reward).** Real fit found: `structure_loot_progression.js`'s
+   `HIGH_TIER_POOL` (120+ blocks from spawn, already has real end-game
+   items like `netherite_scrap` at weight 10, `diamond_block` at weight
+   6). Add `minecraft:netherite_upgrade_smithing_template` at a low
+   weight (3-5, rarer than diamond_block) with count 1-1 - "you'll find
+   it if you are lucky in a structure" matches this pool's own existing
+   rare-high-value-item pattern exactly, no new mechanism needed.
+5. **Re-opened 2026-09-08 - real candidate found, not yet built.**
+   Original investigation confirmed Paojiao134's Airdrop has no alternate
+   delivery mode (Y=300 fall hardcoded) and "Apocalypse Structures: Radio
+   Towers and Airdrops" was a structural mismatch (player-panel-triggered,
+   not script-triggerable). User then separately named a specific mod by
+   description ("Realistic Airdrop"), verified directly rather than taken
+   on faith: **real**, CurseForge `naughty_keller85`, 1.2M+ downloads,
+   genuine plane-flyover mechanic (configurable flight altitude, the
+   plane physically flies across the sky and can crash into terrain if
+   set too low - confirms it's a real flying entity, not a spawn-in-place
+   effect), exposes `/airdrop @s [blockid] [true/false]` and
+   `/setairdrop random|free [x] [z] [params]` commands - real
+   command-triggerable surface, no KubeJS API found but commands are
+   already this pack's established idiom (`server.runCommandSilent`)
+   for exactly this kind of cross-mod trigger. **Real caveat, not
+   glossed over**: no stable "Release"-type build exists for 1.20.1 -
+   both 1.20.1 files (`0.9.5-1.20.1.jar`, Oct 2024; `1.1.0-1.20.1-beta.jar`,
+   Feb 2026, actively updated) are CurseForge-labeled "Beta"; only the
+   1.19.2 line has a full Release build. Worth a hands-on sandbox check
+   of actual stability before committing, same rigor as every other mod
+   pick, but not disqualifying on its own - many mods carry the Beta
+   label indefinitely as a CurseForge convention rather than a real
+   instability signal.
+   **Decided 2026-09-08: replace the existing Paojiao134's Airdrop
+   implementation outright**, not layer alongside it - one airdrop mod,
+   not two. Real command syntax confirmed from the mod's own listed
+   examples (not guessed): `/setairdrop free [x] [z] [height] [length]
+   [blockid] [loottable] [true/false]` and a `/setairdrop random @r
+   [height] [length] [driftmin] [driftmax] [blockid] [loottable]
+   [true/false]` variant. **Real difference from the current mod, not
+   yet resolved**: loot tables are referenced by a standard vanilla-style
+   resource location (the mod's own example: `minecraft:chests/
+   bastion_bridge`), not the current mod's custom `airdrop import`
+   JSON-pool format - this likely means `wave_airdrop.js`'s existing
+   hand-authored `config/airdrop/wave8_bonus.json` gets replaced by a
+   real datapack-style loot table JSON instead (same mechanism this
+   pack already uses for structure/chest loot elsewhere), but needs
+   confirming against the mod's actual loot-loading code before
+   building, not assumed from a description string.
+   **What still needs verification before dispatch** (real unknowns,
+   not guessable from the CurseForge listing alone):
+   - The real mod id/namespace (jar is `dyairdrop`, but the command
+     namespace/loot-table-lookup registry name needs confirming from
+     the jar itself).
+   - Exact semantics of `@r` in `/setairdrop random @r ...` - decompile
+     to confirm whether this targets a random player or something else,
+     since the current implementation's landing behavior (auto-inside
+     the player's current world border, via Paojiao134's own
+     `BorderIntegrationHandler`) has no confirmed equivalent here yet -
+     `random` near the executing player may or may not reproduce it.
+   - Whether a stock loot table id can be swapped for a real custom one
+     registered by this pack (expected to work, standard vanilla loot
+     table resolution, but confirm against the actual loot-loading code
+     rather than assume).
+   - A hands-on sandbox stability check given both real 1.20.1 files are
+     CurseForge-labeled Beta (see above).
+   **What building this touches**: swap the mod in `pack/`, rewrite
+   `wave_airdrop.js`'s `maybeTriggerWaveAirdrop()` (the `airdrop
+   import`/`airdrop summon` calls) to the new command + loot table id,
+   convert `config/airdrop/wave8_bonus.json` to whatever real loot
+   table format the new mod expects, keep the existing "SUPPLIES
+   INBOUND" title/countdown UI as-is (independent of which mod supplies
+   the crate). **Not yet built** - spec ready, holding behind the same
+   playtest-first gate as the rest of this session's work.
+6. **Done, commit a92468c (2026-09-08).** New `ladder_climb_assist.js` -
+   a throttled tick handler detects a wave mob stuck next to a
+   ladder/vine on its path axis and applies a direct upward
+   `setDeltaMovement` nudge. Real prior history: this was investigated
+   2026-09-04 and the recommendation then was "avoid ladders on exterior
+   walls" rather than build a fix, since a full fix looked like it needed
+   a custom pathfinder goal override. On rescoping, that turned out to be
+   unnecessary - the gap is execution, not planning (vanilla's pathfinder
+   already plans through the ladder node fine, it just doesn't reliably
+   execute the climb), so a scripted assist was buildable with patterns
+   already used elsewhere in this pack rather than a mixin/custom
+   PathNavigation class. Verified via sandbox boot, not yet
+   playtest-confirmed.
+7. **Done, commit a92468c (2026-09-08).** `loot_bag_drops.js` redesigned:
+   bag tier used to be gated by mob tier (only `RARE_MOBS`/`EPIC_MOBS`/
+   `LEGENDARY_MOBS` could ever roll a Rare/Epic/Legendary bag). Now every
+   wave mob gets an independent roll at each tier's own flat chance -
+   `BAG_DROP_CHANCE = 0.74` on any kill, then a weighted tier roll within
+   that (absolute odds: Uncommon 50%/Rare 15%/Epic 7%/Legendary 2%),
+   generalizing the existing Legendary-jackpot mechanic's shape to all
+   four tiers instead of mob-gating - the jackpot is folded into this
+   roll, not kept as a separate additive one. Uncommon held at its
+   existing ~50% deliberately, to protect the gold-economy pacing that
+   was tuned against it. Real trade-off, flagged not hidden: total loot
+   volume rises pack-wide since every kill now rolls for tiers it
+   couldn't before. Verified via sandbox boot, not yet
+   playtest-confirmed.
 
 **7-item live feedback batch — dispatched 2026-09-06, literal numbering:**
 1. **Done, 2026-09-06.** User doesn't like gold-ingot quest
@@ -120,6 +612,56 @@ reflect actual current status.
    containers across Philip's Ruins/postapocalypse/Watchtowers alone,
    before Lost City's count even lands) and a new technique for this
    pack - **holding for a decision on whether to proceed**, see below.
+
+**Empty structure-chest loot fix — real approach change, built and
+shipped 2026-09-09.** User raised a real worry about the binary-NBT-
+patching plan above (shipping our own copies of the mods' structure
+files - fragile, breaks silently on a mod update, a technique this pack
+had never used). Real alternative built instead, **verified end-to-end
+in a genuine headless sandbox server before shipping** (not assumed):
+`structure_chest_loot_fix.js` hooks `BlockEvents.rightClicked` and, only
+for a container that's genuinely empty and untagged, assigns a real
+vanilla `LootTable`/`LootTableSeed` NBT pair at the moment a player
+opens it - reflection-based structure-containment check (reused/adapted
+from `playtest_starter_kit.js`'s already-proven `buildStructureProximityCheck`
+pattern) gates this to only containers actually sitting inside one of
+the target mods' own generated structures, never a player's own storage.
+No mod file is touched, so it survives mod updates automatically.
+
+**Real verification chain, not skipped:**
+- Built a real headless Forge 47.4.10 sandbox server (full 73-mod set)
+  to test this live, since no existing sandbox was available in-session.
+- Confirmed merging `LootTable` NBT onto an already-placed empty
+  container reproduces vanilla's own world-gen loot-chest shape exactly,
+  and a **real player right-click** (not just a hopper) correctly rolls
+  it and clears the tag - indistinguishable from genuine world-gen loot.
+- **Real Radium interaction found along the way**: Radium
+  short-circuits the lazy loot-unpack for non-player container access
+  (a hopper pulling from a tagged container did nothing until Radium was
+  disabled, confirmed both directions). Player right-click - the only
+  path this fix uses - was separately confirmed unaffected.
+- Caught and fixed 2 real reflection bugs during build: a
+  `Stream.toList()` call that crashed with a JPMS `IllegalAccessException`
+  on a JDK-internal list type (fixed via `toArray()` instead), and a
+  design flaw where checking the container's own position directly hit
+  "Unable to calculate boundingbox without pieces" for multi-chunk
+  structures (fixed by resolving to the structure's true origin chunk
+  first, same pattern `playtest_starter_kit.js` already uses).
+
+**Real remaining gap: Lost City doesn't work.** Confirmed live -
+even after the origin-chunk fix, Lost City's own structures still throw
+the same "no pieces" error, meaning that mod doesn't expose piece data
+through the same vanilla `StructureStart` API the other 3 mods do. Fails
+safe (caught, logged, just skips the container - no crash, no false
+positive), but Lost City's empty chests stay empty until that mod's own
+generation mechanism is investigated separately. Watchtower_building is
+individually confirmed working (containment correctly true/false against
+a real located structure + 2 control points); Philip's Ruins/
+postapocalypse_structures use the same standard mechanism and are
+expected to work the same way but weren't individually re-tested.
+
+Deployed to the live instance's `kubejs/server_scripts/` directly. Not
+yet playtest-confirmed by the user in real play.
 
 **Savanna removal + desert-area structure density/variety — dispatched
 2026-09-06, direct user instruction with a real screenshot.** User's
@@ -2685,77 +3227,6 @@ below); Phase 5 not started:
   confirmed by name, but the same worldborder machinery has been
   exercised repeatedly through the structure-reachability and world-gen
   playtests since.
-
-## On hold — deliberately not queued right now
-
-**Priority reset, 2026-09-06** — direct instruction: "I want the early
-to mid game be solid enough to sink some proper playtesting in rather
-than see a bunch of bugs and visual noise... the extra tiers and
-mechanics can wait." Everything in this section (new tiers, new
-mechanics, new mob content) is explicitly deprioritized behind a real
-extended playtest of what already exists — don't propose or build
-anything here unless the user brings it back up themselves. Bugs/visual
-polish surfaced by that playtest take priority over all of it.
-
-- **Storage & power system** — fully specced 2026-09-01 (see
-  FEATURES.md's "Defense" section, "Storage & power system" entry).
-  **Sophisticated Storage** (+ required Sophisticated Core), **Refined
-  Storage**, **Immersive Engineering** (power generation — also
-  resolves the Tier 3 Tesla Coil candidate for free), and **Flux
-  Networks** (wireless distribution) — four mods, real footprint (IE is
-  a full standalone tech mod, the biggest single addition besides full
-  Create). Real design decision made along the way: this becomes the
-  pack's actual Tier 3-4 power system, not a separate storage-only
-  addition. Three of the four mods' exact dependency lists weren't
-  fetched directly from their own CurseForge relations pages (only
-  Sophisticated Storage's was) — verify before installing, not assumed.
-  **Deliberately parked, not sent to build** — queued behind the
-  current 2026-09-01 playtest-feedback batch (13 items, 5 phases) so it
-  doesn't add a fifth substantial project on top of what's already in
-  flight. Send when that batch clears.
-- **Hardcore mode** — fully specced 2026-09-01 (see FEATURES.md's new
-  "Hardcore mode" section). Real permadeath (player death or pedestal
-  destruction) softened by Totems of Undying, obtainable both as a rare
-  boss-kill drop and via a new (vanilla has none) hard crafting recipe.
-  Built fully custom via KubeJS, not vanilla's native Hardcore flag —
-  confirmed that flag can't be turned on after world creation, no
-  command/datapack path exists. Optional toggle, not the pack's new
-  default — endless-phase scaling means every hardcore run eventually
-  ends in death no matter how skilled the player is, which is fine for
-  an opt-in but not as a forced default. Pedestal deliberately stays
-  unhardened — defending it is meant to be real base-defense stakes,
-  not background scenery. **Deliberately parked, not sent to build** —
-  same reasoning as the storage/power system above, queued behind the
-  current playtest batch rather than adding a sixth parallel project.
-- **Defense-breaching enemies (Demolition Zombie)** — fully specced
-  2026-09-01 (see FEATURES.md's new "Mob roster & defense-breaching
-  threats" section). Introduces Undead Nights' own Demolition Zombie
-  (already installed, currently unused) as a late-wave threat that can
-  genuinely destroy the gate/watchtower/placed machines via real TNT —
-  confirmed first that the reinforced perimeter walls themselves can
-  never be the breach point (SecurityCraft's explosion immunity is
-  unconditional, not tunable), so this targets what's actually
-  vulnerable instead. User decided: also reinforce the gate (was left
-  plain as "unnecessary complexity" before there was any real threat to
-  it — that's now an accidental weak point, not an intentional one).
-  Exact numbers (TNT count, spawn weight, introduction wave) still
-  open. **Deliberately parked, not sent to build** — queued behind the
-  current playtest batch, same as
-  everything else above.
-- **Mutants and Zombies (more zombie-family variety)** — fully specced
-  2026-09-01 (see FEATURES.md's "Mob roster & defense-breaching
-  threats" section, "More zombie-family variety" entry). 8 real
-  zombie-family mobs (Zombie Brute, Crawler, Spitter, Blister Zombie,
-  Split Head Zombie, Mutant Brute, Rotten Mutant, Mutant Zombie), same
-  author as the already-trusted Undead Nights, confirmed to add no
-  autonomous wave/horde systems of its own. One clean dependency
-  (Advanced Wall Climber API, confirmed real Forge 1.20.1). Mutant
-  Monsters (the more famous alternative) checked and ruled out — no
-  Forge 1.20.1 build exists. Still needs: deciding which waves/hordes
-  these mobs actually join, and any loot/stat re-recipe work, same
-  treatment TFTH mobs got. **Deliberately parked, not sent to build** —
-  queued behind the current playtest batch, same as everything else
-  above.
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 - Roguelike next-wave-composition choice — parked pending a GUI

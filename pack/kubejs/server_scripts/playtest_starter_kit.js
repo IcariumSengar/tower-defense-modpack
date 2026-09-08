@@ -1172,7 +1172,17 @@ PlayerEvents.loggedIn((event) => {
   // Crafting table -> Crafting Station Improved's real block
   // (`craftingstation:crafting_station`, confirmed from the mod's own
   // blockstate JSON - single-variant, no facing property needed).
-  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station`)
+  //
+  // Real bug found + fixed 2026-09-08 (live report: "still spawning with
+  // a water block in it"). Decompiled CraftingStationBlock.class directly:
+  // it implements SimpleWaterloggedBlock with a real WATERLOGGED property
+  // whose getFluidState() returns water when true. This exact coordinate
+  // sits where the original structure's own NBT has a water source (a
+  // kitchen sink feature) - /setblock replacing a water source with a
+  // waterloggable block auto-inherits waterlogged=true, same as
+  // hand-placing into water would, which is what was rendering as "water
+  // inside the crafting table." Forcing it off explicitly.
+  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station[waterlogged=false]`)
   // Cauldron + tripwire hook - direct removal request.
   run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 5} minecraft:air`)
   run(`setblock ${buildingX0 + 8} ${floorY + 2} ${buildingZ0 + 5} minecraft:air`)
