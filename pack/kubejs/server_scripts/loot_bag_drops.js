@@ -42,6 +42,22 @@
 // entries) - a trash-floor zombie can never drop a Legendary bag - same
 // standing rule as before: rarity gates both drop rate and which
 // enemies can roll which tier.
+//
+// **Shrapnel added to all 4 bag tiers, 2026-09-08** (docs/QUEUE.md
+// Roadmap Phase 2 "Shrapnel/scrap" fork) - the real, only place this
+// item is obtainable, per direct instruction ("not a new standalone
+// currency or separate LootJS drop mechanism"). Decided as a genuine
+// crafting material, not flavor loot - see startup_scripts/shrapnel.js
+// for the full reasoning (it's the real gate on Advanced Tower
+// Defense's tech-tree unlock item and its two new Blueprint recipes,
+// see tier2_recipes.js). Lives in the 4 real tier tables this file's
+// entity modifiers point at -
+// `data/bountybags/loot_tables/items/{uncommon,rare,epic,legendary}.json`
+// - not in this file directly (BountyBags' own loot-table JSON is
+// where bag CONTENTS are defined; this file only controls which mob
+// kills drop a bag at all). Counts scale up per tier (2-4 Uncommon,
+// 4-8 Rare, 6-10 Epic, 10-16 Legendary) matching this file's existing
+// "richer tiers give richer rolls" shape.
 
 // Full zombie-apocalypse roster pivot (2026-09-06) - see
 // wave_spawner.js's WAVE_MOB_TYPES for the full writeup. Real ids

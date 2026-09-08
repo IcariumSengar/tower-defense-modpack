@@ -435,6 +435,68 @@
 			y: 6.0d
 		}
 		{
+			dependencies: ["74779308DEED321D"]
+			description: ["A heavier sentry than the Arrow Turret - fires musket shells at anything that gets close, and it's just as hands-off once it's mounted. Assemble it at a Turret Workbench (Tier 0): the blueprint slot takes the Musket Turret blueprint, then load the six material slots and hit assemble. Keep musket shells stocked - unlike the Arrow Turret, this one actually burns through its ammo."]
+			icon: "advanced_tower_defense_mod:turret_head_t_0_mushket"
+			id: "503260000FFBD462"
+			rewards: [
+				{
+					id: "E35F7199341D70D3"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+				{
+					count: 8
+					id: "13621461570D6AD1"
+					item: "advanced_tower_defense_mod:mushket_shell"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "A heavier gun for the wall"
+			tasks: [{
+				consume_items: false
+				id: "CEAF7D7BDF085913"
+				item: "advanced_tower_defense_mod:turret_head_t_0_mushket"
+				type: "item"
+			}]
+			title: "Beyond the Bow"
+			x: 19.0d
+			y: 7.5d
+		}
+		{
+			dependencies: ["74779308DEED321D"]
+			description: ["No auto-targeting on this one - you aim it yourself, at a fixed set of coordinates, and it drops an anvil on whatever's standing there. Slow, heavy-handed, and it hits hard. Needs its own base (a manual one, not the AI-controlled base the Musket Sentry uses) and a blueprint of its own before you can put one together at the Turret Workbench."]
+			icon: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
+			id: "AD122F38A7F9E1FE"
+			rewards: [
+				{
+					id: "DB2924EE65942CD9"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+				{
+					count: 4
+					id: "93D96EE13520A11A"
+					item: "kubejs:shrapnel"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Drop the hammer"
+			tasks: [{
+				consume_items: false
+				id: "CF4EFDBE43242D23"
+				item: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
+				type: "item"
+			}]
+			title: "Anvils From Above"
+			x: 21.0d
+			y: 7.5d
+		}
+		{
 			dependencies: ["689899208FC0ADF0"]
 			description: ["Five waves was as far as whoever held this post before you got. You have matched that, and the gear has finally given out - it was never going to last past this point anyway. Eight was the last wave anyone bothered planning for - after that, it just keeps escalating, no ceiling anyone has found yet. Whatever gear and defenses you have built by now are what you are taking into it. I do not know how far it actually goes. Maybe you will be the one who finds out."]
 			icon: "minecraft:nether_star"
