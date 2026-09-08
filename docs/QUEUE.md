@@ -23,6 +23,245 @@ reflect actual current status.
 
 ## Ready to build
 
+**9-item live feedback batch — built directly 2026-09-08, literal
+numbering. All code/quest-file changes done, syntax-checked, not yet
+confirmed by a real playtest:**
+1. **Done.** Bounty quest tasks (`bounties.snbt`, all 5: First Blood/
+   Exterminator/Culling/Reaper/Zombie Masher) were completable by just
+   clicking the checkbox, bypassing the real kill requirement entirely -
+   decompiled `CheckmarkTask.canSubmit()` directly, it's hardcoded
+   `return true`, no config exists to change that. Switched all 5 to
+   `type: "custom"` instead - `CustomTask` defaults `enableButton=false`
+   (no player click possible) and `check=null` (no periodic auto-check
+   either), completely inert until something external drives it -
+   `bounty_kills.js`'s existing `ftbquests change_progress ... complete`
+   commands keep working unchanged (Task's own type-agnostic
+   `forceProgress()`, doesn't care what task type it's hitting).
+2. **Done.** Hints & Tips chapter title (`tips_and_tricks.snbt`) was
+   `"Tips & Tricks"` - FTB Quests treats `&` as a color-code shorthand
+   prefix, and `& T` isn't a valid code, producing the "invalid
+   formatting" error. Only `&` anywhere in the whole `ftbquests/` config
+   tree. Changed to `"Tips and Tricks"`.
+3. **Done.** Wave-cleared popup (`wave_status.js`) font "slightly
+   smaller" - switched from `title` (big) to an empty title + `subtitle`
+   (vanilla's smaller fixed HUD text), same real "subtitle only shows
+   alongside an active title lifecycle" mechanic used for item 4.
+4. **Done.** Pedestal damage-alert popup (`pedestal_health.js`'s
+   `firePedestalAlert`) "way too large, reduce a lot" - dropped the big
+   bold title line entirely (empty title + subtitle-only for the
+   headline), moved the flavor line to a real `tellraw` chat message
+   instead of dropping it, since chat won't get overwritten by
+   `wave_status.js`'s own actionbar-based hostile counter the way a
+   second title/subtitle call would.
+5. **Done.** Advanced crafting table spawning with water in it - real
+   root cause, not guessed: decompiled `CraftingStationBlock.class`
+   directly, it's a real `SimpleWaterloggedBlock`. The structure's own
+   NBT has a water source at this exact coordinate (a kitchen sink
+   feature); `/setblock` replacing water with a waterloggable block
+   auto-inherits `waterlogged=true`, same as hand-placing into water.
+   Fixed with an explicit `[waterlogged=false]` in
+   `playtest_starter_kit.js`'s setblock call - didn't need the "just use
+   a normal crafting table" fallback.
+6. **Done.** Mobs stuck stationary at the world border, not pathing -
+   real root cause, confirmed by the actual numbers: the border starts at
+   size 50 (half-width 25) and `base_expansion.js`'s own curve only
+   reaches half-width 55 by wave 8, while `wave_spawner.js`'s spawn
+   distance was a fixed 40-60 block radius - every hand-authored wave has
+   been spawning mobs outside the border still active at that point,
+   where vanilla's own border collision (applies to all entities, not
+   just players, independent of the border-damage config) physically
+   holds them at the edge. Spawn distance is now clamped to the border's
+   own live half-width (minus a safety margin), recomputed every horn
+   use, instead of the fixed band - scales automatically as the border
+   grows.
+7. **Done.** "Reach Further" quest (Crafting Station's connected-
+   inventory explainer) moved from `campaign.snbt` to
+   `tips_and_tricks.snbt` - same quest/task IDs preserved (checked the
+   live save's own progress file first, confirmed unstarted, safe to
+   move), dependency on "Open It" dropped since every other tips-chapter
+   entry is standalone.
+8. **Done.** Boomer Zombie now does real block damage on detonation, not
+   just its existing poison-cloud/knockback. Decompiled Zombies More
+   directly: the mod's own `BoomerChargedOnInitialEntitySpawnProcedure`
+   already calls a real `level.explode(power 4.0f)` ~4 seconds after the
+   original zombie dies/collides, but with
+   `Level.ExplosionInteraction.NONE` hardcoded - zero block destruction
+   by deliberate mod-author choice, no config exists. New file
+   `boomer_zombie_explosion.js` adds an independent, real block-
+   destroying explosion (0-fuse TNT, same "prefer a real vanilla command"
+   idiom as the rest of this codebase) timed to the same +80-tick mark
+   and captured spawn position the mod's own detonation uses, so it reads
+   as one explosion, not two. Reinforced SecurityCraft walls stay
+   explosion-immune regardless, same as every other explosive threat in
+   this pack.
+9. **Done.** Nether star pedestal-heal bug - real root cause: the old
+   `BlockEvents.rightClicked` handler tried to both consume the item
+   (`event.cancel()` + `stack.shrink(1)`) and stop Supplementaries' own
+   native "place held item on the pedestal" interaction from also
+   happening on the same click - `event.cancel()` doesn't reliably
+   suppress that (client-predicted placement beats the cancel), so both
+   systems raced for the same item, producing exactly the reported
+   symptom (visibly placed, then "disappears" into a phantom slot on
+   take-back - same add/remove desync class as the earlier rabbit-ghost
+   bug). Fixed the same way `amulet_pedestal.js` already solves the
+   identical problem for the amulet: stopped intercepting the click
+   entirely, poll the pedestal's own real Container slot instead
+   (`getDisplayedItem()`), and consume it for real via
+   `setDisplayedItem(air)` - a real setter on Moonlight's
+   `ItemDisplayTile` (decompiled directly), the pedestal's own single
+   source of truth for "is an item here," never two competing paths
+   again.
+
+**Drop Trapcraft entirely — spec finalized 2026-09-08, see FEATURES.md's
+"Trapcraft dropped entirely" entry for the full writeup. Design settled
+with the user (mod picks confirmed), holding for an explicit "send it"
+before dispatch — not yet in the batch below.** Summary: replace
+`trapcraft:spikes` with Simply Traps, `trapcraft:bear_trap` with V01D's
+Bear Traps, cut `trapcraft:igniter`/`trapcraft:fan` (no replacement),
+replace `trapcraft:magnetic_chest` with Smart Storage's Smart Label
+(pending a real sandbox check of its actual pickup range/behavior before
+trusting it). Touches `tier1_recipes.js`, `tier2_recipes.js`, the
+`kubejs:tier1_machines` tag, 5 quest entries in `campaign.snbt`, and
+`MODS.md` — check the live save's real current quest-progress IDs before
+overwriting that chapter, same divergence risk as the Barbed Wire swap.
+
+**7-item live feedback batch — dispatched 2026-09-08, literal numbering:**
+1. **Done, 2026-09-08, syntax-checked, not yet playtest-confirmed.**
+   Pedestal heal needs a visible animation/cue. User's real report:
+   "the item stays suspended on the pedestal, and it's not till I tried
+   to take it off that it was obvious that the item had been consumed."
+   Real current code (`pedestal_health.js`'s `BlockEvents.rightClicked`
+   handler) already does `event.cancel()` + `stack.shrink(1)` for both
+   golden carrot and nether star - the item IS consumed correctly and
+   never actually placed on the pedestal (that display is reserved for
+   the amulet only). The only feedback right now is a plain chat message
+   - add a real visible/audible cue at the moment of heal (particles at
+   the pedestal position + a sound), same general idea as the existing
+   pedestal-alert system's title+sound pattern, so it's obvious without
+   needing to inspect. Keep the existing chat message too, this is
+   additive. **Shipped as `totem_of_undying` particles + a
+   `block.beacon.power_select` sound at the pedestal, fired from
+   `healPedestalBy()` so it covers both the right-click heal and the
+   wave-clear heal below with one change.**
+2. **Done, 2026-09-08.** Wave-clear pedestal heal: 20% → 5%. Direct
+   number change, `wave_status.js`'s
+   `healPedestalByPercent(player, data, 0.2)` call - change the `0.2` to
+   `0.05`. No other logic changes.
+3. **Done, 2026-09-08, syntax-checked.** Countdown-between-waves pacing
+   change - user confirmed the shape, ready to build. Current formula
+   (`wave_status.js`,
+   `countdownTicksForWave`): `min(1800 + 300*(waveNumber-1), 3600)`
+   ticks - wave 1 = 90s, +15s/wave, capped at 180s (3 min) by wave 7. The
+   wave-5 "you'll have more time to prepare from here on" title
+   (`wave_status.js` ~line 168) currently fires at a wave that's still
+   only 150s (2.5 min) under this formula - user wants it to actually
+   mean something: 4 minutes at wave 5, then continued gradual growth
+   afterward (the old cap flattened exactly where the user wants it to
+   keep climbing).
+   **Confirmed shape: kink at wave 5.** Waves 1-4 stay exactly as they
+   are now, wave 5 becomes a new fixed 4-minute baseline, growth
+   continues from there with no cap - matches "you'll have more time to
+   prepare FROM HERE ON" literally, only the back half of the campaign
+   changes pace. Concrete formula:
+   ```
+   function countdownTicksForWave(waveNumber) {
+     if (waveNumber < 5) return 1800 + 300 * (waveNumber - 1) // unchanged: 90s→135s
+     return 4800 + 300 * (waveNumber - 5) // wave 5 = 4min, +15s/wave after, no cap
+   }
+   ```
+   Real thing to double check before shipping: `COUNTDOWN_MAX_TICKS`
+   (3600) is referenced elsewhere in the codebase too (`wave_airdrop.js`'s
+   own header comment cites it as a pacing reference for the airdrop
+   timer) - confirm removing/changing the cap here doesn't need a
+   matching update there, or that it was just borrowed as a rough scale
+   and stays independent.
+4. **Done, 2026-09-08.** Netherite Upgrade Smithing Template as a rare structure-chest find
+   (not a bag reward).** Real fit found: `structure_loot_progression.js`'s
+   `HIGH_TIER_POOL` (120+ blocks from spawn, already has real end-game
+   items like `netherite_scrap` at weight 10, `diamond_block` at weight
+   6). Add `minecraft:netherite_upgrade_smithing_template` at a low
+   weight (3-5, rarer than diamond_block) with count 1-1 - "you'll find
+   it if you are lucky in a structure" matches this pool's own existing
+   rare-high-value-item pattern exactly, no new mechanism needed.
+5. **Investigated 2026-09-08, no build - genuinely came up empty.**
+   Confirmed Paojiao134's Airdrop has no alternate delivery mode (the
+   Y=300 fall is hardcoded, no config/command surface for anything else).
+   Closest real candidate found ("Apocalypse Structures: Radio Towers and
+   Airdrops," real Forge 1.20.1 build) is a structural mismatch - player-
+   triggered via a physical panel with a cooldown, not script-triggerable
+   at the exact wave-clear moment, plus pulls in an extra dependency. No
+   real candidate to build against; may not be achievable on this version
+   without real Java. Airdrop delivery feels bad - direct ask for a plane flyover +
+   parachute drop instead of falling from Y=300.** User's reference:
+   "Biohazard: Project Genesis - The Ultimate Apocalypse" has this
+   exact mechanic in some modpack they've seen. Real investigation
+   needed, not guessable: check whether Paojiao134's Airdrop (the
+   currently-installed mod) has an alternate delivery mode buried in its
+   config/command args beyond the plain fall-from-height default already
+   used, and separately research whether a real, actively-maintained
+   Forge 1.20.1 mod exists that does an actual plane-flyover-and-
+   parachute delivery (decompile/verify before proposing anything, same
+   rigor as every other mod pick this pack has made - a modpack
+   *containing* this feature doesn't mean the specific mod providing it
+   is identifiable, real, or portable to Forge 1.20.1). Report back with
+   what's actually found before building anything - this may not be
+   achievable without a new mod, and may not exist for this version at
+   all.
+6. **Scoped 2026-09-08, real feasible approach found, NOT built - holding
+   for confirmation.** A real fix doesn't need a custom PathNavigation
+   class/mixin after all - the gap is execution, not planning, so a
+   scripted "climb assist" (throttled tick handler, detect a wave mob
+   stuck next to a ladder/vine on its path axis, apply upward
+   `setDeltaMovement` directly) is buildable in KubeJS using patterns
+   already established elsewhere in this pack. ~60-80 line new script,
+   real but contained scope. Mobs stuck on ladders - direct request to actually fix pathing,
+   not just avoid ladders.** Real history: this was already investigated
+   2026-09-04 (see the "Investigated - a real, well-known vanilla
+   limitation" entry elsewhere in this file) - vanilla mob pathfinders
+   treat ladders as a climbable node when planning a route but don't
+   reliably execute the actual climb, a long-documented Minecraft AI
+   limitation, not specific to this pack/Radium/ESM. The prior
+   recommendation was "avoid ladders on exterior walls" rather than
+   build a fix, since a real fix means a custom pathfinder goal
+   override - real scope beyond a script tweak. User is asking directly
+   for the real fix now despite that history, not just re-reporting the
+   symptom - treat this as a genuine build ask, but it's a real chunk of
+   work (a custom Forge Goal/PathNavigation override, likely needs a
+   mixin or a deeper KubeJS entity-AI hook than this pack has used
+   before). Scope and report back on real feasibility/approach before
+   committing to a specific implementation.
+7. **Proposed 2026-09-08, real worked numbers ready, NOT built - holding
+   for confirmation.** `BAG_DROP_CHANCE = 0.74` flat on any wave mob kill,
+   then a weighted tier roll (Uncommon 68/Rare 20/Epic 9/Legendary 3 →
+   absolute odds Uncommon 50%/Rare 15%/Epic 7%/Legendary 2%), jackpot
+   folded in. Uncommon held at ~50% deliberately to protect the existing
+   gold-economy pacing. Real trade-off: total loot volume rises pack-wide
+   since every kill now rolls for tiers it couldn't before. Loot bag drop rate redesign - real design change, not a bug fix.**
+   Current system (`loot_bag_drops.js`): bag TIER is gated by mob tier -
+   only `RARE_MOBS`/`EPIC_MOBS`/`LEGENDARY_MOBS` (a small, tougher subset
+   of the roster) can ever roll a Rare/Epic/Legendary bag at all, each at
+   its own per-kill chance (Uncommon 50%, Rare 25%, Epic 10%, Legendary
+   4%), plus a flat 2% "jackpot" Legendary roll on top of any wave mob's
+   own tier roll. User's real, correctly-diagnosed complaint: because
+   higher tiers are gated behind rarer/tougher mobs (which also just
+   appear less often across the campaign), the player rarely gets a shot
+   at a good bag at all - direct ask: make it a flat "does a bag drop"
+   chance from ANY wave mob kill, then which TIER independently, rarer
+   tiers less likely, decoupled from which specific mob died. This is
+   the same shape the existing jackpot mechanic already uses for
+   Legendary specifically (flat chance, any mob) - generalize that
+   pattern to all 4 tiers instead of replacing it with mob-gating.
+   Real design work needed: propose a real worked-estimate replacement
+   (same rigor as the earlier gold-economy fix) - a flat per-kill "bag
+   drops" chance, then a weighted tier roll within that (e.g. an
+   Uncommon-heavy/Legendary-rare weighting), calibrated against real
+   expected bags-per-wave so this doesn't blow up the existing gold/
+   loot economy balance that was carefully tuned. Should the existing 2%
+   jackpot mechanic be folded into the new unified roll (as the
+   Legendary weight) rather than kept as a separate additive roll, to
+   avoid double-dipping? Use real judgment, report the proposed numbers
+   back before finalizing rather than shipping a first guess.
+
 **7-item live feedback batch — dispatched 2026-09-06, literal numbering:**
 1. **Done, 2026-09-06.** User doesn't like gold-ingot quest
    rewards anymore - since a basic (Uncommon) loot bag already has a real

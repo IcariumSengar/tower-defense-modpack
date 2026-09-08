@@ -44,10 +44,16 @@
 // Timer start point: when the wave's mobs finish spawning
 // (td_waveSpawnCompleteTick, written by wave_spawner.js's own drain loop),
 // not wave start - doesn't penalize the player for the staggered spawn-in
-// time on big wave-8+ mob counts. Threshold is an estimate (180s, matching
-// the existing COUNTDOWN_MAX_TICKS pacing scale from wave_status.js) with
+// time on big wave-8+ mob counts. Threshold is a plain estimate (180s) with
 // no real wave-8+ clear-time data behind it yet - flagged as adjustable
 // once actual play confirms whether it's landing too easy or too strict.
+// **Note, 2026-09-08**: this used to justify the 180s figure as "matching
+// wave_status.js's own COUNTDOWN_MAX_TICKS pacing scale" - that constant
+// no longer exists (the countdown-between-waves formula lost its flat cap
+// entirely, see wave_status.js's own writeup). Confirmed this was only ever
+// a rough borrowed number for the comment, not a real code dependency -
+// WAVE_AIRDROP_TIME_LIMIT_TICKS below is its own hardcoded literal, always
+// was, so it needs no change here.
 
 var WAVE_AIRDROP_MIN_WAVE = 8
 var WAVE_AIRDROP_TIME_LIMIT_TICKS = 3600 // 180s

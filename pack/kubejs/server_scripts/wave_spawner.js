@@ -565,8 +565,33 @@ function useWaveHorn(player) {
   // harmless, and the border is still a real containment boundary
   // during normal exploration even though wave mobs no longer spawn
   // relative to it.
-  var SPAWN_DISTANCE_MIN = 40
-  var SPAWN_DISTANCE_MAX = 60
+  // Real bug found + fixed 2026-09-08 (live report: mobs stuck stationary
+  // at the world border, not pathing toward anything). Confirmed by the
+  // numbers, not guessed: the border starts at size 50
+  // (playtest_starter_kit.js's `worldborder set 50`, half-width 25) and
+  // base_expansion.js's own escalating curve only reaches half-width 55
+  // by wave 8 (border size 110) - every hand-authored wave's fixed 40-60
+  // block spawn radius has been landing mobs OUTSIDE the border still
+  // active at that point in the campaign for the entire designed
+  // campaign, not just early waves. Vanilla's world border physically
+  // clips ALL entities, not just players, regardless of the border-damage
+  // config (that only controls damage-over-time once outside, not the
+  // collision itself) - a mob summoned past the edge gets held right
+  // there, unable to path back in, exactly the reported symptom.
+  //
+  // Clamped to the border's own live half-width (radius from center,
+  // conservative even for a square border - see the safety-margin note)
+  // instead of a fixed band, recomputed fresh every horn use so it scales
+  // automatically as the border grows rather than needing its own manual
+  // retune every time base_expansion.js's curve changes. A point at
+  // radius <= half-width from a square border's center is guaranteed
+  // inside the square on every axis (worst case is the axis-aligned
+  // angle, where the full radius equals the axis offset) - a small extra
+  // margin keeps mobs off the exact edge, not just barely inside it.
+  var borderHalfWidth = level.getWorldBorder().getSize() / 2
+  var BORDER_SAFETY_MARGIN = 5
+  var SPAWN_DISTANCE_MAX = Math.max(15, Math.min(60, borderHalfWidth - BORDER_SAFETY_MARGIN))
+  var SPAWN_DISTANCE_MIN = Math.min(40, SPAWN_DISTANCE_MAX - 10)
 
   // Real, confirmed root cause of the "nothing spawns" saga across this
   // whole pack's history (2026-09-02): Math.PI is undefined in this

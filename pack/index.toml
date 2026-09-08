@@ -763,6 +763,11 @@ hash = "42b5c040a2abe394deb5969b4ff4a07cb1bd4f6a6e93484c4f82696918ef9aab"
 metafile = true
 
 [[files]]
+file = "mods/unnamed-desert.pw.toml"
+hash = "9568578696b5f826331e2a7b225b5d4e55fcd29869293a653c0646276dd7b00b"
+metafile = true
+
+[[files]]
 file = "mods/waystones.pw.toml"
 hash = "5ab6f2a4a50bd53506496d3da0c2c09d5a3ca363c3ebc7ca8641ecd3f7104365"
 metafile = true

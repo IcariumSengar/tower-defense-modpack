@@ -149,11 +149,20 @@ var PEDESTAL_ALERT_MESSAGES = {
   4: ['THE PEDESTAL IS ABOUT TO FALL', 'This is it - move!'],
 }
 
+// Subtitle-only, not title+subtitle (2026-09-08, direct ask: "way too
+// large, reduce a lot"). Dropping the big bold title line entirely rather
+// than just shrinking the pair - the empty title still triggers the
+// display window (subtitle only ever shows alongside an active title
+// lifecycle), the flavor line (msg[1]) moves to a real tellraw chat
+// message instead of being dropped, since chat is a separate channel that
+// won't get overwritten by wave_status.js's own actionbar-based hostile
+// counter the way a second title/subtitle call would.
 function firePedestalAlert(server, tier) {
   var msg = PEDESTAL_ALERT_MESSAGES[tier]
   if (!msg) return
-  server.runCommandSilent(`title @a title {"text":"${msg[0]}","color":"red","bold":true}`)
-  server.runCommandSilent(`title @a subtitle {"text":"${msg[1]}","color":"gold"}`)
+  server.runCommandSilent(`title @a title {"text":""}`)
+  server.runCommandSilent(`title @a subtitle {"text":"${msg[0]}","color":"red","bold":true}`)
+  server.runCommandSilent(`tellraw @a {"text":"${msg[1]}","color":"gold"}`)
   server.runCommandSilent(`execute as @a at @s run playsound ${PEDESTAL_ALERT_SOUND} hostile @s ~ ~ ~ 1 1`)
 }
 
@@ -170,6 +179,18 @@ function firePedestalAlert(server, tier) {
 // alert again from the new, lower baseline instead of staying silent
 // because a higher tier was already "used up" - the alert system's own
 // comment promised this when it was built.
+// Visible/audible heal cue (2026-09-08, direct feedback: consuming a
+// golden carrot/nether star was only confirmed by the chat message - "not
+// till I tried to take it off that it was obvious that the item had been
+// consumed"). Fires at the pedestal's own position for any heal, additive
+// to the existing chat message - not a replacement. Shared by both the
+// right-click heal below and wave_status.js's own per-wave-clear heal,
+// since both go through healPedestalBy().
+function firePedestalHealEffect(server, x, y, z) {
+  server.runCommandSilent(`particle minecraft:totem_of_undying ${x} ${y + 1} ${z} 0.4 0.5 0.4 0.02 30`)
+  server.runCommandSilent(`playsound minecraft:block.beacon.power_select block @a ${x} ${y} ${z} 1 1`)
+}
+
 function healPedestalBy(player, data, amount) {
   if (data.getBoolean('td_pedestalDestroyed')) return false
   if (!data.contains('td_pedestalHealth')) return false
@@ -181,7 +202,11 @@ function healPedestalBy(player, data, amount) {
   if (newTier < data.getInt('td_pedestalAlertTier')) {
     data.putInt('td_pedestalAlertTier', newTier)
   }
-  updatePedestalBossbar(player.getServer(), newHealth, data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
+  var px = data.getInt('td_pedestalX')
+  var py = data.getInt('td_pedestalY')
+  var pz = data.getInt('td_pedestalZ')
+  updatePedestalBossbar(player.getServer(), newHealth, px, pz)
+  firePedestalHealEffect(player.getServer(), px, py, pz)
   return true
 }
 
@@ -197,27 +222,69 @@ function healPedestalByPercent(player, data, percent) {
 }
 
 // Golden carrot = 10% heal, nether star = full (100%) heal - the rare/
-// premium option, direct ask. Cancels the event so Supplementaries'
-// own native "place held item on the pedestal" behavior doesn't also
-// happen (that's reserved for the amulet - a carrot or star displayed
-// there would look wrong and would confuse amulet_pedestal.js's own
-// container poll, which specifically checks for kubejs:amulet).
-BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
+// premium option, direct ask.
+//
+// **Real bug found + fixed 2026-09-08** (live report: right-click heals
+// the pedestal and the item visibly sits on it; right-clicking again to
+// take it back makes it "disappear" - not actually there, but not really
+// gone either, a phantom that occupies an inventory slot with nothing
+// real behind it). Root cause: this used to be a BlockEvents.rightClicked
+// handler that called event.cancel() + stack.shrink(1), trying to both
+// consume the item AND stop Supplementaries' own native "place held item
+// on the pedestal" interaction from also happening on the same click.
+// event.cancel() doesn't reliably suppress that - the block's own
+// ItemDisplayTile placement still visually goes through (client-predicted
+// before server confirmation), racing this handler's own shrink(1). Two
+// systems both thought they owned the item at once - exactly the
+// add/remove desync class already fixed once before for the rabbit-ghost
+// bug (see docs/QUEUE.md's 7-item batch, item 2).
+//
+// Fixed the same way amulet_pedestal.js already solves the identical
+// "don't fight Supplementaries' own interaction" problem for the amulet:
+// don't intercept the click at all. Let the native placement happen
+// normally (no race), poll the pedestal's own real Container slot
+// (getDisplayedItem(), same call amulet_pedestal.js's own tick-poll
+// already proved reachable from KubeJS), and when a healing item is
+// actually sitting there, heal + consume it for real via
+// setDisplayedItem(air) - a real setter on Moonlight's ItemDisplayTile
+// (decompiled directly, not guessed), the same base class
+// PedestalBlockTile extends. This makes the pedestal's own display slot
+// the single source of truth for "is an item here," never two competing
+// paths again.
+var PEDESTAL_HEAL_ITEMS = {
+  'minecraft:golden_carrot': { percent: 0.1, message: "§d[Pedestal] §fThe carrot's glow seeps into the stone. It holds a little steadier." },
+  'minecraft:nether_star': { percent: 1.0, message: '§d[Pedestal] §fSomething ancient answers. The pedestal is whole again.' },
+}
+
+PlayerEvents.tick((event) => {
   var player = event.entity
-  var stack = event.item
-  var itemId = `${stack.id}`
   var data = player.persistentData
-  if (itemId === 'minecraft:golden_carrot') {
-    if (!healPedestalByPercent(player, data, 0.1)) return
-    event.cancel()
-    stack.shrink(1)
-    player.tell("§d[Pedestal] §fThe carrot's glow seeps into the stone. It holds a little steadier.")
-  } else if (itemId === 'minecraft:nether_star') {
-    if (!healPedestalByPercent(player, data, 1.0)) return
-    event.cancel()
-    stack.shrink(1)
-    player.tell('§d[Pedestal] §fSomething ancient answers. The pedestal is whole again.')
+  if (!data.contains('td_pedestalX')) return
+
+  var level = player.getLevel()
+  if (level.getTime() % 10 !== 0) return
+
+  var x = data.getInt('td_pedestalX')
+  var y = data.getInt('td_pedestalY')
+  var z = data.getInt('td_pedestalZ')
+  if (`${level.getBlock(x, y, z).id}` !== 'supplementaries:pedestal') return
+
+  var pedestalTile = level.getBlockEntity([x, y, z])
+  if (!pedestalTile) return
+
+  var displayed
+  try {
+    displayed = pedestalTile.getDisplayedItem()
+  } catch (e) {
+    return
   }
+  if (!displayed || displayed.isEmpty()) return
+
+  var heal = PEDESTAL_HEAL_ITEMS[`${displayed.id}`]
+  if (!heal) return
+  if (!healPedestalByPercent(player, data, heal.percent)) return
+  pedestalTile.setDisplayedItem(Item.of('minecraft:air'))
+  player.tell(heal.message)
 })
 
 function pedestalAttackDamage(mob) {

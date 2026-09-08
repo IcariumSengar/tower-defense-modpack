@@ -81,6 +81,16 @@ var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:generic_kill',
 ]
 
+// bounties.snbt's tasks are `type: "custom"`, not "checkmark" (2026-09-08
+// fix, real ask: bounties should complete on the kill event, not be
+// clickable). Decompiled dev/ftb/mods/ftbquests/quest/task/CheckmarkTask
+// directly: its canSubmit() is hardcoded `return true` - any player could
+// click a checkmark bounty complete for free, no kills required. CustomTask
+// defaults enableButton=false (no player click possible) and check=null
+// (no periodic auto-check either) - completely inert until something
+// external drives it, exactly this file's `ftbquests change_progress
+// ... complete` below, which calls Task's own type-agnostic
+// forceProgress() and doesn't care what task type it's hitting.
 var BOUNTY_OBJECTIVE = 'td_hostile_kills'
 var BOUNTY_MOD_OBJECTIVE = 'td_bountyMod1500'
 var BOUNTY_REPEATABLE_INTERVAL = 1500

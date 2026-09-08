@@ -28,7 +28,7 @@
 			]
 			tasks: [{
 				id: "42F2080CC88FFF1F"
-				type: "checkmark"
+				type: "custom"
 			}]
 			title: "First Blood"
 			x: 0.0d
@@ -53,7 +53,7 @@
 			]
 			tasks: [{
 				id: "A690E47C2C2FFDB5"
-				type: "checkmark"
+				type: "custom"
 			}]
 			title: "Exterminator"
 			x: 2.0d
@@ -78,7 +78,7 @@
 			]
 			tasks: [{
 				id: "57C0DB55E9655079"
-				type: "checkmark"
+				type: "custom"
 			}]
 			title: "Culling"
 			x: 4.0d
@@ -109,7 +109,7 @@
 			]
 			tasks: [{
 				id: "81F132C101C25BDA"
-				type: "checkmark"
+				type: "custom"
 			}]
 			title: "Reaper"
 			x: 6.0d
@@ -129,7 +129,7 @@
 			}]
 			tasks: [{
 				id: "1355429CD45AF725"
-				type: "checkmark"
+				type: "custom"
 			}]
 			title: "Zombie Masher"
 			x: 8.0d

@@ -94,23 +94,36 @@ const GEAR_REMOVAL_WAVE = 5
 // Escalating peacetime pacing (2026-09-04, real playtest feedback: the
 // flat 3-minute gap "should scale with wave number - short early on,
 // longer later," with a real announced checkpoint "say after wave 5,"
-// not just a silently longer number). First-pass curve, this session's
-// own call per the dispatch: short-and-tense early (1800 ticks/90s at
-// wave 1), ramping +300 ticks (15s) per wave cleared, capped at the
-// pack's original flat value (3600 ticks/3min) so late-game pacing
-// doesn't keep growing forever - reached at wave 7, one before the
-// endless-phase handoff. `PACING_ANNOUNCE_WAVE` is deliberately its own
-// constant, not reused from GEAR_REMOVAL_WAVE, even though they're the
-// same wave number right now - these are two independent narrative
-// beats that happen to coincide, not one dependent on the other.
+// not just a silently longer number). First-pass curve: short-and-tense
+// early (1800 ticks/90s at wave 1), ramping +300 ticks (15s) per wave
+// cleared, capped at 3600 ticks/3min - reached at wave 7.
+//
+// **Kink at wave 5, 2026-09-08** - direct feedback: the wave-5 "you'll
+// have more time to prepare from here on" title (below) fired at a wave
+// that was still only 150s (2.5min) under the old formula, undercutting
+// its own promise. Waves 1-4 are unchanged (still the original 90s→135s
+// ramp); wave 5 becomes a new fixed 4-minute baseline
+// (COUNTDOWN_WAVE5_BASE_TICKS), and growth continues +300 ticks/wave from
+// there with NO ceiling - the old flat cap is gone entirely, replaced by
+// this second, uncapped ramp. `COUNTDOWN_KINK_WAVE` is kept as its own
+// constant rather than reusing `PACING_ANNOUNCE_WAVE`, same reasoning as
+// that constant's own note below - they're the same wave number by
+// design intent this time, but still two independently-named concepts.
 const COUNTDOWN_BASE_TICKS = 1800
 const COUNTDOWN_STEP_TICKS = 300
-const COUNTDOWN_MAX_TICKS = 3600
+const COUNTDOWN_WAVE5_BASE_TICKS = 4800
+const COUNTDOWN_KINK_WAVE = 5
+// `PACING_ANNOUNCE_WAVE` is deliberately its own constant, not reused from
+// GEAR_REMOVAL_WAVE, even though they're the same wave number right now -
+// these are two independent narrative beats that happen to coincide, not
+// one dependent on the other.
 const PACING_ANNOUNCE_WAVE = 5
 
 function countdownTicksForWave(waveNumber) {
-  var scaled = COUNTDOWN_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - 1)
-  return Math.min(scaled, COUNTDOWN_MAX_TICKS)
+  if (waveNumber < COUNTDOWN_KINK_WAVE) {
+    return COUNTDOWN_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - 1)
+  }
+  return COUNTDOWN_WAVE5_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - COUNTDOWN_KINK_WAVE)
 }
 
 const FIXED_WAVE_EVENTS = [
@@ -316,9 +329,15 @@ PlayerEvents.tick((event) => {
   } else if (wasInWave) {
     data.putBoolean('td_inWave', false)
     player.tell(`§6[Wave] §aWave ${waveNumber} defeated!`)
-    // Big on-screen title, same reasoning as wave_spawner.js's "incoming"
-    // one — chat is easy to miss mid-fight.
-    player.getServer().runCommandSilent(`title @a title {"text":"WAVE ${waveNumber} CLEARED","color":"green","bold":true}`)
+    // Subtitle-only, not the big title line (2026-09-08, direct ask: font
+    // "slightly smaller" for this specific popup) - an empty title still
+    // has to fire first to trigger the display window at all (vanilla's
+    // subtitle text is only ever shown alongside an active title
+    // lifecycle, confirmed vanilla /title behavior), it just renders
+    // nothing since the text is blank. Subtitle text itself already
+    // renders at vanilla's smaller fixed HUD scale vs. the title line.
+    player.getServer().runCommandSilent(`title @a title {"text":""}`)
+    player.getServer().runCommandSilent(`title @a subtitle {"text":"WAVE ${waveNumber} CLEARED","color":"green","bold":true}`)
     // Real live ask, 2026-09-05: persistent HUD element for waves
     // cleared, not just this title/chat moment - the sidebar objective
     // itself is created once at login in playtest_starter_kit.js, real
@@ -327,7 +346,8 @@ PlayerEvents.tick((event) => {
 
     // Pedestal heal per wave clear (2026-09-05, direct ask - quick-fix
     // scope only, the bigger upgrade-point system stays parked in
-    // IDEAS.md). +20% of max HP, via pedestal_health.js's own shared
+    // IDEAS.md). Cut from 20% to 5% of max HP (2026-09-08, direct ask -
+    // no other reasoning given), via pedestal_health.js's own shared
     // healPedestalByPercent() - top-level FUNCTIONS reliably share scope
     // across server_scripts in this exact build (confirmed directly, see
     // pedestal_health.js's own header comment for the real sandbox test
@@ -335,7 +355,7 @@ PlayerEvents.tick((event) => {
     // (this pack's own longer-standing, separately-confirmed rule), so
     // this deliberately calls a function rather than reading
     // PEDESTAL_MAX_HEALTH directly from this file.
-    healPedestalByPercent(player, data, 0.2)
+    healPedestalByPercent(player, data, 0.05)
 
     // Wave-8+ speed-clear bonus airdrop (2026-09-05) - see wave_airdrop.js
     // for the full mechanism. No-ops below wave 8 or if the timing data

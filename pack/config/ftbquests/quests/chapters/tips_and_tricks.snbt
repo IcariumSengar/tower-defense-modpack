@@ -196,6 +196,23 @@
 			x: 0.0d
 			y: 2.0d
 		}
+		{
+			description: ["That crafting table by the furnace reaches further than it looks - it pulls from any chest or barrel touching it, right there in the crafting grid. No wiring, nothing to switch on. Build your stash around it instead of hauling it all to one spot."]
+			icon: "craftingstation:crafting_station"
+			id: "AE46C30DC9845EDD"
+			rewards: [{
+				id: "ACB049683F137722"
+				type: "xp_levels"
+				xp_levels: 2
+			}]
+			tasks: [{
+				id: "18A67B1DB7344753"
+				type: "checkmark"
+			}]
+			title: "Reach Further"
+			x: 1.0d
+			y: 2.0d
+		}
 	]
-	title: "Tips & Tricks"
+	title: "Tips and Tricks"
 }
