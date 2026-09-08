@@ -82,3 +82,38 @@ function maybeTriggerWaveAirdrop(player, data, waveNumber) {
   )
   player.tell(`§6[Airdrop] §aWave ${waveNumber} cleared fast enough - a crate is on its way down.`)
 }
+
+// On-screen countdown for the speed-clear window itself (2026-09-06 live
+// feedback: "currently 100% silent server-side check"). Same
+// setStatusMessage/throttle pattern as wave_spawner.js's own next-wave
+// countdown - reused deliberately, not a new display mechanism. Purely
+// timestamp-driven like the trigger check above (no separate active/
+// inactive flag needed): once `elapsed` exceeds the time limit, the
+// window has closed and this naturally stops rendering on its own -
+// whether that's because the bonus was already claimed (wave cleared,
+// `td_waveSpawnCompleteTick` will be overwritten fresh next wave) or
+// simply missed. Both display loops can coexist on the same actionbar
+// slot since they're never live at the same time in practice - this one
+// only has anything to show while a wave 8+ is still being fought, the
+// other only once a wave has already been cleared.
+var AIRDROP_COUNTDOWN_DISPLAY_THROTTLE = 20 // once/second, matches wave_spawner.js's pacing
+
+PlayerEvents.tick(function (event) {
+  var player = event.entity
+  var data = player.persistentData
+  if (data.getInt('td_waveNumber') < WAVE_AIRDROP_MIN_WAVE) return
+  if (!data.contains('td_waveSpawnCompleteTick')) return
+
+  var level = player.getLevel()
+  var currentTick = level.getTime()
+  var elapsed = currentTick - data.getInt('td_waveSpawnCompleteTick')
+  var remaining = WAVE_AIRDROP_TIME_LIMIT_TICKS - elapsed
+  if (remaining <= 0) return
+
+  if (currentTick % AIRDROP_COUNTDOWN_DISPLAY_THROTTLE !== 0) return
+  var totalSeconds = Math.ceil(remaining / 20)
+  var minutes = Math.floor(totalSeconds / 60)
+  var seconds = totalSeconds % 60
+  var secondsDisplay = seconds < 10 ? '0' + seconds : '' + seconds
+  player.setStatusMessage(`§6⏱ Airdrop window: ${minutes}:${secondsDisplay}`)
+})

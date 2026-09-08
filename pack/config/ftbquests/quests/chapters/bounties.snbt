@@ -20,9 +20,9 @@
 					xp_levels: 5
 				}
 				{
-					count: 8
+					count: 1
 					id: "CF8DFC7225F517C0"
-					item: "minecraft:gold_ingot"
+					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
 			]

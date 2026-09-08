@@ -103,9 +103,9 @@
 				type: "item"
 			}
 			{
-				count: 4
+				count: 2
 				id: "80F9C1D996680B95"
-				item: "minecraft:gold_ingot"
+				item: "bountybags:uncommon_loot_bag"
 				type: "item"
 			}]
 			tasks: [{
@@ -135,9 +135,9 @@
 					type: "item"
 				}
 				{
-					count: 4
+					count: 2
 					id: "AE85176DBD4A39E5"
-					item: "minecraft:gold_ingot"
+					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
 			]

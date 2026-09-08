@@ -7,10 +7,27 @@
 // chunk regardless of the gamerule. That's very likely what's actually
 // being seen.
 //
-// Real fix: `EntityEvents.spawned` + an immediate `entity.discard()`,
-// event-driven so it's free when nothing spawns, matching this pack's
-// own standing performance-scrutiny principle - not a recurring tick
-// scan.
+// Real fix: `EntityEvents.spawned` + `event.cancel()`, event-driven so
+// it's free when nothing spawns, matching this pack's own standing
+// performance-scrutiny principle - not a recurring tick scan.
+//
+// **`event.cancel()`, not `entity.discard()` - real ghost-entity bug
+// found and fixed 2026-09-06 (live report: rabbits visible but
+// unkillable and motionless).** Decompiled the real call chain 3 layers
+// deep: KubeJS's `EntityEvents.spawned` is backed by Architectury's
+// `EntityEvent.ADD`, which Architectury's own `EventHandlerImplCommon`
+// subscribes to Forge's real `EntityJoinLevelEvent` at
+// `EventPriority.HIGH` - a JS handler result of `false` (from
+// `event.cancel()`) makes Architectury call the real
+// `event.setCanceled(true)` on that Forge event, which vanilla honors
+// by never adding the entity to the level at all: no tracking, no
+// network sync, no client ever learns it existed. `entity.discard()`,
+// by contrast, lets the entity actually get ADDED first (tracked,
+// broadcast to nearby clients) and only removes it a moment later -
+// exactly the add-then-immediately-remove race that produces an
+// unkillable, motionless client-side ghost when the removal doesn't
+// beat the network sync. `event.cancel()` is a true pre-addition deny,
+// not a post-hoc cleanup.
 //
 // **Real finding, not assumed - the "ideal" pre-spawn cancel approach
 // genuinely doesn't work for this exact spawn path in this build.**
@@ -66,5 +83,5 @@ var PASSIVE_MOB_TYPES = [
 
 EntityEvents.spawned((event) => {
   var entity = event.getEntity()
-  if (PASSIVE_MOB_TYPES.includes(`${entity.type}`)) entity.discard()
+  if (PASSIVE_MOB_TYPES.includes(`${entity.type}`)) event.cancel()
 })

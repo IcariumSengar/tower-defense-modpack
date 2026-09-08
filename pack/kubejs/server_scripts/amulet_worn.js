@@ -1,9 +1,13 @@
 // Applies the amulet's passive buffs while td_amuletWorn is true (set by
 // amulet.js's onEquip/onUnequip capability callbacks, or directly by
 // amulet_pedestal.js when the player takes it back off the pedestal).
-// Regeneration + Fire Resistance, per docs/FEATURES.md — passive
+// Regeneration + Resistance, per docs/FEATURES.md — passive
 // survivability rather than combat stats, so it doesn't duplicate the
 // (removed) roguelike buff-pick's Vitality/Fortitude/Ferocity trio.
+// Resistance replaces the original Fire Resistance (2026-09-06 live
+// feedback: "fire damage is not really a thing in this game") - amplifier
+// 0 is a flat 20% damage reduction against all damage types, a real
+// survivability lever in this pack unlike the old effect.
 //
 // Same PlayerEvents.tick + throttle pattern as mob_aggro.js/wave_status.js.
 // Re-applies every 60 ticks (3s) rather than every tick — both potion
@@ -25,5 +29,5 @@ PlayerEvents.tick((event) => {
   if (!data.getBoolean('td_amuletWorn')) return
 
   player.potionEffects.add('minecraft:regeneration', DURATION_TICKS, 0, false, false)
-  player.potionEffects.add('minecraft:fire_resistance', DURATION_TICKS, 0, false, false)
+  player.potionEffects.add('minecraft:resistance', DURATION_TICKS, 0, false, false)
 })

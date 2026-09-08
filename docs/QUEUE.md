@@ -23,6 +23,162 @@ reflect actual current status.
 
 ## Ready to build
 
+**7-item live feedback batch — dispatched 2026-09-06, literal numbering:**
+1. **Done, 2026-09-06.** User doesn't like gold-ingot quest
+   rewards anymore - since a basic (Uncommon) loot bag already has a real
+   gold_nugget roll in it (weight 20, count 6-15, from the earlier gold-
+   economy fix), a loot bag reads as a strictly more interesting reward
+   that still covers the same gold need, plus "a loot bag is a fun reward
+   in general." Real current gold-reward quests, found by direct grep -
+   only 3 exist:
+   - `campaign.snbt` id `80F9C1D996680B95` - 4 gold_ingot ("Spoils of War")
+   - `campaign.snbt` id `AE85176DBD4A39E5` - 4 gold_ingot ("Open It")
+   - `bounties.snbt` id `CF8DFC7225F517C0` - 8 gold_ingot
+   Real bag item ids, confirmed from `loot_bag_drops.js`:
+   `bountybags:uncommon_loot_bag` / `rare_loot_bag` / `epic_loot_bag` /
+   `legendary_loot_bag`.
+   **Real correction caught during build**: the dispatch's assumption that
+   `CF8DFC7225F517C0` ("First Blood") was a later/bigger bounty was
+   wrong - it's actually the bounties chapter's FIRST and EASIEST entry
+   (25 kills), sitting below Exterminator (100 kills, 2x Uncommon),
+   Culling (300, Rare), Reaper (750, Epic), Zombie Masher (1500,
+   Legendary). Giving it Rare/Epic as originally suggested would have
+   inverted that chapter's own difficulty curve. Built correctly instead:
+   1x Uncommon bag (below Exterminator's 2x, matching its easier
+   position). The 2 campaign.snbt swaps (Spoils of War, Open It) both
+   went to 2x Uncommon bag as specified. Syntax-checked, not yet
+   confirmed by a live playtest.
+2. **Done, real root cause found and fixed, 2026-09-06.** Decompiled 3
+   layers (KubeJS → Architectury → Forge): `EntityEvents.spawned` backs
+   onto Forge's `EntityJoinLevelEvent` at `EventPriority.HIGH`. The old
+   `entity.discard()` let the entity actually get ADDED to the level
+   first (tracked, broadcast to nearby clients), then removed a moment
+   later - exactly the add-then-remove race that produces an unkillable,
+   motionless ghost (looks present, no AI ticking it, no real entity
+   backing it server-side). Fixed by switching to `event.cancel()`,
+   which Architectury translates to `event.setCanceled(true)` on the
+   real Forge event - a true pre-addition deny, never added or tracked
+   at all. Same fix applies to every other passive mob type on the list,
+   not just rabbits. Can't visually confirm the ghost is gone without a
+   real client (same limitation as every other client-visual fix) - the
+   mechanism is now provably correct, not yet player-confirmed.
+3. **Checked, same dead end as thickness - not fixable via config.**
+   Decompiled `WorldBorderElementRenderer.class` fully (all 14 classes in
+   the addon searched for config/color/json/toml, zero hits).
+   `BORDER_COLOR`/`SHADOW_COLOR` are hardcoded `static final int` ARGB
+   constants (opaque red + black shadow) - no config class anywhere.
+   Not fixable without bytecode-patching a third-party mod, same
+   real, avoidable-maintenance-burden call already made on the thickness
+   issue. Leaving as-is unless the user wants to explore alternatives
+   (a different border-rendering mod, or accepting the bytecode-patch
+   cost).
+4. **Done, 2026-09-06.** Reused `wave_spawner.js`'s exact
+   `setStatusMessage`/throttle pattern in a new tick handler in
+   `wave_airdrop.js`. Purely timestamp-driven off the existing
+   `td_waveSpawnCompleteTick` (no new state) - naturally stops showing
+   once the 180s window closes, whether from a successful clear or a
+   miss. Not yet confirmed by a real playtest (client-visual, same
+   limitation as always).
+5. **Done, 2026-09-06.** Both IPN jars removed via packwiz - Kotlin For
+   Forge correctly kept (confirmed still needed by Loot Beams: Refork,
+   not IPN-specific). Removed from sandbox and the live mods folder.
+   **Needs a full client restart to take effect** (mod removal, not a
+   world/script reload).
+6. **Done, 2026-09-06.** One-line edit in `amulet_worn.js`, syntax-
+   checked. `minecraft:fire_resistance` → `minecraft:resistance` as
+   specified.
+7. **Real audit done via NBT parsing (not guessing), 2026-09-06 - fix
+   approach needs a decision before building.** Extracted and parsed
+   every structure `.nbt` file across the installed structure mods:
+   - Philip's Ruins: 563 containers, only 9 truly empty (5 chests, 4
+     dispensers) - small gap.
+   - postapocalypse_structures: 147 containers, only 3 empty (red_mansion's
+     barrels) - tiny gap.
+   - abandoned_structures (Berezka): 39/39 all have real loot tables -
+     zero gap, already fine.
+   - **Abandoned Watchtowers: 98 of 262 containers (37%) are empty
+     barrels** - every tower variant has ~15 decorative empty barrels
+     plus exactly 1 hardcoded-single-item barrel, no loot tables
+     anywhere in the mod at all. The real standout gap.
+   - The Lost City: structure_loot_progression.js's own header comment
+     already confirms (from an earlier investigation) this mod "ships
+     ZERO chest loot tables across all 205 of its own structure NBTs" -
+     expect a big number here too once the scan finishes.
+   **Why this isn't a simple loot-table-JSON fix**: these are containers
+   baked into MOD-owned NBT structure files, not this pack's own data.
+   Where a real LootTable reference already exists in the NBT (like
+   postapocalypse_structures' chests/trash), adding a JSON loot table
+   file is enough - already proven, that's how the earlier "no fix
+   needed" cases worked. But for containers with NO LootTable reference
+   at all (Watchtowers' case, likely Lost City too), the reference
+   itself has to be added to the block entity's own NBT - meaning
+   creating override copies of the structure `.nbt` files at the same
+   resource path in this pack's own data folder (the same override
+   mechanism already used for `dimension.json`/`noise_settings.json`,
+   just applied to binary NBT resources for the first time in this
+   pack). A real chunk of additional work given the scope (110+
+   containers across Philip's Ruins/postapocalypse/Watchtowers alone,
+   before Lost City's count even lands) and a new technique for this
+   pack - **holding for a decision on whether to proceed**, see below.
+
+**Savanna removal + desert-area structure density/variety — dispatched
+2026-09-06, direct user instruction with a real screenshot.** User's
+starting desert patch (X:-2349 Z:-136, fresh world) shows only 2
+structures in view distance and a large savanna blob crowding the
+desert - "too big, takes away from the desert feel," "light on
+structures and not varied."
+1. **Superseded 2026-09-06 by real sandbox testing - plain deletion
+   doesn't work, don't do it.** Removing `minecraft:savanna` and
+   `minecraft:savanna_plateau`'s points from `overworld.json`'s
+   `multi_noise` biome_source does NOT hand their territory to
+   desert/badlands - verified via a genuine fresh-world sandbox test
+   (same seed, before/after): the 588 grid points that were savanna/
+   savanna_plateau become 83.2% meadow, 16.8% plains, 0% desert/badlands.
+   Savanna's own parameter point (temp 0.5, humidity -0.3,
+   continentalness 0.2, erosion 0.3) is mathematically closer to the
+   plains-family cluster than to desert (0.8,-0.8,0.3,0.0) or badlands
+   (0.9,-0.9,0.5,-0.3) - deleting the point just falls through to
+   whichever remaining point is nearest, which is plains-family here.
+   Shipping that would replace one green biome with two others (meadow
+   even adds flowers) - the opposite of "more desert feel."
+   **User-confirmed real fix instead**: ADD new `minecraft:desert` and/or
+   `minecraft:badlands` parameter point(s) positioned at (or very near)
+   savanna's/savanna_plateau's old coordinates, rather than deleting
+   those points - multi_noise supports multiple points per biome, so this
+   directly claims that parameter-space territory for desert/badlands
+   instead of leaving it to fall through. Small, precise edit, same file
+   (2-4 new point entries). Verify the same way (real before/after grid
+   sample at the same coordinates) that this actually lands as
+   desert/badlands now, not another fallback surprise. Also drop
+   `spawn_biome_search`'s existing savanna/savanna_plateau references in
+   `playtest_starter_kit.js` if any dead fallback code remains now that
+   the biome won't exist in the world at all (not just excluded from
+   spawn targeting - a real distinction from today's earlier fix).
+2. **Done, 2026-09-06 - real fork on variety left open, see below.**
+   Verified via decompile exactly which structure_sets place in
+   desert/badlands: only `philipsruins:desert_structures` (3 pieces, was
+   48/24 spacing) and abandoned_urban's city/gas_station/motel/
+   observatory/train (5 structures, already dense at 24-40). CONFIRMED
+   ZERO desert/badlands coverage from every other philipsruins-family
+   set, postapocalypse_structures, watchtower_building,
+   abandoned_structures, and all 13 of the_lost_city's structures (all
+   target forest/mountain/taiga/plains/meadow/now-removed-savanna).
+   Retuned `desert_structures` from 48/24 to 24/12 (parity with
+   abandoned_urban's tier, since it was the outlier at half density).
+   Verified via fresh-world boot: no crash, real `/locate` hits for
+   desert_structures (883 blocks), gas_station (35 blocks), observatory
+   (48 blocks). **Real fork, needs a decision**: density is fixed, but
+   TYPE variety is still genuinely thin - only 2 mods/8 structure pieces
+   cover desert/badlands vs. dozens covering plains-family. Source/vet a
+   real desert-specific structure mod (same rigor as the earlier
+   structure-variety pass), or accept 2 mods' worth of variety for now?
+3. Verify via a genuine fresh-world creation (not a reload) - sample
+   enough columns to confirm the savanna-claimed area actually reads as
+   desert/badlands-dominant now, not some other unexpected biome winning
+   the reassignment, and confirm no world-creation crash (multi_noise
+   edits are usually low-risk structurally, but verify anyway per this
+   pack's own history with worldgen changes).
+
 **Held worldgen batch, dispatched 2026-09-06 overnight (user unavailable
 to review same-night; working through in order per direct instruction,
 documenting reasoning for the morning):**
@@ -43,30 +199,47 @@ documenting reasoning for the morning):**
    (including a correct 0 for a point actually inside a structure), 1
    hit a real vanilla edge case (a piece-less StructureStart) and
    correctly degraded to the old fallback instead of crashing.
-2. **Held, not started - real risk, not just caution.** "~5 blocks to
-   bedrock" reads as a literal world min_y/height reduction (shrink how
-   much diggable stone exists below the surface), but this world's
-   actual surface height is genuinely variable per-column - confirmed
-   by checking playtest_starter_kit.js's own spawn logic, which
-   computes floor Y at runtime from a real heightmap query, not a fixed
-   constant. A min_y cut deep enough to be safe under every biome's
-   lowest real terrain point (savanna/desert/badlands elevations
-   haven't been surveyed) risks either clipping terrain generation
-   entirely in a low spot, or leaving less than 5 blocks under it -
-   exactly the kind of subtle, hard-to-spot-until-a-real-playtest
-   mistake that already caused one real world-creation crash in this
-   pack's history (the earlier noise+fixed rebuild). A wrong version
-   here fails much worse than not shipping it - either a crash on world
-   creation, or a broken floor the user finds mid-session with no one
-   to flag it to overnight. Real options for whoever picks this up:
-   survey actual terrain-height range across the pack's real biome set
-   first (a concrete, boundable task) and pick a min_y with a real
-   safety margin under the lowest point found, or get the user's own
-   call on whether "5 blocks" should be measured from the base/spawn
-   point specifically rather than globally (a much smaller, safer
-   change - a `stone_depth`-based surface_rule addition near the base
-   only, not a dimension-wide min_y cut). Not guessing at either
-   overnight.
+2. **Re-scoped 2026-09-06 - the original "held" premise was wrong, this
+   is actually low-risk. User is picking this up personally.** The
+   original hold assumed "this world's surface height is genuinely
+   variable per-column" (per-biome elevation, unsurveyed) - checked
+   directly against the real, current `overworld_flat.json` noise_router
+   and that premise is false. `final_density` is a `y_clamped_gradient`
+   from `from_y: 1` to `to_y: 3` - a function of **Y only**, zero
+   reference to continentalness/erosion/depth/weirdness anywhere in the
+   density computation. This world is provably, structurally flat by
+   construction (confirmed directly from the JSON, not inferred from
+   `playtest_starter_kit.js`'s heightmap-query spawn logic, which is a
+   generic runtime safety check, not evidence of real per-column height
+   variance - and matches the "World type" section already in
+   FEATURES.md, which independently documents this same fact). Real
+   numbers: `min_y: -64`, walkable surface sits at genuinely constant
+   y≈2 everywhere (the gradient's own crossing point), giving the
+   already-known 65-block floor depth uniformly, not just "probably."
+   The bedrock layer itself is a `vertical_gradient` keyed to
+   `above_bottom` (relative to whatever `min_y` is, not an absolute Y),
+   so it moves correctly with any `min_y` change automatically - no
+   separate edit needed there.
+   **Real hard constraint that does matter**: Minecraft's chunk-section
+   format requires `min_y` to be a multiple of 16 (a vanilla engine
+   limit, not this pack's choice) - "exactly 5 blocks to bedrock" isn't
+   reachable at all, only the nearest 16-aligned options:
+   - `min_y: -16` → 18-block floor depth (surface y≈2 down to -16),
+     bedrock's own random layer occupies the bottom ~5 of those, leaving
+     **~13 blocks of real diggable stone** above bedrock. Safe margin,
+     closest practical fit to "~5 blocks," recommended default.
+   - `min_y: 0` → only a 2-block floor depth - **too shallow, avoid**:
+     the bedrock gradient (bottom 0-5 blocks above min_y) would
+     literally poke through the y≈2 walkable surface, a real broken-floor
+     bug, not a hypothetical.
+   **User confirmed 2026-09-06: go with `min_y: -16`. Ready to build.**
+   Also need `height` adjusted alongside `min_y` (currently 384, keeps
+   the dimension's total span sane) and a check for whether any other
+   file references the old `min_y: -64` literal (structure `y_offset`s,
+   `structure_loot_progression.js`'s any absolute-Y logic, etc.) before
+   touching it. Verify via a genuine fresh-world creation same as any
+   other worldgen edit - low risk given the above, but still real
+   engine-level config, not zero-risk.
 3. **Done, commit dc87f16.** Installed both Abandoned Watchtowers
    (MasterOWS) and Abandoned Structures (Berezka). Checked real biome
    fit before installing rather than assuming: this pack's actual biome

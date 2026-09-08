@@ -593,11 +593,6 @@ hash = "2275a10df12349855b3c88ec95ccf944aace5a879e6dc3fd755fd8cfa7b842e2"
 metafile = true
 
 [[files]]
-file = "mods/inventory-profiles-next.pw.toml"
-hash = "fa90c23becb1613663b566b5955c0dcdc390caabffc9b323f6642f44811ac4c0"
-metafile = true
-
-[[files]]
 file = "mods/inventory-sorter.pw.toml"
 hash = "58170607da6517dc43eeb5a664dea9dec7d96a8ad9e99d2623c2a5a9099c91be"
 metafile = true
@@ -635,11 +630,6 @@ metafile = true
 [[files]]
 file = "mods/kubejs.pw.toml"
 hash = "ed086cdfde6ba4bb175468a76f3df3b9517aea3fe95b09bed0f1fa70f7caeb6a"
-metafile = true
-
-[[files]]
-file = "mods/libipn.pw.toml"
-hash = "ee79f551b7aede4b923fc6df137c4ebbb1dd21eb80a3aaba6da8be93ac5010e7"
 metafile = true
 
 [[files]]
