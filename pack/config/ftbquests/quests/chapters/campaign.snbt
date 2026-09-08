@@ -435,6 +435,188 @@
 			y: 6.0d
 		}
 		{
+			dependencies: ["74779308DEED321D"]
+			description: ["Burns fuel instead of scrap - real power, not the trickle a hand crank gives you. Everything past this point wants what this makes; nothing runs without it."]
+			icon: "immersiveengineering:diesel_generator"
+			id: "4B07331734543EB4"
+			rewards: [
+				{
+					id: "109E721603F25681"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+				{
+					count: 4
+					id: "FBBFB87F39FCBED8"
+					item: "minecraft:copper_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Build the tech chain"
+			tasks: [{
+				consume_items: false
+				id: "929E026BCC985C55"
+				item: "immersiveengineering:diesel_generator"
+				type: "item"
+			}]
+			title: "Wired Different"
+			x: 25.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["74779308DEED321D"]
+			description: ["Holds more than a chest ever will, and it upgrades in place instead of needing replaced. Doesn't need power - just somewhere to sit."]
+			icon: "sophisticatedstorage:barrel"
+			id: "F82126526999A560"
+			rewards: [
+				{
+					id: "9133C9FE5D5DC56D"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+				{
+					count: 4
+					id: "F6C839696611D160"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Build the tech chain"
+			tasks: [{
+				consume_items: false
+				id: "52019608CE1659F9"
+				item: "sophisticatedstorage:barrel"
+				type: "item"
+			}]
+			title: "Room to Grow"
+			x: 25.0d
+			y: 7.0d
+		}
+		{
+			dependencies: ["4B07331734543EB4"]
+			description: ["Set one at the generator, another wherever something needs feeding, and the power finds its own way there - no wire between them. Whatever you plug in downstream just works."]
+			icon: "fluxnetworks:flux_plug"
+			id: "C7E75E99F3A7B653"
+			rewards: [
+				{
+					id: "85F7215E77AB0D42"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+				{
+					count: 8
+					id: "F53E61C8EF2A7523"
+					item: "minecraft:redstone"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Build the tech chain"
+			tasks: [{
+				consume_items: false
+				id: "6930B743A3CDA08B"
+				item: "fluxnetworks:flux_plug"
+				type: "item"
+			}]
+			title: "No Cables Needed"
+			x: 28.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["4B07331734543EB4"]
+			description: ["A real network, not a pile of chests you have to remember. Feed it power and it'll sort, fetch, and craft on request - if you can be bothered to wire it in."]
+			icon: "refinedstorage:controller"
+			id: "C5A98E14436508F8"
+			rewards: [
+				{
+					id: "4B4C22EF7409EFF4"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+				{
+					count: 4
+					id: "4C6F2A7BFB0E2D46"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Build the tech chain"
+			tasks: [{
+				consume_items: false
+				id: "A6789EF8AE0A3FA1"
+				item: "refinedstorage:controller"
+				type: "item"
+			}]
+			title: "The Grid"
+			x: 28.0d
+			y: 4.5d
+		}
+		{
+			dependencies: ["C7E75E99F3A7B653"]
+			description: ["Give it a redstone signal and enough charge and it picks something nearby and puts it down - doesn't care which one, doesn't stop to think about it. First real teeth this place has had that don't need you standing behind them."]
+			icon: "immersiveengineering:tesla_coil"
+			id: "04DC756B047A09D4"
+			rewards: [
+				{
+					id: "9B1C9955CE1A068C"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+				{
+					count: 1
+					id: "B511A7783688070C"
+					item: "minecraft:lightning_rod"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Build the tech chain"
+			tasks: [{
+				consume_items: false
+				id: "09C28999F88F8224"
+				item: "immersiveengineering:tesla_coil"
+				type: "item"
+			}]
+			title: "Sparks in the Dark"
+			x: 31.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["74779308DEED321D"]
+			description: ["A fan blowing over lava does more than move air - point a Nozzle down a corridor and anything that walks through comes out burning. Needs a crank or a wheel to turn it, not power off the grid - a different kind of running machine, cheaper to start."]
+			icon: "create:nozzle"
+			id: "5F728109F9913045"
+			rewards: [
+				{
+					id: "95479A859DF0BA7F"
+					type: "xp"
+					xp: 10
+				}
+				{
+					count: 1
+					id: "CB59BF2C503D4EB3"
+					item: "create:nozzle"
+					type: "item"
+				}
+			]
+			subtitle: "Get the fire going"
+			tasks: [{
+				id: "B97E166BD58ACAFF"
+				type: "checkmark"
+			}]
+			title: "Turn Up the Heat"
+			x: 25.0d
+			y: -0.5d
+		}
+		{
 			dependencies: ["689899208FC0ADF0"]
 			description: ["Five waves was as far as whoever held this post before you got. You have matched that, and the gear has finally given out - it was never going to last past this point anyway. Eight was the last wave anyone bothered planning for - after that, it just keeps escalating, no ceiling anyone has found yet. Whatever gear and defenses you have built by now are what you are taking into it. I do not know how far it actually goes. Maybe you will be the one who finds out."]
 			icon: "minecraft:nether_star"

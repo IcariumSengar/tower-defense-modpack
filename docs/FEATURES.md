@@ -3777,7 +3777,293 @@ system" below, designed 2026-09-01, parked in QUEUE.md rather than
 sent to build (deliberately queued behind the current playtest-feedback
 batch, not a design gap).
 
-**Storage & power system** — *planned, parked, not built*. Direct
+**Storage & power system — BUILT, 2026-09-08 (Roadmap Phase 3).** The
+original 2026-09-01 spec below is kept as real design history (not
+deleted); this paragraph is the actual shipped outcome, verified far
+more rigorously than the original spec pass (which flagged 3 of 4
+mods' dependency lists as unchecked).
+
+**All 4 mods installed via `packwiz curseforge add --addon-id <id> -y`
+(real CurseForge project IDs, not search/slug guesses)**, each
+dependency-checked twice — once via packwiz's own CurseForge-API-backed
+resolver (which auto-detects and offers required deps), once again by
+downloading the exact jar and reading its real `META-INF/mods.toml`
+directly (the authoritative source, per this pack's decompile-first
+convention):
+- **Sophisticated Storage** v1.4.86 (project 619320, file 8719374) +
+  **Sophisticated Core** v1.5.1 (project 618298, file 8839328, real
+  required dependency — packwiz auto-added it, matching the original
+  spec's already-verified claim).
+- **Refined Storage** v1.12.4 (project 243076, file 4844585) — **real
+  correction to the original spec's open caveat**: packwiz found zero
+  required dependencies, and the downloaded jar's own `mods.toml` has
+  no `[[dependencies.refinedstorage]]` block at all beyond the implicit
+  Forge/Minecraft version floor. A generic CurseForge relations-page
+  scrape (not project-ID-specific) had suggested a "Fabric API
+  required" dependency — that reflects the mod's separate Fabric build,
+  not this Forge one; the real jar has no such dependency. Forge loader
+  floor `[47,)` — this pack runs 47.4.10, satisfied.
+- **Immersive Engineering** v10.2.0-183 (project 231951, file 6206989)
+  — confirmed via `mods.toml`: only mandatory deps are `forge
+  >=47.3.0` and `minecraft 1.20.1` (both satisfied), `jei` optional
+  (already installed). Genuinely self-contained, as the spec reasoned
+  but hadn't verified.
+- **Flux Networks** v7.2.1.15 (project 248020, file 5234697) —
+  confirmed via `mods.toml`: only mandatory deps are `forge >=46` and
+  `minecraft [1.20,1.21)`, `modernui`/`jei` optional. No SonarCore
+  dependency in this build, matching the spec's reasoned-not-verified
+  claim.
+
+All 5 jar hashes (sha1) matched packwiz's recorded metadata exactly
+after direct download — genuine files, not corrupted/substituted.
+
+**Real, load-bearing correction to the roadmap dispatch that sent this
+phase to build**: the dispatch stated "Create's own Tesla Coil block
+... NOT Create: Crafts & Additions' Tesla Coil — already ruled out as
+the wrong pick" as an established fact. Decompiled the actual installed
+`create-1.20.1-6.0.8.jar` directly (full jar-entry scan for "tesla"):
+**zero matches at all** — base Create has no Tesla Coil block, model,
+texture, or class anywhere in the jar. The block the dispatch described
+does not exist. Two real Tesla Coils exist in this pack's actual mod
+set instead, both individually decompiled and compared on real
+mechanics (not read from marketing text):
+- `createaddition:tesla_coil` (Create: Crafts & Additions, already
+  installed since the Barbed Wire swap) — `TeslaCoilBlockEntity`: a
+  flat-radius (3-block) AoE tick every 20 ticks while redstone-powered
+  and sufficiently charged; real FE-backed (40,000 FE capacity, 10,000
+  FE/t max input, 1,000 FE consumed per zap); 3 damage to mobs / 2 to
+  players per zap plus a "Shocking" `MobEffectInstance`; a genuine
+  quirk found in the code — full head-to-toe chainmail armor grants
+  complete immunity to both the damage and the effect. Single block.
+- `immersiveengineering:tesla_coil` (Immersive Engineering) —
+  `TeslaCoilBlockEntity`: every 32 ticks, picks ONE random `LivingEntity`
+  within a 6-block radius, deals 6.0 real damage
+  (`IEServerConfig.MACHINES.teslacoil_damage`, config-adjustable) via a
+  dedicated `ieTesla` damage type, and applies IE's own 128-tick
+  Stunned `MobEffect` to that target; every OTHER nearby entity in a
+  wider (9-block) box gets a lesser residual "electric field" effect
+  instead of the full hit. Real FE-backed (48,000 FE capacity, 256 FE/t
+  idle draw, 512 FE per shock), redstone-gated the same way. A 2-tall
+  multiblock. Real stock crafting recipe: HV Capacitor + MV Coil +
+  Advanced Electronic Component + iron component + aluminum plates —
+  IE's own mid-tier component chain, meaning it's already gated behind
+  real IE ore-processing progression by the mod itself. (Checked IE's
+  own `IEPotions`/`EventHandler` for what "Stunned" actually does
+  beyond being a registered harmful effect — found no AI-disabling
+  handler anywhere else in the jar for this specific build; treating it
+  honestly as "a real status effect is applied" rather than overselling
+  a specific gameplay-disabling claim that isn't in the code.)
+
+**Decision: Immersive Engineering's Tesla Coil (`immersiveengineering:
+tesla_coil`) is Tier 3's real defense machine**, not CC&A's, and
+definitely not the nonexistent "Create's own" block the dispatch named.
+Reasoning: (a) genuinely free — zero additional mod footprint beyond
+IE, which this phase installs regardless for power generation, so this
+is the only reading of the roadmap's own "resolves the Tesla Coil
+candidate for free" framing that actually holds up; (b) the single-
+random-target-plus-residual-field mechanic is a much closer literal
+match to "chain lightning" than CC&A's flat-radius tick; (c) it matches
+this project's own real history — both the original 2026-09-01 "Storage
+& power system" spec below and IDEAS.md's Tier 3 sketch named IE's
+Tesla Coil specifically, well before the erroneous "Create's own"
+framing appeared in the 2026-09-08 roadmap dispatch. CC&A's Tesla Coil
+stays installed (it was already in the pack for barbed wire) and stays
+real/usable in a creative build, it's just not the one wired into
+quests — shipping two overlapping "electric zap tower" identities in
+one tier isn't worth it.
+
+**Recipe/tier-gating decision, documented per the dispatch's own
+explicit ask**: no re-recipe layer added on top of any of the 4 mods'
+stock recipes (Sophisticated Storage's barrels, Refined Storage's
+Controller/Grid, IE's generators/Tesla Coil, Flux Networks' Plugs/
+Points all ship as-is). This is a deliberate choice, not an oversight —
+Tier 1/2's "swap the filler ingredient for a loot-tier material" pattern
+(established by `tier1_recipes.js`/`tier2_recipes.js`) doesn't fit here
+for a specific reason: the Tesla Coil's own stock recipe already
+requires a real IE-internal tech-tree item (HV Capacitor, itself built
+from IE's ore-processing/refining chain) — a genuinely deeper, more
+meaningful gate than a fixed materials swap would add, and replacing it
+with loot-tier fillers would let a player skip IE's own progression
+entirely by looting their way to a Tesla Coil, directly undermining the
+"tech pack feel" this system exists to deliver and the pack's own
+established principle that loot shouldn't hand out shortcuts to what a
+placed home machine already makes (see `feedback_loot_shortcut_
+undermines_choice`). The real gate instead is the FTB Quests dependency
+chain (all 6 new Tier 3 quests sit behind the Tier 2 turret quest, see
+below) plus IE's own native component tree for the Tesla Coil
+specifically — consistent with how Tier 1→Tier 2 is ALSO gated purely
+by quest dependency, not forced item consumption (the actual built
+Tier 2 Arrow Turret recipe doesn't consume a Tier 1 item either).
+
+**Flamethrower Mechanics (Create Nozzles + lava) — real check done,
+ships as a parallel/alternative Tier 3 option, not a required second
+machine.** The dispatch asked for a real check of whether a Nozzle's
+fire-stream actually damages mobs before assuming it does. Decompiled
+Create's actual fan-processing pipeline directly (`AirCurrent.
+tickAffectedEntities()` → `AllFanProcessingTypes.BlastingType/
+SmokingType.affectEntity()`):
+- `AirCurrent.tickAffectedEntities()` (in `com.simibubi.create.content.
+  kinetics.fan.AirCurrent`) calls `level.getEntities(null, bounds)` —
+  ALL entities in the air current's bounding box, not just item
+  entities — and for anything that isn't an `ItemEntity`, calls
+  `processingType.affectEntity(entity, world)` every tick it remains
+  caught.
+- `BlastingType.affectEntity()` (fan blowing over real lava — confirmed
+  `minecraft:lava`/`minecraft:flowing_lava` are valid catalysts via
+  `data/create/tags/fluids/fan_processing_catalysts/blasting.json`,
+  exactly matching "Create Nozzles + lava," no extra tagging needed):
+  `entity.setSecondsOnFire(10)` + `entity.hurt(CreateDamageSources.
+  fanLava(level), 4.0F)` — a real 4.0-damage (2-heart) hit plus a
+  10-second ignite, reapplied every tick the entity remains in the
+  stream (vanilla's own hurt-invulnerability window throttles the
+  direct-hit damage on repeat ticks, but the ignite keeps refreshing,
+  so the practical effect is one solid hit plus continuous vanilla
+  fire-tick burn damage — roughly 1 damage/second — for as long as a
+  mob stands in the stream).
+- `SmokingType.affectEntity()` (fan over a weaker heat source, e.g. a
+  lit campfire): `setSecondsOnFire(2)` + 2.0 damage — same mechanism,
+  weaker.
+- A Nozzle isn't what generates this effect — it's a pure vanilla
+  `IAirCurrentSource`-reading attachment that reshapes/extends the
+  underlying fan's own air current into a focused, aimable beam (real
+  use case here: aiming the stream down a kill corridor rather than a
+  bare fan's default cone). The damage/ignite mechanic exists on the
+  fan+heat-source combo itself, Nozzle or not.
+- This is purely Create's own kinetic power (RPM/stress units from a
+  windmill, water wheel, or hand crank) — **not** Forge Energy, so
+  unlike the Tesla Coil it has zero dependency on the new IE/Flux
+  Networks/Refined Storage power chain and needed zero new mod
+  installs (base Create's Nozzle + Fan + a lava source, all already in
+  the pack).
+
+**Decision**: ships as a real, cheaper, parallel Tier 3 choice
+alongside the Tesla Coil, not a required second machine and not cut —
+the decompiled mechanics are genuinely meaningful damage, not cosmetic,
+and it fits a distinct playstyle (a standing area-denial corridor vs.
+the Tesla Coil's periodic single-target zap) at zero FE-chain cost.
+Documented in a new quest, "Turn Up the Heat" (see Quest book changes
+below) — checkmark-type like "Turn the Crank," since it needs no new
+craftable item, just a build (Fan behind a Nozzle, aimed down a
+corridor, with lava reachable from the fan's intake side).
+
+**Tesla Coil hit cinematics — built.** New file
+`pack/kubejs/server_scripts/tesla_coil_cinematics.js`. The mod already
+ships real cinematics of its own (a LOUD_ZAP/`tesla.ogg` sound at the
+coil, a lightning-bolt render via its own `LightningAnimation` class,
+and a lit "powered" blockstate) — this adds a complementary hit
+reaction AT THE STRUCK ENTITY specifically, so the zap reads at the
+point of impact too, not just at the block. Real KubeJS API, verified
+by decompiling KubeJS's own classes directly (not guessed, given this
+pack has never used a hurt-style event before): `EntityEvents.hurt` is
+a real registered event backed by Forge's `LivingHurtEvent`
+(`LivingEntityHurtEventJS`, confirmed in KubeJS's own `EntityEvents`
+binding class), and `event.getSource().getType()` is KubeJS's clean-
+name remap (`DamageSourceMixin`, `@RemapForJS("getType")`) of vanilla's
+`DamageSource.getMsgId()` — confirmed this returns exactly the
+`message_id` string authored in the damage type's own JSON (`data/
+immersiveengineering/damage_type/tesla.json` sets `"message_id":
+"ieTesla"` for this specific ongoing-zap damage, distinct from
+`ieTeslaPrimary`, the coil's own sneak+screwdriver player self-test
+damage — deliberately not matched, this hook is for combat cinematics,
+not a player-safety indicator). On a real `ieTesla` hit: a vanilla
+`minecraft:electric_spark` particle burst (the same particle vanilla
+uses for sculk sensor vibration feedback — a real, already-registered
+"electric" particle, no custom texture needed) plus a vanilla
+`minecraft:entity.lightning_bolt.thunder` sound, both centered on the
+struck entity's position via `runCommandSilent`. Syntax-checked with
+`node --check`.
+
+**Performance tip investigated — real finding, not a code change.**
+The roadmap asked to "cap Embeddium's max particle count" given mass
+Tesla-electrocution of a Enhanced-Hordes-stacked horde is a real
+stutter risk. Decompiled the installed `embeddium-0.3.31+mc1.20.1.jar`
+directly: there is no Embeddium-specific particle cap anywhere in the
+jar (only rendering-performance mixins for how particles are drawn,
+`BillboardParticleMixin`/`SpriteBillboardParticleMixin`). The "Particle
+Quality" option Embeddium's own video-settings screen exposes is
+vanilla's own `options.particles` setting (`ParticleStatus`: All/
+Decreased/Minimal) — confirmed via `SodiumGameOptionPages.java`,
+Embeddium just re-surfaces it in its own UI rather than adding a new
+setting. This pack ships no default `options.txt` (checked), so there's
+no server-side or packwiz-config lever to force it — it's a genuine,
+real per-player client setting, not a code change. Documented here as
+player-facing guidance instead: switching Particles to Decreased or
+Minimal is the real mitigation for a mass-Tesla-zap or Nozzle-
+flamethrower moment, worth mentioning in a future tips quest, not
+something this phase can enforce.
+
+**New Tier 3 quest chapter additions — built, in `campaign.snbt`.** 6
+new quests, all branching off "Wired for War" (Tier 2's Arrow Turret
+quest, id `74779308DEED321D`) matching this pack's existing "next tier
+branches off the previous tier's quest" pattern: "Wired Different"
+(`immersiveengineering:diesel_generator`) and "Room to Grow"
+(`sophisticatedstorage:barrel`) both branch directly off Tier 2;
+"No Cables Needed" (`fluxnetworks:flux_plug`) and "The Grid"
+(`refinedstorage:controller`) both depend on "Wired Different" (need
+real power first); "Sparks in the Dark" (`immersiveengineering:
+tesla_coil`) depends on "No Cables Needed" (needs the wireless
+distribution network, matching the "place a machine and it draws
+automatically" framing); "Turn Up the Heat" (checkmark, the Flamethrower
+build) depends on Tier 2 directly, independent of the whole power
+chain, matching its real zero-FE-dependency status above. All use the
+established item-task pattern (`consume_items: false`, hexagon shape,
+size 1.5) except "Turn Up the Heat" (checkmark, matching "Turn the
+Crank"'s precedent for a build-not-craft quest). Real item/block IDs
+verified by decompiling each mod's own blockstate/asset listing
+directly, not guessed from mod pages.
+
+**Real footprint cost, stated plainly per the dispatch's own ask**:
+this is the single biggest-footprint addition in this pack's history
+besides full Create — 5 new mod jars (Sophisticated Storage,
+Sophisticated Core, Refined Storage, Immersive Engineering, Flux
+Networks), with Immersive Engineering alone being a full standalone
+tech mod (its own ore processing, engineering workbench, multiblock
+machines, turret system not used here). This directly cuts against
+this pack's "keep it lightweight" guiding principle, weighed honestly
+rather than ignored — the counter-argument, already made when this was
+first specced and still true, is that this is a deliberate, one-time,
+user-requested "tech pack feel" investment for Tier 3-4 specifically
+(not creeping into every tier), landing as one coordinated addition
+rather than several small ones.
+
+**Real, honest side effect found during sandbox verification**:
+Sophisticated Storage ships ~25 bundled advancement/recipe files for
+converting upgrades between itself and **Sophisticated Backpacks** (a
+separate mod, same author, NOT installed here — never part of this
+pack's spec). Every boot logs a `Parsing error loading custom
+advancement ... Unknown item id 'sophisticatedbackpacks:...'` for each
+one. These are non-fatal (confirmed: the server reaches `Done` and RCON
+comes up regardless) and only affect a permanently-unreachable "convert
+a backpack upgrade into a storage upgrade" recipe nobody can ever craft
+without the other mod — but it's real, previously-undocumented log
+noise from this install, not something to gloss over.
+
+**Full-mod-set sandbox boot verification — real, done.** Found and
+reused an existing throwaway dedicated-server sandbox (built by a
+sibling track earlier in this same session) rather than touching the
+user's live CurseForge instance directly (writing into the live
+instance's own folders was refused by the permission classifier, same
+boundary this project has hit before over the live save specifically) —
+copied it to an isolated working copy on a different port so it
+wouldn't collide with the sibling's own concurrently-running server.
+Populated its `mods/` from this worktree's real `pack/mods/*.pw.toml`
+list (79 mods total, byte-identical to what the live CurseForge
+instance already has for the other 74) plus the 5 newly-downloaded
+jars, and its `kubejs`/`config` from this worktree's actual `pack/`
+content. Removed **Mob Dismemberment** from this throwaway copy only
+(not from the real pack) — confirmed via the log that it hits the
+exact same pre-documented `LocalPlayer for invalid dist
+DEDICATED_SERVER` crash this pack's own history already flagged as a
+known client-only-mod sandbox limitation, unrelated to this phase's
+changes. Result: clean boot (`Done (24.25s)!`, RCON up on a real
+connection), FTB Quests loaded the full updated quest count with 0
+parse errors, no crash from any of the 5 new mods, and the Tesla Coil
+cinematics script loaded with the rest of `server_scripts` at 0 errors.
+Not yet confirmed by an actual player session (placing/powering a real
+multiblock chain, seeing the Tesla Coil fire on a live mob, or standing
+in a Nozzle+lava stream) — that needs a real playtest.
+
+**Original spec below, 2026-09-01** — kept for design history. Direct
 request: give the pack "a tech pack feel" alongside base defense, with
 sensible item management as higher-tier machines come online. Four
 mods, all independently verified for Forge 1.20.1, not assumed from
@@ -3855,12 +4141,9 @@ actually use one is still an open game-design call, not decided here.
   gated behind specific loot tiers (matching this pack's existing
   Uncommon/Rare materials-gating pattern) or craftable from the start.
 
-**Deliberately parked, not sent to build** — queued behind the current
-2026-09-01 playtest-feedback batch (13 items across 5 phases already in
-progress). This is a real, ready design, not something still being
-figured out; it's just sequenced to land after the current batch
-finishes rather than adding a fifth substantial mod-install project on
-top of what's already in flight.
+**Superseded 2026-09-08** — see the "BUILT, 2026-09-08 (Roadmap Phase
+3)" writeup above this spec for the actual shipped outcome; this
+"deliberately parked" status no longer applies.
 
 ---
 
