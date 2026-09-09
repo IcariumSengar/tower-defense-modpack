@@ -58,6 +58,31 @@
 // kills drop a bag at all). Counts scale up per tier (2-4 Uncommon,
 // 4-8 Rare, 6-10 Epic, 10-16 Legendary) matching this file's existing
 // "richer tiers give richer rolls" shape.
+//
+// **STOP - re-confirmed 2026-09-09, this bites every time and it bit
+// again here**: BountyBags decompiles to a real one-way cache
+// (`LootDefinitionStore.loadAll()` in the installed jar) - it reads
+// this JSON exactly ONCE, the first time `config/bountybags/<tier>_bag.toml`
+// doesn't exist yet, to seed that file. Every boot after that,
+// `readBag()` loads straight from the TOML and the JSON is never
+// consulted again, no matter how many times the JSON changes or the
+// server restarts. A prior session already learned this once (see
+// docs/FEATURES.md's "Real bonus lesson" note near the cobblestone/
+// iron_ingot retune) and manually patched the live `legendary_bag.toml`
+// for the totem_of_undying drop - but every OTHER live edit since
+// (gold_nugget, netherrack, arrow, carrot, and now this shrapnel change)
+// never got the same treatment: checked the real live instance's
+// `config/bountybags/*.toml` directly on 2026-09-09 and every one of
+// those items is still absent from the live `uncommon_bag.toml`
+// (file untouched since 2026-09-03). **Editing this JSON alone does
+// NOT ship the change** - the live instance's stale
+// `config/bountybags/{uncommon,rare,epic,legendary}_bag.toml` must
+// also be deleted (so BountyBags regenerates them from this JSON on
+// next boot) or fixed via an op running `/bountybags edit <tier>` in
+// game and clicking Restore Defaults (decompiled
+// `LootEditorCommands`/`AdminActionPacket.RESTORE_DEFAULTS` - real,
+// but GUI-only, not RCON-automatable). Do this for every future
+// bag-contents edit, not just this one.
 
 // Full zombie-apocalypse roster pivot (2026-09-06) - see
 // wave_spawner.js's WAVE_MOB_TYPES for the full writeup. Real ids
