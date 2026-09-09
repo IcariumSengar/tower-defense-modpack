@@ -96,6 +96,10 @@ function triggerHardcoreGameOver(player, level) {
   server.runCommandSilent('playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 0.6')
   player.tell('§4§lThe run is over.')
   player.tell('§7Hardcore was on, and nothing was left to catch you this time.')
+  // Same "how do I actually restart" gap as pedestal_destruction.js's own
+  // game-over popup, same fix - see that file's comment for the full
+  // reasoning on reusing wave_status.js's queueDelayedTitle here.
+  queueDelayedTitle(player, 'GAME OVER', 'Start a new world to try again - quest book progress carries over automatically.', 'red')
   hqcExportProgress(player)
   tellQuestCarryoverTip(player)
 

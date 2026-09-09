@@ -1156,6 +1156,29 @@ function buildStarterBase(server, level, x, z) {
     run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
   })
 
+  // Double chest, direct ask 2026-09-09: "can the house have a double chest
+  // already spawned instead of the log blocks that are there." Real
+  // structure NBT decompiled directly (this mod's own
+  // abandoned_brick_house.nbt) to find them rather than guessed - 4
+  // stripped_spruce_log props form an L-shaped counter beside the crafting
+  // table and furnace: (6,1,4)/(7,1,4)/(8,1,4) running along the counter,
+  // (8,1,6) at its far end near the furnace. All 4 cleared; two of the
+  // counter's own positions become a real double chest instead - the
+  // obvious spot for storage right next to where the player already
+  // crafts, backed against the solid brick wall at local z=3 behind it.
+  // Facing/type aren't guessed: ChestBlock's own real placement rule is
+  // `facing.getClockWise() == connectingDirection ? LEFT : RIGHT` (the
+  // direction from a given half toward its pair) - south's clockwise is
+  // west, so the lower-x (west) half is RIGHT and the higher-x (east)
+  // half is LEFT. Waterlogged forced off same as the crafting station
+  // fix just above - no known fluid source under these exact cells, but
+  // cheap insurance against the same "inherited from replaced water"
+  // class of bug.
+  run(`setblock ${buildingX0 + 6} ${floorY + 1} ${buildingZ0 + 4} minecraft:air`)
+  run(`setblock ${buildingX0 + 7} ${floorY + 1} ${buildingZ0 + 4} minecraft:chest[facing=south,type=right,waterlogged=false]`)
+  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 4} minecraft:chest[facing=south,type=left,waterlogged=false]`)
+  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 6} minecraft:air`)
+
   // Green terracotta + snow patch - direct removal request 2026-09-05.
   // Real structure NBT check first, not guessed: the building's roof
   // uses plain minecraft:terracotta as a weathered-roofing motif at many

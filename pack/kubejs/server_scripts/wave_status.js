@@ -204,11 +204,17 @@ const FIXED_WAVE_EVENTS = [
 var pendingDelayedTitles = [] // {fireTick, title, subtitle}
 var DELAYED_TITLE_TICKS = 100
 
-function queueDelayedTitle(player, title, subtitle) {
+// `color` defaults to 'gold' (this queue's original, only use case -
+// the pacing announcement above) - added as a param 2026-09-09 so
+// pedestal_destruction.js/hardcore_death.js's own game-over popups
+// (queued the same way, see those files) can show in red instead of
+// reusing gold's tonally-mismatched "good news" color.
+function queueDelayedTitle(player, title, subtitle, color) {
   pendingDelayedTitles.push({
     fireTick: player.getLevel().getTime() + DELAYED_TITLE_TICKS,
     title: title,
     subtitle: subtitle,
+    color: color || 'gold',
   })
 }
 
@@ -223,7 +229,7 @@ PlayerEvents.tick((event) => {
       return
     }
     const server = player.getServer()
-    server.runCommandSilent(`title @a title {"text":"${entry.title}","color":"gold","bold":true}`)
+    server.runCommandSilent(`title @a title {"text":"${entry.title}","color":"${entry.color}","bold":true}`)
     server.runCommandSilent(`title @a subtitle {"text":"${entry.subtitle}","color":"gray"}`)
   })
   pendingDelayedTitles = stillPending

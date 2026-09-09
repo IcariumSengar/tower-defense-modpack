@@ -178,6 +178,21 @@ const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
 // not done automatically here, since the actual complaint was volume,
 // not "not enough gold."
 //
+// **Rare cut again 2026-09-09 (second pass, same day), direct playtest
+// report: "im getting way too many rare loot bags... i need them to be
+// rare right?"** Real, specific complaint about the Rare tier by name, not
+// a repeat of the volume complaint the cut above already addressed - the
+// item named "Rare Loot Bag" was still showing up often enough to not
+// read as rare. Cut from 0.06 to 0.035 (~42% down) - deliberately kept
+// above Epic's own 0.03 so the tier ordering (Uncommon 0.2 > Rare 0.035 >
+// Epic 0.03 > Legendary 0.02) stays strictly decreasing; a Rare bag
+// should still turn up somewhat more often than an Epic one, just by a
+// much smaller margin than before. Epic/Legendary untouched - neither was
+// named in the complaint, and Legendary was already confirmed not the
+// volume problem in the cut above. Quest book's own "Spoils of War"
+// description (campaign.snbt) restates these exact numbers - kept in
+// sync with this change, not left stale.
+//
 // `LootJS.modifiers(...)` / `.addEntityLootModifier(id).randomChance(n).addLoot(id)`
 // - same confirmed-working pattern as the old system, just pointed at
 // bountybags:*_loot_bag instead of the custom kubejs:* items, and now
@@ -185,7 +200,7 @@ const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
 LootJS.modifiers((event) => {
   ALL_WAVE_MOBS.forEach((id) => {
     event.addEntityLootModifier(id).randomChance(0.2).addLoot('bountybags:uncommon_loot_bag')
-    event.addEntityLootModifier(id).randomChance(0.06).addLoot('bountybags:rare_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.035).addLoot('bountybags:rare_loot_bag')
     event.addEntityLootModifier(id).randomChance(0.03).addLoot('bountybags:epic_loot_bag')
     event.addEntityLootModifier(id).randomChance(0.02).addLoot('bountybags:legendary_loot_bag')
   })

@@ -82,6 +82,22 @@ function triggerPedestalDestroyed(player) {
   server.runCommandSilent('title @a subtitle {"text":"Everything it was holding back is gone with it.","color":"gray"}')
   player.tell('§c§lThe pedestal has fallen.')
   player.tell('§7Whatever it was keeping in check has nothing left to answer to.')
+
+  // Real gap, direct playtest report 2026-09-09: "im not seeing a way to
+  // restart the game when the pedestal is destroyed. I want a pop up
+  // telling me game over and that I can restart." The world stays fully
+  // playable after a loss (see the comment at the bottom of this
+  // function) - there was never a mechanical block, just nothing telling
+  // the player the run is actually over and what to do next. Queued as a
+  // SECOND title via wave_status.js's own queueDelayedTitle (top-level
+  // function, shared across server_scripts files in this Rhino build -
+  // see feedback_rhino_java_reflection_quirks) rather than a second
+  // immediate `title` call right after the one above - back-to-back
+  // `/title` calls in the same tick overwrite each other before the
+  // first is even readable, the exact bug that queue was built to fix
+  // for the wave-5/pacing announcements; reusing it here instead of
+  // re-inventing the same fix a third time.
+  queueDelayedTitle(player, 'GAME OVER', 'Start a new world to try again - quest book progress carries over automatically.', 'red')
   hqcExportProgress(player)
   tellQuestCarryoverTip(player)
 

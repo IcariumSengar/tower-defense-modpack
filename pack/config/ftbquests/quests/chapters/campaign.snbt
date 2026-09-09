@@ -98,7 +98,7 @@
 		}
 		{
 			dependencies: ["46AB9754465218CF"]
-			description: ["The sword and armour you're wearing were theirs. Look close and the wear's already showing. They hold for five waves, then they crumble, and whatever you've found by then is what you fight with. Use them hard while you have them."]
+			description: ["The sword and armour you're wearing were theirs. Look close and the wear's already showing - this gear isn't built to last forever. Use it hard while you can; whatever you've found by the time it gives out is what carries you the rest of the way."]
 			icon: "minecraft:clock"
 			id: "70DA454A61DDC3A1"
 			rewards: [
@@ -135,9 +135,8 @@
 			id: "1FCDA02A8AF6F019"
 			rewards: [
 				{
-					count: 4
 					id: "37352A7AD2CAFA58"
-					item: "minecraft:iron_ingot"
+					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
 				{
@@ -179,6 +178,7 @@
 			subtitle: "Right-click the Wave Horn"
 			tasks: [
 				{
+					icon: "kubejs:wave_horn"
 					id: "5A1C0E7B93D4F216"
 					type: "custom"
 				}
@@ -267,6 +267,7 @@
 			subtitle: "Completes on its own when wave 1 is cleared"
 			tasks: [
 				{
+					icon: "minecraft:iron_bars"
 					id: "6B2D1F8CA4E50327"
 					type: "custom"
 				}
@@ -277,7 +278,7 @@
 		}
 		{
 			dependencies: ["0CBAE9737A4869E9"]
-			description: ["Any wave mob can drop a loot bag when it dies, and every one of them rolls the same odds: 20% for an &eUncommon&r bag, 6% Rare, 3% Epic, 2% Legendary. Tougher mobs don't carry better bags; they're just harder to kill. Kill count is what pays."]
+			description: ["Any wave mob can drop a loot bag when it dies, and every one of them rolls the same odds: 20% for an &eUncommon&r bag, 3.5% Rare, 3% Epic, 2% Legendary. Tougher mobs don't carry better bags; they're just harder to kill. Kill count is what pays."]
 			icon: "bountybags:uncommon_loot_bag"
 			id: "3BFCD0E4AA8C5B36"
 			rewards: [
@@ -311,7 +312,7 @@
 		}
 		{
 			dependencies: ["3BFCD0E4AA8C5B36"]
-			description: ["Right-click a bag to open it. Uncommon bags carry iron, copper, redstone, coal, gunpowder, arrows and gold nuggets. Rare bags are where gold ingots, quartz, redstone blocks, iron blocks, obsidian and ender pearls come from, which is what the amulet and the Tier 2 recipes need. Every tier can carry &eShrapnel&r, the turret material. Open bags as you get them; they do nothing in your inventory."]
+			description: ["Right-click a bag to open it - it does nothing sitting in your inventory. Better tiers carry better hauls, and every bag can carry &eShrapnel&r, the turret material. Open them as you get them."]
 			icon: "minecraft:chest"
 			id: "538A1BBC9A1B8EAC"
 			rewards: [
@@ -337,6 +338,7 @@
 			size: 1.5d
 			tasks: [
 				{
+					icon: "minecraft:chest"
 					id: "4B770968EBD48DB3"
 					type: "custom"
 				}
@@ -347,7 +349,7 @@
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Three waves in, the roster changes. Wave 4 brings the first &cBoomer&r and two Split Head Zombies; wave 5 the first Elites. Check Know Your Enemy above before you blow the horn, and spend what you've got: everything below this point on the tree is buildable now."]
+			description: ["Three down, and the horde's just getting started. Wave 4 brings the first &cBoomer&r and two Split Head Zombies; wave 5 the first Elites. Check Know Your Enemy before you sound the next horn, and spend what you've got - everything below this point on the tree is buildable now."]
 			icon: "mutantszombies:split_head_zombie_spawn_egg"
 			id: "0882BEAE557D28DD"
 			rewards: [
@@ -367,6 +369,7 @@
 			subtitle: "Completes on its own when wave 3 is cleared"
 			tasks: [
 				{
+					icon: "mutantszombies:split_head_zombie_spawn_egg"
 					id: "7C3E209DB5F61438"
 					type: "custom"
 				}
@@ -377,7 +380,7 @@
 		}
 		{
 			dependencies: ["0882BEAE557D28DD"]
-			description: ["Five waves. That's where whoever wore this gear before you stopped, and it's where the gear stops too: the moment wave 5 clears, the sword and armour turn to rust in your hands. From here you fight with what you've made and what you've looted. The gaps between waves stretch to four minutes and more now. Use every one of them."]
+			description: ["Feel that? The sword and armour just turned to rust in your hands - five waves was as far as whoever wore this gear ever got. From here you fight with what you've made and what you've looted, nothing else. The gaps between waves stretch to four minutes and more now. Use every one of them."]
 			icon: {
 				Count: 1
 				id: "minecraft:netherite_sword"
@@ -408,6 +411,13 @@
 			subtitle: "Completes on its own when wave 5 is cleared"
 			tasks: [
 				{
+					icon: {
+						Count: 1
+						id: "minecraft:netherite_sword"
+						tag: {
+							Damage: 0
+						}
+					}
 					id: "0D4F31AEC6072549"
 					type: "custom"
 				}
@@ -419,7 +429,7 @@
 		{
 			dependencies: ["03C4E700B07CBC15"]
 			description: [
-				"Wave 8 is the last one anyone planned: a Crawler on the walls, a Mutant Brute at the gate, a Demolition Zombie throwing TNT. After this the waves don't stop and don't repeat. Every one past 8 is an endless level, and each level adds 8% health, 5% damage and 2% speed on top of the last, with the heavy mobs weighted in more as it climbs."
+				"Wave 8 is the last one anyone planned: a Crawler on the walls, a Mutant Brute at the gate, a Demolition Zombie throwing TNT. After this the waves don't stop and don't repeat - every one past 8 is an endless level, and each one hits harder than the last. How much harder, and how the mix shifts as it climbs, isn't written down anywhere. You'll feel it before anyone could tell you."
 				"Every fifth wave a supply crate drops near the base with a map marker on it: a Legendary bag, netherite scrap, a diamond block."
 			]
 			icon: "minecraft:map"
@@ -446,6 +456,7 @@
 			subtitle: "Completes on its own when wave 8 is cleared"
 			tasks: [
 				{
+					icon: "minecraft:map"
 					id: "1E5042BFD718365A"
 					type: "custom"
 				}
@@ -476,6 +487,7 @@
 			subtitle: "Completes when a boss dies"
 			tasks: [
 				{
+					icon: "mutantszombies:mutant_brute_spawn_egg"
 					id: "2F6153C0E829476B"
 					type: "custom"
 				}
@@ -501,6 +513,7 @@
 			subtitle: "Completes on its own when wave 15 is cleared"
 			tasks: [
 				{
+					icon: "minecraft:nether_star"
 					id: "307264D1F93A587C"
 					type: "custom"
 				}
@@ -557,6 +570,7 @@
 			subtitle: "Put the amulet in the Curios slot"
 			tasks: [
 				{
+					icon: "minecraft:golden_apple"
 					id: "418375E20A4B698D"
 					type: "custom"
 				}
@@ -582,6 +596,7 @@
 			subtitle: "Set the amulet on the pedestal"
 			tasks: [
 				{
+					icon: "supplementaries:pedestal"
 					id: "529486F31B5C7A9E"
 					type: "custom"
 				}
