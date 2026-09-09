@@ -311,31 +311,91 @@ first (everything else in this phase needs them).
 
 ### Phase 3 — Tier 3: power + energetic weapons
 
-**Depends on**: Storage & Power system built first - the Tesla Coil has
-no power source without it.
-- **Storage & power system** (moved here from "On hold," fully specced
-  2026-09-01) - Sophisticated Storage (+ Sophisticated Core), Refined
-  Storage, Immersive Engineering (power generation - also resolves the
-  Tesla Coil candidate), Flux Networks (wireless distribution). Real
-  footprint: IE is a full standalone tech mod, the biggest single
-  addition besides full Create. 3 of 4 mods' exact dependency lists
-  still need fetching directly from their own relations pages before
-  installing (only Sophisticated Storage's was checked).
-- **Create's own Tesla Coil** - the actual Tier 3 defense machine,
-  chain-lightning, powered via the chain above (not Create: Crafts &
-  Additions' Tesla Coil - already ruled out as the wrong pick).
-- **Flamethrower Mechanics (Create Nozzles + lava)** - parallel/
-  alternative Tier 3 option, no new mod needed. Real open question:
-  does a Nozzle's vanilla fire-stream actually damage mobs meaningfully
-  - needs a real check, not assumed - and whether it's an alternative
-  choice or a required second machine alongside the Tesla Coil.
-- **Tesla Coil hit cinematics** - electric-spark particles + thunder/
-  conduit sound (optionally a custom `tesla_zap.ogg`) on Tesla damage.
-- **Performance tip**: cap Embeddium's max particle count - relevant
-  here specifically, since mass Tesla-electrocution of an
-  Enhanced-Hordes-stacked horde (Phase 1) is a real stutter risk.
-- **Tooltip tier color-coding**, extended to Tier 3 items; new quests
-  for Tier 3 items in `campaign.snbt`.
+**Done, 2026-09-08.** Full writeup in FEATURES.md's "Storage & power
+system" entry (search for "BUILT, 2026-09-08"). Summary, one item per
+original bullet:
+- **Storage & power system** - all 4 mods installed (Sophisticated
+  Storage + Sophisticated Core, Refined Storage, Immersive Engineering,
+  Flux Networks). The 3 unchecked dependency lists are now checked two
+  ways (packwiz's resolver + each real downloaded jar's own
+  `mods.toml`) - all 3 confirmed dependency-free beyond the Forge/MC
+  version floor, the "Fabric API required" hit from an earlier generic
+  page scrape was a wrong-loader-variant artifact, not real for the
+  Forge build actually installed.
+- **Real, load-bearing correction to this phase's own dispatch**:
+  "Create's own Tesla Coil" does not exist - decompiled the actual
+  installed `create-1.20.1-6.0.8.jar`, zero Tesla Coil content anywhere
+  in it. Built with **Immersive Engineering's real Tesla Coil**
+  (`immersiveengineering:tesla_coil`) instead, picked over Create:
+  Crafts & Additions' real (and also already-installed) Tesla Coil
+  after decompiling and comparing both - see FEATURES.md for the full
+  mechanics comparison and reasoning. This phase's "not Create: Crafts
+  & Additions' Tesla Coil - already ruled out" framing was itself the
+  error; corrected, not re-litigated blind.
+- **Flamethrower Mechanics** - real check done by decompiling Create's
+  actual fan-processing pipeline (`AirCurrent`/`AllFanProcessingTypes`):
+  confirmed real, meaningful damage (4.0 dmg + 10s ignite per entry from
+  a lava-catalyst stream, refreshed every tick an entity remains in it).
+  Ships as a parallel/alternative Tier 3 choice, not a required second
+  machine - real distinct playstyle (standing corridor vs. periodic
+  single-target zap) at zero FE-chain cost (pure Create kinetic power,
+  no dependency on the new mods at all).
+- **Tesla Coil hit cinematics** - built, `tesla_coil_cinematics.js`,
+  vanilla `electric_spark` particles + `lightning_bolt.thunder` sound
+  centered on the struck entity, layered on top of the mod's own
+  block-position zap sound/lightning render. Hooks `EntityEvents.hurt`
+  filtered to the real `ieTesla` damage message id (decompiled/
+  confirmed, not guessed).
+- **Performance tip** - checked, real finding: Embeddium has no
+  particle-count config of its own: decompiled the jar, the option it
+  exposes is vanilla's own `options.particles` client setting, no
+  server-side lever exists. Documented as player-facing guidance, not
+  a code change.
+- **Tooltip tier color-coding** - **not built this phase, real
+  cross-track dependency block, not an oversight**: this is Phase 1's
+  system to build first (Track A); it doesn't exist anywhere in this
+  worktree yet (checked - no tier-color/tooltip file anywhere in
+  `pack/kubejs`), so there's nothing here yet to extend to Tier 3
+  items. Needs picking up once Phase 1's system merges in.
+- **New quests for Tier 3 items** - done, 6 quests added to
+  `campaign.snbt` (Wired Different, Room to Grow, No Cables Needed, The
+  Grid, Sparks in the Dark, Turn Up the Heat), all branching off Tier
+  2's "Wired for War". Sandbox-verified: FTB Quests loads all 40
+  quests (was 34) with 0 parse errors.
+- **Recipe/tier-gating** - deliberate choice made and documented: no
+  re-recipe layer on any of the 4 mods' stock recipes. The Tesla Coil's
+  own stock recipe already requires real IE-internal tech-tree
+  progression (an HV Capacitor, from IE's own ore-processing chain) -
+  a deeper, more meaningful gate than a materials swap, and swapping it
+  for loot-tier fillers would let a player loot-shortcut past IE's own
+  progression entirely, undermining the "tech pack feel" this system
+  exists to deliver. The real gate is the quest dependency chain (all 6
+  new quests sit behind Tier 2) plus IE's own component tree.
+- **Real footprint cost, stated plainly**: the single biggest addition
+  besides full Create - 5 new mod jars, Immersive Engineering alone a
+  full standalone tech mod. Weighed against "keep it lightweight"
+  explicitly in FEATURES.md, not ignored - the counter is this is a
+  deliberate, one-time, user-requested investment scoped to Tier 3-4
+  only, not creeping into every tier.
+- **Sandbox-verified**: found and reused an existing throwaway
+  dedicated-server sandbox (built by a sibling track this same
+  session), copied to an isolated port so it wouldn't collide with a
+  concurrently-running sibling server, populated from this worktree's
+  real 79-mod `pack/mods` list + `kubejs`/`config`. Removed Mob
+  Dismemberment from this throwaway copy only (real, pre-documented
+  dedicated-server-only crash, unrelated to this phase). Clean boot,
+  24/24 KubeJS server scripts at 0 errors, FTB Quests at 0 parse
+  errors, RCON-verified every new block id real-placeable with real
+  block-entity NBT (not placeholder stubs) - `immersiveengineering:
+  tesla_coil`, `refinedstorage:controller`, `sophisticatedstorage:
+  barrel`, `immersiveengineering:diesel_generator`, `fluxnetworks:
+  flux_plug`, `create:nozzle` all confirmed live. **Real, honest side
+  effect found**: Sophisticated Storage ships ~25 bundled advancement/
+  recipe files referencing Sophisticated Backpacks (a separate mod, not
+  installed) - real, non-fatal `Unknown item id` log noise on every
+  boot, flagged rather than silently accepted. Not yet confirmed by an
+  actual player session (placing/powering a real chain, a live Tesla
+  Coil kill, standing in a Nozzle+lava stream) - needs a real playtest.
 
 ### Phase 4 — Boss wave capstone system
 
