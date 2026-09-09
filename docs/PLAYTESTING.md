@@ -22,7 +22,7 @@ to what's actually live right now and worth checking.
 - **Fixed spawn point** near world origin (`gamerule spawnRadius 0`, so
   respawns land there too), with a small walled starter base
   (SecurityCraft reinforced perimeter, one gate) wrapped around a
-  pre-placed building (Red House, `postapocalypse_structures`).
+  pre-placed building (Abandoned Brick House, `postapocalypse_structures`).
 - **Worldborder** starts at 58, grows on every wave clear by an
   escalating amount (`20 + 5·floor((waveNumber-1)/2)`) — reaches 278 by
   wave 8.
