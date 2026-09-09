@@ -9,7 +9,8 @@
         { "type": "minecraft:item", "name": "minecraft:gold_block", "weight": 22, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
         { "type": "minecraft:item", "name": "minecraft:ender_pearl", "weight": 18, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 3 } }] },
         { "type": "minecraft:item", "name": "minecraft:diamond_block", "weight": 12, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
-        { "type": "minecraft:item", "name": "minecraft:netherite_scrap", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] }
+        { "type": "minecraft:item", "name": "minecraft:netherite_scrap", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
+        { "type": "minecraft:item", "name": "kubejs:shrapnel", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 6, "max": 10 } }] }
       ]
     }
   ]

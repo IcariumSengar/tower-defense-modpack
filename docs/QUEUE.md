@@ -3421,3 +3421,75 @@ below); Phase 5 not started:
   `schematics/uploaded/` folder — and none exists yet. Needs at least
   one room hand-built in-game and exported via Schematic and Quill +
   Schematic Table first. Not a coding-session task.
+
+## Track C (2026-09-08 roadmap): Phase 2 → Phase 4 → Phase 5 boss-half — done
+
+Built in dependency order per the "Roadmap: tier-by-tier feature-rich
+buildout" section near the top of this file. Full technical detail
+(real decompiled Advanced Tower Defense recipe/quantity findings, the
+Shrapnel design decision, boss cadence/identity reasoning, the boss-kill
+Totem mechanism) lives in docs/FEATURES.md's own new "Track C" entry and
+each script's header comment - not duplicated here.
+
+**Real sync gap, flagged for whoever merges this**: this worktree was
+forked from `master` mid-session and never picked up the live
+checkout's own in-progress edits to this file/FEATURES.md/IDEAS.md (the
+"Roadmap"/"Frenetic-combat pivot"/"Hardcore mode" sections this track's
+brief pointed at) - confirmed by direct line-count comparison, not
+assumed. Everything below was built from those sections' real content
+(read directly from the live checkout, not guessed), but this worktree's
+own copies of all 3 docs are missing real content the live checkout has
+- reconcile against the live checkout's fuller versions when merging,
+this worktree's copies alone are not the full picture.
+
+- **Phase 2 (Tier 2 turrets + economy) - done.** Advanced Tower Defense
+  installed; real decompiled finding that its turret-head "crafting" is
+  fully hardcoded Java (not a real recipe at all, the established
+  `event.remove`+`event.shaped` pattern doesn't reach it) with one clean
+  KubeJS-fixable blocker upstream (`tech_tablet_mechanics`, gated behind
+  the mod's own separate unbuilt Research Table system) - fixed with one
+  targeted new recipe rather than reverse-engineering that whole
+  sub-system. Shrapnel shipped as a genuine crafting material (not
+  flavor loot), gating that fix plus 2 new Blueprint-item recipes, added
+  to all 4 loot-bag tiers. 2 new campaign.snbt quests, live-save progress
+  checked first (no collision).
+- **Phase 4 (boss wave capstone) - done.** Cadence: every 10th wave
+  (10, 20, 30, ...) - deliberately NOT the same as Phase 0's every-5th
+  airdrop trigger (would've collapsed every milestone into one
+  undifferentiated tier), while still landing ON every airdrop wave
+  (10 % 5 === 0 always) as an examined, intentional "biggest milestones
+  get both" design, not a missed collision. Boss identity: a
+  reskinned/stat-buffed `mutantszombies:mutant_brute` ("The Behemoth") -
+  this pack's own toughest already-installed named mob, chosen over a
+  vanilla mob specifically because [[project_zombie_apocalypse_roster_pivot]]
+  already stripped every non-zombie-family vanilla mob from this pack's
+  theme. Real vanilla `/bossbar` + `playsound`/`stopsound` (no custom
+  `.ogg` - no tool available in this environment to synthesize a real
+  one, and this pack's own Tesla Coil entry already treats that as
+  optional) + particle cues, reusing pedestal_health.js's/
+  wave_spawner.js's own proven idioms. Zero farmable gear via real
+  `ArmorDropChances`/`DeathLootTable` vanilla mechanisms.
+- **Phase 5, boss-kill-drop Totem half - done.** Guaranteed (100%, not
+  an RNG roll on an already-hard fight) `minecraft:totem_of_undying` on
+  every boss kill, alongside `securitycraft:universal_block_reinforcer_lvl1`
+  (real id - hash-verified from the actual installed SecurityCraft jar,
+  the research's guessed no-tier-suffix id doesn't exist) and 12x
+  Shrapnel. Scoped narrowly on purpose: only the drop MECHANISM was
+  built - the rest of Hardcore mode (permadeath toggle, death hook,
+  pedestal vulnerability) stays exactly as parked in docs/FEATURES.md,
+  untouched. This also resolves the same cadence fork sitting in
+  docs/IDEAS.md's "Wave-clear reward: a building/machine places itself
+  in the base" entry - see that entry's own updated note. The
+  building-reward mechanic itself was NOT built (out of this track's
+  scope) - only its cadence question, which the two entries shared, is
+  now answered.
+- **Not picked up, time/scope**: SecurityCraft turret-recipe modules,
+  turret combat-feedback effects (unblocked now that real turret ids
+  exist, just not attempted), Phase 5's crafting-recipe Totem half,
+  Phase 6 bounty shop, tooltip tier color-coding (blocked on Track A's
+  Phase 1 base system, which hasn't landed in this worktree).
+- **Verification**: every script `node --check`ed clean; edited JSON
+  loot tables `JSON.parse`d clean; the extended `campaign.snbt` passed a
+  full-file brace/bracket balance check. Full mod-set sandbox boot with
+  a real player (bossbar/spawn/quest end-to-end) still needed - see this
+  build session's own final report.

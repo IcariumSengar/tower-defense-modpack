@@ -1,0 +1,13 @@
+name = "Advanced Tower Defense"
+filename = "advanced_tower_defense_mod-3.7-forge-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "cd572bef6cc817e9a66b59a94bc04a9ce6f326c7"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8724397
+project-id = 1397871

@@ -282,6 +282,15 @@ is solved.
 
 ## Wave-clear reward: a building/machine places itself in the base
 
+**Cadence resolved 2026-09-08, shared decision with the boss-wave
+system's own cadence fork (docs/FEATURES.md's Track C entry / boss_wave.js) -
+every 10th wave (10, 20, 30, ...), i.e. this WOULD be a boss-wave-only
+reward if built.** Only the cadence question was resolved here -
+the "preview vs. reward-exclusive content" fork below is still open, and
+the actual placement mechanic described below is still NOT built - this
+note just answers "which wave(s)" now that boss waves give it a real,
+concrete anchor point instead of an unresolved "maybe."
+
 Separate from the schematic-based room-expansion in FEATURES.md — this
 is a *gift*, not something the player chooses to build. On some wave
 cadence (maybe only boss waves — cadence never decided), a

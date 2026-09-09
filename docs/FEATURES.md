@@ -6068,3 +6068,132 @@ half already decided.
 request this session. Sequencing relative to the tier roadmap and
 frenetic pivot specs (both also pending "send it" as of today) not yet
 decided either.
+## Track C: Advanced Tower Defense turrets, Shrapnel economy, boss wave, boss-kill Totem — live, 2026-09-08
+
+**Sync note for whoever merges this**: this worktree's `docs/FEATURES.md`/
+`docs/QUEUE.md`/`docs/IDEAS.md` were forked from `master` mid-session and
+never picked up the live-checkout's own in-progress "Frenetic-combat
+pivot & tower-defense research batch" and "Hardcore mode" sections (this
+worktree's copies are ~440/~95/~2 lines shorter than the live checkout's
+at time of writing — a real content gap between worktrees, not just a
+formatting difference). Everything below was built and reasoned from
+those sections' real content (read directly from the live checkout
+before any building started), but this entry is a fresh append rather
+than an edit to a "planned, not built" stub, since no such stub exists
+in this worktree's own copy of the file. Reconcile against the live
+checkout's fuller version when merging, not just this file.
+
+This is Track C of the 2026-09-08 roadmap (`docs/QUEUE.md`'s "Roadmap:
+tier-by-tier feature-rich buildout" section) — Phase 2 (Tier 2 automated
+turrets + economy), then Phase 4 (boss wave capstone), then Phase 5's
+boss-kill-drop Totem half, built in that dependency order. Full
+Advanced Tower Defense recipe-chain writeup (real decompiled ids/
+quantities, the `tech_tablet_mechanics`/Blueprint gating fix, why the
+established `event.remove`+`event.shaped` pattern doesn't apply to the
+turret heads themselves) lives in `pack/kubejs/server_scripts/
+tier2_recipes.js`'s own header comment - not duplicated here, that file
+is the source of record. Shrapnel's design reasoning lives in
+`pack/kubejs/startup_scripts/shrapnel.js`. Boss-wave cadence/identity
+decisions and the boss-kill Totem mechanism live in
+`pack/kubejs/server_scripts/boss_wave.js`'s own header comment.
+
+**What shipped**:
+- Advanced Tower Defense installed (packwiz, real jar hash-verified).
+- `kubejs:shrapnel` - new Tier 2 crafting material, real texture
+  generated (raw PNG chunks, no art tool available, validated via Java
+  ImageIO before committing), added to all 4 BountyBags loot-bag tiers
+  (`data/bountybags/loot_tables/items/*.json` - Uncommon 2-4/weight 20,
+  Rare 4-8/weight 25, Epic 6-10/weight 20, Legendary 10-16/weight 12).
+- 3 new real recipes in `tier2_recipes.js`: `tech_tablet_mechanics`
+  (unblocks the Turret Workbench + both turret base blocks),
+  `blueprint_musket_turret`, `blueprint_anvil_launcher` - all gated
+  behind Shrapnel.
+- 2 new campaign.snbt quests ("Beyond the Bow", "Anvils From Above") in
+  the existing turret section, live-save progress checked first (no
+  collision - the live save's real progress is still entirely in the
+  early tips/basics quests).
+- `boss_wave.js` - full boss-wave system: every 10th wave (10, 20, 30,
+  ...) spawns a stat-buffed, netherite-armored `mutantszombies:
+  mutant_brute` ("The Behemoth", 600 HP/30 attack vs. its real 120/18
+  baseline), tracked via a real vanilla `/bossbar`, announced via
+  title/tellraw/particles and a real vanilla music track
+  (`minecraft:music_disc.pigstep`, played/stopped via `playsound`/
+  `stopsound` - no custom `.ogg` synthesized, no tool available in this
+  environment to make a convincing one, and this pack's own Tesla Coil
+  entry already treats a custom `.ogg` as optional). Zero farmable gear
+  (`ArmorDropChances`/`DeathLootTable` - real vanilla mechanisms, not
+  guessed) - drops a curated reward instead:
+  `securitycraft:universal_block_reinforcer_lvl1` (real id, verified by
+  hash-checking the installed SecurityCraft jar directly - the research's
+  guessed id with no tier suffix doesn't exist), 12x Shrapnel, and a
+  **guaranteed** `minecraft:totem_of_undying` - the real Phase 5
+  boss-kill-drop Totem source for docs/IDEAS.md's still-parked Hardcore
+  mode design (only this one drop mechanism was built - the rest of
+  Hardcore mode, permadeath toggle/death-hook/pedestal-vulnerability,
+  stays exactly as parked, out of this batch's scope).
+- Resolved the shared cadence fork between Phase 4 and
+  docs/IDEAS.md's "Wave-clear reward: a building/machine places itself
+  in the base" entry (see that entry's own updated note) - both now
+  point at "every 10th wave."
+
+**Also picked up, time allowed (lowest priority, "if time left")**:
+Phase 5's crafting-recipe Totem half - `hardcore_totem_recipe.js`, a
+single new shapeless `minecraft:totem_of_undying` recipe (vanilla ships
+none at all). Real material choice: not literally "Rare-tier loot bag
+contents" as docs/IDEAS.md's own example suggested - checked this
+pack's actual Rare tier directly and none of it reads as
+totem-worthy (iron/quartz/gold_ingot/redstone_block/obsidian/
+lapis_block/iron_block/tnt/ender_pearl/diamond) - used Epic/Legendary
+tier materials instead (1 nether_star, 2 diamond_block, 1 gold_block, 1
+netherite_scrap), a considered substitution, documented as such in the
+file's own header. Scoped exactly as narrow as the boss-kill half - only
+the recipe, not the rest of Hardcore mode.
+
+**Not built, deliberately out of scope for this pass** (flagged, not
+silently dropped): SecurityCraft modules as turret-recipe components,
+turret combat-feedback effects (muzzle flash/ballistic impact - real
+turret ids now exist so this is unblocked whenever picked up), tooltip
+tier color-coding (depends on Track A's Phase 1 base system landing
+first - nothing to extend yet in this worktree), Phase 6 bounty shop.
+
+**Verification status - real full-mod-set sandbox boot completed, not
+skipped.** Built a genuine throwaway dedicated server (Forge
+1.20.1-47.4.10, matching `pack/pack.toml`'s pinned version) since none
+existed on this machine: real jar/mod-hash-verified copies of all 74
+already-installed mods from the live CurseForge instance's own `mods`
+folder (read-only copy, the live save itself never touched, per
+[[feedback_live_save_write_permission_boundary]]) plus this track's new
+Advanced Tower Defense jar, with this worktree's own edited
+`kubejs`/`config` overlaid on top. One mod (`MobDismemberment`) excluded
+- already-documented in this pack's own history as genuinely
+dedicated-server-incompatible (client-only, throws
+`RuntimeException: ... invalid dist DEDICATED_SERVER` on a real headless
+server - confirmed by hitting that exact crash first, then excluding it,
+not assumed from memory alone) - unrelated to anything built here.
+**Real, clean results**: `Done (50.680s)! For help, type "help"` - full
+successful boot, zero crashes, zero crash-reports. `Loaded 24/24 KubeJS
+server scripts... 0 errors and 0 warnings`. `Added 9 recipes, removed 3
+recipes, modified 0 recipes, with 0 failed recipes` - confirms every new
+item id used in this track's recipes (`kubejs:shrapnel`,
+`advanced_tower_defense_mod:tech_tablet_mechanics`/
+`blueprint_musket_turret`/`blueprint_anvil_launcher`,
+`minecraft:totem_of_undying`) is real and resolvable, not guessed.
+`FTB Quests: Loaded 1 chapter groups, 3 chapters, 36 quests, 0 reward
+tables` - zero parse errors, both new turret quests present and loaded.
+The 10 real ERROR-level log lines present are all pre-existing,
+unrelated to this track's changes - Advanced Tower Defense's own 2 gaps
+(a `vampirism`-family tag/holy-water tag referencing an uninstalled
+optional soft-dependency mod, and one stale advancement referencing a
+`deleted_mod_element` placeholder - both real quirks in the mod's own
+shipped data, confirmed by checking, not assumed), plus 2 other
+pre-existing mods' own advancement/tag gaps (Supplementaries →
+farmersdelight, Zombies More's "kaboom" advancement) and a couple of
+generic vanilla dedicated-server warnings. None reference `shrapnel`,
+`boss_wave`, the two Blueprint recipes, `tech_tablet_mechanics`, or
+`hardcore_totem_recipe` at all. **Not verified by this boot** (needs a
+real connected player, impossible in this headless environment): the
+boss's actual spawn-cadence trigger firing, the `/bossbar` rendering
+correctly, in-world turret assembly at a placed Turret Workbench, and
+quest-completion detection - all client-visual/player-interaction checks
+this pack's own history repeatedly notes as the real remaining bar
+beyond a clean script/data boot.
