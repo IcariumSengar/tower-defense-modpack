@@ -1008,6 +1008,51 @@ PlayerEvents.loggedIn((event) => {
   run(`setblock ${x0 - 1} ${wallY0} ${z0 + 1} minecraft:cobblestone`)
   run(`setblock ${x0 - 1} ${wallY0} ${z0 + 2} minecraft:gravel`)
 
+  // WWZ counter-mechanic (2026-09-08, Phase 1) - Simply Traps' `stake_wall`
+  // mounted on the outer face of the perimeter, one block outside the wall
+  // shell itself (real wall material untouched) rather than crafted by the
+  // player - it's part of the starting base's own defense, same as the
+  // walls. Real fit confirmed by decompile before building
+  // (tier1_recipes.js has the full writeup): non-solid, empty-collision
+  // block that deals real contact damage regardless of its own facing
+  // property, so a mob crowding/climbing the wall's outer face takes
+  // sustained chip damage rather than walls doing nothing once Enhanced
+  // Hordes lets mobs climb over each other. Spaced every 3 blocks along
+  // each of the 4 wall runs, 2 heights (wallY0/wallY0+1, below the
+  // 3-block-tall wall's own top) - enough coverage to matter without
+  // hundreds of setblock calls (this only runs once, at base creation).
+  // Skips the WEAK_WALL stretch (deliberately unreinforced, stays a real
+  // undefended gap - see the comment above) and a small buffer either
+  // side of the gate opening (doorX ± 2) so the entrance itself stays
+  // clear to walk through.
+  const STAKE_WALL_SPACING = 3
+  const STAKE_WALL_GATE_BUFFER = 2
+
+  function placeStakeWall(sx, sy, sz, facing) {
+    run(`setblock ${sx} ${sy} ${sz} simply_traps:stake_wall[facing=${facing}]`)
+  }
+
+  for (let wx = x0; wx <= x1; wx += STAKE_WALL_SPACING) {
+    // z0 run (back wall).
+    placeStakeWall(wx, wallY0, z0 - 1, 'north')
+    placeStakeWall(wx, wallY0 + 1, z0 - 1, 'north')
+    // z1 run (gate wall) - skip near the doorX opening.
+    if (Math.abs(wx - doorX) > STAKE_WALL_GATE_BUFFER) {
+      placeStakeWall(wx, wallY0, z1 + 1, 'south')
+      placeStakeWall(wx, wallY0 + 1, z1 + 1, 'south')
+    }
+  }
+  for (let wz = z0; wz <= z1; wz += STAKE_WALL_SPACING) {
+    // x0 run (west wall) - skip the WEAK_WALL stretch entirely, it's
+    // meant to stay undefended (see the comment above).
+    if (wz < WEAK_WALL_Z0 || wz > WEAK_WALL_Z1) {
+      placeStakeWall(x0 - 1, wallY0, wz, 'west')
+      placeStakeWall(x0 - 1, wallY0 + 1, wz, 'west')
+    }
+    placeStakeWall(x1 + 1, wallY0, wz, 'east')
+    placeStakeWall(x1 + 1, wallY0 + 1, wz, 'east')
+  }
+
   // Entrance changed 2026-09-04 (direct ask, real playtest feedback
   // batch): genuinely open 3-wide, 3-tall gap, no door block at all -
   // was a single 1-wide oak_door.
