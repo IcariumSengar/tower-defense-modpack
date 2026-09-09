@@ -9,6 +9,10 @@
     "type": "minecraft:random_spread",
     "spacing": 24,
     "separation": 12,
-    "salt": 14032026
+    "salt": 14032026,
+    "exclusion_zone": {
+      "other_set": "kubejs:base_anchor",
+      "chunk_count": 16
+    }
   }
 }

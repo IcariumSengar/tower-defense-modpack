@@ -26,15 +26,24 @@
 // tables too, and matches the actual design intent (loot gets better
 // with exploration distance) more directly than an incomplete table
 // allowlist would have.
-// Kept in sync with playtest_starter_kit.js's own fixed-spawn target -
-// moved 2026-09-06 along with it (savanna relocation, real user
-// decision after the plains-spawn report - see that file's own header
-// comment for the full writeup).
-var SPAWN_X = 1171
-var SPAWN_Z = -499
-
-var MID_TIER_RADIUS = 60
-var HIGH_TIER_RADIUS = 120
+// Distance is measured from the REAL base, read live from the permanent
+// td_pedestal_target marker's own persistentData (world_state.js's
+// worldData()) - **real bug fixed 2026-09-09**: this file still carried a
+// hardcoded SPAWN_X/SPAWN_Z of (1171, -499), a coordinate verified
+// against one specific seed on 2026-09-06 and stale ever since the spawn
+// became a runtime search that same day; both fresh worlds this morning
+// put the base 2,200 and 3,700 blocks away from it, so every chest in
+// the world was being tiered against a point nobody was near.
+//
+// Radii shifted +200 (60/120 -> 260/320) the same day: the anchor-grid
+// base placement (playtest_starter_kit.js) now guarantees no structure
+// set has a placement chunk within 12 chunks (~200 blocks) of the base,
+// so the old 60/120 bands would have made every reachable chest
+// top-tier from wave 1. The band WIDTHS are unchanged - "first 60
+// blocks of structures are mid, everything past that high" is exactly
+// what it was, just measured from where structures can actually start.
+var MID_TIER_RADIUS = 260
+var HIGH_TIER_RADIUS = 320
 
 var MID_TIER_POOL = [
   { item: 'minecraft:iron_ingot', weight: 25, min: 2, max: 4 },
@@ -81,8 +90,10 @@ LootJS.modifiers((event) => {
   event.addLootTypeModifier('chest').apply((context) => {
     var pos = context.getBlockPos()
     if (!pos) return
-    var dx = pos.getX() - SPAWN_X
-    var dz = pos.getZ() - SPAWN_Z
+    var base = worldData(context.getLevel())
+    if (!base || !base.contains('td_pedestalX')) return
+    var dx = pos.getX() - base.getInt('td_pedestalX')
+    var dz = pos.getZ() - base.getInt('td_pedestalZ')
     var dist = Math.sqrt(dx * dx + dz * dz)
 
     var pool = null

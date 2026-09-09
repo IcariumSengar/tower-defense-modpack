@@ -9,6 +9,10 @@
     "type": "berezka_api:berezkas_structure_placement",
     "spacing": 28,
     "separation": 14,
-    "salt": 512251957
+    "salt": 512251957,
+    "exclusion_zone": {
+      "other_set": "kubejs:base_anchor",
+      "chunk_count": 12
+    }
   }
 }

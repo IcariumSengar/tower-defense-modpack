@@ -86,12 +86,17 @@ var TARGET_BLOCK_IDS = [
 // NOT sharing its actual pools/vars (top-level var/const don't reliably
 // share across server_scripts in this exact Rhino build - only
 // functions do) - a fresh, self-contained copy avoids that pitfall.
-// SPAWN_X/SPAWN_Z copied from playtest_starter_kit.js/
-// structure_loot_progression.js's own fixed-spawn target - keep in sync
-// if that ever moves again.
-var SPAWN_X = 1171
-var SPAWN_Z = -499
-var FAR_DISTANCE = 120
+// Distance is measured from the REAL base, read live from the permanent
+// td_pedestal_target marker (world_state.js's worldData()) - **real bug
+// fixed 2026-09-09**: this file still carried a hardcoded SPAWN_X/SPAWN_Z
+// of (1171, -499), a one-seed coordinate that has been stale since the
+// spawn became a runtime search on 2026-09-06 (both fresh worlds this
+// morning put the base 2,200 and 3,700 blocks from it). FAR_DISTANCE
+// shifted +200 (120 -> 320) alongside structure_loot_progression.js's
+// radii, for the same reason: the anchor-grid base placement guarantees
+// no structure can start within ~200 blocks of the base, so the old
+// threshold would have made every reachable chest "far".
+var FAR_DISTANCE = 320
 var NEAR_TABLE = 'minecraft:chests/simple_dungeon'
 var FAR_TABLE = 'minecraft:chests/stronghold_corridor'
 
@@ -344,8 +349,10 @@ BlockEvents.rightClicked((event) => {
   var pos = block.getPos()
   if (!sclfChecker(pos)) return // not inside one of our 4 target structures - leave it alone (a player's own empty barrel stays empty)
 
-  var dx = pos.getX() - SPAWN_X
-  var dz = pos.getZ() - SPAWN_Z
+  var base = worldData(block.getLevel())
+  if (!base || !base.contains('td_pedestalX')) return // base not built yet - nothing to measure from, leave the chest untouched
+  var dx = pos.getX() - base.getInt('td_pedestalX')
+  var dz = pos.getZ() - base.getInt('td_pedestalZ')
   var dist = Math.sqrt(dx * dx + dz * dz)
   var table = dist > FAR_DISTANCE ? FAR_TABLE : NEAR_TABLE
 

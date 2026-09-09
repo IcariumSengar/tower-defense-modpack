@@ -6880,7 +6880,16 @@ same general "curated dispatch, not standard JS semantics" gap this
 codebase has already documented elsewhere (Rhino Java reflection
 quirks).
 
-## Structure spawn-exclusion floor — built 2026-09-09, priority fix, not yet confirmed in live play
+## Structure spawn-exclusion floor — built 2026-09-09, SUPERSEDED the same day
+
+**Superseded by "Anchor-grid base placement" at the end of this file.**
+Kept for the record: the `exclusion_zone` mechanism identified here is
+real and is what the replacement builds on, but the numbers were wrong
+in a way that mattered — `hasStructureChunkInRange` is pure grid math
+over the other set's placement grid, so a `chunk_count` of 20 or 30
+against a 32-chunk-spacing anchor puts an anchor inside EVERY search
+box, i.e. every mid/far-tier set stopped generating anywhere, while
+nothing protected the actual base (which never sat on the anchor).
 
 Direct report with a Xaero's minimap screenshot: structures (villages,
 gas stations, pillager outposts, ruins) landing "way way too close" to
@@ -6998,3 +7007,184 @@ Seeing the fix reflected around spawn specifically needs either a fresh
 world, or the border/exploration eventually reaching not-yet-generated
 territory near the old spawn (unlikely to happen naturally, since
 that's precisely the area already explored).
+
+## Anchor-grid base placement — 2026-09-09, replaces the login-time spawn search
+
+Direct report, urgent: "world gen is still broken — takes ages to get
+the custom world to load, the base isn't spawning correctly, and
+structures are spawning way too close to my base." Diagnosed from the
+live instance's own `logs/latest.log` plus both fresh saves created
+that morning (`level.dat` and the player `.dat` decoded directly with a
+small NBT reader), then every engine claim below was checked against
+the decompiled bytecode of the exact installed jars (Forge-patched
+client jar for `MinecraftServer`, the SRG client jar for the vanilla
+classes, the KubeJS jar for its own API) before any code was written.
+
+**What the logs actually showed (both boots, 10:47 and 11:10):**
+- Vanilla's "Preparing spawn area" took 23.5s and 25.0s — 441 chunks
+  generated around a spawn near world origin that this pack then never
+  used.
+- After login, the handler froze the server for 36s and 55s ("Can't
+  keep up! Running 55240ms or 1104 ticks behind"). The player sat in
+  the sky watching the old world, then fell.
+- The old structure-proximity search never found a site: "no wasteland
+  spot cleared 200 blocks of structure clearance within 4000 blocks,
+  using best real candidate found (120.9 blocks clear)" — and 160 on
+  the other boot. Bases ended up 2,200 and 3,700 blocks from origin.
+- Both boots then threw `Cannot read property "persistentData" from
+  undefined` right after summoning the pedestal marker, aborting the
+  handler before the Red House was placed. That is the "base not
+  spawning correctly": walls, pedestal and waystone down, no house, no
+  forceload, no pedestal HP, no wave targeting.
+- Both boots logged "terrain variance 66 / 61 blocks across the base
+  footprint" and ran the leveling pass.
+
+**Five real root causes, in order of severity:**
+
+1. **The structure-proximity check generated chunks.** The old search
+   reflected into `ChunkGenerator#findNearestMapStructure`. That is not
+   a pure lookup: `getStructureGeneratingAt` calls
+   `level.getChunk(x, z, ChunkStatus.STRUCTURE_STARTS)` for every
+   candidate placement chunk inside its 15-chunk search radius, so each
+   ring-search candidate synchronously generated hundreds of chunks (the
+   11:10 save had 48 region files after a 2-minute session, with probes
+   6,000+ blocks out). With near-tier structure_sets at 6-chunk spacing
+   there is no point anywhere with 200 blocks of clearance, so the
+   search always ran to exhaustion and then took its "best" candidate.
+   This is the 36–55s freeze.
+2. **The marker lookup raced chunk visibility.** A chunk that was
+   force-generated inside the same blocked tick has its entity section
+   still HIDDEN — the chunk map only promotes sections when its own tick
+   processes the ticket change — so `level.getEntities()` (KubeJS reads
+   the visible-entity storage) cannot see anything just summoned into
+   it. The orphaned working-tree "fix" (move the block after the house,
+   retry once in the same tick) could not work: a same-tick re-summon
+   just makes a second invisible marker.
+3. **The exclusion-zone anchor disabled structures instead of
+   protecting the base.** Decompiled
+   `ChunkGeneratorStructureState#hasStructureChunkInRange` (m_254936_):
+   it loops a `(2·chunk_count+1)²` box and calls
+   `StructurePlacement#isStructureChunk` (m_255071_) on the OTHER set's
+   placement grid — no biome check, no chunk loading. Against
+   `minecraft:ocean_monuments` (spacing 32) a `chunk_count` of 20 or 30
+   means the box always contains a full 32-chunk region, so every
+   mid/far-tier set was excluded from the entire world. Near tier (10)
+   lost ~43% of its placements in a grid pattern. And none of it kept
+   anything away from the base, which never sat at the anchor. The
+   uncommitted follow-up in the working tree (repoint to
+   `the_lost_city:city`, spacing 34) had the identical flaw.
+4. **`Level#getHeight` is hasChunk-gated.** Verified in bytecode
+   (m_6924_ → m_7232_/hasChunk, else m_141937_/getMinBuildHeight): for
+   a chunk that isn't loaded it returns -64 without generating anything.
+   The 9-point flatness sample reached into not-yet-loaded chunks, read
+   -64 against a real surface of 2, and reported "66 blocks of
+   variance" — the leveling pass was firing on a phantom, not terrain.
+5. **Two loot scripts still carried a hardcoded spawn** of (1171, -499)
+   — `structure_loot_progression.js` and `structure_chest_loot_fix.js` —
+   a one-seed coordinate stale since the spawn became a runtime search
+   on 2026-09-06. Every chest in the world was being tiered against a
+   point nobody was near.
+
+**The fix — turn finding 3 into the mechanism.** One anchor structure
+set, `kubejs:base_anchor` (`data/kubejs/worldgen/structure_set/
+base_anchor.json`, structure `minecraft:monument`, which can never
+generate in this biome source): `spacing: 64, separation: 63`. With
+`spacing - separation = 1` the random offset is `nextInt(1) = 0`, so
+the placement chunk is pinned to exactly chunk `(64i, 64j)` for every
+region — no randomness left. Every structure_set that can generate in
+this world's biomes (52 files: vanilla villages/pillager_outposts/
+ruined_portals, all 5 u_desert sets, supplementaries way_signs, 14
+Philip's Ruins, all 12 Lost City, all 4 abandoned_structures — Berezka's
+`DistanceBasedStructurePlacement` extends `RandomSpreadStructurePlacement`
+and its codec carries `exclusion_zone`, confirmed by decompile — 7
+abandoned_urban, 4 postapocalypse_structures, 2 watchtowers) now carries
+`exclusion_zone: {other_set: "kubejs:base_anchor", chunk_count: 12}`
+(16 for the sprawling `the_lost_city:city`/`big_city_structure`/
+`villages_city`/`roads` and `abandoned_urban:city`). That carves a
+guaranteed structure-free 25×25-chunk box (≈400 blocks) around every
+anchor chunk, 1,024 blocks apart — the nearest allowed placement chunk
+starts ~200 blocks from the base centre, the exact target the old
+search could never reach. Sets that previously used their one
+`exclusion_zone` slot against villages or Lost City's own `city` set
+lose that anti-overlap rule; Berezka already destroys overlapping
+structures at runtime (the "[Berezka API] structure X is spawned inside
+other structure Y, trying to destroy structure" lines in every log), so
+the mods' own safeguard still applies. New overrides were seeded from
+the mods' own jar defaults; the old `ocean_monuments.json` override is
+gone (no oceans exist, and repointing everything to `city` was reverted
+with it). Philip's `pumpkin_ruins`/`rare_ruin` are forest/jungle-gated
+and left alone; `infinity_city` is Lost-City-dimension only.
+
+**The base is then simply placed ON an anchor chunk.** `findBaseSite()`
+in `playtest_starter_kit.js` walks the anchor grid nearest-origin-first
+(6 rings, 13×13 points, 6,144 blocks each way), requires the centre
+column in desert/badlands, prefers the four ±96-block samples to be
+wasteland too, and self-checks the chosen chunk with the exact method
+the exclusion zone uses — `hasStructureChunkInRange` over
+`possibleStructureSets()` (m_255252_, vanilla's own biome-filtered list)
+— logging any set that still reports a placement chunk inside the box.
+Pure biome lookups plus grid math: the whole search measured 126ms in
+the sandbox, versus 36–55 seconds of chunk generation before.
+
+**Timing moved to world load.** Verified in the Forge-patched
+`MinecraftServer#createLevels`: `LevelEvent$Load` for the overworld is
+posted (bytecode 226) BEFORE the `isInitialized` check (233) and
+`setInitialSpawn` (250). So `LevelEvents.loaded` now picks the site,
+runs `/setworldspawn` through `event.server` (NOT `level.runCommandSilent`
+— that KubeJS variant iterates `Level#players()` and runs the command
+once per online player, i.e. never with nobody online; caught in the
+first sandbox boot, where the spawn silently stayed at (0,0)), and
+flips the level's own `initialized` flag (m_5555_) so vanilla skips its
+climate-based spawn hunt. Vanilla's 441-chunk "Preparing spawn area"
+pass then generates the BASE's surroundings — inside the structure-free
+box, so it is cheap — and `ServerEvents.loaded` builds the compound
+before any player can join. The player's first placement lands
+directly in the courtyard: no double spawn, no slow-falling hop, no
+frozen tick, no `spreadplayers`. The pedestal marker is created through
+`level.createEntity('minecraft:armor_stand')` + `mergeNbt` + `spawn()`
+so the entity reference is held directly — no lookup to race. A
+`surfaceHeightAt()` helper touches a block state first (which goes
+through `Level#getChunk(x, z)` → FULL, load=true, the same path
+vanilla's own `setInitialSpawn` takes via `PlayerRespawnLogic`) so every
+heightmap read is against a generated chunk. The login handler is now
+per-player only (starter kit, coordinate mirror, sidebar score seed via
+`scoreboard players add @a td_waves_cleared 0` so a late joiner no
+longer resets everyone's count), with the full site-search-and-build
+kept as a logged last-resort fallback for a world where the load-time
+path failed. Both loot scripts read the base position live from the
+marker's persistentData (`worldData(level)`), with their radii shifted
++200 (60/120 → 260/320, FAR 120 → 320) so band widths are unchanged
+relative to where structures can now actually start.
+
+**Verified in a full-mod-set sandbox (the same 81-jar dedicated server
+the day's other work used), two fresh seeds, RCON-checked — not
+inferred.** First boot caught two real silent failures fixed above
+(`level.runCommandSilent` no-op with no players; `getHeight` = -64 for
+an unloaded chunk). Second boot, clean:
+- Site chosen in 210ms at world load; 50 structure sets checked, none
+  reporting a placement chunk inside the box.
+- "Preparing spawn area" 13.4s (was 23.5–25.0s live), and ONLY the four
+  region files around the base exist — no origin generation at all.
+- Base built in 597ms at server start, before any player: pedestal,
+  waystone, crafting station, rolling mill, press, courtyard floor and
+  the open gate all confirmed by `execute if block`; exactly one
+  `td_pedestal_target` marker, carrying td_pedestalX/Y/Z/Health; world
+  spawn (level.dat) at the base with the real surface Y; border 58
+  centred there; spawnRadius 0; doMobSpawning false; 169 forced chunks.
+- Real `/locate structure` distances from the base (console source sits
+  at the world spawn): redhouse 254, Lost City post 273, Abandoned Urban
+  city 344, gas station 351, roads 633, desert_structures 704, big city
+  712, pillager outpost 753, watchtower 825, abandoned house 962, Lost
+  City city 971. Nothing under 254 blocks; the two live boots that
+  morning had 20.4 and 120.9.
+
+**Real, unresolved, flagged rather than silently changed**: with the
+2026-09-08 "2 of 7" biome blend, desert/badlands is rare — both sandbox
+seeds had exactly ONE wasteland anchor point among 169 (bases at 8.7km
+and 7.2km from origin, harmless in itself), and the second sat on the
+edge of its badlands patch with plains 45 blocks away. The search now
+scans 10 rings (441 points) to improve the odds of an all-wasteland
+site, but the lever for "the base should read as wasteland all around"
+is the `multi_noise` blend in `overworld.json`, which the user chose to
+keep as-is on 2026-09-09 pending real play — a decision for them, not
+this fix.

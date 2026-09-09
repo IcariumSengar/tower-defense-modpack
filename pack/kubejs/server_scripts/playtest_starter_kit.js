@@ -1,3 +1,14 @@
+// **Rebuilt 2026-09-09 - world-load-time base placement.** The base site
+// is now chosen in LevelEvents.loaded (before vanilla prepares its spawn
+// area) from a fixed grid of "anchor" chunks that every structure_set in
+// the pack is excluded from by a real `exclusion_zone`, and the compound
+// is built in ServerEvents.loaded before any player exists. See the
+// "Base-site selection" section below for the three live root causes
+// (slow load, base never finishing, structures on top of the base) this
+// replaced, and docs/FEATURES.md's "Anchor-grid base placement" entry.
+// The older history below is kept as-is - the build itself (walls,
+// house, pedestal, rig) is the same code, just no longer player-driven.
+//
 // Playtest convenience gear (weapon/armor) plus the real "Fixed spawn +
 // prebuilt starting building" pack design (docs/IDEAS.md) — every world
 // now spawns the player at the exact same fixed point (0, groundY, 0)
@@ -111,6 +122,10 @@ function giveStarterKit(player) {
 // never able to fix savanna's real problem (its green grass-block ground
 // color and visible horizon past the cleared radius, not just its
 // foliage). Desert/badlands are now the only acceptable outcome.
+// **Superseded 2026-09-09**: this search no longer runs at login or walks
+// rings of arbitrary points - see findBaseSite() below (anchor grid,
+// world-load time). The biome roster and biomeIdAt() helper here are
+// unchanged and still what that search uses.
 const BARE_WASTELAND_BIOMES = ['minecraft:desert', 'minecraft:badlands']
 
 // `level.getBiome([x, y, z])` is a real, fast, pure lookup - confirmed
@@ -124,74 +139,6 @@ const BARE_WASTELAND_BIOMES = ['minecraft:desert', 'minecraft:badlands']
 function biomeIdAt(level, x, z) {
   return `${level.getBiome([x, 64, z]).key().location()}`
 }
-
-// Real structure-proximity check (2026-09-06 follow-up: "the generated
-// structures have spawned right outside my base" - the spawn search
-// only ever checked biome, never checked for a nearby structure, so it
-// had no way to avoid this). Real, direct-API technique, same spirit as
-// the biome check above, not parsing command feedback text: vanilla's
-// own `ChunkGenerator#findNearestMapStructure` - the exact method
-// `/locate structure` itself calls internally, a pure deterministic
-// lookup that works without needing the area actually generated, same
-// category as `getBiome`.
-//
-// Real Java reflection required to reach it, every step live-verified
-// in a sandbox before trusting it, not guessed:
-// - This exact method's real runtime name in this build is
-//   SRG-obfuscated (`m_223037_`, found by dumping every 5-param method
-//   on the chunk generator's class and matching by parameter shape -
-//   ServerLevel/HolderSet/BlockPos/int/boolean -> Pair) even though
-//   sibling methods on Level/ServerLevel (getChunkSource/getGenerator)
-//   resolve to clean names directly by dot-syntax. This build's
-//   clean-name coverage is inconsistent per-method, not a simple
-//   "vanilla methods work / don't" rule - has to be checked per method.
-// - Building the required `HolderSet<Structure>` argument took several
-//   live-corrected wrong turns: `Registry#wrapAsHolder(T)` (the
-//   obvious-looking shortcut once you already have a raw Structure
-//   object) throws "This registry can't create intrusive holders" for
-//   datapack-driven registries like Structure - that path only works
-//   for the handful of core registries vanilla special-cases
-//   (Block/Item/EntityType). Real fix: enumerate the registry directly
-//   via `Registry#holders()` (a `Stream<Holder.Reference<T>>` of every
-//   currently-registered structure) instead of looking any up by id -
-//   simpler AND more complete than a hand-curated id list, can't miss a
-//   structure mod's id through a typo, and stays correct automatically
-//   if the mod roster ever changes. Structures outside this pack's
-//   curated biome set (ocean/nether/end ones) are harmless to include -
-//   they simply can never be found nearby, since they can't generate in
-//   this pack's biome_source at all.
-// - `Stream#toList()` threw a real `IllegalAccessException` when
-//   reflected off the stream's own concrete class
-//   (`java.util.stream.ReferencePipeline`) - a Java module-system
-//   gotcha, that impl class isn't exported by the `java.base` module
-//   even though `toList()` itself is public. Fixed by reflecting the
-//   method off the public `Stream` INTERFACE class instead of the
-//   concrete implementation.
-// - Raw `Method#invoke()`/`Constructor#newInstance()` need REAL boxed
-//   Java primitives, not bare JS numbers/booleans - confirmed live via
-//   a genuine "argument type mismatch" `IllegalArgumentException` from
-//   passing a plain JS number for `BlockPos`'s `int` constructor params.
-//   Rhino's usual automatic coercion only applies to normal dot-syntax
-//   calls, not manual reflection invocation (the same underlying
-//   limitation mob_aggro.js already hit for functional-interface
-//   coercion). Fixed via `Integer.valueOf(String)`/
-//   `Boolean.valueOf(String)`, since a JS string DOES pass through
-//   reflection cleanly (proven working elsewhere in this same chain).
-//
-// `STRUCTURE_MIN_DISTANCE` (200 blocks) is sized against this pack's own
-// real worldborder growth curve (`base_expansion.js`), not guessed:
-// starting diameter 50 + the full 8-wave campaign's cumulative growth
-// (5+5+5+10+10+10+15+15 = 75) caps at diameter 125 - comfortably under
-// 200 even counting the full designed campaign's end state, with margin
-// left over for early endless-phase growth beyond that.
-//
-// Cost: the whole reflection chain (registry lookup + enumerating every
-// registered structure, 135 on this pack's real mod set + one
-// `findNearestMapStructure` call) measured live at ~1.6s - but that
-// setup only happens ONCE per login (`buildStructureProximityCheck`
-// below), reused across every ring-search candidate; only the cheap
-// final `findNearestMapStructure` call itself repeats per candidate.
-var STRUCTURE_MIN_DISTANCE = 200
 
 function findMethodByShape(cls, paramCount, retTypeName, paramTypeNames) {
   var all = cls.getMethods()
@@ -239,7 +186,8 @@ function resolveClass(anyObj, className) {
 }
 
 // Real second ambiguity caught by the same live audit that found the
-// holders() bug above: `java.lang.Integer` has THREE real 1-arg(String)
+// holders() ambiguity in the old findNearestMapStructure chain (removed
+// 2026-09-09, see docs/FEATURES.md): `java.lang.Integer` has THREE real 1-arg(String)
 // methods returning Integer - `valueOf` (wanted), `decode` (also parses
 // hex/octal prefixes, would silently misparse some inputs), and
 // `getInteger` (reads a JVM SYSTEM PROPERTY named by the string - not a
@@ -278,473 +226,287 @@ function boxBool(anyObj, b) {
   return valueOf.invoke(null, [`${b}`])
 }
 
-// Builds the real find-nearest-structure closure ONCE (not per
-// candidate point) - every reflection lookup below only runs one time;
-// only the returned function's own `invoke()` call repeats per
-// candidate. Returns null (logged) if anything in the chain fails -
-// never lets a reflection break spawn placement entirely, same
-// resilience philosophy as mob_aggro.js's stripAutoRetargeting: the
-// caller falls back to a biome-only search rather than being unable to
-// spawn the player at all.
-function buildStructureProximityCheck(level) {
+// ---------------------------------------------------------------------
+// Base-site selection, rebuilt 2026-09-09. Real root causes, all three
+// diagnosed from the live instance's own logs/latest.log + two fresh
+// saves (level.dat/playerdata decoded directly), not reasoned from
+// source:
+//
+// 1. "Takes ages to load" - two separate stalls. (a) Vanilla's own
+//    "Preparing spawn area" spent 23-25s generating 441 chunks around
+//    ITS spawn near world origin, which this pack then never used
+//    (the player got teleported thousands of blocks away moments
+//    later). (b) The old `findWastelandSpawn` ring search froze the
+//    server for 36-55s ("Can't keep up! Running 55240ms or 1104 ticks
+//    behind") because its structure-proximity check reflected into
+//    `ChunkGenerator#findNearestMapStructure`, which is NOT a pure
+//    lookup: `getStructureGeneratingAt` calls
+//    `level.getChunk(x, z, ChunkStatus.STRUCTURE_STARTS)` for every
+//    candidate placement chunk inside its 15-chunk search radius, i.e.
+//    it synchronously generated hundreds of chunks (48 region files
+//    written for a 2-minute session, probes 6000+ blocks out) - and
+//    then, with near-tier structure_sets at 6-chunk spacing, it could
+//    never find 200 blocks of clearance anyway (best real result on
+//    the last two boots: 120.9 and 160 blocks, both "best candidate"
+//    fallbacks).
+// 2. "Base not spawning correctly" - `findWorldStateEntity(level)`
+//    returned nothing right after `/summon`ing the marker inside that
+//    same blocked tick (a freshly force-generated chunk's entity
+//    section isn't promoted to TRACKED until the chunk-map's own tick
+//    runs, so nothing summoned into it is visible to
+//    `level.getEntities()` yet), throwing `Cannot read property
+//    "persistentData" from undefined` and aborting the handler before
+//    the house was placed. Both fresh saves this morning show it
+//    (11:11:52 and 10:48:16). A same-tick retry cannot fix that - it
+//    just summons a second invisible marker.
+// 3. "Structures way too close to the base" - the previous
+//    `exclusion_zone` fix anchored every set against
+//    `minecraft:ocean_monuments` (spacing 32). Decompiled
+//    `ChunkGeneratorStructureState#hasStructureChunkInRange`
+//    (m_254936_): it is pure grid math over the OTHER set's placement
+//    grid - a `chunk_count` of 20/30 against a 32-chunk grid means the
+//    41/61-chunk box ALWAYS contains an anchor, so every mid/far-tier
+//    set stopped generating anywhere, while nothing at all protected
+//    the actual base (which never sat at the anchor).
+//
+// The fix turns that last finding into the mechanism: ONE anchor set
+// (`kubejs:base_anchor`, spacing 64 / separation 63, so its placement
+// chunk is pinned to exactly chunk (64i, 64j) for every region - no
+// randomness left in the offset) and an `exclusion_zone` against it on
+// every structure_set that can generate in this world's biomes. That
+// carves a guaranteed structure-free box of (2*12+1)=25 chunks around
+// every anchor chunk, 1024 blocks apart. The base is then simply placed
+// ON the nearest anchor chunk that sits in desert/badlands - the
+// search only has to test grid points, using the exact same
+// `hasStructureChunkInRange` call the exclusion zone itself uses (no
+// chunk generation, microseconds per set) as a self-check that nothing
+// slipped through the JSON pass.
+//
+// Timing moved too: `LevelEvents.loaded` fires from
+// `MinecraftServer#createLevels` BEFORE vanilla's `setInitialSpawn`
+// (verified in the Forge-patched class: `LevelEvent$Load` is posted at
+// bytecode offset 226, the `isInitialized` check at 233). Picking the
+// site there and setting the world spawn ourselves - then flipping the
+// level's own `initialized` flag so vanilla skips its climate-based
+// spawn hunt - means the 441-chunk "Preparing spawn area" pass now
+// generates the BASE's surroundings (inside the structure-free hole,
+// so it is cheap), the player's first placement lands directly in the
+// courtyard, and there is no double spawn, no fall, and no frozen tick.
+// The build itself runs in `ServerEvents.loaded`, after those chunks
+// exist and before any player can join.
+// ---------------------------------------------------------------------
+
+// Must match data/kubejs/worldgen/structure_set/base_anchor.json
+// (spacing) - separation is spacing-1 there, which pins the placement
+// offset to 0, so anchor chunks are exactly (64i, 64j).
+var BASE_ANCHOR_SET_ID = 'kubejs:base_anchor'
+var BASE_ANCHOR_SPACING_CHUNKS = 64
+// Must match the smallest exclusion_zone chunk_count used across the
+// structure_set overrides (12; the sprawling Lost City / Abandoned
+// Urban city sets use 16). 12 chunks past the anchor chunk = the
+// nearest allowed placement chunk starts ~200 blocks from the base
+// centre, the same 200-block target the old search aimed for and could
+// never reach.
+var STRUCTURE_CLEAR_CHUNKS = 12
+// Grid rings searched around world origin: 10 rings = 21x21 anchor
+// points, 10240 blocks each way. Sized from real data, not a guess:
+// the first two sandbox seeds of this code each had exactly ONE
+// desert/badlands anchor point inside 6 rings (169 points), 6-7km out -
+// the 2026-09-08 "cut desert back to 2 of 7" biome blend made wasteland
+// genuinely rare (docs/QUEUE.md's "Desert dominance" entry measured 0%
+// near origin). 441 points still cost only ~0.2s of pure biome lookups,
+// and give the scoring a real chance of finding a point whose
+// surroundings are wasteland too, not just its centre column. Distance
+// from origin has no gameplay cost - nothing in the pack is
+// origin-relative any more.
+var BASE_SEARCH_MAX_RINGS = 10
+// Extra biome samples this far out in each cardinal direction so the
+// whole visible area around the base reads as wasteland, not just the
+// one column the base sits on (the old single-point check landed bases
+// on the edge of a desert with plains in view).
+var BASE_BIOME_SAMPLE_OFFSET = 96
+// Underground sets - irrelevant to a surface base, and strongholds'
+// concentric-ring placement is the one placement type whose
+// isStructureChunk is not cheap grid math.
+var STRUCTURE_CHECK_SKIP_SETS = [BASE_ANCHOR_SET_ID, 'minecraft:mineshafts', 'minecraft:strongholds']
+
+// Builds a closure: (chunkX, chunkZ) -> array of structure_set ids that
+// still have a placement chunk within STRUCTURE_CLEAR_CHUNKS of that
+// chunk. Expected to be empty at every anchor chunk - a non-empty
+// result names a set the exclusion_zone pass missed. Uses
+// `ChunkGeneratorStructureState#possibleStructureSets` (m_255252_), the
+// exact list vanilla itself iterates in createStructures (already
+// filtered to sets whose structures have at least one biome in this
+// world's biome source), and `hasStructureChunkInRange` (m_254936_),
+// the exact method the exclusion zone calls. SRG names resolved from
+// this build's own mcp_config joined.tsrg + Mojang mappings, then
+// cross-checked against the decompiled bytecode. Returns null (logged)
+// on any reflection failure - the JSON exclusion floor still holds
+// without this, the search just loses its self-check.
+function buildStructureClearanceCheck(level) {
   try {
-    var rlCls = resolveClass(level, 'net.minecraft.resources.ResourceLocation')
-    var rlCtor = null
-    var rlCtors = rlCls.getConstructors()
-    for (var i = 0; i < rlCtors.length; i++) {
-      var ps = rlCtors[i].getParameterTypes()
-      if (ps.length === 1 && `${ps[0].getName()}` === 'java.lang.String') rlCtor = rlCtors[i]
-    }
-
+    var chunkSource = level.getChunkSource()
+    var getGeneratorState = findMethodByNameAndShape(chunkSource.getClass(), 'm_255415_', 0, 'net.minecraft.world.level.chunk.ChunkGeneratorStructureState', null)
+    var state = getGeneratorState.invoke(chunkSource, [])
+    var possibleSetsMethod = findMethodByNameAndShape(state.getClass(), 'm_255252_', 0, 'java.util.List', null)
+    var hasInRange = findMethodByNameAndShape(state.getClass(), 'm_254936_', 4, 'boolean', ['net.minecraft.core.Holder', 'int', 'int', 'int'])
+    var holderRefCls = resolveClass(level, 'net.minecraft.core.Holder$Reference')
+    var keyMethod = findMethodByNameAndShape(holderRefCls, 'm_205785_', 0, 'net.minecraft.resources.ResourceKey', null)
     var rkCls = resolveClass(level, 'net.minecraft.resources.ResourceKey')
-    var createRegistryKeyMethod = findMethodByShape(rkCls, 1, null, ['net.minecraft.resources.ResourceLocation'])
-    var structureRegistryKey = createRegistryKeyMethod.invoke(null, [rlCtor.newInstance(['minecraft:worldgen/structure'])])
-
-    var ra = level.registryAccess()
-    var registryOrThrow = findMethodByShape(ra.getClass(), 1, 'net.minecraft.core.Registry', ['net.minecraft.resources.ResourceKey'])
-    var structureRegistry = registryOrThrow.invoke(ra, [structureRegistryKey])
-
-    // Every currently-registered structure, as real Holder.Reference
-    // objects directly - see the header comment above for why this
-    // beats a hand-curated id list.
-    //
-    // Real bug caught by a live end-to-end test, not assumed safe from
-    // the isolated reflection probe alone: `Class#getMethods()`'s
-    // ordering is explicitly unspecified by the JLS, and this registry
-    // class has FOUR real 0-arg Stream-returning methods, not one -
-    // `Stream<Pair<TagKey<T>, HolderSet.Named<T>>>` (getTags),
-    // `Stream<TagKey<T>>` (getTagNames), `Stream<Holder.Reference<T>>`
-    // (holders - the one actually wanted), and `Stream<T>` (stream, raw
-    // values). A plain `paramCount+returnType` shape match, or even a
-    // loose `.includes('Holder')` check against the generic signature
-    // (the tags stream's `HolderSet.Named` also contains the substring
-    // "Holder"!), picked a different one of these between separate JVM
-    // launches depending on `getMethods()`'s own unspecified ordering -
-    // worked in one boot, then threw a real "Pair cannot be cast to
-    // Holder" in the very next one, same code, same mod set, once the
-    // tags-stream method happened to win instead. Fixed with a precise
-    // discriminator: the exact nested-class name `Holder$Reference` in
-    // the real GENERIC return type string (`getGenericReturnType()`,
-    // which survives erasure unlike `getReturnType()`) - the ONLY one of
-    // the 4 real candidates whose signature contains that exact string.
-    var regMethodsForHolders = structureRegistry.getClass().getMethods()
-    var holdersMethod = null
-    for (var hi = 0; hi < regMethodsForHolders.length; hi++) {
-      var hm = regMethodsForHolders[hi]
-      if (hm.getParameterTypes().length !== 0) continue
-      if (`${hm.getReturnType().getName()}` !== 'java.util.stream.Stream') continue
-      if (!`${hm.getGenericReturnType()}`.includes('Holder$Reference')) continue
-      holdersMethod = hm
-    }
-    var holdersStream = holdersMethod.invoke(structureRegistry, [])
-    var streamCls = resolveClass(level, 'java.util.stream.Stream')
-    var toListMethod = findMethodByShape(streamCls, 0, 'java.util.List', null)
-    var holdersList = toListMethod.invoke(holdersStream, [])
-
-    var holderSetCls = resolveClass(level, 'net.minecraft.core.HolderSet')
-    var directMethod = findMethodByShape(holderSetCls, 1, null, ['java.util.List'])
-    var allStructuresHolderSet = directMethod.invoke(null, [holdersList])
-
-    var gen = level.getChunkSource().getGenerator()
-    var genMethods = gen.getClass().getMethods()
-    var findNearestMethod = null
-    for (var i = 0; i < genMethods.length; i++) {
-      var m = genMethods[i]
-      var ps = m.getParameterTypes()
-      if (ps.length === 5 && `${ps[3].getName()}` === 'int' && `${ps[4].getName()}` === 'boolean') findNearestMethod = m
+    var locationMethod = findMethodByNameAndShape(rkCls, 'm_135782_', 0, 'net.minecraft.resources.ResourceLocation', null)
+    if (!getGeneratorState || !possibleSetsMethod || !hasInRange || !keyMethod || !locationMethod) {
+      throw new Error('one of the reflected methods resolved to null')
     }
 
-    var bpCls = resolveClass(level, 'net.minecraft.core.BlockPos')
-    var bpCtor = null
-    var bpCtors = bpCls.getConstructors()
-    for (var i = 0; i < bpCtors.length; i++) {
-      var ps = bpCtors[i].getParameterTypes()
-      if (ps.length === 3 && `${ps[0].getName()}` === 'int') bpCtor = bpCtors[i]
+    // The returned List is a `java.util.ImmutableCollections$ListN` -
+    // calling size()/get() on it directly throws a real
+    // IllegalAccessException from Rhino's MemberBox (that impl class is
+    // not exported by java.base), the same module-system gotcha the old
+    // Stream#toList() chain hit. Reflect both off the public List
+    // interface instead - confirmed live in the sandbox, 2026-09-09.
+    var sets = possibleSetsMethod.invoke(state, [])
+    var listCls = resolveClass(level, 'java.util.List')
+    var listSize = findMethodByNameAndShape(listCls, 'size', 0, 'int', null)
+    var listGet = findMethodByNameAndShape(listCls, 'get', 1, 'java.lang.Object', ['int'])
+    var setCount = parseInt(`${listSize.invoke(sets, [])}`, 10)
+    var checked = []
+    for (var i = 0; i < setCount; i++) {
+      var holder = listGet.invoke(sets, [boxInt(level, i)])
+      var id = `${locationMethod.invoke(keyMethod.invoke(holder, []), [])}`
+      if (STRUCTURE_CHECK_SKIP_SETS.includes(id)) continue
+      checked.push({ id: id, holder: holder })
     }
+    var radius = boxInt(level, STRUCTURE_CLEAR_CHUNKS)
+    console.log(`playtest_starter_kit.js: structure clearance check ready - ${checked.length} structure sets can generate in this world's biomes`)
 
-    // +2 chunks of margin past the exact block-distance threshold, so a
-    // structure just past STRUCTURE_MIN_DISTANCE in blocks isn't missed
-    // by a search radius that's rounded down in chunks.
-    var searchRadiusChunks = boxInt(level, Math.ceil(STRUCTURE_MIN_DISTANCE / 16) + 2)
-    var skipKnown = boxBool(level, false)
-
-    // Real fix (2026-09-06 follow-up to the follow-up): decompiled
-    // ChunkGenerator/StructurePlacement directly and confirmed
-    // findNearestMapStructure's own returned BlockPos is the structure's
-    // ORIGIN CHUNK CORNER (StructurePlacement.getLocatePos ->
-    // ChunkPos.getMinBlockX/Z, no size adjustment at all) - not any point
-    // on the structure's real footprint. Fine for a small structure; for
-    // a large multi-chunk one (a city, a big dungeon) the true nearest
-    // edge can be dozens of blocks closer than this origin point
-    // suggests, which is exactly the kind of gap that could let a
-    // structure read as comfortably clear via this check while actually
-    // sitting right next to (or under) the spot chosen. Real fix: look
-    // up the actual StructureStart at that origin (structure starts are
-    // always placed from their own origin chunk, so this reliably finds
-    // it) and measure to the nearest point on its real BoundingBox
-    // instead.
-    //
-    // **Real finding, not assumed - named by SRG identifier, not by
-    // clean name.** First attempt used the real official-mapping names
-    // (minX/maxX/getBoundingBox/etc, cross-checked against this exact
-    // build's own bundled Mojang mapping file) via
-    // findMethodByNameAndShape - every single one resolved to null on a
-    // live sandbox boot. A diagnostic dump of BoundingBox's own
-    // `getMethods()` at runtime showed why: reflection here sees SRG
-    // names (`m_162395_`, `m_162399_`, ...), not official ones. This is
-    // the same gap no_passive_mobs.js already documented for EntityType
-    // ("fully SRG-obfuscated with no clean id->category mapping"), just
-    // not previously known to be a GENERAL property of raw reflection
-    // against vanilla classes in this build rather than an EntityType-
-    // specific quirk - Forge's compile-time remapping only rewrites
-    // bytecode that CALLS these methods directly (mod Java source, or
-    // this pack's own already-working shape-only lookups, which never
-    // needed a name at all), not what a live `getMethods()` scan
-    // reports back to a script. Every SRG id below was cross-verified by
-    // reading the actual decompiled method BODY (not just its shape) to
-    // confirm which of several same-shaped candidates it really is -
-    // StructureManager alone has two different (BlockPos,Structure)
-    // methods (getStructureAt vs. getStructureWithPieceAt) that shape
-    // matching alone can't tell apart.
-    var structureManager = level.structureManager()
-    var holderCls = resolveClass(level, 'net.minecraft.core.Holder')
-    var holderValueMethod = findMethodByNameAndShape(holderCls, 'm_203334_', 0, null, null)
-    var getStructureAtMethod = findMethodByNameAndShape(
-      structureManager.getClass(), 'm_220494_', 2, null,
-      ['net.minecraft.core.BlockPos', 'net.minecraft.world.level.levelgen.structure.Structure']
-    )
-    var structureStartCls = resolveClass(level, 'net.minecraft.world.level.levelgen.structure.StructureStart')
-    var isValidMethod = findMethodByNameAndShape(structureStartCls, 'm_73606_', 0, 'boolean', null)
-    var getBoundingBoxMethod = findMethodByNameAndShape(structureStartCls, 'm_73601_', 0, 'net.minecraft.world.level.levelgen.structure.BoundingBox', null)
-    var boundingBoxCls = resolveClass(level, 'net.minecraft.world.level.levelgen.structure.BoundingBox')
-    var minXMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162395_', 0, 'int', null)
-    var maxXMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162399_', 0, 'int', null)
-    var minZMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162398_', 0, 'int', null)
-    var maxZMethod = findMethodByNameAndShape(boundingBoxCls, 'm_162401_', 0, 'int', null)
-
-    // Real distance (blocks) to the nearest structure of any kind, or
-    // null if none within the search radius - the caller compares this
-    // against STRUCTURE_MIN_DISTANCE itself, since findNearestMapStructure's
-    // own searchRadius argument is in CHUNKS and only bounds the search -
-    // it doesn't guarantee the result is within any particular block
-    // distance, that still has to be computed from the real returned
-    // position.
-    return function (x, z) {
-      var pos = bpCtor.newInstance([boxInt(level, x), boxInt(level, 64), boxInt(level, z)])
-      var result = findNearestMethod.invoke(gen, [level, allStructuresHolderSet, pos, searchRadiusChunks, skipKnown])
-      if (result == null) return null
-      var foundPos = result.getFirst()
-      var structureHolder = result.getSecond()
-
-      try {
-        var structure = holderValueMethod.invoke(structureHolder, [])
-        var structureStart = getStructureAtMethod.invoke(structureManager, [foundPos, structure])
-        if (structureStart != null && isValidMethod.invoke(structureStart, [])) {
-          var bbox = getBoundingBoxMethod.invoke(structureStart, [])
-          var minX = minXMethod.invoke(bbox, [])
-          var maxX = maxXMethod.invoke(bbox, [])
-          var minZ = minZMethod.invoke(bbox, [])
-          var maxZ = maxZMethod.invoke(bbox, [])
-          var clampedX = Math.max(minX, Math.min(x, maxX))
-          var clampedZ = Math.max(minZ, Math.min(z, maxZ))
-          var edx = x - clampedX
-          var edz = z - clampedZ
-          return Math.sqrt(edx * edx + edz * edz)
-        }
-      } catch (e) {
-        console.log('playtest_starter_kit.js: bounding-box lookup failed (' + e + '), falling back to origin-point distance for this candidate')
+    return function (chunkX, chunkZ) {
+      var cx = boxInt(level, chunkX)
+      var cz = boxInt(level, chunkZ)
+      var blockers = []
+      for (var i = 0; i < checked.length; i++) {
+        if (`${hasInRange.invoke(state, [checked[i].holder, cx, cz, radius])}` === 'true') blockers.push(checked[i].id)
       }
-
-      // Fallback if the bounding-box lookup didn't resolve (shouldn't
-      // normally happen given a structure start is always at its own
-      // origin chunk, but this is reflection reaching into internal
-      // generation state, not a stable public API) - degrade to the old
-      // origin-point distance rather than breaking the whole search.
-      var dx = foundPos.getX() - x
-      var dz = foundPos.getZ() - z
-      return Math.sqrt(dx * dx + dz * dz)
+      return blockers
     }
   } catch (e) {
-    console.log('playtest_starter_kit.js: structure-proximity check unavailable (' + e + '), spawn search will skip it and fall back to biome-only')
+    console.log(`playtest_starter_kit.js: structure clearance check unavailable (${e}) - site search will trust the JSON exclusion floor alone`)
     return null
   }
 }
 
-// Ring-by-ring outward search from a given anchor for any biome in
-// `biomeList` - cheap enough to run synchronously during login (a real
-// sandbox timing test: 441 lookups in 141ms). Step 48 keeps the ring
-// count (and worst-case call count) reasonable while still being
-// fine-grained enough not to skip over a real biome patch. `isAcceptable`
-// (optional) runs only on cells that already matched the biome, and can
-// reject an otherwise-matching candidate to keep searching - used by the
-// structure-proximity check below.
-function searchForBiome(level, startX, startZ, biomeList, maxRadius, isAcceptable) {
-  const step = 48
-  function candidateOk(x, z) {
-    if (!biomeList.includes(biomeIdAt(level, x, z))) return false
-    if (isAcceptable && !isAcceptable(x, z)) return false
-    return true
-  }
-  if (candidateOk(startX, startZ)) return [startX, startZ]
-  for (let r = step; r <= maxRadius; r += step) {
-    for (let dx = -r; dx <= r; dx += step) {
-      for (let dz = -r; dz <= r; dz += step) {
-        if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue // ring only, not a full grid
-        if (candidateOk(startX + dx, startZ + dz)) return [startX + dx, startZ + dz]
-      }
-    }
-  }
-  return null
+function isWastelandAt(level, x, z) {
+  return BARE_WASTELAND_BIOMES.includes(biomeIdAt(level, x, z))
 }
 
-// Seed-independent from a seed-independent anchor (world origin) -
-// correct for whatever the actual seed is, unlike a hardcoded
-// coordinate. **Radius widened to 4000 (from 1200) 2026-09-06** - real
-// consequence of dropping the leafy fallback above, handled
-// deliberately, not ignored: the old radius was sized assuming a safety
-// net existed if it came up short. With no net, the radius itself has to
-// be trusted to actually find desert/badlands - 4000 is directly
-// informed by real data already measured in this pack's own history, not
-// picked arbitrarily: the vegetation Y-range fix found desert/badlands
-// sitting ~3650 blocks from a real savanna_plateau landing point on one
-// actual save. Worst-case cost at this radius (only paid if genuinely
-// nothing barren turns up anywhere within it, which would itself be a
-// real finding about the seed, not the expected path): ~27,900
-// `getBiome` calls at this file's own measured ~0.3ms/call, ~8.4s - a
-// one-time login cost, acceptable for how rare that case should be given
-// desert+badlands are 2 of only 7 curated biomes in this pack's
-// multi_noise blend. If it still comes back null, the caller (below)
-// has a real, defined fallback - not left undefined.
-//
-// **Best-candidate fallback, real fix 2026-09-06**: a real live playtest
-// found the base structure spawning on top of other structures - traced
-// to this function returning null whenever every biome-matched candidate
-// fell short of STRUCTURE_MIN_DISTANCE, which sent the login handler down
-// its own fallback path (`spreadplayers 0 0`) with ZERO structure-proximity
-// protection at all - worse than just accepting the least-bad real
-// candidate. Every biome-matched candidate seen during the search (pass or
-// fail) is now tracked by its own structure distance; if none clear the
-// full threshold, the search returns whichever one had the most clearance
-// instead of surrendering to the unchecked origin fallback.
-function findWastelandSpawn(level, startX, startZ) {
-  var structureDistanceAt = buildStructureProximityCheck(level)
-  var bestCandidate = null
-  var bestDistance = -1
-  var isAcceptable = structureDistanceAt ? function (x, z) {
-    var dist = structureDistanceAt(x, z)
-    if (dist === null) return true
-    if (dist > bestDistance) {
-      bestDistance = dist
-      bestCandidate = [x, z]
-    }
-    return dist >= STRUCTURE_MIN_DISTANCE
-  } : null
-  var found = searchForBiome(level, startX, startZ, BARE_WASTELAND_BIOMES, 4000, isAcceptable)
-  if (found) return found
-  if (bestCandidate) {
-    console.log('playtest_starter_kit.js: no wasteland spot cleared ' + STRUCTURE_MIN_DISTANCE + ' blocks of structure clearance within 4000 blocks, using best real candidate found (' + bestDistance + ' blocks clear) instead of the unchecked origin fallback')
-    return bestCandidate
+// Picks the anchor chunk the base goes on. Candidates are ONLY anchor
+// grid points (chunk (64i, 64j), block centre (1024i+8, 1024j+8)),
+// nearest-to-origin first. Scoring: centre column in desert/badlands
+// (required), the four BASE_BIOME_SAMPLE_OFFSET samples also wasteland
+// (+10), no structure set reporting a placement chunk inside the
+// clearance box (+5). The first perfect score wins immediately;
+// otherwise the best-scoring candidate seen. Only biome-passing points
+// pay for the structure check, so the whole search is a few hundred
+// pure biome lookups (~0.3ms each) plus a handful of grid-math passes.
+function findBaseSite(level) {
+  var startedAt = Date.now()
+  var structureBlockersAt = buildStructureClearanceCheck(level)
+  var points = []
+  for (var i = -BASE_SEARCH_MAX_RINGS; i <= BASE_SEARCH_MAX_RINGS; i++) {
+    for (var j = -BASE_SEARCH_MAX_RINGS; j <= BASE_SEARCH_MAX_RINGS; j++) points.push([i, j])
   }
-  return null
+  points.sort(function (a, b) { return (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1]) })
+
+  var best = null
+  var biomeHits = 0
+  for (var p = 0; p < points.length; p++) {
+    var chunkX = points[p][0] * BASE_ANCHOR_SPACING_CHUNKS
+    var chunkZ = points[p][1] * BASE_ANCHOR_SPACING_CHUNKS
+    var x = chunkX * 16 + 8
+    var z = chunkZ * 16 + 8
+    if (!isWastelandAt(level, x, z)) continue
+    biomeHits++
+    var o = BASE_BIOME_SAMPLE_OFFSET
+    var surroundingsOk = isWastelandAt(level, x + o, z) && isWastelandAt(level, x - o, z) && isWastelandAt(level, x, z + o) && isWastelandAt(level, x, z - o)
+    var blockers = structureBlockersAt ? structureBlockersAt(chunkX, chunkZ) : []
+    var score = 10 + (surroundingsOk ? 10 : 0) + (blockers.length === 0 ? 5 : 0)
+    var candidate = { x: x, z: z, chunkX: chunkX, chunkZ: chunkZ, score: score, surroundingsOk: surroundingsOk, blockers: blockers, biome: biomeIdAt(level, x, z) }
+    if (!best || score > best.score) best = candidate
+    if (score === 25) break
+  }
+
+  var elapsed = Date.now() - startedAt
+  if (!best) {
+    // No desert/badlands anchor point in a 12km square. Never seen on a
+    // real seed; surfaced loudly rather than silently picking a
+    // non-anchor point (which would forfeit the structure-free hole).
+    // The origin anchor still has the hole, it just won't be wasteland.
+    console.error(`playtest_starter_kit.js: no desert/badlands anchor point within ${BASE_SEARCH_MAX_RINGS} rings of origin (${points.length} points, ${elapsed}ms) - falling back to the origin anchor, biome will be off-theme this world`)
+    return { x: 8, z: 8, chunkX: 0, chunkZ: 0, score: 0, surroundingsOk: false, blockers: structureBlockersAt ? structureBlockersAt(0, 0) : [], biome: biomeIdAt(level, 8, 8) }
+  }
+  console.log(`playtest_starter_kit.js: base site chosen at (${best.x}, ${best.z}) [anchor chunk ${best.chunkX},${best.chunkZ}] biome=${best.biome} surroundings=${best.surroundingsOk ? 'wasteland' : 'MIXED'} score=${best.score} (${biomeHits} wasteland anchor points seen, ${elapsed}ms)`)
+  if (best.blockers.length) {
+    console.error(`playtest_starter_kit.js: structure sets still reporting a placement chunk within ${STRUCTURE_CLEAR_CHUNKS} chunks of the chosen anchor - these are missing the base_anchor exclusion_zone: ${best.blockers.join(', ')}`)
+  }
+  return best
 }
 
-PlayerEvents.loggedIn((event) => {
-  const player = event.player
-  const data = player.persistentData
-  const level = player.getLevel()
+// Real surface height at a column, forcing the chunk to exist first.
+// `Level#getHeight` (m_6924_) is hasChunk-gated - verified in this
+// build's bytecode (m_7232_ check, else m_141937_/getMinBuildHeight):
+// for a chunk that isn't loaded it returns -64 WITHOUT generating
+// anything. The old login-time build only ever saw real values because
+// `/spreadplayers` had already loaded the landing chunk. Reading a block
+// state first goes through Level#getChunk(x, z) -> FULL, load=true,
+// which synchronously generates the chunk - the same path vanilla's own
+// setInitialSpawn takes via PlayerRespawnLogic, so it is safe this
+// early. **Real live bug this explains, 2026-09-09**: the "terrain
+// variance 66 / 61 blocks across the base footprint" lines in both
+// fresh-world logs this morning were flatness sample points sitting in
+// not-yet-loaded chunks reading -64 against a real surface of 2 - the
+// leveling pass was firing on a phantom, not on real terrain. First
+// sandbox boot of this file reproduced it exactly (base recorded at
+// y=-64) before this helper existed.
+function surfaceHeightAt(level, x, z) {
+  level.getBlock(x, 64, z).getId()
+  return level.getHeight('MOTION_BLOCKING', x, z)
+}
 
-  // Real live bug fixed 2026-09-05: Zcraft Decoration removed entirely
-  // (direct report - its concrete blocks were getting mobs stuck
-  // pathing near them). Full uninstall (mod + this function's own
-  // placement further down), but any save that already built its
-  // starter base (td_playtestKitGiven true) also already has the 2 real
-  // zcraft_decorations:sfz_shuiniqiang blocks placed at the gate - once
-  // the mod's gone those become real "missing block" placeholders on
-  // next load, not just an unplaced decoration. This runs BEFORE the
-  // td_playtestKitGiven early-return below on purpose, gated by its own
-  // separate flag, since that gate only covers fresh worlds and this
-  // needs to also reach already-built ones. Recomputes the 2 known
-  // coordinates from this file's own persisted td_pedestalX/Y/Z (same
-  // doorX/wallY0/z1 relationship the base-building code below uses:
-  // doorX = td_pedestalX, wallY0 = td_pedestalY, z1 = td_pedestalZ + 7)
-  // and blindly overwrites them with air regardless of what's actually
-  // there now - safe either way, a fresh world never had anything there.
-  if (!data.getBoolean('td_zcraftCleanupDone') && data.getBoolean('td_playtestKitGiven')) {
-    data.putBoolean('td_zcraftCleanupDone', true)
-    var oldDoorX = data.getInt('td_pedestalX')
-    var oldWallY0 = data.getInt('td_pedestalY')
-    var oldZ1 = data.getInt('td_pedestalZ') + 7
-    player.getServer().runCommandSilent(`setblock ${oldDoorX - 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
-    player.getServer().runCommandSilent(`setblock ${oldDoorX + 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
-  }
-
-  // The amulet is NO LONGER starter gear (reversed 2026-09-01,
-  // docs/FEATURES.md's "The amulet" - "the pedestal is pre-built, the
-  // amulet is crafted"). It now has a real crafting recipe
-  // (server_scripts/amulet_pedestal.js) instead of being given here;
-  // the empty pre-built pedestal (below, in the base-building section)
-  // is the intended hook - "something was supposed to be here."
-
-  // Real multiplayer fix, 2026-09-08 (see docs/FEATURES.md's
-  // "Multiplayer / LAN readiness" for the full bug writeup). Real root
-  // cause: the world-build gate below (td_playtestKitGiven) used to be
-  // read from THIS JOINING PLAYER's own persistent data - so any
-  // player's first-ever login, even into a world whose base had already
-  // existed for hours, read that flag as false for them personally and
-  // ran the ENTIRE build again: a second base built at a different
-  // biome-search result, `spreadplayers ... @a` dragging every online
-  // player there mid-session, and the shared wave-counter scoreboard
-  // reset to 0 for everyone. Fix: the permanent td_pedestal_target
-  // marker's own EXISTENCE (see world_state.js) is now the real "has
-  // this WORLD been built" signal, checked first, independent of
-  // whether THIS player has ever logged in before.
-  var existingMarker = findWorldStateEntity(level)
-  if (existingMarker) {
-    // Real regression fix, 2026-09-09 (see world_state.js's own comment
-    // on migrateLegacySharedState for the full writeup). Must run here,
-    // BEFORE the td_playtestKitGiven check right below - that check
-    // already returns immediately for this pack's one long-running
-    // player, which is exactly why the migration could never reach this
-    // point if it lived any later in this function.
-    migrateLegacySharedState(player, existingMarker)
-
-    // World already built - this player just needs their own gear, not
-    // a second base. Vanilla's own /setworldspawn (set once, by whoever
-    // built the world) already places a player with no personal spawn
-    // override here directly on login, so no manual teleport is needed.
-    if (data.getBoolean('td_playtestKitGiven')) return
-    data.putBoolean('td_playtestKitGiven', true)
-    giveStarterKit(player)
-    // Mirrored onto this player's own data too (read-only cache, never
-    // authoritative) purely so mob_aggro.js's ensurePedestalMarker()
-    // recovery safety net and this file's own td_zcraftCleanupDone
-    // migration above have a real coordinate to fall back to from
-    // WHICHEVER player happens to be online, not just the original
-    // builder specifically.
-    var existingData = existingMarker.persistentData
-    if (existingData.contains('td_pedestalX')) {
-      data.putInt('td_pedestalX', existingData.getInt('td_pedestalX'))
-      data.putInt('td_pedestalY', existingData.getInt('td_pedestalY'))
-      data.putInt('td_pedestalZ', existingData.getInt('td_pedestalZ'))
-    }
-    return
-  }
-
-  if (data.getBoolean('td_playtestKitGiven')) return
-  data.putBoolean('td_playtestKitGiven', true)
-
-  // Real UX fix, 2026-09-05 (live report: the player visibly spawns
-  // once at the vanilla default point, then gets teleported to the
-  // real wasteland base moments later - reads as a jarring double
-  // spawn). Real investigation: `PlayerEvents.loggedIn` only fires
-  // AFTER vanilla has already placed the player entity in the world -
-  // there is no earlier Forge/vanilla hook that runs before that first
-  // placement, so the world/terrain genuinely can't be "ready first."
-  // Everything below this point (the biome search, up to 4000 blocks,
-  // plus the full base build - walls, structure placement, loot) runs
-  // synchronously inside this one handler and takes real, measurable
-  // time, during which the player's client is still rendering
-  // whatever real (wrong) terrain they were first placed on. Can't
-  // eliminate the double-teleport, but can make it read as one clean
-  // spawn instead of a correction: an immediate, near-instant safety
-  // hop straight up to a fixed neutral altitude (sky, nothing
-  // identifiable to notice snapping away from) before any of the slow
-  // work starts, with a short slow_falling grant as a safety net in
-  // case of any lag - by the time the real spreadplayers teleport below
-  // lands, the player was already looking at sky, not a real landscape.
-  event.server.runCommandSilent('effect give @a minecraft:slow_falling 10 0 true')
-  player.teleportTo(player.getX(), 300, player.getZ())
-
-  // Real live ask, 2026-09-05: a persistently visible HUD element for
-  // waves cleared, not just a one-off chat/title message. Plain vanilla
-  // scoreboard sidebar - real, idempotent objective creation (a second
-  // `objectives add` with the same name is a real no-op error, silenced
-  // since this only runs once per player anyway via the gate above).
-  // wave_status.js sets the real value each time a wave is marked
-  // cleared.
-  player.getServer().runCommandSilent('scoreboard objectives add td_waves_cleared dummy {"text":"Waves Cleared"}')
-  player.getServer().runCommandSilent('scoreboard objectives setdisplay sidebar td_waves_cleared')
-  player.getServer().runCommandSilent('scoreboard players set @a td_waves_cleared 0')
-
-  giveStarterKit(player)
-
-  event.server.runCommandSilent('gamerule doMobSpawning false')
-
-  // Spawn-biome target history, condensed (full real writeup in
-  // docs/FEATURES.md's "Seed-independent world-gen" entry): (0,0) landed
-  // in a badlands blob -> hardcoded (780,-150) -> that turned out to be
-  // plains, hardcoded (1171,-499) after a real census against the live
-  // save's own seed -> the VERY NEXT fresh world landed back in plains
-  // at that exact point too, because it rolled a different seed and a
-  // hardcoded coordinate tuned for one seed's noise pattern has no
-  // reason to hold on another. **Real, structural fix 2026-09-06**:
-  // search for a real wasteland-tagged biome at LOGIN TIME instead of
-  // trusting a number picked in advance - see `findWastelandSpawn()`
-  // above. World origin (0,0) is the anchor precisely because it's
-  // seed-independent - no reason to prefer one arbitrary point over
-  // another when the search itself now does the real work.
-  // **Savanna/savanna_plateau dropped entirely 2026-09-06** (real
-  // follow-up playtest: "savanna is still looking far too green. lose
-  // this biome, stick with wasteland feel.") - desert/badlands are now
-  // the only acceptable outcome, see `findWastelandSpawn()` above for
-  // the widened radius that makes that safe.
-  const wastelandTarget = findWastelandSpawn(player.getLevel(), 0, 0)
-  if (wastelandTarget) {
-    event.server.runCommandSilent(`spreadplayers ${wastelandTarget[0]} ${wastelandTarget[1]} 1 8 false @a`)
-  } else {
-    // Real, honest fallback - a search radius of 4000 blocks turning up
-    // neither desert nor badlands is itself a finding worth surfacing
-    // (unusual seed, or the curated biome set is oddly sparse near
-    // origin), not silently pretending it worked. Falls back to world
-    // origin - still heightmap-snapped, still gets a working base, just
-    // not guaranteed to be in-theme this one time. Deliberately does NOT
-    // fall back to savanna/savanna_plateau - that fallback is exactly
-    // what this fix removed, reinstating it here would silently undo it
-    // in the one case it's most likely to matter.
-    console.log('playtest_starter_kit.js: no desert/badlands biome found within 4000 blocks of origin, falling back to (0,0)')
-    event.server.runCommandSilent('spreadplayers 0 0 1 8 false @a')
-  }
-
-  // Ground truth read AFTER spreadplayers — this is where the player is
-  // actually now standing, on real terrain, not a guess.
-  //
-  // **Real bug found and fixed 2026-09-06, direct playtest report:
-  // "my entire base is floating 1 block off the ground."** Used to read
-  // `Math.floor(player.getY())` here directly - wrong whenever the
-  // landing column happens to have a decorative, non-collidable plant
-  // (`minecraft:grass`, the 1.20.1 single-block tall-grass, confirmed
-  // live at the actual reported column) sitting on top of the real
-  // ground. `/spreadplayers` places the player using a heightmap that
-  // counts that plant as "the surface," one block above where real
-  // collision/gravity would actually settle them - and since this read
-  // happens the same tick, immediately after the teleport, gravity never
-  // gets a chance to correct it before every wall/floor/pedestal Y in
-  // this whole function gets derived from the inflated number. Confirmed
-  // directly on the exact real live-save column this bug was reported
-  // from: `Math.floor(player.getY())` gave 3, but the real settled
-  // player position after actual play (read from the save's own player
-  // data) was 2, and vanilla's own real `MOTION_BLOCKING` heightmap
-  // (which explicitly excludes non-collidable blocks like this one, by
-  // design - the same value real gravity converges to) also gives 2.
-  // Fixed by reading the real heightmap instead of the player's own
-  // possibly-not-yet-settled Y - correct regardless of what's growing on
-  // the landing tile, no hand-maintained "which plants don't count" list
-  // needed.
-  const x = Math.floor(player.getX())
-  const z = Math.floor(player.getZ())
-  const y = player.getLevel().getHeight('MOTION_BLOCKING', x, z)
+// Builds the whole starter compound at (x, z). Runs with no player in
+// the world (ServerEvents.loaded on a fresh world, see the hooks at the
+// bottom of this file), so everything here is server/level-based - the
+// per-player pieces (starter kit, per-player data mirror) live in the
+// login handler. Returns the pedestal coordinates and the marker
+// entity so the caller can teleport a late-arriving player (the login
+// fallback path) without re-reading anything.
+function buildStarterBase(server, level, x, z) {
+  // Ground truth from the real MOTION_BLOCKING heightmap at the chosen
+  // column. **Real bug found and fixed 2026-09-06, direct playtest
+  // report: "my entire base is floating 1 block off the ground."**
+  // Used to read `Math.floor(player.getY())` right after a
+  // `/spreadplayers` landing - wrong whenever the landing column had a
+  // decorative, non-collidable plant (`minecraft:grass`) on top of the
+  // real ground: spreadplayers' heightmap counts that plant as "the
+  // surface", one block above where gravity actually settles a player,
+  // and the read happened the same tick, before gravity could correct
+  // it. Confirmed on the reported column: player Y read 3, real settled
+  // position 2, `MOTION_BLOCKING` (which excludes non-collidable blocks
+  // by design) also 2. Reading the heightmap directly is correct
+  // regardless of what's growing on the tile - and now that the site is
+  // chosen at world-load time (no player, no spreadplayers), it's the
+  // only sensible source anyway.
+  const y = surfaceHeightAt(level, x, z)
 
   // Pin every future respawn to this exact point (docs/IDEAS.md's
   // "Fixed spawn" plan) - spawnRadius 0 removes vanilla's default ~10
   // block first-spawn scatter, so this is the actual landing spot, not
   // just a nearby nudge target.
-  event.server.runCommandSilent(`setworldspawn ${x} ${y} ${z}`)
-  event.server.runCommandSilent('gamerule spawnRadius 0')
+  server.runCommandSilent(`setworldspawn ${x} ${y} ${z}`)
+  server.runCommandSilent('gamerule spawnRadius 0')
 
   // Center the border on the same fixed point, not wherever the player
   // happened to be standing — matches the manual setup step from
   // docs/PLAYTESTING.md, now automatic.
-  event.server.runCommandSilent(`worldborder center ${x} ${z}`)
+  server.runCommandSilent(`worldborder center ${x} ${z}`)
   // Briefly bumped to 90 for the Red Mansion (26x28), reverted back to
   // 50 the same day (2026-09-01) once the mansion itself was swapped for
   // Abandoned Brick House (12x11, see below) - the smaller building's
@@ -762,20 +524,35 @@ PlayerEvents.loggedIn((event) => {
   // is purely relative, so bumping this base value doesn't need any
   // change there - it just restores the same 3-block buffer (radius 29,
   // diameter 58) rather than guessing a bigger round number.
-  event.server.runCommandSilent('worldborder set 58')
+  server.runCommandSilent('worldborder set 58')
   // Wave mobs deliberately spawn just beyond the border (wave_spawner.js)
   // and walk in - without this, vanilla's default border damage would
   // chip them (and the player, near the edge) for no reason this pack
   // actually wants; the border here is a containment/staging boundary,
   // not a shrinking-zone mechanic.
-  event.server.runCommandSilent('worldborder damage amount 0')
+  server.runCommandSilent('worldborder damage amount 0')
+
+  // Waves Cleared sidebar (real live ask, 2026-09-05: a persistently
+  // visible HUD element for waves cleared, not just a one-off chat/title
+  // message). Plain vanilla scoreboard sidebar - the objective and its
+  // display slot are created once per world here; each player's own
+  // score row is seeded at their first login (see the login handler).
+  // wave_status.js sets the real value each time a wave is marked
+  // cleared.
+  server.runCommandSilent('scoreboard objectives add td_waves_cleared dummy {"text":"Waves Cleared"}')
+  server.runCommandSilent('scoreboard objectives setdisplay sidebar td_waves_cleared')
+
+  // Natural hostile spawning off for the whole world - waves are the only
+  // source of enemies. Was issued on first login before; same
+  // once-per-world semantics, now alongside the rest of the world setup.
+  server.runCommandSilent('gamerule doMobSpawning false')
 
   const floorY = y - 1
   const wallY0 = y
   const wallY1 = y + 2
   const doorX = x
 
-  const run = (cmd) => event.server.runCommandSilent(cmd)
+  const run = (cmd) => server.runCommandSilent(cmd)
 
   // Layout wraps around a real postapocalypse_structures building
   // instead of the old hand-built shell - gate sits just off the fixed
@@ -871,7 +648,7 @@ PlayerEvents.loggedIn((event) => {
   ]
   let maxTerrainDeviation = 0
   flatnessSamplePoints.forEach(([sx, sz]) => {
-    const sampleY = player.getLevel().getHeight('MOTION_BLOCKING', sx, sz)
+    const sampleY = surfaceHeightAt(level, sx, sz)
     maxTerrainDeviation = Math.max(maxTerrainDeviation, Math.abs(sampleY - wallY0))
   })
   // Tolerance of 1 - a single block of unevenness is invisible once the
@@ -1193,74 +970,6 @@ PlayerEvents.loggedIn((event) => {
   // specifically") - this isn't an oversight, it's the ask, unchanged
   // from the circular-altar rebuild this replaces.
 
-  // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
-  // note on the amulet objective fix): the pedestal is the permanent
-  // front line, full stop - not an objective that only exists while the
-  // amulet happens to be sitting on it. "regardless of whether the
-  // amulet is on the pedestal or not, this is the focus point for the
-  // enemies... if im not in the base to defend it then i lose the
-  // game." Every wave mob (mob_aggro.js) targets this marker
-  // unconditionally now, and wave_spawner.js/wave_status.js's own
-  // waveObjective() always resolves to this same fixed point - the
-  // amulet's actual remaining job (server_scripts/amulet_pedestal.js)
-  // narrows to just personal buffs while worn and unlocking
-  // border-crossing while placed, fully decoupled from whether the base
-  // itself is being defended.
-  //
-  // Marker summoned once, here, permanently - never killed, unlike the
-  // old amulet-gated marker it replaces. `PersistenceRequired:1b`
-  // (same real bug this pack already hit once with wave mobs -
-  // unpersisted entities silently despawn) keeps it from vanishing on a
-  // server restart or long absence. No HandItems - Supplementaries'
-  // pedestal now renders its own contents natively, so this is a pure,
-  // invisible targeting anchor, not a visual prop. One block above the
-  // pedestal's own position (back to wallY0+1, ground-level pedestal
-  // above), not inside it.
-  //
-  // Moved ahead of the td_pedestalX/Y/Z/Health writes below (2026-09-08,
-  // real multiplayer fix - see world_state.js) so those land on the
-  // marker's OWN persistentData - a genuinely shared, durable store -
-  // instead of the building player's own data, which desynced the
-  // moment a second player was involved.
-  run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 1} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
-  const worldD = findWorldStateEntity(level).persistentData
-
-  // Stored once here, permanent regardless of amulet state -
-  // pedestal_destruction.js's own block-gone check, pedestal_health.js's
-  // own HP tick, amulet_pedestal.js's border-crossing poll, and every
-  // wave/mob-targeting reference below all key off this same fixed
-  // coordinate. 2026-09-03, "if the pedestal is destroyed you lose." Y
-  // dropped back to wallY0 (ground level, no more plinth offset).
-  worldD.putInt('td_pedestalX', centerX)
-  worldD.putInt('td_pedestalY', wallY0)
-  worldD.putInt('td_pedestalZ', centerZ)
-  // Mirrored onto the building player's own data too (read-only cache,
-  // never authoritative) - see the existingMarker branch above for why:
-  // mob_aggro.js's ensurePedestalMarker() recovery safety net and this
-  // file's own td_zcraftCleanupDone migration both read a player's copy.
-  data.putInt('td_pedestalX', centerX)
-  data.putInt('td_pedestalY', wallY0)
-  data.putInt('td_pedestalZ', centerZ)
-
-  // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
-  // set once here, same pattern as td_pedestalX/Y/Z above, full at
-  // world-build time. Replaces reliance on Epic Siege Mod's own
-  // blockTargets AI, which stayed inconclusive even after the
-  // mob-pathing fix (mob_aggro.js) was meant to give it a fair shot.
-  // Bumped 200 -> 300 (2026-09-05, direct ask: "pedestal starting HP
-  // up") - must match PEDESTAL_MAX_HEALTH in pedestal_health.js, this
-  // pack's own established cross-file-constant duplication convention.
-  worldD.putInt('td_pedestalHealth', 300)
-
-  // Forceload is now a one-time permanent setup, not a toggle -
-  // same 96-block/169-chunk radius already verified safe
-  // (amulet_pedestal.js used to add/remove this exact range whenever
-  // the amulet went on/off the pedestal; now it's just always on). Real,
-  // deliberate resource-cost tradeoff, not an oversight: permanently
-  // reserving chunk-loading around the base for the whole game is the
-  // accepted cost of "the base is always genuinely at stake."
-  run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
-
   // Grave markers removed entirely 2026-09-04 (direct ask, real
   // playtest feedback batch) - a knowing call, not a missed-context
   // one: these carried real flavor-text intent (reinforcing "whoever
@@ -1345,6 +1054,94 @@ PlayerEvents.loggedIn((event) => {
   // fake-bed shape. Left untouched rather than guessing at a fix for
   // something that isn't actually there - flag it directly if anything
   // still reads wrong once seen in game.
+
+  // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
+  // note on the amulet objective fix): the pedestal is the permanent
+  // front line, full stop - not an objective that only exists while the
+  // amulet happens to be sitting on it. "regardless of whether the
+  // amulet is on the pedestal or not, this is the focus point for the
+  // enemies... if im not in the base to defend it then i lose the
+  // game." Every wave mob (mob_aggro.js) targets this marker
+  // unconditionally now, and wave_spawner.js/wave_status.js's own
+  // waveObjective() always resolves to this same fixed point - the
+  // amulet's actual remaining job (server_scripts/amulet_pedestal.js)
+  // narrows to just personal buffs while worn and unlocking
+  // border-crossing while placed, fully decoupled from whether the base
+  // itself is being defended.
+  //
+  // Marker created once, here, permanently - never killed, unlike the
+  // old amulet-gated marker it replaces. No HandItems - Supplementaries'
+  // pedestal now renders its own contents natively, so this is a pure,
+  // invisible targeting anchor, not a visual prop. One block above the
+  // pedestal's own position (wallY0+1), not inside it.
+  //
+  // **Created through `level.createEntity`, not `/summon` + lookup,
+  // 2026-09-09 - real crash found live twice this morning.** The old
+  // `run('summon ...')` followed by `findWorldStateEntity(level)` threw
+  // `Cannot read property "persistentData" from undefined` on both fresh
+  // worlds: a chunk that was force-generated synchronously inside the
+  // same tick has its entity section still HIDDEN (the chunk map only
+  // promotes sections to TRACKED when its own tick processes the ticket
+  // change), so `level.getEntities()` - which reads the visible-entity
+  // storage only - cannot see anything summoned into it yet. A same-tick
+  // retry just summons a second invisible marker. Holding the entity
+  // reference directly sidesteps the lookup entirely: `createEntity`
+  // returns the real Entity (`EntityType#create(level)`), `mergeNbt`
+  // applies the same tags/flags the summon string carried, `spawn()` is
+  // `level.addFreshEntity`. The `/summon` path stays only as a logged
+  // fallback if the direct path ever throws.
+  var markerEntity = null
+  try {
+    markerEntity = level.createEntity('minecraft:armor_stand')
+    markerEntity.setPosition(centerX + 0.5, wallY0 + 1, centerZ + 0.5)
+    markerEntity.mergeNbt({ Invisible: true, NoGravity: true, Marker: true, PersistenceRequired: true, Tags: ['td_pedestal_target'] })
+    markerEntity.spawn()
+  } catch (e) {
+    console.error(`playtest_starter_kit.js: direct marker creation failed (${e}), falling back to /summon + lookup`)
+    run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 1} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
+    markerEntity = findWorldStateEntity(level)
+    if (!markerEntity) console.error('playtest_starter_kit.js: pedestal marker not queryable after /summon fallback - wave targeting/pedestal HP will not work this world, needs live investigation')
+  }
+  const worldD = markerEntity ? markerEntity.persistentData : null
+
+  // Stored once here, permanent regardless of amulet state -
+  // pedestal_destruction.js's own block-gone check, pedestal_health.js's
+  // own HP tick, amulet_pedestal.js's border-crossing poll, and every
+  // wave/mob-targeting reference below all key off this same fixed
+  // coordinate. 2026-09-03, "if the pedestal is destroyed you lose." Y
+  // dropped back to wallY0 (ground level, no more plinth offset).
+  // Guarded - worldD is only null in the fallback-failed case logged
+  // above, and every downstream reader (pedestal_health.js etc., see
+  // world_state.js's own worldData()) already treats a missing
+  // marker/key as "not built yet" rather than assuming it's always set.
+  // The per-player mirror of these coordinates (read-only cache for
+  // mob_aggro.js's ensurePedestalMarker() safety net and the
+  // td_zcraftCleanupDone migration) is written in the login handler,
+  // for every player, from this same marker.
+  if (worldD) {
+    worldD.putInt('td_pedestalX', centerX)
+    worldD.putInt('td_pedestalY', wallY0)
+    worldD.putInt('td_pedestalZ', centerZ)
+  }
+
+  // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
+  // set once here, same pattern as td_pedestalX/Y/Z above, full at
+  // world-build time. Replaces reliance on Epic Siege Mod's own
+  // blockTargets AI, which stayed inconclusive even after the
+  // mob-pathing fix (mob_aggro.js) was meant to give it a fair shot.
+  // Bumped 200 -> 300 (2026-09-05, direct ask: "pedestal starting HP
+  // up") - must match PEDESTAL_MAX_HEALTH in pedestal_health.js, this
+  // pack's own established cross-file-constant duplication convention.
+  if (worldD) worldD.putInt('td_pedestalHealth', 300)
+
+  // Forceload is now a one-time permanent setup, not a toggle -
+  // same 96-block/169-chunk radius already verified safe
+  // (amulet_pedestal.js used to add/remove this exact range whenever
+  // the amulet went on/off the pedestal; now it's just always on). Real,
+  // deliberate resource-cost tradeoff, not an oversight: permanently
+  // reserving chunk-loading around the base for the whole game is the
+  // accepted cost of "the base is always genuinely at stake."
+  run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
 
   // House reinforcement (2026-09-04, real playtest feedback batch,
   // direct ask: "reinforce the whole house... full uniform coverage"
@@ -1657,4 +1454,207 @@ PlayerEvents.loggedIn((event) => {
   run(`setblock ${rigMillX} ${wallY0} ${rigZ} createaddition:rolling_mill[facing=west]`)
   run(`setblock ${rigPressX} ${wallY0} ${rigZ} create:depot`)
   run(`setblock ${rigPressX} ${wallY0 + 2} ${rigZ} create:mechanical_press[facing=west]`)
+
+  return { centerX: centerX, centerY: wallY0, centerZ: centerZ, spawnX: x, spawnY: y, spawnZ: z, marker: markerEntity }
+}
+
+// ---------------------------------------------------------------------
+// Lifecycle hooks. Set by the overworld's LevelEvents.loaded on a
+// brand-new world, consumed by ServerEvents.loaded; both handlers live
+// in this one file on purpose - top-level `var`s are NOT reliably
+// shared across server_scripts files in this KubeJS build (see the
+// resolveClass comment above), but within one file they are plain
+// shared scope.
+// ---------------------------------------------------------------------
+var pendingBaseSite = null
+
+// The overworld's own ServerLevelData (a PrimaryLevelData) via
+// Level#getLevelData (m_6106_). `isInitialized` (m_6535_) is the exact
+// flag vanilla's createLevels checks before running setInitialSpawn -
+// false only on a world that has never been created before, which
+// makes it the most honest "fresh world" gate there is (no time/entity
+// heuristics). `setInitialized(true)` (m_5555_) is what createLevels
+// sets right after its own spawn hunt; flipping it here first makes
+// vanilla skip that hunt and keep the spawn this file just set.
+function overworldLevelData(level) {
+  var getLevelData = findMethodByNameAndShape(level.getClass(), 'm_6106_', 0, 'net.minecraft.world.level.storage.LevelData', null)
+  return getLevelData.invoke(level, [])
+}
+function isFreshWorld(level) {
+  var levelData = overworldLevelData(level)
+  var isInitialized = findMethodByNameAndShape(levelData.getClass(), 'm_6535_', 0, 'boolean', null)
+  return `${isInitialized.invoke(levelData, [])}` !== 'true'
+}
+function markWorldInitialized(level) {
+  var levelData = overworldLevelData(level)
+  var setInitialized = findMethodByNameAndShape(levelData.getClass(), 'm_5555_', 1, 'void', ['boolean'])
+  setInitialized.invoke(levelData, [boxBool(level, true)])
+}
+
+// Fires from MinecraftServer#createLevels, BEFORE vanilla's
+// setInitialSpawn and before prepareLevels' 441-chunk spawn-area pass
+// (verified in this build's Forge-patched bytecode, see the header of
+// the site-selection section). On a fresh overworld: pick the site,
+// point the world spawn at it, and tell vanilla the spawn is already
+// initialized so it doesn't overwrite it with its own climate-based
+// pick near origin. Everything else (the actual build) waits for
+// ServerEvents.loaded, when the spawn-area chunks already exist and the
+// world border's saved settings have been applied (createLevels applies
+// those AFTER this event, so a border set here would be clobbered).
+LevelEvents.loaded((event) => {
+  var level = event.level
+  if (`${level.dimension}` !== 'minecraft:overworld') return
+  try {
+    if (!isFreshWorld(level)) return
+    var site = findBaseSite(level)
+    var y = surfaceHeightAt(level, site.x, site.z)
+    // `event.server.runCommandSilent`, NOT `level.runCommandSilent` -
+    // real silent failure caught in the first sandbox boot of this
+    // code, 2026-09-09: LevelKJS#kjs$runCommandSilent iterates
+    // Level#players() and runs the command once AS EACH PLAYER, so
+    // with nobody online yet it runs nothing at all and returns
+    // quietly. The server-level variant uses the console source. That
+    // boot's spawn stayed at the PrimaryLevelData default (0,0), the
+    // 441-chunk spawn-area pass ran at origin (4 region files there),
+    // and only the build's own later setworldspawn fixed the record.
+    event.server.runCommandSilent(`setworldspawn ${site.x} ${y} ${site.z}`)
+    markWorldInitialized(level)
+    pendingBaseSite = site
+    console.log(`playtest_starter_kit.js: fresh world - spawn pinned to the base site (${site.x}, ${y}, ${site.z}) before vanilla's spawn-area pass; base build deferred to server start`)
+  } catch (e) {
+    console.error(`playtest_starter_kit.js: world-load site selection failed (${e}) - vanilla will pick its own spawn; the base will be built on first login instead`)
+    pendingBaseSite = null
+  }
+})
+
+// Idempotent: builds the base exactly once per world. Normal path is
+// ServerEvents.loaded right after a fresh world's spawn area is
+// prepared; the login handler calls it too as a last-resort fallback
+// for a world where the load-time hook didn't run or failed (in which
+// case the world spawn is still vanilla's, so the site search runs
+// here instead and the joining player gets moved).
+function ensureBaseBuilt(server, level, reason) {
+  if (findWorldStateEntity(level)) return null
+  var site = pendingBaseSite || findBaseSite(level)
+  pendingBaseSite = null
+  var startedAt = Date.now()
+  var result = buildStarterBase(server, level, site.x, site.z)
+  console.log(`playtest_starter_kit.js: starter base built at (${site.x}, ${result.spawnY}, ${site.z}) in ${Date.now() - startedAt}ms (${reason})`)
+  return result
+}
+
+ServerEvents.loaded((event) => {
+  if (!pendingBaseSite) return
+  try {
+    ensureBaseBuilt(event.server, event.server.getLevel('minecraft:overworld'), 'server start, fresh world')
+  } catch (e) {
+    console.error(`playtest_starter_kit.js: base build at server start failed (${e}) - will retry on first login`)
+  }
+})
+
+// Mirrors the marker's pedestal coordinates onto one player's own
+// persistentData (read-only cache, never authoritative) - see the
+// login handler for why: mob_aggro.js's ensurePedestalMarker() recovery
+// safety net and this file's own td_zcraftCleanupDone migration both
+// read a player's copy, and need a real coordinate from WHICHEVER
+// player happens to be online, not just the original builder.
+function mirrorPedestalCoords(data, worldD) {
+  if (!worldD || !worldD.contains('td_pedestalX')) return
+  data.putInt('td_pedestalX', worldD.getInt('td_pedestalX'))
+  data.putInt('td_pedestalY', worldD.getInt('td_pedestalY'))
+  data.putInt('td_pedestalZ', worldD.getInt('td_pedestalZ'))
+}
+
+PlayerEvents.loggedIn((event) => {
+  const player = event.player
+  const data = player.persistentData
+  const level = player.getLevel()
+  const server = player.getServer()
+
+  // Real live bug fixed 2026-09-05: Zcraft Decoration removed entirely
+  // (direct report - its concrete blocks were getting mobs stuck
+  // pathing near them). Full uninstall (mod + this function's own
+  // placement further down), but any save that already built its
+  // starter base (td_playtestKitGiven true) also already has the 2 real
+  // zcraft_decorations:sfz_shuiniqiang blocks placed at the gate - once
+  // the mod's gone those become real "missing block" placeholders on
+  // next load, not just an unplaced decoration. Gated by its own
+  // separate flag, since the world-build gate only covers fresh worlds
+  // and this needs to also reach already-built ones. Recomputes the 2
+  // known coordinates from this file's own persisted td_pedestalX/Y/Z
+  // (same doorX/wallY0/z1 relationship the base-building code uses:
+  // doorX = td_pedestalX, wallY0 = td_pedestalY, z1 = td_pedestalZ + 7)
+  // and blindly overwrites them with air regardless of what's actually
+  // there now - safe either way, a fresh world never had anything there.
+  if (!data.getBoolean('td_zcraftCleanupDone') && data.getBoolean('td_playtestKitGiven')) {
+    data.putBoolean('td_zcraftCleanupDone', true)
+    var oldDoorX = data.getInt('td_pedestalX')
+    var oldWallY0 = data.getInt('td_pedestalY')
+    var oldZ1 = data.getInt('td_pedestalZ') + 7
+    server.runCommandSilent(`setblock ${oldDoorX - 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+    server.runCommandSilent(`setblock ${oldDoorX + 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+  }
+
+  // The amulet is NO LONGER starter gear (reversed 2026-09-01,
+  // docs/FEATURES.md's "The amulet" - "the pedestal is pre-built, the
+  // amulet is crafted"). It now has a real crafting recipe
+  // (server_scripts/amulet_pedestal.js) instead of being given here;
+  // the empty pre-built pedestal (in buildStarterBase) is the intended
+  // hook - "something was supposed to be here."
+
+  // Real multiplayer fix, 2026-09-08 (see docs/FEATURES.md's
+  // "Multiplayer / LAN readiness" for the full bug writeup). Real root
+  // cause: the world-build gate used to be read from THIS JOINING
+  // PLAYER's own persistent data - so any player's first-ever login,
+  // even into a world whose base had already existed for hours, read
+  // that flag as false for them personally and ran the ENTIRE build
+  // again. The permanent td_pedestal_target marker's own EXISTENCE (see
+  // world_state.js) is the real "has this WORLD been built" signal,
+  // independent of whether THIS player has ever logged in before.
+  //
+  // Since 2026-09-09 the base is normally already standing before any
+  // player can join (site chosen in LevelEvents.loaded, built in
+  // ServerEvents.loaded - see the hooks above), so on a healthy boot
+  // this branch always finds the marker. The build-here path below is
+  // the last-resort fallback for a world where that load-time path
+  // failed and logged; it reuses the exact same site search and build,
+  // then moves the player onto the new spawn.
+  var existingMarker = findWorldStateEntity(level)
+  if (!existingMarker) {
+    console.error('playtest_starter_kit.js: no pedestal marker found at login - the load-time build did not happen, building the base now as a fallback')
+    try {
+      var built = ensureBaseBuilt(server, level, 'first-login fallback')
+      if (built) {
+        existingMarker = built.marker || findWorldStateEntity(level)
+        player.teleportTo(built.spawnX + 0.5, built.spawnY, built.spawnZ + 0.5)
+      }
+    } catch (e) {
+      console.error(`playtest_starter_kit.js: fallback base build failed (${e})`)
+    }
+  }
+
+  if (existingMarker) {
+    // Real regression fix, 2026-09-09 (see world_state.js's own comment
+    // on migrateLegacySharedState for the full writeup). Must run
+    // BEFORE the td_playtestKitGiven check right below - that check
+    // already returns immediately for this pack's one long-running
+    // player, which is exactly why the migration could never reach this
+    // point if it lived any later in this function.
+    migrateLegacySharedState(player, existingMarker)
+  }
+
+  // Per-player pieces only from here on. Vanilla's own /setworldspawn
+  // (set once, at world build) already places a player with no personal
+  // spawn override directly in the courtyard on login, so no manual
+  // teleport is needed on the normal path.
+  if (data.getBoolean('td_playtestKitGiven')) return
+  data.putBoolean('td_playtestKitGiven', true)
+  giveStarterKit(player)
+  // Seeds this player's own row on the Waves Cleared sidebar (objective
+  // created once per world in buildStarterBase). `add 0` creates a
+  // missing score at 0 and leaves an existing one untouched, so a late
+  // joiner in multiplayer doesn't reset anyone else's count the way the
+  // old `set @a ... 0` did.
+  server.runCommandSilent('scoreboard players add @a td_waves_cleared 0')
+  mirrorPedestalCoords(data, existingMarker ? existingMarker.persistentData : null)
 })

@@ -1,18 +1,19 @@
 {
-  "structures": [
-    {
-      "structure": "the_lost_city:train",
-      "weight": 1
-    }
-  ],
   "placement": {
     "type": "minecraft:random_spread",
+    "frequency": 1,
     "spacing": 25,
-    "separation": 20,
-    "salt": 590889399,
+    "separation": 10,
+    "salt": 17543632,
     "exclusion_zone": {
       "other_set": "kubejs:base_anchor",
       "chunk_count": 12
     }
-  }
+  },
+  "structures": [
+    {
+      "structure": "u_desert:geyser",
+      "weight": 1
+    }
+  ]
 }

@@ -21,6 +21,230 @@ reflect actual current status.
 
 ---
 
+## World-gen rebuild 2026-09-09 — anchor-grid base placement (supersedes the entry below it)
+
+Direct urgent report after the previous same-day attempt: "still
+broken — takes ages to load, base not spawning correctly, structures
+way too close to my base." Full root-cause writeup in docs/FEATURES.md's
+"Anchor-grid base placement" entry; this tracks status against the
+user's own three items.
+
+1. **Slow load — fixed.** Two stalls: vanilla's 23–25s spawn-area pass
+   near origin (wasted, the player was teleported away) and a 36–55s
+   frozen server tick in the login handler, whose structure-proximity
+   check reflected into `findNearestMapStructure` and synchronously
+   generated hundreds of chunks per candidate. Replaced with a
+   world-load-time site pick over a fixed anchor grid (pure biome
+   lookups + the engine's own placement-grid math, 126ms in the
+   sandbox) that pins the world spawn BEFORE vanilla's spawn-area pass,
+   so that pass now prepares the base's own surroundings, and the base
+   is built in `ServerEvents.loaded` before any player exists.
+2. **Base not finishing — fixed.** Real cause was a marker-visibility
+   race (`level.getEntities()` cannot see an entity summoned into a
+   chunk generated in the same blocked tick), throwing before the house
+   was placed. Marker now created via `level.createEntity` with the
+   reference held directly. Also found: `Level#getHeight` returns -64
+   for unloaded chunks — the "66 blocks of terrain variance" in the live
+   logs was a phantom, fixed with a chunk-touching `surfaceHeightAt()`.
+3. **Structures on top of the base — fixed by construction.** The
+   previous `exclusion_zone` anchor was mis-sized (mid/far tiers were
+   being excluded from the entire world, nothing protected the base).
+   New `kubejs:base_anchor` set (spacing 64/separation 63 → placement
+   chunk pinned to exactly (64i, 64j)), 52 structure_set overrides
+   excluded 12 chunks (16 for sprawling city sets) around it, and the
+   base is placed ON the nearest desert/badlands anchor chunk — a
+   guaranteed ~200-block structure-free radius, no search needed.
+
+Also fixed while in there: `structure_loot_progression.js` and
+`structure_chest_loot_fix.js` still measured distance from a hardcoded
+(1171, -499) — now read from the marker, radii shifted +200.
+
+**Not fixed, flagged:** desert/badlands is rare on the current 2-of-7
+`multi_noise` blend — the first sandbox seed had exactly ONE
+desert/badlands anchor point among 169 (6,152 blocks out). The search
+copes, but if that reads as "too far" in play, the biome blend is the
+lever, not the search.
+
+## SUPERSEDED (same day) — "RESOLVED 2026-09-09 — 3-item world-gen regression from the previous batch"
+
+Left for the record; its items 2 and 3 were wrong (a same-tick retry
+cannot fix the marker race, and the complaint was structures too close
+to the BASE, not to each other). Its working-tree edits were never
+deployed to the live instance and are replaced by the entry above.
+
+Direct live report the same day as the Red House swap + exclusion_zone
+batch (58dd0bb): "world gen is broken" — slow boot with a visible fall
+before the world loads, no starting base at all, and structures still
+landing too close together. Diagnosed directly against the live
+instance's own fresh `logs/latest.log` (a brand-new "New World" created
+that session), not guessed. All 3 traced to real, distinct causes:
+
+**1. Fall during boot.** The safety-hop `effect give @a
+minecraft:slow_falling 10 0 true` in `playtest_starter_kit.js` only
+covers 0.5s, on the assumption the biome search + spreadplayers landing
+right after it is near-instant. This same boot's log shows that stretch
+alone took ~32 real seconds (`findWastelandSpawn`'s ring search, up to
+4000 blocks) inside one blocked server tick — confirmed by the server's
+own "Can't keep up! Running 36276ms or 725 ticks behind" warning logged
+right after. Since the whole handler runs in one tick, the *client's*
+own local countdown of the 0.5s effect expires long before the server
+tick actually completes, so the client's own gravity prediction resumes
+normal-speed falling with no server packet yet arriving to correct it —
+exactly "fall while the other world loads." Fixed: duration bumped
+10 → 1200 ticks (60s, a real margin over the measured 36s worst case).
+
+**2. No starting base.** Real crash, same boot's log:
+`playtest_starter_kit.js#1226: TypeError: Cannot read property
+"persistentData" from undefined` — `findWorldStateEntity(level)` came
+back empty immediately after summoning the pedestal marker, under the
+same heavy synchronous load as #1. This block ran *before* the Red
+House placement, so the throw aborted the rest of the handler and the
+house (`/place template postapocalypse_structures:red_house` + all its
+interior fixups/loot removal) never ran — walls/pedestal/waystone were
+already down, but no house. Fixed: moved the marker/pedestal-state block
+to run *after* the house is fully placed (so a repeat only costs
+targeting/HP, never the visible base), and added a real retry
+(re-summon + re-query once) before giving up and logging an error
+instead of throwing.
+
+**3. Structures still too close.** The same batch's exclusion_zone fix
+anchored all 29 retuned structure_sets against a new
+`minecraft:ocean_monuments` override — an unrelated, sparse oceanic
+structure with no bearing on the actual density-tier structures
+colliding with each other. The same boot's log has real proof this did
+nothing: `[Berezka API] structure the_lost_city:train ... is spawned
+inside other structure the_lost_city:post`, `villages_city` inside
+`big_city_structure`, and cross-mod overlaps
+(`abandoned_structures:gas_station` inside `the_lost_city:roads`,
+`the_lost_city:train` inside `abandoned_structures:house1`). Real root
+cause: `the_lost_city:train.json` and `villages_city.json` were the only
+2 of Lost City's 12 own structure_sets missing the `exclusion_zone`
+their siblings already have against `the_lost_city:city`, and the
+previous session's 900d52c density retune tightened `abandoned_structures`
+etc. down to 28/14-chunk spacing without ever excluding them from Lost
+City's own (deliberately untouched, still sprawling) city footprint.
+Fixed: repointed all 29 files' `exclusion_zone.other_set` from
+`minecraft:ocean_monuments` to `the_lost_city:city` (the structure
+actually causing the collisions), added the same exclusion_zone to
+`train.json`/`villages_city.json` to match their siblings, and deleted
+the now-pointless `ocean_monuments.json` override (it also silently
+changed vanilla ocean monument separation from 5 to 28 — reverted to
+stock behavior as a side effect).
+
+**Not yet playtest-confirmed** — fixed from real log evidence and
+syntax-checked, but needs a fresh-world boot to verify the fall/base/
+spacing symptoms are actually gone.
+
+---
+
+## Tier 2 trap replacements + Track C follow-ups — built and sandbox-verified, 2026-09-09
+
+User dispatch: "tier 2 [trap replacements] and [the Track C items not
+picked up: SecurityCraft turret-recipe modules, turret combat-feedback
+effects, tooltip tier color-coding for Tier 2/3]." Built directly in
+this session (no build-session peer was online) rather than dispatched —
+full spec for the trap-replacement half already existed in this file's
+own now-superseded "Tier 2 trap replacements... NOT BUILT" entry and
+FEATURES.md; the other 3 items were only ever a one-line "not picked up"
+note in Track C's own writeup, fleshed out here for real before building.
+
+**Vacuum Block → Item Collectors.** Verified real via CurseForge's own
+file list (not trusted from FEATURES.md's already-stale "1.1.7" pointer —
+1.1.10 (file 5272968) is the actual newest build whose `versions` list
+still includes 1.20.1, added via `packwiz curseforge add --addon-id
+395620 --file-id 5272968`, which auto-resolved 2 real dependencies,
+SuperMartijn642's Core Lib + Config Lib). Real id `itemcollectors:
+basic_collector`, extracted directly from the jar's own recipe/model
+JSON. Re-recipied in `tier2_recipes.js` onto the Tier 2 loot-pool filler
+convention (quartz/redstone_block/iron_block). `vacuum-blocks.pw.toml`
+removed via `packwiz remove`.
+
+**Arrow Turret → Musket Sentry promoted to the Tier 2 gate.** Arrow
+Turret's recipe cut entirely from `tier2_recipes.js`; Medieval Defense
+Turrets uninstalled outright (`packwiz remove medieval-defense-turrets`)
+rather than left with dead weight — its only other content is a whole
+medieval-fantasy tech tree (catapults, knights, an orbital cannon) that
+was never used and doesn't fit this pack's theme, not just the one
+turret. Quest chain reroute in `campaign.snbt`: "Wired for War" removed
+entirely (it had zero of its own dependencies — a real root quest, not
+just a leaf); "Beyond the Bow" inherits its exact former dependency
+(`1454951A7FB14A26`) and its description no longer references the Arrow
+Turret; the 4 quests that depended on "Wired for War" ("Anvils From
+Above", "Wired Different", "Room to Grow", "Turn Up the Heat") now
+depend on "Beyond the Bow" instead — same tree shape, one node removed
+and its position taken over, not a rebuild. "Waste Not" retargeted from
+`vacuum_cleaner:vacuum_block_tier_1` to `itemcollectors:basic_collector`
+with a rewritten description.
+
+**SecurityCraft turret-recipe modules — real ids extracted from the jar,
+not guessed.** `securitycraft:redstone_module`/`smart_module`/
+`speed_module` (all real, already vanilla-material `crafting_shaped`
+recipes, no gate of their own). Injected one per recipe into the 3 real,
+data-driven components downstream of `tech_tablet_mechanics` — the
+turret HEADS themselves stay out of reach (hardcoded-Java-only assemble
+step, documented in `tier2_recipes.js`'s own header, unchanged since
+Track C): `turret_base_t_0` (AI-controlled base) gets Smart Module,
+`manual_turret_base_t_0` (player-aimed base) gets Redstone Module,
+`winding_mechanism` (shared by both bases + the Workbench itself) gets
+Speed Module — each picked to match what that module actually does in
+SecurityCraft, not arbitrary.
+
+**Turret combat-feedback effects — new `turret_combat_feedback.js`,
+built from decompiling both turrets' real firing procedures, not the
+mod's JEI listing.** Musket Sentry (a real traveling-bullet turret, every
+shot spawns `advanced_tower_defense_mod:pellet` — a real vanilla
+`AbstractArrow` subclass) gets all three requested effects: muzzle flash
+on pellet spawn, a throttled per-tick tracer trail while pellets are
+live, and an impact particle on hit (filtered by vanilla's own "arrow"
+damage message id — real, but a roster-wide caveat documented in the
+file's own header, not hidden). Anvil Launcher turned out to be a
+fundamentally different mechanic on decompile (a real vanilla
+`minecraft:falling_block` dropped from Y=290, not a projectile at all,
+and its actual landing damage isn't reachable by any KubeJS-visible
+damage-type hook with confidence) — given a distinct, honestly-scoped
+pair instead: a launch telegraph at its real sky spawn point, and a
+landing impact detected by polling its tracked UUID until it disappears
+from `level.getEntities()` (same idiom as `ladder_climb_assist.js`), not
+a damage-type guess.
+
+**Tooltip tier color-coding, Tier 2 updated + Tier 3 added.**
+`tooltip_tier_colors.js`'s Tier 2 entries swapped for the real
+replacement items above (`itemcollectors:basic_collector`, both real
+ATD turret-head item ids); Tier 3 added for the first time — 6 real ids
+pulled from `campaign.snbt`'s own Storage & power system quest chapter
+(`immersiveengineering:diesel_generator`/`tesla_coil`,
+`refinedstorage:controller`, `sophisticatedstorage:barrel`,
+`fluxnetworks:flux_plug`, `create:nozzle`), not guessed.
+
+**Verified for real, not just syntax-checked.** `node --check` clean on
+all 3 touched/new scripts; `campaign.snbt` brace/bracket-balanced. A real
+full-mod-set sandbox boot was built specifically for this (a cached
+sandbox from an earlier session turned out to be stale — missing 8 mods
+including Advanced Tower Defense itself, which produced 6 real "result
+can't be empty" recipe failures on the first boot attempt; rebuilt from
+the live CurseForge instance's own current 81-mod `mods/` folder instead,
+which caught the gap immediately). Clean result: `Done (4.681s)!`,
+**29/29 KubeJS server scripts, 0 errors**, **13 recipes added, 8 removed,
+0 failed**, **FTB Quests: 41 quests, 0 parse errors**. Every touched item
+id (`itemcollectors:basic_collector`, all 3 SecurityCraft modules, all 3
+re-recipied ATD components, both turret-head items, all 6 new Tier 3
+tooltip items) RCON-confirmed real via `/give` (each returned "No player
+was found", not "Unknown item" — proof the id itself parsed, not just
+that the recipe didn't error). All 3 entity ids used in the new combat-
+feedback script (`pellet`, `turret_t_0_musket_heavy_metal`,
+`turret_t_0_anvil_launcher`) RCON-confirmed via `/summon`. The only 4
+ERROR-level log lines present are pre-existing, already-documented ATD
+quirks from Track C's own verification (a vampirism-tag/holy-water-tag
+soft-dependency gap and one stale `deleted_mod_element` advancement) —
+none reference anything built in this pass.
+
+**Not yet confirmed by an actual player session** — sandbox boot proves
+scripts/recipes/quests/ids are real and error-free, not the in-world
+visual feel of the muzzle flash/tracer/impact effects or whether the
+SecurityCraft-module recipes read as a sensible cost in practice.
+
+---
+
 ## RESOLVED 2026-09-09 — BountyBags TOML regeneration (was URGENT)
 
 **Confirmed fixed, checked directly against the live instance - no
@@ -493,14 +717,13 @@ first (everything else in this phase needs them).
 - **Shrapnel/scrap folded into loot bag tables** - real open fork:
   craft-material (feeds ammo recipes) or pure flavor loot - decide
   alongside the ammo-recipe design above, not independently.
-- **SecurityCraft modules as turret-recipe components** - Redstone/
-  Smart/Speed Module as real recipe ingredients for MDT/ATD turrets,
-  giving SecurityCraft a second identity beyond walls. Not scoped in
-  detail - needs turret IDs first.
-- **Turret combat-feedback effects** - muzzle flash (on fire), ballistic
-  impact (on hit), and bullet tracer trail (mid-flight) - three
-  separate trigger points, all depend on real turret/projectile IDs.
-- **Tooltip tier color-coding**, extended to Tier 2 items.
+- **SecurityCraft modules as turret-recipe components - done, 2026-09-09**
+  (MDT half moot - Arrow Turret/MDT itself cut the same day, see "Tier 2
+  trap replacements + Track C follow-ups" near the top of this file).
+- **Turret combat-feedback effects - done, 2026-09-09** - see the same
+  entry.
+- **Tooltip tier color-coding, extended to Tier 2 items - done,
+  2026-09-09**, and Tier 3 too - see the same entry.
 
 ### Phase 3 — Tier 3: power + energetic weapons
 
@@ -3676,11 +3899,11 @@ this worktree's copies alone are not the full picture.
   building-reward mechanic itself was NOT built (out of this track's
   scope) - only its cadence question, which the two entries shared, is
   now answered.
-- **Not picked up, time/scope**: SecurityCraft turret-recipe modules,
-  turret combat-feedback effects (unblocked now that real turret ids
-  exist, just not attempted), Phase 5's crafting-recipe Totem half,
-  Phase 6 bounty shop, tooltip tier color-coding (blocked on Track A's
-  Phase 1 base system, which hasn't landed in this worktree).
+- **Not picked up, time/scope**: Phase 5's crafting-recipe Totem half,
+  Phase 6 bounty shop. **SecurityCraft turret-recipe modules, turret
+  combat-feedback effects, and tooltip tier color-coding are now done**
+  - see "Tier 2 trap replacements + Track C follow-ups" near the top of
+  this file (2026-09-09).
 - **Verification**: every script `node --check`ed clean; edited JSON
   loot tables `JSON.parse`d clean; the extended `campaign.snbt` passed a
   full-file brace/bracket balance check. Full mod-set sandbox boot with
@@ -3841,7 +4064,9 @@ save's already-explored area around spawn keeps its current structures
 regardless. Needs either a fresh world or a real sandbox boot to
 actually see the fix.
 
-## Tier 2 trap replacements — spec ready, NOT BUILT, holding for explicit dispatch (2026-09-09)
+## Tier 2 trap replacements — DONE, see "Tier 2 trap replacements + Track C follow-ups" near the top of this file (2026-09-09)
+
+Original spec kept below for reference/reasoning; status line only.
 
 Direct feedback: "I hate the tier 2 traps... specifically the arrow
 turret and vacuum chest thing." Full research/reasoning/decompiled

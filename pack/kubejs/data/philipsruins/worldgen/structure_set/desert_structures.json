@@ -19,8 +19,8 @@
     "spacing": 6,
     "separation": 3,
     "exclusion_zone": {
-      "chunk_count": 10,
-      "other_set": "minecraft:ocean_monuments"
+      "other_set": "kubejs:base_anchor",
+      "chunk_count": 12
     }
   }
 }

@@ -11,8 +11,8 @@
     "separation": 30,
     "salt": 141988967,
     "exclusion_zone": {
-      "other_set": "the_lost_city:city",
-      "chunk_count": 16
+      "other_set": "kubejs:base_anchor",
+      "chunk_count": 12
     }
   }
 }

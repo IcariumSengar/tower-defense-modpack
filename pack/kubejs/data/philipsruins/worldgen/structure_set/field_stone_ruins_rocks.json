@@ -8,8 +8,8 @@
   "placement": {
     "type": "minecraft:random_spread",
     "exclusion_zone": {
-      "chunk_count": 20,
-      "other_set": "minecraft:ocean_monuments"
+      "other_set": "kubejs:base_anchor",
+      "chunk_count": 12
     },
     "salt": 144788412,
     "spacing": 14,
