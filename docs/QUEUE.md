@@ -139,8 +139,63 @@ Proposed 3-tier retune (not yet applied to any file):
   check every past structure_set change in this pack has required, not
   a blind bulk edit — likely staged (near tier first, verify, then mid,
   then far) rather than all 40 files in one pass.
-- **Not yet built** — real per-file spacing assignment and the staged
-  verification pass still need doing.
+- **Built and verified live, 2026-09-09.** Same throwaway sandbox
+  extended to the full modded pack: Forge 47.4.10 + all 73 real mod
+  jars (copied from the live CurseForge instance's own `mods/` folder
+  rather than re-downloading — a few mods, including the new
+  `u_desert`, are flagged "excluded from the CurseForge API" and can't
+  be fetched via packwiz outside the CurseForge client). Real,
+  individually-reasoned pass, not a blanket edit — 29 files retuned:
+  - **The Lost City (all `the_lost_city:*` sets) deliberately left
+    untouched**, matching this file's own earlier "intentionally
+    excluded from the reachability-retune pattern" note — it has its
+    own internal overlap safeguards tuned to its stock spacing, and
+    retuning it once already caused a real spawn-inside-a-generating-
+    city incident.
+  - **`minecraft:villages` left untouched** — deliberately widened
+    earlier so villages stop pulling wave mobs off-target; retuning it
+    back down would undo that.
+  - **Near tier** (8 files: `abandoned_urban` gas_station/fire_tower,
+    `philipsruins:desert_structures`, `u_desert:pillager_outpost`,
+    all 4 `postapocalypse_structures` houses) → 6/3 chunk spacing/
+    separation.
+  - **Mid tier** (16 files: remaining `philipsruins` sets, remaining
+    `abandoned_urban` sets) → 14/7.
+  - **Far tier** (5 files: both `watchtower_building` sets, all 3
+    `abandoned_structures` sets) → 28/14.
+  - **Real crash check**: one real structure-overlap event did occur
+    (`abandoned_structures:gas_station` spawned inside
+    `abandoned_structures:house2`, Berezka API's own handler destroyed
+    the redundant one) — this is the mod's own designed self-heal, not
+    a crash, and the server reached `Done` clean afterward. The
+    Radium `chunk_region` mixin (the actual fix for this pack's
+    documented crash history) was already force-disabled in the
+    shipped config, so this stayed safe.
+  - **Real /locate results, before → after** (from world origin):
+    `abandoned_urban:gas_station` 24-chunk baseline never queried at
+    this exact tier before → now 35 blocks; `abandoned_urban:fire_tower`
+    → 22 blocks; `postapocalypse_structures:redhouse` → 16 blocks;
+    `philipsruins:ancient_ruins` (was 48-chunk tier) → 81 blocks;
+    `abandoned_structures:gas_station` (was 80-chunk far tier, baseline
+    unqueried) → 236 blocks; `watchtower_building:abandoned_watchtower`
+    (was 80-chunk) → 658 blocks. Near/mid tier structures now land
+    comfortably inside the wave-8 border (half-width ~62); far tier
+    lands in the range endless-phase border growth actually reaches,
+    not thousands of blocks out.
+  - **Real, accepted limitation, not fixed by this pass**: desert-gated
+    structures stay effectively unreachable —
+    `philipsruins:desert_structures` 3823 blocks away,
+    `u_desert:pillager_outpost` 4460 blocks away — because desert
+    biome itself is now scarce (2 of 7 multi_noise points, see the
+    biome fix above), so most of even a tightly-spaced desert-only
+    set's placement attempts fail the biome check. Tightening spacing
+    further doesn't fix a biome-availability problem. **User decision
+    2026-09-09**: proceed with the spacing retune as-is and accept this
+    trade-off, rather than revisiting the biome ratio again.
+  - Deployed to the repo's real `pack/kubejs/data/` (not just the
+    sandbox) — same files the live instance uses.
+  - **Not yet playtest-confirmed** — sandbox-verified only, same
+    standing caveat as every other worldgen change in this pack.
 
 ---
 
@@ -3577,3 +3632,28 @@ this worktree's copies alone are not the full picture.
   full-file brace/bracket balance check. Full mod-set sandbox boot with
   a real player (bossbar/spawn/quest end-to-end) still needed - see this
   build session's own final report.
+
+## Live-feedback batch, 2026-09-09 - ready to build, not yet sent
+
+3 items from direct playtest feedback, full spec/reasoning in
+docs/FEATURES.md's own "Live-feedback batch, 2026-09-09" section - this
+entry only tracks readiness/status against the user's own numbering.
+
+1. **Chat noise -> toast popups.** Convert ~8 routine status-ping call
+   sites (wave cleared, airdrop, base expansion, wave horn, force-clear,
+   pedestal heal) from `player.tell()` to `player.notify()`. Leave
+   one-time flavor/lore lines in chat. Mechanical, low risk, no
+   reflection.
+2. **Bounty quest live counter.** Reflection-based `TeamData.setProgress()`
+   call from `bounty_kills.js` + `max_progress` added to each task in
+   `bounties.snbt`. Same reflection pattern this pack already uses
+   elsewhere; new surface (first time touching FTB Quests internals) -
+   needs live-sandbox verification the progress bar renders correctly
+   and doesn't fight the existing `complete` calls.
+3. **Boomer zombie killable while armed.** Needs confirming
+   `AttackEntityEvent` (or an equivalent) is actually reachable from
+   this exact KubeJS build before it's buildable - not a guaranteed yes,
+   check first rather than building on the assumption.
+
+**Not yet sent** - holding for explicit go-ahead before dispatching to
+the build session.

@@ -6509,3 +6509,137 @@ triggered airdrop crate (visual flyover, waypoint, loot-on-open),
 Enhanced Hordes' stacking effect against a real horde, the Stake Wall's
 damage tick against a climbing mob, or the tooltip rendering in a real
 client.
+
+## Live-feedback batch, 2026-09-09
+
+3 items from direct playtest feedback ("less noise from the chat
+window... popups", "bounties quests have a counter... 1/25 killed",
+"boomer explosion is good but I can't hit the mob"). Each investigated
+against the actual running instance / decompiled mod classes before
+speccing, not guessed. QUEUE.md's own matching entry carries the
+literal 1-3 checklist tracking build status.
+
+### 1. Chat noise - toast popups for routine status pings
+
+Real finding: KubeJS 2001.6.5 ships a native on-screen toast API never
+used anywhere in this pack - `player.notify(...)`
+(`ServerPlayerKJS.kjs$notify` / `NotificationBuilder` /
+`NotificationToast`, decompiled directly from the shipped
+`kubejs-forge-2001.6.5` jar), the same toast mechanism vanilla uses for
+"Advancement Made!". Takes text, an optional icon (plain/item/atlas),
+colors, and a duration (default 5s). Genuinely free - no reflection, no
+new mod, no server/client sync work (it's already a real networked
+message class).
+
+Scope, per direct answer: convert the routine, repeats-every-wave
+status pings to toasts; leave one-time flavor/lore lines in chat (they
+read better as permanent scrollback you can scroll back to - a toast
+vanishes after its duration).
+
+Convert to `.notify(...)`:
+- `wave_status.js:340` - "Wave N defeated!"
+- `wave_status.js:182` - "the gap between waves keeps growing"
+- `wave_status.js:425` / `:455` - force-clear messages
+- `wave_spawner.js:708` / `:753` - "Wave N incoming!" (wave horn)
+- `wave_spawner.js:462` / `:486` - horn-empty / wave-still-active warnings
+- `base_expansion.js:85` - "border grows by N blocks"
+- `wave_airdrop.js:89` - "a crate is on its way down"
+- `pedestal_health.js:297` - heal message
+
+Stay as chat (`.tell()`, unchanged):
+- `wave_status.js:161-163` - gear-crumbles-to-dust lore beat
+- `pedestal_destruction.js:83-84` - "the pedestal has fallen" (major,
+  rare, wants permanence in scrollback)
+- `amulet_pedestal.js` / `amulet_border.js` - amulet flavor lines (rare,
+  one-shot per pickup/drop)
+
+Mechanical, low risk - straight `player.tell(...)` ->
+`player.notify(builder => { builder.text = ...; builder.duration =
+...  })` swaps, no reflection. Needs one live check before shipping:
+that toast text actually renders/wraps this pack's existing
+§-color-coded strings correctly (Component parsing through the toast
+path vs. the chat path).
+
+### 2. Bounty quest counter (1/25 killed) - live progress via reflection
+
+Real finding: decompiled FTB Quests 2001.4.22 directly
+(`dev.ftb.mods.ftbquests.quest.task.CustomTask` / `KillTask` /
+`command.FTBQuestsCommands`). Confirmed:
+- The only script-facing command is `/ftbquests change_progress
+  <players> complete|reset <id>` - no "set progress to N" subcommand
+  exists in this version. That's why bounty tasks show a flat grey
+  "custom" icon with no counter today - `bounty_kills.js` only ever
+  calls `complete` at each exact threshold, never touches progress in
+  between.
+- Vanilla `KillTask` (which DOES show a live counter automatically)
+  can't replace this design: it tracks exactly one entity type per task
+  (bounties span ~15 mob types) and its own internal hook
+  (`FTBQuestsEventHandler.playerKill`) only fires when
+  `DamageSource.getEntity() instanceof ServerPlayer` - it would
+  silently drop every trap/turret kill, which this chapter's own
+  2026-09-05 design note explicitly requires counting.
+- `CustomTask` does support a real `max_progress` + progress-bar
+  display like any other task type - it's just never been populated
+  because nothing calls the (nonexistent) set-progress command.
+
+Fix, per direct answer: reach `TeamData.setProgress(Task, long)`
+directly via reflection, using this codebase's own established
+bootstrap (`Class.forName` via `anyObj.getClass().getClass()`, same
+technique as `mob_aggro.js`'s `resolveClass` /
+`loot_bag_notification.js`'s `punResolveClass`) -
+`dev.ftb.mods.ftbquests.quest.ServerQuestFile.INSTANCE` is a public
+static field, `.get(id)` returns the `CustomTask`, `TeamData.setProgress`
+is a public method. On every bounty-counted kill (`bounty_kills.js`'s
+existing `EntityEvents.death` hook), set each not-yet-completed
+fixed-tier task's progress to the running kill count (clamped to its
+own threshold) and the repeatable task's progress to `killCount %
+1500`. Also needs `max_progress: 25/100/300/750/1500` added to each
+task in `bounties.snbt` (currently defaults to 1, hence no visible bar
+today).
+
+Real risk, flagged not hidden: same class of reflection this pack
+already ships successfully elsewhere, but genuinely new surface (first
+time reaching into FTB Quests' own `TeamData`) - needs a live sandbox
+check that `setProgress` renders the bar correctly and doesn't fight
+with the existing `complete` calls at each threshold (a task already
+marked complete should stay complete even if its computed progress
+value is later recomputed above its own max).
+
+### 3. Boomer zombie - let players kill it while armed
+
+Real root cause, decompiled Zombies More 2.1.5 directly
+(`net.mcreator.zombiesmore.entity.BoomerChargedEntity`). Once a
+`boomer_zombie` takes its killing blow (or however else it transitions
+- `BoomerZombiePlayerCollidesWithThisEntityProcedure` also triggers it),
+it's replaced by `boomer_charged`, whose own `hurt()` override
+unconditionally blocks all player-sourced damage:
+```java
+if (source.getEntity() instanceof Player) { return false; }
+```
+(alongside arrows, thrown potions, area-effect clouds, and most
+environmental damage types). This short-circuits before `super.hurt()`
+runs, so it never reaches the Forge event bus at all - a normal KubeJS
+`EntityEvents.hurt`/`damaged` listener can never see or override it,
+because the vanilla damage pipeline never gets that far. Mid-fight this
+reads exactly like the report: a hit lands, the mob visibly transforms
+(texture/animation change to `boomerexplode`), and every further swing
+does nothing no matter how many more times you hit it, until the
+explosion goes off at +80 ticks - it's not lag or a hitbox problem, it's
+hardcoded in the mod's own bytecode.
+
+Fix direction, per direct answer (needs the build session's own
+verification, same as everything reflection/event-timing related in
+this pack): can't patch the compiled `hurt()` method, but Forge's
+`AttackEntityEvent` (`PlayerInteractEvent`-family) fires *before*
+`hurt()` is ever called, when the player's attack begins - if that's
+KubeJS-visible in this exact build, intercept a player attacking a live
+`zombiesmore:boomer_charged`, apply damage by directly mutating its
+health (`LivingEntity.setHealth()`, which bypasses `hurt()` entirely
+rather than calling through it) instead of going through the blocked
+path, and treat 0 HP as an early defuse: cancel its entry in
+`boomer_zombie_explosion.js`'s `pendingBoomerExplosions` array and
+discard the entity before the TNT summon fires. **Open question, not
+assumed**: whether `AttackEntityEvent` is actually reachable from
+KubeJS in this exact build, or whether this needs to fall back to the
+same by-shape Forge-event-bus reflection this pack already uses
+elsewhere - check first, don't build on the assumption.
