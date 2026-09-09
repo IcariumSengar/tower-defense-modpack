@@ -104,13 +104,15 @@ thought, not scoped:**
   Worth a real look at what TFTH itself might already support for
   player-side infection before reaching for a different mod, given
   TFTH's already installed.
-- **Player-count-scaled horde difficulty** (Troublesome Towers, Wave
-  Defense) — not relevant to a currently-singleplayer-assumed pack (see
-  the multiplayer all-players-killed decision in the current playtest
-  batch — this pack is drifting toward at least considering multiplayer
-  more seriously), but if that direction firms up, several packs already
-  have real, working patterns for this worth studying rather than
-  designing from scratch.
+- **Player-count-scaled horde difficulty — moved to FEATURES.md
+  2026-09-08.** The "drifting toward multiplayer" note below turned into
+  a direct ask the same day: real assessment done, a genuine
+  architectural blocker found (shared campaign state lives on
+  `player.persistentData`, not world state — breaks the moment a second
+  player joins), and a scaling direction chosen (more mobs per wave +
+  party-wide perks, tuned for 2-4 players) — see FEATURES.md's
+  "Multiplayer / LAN readiness" section for the full writeup. Assessment
+  only, not sent to build.
 
 **Packs surveyed, real findings (not all panned out):**
 - **Troublesome Towers** — closest thematic match to "tower defense +

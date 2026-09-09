@@ -105,6 +105,13 @@ ServerEvents.recipes((event) => {
 // running the original custom block) - the actual border-crossing
 // effect doesn't depend on which real block is involved, only on
 // whether the amulet just went on or came off.
+//
+// `data` is the shared world-state object (see world_state.js) as of
+// 2026-09-08's multiplayer fix, not a player's own persistentData -
+// whether the amulet sits on the one shared pedestal is a real single
+// fact, not something each player should track their own copy of
+// (amulet_border.js's own border-crossing check reads it the same
+// shared way now).
 function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
   data.putBoolean('td_amuletOnPedestal', hasAmulet)
 
@@ -134,13 +141,15 @@ function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
 // changes on a deliberate player action.
 PlayerEvents.tick((event) => {
   var player = event.entity
-  var data = player.persistentData
-
-  // td_pedestalX is only set once playtest_starter_kit.js's base build
-  // finishes this login - nothing to poll before that.
-  if (!data.contains('td_pedestalX')) return
-
   var level = player.getLevel()
+
+  // Real multiplayer fix, 2026-09-08 (see world_state.js). Also doubles
+  // as the "hasn't finished building yet this login" guard the old
+  // per-player td_pedestalX check used to provide - null here means the
+  // same thing (nothing to poll yet).
+  var data = worldData(level)
+  if (!data || !data.contains('td_pedestalX')) return
+
   if (level.getTime() % 10 !== 0) return
 
   var x = data.getInt('td_pedestalX')
@@ -183,8 +192,13 @@ PlayerEvents.tick((event) => {
 // Supplementaries' own interaction requires.
 BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   var player = event.player
-  var data = player.persistentData
   var level = player.getLevel()
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared, not
+  // player.persistentData. Silently no-ops if the base hasn't finished
+  // building yet (shouldn't be reachable - this block can't exist before
+  // then - but matches this pack's established defensive style).
+  var data = worldData(level)
+  if (!data) return
 
   if (data.getBoolean('td_amuletOnPedestal')) {
     player.give(Item.of('kubejs:amulet', 1))

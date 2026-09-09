@@ -48,7 +48,15 @@
 // Idempotent-safe to call twice (guarded by td_pedestalDestroyed at
 // each caller), but only ever actually called once in practice.
 function triggerPedestalDestroyed(player) {
-  var data = player.persistentData
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - the
+  // game-over flag, in-wave flag and countdown are all shared campaign
+  // state, not player.persistentData. Guarded null-check even though
+  // this should be unreachable with a null world state in practice
+  // (both real callers - this file's own tick handler and
+  // pedestal_health.js's HP-hitting-0 path - already require
+  // td_pedestalX/td_pedestalHealth to exist before calling this).
+  var data = worldData(player.getLevel())
+  if (!data) return
   data.putBoolean('td_pedestalDestroyed', true)
 
   var server = player.getServer()
@@ -82,7 +90,11 @@ function triggerPedestalDestroyed(player) {
 
 PlayerEvents.tick((event) => {
   var player = event.entity
-  var data = player.persistentData
+  var level = player.getLevel()
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared
+  // pedestal state, not player.persistentData.
+  var data = worldData(level)
+  if (!data) return
 
   // Already triggered, or the base hasn't finished building yet this
   // login (td_pedestalX is only set once playtest_starter_kit.js's
@@ -90,7 +102,6 @@ PlayerEvents.tick((event) => {
   if (data.getBoolean('td_pedestalDestroyed')) return
   if (!data.contains('td_pedestalX')) return
 
-  var level = player.getLevel()
   // Once/second is plenty for a destruction check - this isn't a
   // display that needs to feel instant, just needs to catch it
   // eventually. Same throttle rate as wave_status.js's own hostile

@@ -441,7 +441,16 @@ function waveObjective(player, data) {
 function useWaveHorn(player) {
   var level = player.getLevel()
   var server = player.getServer()
-  var data = player.persistentData
+  // Real multiplayer fix, 2026-09-08 (see world_state.js): wave number,
+  // horn cooldown, countdown state and the pedestal-destroyed flag are
+  // all real shared campaign state - used to live on player.persistentData,
+  // which let two different players hold two independent copies (each
+  // able to blow the horn on their own cooldown, desyncing the whole
+  // campaign). Silently no-ops if the base hasn't finished building yet
+  // this world (the only time this can be null) - same defensive shape
+  // every other handler in this pack already uses.
+  var data = worldData(level)
+  if (!data) return
 
   // Real permanent stop condition (2026-09-03, direct request: "if the
   // pedestal is destroyed you lose") - checked before the cooldown dedup
@@ -878,9 +887,14 @@ PlayerEvents.tick(function (event) {
   // The guard above (`if (pendingSpawns.length === 0) return`) means this
   // block only ever runs when the queue was non-empty at tick start, so
   // an empty result here always means "just finished," not "was already
-  // empty."
+  // empty." **Real multiplayer fix, 2026-09-08**: written to the shared
+  // marker's persistentData (world_state.js), not player.persistentData -
+  // this is real shared campaign state (wave_airdrop.js's own check reads
+  // it the same shared way now), not something tied to whichever player's
+  // tick handler happened to drain the last queued spawn.
   if (stillPending.length === 0) {
-    player.persistentData.putInt('td_waveSpawnCompleteTick', currentTick)
+    var wd = worldData(level)
+    if (wd) wd.putInt('td_waveSpawnCompleteTick', currentTick)
   }
 
   pendingSpawns = stillPending
@@ -900,10 +914,17 @@ var COUNTDOWN_DISPLAY_THROTTLE = 20 // once/second is plenty for a countdown dis
 
 PlayerEvents.tick(function (event) {
   var player = event.entity
-  var data = player.persistentData
-  if (!data.getBoolean('td_countdownActive')) return
-
   var level = player.getLevel()
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared, not
+  // per-player. Self-guards correctly against a duplicate trigger with
+  // multiple players online: whichever player's tick handler runs first
+  // this tick flips td_countdownActive to false before the next player's
+  // handler reads it, so useWaveHorn() below only ever fires once per
+  // real countdown expiry - Minecraft's server tick is single-threaded,
+  // no real race window between them.
+  var data = worldData(level)
+  if (!data || !data.getBoolean('td_countdownActive')) return
+
   var currentTick = level.getTime()
   var remaining = data.getInt('td_countdownEndTick') - currentTick
 

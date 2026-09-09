@@ -5281,3 +5281,507 @@ specific mechanic needed before installing it on the strength of its
 name or download count alone (Simple Spikes' 1.20.1 build, Gravemist's
 1.20.1 availability, and MineTraps' current Forge target all turned out
 to not be what search results implied).
+
+## Frenetic-combat pivot & tower-defense research batch (2026-09-08)
+
+**Source and status**: user pasted a large AI-generated ("Google AI")
+research document proposing turret tiers, SecurityCraft-module
+integration, boss waves, WWZ-style zombie stacking, and a performance
+suite. Note this is the *second* time close-to-identical research
+reached this project the same day — a first pass already touched Tier
+2/3 turret and performance-mod claims during the Trapcraft-removal work
+(see "Trapcraft dropped entirely" above, ~line 3706) and ruled most of
+it out as either already-covered or unverified. This entry is the full
+follow-up pass: every mod claim independently re-verified (not trusted
+from the pasted text), decided item-by-item with the user via direct
+questions, **spec only — nothing built or dispatched yet**, per direct
+instruction ("spec now, build later"). Don't send any of this to the
+build session without an explicit go-ahead; today's whole 10-item
+feedback batch + Trapcraft removal is also still unplaytested, and nothing
+here should jump ahead of that confirmation pass.
+
+**Real verification pass (2026-09-08)**, all 7 mod names in the
+research checked against real platform data, not the research's own
+claims:
+- **Advanced Tower Defense** — real, active Forge 1.20.1 build
+  (CurseForge, "3.7 [Mini Update]", updated 2026-08-24). Usable.
+- **Enhanced Hordes** — real, active Forge 1.20.1 build (CurseForge,
+  `eh2.0-forge1.20.1.jar`, released 2026-07-03; `eh1.3.1` also exists).
+  Genuinely does zombie-climbs-zombie stacking + wall-break, matches the
+  research's WWZ claim. Usable.
+- **Tower Defense Units** — dead end. Latest file targets Forge 1.19.2,
+  July 2022, no 1.20.1 build exists.
+- **Immersive Intelligence** — dead end. Every file, including a recent
+  2026-08 dev build, targets Forge **1.12.2** only; never ported to
+  1.20.1.
+- **"Zombie Ladder"** — doesn't exist as a distinct mod. No CurseForge/
+  Modrinth listing found under this name; treat as a hallucinated/
+  confused reference in the research — Enhanced Hordes already covers
+  the claimed mechanic.
+- **Hostile Climbers** — Fabric-only, no Forge build. Wrong loader.
+- **Shake Screen / Screenshake** — Fabric-only, no Forge build. Wrong
+  loader.
+- Checked directly against the pack's own live config: **Undead Nights**
+  (`undeadnights-server.toml`) has no entity-stacking/climbing option of
+  its own — genuinely separate mechanic from what Enhanced Hordes would
+  add, the two don't overlap or conflict on that front.
+
+### Walls/chokepoints → frenetic pivot (decided, additive)
+
+Direct instruction: pivoting away from walls-and-chokepoints as the
+*primary* defense identity toward "a more frenetic experience."
+**Scope confirmed explicitly**: existing SecurityCraft reinforced walls,
+the Watchpost rebuild, and the current chokepoint layout all stay
+exactly as built — no removal, no rework. This is additive, not a
+teardown of [[project_chokepoint_walls]]. What changes is that walls
+stop being treated as a full stop against every threat; Enhanced Hordes
+(below) means some mobs go over rather than being funneled through.
+
+### Enhanced Hordes install — planned, not built
+
+Adds real zombie-stacking climb physics per its own mod description.
+**Scoped unconditionally, not late-wave-gated** — direct instruction
+was to feel this generally, not save it for endgame. Real work needed
+before dispatch, not guessable:
+- A full-mod-set sandbox boot (not a minimal one) — it interacts with
+  both the already-installed Undead Nights horde-scaling AND this
+  pack's own `wave_spawner.js`/`base_expansion.js` spawn logic, the
+  exact "minimal sandbox proves less than it looks like" trap already
+  documented in IDEAS.md's own gotcha list.
+- Its real config schema needs to be read directly (same rigor as every
+  other config touch in this pack's history) before tuning
+  population/stacking-chance values — don't assume field names from the
+  research's invented `horde_settings` block, that was never verified
+  against the actual mod.
+- A real FPS/TPS check under an active stacked-horde scenario before
+  shipping, given this pack's [[feedback_performance_scrutiny]] stance —
+  a clean boot isn't proof this performs.
+
+### Advanced Tower Defense, added alongside Medieval Defense Turrets — planned, not built
+
+MDT's Arrow Turret stays exactly as-is (already live, quest-integrated,
+verified via sandbox boot — don't touch). Advanced Tower Defense's
+**Musket Sentry** and **Anvil Launcher** get added as a later/heavier
+slot — variety, not a replacement, per direct decision. Real work before
+dispatch:
+- Verify ATD's actual block/item IDs and default recipes from its own
+  shipped data — the pasted research's example recipes/IDs
+  (`advanced_tower_defense:iron_bolt`, etc.) were never confirmed to
+  exist and shouldn't be trusted.
+- Decide re-recipe/tier gating using the same `event.remove` +
+  `event.shaped` pattern already established in `tier1_recipes.js`/
+  `tier2_recipes.js`.
+- Needs a real quest slot — extend the existing turret quest chapter
+  rather than create a new one, per this pack's "one quest per distinct
+  item" convention.
+
+### Shrapnel/scrap folded into loot bag tables — planned, not built
+
+Direct instruction: no second currency — fold the idea into the
+existing loot bag economy instead of the research's standalone LootJS
+per-mob-kill modifier. This keeps a single unified kill-reward system
+per [[feedback_loot_shortcut_undermines_choice]]. Register a scrap item
+(check first whether anything scrap-flavored already exists in the pack
+before adding a new one) as a real loot-table entry inside
+`loot_bag_drops.js`'s existing tier tables (Uncommon/Rare/Epic/
+Legendary), not a separate drop mechanism. **Real open fork**: is
+shrapnel meant to be a genuine crafting material (feeding ammo/turret
+recipes, matching the research's original intent) or pure flavor loot?
+If it's meant to feed ammo recipes, that needs deciding alongside the
+Advanced Tower Defense ammo-recipe design above, not independently.
+
+### Boss-wave spectacle system — planned, partial (real Forge gap)
+
+Ties directly into an existing open fork already sitting in IDEAS.md
+under "Wave-clear reward: a building/machine places itself in the
+base" — that entry's cadence question ("maybe only boss waves — cadence
+never decided") is the same undecided question this needs answered.
+Resolve both together, not separately, when this gets picked up.
+
+**Buildable now, vanilla-command-driven, no new mod needed** — reuses
+patterns already live in this codebase rather than the research's raw
+`LevelEvents.tick` polling template:
+- Custom boss mob spawn with inflated stats, same
+  EntityEvents/particle/sound idiom already used in
+  `pedestal_health.js`/`boomer_zombie_explosion.js`.
+- A real vanilla `/bossbar`, tracked off the boss's live HP via a
+  throttled tick handler — same throttle idiom `wave_status.js` already
+  uses for its own actionbar counter.
+- Custom boss music via a real `.ogg` + `sounds.json` registration +
+  `playsound`/`stopsound` commands — standard KubeJS asset mechanism,
+  no mod required.
+
+**Not buildable as researched**: the screenshake polish has no real
+Forge 1.20.1 path (Shake Screen/Screenshake verified Fabric-only) — cut
+from scope unless a real Forge alternative turns up later. Don't
+re-propose it without a new mod check.
+
+**Real open fork before building**: which wave(s) actually get a boss
+(the same undecided cadence question above)? Also whether the boss is a
+reskinned/stat-buffed vanilla mob (the research's zero-new-content
+approach) or one of this pack's already-installed named mobs — needs an
+explicit decision, not guessable.
+
+### SecurityCraft modules as turret-recipe components — idea, not scoped in detail
+
+Genuinely new angle, not part of the already-parked Tier 3 power plan.
+Since SecurityCraft is already installed and load-bearing for walls, its
+Redstone/Smart/Speed Modules could become real recipe components for
+Medieval Defense Turrets/Advanced Tower Defense turrets — same
+`event.remove` + `event.shaped` pattern as every other tier re-recipe in
+this pack — giving SecurityCraft a second identity beyond walls instead
+of pure flavor. Not scoped in detail — real recipe design needs the
+turret IDs confirmed first (see Advanced Tower Defense entry above).
+
+### Tier 1 trap decay/degradation — idea, flagged not committed
+
+The research's per-kill % break-chance mechanic, applied to the
+just-installed Simply Traps Spike Trap / V01D Bear Trap (replaced
+Trapcraft the same day, see "Drop Trapcraft entirely" above) — same
+`EntityEvents.death` + block-check pattern already used elsewhere in
+this pack. **Real open question, not decided**: does this fit the
+"keep footprint/complexity small" stance, or is it scope creep on a
+system that was just simplified today? Flagging for a future decision,
+not building without confirmation.
+
+### Perimeter siren — not a build item
+
+SecurityCraft (already installed) already ships Laser Blocks + Alarm
+blocks natively — placeable in-world today with zero scripting. Noting
+this so it doesn't get mistaken for missing functionality later.
+
+### Bullet tracer particles for turrets — deferred
+
+Cheap addition once real turret IDs exist (see Advanced Tower Defense
+entry above) — needs the actual projectile entity type decompiled from
+whichever turret mod ships it, not the research's guessed/invented IDs.
+Not actionable until that groundwork is done.
+
+### "Perimeter Warfare" standalone quest chapter — not carried forward, folded into existing structure
+
+The research proposed a whole new FTB Quests chapter (`defensive_mechanics.snbt`) walking players through Tier 1→3 defense progression as its own tree (Physical Hazards → Scrap & Salvage → Radial Automation → Energetic Annihilation). **Deliberately not built as a separate chapter** - this pack already consolidated 3 separate chapters into one `campaign.snbt` tree on 2026-09-03 specifically to stop chapter proliferation (see [[project_quest_book_rebuild]]); adding a new standalone chapter here would directly reverse that decision for no real gain, since `campaign.snbt`'s existing x/y tree layout already has a real Tier 1/Tier 2 turret section (confirmed live: 70 quests currently in `campaign.snbt` alone, including the existing "Wired for War" Arrow Turret quest). Real, current chapter file inventory, checked directly rather than assumed: `campaign.snbt` (70 quests), `bounties.snbt` (21), `tips_and_tricks.snbt` (37) - three files total, matching this pack's actual FTB Quests structure.
+
+**What this means for new items from this batch**: Advanced Tower Defense's Musket Sentry/Anvil Launcher, and anything else that ships from this research, get **new quests added into the existing `campaign.snbt` tree** (extending the current turret section, one quest per item per this pack's own "[[feedback_check_ideas_before_implementing]]" quest convention), not a new chapter file. Live-save quest-progress ID safety applies here the same as every other `campaign.snbt` edit in this pack's history - pull real current IDs from the live save before touching the file, per [[feedback_ftbquests_live_save_ids]].
+
+### Bounty shop (FTB Quests spend economy) — exploratory only, not scoped
+
+No committed design. FTB Quests has no native "deposit currency, buy
+item" mechanic — would need custom scripting to detect item deposits
+and grant rewards, a genuinely new technique for this pack. Not part of
+this batch; revisit only if there's real appetite for it later.
+
+### Flamethrower Mechanics (Create Nozzles) — idea, not scoped
+
+Missed on the first pass, caught on re-audit. Distinct from the Tesla
+Coil entry above - routes lava (or a modded fuel) through Create's own
+Nozzle blocks (Create is already fully installed for this pack's power
+chain, see "Storage & power system") to create a high-pressure fire
+torrent across a chokepoint. Real appeal: no new mod needed at all,
+pure recipe/contraption work against a mod already in the pack. Not
+scoped - real open questions before this is buildable: does a Nozzle's
+vanilla fire-stream actually deal meaningful damage to mobs walking
+through it (needs a real in-game/decompile check, not assumed), and
+how it fits relative to the Tesla Coil as a second Tier 3 option
+(alternative choice vs. a required second machine) is undecided.
+
+### WWZ counter-mechanics — real open question tied to the frenetic pivot
+
+Missed on the first pass. The research's own answer to "how do players
+fight back once mobs can climb walls" (once Enhanced Hordes ships) -
+directly relevant now that walls stay built as-is while Enhanced Hordes
+goes in unconditionally (see above), not something to silently skip.
+Three ideas, none scoped or decided:
+- **Anti-climb lip**: an inverted 1-block overhang at the top of a
+  wall, meant to break a climbing mob's pathing and drop it back down.
+  Real question: does vanilla/Enhanced Hordes pathing actually respect
+  an overhang as an obstacle, or does this need live testing to confirm
+  it does anything at all.
+- **Liquid moat**: SecurityCraft's own Fake Water (already installed,
+  acts like boiling lava to mobs) as a perimeter trench - collapses a
+  climbing stack from the bottom before it reaches the top.
+  SecurityCraft is already load-bearing in this pack, so this is a
+  zero-new-mod option.
+- **Wall-mounted stakes**: placing Simply Traps' spike piece directly
+  on vertical wall faces so a climbing mob takes continuous contact
+  damage on the way up. Real question: does Simply Traps' spike
+  actually support wall-mounted placement/orientation, or is it a
+  floor-only block - needs checking, not assumed.
+**Not decided which (if any) of these three actually gets built** -
+flagging so the frenetic pivot doesn't quietly become "walls do
+nothing" by default by omission.
+
+### Tiered tooltip color-coding — idea, cheap, not scoped
+
+Missed on the first pass. Client-side `ItemEvents.tooltip` additions
+marking Tier 1/2/3 defense items green/yellow/red with a one-line
+tier explainer, same general idea already proven via this pack's
+existing tooltip work elsewhere. Real, low-risk, low-cost - could
+reasonably ship alongside whichever turret item IDs get confirmed
+first (see Advanced Tower Defense entry above), not independently
+useful before that.
+
+### Turret combat-feedback effects (muzzle flash, ballistic impact, Tesla hit cinematics) — idea, not scoped
+
+Missed on the first pass - folded too generically into the "bullet
+tracer particles" entry above, which only covers the mid-flight trail.
+Three genuinely separate trigger points from the research, none
+scoped:
+- **Muzzle flash** - a brief particle/sound burst at the turret block
+  itself, the moment it fires (not the projectile's flight or impact).
+- **Ballistic impact** - particle/sound at the moment a turret
+  projectile actually hits a mob (distinct event from the flight
+  trail).
+- **Tesla Coil hit cinematics** - electric-spark particles + a
+  thunder/conduit sound (optionally a custom `tesla_zap.ogg` via the
+  same real `.ogg`+`sounds.json` mechanism as the boss music system) on
+  Tesla damage specifically - tied to the not-yet-built Tesla Coil, not
+  actionable until that exists.
+All three reuse patterns already live in this codebase
+(`pedestal_health.js`'s particle+sound idiom); none are blocking, all
+depend on real turret/Tesla IDs existing first.
+
+### Boss wave: gear + kill-reward detail — folded into the spectacle system entry above
+
+Missed on the first pass - the research's specific "equip the boss with
+full netherite gear, zero drop chance" and "drop
+`securitycraft:universal_block_reinforcer` + bonus shrapnel on a
+confirmed boss kill" details got compressed into a vague "inflated
+stats" line in the boss-wave entry above. Both are real open details
+for whenever boss-wave cadence actually gets decided, not separate
+work - the boss-kill bonus-shrapnel piece is consistent with the
+already-decided "shrapnel lives in loot bag tables" fold-in, just
+needs restating at boss-wave build time.
+
+### Minor items, low priority, noted so nothing's silently dropped
+
+- **Ammo-economy recipes** - the research's specific example (iron_bolt
+  from flint/barbed_wire/iron; bonus arrows from iron_spikes/feather/
+  stick) was only referenced as "an open fork," never spelled out. Real
+  recipe design still needs the Advanced Tower Defense ammo item IDs
+  confirmed first (see that entry above) before this is actionable.
+- **Performance tip**: cap Embeddium's max particle count specifically
+  because mass Tesla-Coil electrocution of an Enhanced-Hordes-stacked
+  horde could cause a real stutter - tied to two not-yet-built things
+  (Tesla Coil + Enhanced Hordes), revisit once either ships.
+- **Simply Traps' Slime Trap piece** - Simply Traps (already installed
+  for Tier 1 spikes) apparently ships a Slime Trap block beyond the
+  Spike Trap/Stakes this pack currently uses. Never evaluated - real
+  open question whether it adds anything this pack's Tier 1 doesn't
+  already have (crowd-control/pathfinding-compression, per the
+  research's own description), not assumed useful or useless.
+
+### Explicitly not carried forward — already better-covered elsewhere
+
+- **Tier 3 Tesla/power chain** — stays exactly as already parked (see
+  "Storage & power system" above): Create's own Tesla Coil + Immersive
+  Engineering + Flux Networks. The research's alternative (Immersive
+  Intelligence) is a dead end per the verification pass above — nothing
+  to revisit, the parked plan wins by default.
+- **Performance mod suite** — already installed (Radium, Embeddium,
+  FerriteCore, ModernFix, Clumps, Entity Culling per IDEAS.md's own
+  gotcha list). The research's list is redundant with what's already
+  running; no action needed.
+- **Aikar's JVM flags** — a launcher-level user setting, not a pack
+  file. Not a build task; mention to the user as a one-time optional
+  action if they want it, don't spec it as pack work.
+
+---
+
+## Multiplayer / LAN readiness
+
+**Shared-state fix built 2026-09-08 — code-complete, not yet verified by
+a real live playtest.** Direct ask: the pack should be playable
+multiplayer over LAN (one host, others join via "Open to LAN"), and
+player count should scale the difficulty. Investigated from the real
+KubeJS scripts, not the docs' own "singleplayer-focused" framing (which
+several files state directly but never quantified) — real, concrete
+failure modes found, then fixed directly per a follow-up "build it now."
+
+**Real blocker, root cause confirmed by reading the code**: nearly
+every piece of shared campaign state lives on `player.persistentData`
+— per-player NBT — instead of true world/level state. In singleplayer
+this is invisible (the one player's data and the world's data are the
+same thing); in multiplayer it's a real, systemic bug, not a rough
+edge. Confirmed consistent across every file that touches wave/pedestal
+state: `td_waveNumber`, `td_inWave`/`td_wasInWaveForExpansion`
+(`wave_status.js`, `base_expansion.js`), `td_pedestalHealth`/`X`/`Y`/`Z`
+and `td_pedestalDestroyed` (`pedestal_health.js`, `pedestal_destruction.js`,
+`wave_spawner.js`'s `waveObjective()`), `td_lastHornUseTick`/
+`td_countdownActive` (`wave_spawner.js`), and — worst of the set — the
+"has the base already been built" flag `td_playtestKitGiven`
+(`playtest_starter_kit.js`).
+
+That last one is the sharpest concrete failure: `PlayerEvents.loggedIn`
+gates the *entire* world-build sequence (wasteland biome search, walls,
+starter kit, pedestal placement, worldspawn/border setup, scoreboard
+reset) behind `td_playtestKitGiven` read from **the joining player's
+own** persistent data. Any player who logs in for the first time —
+even into a world where the base has already existed for hours — has
+that flag read as `false` for them personally, and re-runs the whole
+build: a second base gets constructed at a different biome-search
+result, `spreadplayers ... @a` drags **every online player** there
+mid-session, and `scoreboard players set @a td_waves_cleared 0` resets
+the shared wave counter for everyone. Wave number and pedestal
+state would desync the same way the moment two different players'
+copies of `td_waveNumber`/`td_pedestalHealth` diverge (e.g. whichever
+player last blew the Wave Horn advances only their own counter).
+
+**The obvious fix (a real level-scoped persistent store) is already
+ruled out** — not by this investigation, but by an earlier one, left as
+a comment in `base_expansion.js`: KubeJS's server/level-scoped
+`persistentData` was checked directly against its own source
+(`MinecraftServerMixin.java`) and found to have no save/load hook at
+all — a plain in-memory `CompoundTag` that resets on every restart.
+Not usable as-is for anything that needs to survive a server restart.
+
+**Real fix, built 2026-09-08**: this pack already summons a permanent,
+forceloaded marker entity at the pedestal (`td_pedestal_target`, from
+the "always pedestal-relative" rework) purely as a targeting anchor.
+Whether KubeJS's `persistentData` capability is generic to any `Entity`
+(not player-specific) was the one open technical question blocking this
+— **confirmed, not assumed**: decompiled this pack's exact installed
+KubeJS jar (`kubejs-forge-2001.6.5-build.26`) with `javap`.
+`EntityMixin.class` implements the capability once, generically, on
+vanilla's own `Entity` class (a real `kjs$persistentData` field, saved/
+loaded under the `"KubeJSPersistentData"` NBT key via real mixin
+save/load hooks); `PlayerMixin`/`ServerPlayerMixin` don't redeclare it
+at all — `Player` just inherits `Entity`'s implementation through the
+class hierarchy. So the marker entity persists it exactly like a player
+would, real NBT, survives a restart, no new infrastructure needed.
+
+New shared file `world_state.js` exposes `worldData(level)` (finds the
+`td_pedestal_target`-tagged entity, returns its `persistentData`, or
+`null` before the very first login's build has finished) and
+`findWorldStateEntity(level)`. Every read/write of the shared campaign
+state — `td_waveNumber`, `td_pedestalHealth`/`Destroyed`/`AlertTier`/
+`BossbarAdded`, `td_lastHornUseTick`, `td_countdownActive`/`EndTick`,
+`td_inWave`/`td_wasInWaveForExpansion`, `td_lastEndlessLevel`,
+`td_waveSpawnCompleteTick`, `td_amuletOnPedestal`,
+`td_starterGearRemoved`/`td_pacingAnnounced` — moved from
+`player.persistentData` to this shared store, across
+`playtest_starter_kit.js`, `wave_spawner.js`, `wave_status.js`,
+`base_expansion.js`, `wave_airdrop.js`, `pedestal_health.js`,
+`pedestal_destruction.js`, `amulet_pedestal.js`, and `amulet_border.js`.
+`td_pedestalX`/`Y`/`Z` also moved to the marker as the authoritative
+copy, but are additionally mirrored (write-only cache, never read as
+authoritative) onto every player's own data at kit-give time, purely so
+`mob_aggro.js`'s existing `ensurePedestalMarker()` recovery safety net
+(and this file's own `td_zcraftCleanupDone` migration) still have a
+coordinate to fall back to if the marker is ever lost some other way —
+that function intentionally wasn't touched.
+
+**The world-build gate itself was the sharpest fix**: `playtest_starter_kit.js`'s
+login handler now checks `findWorldStateEntity(level)` FIRST — if the
+marker already exists, a newly-joining player just gets their own
+starter kit (extracted into `giveStarterKit()`) and a read-only mirror
+of the pedestal coordinate, and returns immediately, never touching the
+biome search / wall-building / `spreadplayers @a` / scoreboard-reset
+path at all. Vanilla's own `/setworldspawn` (set once, by whoever
+originally built the world) already places a player with no personal
+spawn override directly at the base on login, so no manual teleport is
+needed for a latecomer.
+
+**Self-guards against duplicate firing with multiple players online,
+reasoned through, not just hoped**: several of these (the countdown
+auto-trigger, the wave-clear detection, the base-expansion edge
+detector) are `PlayerEvents.tick` handlers that now run once per online
+player against the SAME shared flag. Minecraft's server tick is
+single-threaded — whichever player's handler runs first in a tick flips
+the flag before the next player's handler reads it, so the transition
+still only fires once per real event regardless of how many players are
+online. This also incidentally fixes a latent bug that existed even
+before this pass: two players both blowing the Wave Horn in the same
+tick used to each get their own independent cooldown, so both would
+succeed and double-spawn a wave.
+
+**Real known gap, not silently glossed over**: `mob_aggro.js`'s
+`ensurePedestalMarker()` recovery path (re-summons the marker if it's
+ever found missing, a narrow safety net dating to the 2026-09-05
+retrofit) creates a brand-new, empty-`persistentData` marker if it ever
+actually fires — it would NOT restore `td_waveNumber`/`td_pedestalHealth`/
+etc. from wherever the campaign actually was. This only matters for a
+save whose marker was already missing before this exact fix shipped
+(the scenario that safety net was originally built for); a fresh
+marker summoned by a normal world-build always gets its state written
+in the same breath, never separately "missing." Not fixed here —
+narrow enough, and specific enough to a already-flagged historical
+migration edge case, not to be worth broadening this fix's scope for.
+
+**Verified so far**: every touched file passes `node --check` (this
+pack's own standing syntax-check practice). The core API assumption
+(persistentData generic to any Entity) is confirmed via decompile, not
+guessed. **Not yet verified**: no live boot test, solo or multiplayer —
+this session doesn't have this repo's sandbox-server setup, and
+touching the user's real live save directly is out of bounds (see
+`feedback_live_save_write_permission_boundary`). A real test needs
+someone to actually open the world to LAN with a second player (or a
+second client) and play through at least one full wave-horn cycle,
+ideally including a fresh second-player login after the base already
+exists — exactly the scenario that was broken.
+
+**What did NOT need to move**: broadcast commands already correctly
+target `@a` (titles, sounds, gear removal at `GEAR_REMOVAL_WAVE`), and
+`bounty_kills.js`'s per-player kill/bounty tracking plus the loot bag
+notification system are correctly player-scoped already — a bounty is
+supposed to be personal. Only the "one shared campaign" state needed to
+move; the pack's UI/reward layer already assumed a party correctly.
+
+**Resolved during the build, not left open**: `td_playtestKitGiven`
+stayed exactly what it says — a per-player "has THIS player received
+their gear" flag — while the world-build gate became a separate check
+(marker existence, via `findWorldStateEntity`). A latecomer's
+now-redundant `td_pedestalX`/`Y`/`Z` mirror is harmless leftover NBT by
+design (see above), not cleaned up and not worth cleaning up.
+
+### Player-count-scaled difficulty — direction chosen, not built
+
+**Real decisions made 2026-09-08**: scale by adding more mobs per wave
+(not just tougher individual mobs), plus real party-wide perks so more
+players isn't purely "harder for the same reward" — the perks
+themselves are unscoped. Tune for 2-4 players, favoring a curve that
+degrades gracefully rather than being hand-tuned to one exact count.
+
+**Real lever already installed, currently unused**: Undead Nights (the
+mod already driving the endless phase, waves 9+) ships its own
+per-player dynamic scaling block in
+`undeadnights_difficulty_config.json` —
+`healthScalePerPlayer`/`damageScalePerPlayer`/`speedScalePerPlayer`/
+`armorScalePerPlayer`/`hordeScalePerPlayer`, each with a matching
+`maxXScale` ceiling — but `dynamicScalingEnabled` is currently `false`
+and every scale value beyond health/damage (0.05 each) is `0`. Flipping
+this on and tuning the values covers endless-phase scaling almost for
+free, no KubeJS code needed — though per this pack's own established
+finding (IDEAS.md/FEATURES.md history), Undead Nights' config is a
+Forge `SERVER`-type file, so a change needs a full restart to take
+effect, not a live edit.
+
+**Waves 1-8 have no such mechanism** — the hand-authored `WAVES` array
+in `wave_spawner.js` is a fixed `[mobType, count]` list per wave. Real,
+small addition (not new plumbing): multiply each wave's mob counts by
+a player-count-derived factor at horn-use time, reusing the exact
+per-mob `Attributes` NBT override technique this file already uses for
+the zombie-roster tuning (`summonNbt`'s `Attributes:[...]`). **Real
+open question, not decided**: should the multiplier key off total
+online player count, or players actually near the base/pedestal —
+a player off exploring solo shouldn't inflate the horde size for a
+partner defending alone back at base. The pedestal's own
+`waveObjective()` position is the natural anchor for a distance check
+if that's the direction chosen.
+
+**Sequencing note, not just a scheduling detail**: this cannot be
+built before the shared-state fix above, or it makes the existing bug
+worse rather than better — scaling logic that reads "current wave
+number" or "current pedestal state" needs those to actually be one
+shared value first. Building player-count scaling on top of today's
+per-player wave counters would scale each player's own desynced view
+independently.
+
+**Party-wide perks — genuinely unscoped.** No concrete design yet
+(bonus loot rolls, a shared buff, something else); needs its own real
+design pass before this is buildable, not implied by the "more mobs"
+half already decided.
+
+**Not sent to build** — assessment and direction only, per explicit
+request this session. Sequencing relative to the tier roadmap and
+frenetic pivot specs (both also pending "send it" as of today) not yet
+decided either.

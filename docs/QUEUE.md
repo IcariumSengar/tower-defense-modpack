@@ -21,6 +21,129 @@ reflect actual current status.
 
 ---
 
+## Desert dominance + structure sparseness — live feedback 2026-09-08
+
+Direct feedback, unprompted by any roadmap item: "the all one big giant
+desert biome looks bad" + "structure gen and density is still not
+right." Investigated from the real current files, not guessed — two
+separate root causes found, both traced to earlier fixes that were each
+individually reasonable at the time but interacted badly.
+
+**1. Biome dominance — real root cause, fixed, needs live verification.**
+The live `overworld.json` `multi_noise` biome source had 7 parameter
+points, but 4 of them (57%) were desert/badlands. Real cause: the
+2026-09-06 savanna-removal fix (this file, "Savanna removal..." entry
+above) replaced savanna's and savanna_plateau's old parameter
+coordinates with *more* desert/badlands points, specifically because
+plain deletion had made that territory fall to plains/meadow instead —
+correct call at the time (the ask then was "more desert feel"), but
+never revisited once desert/badlands ended up dominant. **User
+confirmed direction 2026-09-08: cut desert/badlands back down.**
+Fixed by converting those same two points from desert/badlands back to
+`minecraft:plains` and `minecraft:meadow` (same parameter coordinates,
+just the biome id changed) — not `savanna`/`savanna_plateau` again,
+since those specific biomes were the ones that drew the original "big
+blob crowding the desert" complaint. Ratio now desert/badlands 2 of 7
+(~29%), down from 4 of 7 (~57%).
+
+**Verified live, 2026-09-08, real grid sample — found a likely
+overcorrection.** No sandbox/server access existed in this session, so
+one was built from scratch: a genuine vanilla 1.20.1 server (not the
+live CurseForge instance — a separate throwaway copy, never touched the
+real save) booted with just the two real files that drive this
+(`overworld.json` + `overworld_flat.json`) as a datapack, sampled via
+real `/execute if biome` queries over RCON, not guessed. Real
+methodology bugs hit and fixed along the way: 1.20.1 datapacks need
+`functions`/`tags/functions` (plural) not the 1.21+ singular naming;
+automatically-triggered load-tag functions run with feedback silenced,
+needed RCON to read scores back; `/execute if biome` does NOT force
+chunk generation (only `/setblock`-style edits do, and only within
+already-loaded chunks) — confirmed the real ~190-block auto-loaded
+radius around spawn by direct probing rather than assuming one.
+**Real result**: sampled 1444 points on a 10-block grid within that
+confirmed-loaded ~185-block radius of world origin — 0% desert, 0%
+badlands, ~85% plains, ~10% meadow (~5% unaccounted, edge-of-radius
+noise). Zero desert/badlands hits in a ~370-block-wide area is a much
+bigger swing than "roughly 2 of 7 points" suggested.
+**Real caveat**: this measured the area around world origin (0,0) in a
+bare-vanilla sandbox, not the pack's actual live spawn point, which
+`playtest_starter_kit.js`'s real biome search deliberately hunts
+outward from origin specifically for a desert/badlands hit (so the
+player's immediate surroundings should still be real desert regardless
+of this result). What this does show: large stretches away from that
+hand-picked spawn spot may now read as completely desert-free, a bigger
+overcorrection than "cut back down" implied.
+**Decided 2026-09-09: keep as shipped (2 of 7).** User confirmed after
+seeing the real 0%-in-sample-area result — matches what was asked
+directionally, want to see it in actual play before adjusting further
+rather than pre-compensating for a result from a single sampled
+neighborhood. Biome fix considered done pending a real playtest
+opinion.
+
+**2. Structure sparseness — real root cause found, fix scoped, not yet
+built.** The world border starts at half-width 25 blocks and only
+reaches ~62 by wave 8 (`base_expansion.js`'s own escalating curve,
+continuing to grow slowly after). Checked every active structure_set's
+real `spacing` value (chunks, not blocks) against that: even the
+tightest currently in use (`the_lost_city:post` at 10 chunks/160
+blocks) exceeds the wave-8 half-width, and the bulk of them (Philip's
+Ruins, Abandoned Urban, The Lost City's other sets) sit at 16-48 chunks
+(256-768 blocks) — Watchtowers/Abandoned Structures were deliberately
+tuned even sparser (80-120 chunks) as an intentional low-priority tier.
+Real reason past retuning passes didn't fix this: each was calibrated
+against a border-size assumption (270, then 166, then 125 total width)
+that kept shrinking separately (the border-growth curve itself got cut
+twice for "expands too fast" complaints) after the structure retune
+already shipped, so the spacing numbers were chasing a moving target.
+
+**Real complication, surfaced and resolved with the user**: the
+2026-09-02 "Exploration pacing retune" (see this file/FEATURES.md)
+deliberately reduced near-spawn density on purpose, direct feedback at
+the time was "too dense from wave 1, want exploration to feel
+midgame." **User confirmed 2026-09-08: keep that midgame-gating intent
+— early game stays deliberately sparse — but retune so midgame
+(~wave 8+, where the border is actually large enough) is genuinely
+dense, which today's numbers fail even there.**
+
+**Real target found, not arbitrary**: `structure_loot_progression.js`
+already defines `MID_TIER_RADIUS = 60` and `HIGH_TIER_RADIUS = 120` for
+loot-rarity-by-distance — and the border's own half-width curve crosses
+60 blocks right around wave 8 and 120 blocks around wave 13-15. Tying
+structure spacing tiers to these same two radii means structure density
+and loot rarity progress on the same schedule instead of two
+independently-tuned systems that happen to overlap by coincidence.
+Proposed 3-tier retune (not yet applied to any file):
+- **Near tier** (reachable inside the ~60-block MID_TIER ring, so it's
+  actually findable by the time it stops being "too dense to want
+  early"): target spacing ~4-6 chunks (64-96 blocks). One or two
+  representative pieces per mod family, not everything — e.g.
+  `the_lost_city:post`/`roads`/`tower`, `abandoned_urban:gas_station`/
+  `fire_tower`, `philipsruins:desert_structures`, `u_desert:pillager_outpost`,
+  postapocalypse_structures' 4 house sets.
+- **Mid tier** (reachable inside the ~120-block HIGH_TIER ring, roughly
+  wave 13-15+): target spacing ~10-16 chunks (160-256 blocks). The rest
+  of the_lost_city/abandoned_urban/philipsruins sets currently at
+  24-50 chunks.
+- **Far tier** (genuinely late/endless-only, matches the loot system's
+  own "found later, higher value" framing): target spacing ~24-32
+  chunks (384-512 blocks) — pulled down from Watchtowers/Abandoned
+  Structures' current 80-120 chunks (1280-1920 blocks), which would
+  need a border half-width that large — realistically never reached
+  given how the escalation curve grows, wasting the content entirely
+  rather than making it "rare."
+- **Real risk, not glossed over**: ~40 structure_sets are simultaneously
+  active. This pack has a documented crash history
+  ([[Radium chunk_region crash]]) from far fewer (~7) simultaneous
+  dense sets colliding during jigsaw placement. Tightening this many
+  sets at once needs the same real fresh-world sandbox boot + crash-log
+  check every past structure_set change in this pack has required, not
+  a blind bulk edit — likely staged (near tier first, verify, then mid,
+  then far) rather than all 40 files in one pass.
+- **Not yet built** — real per-file spacing assignment and the staged
+  verification pass still need doing.
+
+---
+
 ## Roadmap: tier-by-tier feature-rich buildout (2026-09-08)
 
 **Status: user has playtested and is happy with everything shipped so

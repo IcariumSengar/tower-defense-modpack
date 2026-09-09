@@ -31,7 +31,15 @@ PlayerEvents.tick((event) => {
 
   if (level.getTime() % CHECK_INTERVAL !== 0) return
 
+  // td_wasInsideBorderForAmulet is genuinely per-player (each player's
+  // own position, tracked for their own edge-triggered message) and
+  // stays on player.persistentData. td_amuletOnPedestal is a real
+  // shared fact (one pedestal, one amulet) - real multiplayer fix,
+  // 2026-09-08, see world_state.js - so it's read from the shared
+  // world-state object instead, same as amulet_pedestal.js's own write
+  // to it.
   const data = player.persistentData
+  const world = worldData(level)
   const border = level.getWorldBorder()
   const minX = border.getMinX()
   const maxX = border.getMaxX()
@@ -46,7 +54,7 @@ PlayerEvents.tick((event) => {
   data.putBoolean('td_wasInsideBorderForAmulet', isInside)
 
   if (isInside) return
-  if (data.getBoolean('td_amuletOnPedestal')) return
+  if (world && world.getBoolean('td_amuletOnPedestal')) return
 
   const clampedX = Math.min(Math.max(x, minX + PUSH_BACK_MARGIN), maxX - PUSH_BACK_MARGIN)
   const clampedZ = Math.min(Math.max(z, minZ + PUSH_BACK_MARGIN), maxZ - PUSH_BACK_MARGIN)

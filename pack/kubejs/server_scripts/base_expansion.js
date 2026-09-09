@@ -15,12 +15,24 @@
 // within the same tick isn't guaranteed, so this can lag the real
 // transition by up to one tick (~50ms) — not noticeable.
 //
-// Counter lives on the player's own persistent data, not the world/level.
-// KubeJS's server/level-scoped persistentData was checked against its own
-// source (MinecraftServerMixin.java) and has no save/load hook at all —
-// it's a plain in-memory CompoundTag that resets on every restart. Player
-// persistent data does survive — fine given this pack is single-player-
-// focused, not built for a real multiplayer server.
+// Counter lives on the permanent pedestal marker entity's own persistent
+// data (see world_state.js), not a player's. **Changed 2026-09-08, real
+// multiplayer fix** — this used to live on player.persistentData, which
+// desynced per player the moment a second player was involved (each
+// online player's own tick handler would read/write a separate copy of
+// td_inWave/td_waveNumber). KubeJS's server/level-scoped persistentData
+// was checked against its own source (MinecraftServerMixin.java) and
+// found to have no save/load hook at all — a plain in-memory CompoundTag
+// that resets on every restart — so that's still not usable here either;
+// the marker entity's own persistentData is durable (real per-Entity NBT,
+// confirmed via decompiling this pack's exact KubeJS build — see
+// world_state.js's header) AND genuinely shared, unlike either alternative.
+// Multiple online players' tick handlers hitting this same shared flag in
+// one tick self-guards correctly: whichever player's handler runs first
+// flips td_wasInWaveForExpansion before the next player's handler reads
+// it, so the transition only ever fires once per real wave-clear
+// regardless of how many players are online — Minecraft's server tick is
+// single-threaded, so there's no real race window between them.
 //
 // Runs the worldborder command via player.getServer().runCommandSilent
 // (console-level, always full permission), not player.runCommandSilent
@@ -52,7 +64,8 @@ function expansionForWave(waveNumber) {
 
 PlayerEvents.tick(function (event) {
   var player = event.entity
-  var data = player.persistentData
+  var data = worldData(player.getLevel())
+  if (!data) return
 
   var wasInWave = data.getBoolean('td_wasInWaveForExpansion')
   var isInWave = data.getBoolean('td_inWave')

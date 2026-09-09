@@ -262,6 +262,10 @@ PlayerEvents.tick((event) => {
 // correction as wave_spawner.js's own waveObjective(): the pedestal is
 // the permanent objective regardless of amulet state, so this always
 // measures from its fixed td_pedestalX/Y/Z now, not conditionally.
+// `data` is the shared world-state object (see world_state.js), not a
+// player's own persistentData - callers pass it in the same way they
+// already did before 2026-09-08's multiplayer fix, just sourced
+// differently now.
 function waveObjective(player, data) {
   if (data.contains('td_pedestalX')) {
     return {
@@ -285,7 +289,12 @@ PlayerEvents.tick((event) => {
   // display, not something that needs literal 20fps precision either.
   if (level.getTime() % 4 !== 0) return
 
-  const data = player.persistentData
+  // Real multiplayer fix, 2026-09-08 (see world_state.js): this used to
+  // be player.persistentData, which desynced per player - wave number,
+  // the in-wave flag, and the countdown are all real shared campaign
+  // state, not something each player should track a separate copy of.
+  const data = worldData(level)
+  if (!data) return
   // No longer capped at FINAL_WAVE (2026-08-31, endless phase scaling
   // shipped - see wave_spawner.js): waves past FINAL_WAVE are now a
   // real, distinct endless phase (Undead Nights hordes), not a silent
@@ -411,7 +420,11 @@ ServerEvents.commandRegistry((event) => {
       .executes((context) => {
         var player = context.source.getPlayerOrException()
         var level = context.source.getLevel()
-        var data = player.persistentData
+        var data = worldData(level)
+        if (!data) {
+          player.tell('§c[Wave] §fNothing to force-clear - the base hasn\'t finished building yet.')
+          return 0
+        }
         var objective = waveObjective(player, data)
         var killed = 0
         level.getEntities().forEach((e) => {

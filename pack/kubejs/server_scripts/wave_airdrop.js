@@ -106,11 +106,15 @@ var AIRDROP_COUNTDOWN_DISPLAY_THROTTLE = 20 // once/second, matches wave_spawner
 
 PlayerEvents.tick(function (event) {
   var player = event.entity
-  var data = player.persistentData
+  var level = player.getLevel()
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared
+  // campaign state, same as maybeTriggerWaveAirdrop()'s own `data` param
+  // above, not player.persistentData.
+  var data = worldData(level)
+  if (!data) return
   if (data.getInt('td_waveNumber') < WAVE_AIRDROP_MIN_WAVE) return
   if (!data.contains('td_waveSpawnCompleteTick')) return
 
-  var level = player.getLevel()
   var currentTick = level.getTime()
   var elapsed = currentTick - data.getInt('td_waveSpawnCompleteTick')
   var remaining = WAVE_AIRDROP_TIME_LIMIT_TICKS - elapsed

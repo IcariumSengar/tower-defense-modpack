@@ -191,6 +191,14 @@ function firePedestalHealEffect(server, x, y, z) {
   server.runCommandSilent(`playsound minecraft:block.beacon.power_select block @a ${x} ${y} ${z} 1 1`)
 }
 
+// `data` is the shared world-state object (see world_state.js) in every
+// real call path since 2026-09-08's multiplayer fix - wave_status.js's
+// own per-wave-clear heal already passes its own (now shared) `data`
+// through, and the right-click heal handler below sources it the same
+// way. HP, the destroyed flag, and the alert tier are all real shared
+// pedestal state - two players healing/damaging their own separate
+// copies would desync exactly like the wave/pedestal state this same
+// fix pass corrected elsewhere.
 function healPedestalBy(player, data, amount) {
   if (data.getBoolean('td_pedestalDestroyed')) return false
   if (!data.contains('td_pedestalHealth')) return false
@@ -258,10 +266,12 @@ var PEDESTAL_HEAL_ITEMS = {
 
 PlayerEvents.tick((event) => {
   var player = event.entity
-  var data = player.persistentData
-  if (!data.contains('td_pedestalX')) return
-
   var level = player.getLevel()
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared
+  // pedestal state, not player.persistentData.
+  var data = worldData(level)
+  if (!data || !data.contains('td_pedestalX')) return
+
   if (level.getTime() % 10 !== 0) return
 
   var x = data.getInt('td_pedestalX')
@@ -301,7 +311,11 @@ function pedestalAttackDamage(mob) {
 
 PlayerEvents.tick((event) => {
   var player = event.entity
-  var data = player.persistentData
+  var level = player.getLevel()
+  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared
+  // pedestal state, not player.persistentData.
+  var data = worldData(level)
+  if (!data) return
 
   // Already destroyed, or the base hasn't finished building yet this
   // login (td_pedestalHealth is only set once playtest_starter_kit.js's
@@ -309,7 +323,6 @@ PlayerEvents.tick((event) => {
   if (data.getBoolean('td_pedestalDestroyed')) return
   if (!data.contains('td_pedestalHealth')) return
 
-  var level = player.getLevel()
   if (level.getTime() % 20 !== 0) return
 
   var x = data.getInt('td_pedestalX') + 0.5

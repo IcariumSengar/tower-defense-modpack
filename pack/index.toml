@@ -190,11 +190,11 @@ hash = "3f2e1330d669bb83820ed1f91ddcb9dd3cfd37561eebb1520a829b842bc6b000"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/noise_settings/overworld_flat.json"
-hash = "ab7dc049fa4eaea0a73ef777390297f5953a537cdce165954d8ab08b2dc092a8"
+hash = "b1d2d05fd0aa98aa528af0641ffb319bcc00294ffdc75da62ddd86d3ba2224b4"
 
 [[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
-hash = "4eb82fbd7b37ca7c65538cabf261e88ec4f6f64e8f260ace024cbc2e5713dca9"
+hash = "902cd6d4af2c70d27067bcd5ffd2c6156b03b04b79f593d609df9d83e0caec9e"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
@@ -382,11 +382,11 @@ hash = "7da23a4a47c2b2137bf9b82daa34f1ecce40a2c6cb3b9d744d5d34c4bc70c3eb"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_border.js"
-hash = "b1789c9248933a04dd7ee74b6583b77f6f9154fb1bf7571e896d2fd94b109ea6"
+hash = "3343c3962f4ff43c8fcccc785c15abf4bc9337c37680e2f8e37fbff991cd941a"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "80373bdd0995b19730a781f503fa36eb8df43853cd4fa3dceca87b5e9d6e5018"
+hash = "083c8a9bdef813316167a4bfaa5f8ab5d4af69db004db0ecad6e6dc7e8c29987"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
@@ -394,7 +394,7 @@ hash = "8b9418b4bbca0f9f470254f6e42349996649f8cb5ca1162dd9c347ff6fed5305"
 
 [[files]]
 file = "kubejs/server_scripts/base_expansion.js"
-hash = "2b1c228e73659760fd5401ed6ee884f560d9be673f64da7c140d7660f0f100e6"
+hash = "98004aacc1ccaa4fe9a73cb7285d0245f2aaff7f16881606bfedd47db4c5091b"
 
 [[files]]
 file = "kubejs/server_scripts/boomer_zombie_explosion.js"
@@ -434,15 +434,19 @@ hash = "ac7aa51d845a25853c7ea5ffb893bffa537d9f689eb83a699d3aa85dbca827c0"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_destruction.js"
-hash = "11d9a2875b91efe705ef0f6a8a0280ca7265c3774800293a3d1bc02372afbf72"
+hash = "a2f31c3fe1de115882374605df124b785bdf9bcdcd5b6bfb02f3a3c8f62b2044"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_health.js"
-hash = "77be807c20863c62d761056d72fb65efc8493306ccefc43c8055a75873bb86d7"
+hash = "a58fad413c1a60eb414be009813a1cf52517447f3a8c4f3057a515f4097abf03"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "de792f33f826b952ec64ecb873264ca48347ad79cc5f8b70de0af1f71df3bac9"
+hash = "ff5522431f0595985700f22d3ce6449cba334ec4b0f36ee12c9cdb3a6e836e33"
+
+[[files]]
+file = "kubejs/server_scripts/structure_chest_loot_fix.js"
+hash = "a0d0141f8410fbe36e3d31e934c9fb8f97cf377a7530c7bd4598c7100fac409f"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
@@ -458,15 +462,19 @@ hash = "c046ba5ba967f93c4f99b443ce5e9133b9abe303071cd2f25d732c2220007c50"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
-hash = "a5c88bab84889b1f45fbf54e3c3dcbe492fc82ab8a9a479f4f41398c3d6f35dc"
+hash = "2380ec00b3d77995279bbf51c2fc802a89c8340a91d41a0f58d9c916f11c821f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "ee43c20e267fde7724011cea364d14b9a023718976e2d256f917b56899b3f2c8"
+hash = "b84416d936fe5b7e6da4ff9a324d76723d9cc14fe4750008d82be3aadeb8f1ae"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "2258c8290cbb116a2766c0596f310d0653b3fa3183b3e77199e34c49b6e416c4"
+hash = "d1d22367411bb728bc33523a94f2a2cdd9a6edb3076ed638bb7d93039392a06a"
+
+[[files]]
+file = "kubejs/server_scripts/world_state.js"
+hash = "3df03a98ff3e988f9e05bc4da10933896170081aac25f4d12a395860563ae65f"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"

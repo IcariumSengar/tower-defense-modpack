@@ -67,7 +67,7 @@
           }
         },
         {
-          "biome": "minecraft:desert",
+          "biome": "minecraft:plains",
           "parameters": {
             "temperature": 0.5,
             "humidity": -0.3,
@@ -79,7 +79,7 @@
           }
         },
         {
-          "biome": "minecraft:badlands",
+          "biome": "minecraft:meadow",
           "parameters": {
             "temperature": 0.5,
             "humidity": -0.3,

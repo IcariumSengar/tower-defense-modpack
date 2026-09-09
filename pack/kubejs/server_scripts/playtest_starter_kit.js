@@ -64,6 +64,21 @@ function starterGearNbt(extra) {
   return `{${extraPart}td_starter_gear:1b,display:{Lore:[${lore}]}}`
 }
 
+// Extracted 2026-09-08 (real multiplayer fix, see world_state.js) - used
+// to be inlined once in the login handler below, now needed twice: the
+// very first login (which builds the whole base) and every later
+// player's own first login (which must NOT rebuild the base, just give
+// them their own copy of this gear - see the existingMarker branch
+// below).
+function giveStarterKit(player) {
+  player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
+  player.give(Item.of('kubejs:wave_horn', 1))
+  player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
+  player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
+  player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
+  player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
+}
+
 // Seed-independent spawn-biome search (2026-09-06) - real replacement
 // for a hardcoded fixed coordinate. Root cause, traced through this
 // exact bug recurring twice: every previous spawn-relocation fix
@@ -536,6 +551,7 @@ function findWastelandSpawn(level, startX, startZ) {
 PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
+  const level = player.getLevel()
 
   // Real live bug fixed 2026-09-05: Zcraft Decoration removed entirely
   // (direct report - its concrete blocks were getting mobs stuck
@@ -568,6 +584,43 @@ PlayerEvents.loggedIn((event) => {
   // (server_scripts/amulet_pedestal.js) instead of being given here;
   // the empty pre-built pedestal (below, in the base-building section)
   // is the intended hook - "something was supposed to be here."
+
+  // Real multiplayer fix, 2026-09-08 (see docs/FEATURES.md's
+  // "Multiplayer / LAN readiness" for the full bug writeup). Real root
+  // cause: the world-build gate below (td_playtestKitGiven) used to be
+  // read from THIS JOINING PLAYER's own persistent data - so any
+  // player's first-ever login, even into a world whose base had already
+  // existed for hours, read that flag as false for them personally and
+  // ran the ENTIRE build again: a second base built at a different
+  // biome-search result, `spreadplayers ... @a` dragging every online
+  // player there mid-session, and the shared wave-counter scoreboard
+  // reset to 0 for everyone. Fix: the permanent td_pedestal_target
+  // marker's own EXISTENCE (see world_state.js) is now the real "has
+  // this WORLD been built" signal, checked first, independent of
+  // whether THIS player has ever logged in before.
+  var existingMarker = findWorldStateEntity(level)
+  if (existingMarker) {
+    // World already built - this player just needs their own gear, not
+    // a second base. Vanilla's own /setworldspawn (set once, by whoever
+    // built the world) already places a player with no personal spawn
+    // override here directly on login, so no manual teleport is needed.
+    if (data.getBoolean('td_playtestKitGiven')) return
+    data.putBoolean('td_playtestKitGiven', true)
+    giveStarterKit(player)
+    // Mirrored onto this player's own data too (read-only cache, never
+    // authoritative) purely so mob_aggro.js's ensurePedestalMarker()
+    // recovery safety net and this file's own td_zcraftCleanupDone
+    // migration above have a real coordinate to fall back to from
+    // WHICHEVER player happens to be online, not just the original
+    // builder specifically.
+    var existingData = existingMarker.persistentData
+    if (existingData.contains('td_pedestalX')) {
+      data.putInt('td_pedestalX', existingData.getInt('td_pedestalX'))
+      data.putInt('td_pedestalY', existingData.getInt('td_pedestalY'))
+      data.putInt('td_pedestalZ', existingData.getInt('td_pedestalZ'))
+    }
+    return
+  }
 
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
@@ -605,12 +658,7 @@ PlayerEvents.loggedIn((event) => {
   player.getServer().runCommandSilent('scoreboard objectives setdisplay sidebar td_waves_cleared')
   player.getServer().runCommandSilent('scoreboard players set @a td_waves_cleared 0')
 
-  player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
-  player.give(Item.of('kubejs:wave_horn', 1))
-  player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
-  player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
-  player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
-  player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
+  giveStarterKit(player)
 
   event.server.runCommandSilent('gamerule doMobSpawning false')
 
@@ -1054,25 +1102,6 @@ PlayerEvents.loggedIn((event) => {
   // matching what real placement does.
   run(`setblock ${centerX + 3} ${wallY0} ${centerZ} waystones:waystone[facing=north,half=lower]`)
   run(`setblock ${centerX + 3} ${wallY0 + 1} ${centerZ} waystones:waystone[facing=north,half=upper]`)
-  // Stored once here, permanent regardless of amulet state -
-  // pedestal_destruction.js's own block-gone check, pedestal_health.js's
-  // own HP tick, amulet_pedestal.js's border-crossing poll, and every
-  // wave/mob-targeting reference below all key off this same fixed
-  // coordinate. 2026-09-03, "if the pedestal is destroyed you lose." Y
-  // dropped back to wallY0 (ground level, no more plinth offset).
-  data.putInt('td_pedestalX', centerX)
-  data.putInt('td_pedestalY', wallY0)
-  data.putInt('td_pedestalZ', centerZ)
-
-  // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
-  // set once here, same pattern as td_pedestalX/Y/Z above, full at
-  // world-build time. Replaces reliance on Epic Siege Mod's own
-  // blockTargets AI, which stayed inconclusive even after the
-  // mob-pathing fix (mob_aggro.js) was meant to give it a fair shot.
-  // Bumped 200 -> 300 (2026-09-05, direct ask: "pedestal starting HP
-  // up") - must match PEDESTAL_MAX_HEALTH in pedestal_health.js, this
-  // pack's own established cross-file-constant duplication convention.
-  data.putInt('td_pedestalHealth', 300)
 
   // No campfires or fire props anywhere in this build - direct request,
   // dropped entirely rather than reduced. The old braziers were called
@@ -1103,7 +1132,41 @@ PlayerEvents.loggedIn((event) => {
   // invisible targeting anchor, not a visual prop. One block above the
   // pedestal's own position (back to wallY0+1, ground-level pedestal
   // above), not inside it.
+  //
+  // Moved ahead of the td_pedestalX/Y/Z/Health writes below (2026-09-08,
+  // real multiplayer fix - see world_state.js) so those land on the
+  // marker's OWN persistentData - a genuinely shared, durable store -
+  // instead of the building player's own data, which desynced the
+  // moment a second player was involved.
   run(`summon minecraft:armor_stand ${centerX + 0.5} ${wallY0 + 1} ${centerZ + 0.5} {Invisible:1b,NoGravity:1b,Marker:1b,PersistenceRequired:1b,Tags:["td_pedestal_target"]}`)
+  const worldD = findWorldStateEntity(level).persistentData
+
+  // Stored once here, permanent regardless of amulet state -
+  // pedestal_destruction.js's own block-gone check, pedestal_health.js's
+  // own HP tick, amulet_pedestal.js's border-crossing poll, and every
+  // wave/mob-targeting reference below all key off this same fixed
+  // coordinate. 2026-09-03, "if the pedestal is destroyed you lose." Y
+  // dropped back to wallY0 (ground level, no more plinth offset).
+  worldD.putInt('td_pedestalX', centerX)
+  worldD.putInt('td_pedestalY', wallY0)
+  worldD.putInt('td_pedestalZ', centerZ)
+  // Mirrored onto the building player's own data too (read-only cache,
+  // never authoritative) - see the existingMarker branch above for why:
+  // mob_aggro.js's ensurePedestalMarker() recovery safety net and this
+  // file's own td_zcraftCleanupDone migration both read a player's copy.
+  data.putInt('td_pedestalX', centerX)
+  data.putInt('td_pedestalY', wallY0)
+  data.putInt('td_pedestalZ', centerZ)
+
+  // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
+  // set once here, same pattern as td_pedestalX/Y/Z above, full at
+  // world-build time. Replaces reliance on Epic Siege Mod's own
+  // blockTargets AI, which stayed inconclusive even after the
+  // mob-pathing fix (mob_aggro.js) was meant to give it a fair shot.
+  // Bumped 200 -> 300 (2026-09-05, direct ask: "pedestal starting HP
+  // up") - must match PEDESTAL_MAX_HEALTH in pedestal_health.js, this
+  // pack's own established cross-file-constant duplication convention.
+  worldD.putInt('td_pedestalHealth', 300)
 
   // Forceload is now a one-time permanent setup, not a toggle -
   // same 96-block/169-chunk radius already verified safe
