@@ -7203,4 +7203,22 @@ slightly" — floor cut 12 → 9 chunks (13 for the sprawling city sets),
 (+150 instead of +200). Numeric change inside the proven-safe range
 (any value under half the 64-chunk anchor spacing), deployed live
 without a second sandbox boot. The user also answered "base wrong"
-without detail — being chased as a separate item.
+without detail — chased with a follow-up question: **"The Red House."**
+
+**Red House swap reverted, same day.** The morning's swap from
+Abandoned Brick House to Red House rested on a misdiagnosis — the
+"house has gone" report was the marker crash aborting the handler
+before `/place template` ever ran, not the template failing on rough
+terrain — so the Brick House was never actually broken. User's pick:
+Brick House back. The entire Brick-House-specific block was restored
+verbatim from commit 9de1941 (the last version that shipped it):
+placement, wet_sponge fix, crafting station at local [5,1,4] with the
+waterlogged fix, cauldron/tripwire removal, the 5 barrels, the green
+terracotta/snow roof patch, the trapdoor-bed clear, and the 212-block
+`HOUSE_REINFORCE_BLOCKS` pass re-enabled (it had been disabled because
+it is keyed to the Brick House's wall geometry). `BUILDING_*` back to
+12/11/13 and the border back to 50 (58 only ever existed for the
+15-deep Red House). Verified by a fresh-world sandbox boot with the
+placed blocks read straight from the region files, not just the
+setblock-placed fixtures — the gap that let the morning's swap go
+unverified.

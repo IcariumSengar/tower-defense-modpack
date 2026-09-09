@@ -60,8 +60,12 @@ user's own three items.
 
 **First live playtest (same day): load, spawn-in-courtyard, full
 compound and structure distance all confirmed working from the live
-log and decoded save. Still open: user answered "base wrong" without
-saying what — awaiting detail.**
+log and decoded save. "Base wrong" turned out to be the Red House
+itself — the morning's swap was built on the misdiagnosis above (the
+Brick House never failed to place, the handler crashed before reaching
+it). Reverted to the Abandoned Brick House with every Brick-House
+fixup and its wall reinforcement restored from 9de1941; border back to
+50. Sandbox-verified from the region files.**
 
 Also fixed while in there: `structure_loot_progression.js` and
 `structure_chest_loot_fix.js` still measured distance from a hardcoded

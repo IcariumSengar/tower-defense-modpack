@@ -498,7 +498,7 @@ hash = "8e16f983287f54cea06eb03c698efab84dbfe07822104d2ca5e2c2badf75062a"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "4d6413567c5011cbcf6df55c49ec15ad1958f07b14561864dae7ae468bc6d7a2"
+hash = "80629527e82085e229c6aa55e18cb4e87ee9c06bfa4b77fc58e274d57971b917"
 
 [[files]]
 file = "kubejs/server_scripts/structure_chest_loot_fix.js"
