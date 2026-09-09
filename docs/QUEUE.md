@@ -21,10 +21,24 @@ reflect actual current status.
 
 ---
 
-## URGENT, needs a human action on the live instance — found 2026-09-09
+## RESOLVED 2026-09-09 — BountyBags TOML regeneration (was URGENT)
 
-**BountyBags loot-table edits since 2026-09-03 have never actually
-reached the live game.** Found during the full-mod-set merge
+**Confirmed fixed, checked directly against the live instance - no
+action needed.** `config/bountybags/*.toml` mtimes are now Sep 9 09:05
+(not the stale Sep 3 this entry originally recorded), and all 5
+previously-missing items are present: `uncommon_bag.toml` has
+gold_nugget/netherrack/arrow/carrot/kubejs:shrapnel, rare/epic both have
+kubejs:shrapnel, legendary has both kubejs:shrapnel and
+minecraft:totem_of_undying. Someone already did the delete-and-restart
+(or `/bountybags edit` restore-defaults) this fix called for, between
+this entry being written and now - not this session, not verified who.
+Worth a live playtest confirmation that drops actually happen at the
+expected rates, but the loot-table content itself is confirmed current.
+Original finding kept below for context.
+
+**Original finding, 2026-09-09**: BountyBags loot-table edits since
+2026-09-03 had never actually reached the live game. Found during the
+full-mod-set merge
 verification pass (Phase 0/1 + Track B + Track C + the multiplayer
 shared-state fix, all booted together for the first time). Not a bug
 in this pack's own scripts — a real, decompiled characteristic of the
@@ -470,7 +484,9 @@ first (everything else in this phase needs them).
   Turret stays untouched). Real work: verify ATD's actual IDs/recipes
   from its own shipped data, re-recipe/tier-gate via the established
   `event.remove`+`event.shaped` pattern, real quest slot in the
-  existing turret section of `campaign.snbt`.
+  existing turret section of `campaign.snbt`. **Done, 2026-09-08 (Track
+  C).** "MDT's Arrow Turret stays untouched" is now stale/superseded —
+  see "Tier 2 trap replacements" below.
 - **Ammo economy recipes** - iron_bolt from flint/barbed_wire/iron,
   bonus arrows from iron_spikes/feather/stick (the research's examples,
   needs real ATD ammo item IDs first).
@@ -3743,3 +3759,118 @@ finding on that).
    disengage rather than waste hits on something that can't be damaged.
    `node --check` and an embedded-JSON parse check both pass. **Not yet
    confirmed in live play.**
+
+## Live-feedback batch, 2026-09-09 (part 2) - all 3 built, none yet confirmed in live play
+
+3 more items from direct playtest feedback, full spec/reasoning in
+docs/FEATURES.md's own "Live-feedback batch, 2026-09-09 (part 2)"
+section - this entry tracks status against the user's own numbering.
+
+1. **Starting house missing -> Red House swap - built.** Root cause
+   (spawn landed 20.4 blocks from a real Big Lost City/Philip's Ruins
+   structure, plus 66 blocks of terrain variance the leveling pass can't
+   handle) found directly in the live `logs/latest.log`. Swapped
+   Abandoned Brick House for Red House (same mod, user's pick) with every
+   local-coordinate fixup re-derived from Red House's own real NBT -
+   loot strip (30 barrels), crafting station, cauldron/tripwire removal,
+   wet_sponge fix, dimension constants, worldborder bumped 50->58 (real
+   math against the new depth, not guessed). **`HOUSE_REINFORCE_BLOCKS`
+   is disabled, not redone** - it's keyed to the old building's exact
+   wall geometry; a real follow-up if the house's own walls should be
+   reinforced again, separate from this swap. `node --check` passes.
+   **Not yet confirmed in live play** - the underlying "spawn landed too
+   close to a big structure" risk also isn't fixed, only worked around
+   for this one report.
+2. **Tab keybind for quests - no change needed.** Checked the live
+   `options.txt` directly: already bound (`key_key.ftbquests.quests` ->
+   Tab), coexisting with vanilla's player-list and Refined Storage's
+   search-focus bindings - Minecraft fires every binding sharing a key,
+   it doesn't block duplicates. Nothing to build; per-player client
+   setting, not something packwiz should ship/override.
+3. **Loot bags far too many - drop rates cut, built.** Root cause: the
+   2026-09-08 redesign's 4 independent per-kill rolls (0.74 expected
+   bags/kill) against 21 real wave 1+2 kills predicts ~15.5 bags -
+   matches the report almost exactly. Cut to ~0.31 total/kill (Uncommon
+   0.5->0.2, Rare 0.15->0.06, Epic 0.07->0.03, Legendary unchanged at
+   0.02) - same per-tier shape, ~40% of the old volume. **Known
+   trade-off, flagged not hidden**: also cuts average gold income from
+   Uncommon bags by roughly the same fraction unless bag CONTENTS are
+   separately bumped - not done here, revisit if gold feels short.
+   `node --check` passes. **Not yet confirmed in live play.**
+
+**Also fixed while in the area (not one of the 3 numbered items):** the
+bounty progress-counter reflection shipped in part 1 above (item 2) was
+silently crashing on every real boot (`TypeError: bqTaskForId is not a
+function`) - found in the same `logs/latest.log` sweep used to diagnose
+item 1. Real cause: a `function` declaration nested inside a `try` block
+doesn't reliably hoist in this Rhino build. Fixed by converting it to a
+plain `var` function-expression assignment. `node --check` passes,
+**not yet confirmed the progress bar actually renders correctly now.**
+
+**Unrelated pre-existing item, surfaced again for visibility**: the
+"URGENT, needs a human action" BountyBags TOML entry at the top of this
+file is still outstanding and unaffected by item 3 above (drop RATE
+lives in `loot_bag_drops.js`, re-evaluated fresh every boot - it's bag
+CONTENTS, in the cached TOML, that needs the manual delete/regenerate
+step). Still worth doing since it's the same underlying loot system.
+
+## Structure spawn-exclusion floor — built 2026-09-09, needs sandbox verification
+
+Direct priority report (Xaero's map screenshot: ~a dozen structures
+clustered within ~100 blocks of spawn). Full root-cause writeup and fix
+in docs/FEATURES.md's own "Structure spawn-exclusion floor" section -
+this entry only tracks status.
+
+**Built**: 1 new anchor file
+(`pack/kubejs/data/minecraft/worldgen/structure_set/ocean_monuments.json`)
++ `exclusion_zone` added/swapped across 29 existing `structure_set`
+files (near/mid/far tiers from the 900d52c retune, plus `villages.json`,
+`nether_ruins.json`, `underground_structures.json`). All 30 touched
+files JSON-validated (`node -e "JSON.parse(...)"`).
+
+**Not done**: real sandbox boot + `/locate` distance check against the
+new `minecraft:ocean_monuments` anchor (this pack's usual verification
+step for any structure placement change, given 3 prior real
+world-creation crashes from this exact category of edit). `the_lost_city`
+(10 sets) and `abandoned_structures` (4 sets, custom
+`berezka_api:berezkas_structure_placement` codec) were deliberately left
+untouched - see FEATURES.md for why.
+
+**Known limit**: only affects chunks not yet generated - the live
+save's already-explored area around spawn keeps its current structures
+regardless. Needs either a fresh world or a real sandbox boot to
+actually see the fix.
+
+## Tier 2 trap replacements — spec ready, NOT BUILT, holding for explicit dispatch (2026-09-09)
+
+Direct feedback: "I hate the tier 2 traps... specifically the arrow
+turret and vacuum chest thing." Full research/reasoning/decompiled
+findings in docs/FEATURES.md's new "Tier 2 trap replacements" section
+(search that heading) - this entry only tracks status.
+
+- **Vacuum Block → Item Collectors.** Real, load-bearing finding: the
+  installed `vacuum_cleaner` mod's pull mechanic is dead code on every
+  tier (decompiled - no tier ever calls `.randomTicks()`, so its
+  `randomTick()`-only pickup logic never fires under vanilla rules), not
+  just fiddly as reported. Item Collectors (real Forge 1.20.1 build
+  confirmed, 53M+ downloads) is a verified, simpler replacement -
+  omnidirectional configurable radius, drops into a plain chest
+  underneath, no rig.
+- **Arrow Turret → promote Advanced Tower Defense's Musket Sentry into
+  the actual Tier 2 gate**, replacing it rather than sitting behind it
+  (reverses the "MDT's Arrow Turret stays untouched" call in Phase 2
+  above). Zero new mod install - Musket Sentry's full recipe chain is
+  already live from Track C. Arrow Turret's own recipe + "Wired for War"
+  quest get cut entirely, not demoted to Tier 1.
+
+**Not done**: everything - this is a spec, not a build. Real work needed:
+verify Item Collectors' actual ids/recipe from its shipped data, re-recipe
+via `event.remove`+`event.shaped` into the Tier 2 loot-pool filler
+convention, remove the Vacuum Block recipe + uninstall `vacuum_cleaner`,
+flatten "Beyond the Bow"'s quest dependency off "Wired for War" and
+rewrite its description, rewrite "Waste Not"'s quest text for the new
+mechanic, remove/repurpose "Wired for War", full-mod-set sandbox boot
+before shipping.
+
+**Holding for explicit "send it"** per this pack's own dispatch practice
+- not sent to the build session yet.

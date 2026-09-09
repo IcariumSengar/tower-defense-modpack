@@ -152,15 +152,41 @@ const LEGENDARY_MOBS = ['mutantszombies:crawler', 'undeadnights:demolition_zombi
 // odds. That's the actual point of the fix, not a side effect to hide.
 const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
 
+// **Rates cut 2026-09-09, direct playtest report: "far far too many loot
+// bags drop... just finished wave 2 and I had about 15 bags."** Real
+// math, not a guess: wave 1+2 kill 21 mobs total (WAVES[0]/[1] in
+// wave_spawner.js), and the old flat rates below (0.5+0.15+0.07+0.02 =
+// 0.74 expected bags/kill) predict 21*0.74 ≈ 15.5 - matches the report
+// almost exactly, and Uncommon's own 0.5 alone accounts for ~70% of that
+// volume (the other 3 tiers combine for barely 4-5 bags over the same
+// span). Cut to ~0.31 total/kill (≈40% of the old volume) - same
+// per-tier SHAPE (every mob still gets an independent shot at every
+// tier, the real point of the 2026-09-08 redesign above, not reverted)
+// just scaled down enough that a wave 1-2 clear lands around 6-7 bags
+// instead of 15. Legendary left untouched - it was never the volume
+// problem (only ~0.4 expected bags over the same 21 kills) and is
+// deliberately a rare jackpot, not something to tune for count.
+// Real, known trade-off, not hidden: Uncommon bags are this pack's real
+// gold_nugget source (see the redesign comment above, "calibrated
+// against the gold_nugget economy fix") - cutting its rate to ~40% of
+// its old value also cuts average gold income from kills to roughly the
+// same fraction, unless bag CONTENTS are separately bumped to
+// compensate (a heavier follow-up: BountyBags caches its loot tables
+// into config/bountybags/*.toml after first boot, per this file's own
+// "STOP" note above, so a contents change needs the live TOML deleted/
+// regenerated, not just this file edited). Left as a known follow-up,
+// not done automatically here, since the actual complaint was volume,
+// not "not enough gold."
+//
 // `LootJS.modifiers(...)` / `.addEntityLootModifier(id).randomChance(n).addLoot(id)`
 // - same confirmed-working pattern as the old system, just pointed at
 // bountybags:*_loot_bag instead of the custom kubejs:* items, and now
 // applied to every wave mob instead of a tier-specific subset.
 LootJS.modifiers((event) => {
   ALL_WAVE_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.5).addLoot('bountybags:uncommon_loot_bag')
-    event.addEntityLootModifier(id).randomChance(0.15).addLoot('bountybags:rare_loot_bag')
-    event.addEntityLootModifier(id).randomChance(0.07).addLoot('bountybags:epic_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.2).addLoot('bountybags:uncommon_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.06).addLoot('bountybags:rare_loot_bag')
+    event.addEntityLootModifier(id).randomChance(0.03).addLoot('bountybags:epic_loot_bag')
     event.addEntityLootModifier(id).randomChance(0.02).addLoot('bountybags:legendary_loot_bag')
   })
 })

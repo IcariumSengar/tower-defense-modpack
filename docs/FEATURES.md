@@ -5642,6 +5642,14 @@ before dispatch, not guessable:
 
 ### Advanced Tower Defense, added alongside Medieval Defense Turrets — planned, not built
 
+**STALE as of 2026-09-09 — built, and the "don't touch" call below is
+reversed by direct feedback.** Advanced Tower Defense was installed and
+Musket Sentry/Anvil Launcher shipped as a later/heavier *addition* (Track
+C, 2026-09-08 — see that entry further down this file and
+`tier2_recipes.js`'s own header comment for the real recipe chain). Left
+as history, not deleted. The "MDT's Arrow Turret stays untouched"
+decision itself is superseded — see the new entry immediately below.
+
 MDT's Arrow Turret stays exactly as-is (already live, quest-integrated,
 verified via sandbox boot — don't touch). Advanced Tower Defense's
 **Musket Sentry** and **Anvil Launcher** get added as a later/heavier
@@ -5657,6 +5665,110 @@ dispatch:
 - Needs a real quest slot — extend the existing turret quest chapter
   rather than create a new one, per this pack's "one quest per distinct
   item" convention.
+
+### Tier 2 trap replacements: Vacuum Block → Item Collectors, Arrow Turret → Musket Sentry — spec ready, NOT BUILT, holding for explicit dispatch
+
+Direct feedback, 2026-09-09: "I hate the tier 2 traps... specifically the
+arrow turret and vacuum chest thing." Reviewed both against real
+decompiled/verified data before proposing replacements — not a taste-only
+swap.
+
+**Vacuum Block (`vacuum_cleaner:vacuum_block_tier_1`, the "vacuum chest
+thing") — real finding: it's not just fiddly, it's dead code.** Decompiled
+all 5 tiers (`VacuumBlockTier1Block` through `Tier5Block`, all
+`net.mcreator.vacuumcleaner.block`) directly via `javap`. Every tier's
+constructor chains exactly 4 `BlockBehaviour.Properties` builder calls
+(`of()` → `instrument()` → `sound()` → `strength(1.0F, 10.0F)`) straight
+into the `Block` superconstructor — **no tier calls `.randomTicks()`
+anywhere, and none overrides `isRandomlyTicking()`.** Every tier's actual
+item-pull logic (`VacuumprocedureProcedure`/`Vaccumtier2proProcedure`/.../
+`Vacuumtier5proProcedure`) is only ever invoked from the block's own
+`randomTick()` override — confirmed via a full-jar grep, nothing else in
+the mod calls it. Per vanilla's own block-ticking rules (confirmed via
+web search against Forge 1.20.1 docs), a block that never opts into
+random ticking never has `randomTick()` called at all. **The entire pull
+mechanic is unreachable in normal play, on every tier, not just tier 1** —
+this can't be patched via KubeJS (`isRandomlyTicking()` is a hardcoded
+Java method, not data-driven; same "no custom Java mod" boundary as
+Advanced Tower Defense's turret-head recipes above), so the fix has to be
+a different mod, not a config tweak.
+
+**Replacement: Item Collectors** (CurseForge, real Forge 1.20.1 build
+confirmed directly via CurseForge's own files list — file v1.1.7 exists
+for 1.20.1/Forge, not guessed from the mod's newest-version page; 53M+
+total downloads, created 6 years ago, still receiving releases into 2026
+— a well-established mod, not a fringe one). Real, verified mechanic
+(CurseForge's own description page, cross-checked, not taken on faith):
+places collected items into whatever block sits directly underneath the
+collector (a plain chest is enough — no hopper rig at all), pulls from a
+genuinely omnidirectional radius (Basic Item Collector: up to 5 blocks
+per axis; Advanced: up to 7 blocks + a whitelist/blacklist item filter),
+range configurable per-axis via the block's own GUI, no redstone/power
+requirement. Directly answers all three named complaints: no rig beyond
+"put a chest under it," no directional limitation, and it reads as a
+generic scavenging "collector" rather than a vacuum-cleaner reskin.
+**Scope call**: ship the Basic tier only as the Tier 2 replacement (keeps
+the existing single-slot design, matches Vacuum Block's own tier-1-only
+usage) — the Advanced tier (filtering) is a real future Tier 3 upgrade
+candidate, not built here.
+
+**Arrow Turret (`medievalturrets:bow_turret_item`) — direct feedback: too
+weak/boring, and a thematic mismatch.** Already-documented real quirks
+(from the earlier "Herd Them In" quest-text fix) explain part of why it
+reads as thin: unlimited free arrows with zero ammo mechanic (no
+maintenance loop at all), spawns facing a random direction until it
+acquires a target, and a stray `RandomStrollGoal` can walk it off its
+placed position when idle.
+
+**Replacement: promote Advanced Tower Defense's Musket Sentry into the
+actual Tier 2 gate, replacing Arrow Turret rather than sitting behind it.**
+Zero new mod install — Musket Sentry is already installed and its full
+recipe chain already works (Track C, 2026-09-08): Turret Workbench (Tier
+0) + Blueprint (Musket Turret) + `tech_tablet_mechanics`, both gated
+behind Shrapnel, then the mod's own hardcoded-Java assemble step (8x
+iron_ingot, 1x stone_barrel, 1x spring, 1x spyglass, 6x wooden_parts, 4x
+stone_parts — see `tier2_recipes.js`'s header for the full decompiled
+chain). Real ammo economy already confirmed working (musket
+shells/slugs, vanilla-material recipes, no dependency on anything gated).
+Thematically a mounted gun, not a bow-on-a-stick — matches "heavier
+sentry" framing already in its own quest text ("A heavier sentry than the
+Arrow Turret..."). **Real quest-chain work needed**: "Beyond the Bow"
+(Musket Sentry's quest, id `503260000FFBD462`) currently depends on
+"Wired for War" (Arrow Turret's quest, id `74779308DEED321D`) — that
+dependency needs flattening so Beyond the Bow becomes the Tier 2 gate
+quest itself, not a bonus branching off it. Its description text ("A
+heavier sentry than the Arrow Turret...") also needs a rewrite once Arrow
+Turret is gone, since it currently assumes Arrow Turret is a live sibling
+item.
+
+**Scope call on Arrow Turret itself: cut entirely** (recipe removed from
+`tier2_recipes.js`, "Wired for War" quest removed/repurposed), not
+demoted to a Tier 1 option — Tier 1 has no turret slot in its own design
+and nothing in the feedback asked to keep a cheaper version around.
+
+**Not yet built, not yet dispatched** — holding per this pack's own
+"write the spec, wait for explicit send it" practice. Real work for
+whoever builds this:
+- Verify Item Collectors' actual block/item IDs and default recipe from
+  its own shipped data (packwiz hash-verified jar) before writing any
+  glue — same rigor as every other mod addition in this pack, don't trust
+  the CurseForge description page's item names.
+- Re-recipe Item Collectors' basic tier via the established
+  `event.remove` + `event.shaped` pattern, matching the Tier 2 loot-pool
+  filler convention (`quartz`/`redstone_block`/`iron_block`) already used
+  for the rest of this file.
+- Remove `vacuum_cleaner:vacuum_block_tier_1`'s recipe entirely from
+  `tier2_recipes.js`; the mod itself can be uninstalled from packwiz once
+  nothing references it.
+- Rewrite the "Waste Not" quest text (currently describes the Vacuum
+  Block's — also fictional, given the dead-code finding above — pickup
+  behavior) to describe Item Collectors' real mechanic instead.
+- Flatten "Beyond the Bow"'s quest dependency as described above, remove
+  or repurpose "Wired for War," rewrite Beyond the Bow's description to
+  drop the Arrow Turret comparison.
+- Full-mod-set sandbox boot (uninstalling `vacuum_cleaner`, keeping
+  Advanced Tower Defense already-installed) before shipping — same bar as
+  every other recipe/quest change in this pack's history.
 
 ### Shrapnel/scrap folded into loot bag tables — planned, not built
 
@@ -6643,3 +6755,246 @@ assumed**: whether `AttackEntityEvent` is actually reachable from
 KubeJS in this exact build, or whether this needs to fall back to the
 same by-shape Forge-event-bus reflection this pack already uses
 elsewhere - check first, don't build on the assumption.
+
+## Live-feedback batch, 2026-09-09 (part 2)
+
+3 more items from direct playtest feedback ("the starting house has
+gone... no longer spawns in", "force the tab keybind to open quests",
+"far far too many loot bags... about 15 bags" by wave 2). Each diagnosed
+against the actual live instance (`logs/latest.log`, `options.txt`) or
+the mod's own real NBT/JS before changing anything, not guessed.
+
+### 1. Starting house missing - root cause + Red House swap
+
+Root cause, found directly in the live instance's own `logs/latest.log`
+for the exact world that reported it: that boot's spawn search landed
+only 20.4 blocks from a real generated structure (this pack's own Big
+Lost City/Philip's Ruins are the only ones dense enough to land that
+close) - inside `STRUCTURE_MIN_DISTANCE`'s 200-block target - and the
+same boot logged "terrain variance 66 blocks across the base footprint."
+The terrain-leveling pass in `playtest_starter_kit.js` only compensates
+for ~16 blocks of unevenness, nowhere near enough for ground that rough
+- the `/place template` building landed on broken terrain fighting
+another structure's own generation, while the courtyard's own `/fill`
+walls survived fine (terrain-height independent). This is a real,
+structural risk that could recur with ANY building on a future world -
+not fixed here, flagged as a genuine follow-up if it happens again.
+
+Direct ask once diagnosed: pick a different building rather than just
+re-placing the same one. Presented the 2 remaining untried
+postapocalypse_structures buildings (Yellow House 26×21×18, Red House
+22×15×15 - Red Mansion 26×19×28 was already rejected as too big) plus
+Abandoned Urban as a stylistic alternative; picked **Red House**, same
+mod/aesthetic as before.
+
+Full swap in `playtest_starter_kit.js`:
+- `BUILDING_WIDTH/DEPTH/HEIGHT` updated to Red House's real decompiled
+  dimensions (22×15×15, DataVersion 3465).
+- `/place template` repointed at `postapocalypse_structures:red_house`.
+- Every local-coordinate fixup re-derived from Red House's own real NBT
+  (decompiled directly, not carried over from Abandoned Brick House's
+  numbers, which would have hit arbitrary wrong blocks in the new
+  layout): wet_sponge foundation swap (124 blocks vs. the old 78),
+  ground-floor crafting table -> `craftingstation:crafting_station`
+  (Red House has 2 baked-in vanilla crafting tables; only the
+  ground-floor one is swapped), cauldron/tripwire/tripwire-hook removal
+  (2 of each), and all 30 real loot barrels stripped (vs. the old
+  building's 5) per the standing "loot lives outside the border" policy.
+- Checked for Abandoned Brick House's other 2 known issues (green-
+  terracotta/snow roof patch, "bed-like trapdoor" trick) against Red
+  House's real NBT - neither exists in the same form, left untouched
+  rather than guessing a fix for something not actually there.
+- `worldborder set 50 -> 58`: real math, not guessed - the compound's
+  outer wall sits `GATE_OFFSET + COURTYARD_DEPTH + BUILDING_DEPTH +
+  BACK_MARGIN` blocks from spawn. The old 11-deep building left a real
+  3-block buffer inside the old radius-25 border; Red House's 15-deep
+  footprint eats that buffer entirely (and 1 block past it) unless the
+  border grows too. `base_expansion.js`'s own growth is a relative
+  `worldborder add`, so this needed no other change.
+- **`HOUSE_REINFORCE_BLOCKS` (the 212-block wall-reinforcement pass from
+  the 2026-09-04 "House reinforcement" feature) is disabled, not
+  redone** - every entry is a local coordinate + block matched
+  specifically against Abandoned Brick House's own wall geometry;
+  applying it unchanged to Red House would reinforce arbitrary wrong
+  blocks. Left in the file as reference, invocation commented out. Real
+  follow-up if wanted: redo the same decompile-and-match process against
+  Red House's own wall planes. Until then only the courtyard's own
+  perimeter wall is reinforced - which is the part direct feedback
+  actually praised ("the outer perimeter looks cool so want to keep
+  that").
+
+### 2. Tab keybind for quests - already in effect, no config change needed
+
+Checked the live instance's own `options.txt` directly: FTB Quests'
+`key_key.ftbquests.quests` is already bound to Tab, alongside vanilla's
+`key_key.playerlist` and Refined Storage's `focusSearchBar`. Minecraft
+doesn't actually block a key from being reused across bindings - it only
+flags a "duplicate" in the Controls menu; every binding sharing a key
+still fires on press. No pack-side change needed (and none made -
+`options.txt` is a per-player file, not something this pack's build
+process should be overwriting anyway).
+
+### 3. Loot bags - drop-rate cut, real math not a guess
+
+Root cause: `loot_bag_drops.js`'s 2026-09-08 redesign gives every wave
+mob kill 4 independent rolls (0.5/0.15/0.07/0.02 = 0.74 expected
+bags/kill). Wave 1+2 kill 21 mobs total (`WAVES[0]`/`[1]` in
+`wave_spawner.js`), predicting ~15.5 bags - matches the report ("about
+15 bags" by wave 2) almost exactly, with Uncommon's own 0.5 alone
+accounting for ~70% of that volume.
+
+Cut to 0.2/0.06/0.03/0.02 (~0.31 total/kill, ~40% of the old volume) -
+same per-tier shape (every mob still gets an independent shot at every
+tier, the real point of the 2026-09-08 redesign, not reverted), just
+scaled down enough that a wave 1-2 clear lands around 6-7 bags instead
+of 15. Legendary left untouched (deliberately a rare jackpot, and was
+never the volume driver - only ~0.4 expected bags over the same 21
+kills).
+
+Known, flagged trade-off: Uncommon bags are this pack's real
+`gold_nugget` source (calibrated against the 2026-09-05 gold-economy
+fix) - cutting its rate to ~40% of its old value also cuts average gold
+income from kills by roughly the same fraction, unless bag CONTENTS are
+separately bumped to compensate (a heavier follow-up needing BountyBags'
+live `config/bountybags/*.toml` deleted/regenerated, per this file's own
+"STOP" note about its one-time loot-table cache). Not done here since
+the actual complaint was volume, not "not enough gold" - revisit if gold
+starts feeling short.
+
+### Also fixed while in the area: bounty progress counter crash
+
+Real live bug, not part of the 3 items above but found in the same
+`logs/latest.log` sweep and cheap to fix while already in
+`bounty_kills.js` for context: the just-shipped bounty progress-bar
+reflection (previous batch, item 2 above) threw `TypeError: bqTaskForId
+is not a function, it is undefined` on every real server boot, silently
+disabling the whole progress display (the "STOP"-tier reflection risk
+that entry's own "needs a live sandbox check" note anticipated). Root
+cause: `bqTaskForId` was a `function` DECLARATION nested inside a `try`
+block - this exact Rhino build doesn't reliably hoist a block-nested
+function declaration the way normal JS engines do, even though its own
+call sites sit textually below it in the same block. Fixed by making it
+a plain top-to-bottom `var` assignment instead (a function EXPRESSION,
+not a declaration), which carries no hoisting ambiguity in any engine -
+same general "curated dispatch, not standard JS semantics" gap this
+codebase has already documented elsewhere (Rhino Java reflection
+quirks).
+
+## Structure spawn-exclusion floor — built 2026-09-09, priority fix, not yet confirmed in live play
+
+Direct report with a Xaero's minimap screenshot: structures (villages,
+gas stations, pillager outposts, ruins) landing "way way too close" to
+spawn - the screenshot showed roughly a dozen distinct structures
+clustered within ~100 blocks of the player, overlapping each other.
+Same underlying issue the "part 2" item 1 entry above already flagged
+as an unfixed risk ("spawn landed too close to a big structure... not
+fixed, only worked around for this one report") - this is the real fix
+for that class of bug, not just this one report.
+
+**Root cause, not a guess**: `minecraft:random_spread` placement always
+evaluates a candidate position for the grid region containing true
+world coordinate (0,0), regardless of `spacing`/`separation` value -
+that region's own offset range is `[0, spacing-separation)` chunks,
+which starts at literally 0. Confirmed by re-reading this pack's own
+retune history: 2026-08-31 tightened spacing to guarantee reachable
+loot inside a then-tiny border, 2026-09-02 loosened it back because
+density read as "saturating from wave 1," and 2026-09-09 (900d52c)
+tightened it again into near/mid/far tiers (6/3, 14/7, 28/14 chunks) to
+re-align density with `structure_loot_progression.js`'s distance-based
+loot tiers. Each pass only ever changed the AVERAGE distance between
+repeats of the same structure - none of them could fix the minimum,
+because the near-origin region's floor is always 0 blocks regardless of
+spacing. This save's runtime-searched spawn also happened to land
+almost exactly at true (X:-4, Z:0), which is why every near-tier set's
+near-origin roll actually manifested as visible clutter instead of
+landing somewhere the player hasn't walked yet - and this isn't a fluke
+specific to this save, since vanilla's own spawn search already starts
+from (0,0) and expands outward, so most seeds keep spawn reasonably
+close to true origin too.
+
+**Fix: a real guaranteed minimum-distance floor**, not another spacing
+guess. Verified `exclusion_zone` (`{other_set, chunk_count}`) is a real
+1.20.1 field by extracting vanilla's own `pillager_outposts.json` from
+the exact installed client jar (`Install/versions/1.20.1/1.20.1.jar`) -
+it already excludes pillager outposts within 10 chunks of any village.
+This pack already uses the same mechanism successfully in 3 places
+(`u_desert:pillager_outpost` and `philipsruins:field_stone_ruins_rocks`
+vs. `minecraft:villages`, and 6 of `the_lost_city`'s own sets vs. its
+own `city` set) - reusing a pattern already proven in this exact repo,
+not introducing an unverified one.
+
+Built a dedicated anchor point at true world origin by overriding the
+vanilla `minecraft:ocean_monuments` structure_set
+(`pack/kubejs/data/minecraft/worldgen/structure_set/ocean_monuments.json`,
+new file - no prior override existed) to `spacing: 32, separation: 28`
+(32 is unchanged from vanilla's own stock value, only separation moved
+closer to it) - its region-(0,0) instance now lands within 0-64 blocks
+of true origin, deterministic within one chunk band. Picked
+`ocean_monuments` specifically because this world's biome source
+(`pack/kubejs/data/minecraft/dimension/overworld.json`) has no ocean
+biome at all (desert/badlands/plains/sunflower_plains/meadow only) - the
+anchor's own structure can never physically generate, so it's purely a
+math reference point, zero visual footprint. `exclusion_zone` uses the
+other set's grid-computed candidate position for distance checks
+independent of whether that structure actually passes its own biome
+check - same reason vanilla's own pillager-outpost/village exclusion
+already works this way.
+
+Added `exclusion_zone` (vs. `minecraft:ocean_monuments`) to every
+structure_set from the near/mid/far density pass, tiered to roughly
+double each tier's own existing spacing-chunk value plus a margin for
+the anchor's own small position uncertainty:
+- **Near tier -> `chunk_count: 10`** (~160 block floor): both
+  `abandoned_urban` sets (fire_tower, gas_station),
+  `philipsruins:desert_structures`, all 4 `postapocalypse_structures`
+  houses, and `minecraft:villages` itself (previously had no exclusion
+  at all).
+- **Mid tier -> `chunk_count: 20`** (~320 block floor): the remaining 5
+  `abandoned_urban` sets and 10 remaining `philipsruins` sets.
+- **Far tier -> `chunk_count: 30`** (~480 block floor):
+  `watchtower_building`'s 2 sets, plus `philipsruins:nether_ruins` and
+  `underground_structures` (48/24 spacing, previously untouched by any
+  retune pass).
+
+**2 files already had an `exclusion_zone` slot in use** (a structure_set
+can only hold one) - `u_desert:pillager_outpost` and
+`philipsruins:field_stone_ruins_rocks` both previously excluded 10/20
+chunks from `minecraft:villages` (anti-overlap, not anti-spawn-clutter).
+Swapped their target to the new anchor instead, same chunk_count each
+already had - trades away the "don't overlap a real village" guarantee
+for the reported bug's fix, a deliberate call given the report's
+severity.
+
+**Deliberately left alone**: `the_lost_city`'s 10 sets (explicit caution
+carried over from 900d52c - "has its own overlap safeguards, retuning
+it once already caused a real collision crash"; adding an exclusion
+field is a smaller change than retuning spacing but not worth the risk
+given 6 of its 10 sets already use their own single `exclusion_zone`
+slot against `the_lost_city:city` for internal collision safety).
+`abandoned_structures`' 4 sets (`berezka_api:berezkas_structure_placement`,
+a mod-custom placement type, not vanilla `random_spread` -
+`exclusion_zone` support unverified for this codec, and this set is
+already the least severe offender at 28-96 chunk spacing). Both are
+real, lower-severity gaps, not fixed here - flagged as a known follow-up
+if either keeps showing up close to spawn after this fix.
+
+Validated all 30 touched/new JSON files parse (`node -e
+"JSON.parse(...)"`), matching this pack's own JSON-syntax-check
+discipline. **Not yet verified via a real sandbox boot** - unlike this
+pack's usual worldgen-change practice (structure placement changes have
+caused 3 real world-creation crashes before: YUNG's Better Desert
+Temples, the noise-settings schema gap, the Radium chunk_region race),
+this pass reused only fields already proven live in this exact repo
+(`exclusion_zone` shape, `ocean_monuments`' own vanilla spacing value),
+but a real boot + `/locate` distance check against the new anchor is
+still the right verification step before calling this confirmed.
+
+**Real, honest limit, same as every other worldgen change in this
+pack**: structure placement is decided at chunk-generation time. The
+screenshot's own already-explored chunks near spawn were generated
+under the old settings and will keep exactly what's already there -
+this fix only changes what generates in chunks that haven't loaded yet.
+Seeing the fix reflected around spawn specifically needs either a fresh
+world, or the border/exploration eventually reaching not-yet-generated
+territory near the old spawn (unlikely to happen naturally, since
+that's precisely the area already explored).

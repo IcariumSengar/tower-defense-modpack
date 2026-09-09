@@ -10,6 +10,10 @@
     "spread_type": "triangular",
     "salt": 165916912,
     "spacing": 14,
-    "separation": 7
+    "separation": 7,
+    "exclusion_zone": {
+      "chunk_count": 20,
+      "other_set": "minecraft:ocean_monuments"
+    }
   }
 }

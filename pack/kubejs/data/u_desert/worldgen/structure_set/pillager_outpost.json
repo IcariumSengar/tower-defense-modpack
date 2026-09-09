@@ -7,7 +7,7 @@
     "salt": 1515342,
     "exclusion_zone": {
       "chunk_count": 10,
-      "other_set": "minecraft:villages"
+      "other_set": "minecraft:ocean_monuments"
     }
   },
   "structures": [

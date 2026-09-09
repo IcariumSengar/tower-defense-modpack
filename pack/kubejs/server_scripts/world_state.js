@@ -58,3 +58,46 @@ function worldData(level) {
   var entity = findWorldStateEntity(level)
   return entity ? entity.persistentData : null
 }
+
+// One-time migration, 2026-09-09 - real regression found live (direct
+// report: "I no longer see the pedestal's health bar"). Root cause: the
+// 2026-09-08 multiplayer fix above moved every key below from
+// player.persistentData onto this marker's own persistentData, but only
+// ever WROTE fresh values here for a brand-new world build
+// (playtest_starter_kit.js's build-the-base branch). Any world whose
+// marker was summoned before that fix - this pack's own long-running
+// dev save included - kept an empty marker forever: nothing ever
+// satisfied `data.contains('td_pedestalX')` again, so pedestal_health.js/
+// pedestal_destruction.js/wave_spawner.js/wave_status.js/amulet_border.js
+// all silently no-op on their very first check, every tick, forever -
+// not just the bossbar, the wave counter and every other shared flag
+// below reset to defaults too. Copies the full known shared-key set from
+// the joining player's own (now legacy, orphaned) persistentData onto
+// the marker exactly once, gated by the same td_pedestalX canary every
+// reader already relies on to mean "real data lives here" - a fresh
+// world's marker already has this key the moment it's built, so this
+// safely never fires for one.
+var LEGACY_SHARED_INT_KEYS = [
+  'td_pedestalX', 'td_pedestalY', 'td_pedestalZ', 'td_pedestalHealth',
+  'td_pedestalAlertTier', 'td_waveNumber', 'td_lastHornUseTick',
+  'td_countdownEndTick', 'td_waveSpawnCompleteTick', 'td_lastEndlessLevel',
+  'td_bossLastSpawnedWave', 'td_bountyKillCount',
+]
+var LEGACY_SHARED_BOOLEAN_KEYS = [
+  'td_pedestalDestroyed', 'td_pedestalBossbarAdded', 'td_amuletOnPedestal',
+  'td_inWave', 'td_wasInWaveForExpansion', 'td_countdownActive',
+  'td_pacingAnnounced', 'td_starterGearRemoved',
+]
+
+function migrateLegacySharedState(player, marker) {
+  var markerData = marker.persistentData
+  if (markerData.contains('td_pedestalX')) return
+  var legacy = player.persistentData
+  if (!legacy.contains('td_pedestalX')) return
+  LEGACY_SHARED_INT_KEYS.forEach(function (key) {
+    if (legacy.contains(key)) markerData.putInt(key, legacy.getInt(key))
+  })
+  LEGACY_SHARED_BOOLEAN_KEYS.forEach(function (key) {
+    if (legacy.contains(key)) markerData.putBoolean(key, legacy.getBoolean(key))
+  })
+}

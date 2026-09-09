@@ -259,7 +259,19 @@ function bqInitProgressReflection(anyObj) {
     var parseHexIdMethod = questObjectBaseCls.getMethod('parseHexId', [stringCls])
     var optionalGetMethod = optionalCls.getMethod('get', [])
 
-    function bqTaskForId(hexId) {
+    // Real live bug, 2026-09-09: shipped as a `function bqTaskForId(...)`
+    // declaration nested inside this try block - threw "bqTaskForId is
+    // not a function, it is undefined" on every real server boot
+    // (confirmed in the live instance's logs/latest.log), even though
+    // its own call sites sit textually below it in this exact same
+    // block. This Rhino build doesn't reliably hoist a function
+    // DECLARATION nested inside a block the way normal JS engines do -
+    // same general "curated dispatch, not standard JS semantics" family
+    // of gap this codebase has already hit elsewhere (mob_aggro.js's
+    // functional-interface coercion, this file's own MobCategory note
+    // above). Fixed by making it a plain top-to-bottom `var` assignment
+    // instead, which carries no hoisting ambiguity in any engine.
+    var bqTaskForId = function (hexId) {
       var optionalLong = parseHexIdMethod.invoke(null, [hexId])
       var idLong = optionalGetMethod.invoke(optionalLong, [])
       return getBaseMethod.invoke(bqServerQuestFileInstance, [idLong])

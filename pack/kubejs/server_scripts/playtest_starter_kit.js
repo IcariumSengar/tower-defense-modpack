@@ -600,6 +600,14 @@ PlayerEvents.loggedIn((event) => {
   // whether THIS player has ever logged in before.
   var existingMarker = findWorldStateEntity(level)
   if (existingMarker) {
+    // Real regression fix, 2026-09-09 (see world_state.js's own comment
+    // on migrateLegacySharedState for the full writeup). Must run here,
+    // BEFORE the td_playtestKitGiven check right below - that check
+    // already returns immediately for this pack's one long-running
+    // player, which is exactly why the migration could never reach this
+    // point if it lived any later in this function.
+    migrateLegacySharedState(player, existingMarker)
+
     // World already built - this player just needs their own gear, not
     // a second base. Vanilla's own /setworldspawn (set once, by whoever
     // built the world) already places a player with no personal spawn
@@ -743,7 +751,18 @@ PlayerEvents.loggedIn((event) => {
   // compound footprint comfortably fits the original border size again,
   // so this also restores base_expansion.js's originally-tuned wave-8
   // ending border of 166 instead of the mansion-driven ~206.
-  event.server.runCommandSilent('worldborder set 50')
+  // **Bumped 50 -> 58, 2026-09-09** (Red House swap below, real math not
+  // a guess): the compound's own outer wall (z0) sits at
+  // `z - GATE_OFFSET - COURTYARD_DEPTH - BUILDING_DEPTH - BACK_MARGIN`
+  // blocks from spawn - with the old 11-deep building that was 22 blocks,
+  // comfortably inside the old radius-25 (diameter 50) border with a real
+  // 3-block buffer. Red House is 15 deep (4 more), pushing that to 26
+  // blocks - already past a 25 radius with the buffer gone entirely, and
+  // 1 block into the border itself. `worldborder add` in base_expansion.js
+  // is purely relative, so bumping this base value doesn't need any
+  // change there - it just restores the same 3-block buffer (radius 29,
+  // diameter 58) rather than guessing a bigger round number.
+  event.server.runCommandSilent('worldborder set 58')
   // Wave mobs deliberately spawn just beyond the border (wave_spawner.js)
   // and walk in - without this, vanilla's default border damage would
   // chip them (and the player, near the edge) for no reason this pack
@@ -763,20 +782,40 @@ PlayerEvents.loggedIn((event) => {
   // spawn point, courtyard runs north from there, then the building,
   // then a back margin closing out the compound. Swapped from Red
   // Mansion to Abandoned Brick House the same day (2026-09-01, direct
-  // feedback: "this mansion is too big") - real dimensions confirmed by
-  // decompiling its own NBT directly (12 wide (X) x 13 tall (Y) x 11
-  // deep (Z), DataVersion 3465 matches this pack's install exactly),
-  // barely bigger than the original hand-built 11x11 footprint. Same
-  // mod, same aesthetic family, already installed - no new dependency.
-  // Watchtower removed entirely 2026-09-03 (direct request: "it serves
-  // no purpose now that we have a better starting structure" - its
-  // original 4-sided-lookout reasoning assumed border-relative mob
-  // spawns, stale since spawns went player-relative 2026-09-01, and it
-  // stood outside the compound's own back wall regardless, never part
-  // of the defended perimeter).
-  const BUILDING_WIDTH = 12
-  const BUILDING_DEPTH = 11
-  const BUILDING_HEIGHT = 13
+  // feedback: "this mansion is too big"). Same mod, same aesthetic
+  // family, already installed - no new dependency. Watchtower removed
+  // entirely 2026-09-03 (direct request: "it serves no purpose now that
+  // we have a better starting structure" - its original 4-sided-lookout
+  // reasoning assumed border-relative mob spawns, stale since spawns
+  // went player-relative 2026-09-01, and it stood outside the compound's
+  // own back wall regardless, never part of the defended perimeter).
+  //
+  // **Swapped again to Red House, 2026-09-09** - real playtest report:
+  // Abandoned Brick House "has gone... no longer spawns in." Root cause,
+  // found directly in the live instance's own logs/latest.log for the
+  // exact world that reported it: that boot's spawn search landed only
+  // 20.4 blocks from a real generated structure (this pack's own Big
+  // Lost City/Philip's Ruins are the only ones dense enough to land that
+  // close - docs/FEATURES.md's "World-gen structure variety" entry),
+  // well inside STRUCTURE_MIN_DISTANCE's 200-block target, and the same
+  // boot logged "terrain variance 66 blocks across the base footprint" -
+  // the terrain-leveling pass above only compensates for ~16 blocks of
+  // unevenness, nowhere near enough for ground that rough. The building
+  // placed onto broken terrain fighting another structure's own
+  // generation instead of the clean pad this code assumes - the
+  // courtyard's own `/fill` walls survived fine (terrain-height
+  // independent), only the `/place template` building itself broke.
+  // Direct ask once diagnosed: pick a different building (same mod,
+  // "something similar") rather than just re-placing the same one - this
+  // doesn't fix the underlying spawn/terrain risk itself (any building
+  // could still land next to a big generated structure on a future
+  // world), flagged as a real, separate follow-up if it recurs, not
+  // silently solved here. Real dimensions confirmed by decompiling Red
+  // House's own NBT directly (22 wide (X) x 15 tall (Y) x 15 deep (Z),
+  // DataVersion 3465, same install as before).
+  const BUILDING_WIDTH = 22
+  const BUILDING_DEPTH = 15
+  const BUILDING_HEIGHT = 15
   // 4 → 8 (2026-09-05, "the pedestal area is lacking any oomph... I
   // want this to be the heart of the base, the centre point to
   // everything"): the centered dais/step/grave-arc redesign below needs
@@ -1229,114 +1268,103 @@ PlayerEvents.loggedIn((event) => {
   // wave_status.js) and that tie-in is being dropped on purpose, per
   // explicit confirmation, not because it went unrecognized.
 
-  // Abandoned Brick House (2026-09-01, docs/FEATURES.md's "Redesign
-  // direction" - replaces the old hand-built single-room shack with a
-  // real professionally-modeled structure, since no amount of /fill
-  // detail fixed the "terrible" verdict on the old hand-typed shell).
-  // Swapped in from Red Mansion the same day (direct feedback: "this
-  // mansion is too big") - same mod, same postapocalypse aesthetic,
-  // 12x13x11 (barely bigger than the original hand-built 11x11
-  // footprint), real dimensions confirmed by decompiling the mod's own
-  // NBT directly (DataVersion 3465 matches this pack's install exactly)
-  // - not guessed. /place template loads a mod-registered structure the
-  // same clean way as a vanilla one, already confirmed in a live sandbox
-  // test for this same mod's Red Mansion. Its 8 chests/barrels already
-  // carry LootTable refs pointing at
-  // postapocalypse_structures:chests/{trash,cobwebs,food} - the exact
-  // tables this pack already buffed with real treasure earlier this
-  // session (see docs/QUEUE.md's Phase 3 entry) - so this is free
-  // upgraded starting loot, not something that needed clearing/replacing.
-  // Placed at floorY, not wallY0 - the building's own local y=0 layer is
-  // its floor/foundation material (matching the courtyard's floorY
-  // block below the walkable surface), so its local y=1 walkable ground
-  // floor lines up exactly with the courtyard's own walkable surface at
-  // wallY0 - placing at wallY0 instead would leave the building's floor
-  // sitting 2 blocks above the courtyard, an awkward step up right at
-  // its own front rather than a level walk-in (the exact bug caught and
-  // fixed for the Red Mansion placement this same day).
-  run(`place template postapocalypse_structures:abandoned_brick_house ${buildingX0} ${floorY} ${buildingZ0}`)
+  // Red House (2026-09-09 - see the BUILDING_WIDTH/DEPTH header comment
+  // above for the full "why the previous building disappeared"
+  // diagnosis). Same mod/aesthetic as Abandoned Brick House
+  // (postapocalypse_structures), just a different one of its 4 real
+  // buildings. Every local-coordinate fixup below was re-derived from
+  // Red House's own real NBT, decompiled directly - none of it reuses
+  // Abandoned Brick House's old local coordinates, since the two
+  // structures have completely different internal layouts and reusing
+  // the old numbers here would have hit arbitrary wrong blocks.
+  // HOUSE_REINFORCE_BLOCKS further below is the one piece deliberately
+  // NOT redone as part of this swap (see its own comment) - it's keyed
+  // to Abandoned Brick House's specific wall geometry and disabled
+  // rather than left pointing at the wrong blocks in Red House.
+  // Placed at floorY, not wallY0, same reasoning as before: this
+  // structure's own local y=0 layer is its floor/foundation material, so
+  // local y=1 lines up exactly with the courtyard's own walkable surface.
+  run(`place template postapocalypse_structures:red_house ${buildingX0} ${floorY} ${buildingZ0}`)
 
-  // Same real bug class caught for the Red Mansion, confirmed present
-  // here too by parsing this building's own NBT directly before
-  // shipping: /place template bypasses the mod's own worldgen
-  // block_ignore processor (which strips these during natural jigsaw
-  // generation), and the raw NBT has a 78-block wet_sponge layer at its
-  // own local y=0 (a "leave the terrain alone here" foundation marker)
-  // that would otherwise show up as visible sponge across the ground
-  // floor footprint. Replace-mode fill over just that one Y layer swaps
-  // it for the same stone_bricks the rest of the compound floor uses.
+  // Same real bug class Abandoned Brick House had: /place template
+  // bypasses the mod's own worldgen block_ignore processor, and this
+  // structure's raw NBT has its own wet_sponge foundation layer at local
+  // y=0 (124 blocks, decompiled directly - more than the old building's
+  // 78, matching Red House's bigger 22x15 footprint) that would
+  // otherwise show as visible sponge across the ground floor.
   run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
 
-  // Real playtest feedback batch, 2026-09-04 - furniture baked into this
-  // structure's own NBT, not scripted (same class of fix as the
-  // wet_sponge layer above). Decompiled the real NBT directly to find
-  // local coordinates rather than guessing - **real correction to the
-  // original spec while doing so**: the doc's own count of "8 chests/
-  // barrels" is wrong against the actual file. There are no chests at
-  // all, and only 5 barrels total (2x `chests/food` at [8,3,6]/[8,3,7],
-  // 1x `chests/trash` at [3,5,5], 2x `chests/cobwebs` at [3,6,5]/
-  // [3,7,5]) - removing all 5 real ones, not a guessed 8.
-  //
-  // Crafting table -> Crafting Station Improved's real block
-  // (`craftingstation:crafting_station`, confirmed from the mod's own
-  // blockstate JSON - single-variant, no facing property needed).
-  //
-  // Real bug found + fixed 2026-09-08 (live report: "still spawning with
-  // a water block in it"). Decompiled CraftingStationBlock.class directly:
-  // it implements SimpleWaterloggedBlock with a real WATERLOGGED property
-  // whose getFluidState() returns water when true. This exact coordinate
-  // sits where the original structure's own NBT has a water source (a
-  // kitchen sink feature) - /setblock replacing a water source with a
-  // waterloggable block auto-inherits waterlogged=true, same as
-  // hand-placing into water would, which is what was rendering as "water
-  // inside the crafting table." Forcing it off explicitly.
-  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station[waterlogged=false]`)
-  // Cauldron + tripwire hook - direct removal request.
-  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 5} minecraft:air`)
-  run(`setblock ${buildingX0 + 8} ${floorY + 2} ${buildingZ0 + 5} minecraft:air`)
-  // Starter loot chests/barrels - direct ask, remove all of them
-  // entirely, not just nerf their tables ("loot lives outside the
-  // border, not at home").
-  ;[[8, 3, 6], [8, 3, 7], [3, 5, 5], [3, 6, 5], [3, 7, 5]].forEach(([lx, ly, lz]) => {
+  // Crafting table -> Crafting Station Improved's real block, same
+  // standing policy as Abandoned Brick House. Red House's own NBT bakes
+  // in 2 vanilla crafting tables (decompiled directly: local [4,1,11] on
+  // the ground floor, [8,6,3] upstairs) - only the ground-floor one (the
+  // one actually reached first) is swapped; the upstairs one is left as
+  // a plain, still-functional vanilla crafting table rather than
+  // cluttering the build with two real crafting stations. No
+  // water-source bug here - confirmed directly, Red House's NBT has zero
+  // water blocks anywhere, unlike Abandoned Brick House's kitchen sink -
+  // [waterlogged=false] kept anyway since it's harmless and matches this
+  // pack's own established pattern for this exact block.
+  run(`setblock ${buildingX0 + 4} ${floorY + 1} ${buildingZ0 + 11} craftingstation:crafting_station[waterlogged=false]`)
+
+  // Cauldron + tripwire/tripwire hook - same standing removal policy as
+  // Abandoned Brick House (that was a direct removal request there; it
+  // generalizes cleanly since these are clutter/trap-style furniture,
+  // not building-specific aesthetic). Red House's NBT has 2 of each,
+  // decompiled directly, not guessed: cauldrons at local [3,1,4]/
+  // [6,6,3], a tripwire pair at [7,1,3]/[7,1,4], tripwire hooks at
+  // [3,2,4]/[6,7,3].
+  ;[[3, 1, 4], [6, 6, 3], [7, 1, 3], [7, 1, 4], [3, 2, 4], [6, 7, 3]].forEach(([lx, ly, lz]) => {
     run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
   })
 
-  // Green terracotta + snow patch - direct removal request 2026-09-05.
-  // Real structure NBT check first, not guessed: the building's roof
-  // uses plain minecraft:terracotta as a weathered-roofing motif at many
-  // points, but one 3x2 section at local y=5 ([6-8],5,[6-7]) is
-  // minecraft:green_terracotta instead, with 2 real snow layers stacked
-  // directly on top of it at local (8,6,6)/(8,6,7) - a "mossy patch with
-  // snow" roof accent. Removing the snow layers alone would leave green
-  // terracotta exposed underneath (still wrong per the ask); removing
-  // the green terracotta alone would leave the snow floating with
-  // nothing solid under it. Fixed both together: green_terracotta
-  // becomes plain terracotta (matching the roof's own established
-  // weathered color everywhere else in this same structure, not a new
-  // material), snow becomes air.
-  ;[[6, 5, 6], [6, 5, 7], [7, 5, 6], [7, 5, 7], [8, 5, 6], [8, 5, 7]].forEach(([lx, ly, lz]) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:terracotta`)
-  })
-  ;[[8, 6, 6], [8, 6, 7]].forEach(([lx, ly, lz]) => {
+  // Starter loot chests/barrels - same standing policy as Abandoned
+  // Brick House ("loot lives outside the border, not at home"). Red
+  // House carries far more of these than the old building did (30 real
+  // barrels with LootTable refs, decompiled directly, vs. the old
+  // building's 5) - all 30 removed entirely, not just nerfed.
+  ;[
+    [6, 1, 11], [11, 1, 3], [11, 1, 10], [11, 1, 11], [14, 1, 7], [15, 1, 9],
+    [6, 2, 11], [11, 2, 3], [14, 2, 7], [15, 2, 9],
+    [6, 3, 11], [14, 3, 7], [15, 3, 9],
+    [3, 4, 7], [4, 4, 7], [5, 4, 7],
+    [9, 6, 8], [12, 6, 3], [15, 6, 6], [15, 6, 9],
+    [9, 7, 8], [12, 7, 3], [15, 7, 6], [15, 7, 9],
+    [12, 8, 3], [15, 8, 6], [15, 8, 9],
+    [5, 9, 3], [6, 9, 3], [7, 9, 3],
+  ].forEach(([lx, ly, lz]) => {
     run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
   })
 
-  // "Bed-like blocks upstairs" - real, non-obvious finding while
-  // investigating, not a mod-furniture block as guessed: plain vanilla
-  // `minecraft:spruce_trapdoor` x4 in a row at local [3,5,4]-[6,5,4] (a
-  // classic trapdoor-bed decoration trick), one real floor up from the
-  // ground-floor crafting table/cauldron. Identified first, flagged for
-  // a real decision rather than guessed at - user's call 2026-09-04:
-  // clear it, not reskin.
-  ;[3, 4, 5, 6].forEach((lx) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + 5} ${buildingZ0 + 4} minecraft:air`)
-  })
+  // The green-terracotta/snow "mossy roof patch" and the "bed-like
+  // trapdoor" trick (both real, hand-found issues specific to Abandoned
+  // Brick House) were checked against Red House's own real NBT and NOT
+  // found in the same form - no matching green-terracotta patch
+  // anywhere, and its many trapdoors are all part of an evenly-gridded
+  // balcony-railing pattern (ordinary decorative use), not a clustered
+  // fake-bed shape. Left untouched rather than guessing at a fix for
+  // something that isn't actually there - flag it directly if anything
+  // still reads wrong once seen in game.
 
   // House reinforcement (2026-09-04, real playtest feedback batch,
   // direct ask: "reinforce the whole house... full uniform coverage"
   // over a distance-falloff pattern like the courtyard walls, given the
-  // house is "kinda the permanent fixture throughout the game"). Real
-  // scope, not guessed: the building's true solid wall shell doesn't sit
+  // house is "kinda the permanent fixture throughout the game").
+  //
+  // **Disabled 2026-09-09, Red House swap** - every entry below is a
+  // local coordinate + exact block matched against Abandoned Brick
+  // House's own specific wall geometry (see the rest of this comment
+  // block for how that was derived). Red House's walls sit at completely
+  // different local coordinates, so applying this array unchanged would
+  // set blocks at essentially arbitrary, likely-wrong positions inside
+  // the new building - left in place as reference for the technique, but
+  // its invocation below is skipped until the same decompile-and-match
+  // process is redone against Red House's own real NBT (a genuine
+  // follow-up task, not done blind as part of this swap - flag if
+  // wanted). The array data itself is now real ONLY for Abandoned Brick
+  // House, kept for history/reference, not live. Real scope this pass
+  // originally covered, not guessed: the building's true solid wall shell
+  // doesn't sit
   // at the structure's own bounding-box edges (x=0/11, z=0/10 - checked
   // first, found 0 real reinforceable blocks there) - the actual walls
   // are 2 blocks further in (x=2/9, z=2/9), the outer ring being a real
@@ -1573,9 +1601,13 @@ PlayerEvents.loggedIn((event) => {
     [2, 11, 5, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
     [9, 11, 5, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
   ]
-  HOUSE_REINFORCE_BLOCKS.forEach(([lx, ly, lz, block]) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} ${block}`)
-  })
+  // Invocation disabled - see the "Disabled 2026-09-09" note on
+  // HOUSE_REINFORCE_BLOCKS above. Only the courtyard's own perimeter
+  // wall is reinforced right now; the house itself is plain Red House
+  // material until this is redone for its real geometry.
+  // HOUSE_REINFORCE_BLOCKS.forEach(([lx, ly, lz, block]) => {
+  //   run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} ${block}`)
+  // })
 
   // Pre-placed Tier 1 kinetic rig (2026-09-03, direct request: pre-place
   // a finished Rolling Mill "same way it already ships with a furnace
