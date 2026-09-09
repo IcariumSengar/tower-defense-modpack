@@ -138,31 +138,31 @@ hash = "c59ffdc5b376c624636ea7353463682742775ffb926768a48ca18bede55cf9c0"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/city.json"
-hash = "90df7f3fc7ecf9722b5767e272c3ded895bf7807c72fcab824747b9737c30489"
+hash = "e951d0a6cf7f27f379e92deeefd3932c75ceca62838faa5252a06c50aeffa915"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/fire_tower.json"
-hash = "ef405f1ad95d8d003906b08a114ac7cff841eb25eb8f7838df846d3f43a5ac69"
+hash = "7c88e3a14f24ee7254b803e687c03e3407a75f68ace02751d11c0e9079e7dd17"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/gas_station.json"
-hash = "3f53296faaa3347841fc203916affc15f93d8cc7f0bc353572930f04dba28c53"
+hash = "d3ab0337f925a1c8de92929fb47aa3f40c168de16eb202b3e3b6a80c887241a1"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/motel.json"
-hash = "17fde9c70b98d237e568fba72915056c364006d41a66784c3c6f1770ce9db71b"
+hash = "9b146876dcc220225bf6260eb91d4b736f20bcaceda2a28302bcdbd24fde48d1"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/observatory.json"
-hash = "aba43735b292c31e879a754c2b03a36c2ff5ae9069794a3da074d73b8be156ba"
+hash = "5ce46b8208f1a532d5b51ee0ee876240bc14124a63144416158a182f925d2553"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/plane_crash.json"
-hash = "77d4d720e5a4236bb411a22bc151d7a59f3a13dc30019acc8a00320173d63acd"
+hash = "e9871e0b1508627ac3c3b55c020115ab3fe6c287908ce7ec5b12c6edf7e58f37"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/train.json"
-hash = "48bf95e7bcee0177d044cb498ef2ff09d207cb6a2f26c5386fb6c445141dfb8a"
+hash = "8f87ea7434c4aa832bb05e36f8aacb6cfa4707bd285df179840f4b36bf01b9a0"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/epic.json"
@@ -213,64 +213,68 @@ file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
 hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
 
 [[files]]
+file = "kubejs/data/minecraft/worldgen/structure_set/ocean_monuments.json"
+hash = "f63d838dcee5ae0b2f0f66bfbd208a172918341af77154c04e533f3f528e61fc"
+
+[[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/villages.json"
-hash = "ed01ea970ff82a83bc6c338e1d791711fd24c24263cbf53f31dd7460b0861a3c"
+hash = "62e444cf8c519c7519ff23abe72cfb1ad711b1c55f8c0e4eb3d7ec44fe5f21d0"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_crypt.json"
-hash = "a538259feb7b611fb44ff80a49eed297c487edc86fc47586b3cfb806ade05a94"
+hash = "47a1045b9c8d097a95501f30a6a9ecf3e0ec739536b44e36e98430a8401dc587"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_dungeon.json"
-hash = "baa7369015efad56b9577dbf30d03ff8183e0aec823bf9f8f86c729558fd8725"
+hash = "50d9ada0d3aea270f5854709e105c854d0ef767877e3ac701ca69c024fd87ef5"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_ruins.json"
-hash = "55700f36537eea1e2c79be2af4c7a0cd726859002e411da278893d3f406e196b"
+hash = "97b175e946e3d03a0aba2cfa80edb1010a77ec762668f5aef3de589ecce9577d"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_towers.json"
-hash = "bd350f3550c6cd012556219d3b5525ffff8caa5045d82a555b32f2ac798c5559"
+hash = "463249159de21b3253c2b4733f4acfa02d9ec43fe19cd5ec56def5b5f10b9157"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/antiquus_crypta.json"
-hash = "32c130a41df176d502c6490b7ca25dc31ef28c985db1cfa3f3b2c13c5195e061"
+hash = "7037d937712e44fc947f043a56f96fc0519330153a93bcda0320597ffe6e0688"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/desert_structures.json"
-hash = "5c3b41facb17536d3e19562d2f6dac6c461e1d1e54db233840daea9576984e51"
+hash = "df778aeea9379edcaaaf523bdda10caf9deeaad3f5de45a4882e28c0786b27ea"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/field_stone_ruins.json"
-hash = "e2678a4229e1fa1ee1f7fbbd11a12d6edc55889da8c95cbaf958fb1153f83403"
+hash = "674d7be3fc54bfc74bd10a9ff73039d8b4d4f0a4c267f9aa79ed5731cbbd547e"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/field_stone_ruins_rocks.json"
-hash = "9e75a589bcf65b71b3ad606a30f16e0728bfa96a62abf79e210de902212572b2"
+hash = "c9caf7a78c0f06eb3bdae247765165ddc8512c2d4cf9767218fbf5bc105eabb6"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/level_one_ruins.json"
-hash = "a44d99ad42e8b8c233c7a32ca5d6c75bab96d2fc1540fe40de6781157e416afc"
+hash = "0672112b8ba17981a93530438076c41c46e2327ddbbd5d8ec369f9d60ef1d4f8"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/level_three_ruins.json"
-hash = "7544012184b25d9a564288fa981430f4216de112e786e61df37c6157c6ae32b9"
+hash = "61780e86e5385ca2d17a73f720684acc04ee81ad1cb331a3339ed51bf1ecfa45"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/level_two_ruins.json"
-hash = "a9a6d0068a819d54a8ae77b9eed0269004d6e57b7cc99a46c5748d902903f0f6"
+hash = "849e3e1a94da8326b33c9fa588ac00190a9f1ea604c987cc97349d4e4a4ed50d"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/lost_soul_city.json"
-hash = "155e59d1ef42a33711ee4a6f204834446bdfad904194d9d2e6ba7be1826576b5"
+hash = "aa57199781dfbc4f578d5f10adff006f1b4a5b1fbb8799f67b110b1da32d165b"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/nether_ruins.json"
-hash = "bc4b0916372afceab2013f4a11325f1a9f2369f658aa19dcb99e0cf6d739c06a"
+hash = "91f9146fd9faec504ac198ee4222ce9088e7cc30e219f51751b0e1dce8eb34ad"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/underground_structures.json"
-hash = "ec3ea7a36014c3783bb318beed87e9d6da6e905ee20b630e515424b00c820cee"
+hash = "87112b033d0e09a1dfc01175706bdca5b57c6224bf61d98364518a60f3aa43bc"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/cobwebs.json"
@@ -290,19 +294,19 @@ hash = "dd72bf4356c95d3012a425711f50ed826c93eecd051d7ec1b09457d78d77d9ab"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/abandoned_brick_house.json"
-hash = "c504d44b9a501461d88ef75b3ff345e6928fd4fabe9db56c8df4d02d55e07c26"
+hash = "4408993e9bde9f01bd77a42e670e1a0bd72a15e6686f7a80c75e5dd0ca1149b1"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/red_mansion.json"
-hash = "789f61027f1dd52de8bfc9565abf6934689004eba752bd1726bb4e2ad5562adc"
+hash = "ee3dbd12c81a6643ca0a7e3d60619d823cf945afb9b7c43d5975b8a4f99e8b11"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/redhouse.json"
-hash = "d68555fc93a21bbd21cd74c099f9b6de92180b8512b2e026ae6eed1d28c9f878"
+hash = "c12834aca8948b4dbbf38e1a7bce24c58cc1383c89490b33f783745bf4268320"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/yellowhouse.json"
-hash = "263cc101d7c832eeb760e038f62cbf2319f1e1899185e7a27844d35885cd5f4b"
+hash = "2ab0280771fec30266a845b7c0034ccdba6e1e71ff3cd9952d017b7ecc4dbc0f"
 
 [[files]]
 file = "kubejs/data/the_lost_city/structures/farm1.nbt"
@@ -382,15 +386,15 @@ hash = "3ad6bea5db8008460b84f2528f9d82fc3f120dcc87db351e25cce40c1cbf74e5"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure_set/pillager_outpost.json"
-hash = "c2a37b3316516521181843be3bf5c3d3e89f11664778e68b00e0ffd7ab5891e3"
+hash = "277e266e8cff35c7ab016cf77c3b344745a45256a9364e18912eb045147bc178"
 
 [[files]]
 file = "kubejs/data/watchtower_building/worldgen/structure_set/abandoned_watchtower.json"
-hash = "2176261205c2430effbcb1fbf6462455a87e0821782dd040381d86e45cebdf50"
+hash = "3b3e60dc10a7d2d7834f2d21645697e70cef9bf5039cfb5cc7fda7df49228308"
 
 [[files]]
 file = "kubejs/data/watchtower_building/worldgen/structure_set/fresh_watchtower.json"
-hash = "58b5551a643490efd5712944a77b2375b952b0dd684c93cbcbf62758a446c5dc"
+hash = "9884d041ccedc83c726be3b7b991dec31a3df9308384b99ae54fba4b51a05df5"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_border.js"
@@ -418,7 +422,7 @@ hash = "1435a20fad13ef1bacb3ff8c0bbe4f0e8df2daf4f9b35b3144287458f38455d3"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
-hash = "0fe06392d59a8f0795848377e51d143a8ab36cd3d89ecd9193adf3b6f443706e"
+hash = "4ca6a0cb8dd8af83df836528b041af07571cb7a16dbe35947d8580755dd0ae58"
 
 [[files]]
 file = "kubejs/server_scripts/enhanced_hordes_config.js"
@@ -438,7 +442,7 @@ hash = "5f3adb347ab499dcb9303392082e48c99b5c8f9b4eedf1a221e76d21fb0a07c3"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "79c210a49a0ff80029fe9184c5b9f7d448294245a07d3fcd57b46396542b999e"
+hash = "ee7a9cc462678b58ec62255e3bc66be49eef6275a9b16965f6b08c46e9b96341"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
@@ -466,7 +470,7 @@ hash = "8e16f983287f54cea06eb03c698efab84dbfe07822104d2ca5e2c2badf75062a"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "874b4e568ea70709ffe8eec57a00fbf3eb189e5510767986eb9b37ed0628f4b2"
+hash = "b22ef87d5a3c5568ce688f875d3976d3c5e4490aee3ecc72205781101ca57469"
 
 [[files]]
 file = "kubejs/server_scripts/structure_chest_loot_fix.js"
@@ -502,7 +506,7 @@ hash = "fd02193314a07dd950204bd0248a44e744f66ab9f219e6b3016aa543c2aa4ead"
 
 [[files]]
 file = "kubejs/server_scripts/world_state.js"
-hash = "3df03a98ff3e988f9e05bc4da10933896170081aac25f4d12a395860563ae65f"
+hash = "9b77d4a6ffc98ac0e034594b0a33003e268de52df15e7cc26270d507e9e818ae"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
