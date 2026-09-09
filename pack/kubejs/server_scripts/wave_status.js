@@ -178,8 +178,9 @@ const FIXED_WAVE_EVENTS = [
       // could actually be read. Queued via pendingDelayedTitles instead
       // of firing immediately - see that array's own comment below for
       // the delay and why.
+      // Chat line removed 2026-09-09 (real playtest ask: "less noise from
+      // the chat window") - queueDelayedTitle above already pops this up.
       queueDelayedTitle(player, 'THE NIGHTS GROW LONGER', "You'll have more time to prepare from here on.")
-      player.tell('§6[Wave] §eThe gap between waves keeps growing from here - use it.')
     },
   },
 ]
@@ -337,7 +338,9 @@ PlayerEvents.tick((event) => {
     }
   } else if (wasInWave) {
     data.putBoolean('td_inWave', false)
-    player.tell(`§6[Wave] §aWave ${waveNumber} defeated!`)
+    // Chat line removed 2026-09-09 (real playtest ask: "less noise from
+    // the chat window") - the title/subtitle pair right below already
+    // delivers this as a popup, the chat message was pure duplication.
     // Subtitle-only, not the big title line (2026-09-08, direct ask: font
     // "slightly smaller" for this specific popup) - an empty title still
     // has to fire first to trigger the display window at all (vanilla's

@@ -294,7 +294,9 @@ PlayerEvents.tick((event) => {
   if (!heal) return
   if (!healPedestalByPercent(player, data, heal.percent)) return
   pedestalTile.setDisplayedItem(Item.of('minecraft:air'))
-  player.tell(heal.message)
+  // Toast, not chat (2026-09-09, real playtest ask: "less noise from the
+  // chat window") - no existing popup covers a manual heal-item use.
+  player.notify(heal.message)
 })
 
 function pedestalAttackDamage(mob) {

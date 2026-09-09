@@ -705,7 +705,11 @@ function useWaveHorn(player) {
       baselineIndex++
     }
 
-    player.tell(`§6[Wave Horn] §fWave ${waveNumber} incoming! (endless horde, difficulty ${endlessLevel}, +${baselineZombieCount + baselineOtherCount} baseline)`)
+    // Toast, not chat (2026-09-09, real playtest ask: "less noise from the
+    // chat window") - the title/subtitle pair below already pops up the
+    // wave-start moment itself, this just adds the difficulty/baseline
+    // numbers the subtitle's generic text doesn't carry.
+    player.notify(`§6Wave ${waveNumber} - endless horde, difficulty ${endlessLevel}, +${baselineZombieCount + baselineOtherCount} baseline`)
     server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}","color":"gold","bold":true}`)
     server.runCommandSilent(`title @a subtitle {"text":"An endless horde approaches...","color":"white"}`)
     // Real placeholder sound, 2026-09-05 - direct ask: something audible
@@ -750,7 +754,9 @@ function useWaveHorn(player) {
   })
 
   var displayWave = Math.min(waveNumber, WAVES.length)
-  player.tell(`§6[Wave Horn] §fWave ${displayWave} incoming! (${totalMobs} mobs)`)
+  // Chat line removed 2026-09-09 (real playtest ask: "less noise from the
+  // chat window") - the mob count is already in the subtitle below, this
+  // was pure duplication.
   // Big on-screen title (like an achievement popup), not just chat —
   // chat is easy to miss mid-fight. Uses vanilla /title via
   // runCommandSilent, consistent with every other command in this pack

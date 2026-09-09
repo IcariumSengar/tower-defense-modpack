@@ -82,5 +82,8 @@ PlayerEvents.tick(function (event) {
   var expansionBlocks = expansionForWave(waveNumber)
 
   player.getServer().runCommandSilent(`worldborder add ${expansionBlocks} ${EXPANSION_TIME_SECONDS}`)
-  player.tell(`§6[Base Expansion] §fWave ${waveNumber} cleared - the border grows by ${expansionBlocks} blocks.`)
+  // Toast, not chat (2026-09-09, real playtest ask: "less noise from the
+  // chat window") - no existing title/popup covers this specific number,
+  // unlike most of this pack's other wave-clear messages.
+  player.notify(`§6Base Expansion §f- the border grows by ${expansionBlocks} blocks.`)
 })

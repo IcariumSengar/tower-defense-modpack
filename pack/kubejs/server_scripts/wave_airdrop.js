@@ -101,7 +101,8 @@ function maybeTriggerWaveAirdrop(player, data, waveNumber) {
   server.runCommandSilent(
     `title @a title {"text":"SUPPLIES INBOUND","color":"gold","bold":true}`
   )
-  player.tell(`§6[Airdrop] §aWave ${waveNumber} cleared - a supply crate is inbound.`)
+  // Chat line removed 2026-09-09 (real playtest ask: "less noise from the
+  // chat window") - the title above already pops this up.
 }
 
 // Old wave-8+ speed-clear countdown display removed entirely (2026-09-08) -

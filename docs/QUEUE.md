@@ -3671,27 +3671,75 @@ this worktree's copies alone are not the full picture.
   a real player (bossbar/spawn/quest end-to-end) still needed - see this
   build session's own final report.
 
-## Live-feedback batch, 2026-09-09 - ready to build, not yet sent
+## Live-feedback batch, 2026-09-09 - all 3 built, none yet confirmed in live play
 
 3 items from direct playtest feedback, full spec/reasoning in
 docs/FEATURES.md's own "Live-feedback batch, 2026-09-09" section - this
-entry only tracks readiness/status against the user's own numbering.
+entry tracks status against the user's own numbering. User said "send
+it" 2026-09-09; built directly in this session rather than dispatched to
+a peer (both items were small/well-specified enough not to need it, and
+an interactive peer session can't be messaged safely without risking
+disrupting whatever it's already doing - see this project's own past
+finding on that).
 
-1. **Chat noise -> toast popups.** Convert ~8 routine status-ping call
-   sites (wave cleared, airdrop, base expansion, wave horn, force-clear,
-   pedestal heal) from `player.tell()` to `player.notify()`. Leave
-   one-time flavor/lore lines in chat. Mechanical, low risk, no
-   reflection.
-2. **Bounty quest live counter.** Reflection-based `TeamData.setProgress()`
-   call from `bounty_kills.js` + `max_progress` added to each task in
-   `bounties.snbt`. Same reflection pattern this pack already uses
-   elsewhere; new surface (first time touching FTB Quests internals) -
-   needs live-sandbox verification the progress bar renders correctly
-   and doesn't fight the existing `complete` calls.
-3. **Boomer zombie killable while armed.** Needs confirming
-   `AttackEntityEvent` (or an equivalent) is actually reachable from
-   this exact KubeJS build before it's buildable - not a guaranteed yes,
-   check first rather than building on the assumption.
-
-**Not yet sent** - holding for explicit go-ahead before dispatching to
-the build session.
+1. **Chat noise -> toast popups - built.** Investigating the 8
+   originally-listed call sites turned up something the original spec
+   didn't know yet: 5 of them already had a paired vanilla `/title`
+   popup sitting right next to the chat line (wave defeated, both wave-
+   incoming messages, the "gap keeps growing" beat, airdrop inbound) -
+   those chat lines were deleted outright as pure duplication rather
+   than converted, which cuts more real noise than the original plan.
+   The endless-wave-incoming message was converted to `player.notify()`
+   instead of deleted (carries difficulty/baseline numbers the subtitle
+   doesn't). 2 messages with no existing popup (base expansion border
+   growth, pedestal manual-heal) converted to `player.notify()`. Command-
+   feedback lines (force-clear, horn-misuse) left as chat - not part of
+   the "routine ping" complaint, they're rare/player-initiated. All 5
+   edited files pass `node --check`. **Not yet confirmed in live play.**
+2. **Bounty quest live counter - built.** `max_progress` (25/100/300/
+   750/1500) added to each task in `bounties.snbt`. `bounty_kills.js`
+   now reaches `TeamData.setProgress(Task, long)` via reflection (same
+   `Class.forName` bootstrap this pack already uses elsewhere), synced
+   from a throttled `PlayerEvents.tick` (every 10 ticks) rather than
+   every kill. **Two real bugs found and fixed while building, not
+   just assumed working**: task ids are real 64-bit values that lose
+   precision through JS's `parseInt` (routed through FTB Quests' own
+   `QuestObjectBase.parseHexId` instead), and a raw
+   `Method#invoke(Object, Object[])` call boxes a plain JS number as
+   `java.lang.Double`, which `setProgress`'s `long` parameter would
+   reject - routed every numeric argument through `Long.valueOf(String)`
+   instead. `isCompleted`'s boolean return is stringified and compared
+   (`` `${...}` === 'true' ``) rather than trusted for raw truthiness,
+   matching this codebase's own established idiom for values crossing an
+   uncertain Java/JS boundary. `.snbt` edit passed a brace/bracket
+   balance check, `.js` passes `node --check`. **First time this pack
+   has reached FTB Quests' own internals via reflection - genuinely new
+   surface, not yet confirmed in live play** (does the bar actually
+   render; does a completed tier stay completed once `killCount` climbs
+   past its own threshold).
+3. **Boomer zombie killable while armed - re-scoped and built, "telegraph
+   it" direction.** The open question from the original spec came back
+   negative: checked every event KubeJS 2001.6.5 actually registers
+   (`KubeJSPlayerEventHandler`/`KubeJSEntityEventHandler`/
+   `KubeJSItemEventHandler`, decompiled directly) - nothing fires before
+   a player's attack reaches `hurt()`, and `EntityEvents.hurt` itself
+   never fires at all for this specific case (`BoomerChargedEntity`'s own
+   `hurt()` override returns `false` before ever calling `super.hurt()`,
+   which is what would normally fire the event). Raw Forge-event-bus
+   reflection hits the same functional-interface-coercion wall this
+   codebase already documented for `mob_aggro.js`. Also found while
+   checking: `hurt()` blocks explosion damage too (`DamageTypes.EXPLOSION`
+   is in its exclusion list), so a TNT/explosive workaround doesn't
+   exist either - but `mob_attack` and other custom/unlisted damage
+   types (e.g. Bear Trap's own, Barbed Wire's own) are NOT blocked and
+   already work today, untouched. Given no clean player-melee-detection
+   path exists in this build, direct answer was to drop the "make it
+   killable" goal and telegraph the moment instead: `boomer_zombie_
+   explosion.js`'s own `EntityEvents.spawned` handler (already the exact
+   tick a `boomer_charged` arms, since it seeds the explosion queue there)
+   now also fires a red "ARMED" title, a "You cannot stop this one - move."
+   subtitle, and a positioned `entity.tnt.primed` sound cue at that same
+   instant - so a player knows immediately melee won't work and to
+   disengage rather than waste hits on something that can't be damaged.
+   `node --check` and an embedded-JSON parse check both pass. **Not yet
+   confirmed in live play.**

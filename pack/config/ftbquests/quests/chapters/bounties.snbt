@@ -28,6 +28,7 @@
 			]
 			tasks: [{
 				id: "42F2080CC88FFF1F"
+				max_progress: 25L
 				type: "custom"
 			}]
 			title: "First Blood"
@@ -53,6 +54,7 @@
 			]
 			tasks: [{
 				id: "A690E47C2C2FFDB5"
+				max_progress: 100L
 				type: "custom"
 			}]
 			title: "Exterminator"
@@ -78,6 +80,7 @@
 			]
 			tasks: [{
 				id: "57C0DB55E9655079"
+				max_progress: 300L
 				type: "custom"
 			}]
 			title: "Culling"
@@ -109,6 +112,7 @@
 			]
 			tasks: [{
 				id: "81F132C101C25BDA"
+				max_progress: 750L
 				type: "custom"
 			}]
 			title: "Reaper"
@@ -129,6 +133,7 @@
 			}]
 			tasks: [{
 				id: "1355429CD45AF725"
+				max_progress: 1500L
 				type: "custom"
 			}]
 			title: "Zombie Masher"

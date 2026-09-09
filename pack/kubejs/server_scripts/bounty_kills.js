@@ -133,6 +133,17 @@ EntityEvents.death((event) => {
   var server = event.level.getServer()
   server.runCommandSilent(`scoreboard players add @a ${BOUNTY_OBJECTIVE} 1`)
 
+  // JS-readable copy of the same running total, world-scoped like every
+  // other piece of wave state in this pack (worldData/findWorldStateEntity,
+  // shared from world_state.js) - kept purely so the progress-display tick
+  // handler below has a real number to work with. KubeJS has no binding to
+  // read a vanilla scoreboard score back into a script (checked - nothing
+  // on EntityKJS/PlayerKJS exposes one), so the scoreboard objective above
+  // and this int can't just be the same storage; they're driven by the
+  // same kill events so they can't drift apart either.
+  var bqData = worldData(event.level)
+  if (bqData) bqData.putInt('td_bountyKillCount', bqData.getInt('td_bountyKillCount') + 1)
+
   // Exact-score match, not a range - kills only ever increment by 1, so
   // the score passes through each threshold exactly once. Avoids re-
   // issuing `change_progress complete` on every kill for the rest of the
@@ -152,4 +163,167 @@ EntityEvents.death((event) => {
   server.runCommandSilent(
     `execute as @a[scores={${BOUNTY_MOD_OBJECTIVE}=0}] run ftbquests change_progress @s complete ${BOUNTY_REPEATABLE_TASK_ID}`
   )
+})
+
+// Live progress display (2026-09-09, real playtest ask: "can the bounty
+// quests have a counter on them like 1/25 killed, at the moment its just
+// a colourful circle with the word custom on it"). Decompiled FTB Quests
+// 2001.4.22 directly - the only script-facing command is `/ftbquests
+// change_progress <players> complete|reset <id>`, no "set progress to N"
+// subcommand exists in this version, which is why the `complete` calls
+// above only ever flip a task from 0 to fully done with nothing showing
+// in between. CustomTask does support a real max_progress + progress bar
+// (now set per-task in bounties.snbt) - it's just never been populated
+// because nothing calls the set-progress command that doesn't exist.
+//
+// Fix: reach `TeamData.setProgress(Task, long)` directly via reflection,
+// the same Class.forName bootstrap this codebase already uses elsewhere
+// (mob_aggro.js's own resolveClass / loot_bag_notification.js's
+// punResolveClass) since java.*/Packages.* is disabled in this Rhino
+// build. Named with a bq prefix, not shared with those other files' own
+// copies - top-level var/const don't share scope across server_scripts
+// in this exact build (confirmed elsewhere in this codebase already),
+// only top-level FUNCTIONS do.
+function bqResolveClass(anyObj, className) {
+  var classOfClass = anyObj.getClass().getClass()
+  var methods = classOfClass.getMethods()
+  for (var i = 0; i < methods.length; i++) {
+    var m = methods[i]
+    var params = m.getParameterTypes()
+    if (params.length === 1 && `${m.getReturnType().getName()}` === 'java.lang.Class' && `${params[0].getName()}` === 'java.lang.String') {
+      return m.invoke(null, [className])
+    }
+  }
+  return null
+}
+
+var bqProgressAvailable = true
+var bqProgressInitDone = false
+var bqServerQuestFileInstance = null
+var bqGetOrCreateTeamDataMethod = null
+var bqIsCompletedMethod = null
+var bqSetProgressMethod = null
+var bqLongValueOfMethod = null
+// {task: <CustomTask>, threshold: <number>} per fixed tier, plus the
+// repeatable task on its own - resolved once at init via ServerQuestFile's
+// own getBase(long), not re-looked-up on every kill. threshold itself
+// stays a plain JS number (max 1500, nowhere near the 2^53 safe-integer
+// ceiling that ruled out parseInt for the ids themselves) - it only ever
+// gets boxed via bqBoxLong() right before crossing into a reflective call.
+var bqFixedTierTasks = []
+var bqRepeatableTask = null
+
+// A raw Method#invoke(Object, Object[]) call is genuine Java reflection,
+// not Rhino's own normal dot-call dispatch - Rhino can't inspect the
+// target parameter's declared type through it (same real gap this
+// codebase already hit and documented for functional-interface
+// coercion, mob_aggro.js's own header comment), so a plain JS number
+// gets boxed as java.lang.Double for the call's Object[] args, and
+// setProgress's own `long` parameter would reject that with a real
+// IllegalArgumentException at runtime - a Double, unlike a Long, isn't
+// auto-unboxed to `long`. Routed through Long.valueOf(String) instead
+// (unambiguous - String isn't a primitive type reflection could get
+// wrong), same rigor as parseHexId above for the ids themselves.
+function bqBoxLong(n) {
+  return bqLongValueOfMethod.invoke(null, [`${n}`])
+}
+
+function bqInitProgressReflection(anyObj) {
+  if (bqProgressInitDone) return
+  bqProgressInitDone = true
+  try {
+    var serverQuestFileCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.ServerQuestFile')
+    var teamDataCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.TeamData')
+    var taskCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.task.Task')
+    var questObjectCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.QuestObject')
+    var questObjectBaseCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.QuestObjectBase')
+    var entityCls = bqResolveClass(anyObj, 'net.minecraft.world.entity.Entity')
+    var stringCls = bqResolveClass(anyObj, 'java.lang.String')
+    var optionalCls = bqResolveClass(anyObj, 'java.util.Optional')
+    var longCls = bqResolveClass(anyObj, 'java.lang.Long')
+    var longPrimitiveCls = longCls.getField('TYPE').get(null)
+
+    bqServerQuestFileInstance = serverQuestFileCls.getField('INSTANCE').get(null)
+    var getBaseMethod = serverQuestFileCls.getMethod('getBase', [longPrimitiveCls])
+    bqGetOrCreateTeamDataMethod = serverQuestFileCls.getMethod('getOrCreateTeamData', [entityCls])
+    bqIsCompletedMethod = teamDataCls.getMethod('isCompleted', [questObjectCls])
+    bqSetProgressMethod = teamDataCls.getMethod('setProgress', [taskCls, longPrimitiveCls])
+    bqLongValueOfMethod = longCls.getMethod('valueOf', [stringCls])
+
+    // Hex quest-object ids are real 64-bit values (e.g.
+    // "42F2080CC88FFF1F") - well beyond JS's safe-integer range, so this
+    // uses FTB Quests' own QuestObjectBase.parseHexId(String) (the exact
+    // method FTBQuestsCommands itself calls to turn a command's hex-id
+    // argument into a real long) instead of a lossy parseInt(id, 16), to
+    // resolve each task's actual Java object once via getBase(long).
+    var parseHexIdMethod = questObjectBaseCls.getMethod('parseHexId', [stringCls])
+    var optionalGetMethod = optionalCls.getMethod('get', [])
+
+    function bqTaskForId(hexId) {
+      var optionalLong = parseHexIdMethod.invoke(null, [hexId])
+      var idLong = optionalGetMethod.invoke(optionalLong, [])
+      return getBaseMethod.invoke(bqServerQuestFileInstance, [idLong])
+    }
+
+    BOUNTY_FIXED_TIERS.forEach((tier) => {
+      bqFixedTierTasks.push({ task: bqTaskForId(tier.taskId), threshold: tier.threshold })
+    })
+    bqRepeatableTask = bqTaskForId(BOUNTY_REPEATABLE_TASK_ID)
+  } catch (e) {
+    bqProgressAvailable = false
+    console.log(`[bounty_kills] progress-display reflection unavailable: ${e}`)
+  }
+}
+
+function bqSyncPlayerProgress(player, killCount) {
+  bqInitProgressReflection(player)
+  if (!bqProgressAvailable) return
+  try {
+    var teamData = bqGetOrCreateTeamDataMethod.invoke(bqServerQuestFileInstance, [player])
+
+    // isCompleted's real return type is a primitive `boolean` - Java
+    // autoboxes it to a Boolean crossing back through invoke()'s own
+    // Object return type, but this codebase doesn't trust raw truthiness
+    // on a value that came back through a generic-Object reflective call
+    // (a non-null wrapper object is always JS-truthy regardless of the
+    // boolean it actually holds, if Rhino doesn't unwrap it here the same
+    // way it does for a normal dot-call). Stringified and compared
+    // instead, the same defensive idiom this codebase already uses
+    // everywhere else for values crossing an uncertain Java/JS boundary
+    // (`` `${entity.type}` ``, `` `${source.typeHolder()...}` ``) -
+    // correct either way, since Boolean#toString() is exactly "true"/
+    // "false" regardless of how Rhino wrapped it.
+    bqFixedTierTasks.forEach((entry) => {
+      // Skip once already completed - the `complete` calls in
+      // EntityEvents.death above are still what actually finishes a
+      // tier and grants its rewards; this only ever fills the bar in
+      // between, and must never fight a completed task back toward a
+      // recomputed value (killCount keeps climbing past every earlier
+      // tier's own threshold for the rest of the game).
+      if (`${bqIsCompletedMethod.invoke(teamData, [entry.task])}` === 'true') return
+      bqSetProgressMethod.invoke(teamData, [entry.task, bqBoxLong(Math.min(killCount, entry.threshold))])
+    })
+
+    // Repeatable tier - same modulo the scoreboard math already uses, so
+    // this can't drift from the real running total either. A completed-
+    // but-not-yet-reset repeatable task is left alone for the same reason
+    // as the fixed tiers above.
+    if (`${bqIsCompletedMethod.invoke(teamData, [bqRepeatableTask])}` !== 'true') {
+      bqSetProgressMethod.invoke(teamData, [bqRepeatableTask, bqBoxLong(killCount % BOUNTY_REPEATABLE_INTERVAL)])
+    }
+  } catch (e) {
+    console.log(`[bounty_kills] progress-display sync failed: ${e}`)
+  }
+}
+
+// Throttled to every 10 ticks (matches pedestal_health.js's own polling
+// cadence) rather than every tick - this is a display-only sync, not
+// something that needs to be frame-perfect, and the actual tier-complete
+// calls in EntityEvents.death above already fire immediately on the real
+// kill event regardless of this handler's own cadence.
+PlayerEvents.tick((event) => {
+  if (event.player.getLevel().getTime() % 10 !== 0) return
+  var data = worldData(event.player.getLevel())
+  if (!data) return
+  bqSyncPlayerProgress(event.player, data.getInt('td_bountyKillCount'))
 })

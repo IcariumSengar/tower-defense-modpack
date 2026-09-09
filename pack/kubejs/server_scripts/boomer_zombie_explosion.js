@@ -33,12 +33,35 @@ var BOOMER_EXPLOSION_DELAY_TICKS = 80
 EntityEvents.spawned((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'zombiesmore:boomer_charged') return
-  pendingBoomerExplosions.push({
-    x: entity.getX(),
-    y: entity.getY(),
-    z: entity.getZ(),
-    tick: event.level.getTime() + BOOMER_EXPLOSION_DELAY_TICKS,
-  })
+  var x = entity.getX()
+  var y = entity.getY()
+  var z = entity.getZ()
+  pendingBoomerExplosions.push({ x: x, y: y, z: z, tick: event.level.getTime() + BOOMER_EXPLOSION_DELAY_TICKS })
+
+  // Armed warning (2026-09-09, direct answer to real playtest feedback:
+  // "I can't seem to be able to actually hit the mob" trying to kill it
+  // before it explodes). Decompiled BoomerChargedEntity.hurt() directly -
+  // once this entity exists, it unconditionally blocks ALL player-sourced
+  // damage (melee AND arrows), plus thrown potions, area-effect clouds,
+  // and even explosion damage (DamageTypes.EXPLOSION is in its own
+  // exclusion list, so a TNT trick doesn't work either) - there is no way
+  // to stop this once it's armed, by the mod's own design, not a bug on
+  // this pack's side. Checked whether a KubeJS-side fix could intercept
+  // the player's attack before hurt() ever runs: no event in this exact
+  // KubeJS build fires early enough (EntityEvents.hurt itself never fires
+  // for this case either, since hurt()'s own override returns false
+  // before ever calling super.hurt(), which is what would normally raise
+  // it), and reaching Forge's own pre-hurt AttackEntityEvent via raw
+  // event-bus reflection hits the same functional-interface-coercion
+  // wall this codebase already documented for mob_aggro.js. Direct
+  // answer: don't try to make it stoppable, make the "you can't stop
+  // this, move" moment clear and immediate instead, right at the exact
+  // tick it becomes unstoppable (this handler already captures that exact
+  // moment for the explosion queue above).
+  var server = event.level.getServer()
+  server.runCommandSilent(`title @a title {"text":"ARMED","color":"red","bold":true}`)
+  server.runCommandSilent(`title @a subtitle {"text":"You cannot stop this one - move.","color":"gray"}`)
+  server.runCommandSilent(`playsound minecraft:entity.tnt.primed master @a ${x} ${y} ${z} 1 1`)
 })
 
 PlayerEvents.tick((event) => {
