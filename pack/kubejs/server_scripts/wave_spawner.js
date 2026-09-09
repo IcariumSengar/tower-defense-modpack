@@ -229,17 +229,29 @@
 // here would silently invalidate that calibration. Not the endless-
 // phase's explosive per-level growth - just "a little more," per the
 // direct ask, not a difficulty overhaul.
+//
+// Boomer Zombie pulled from every wave (waves 4/5/7) 2026-09-09, direct
+// ask: "remove the boomers for now, i cant figure out how to balance
+// these, they keep blowing up my pedestal" - a real balance problem
+// (boomer_zombie_explosion.js's own block-destroying blast, see that
+// file), not a bug. Removed here only, not from every roster copy
+// elsewhere (mob_aggro.js/pedestal_health.js/wave_status.js/
+// bounty_kills.js/flesh_death_sound.js/ladder_climb_assist.js/
+// loot_bag_drops.js) - those are all inert without a live boomer to
+// match against, and leaving them means re-adding this mob later (once
+// it's balanced) is just restoring these 3 array entries, not a wider
+// re-wire.
 var WAVES = [
   [['minecraft:zombie', 5], ['minecraft:husk', 3], ['minecraft:zombie_villager', 1]],
   [['minecraft:zombie', 4], ['minecraft:husk', 3], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 3]],
   [['minecraft:zombie', 3], ['minecraft:husk', 3], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 3]],
-  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2], ['zombiesmore:boomer_zombie', 1]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2]],
   // Elite Zombie (Undead Nights' own, real distinct stat block per its
   // own bytecode - slower but hits harder than Horde Zombie) replaces
   // the ravager as this wave's toughest mob. Now doing double duty as
   // both its own slot and Flesh Suffer's replacement (see the roster
   // header comment above) - a real duplication, not a fresh identity.
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['zombiesmore:boomer_zombie', 1], ['undeadnights:elite_zombie', 2]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['undeadnights:elite_zombie', 2]],
   // Undead Nights' own zombies arrive as a numbers-focused reinforcement
   // wave - a real, intended "horde grows" beat, not filler. Horde Zombie
   // now also stands in for Flesh Brute I's slot (see roster header
@@ -265,7 +277,7 @@ var WAVES = [
   // Elite Zombie, more Horde Zombie reinforcements, another Spitter)
   // rather than introducing anything new - Mutant Brute/Zombie Brute's
   // actual first appearance is wave 8 below, untouched.
-  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 3], ['zombiesmore:boomer_zombie', 1]],
+  [['undeadnights:elite_zombie', 2], ['undeadnights:horde_zombie', 3]],
   // Toughest hand-authored mix, including the first appearance of
   // something that can genuinely breach the base's own defenses, not
   // just the player - Demolition Zombie, real TNT capability per
@@ -463,6 +475,14 @@ function useWaveHorn(player) {
     return
   }
 
+  // Same permanent stop, hardcore-death side (hardcore_death.js,
+  // 2026-09-09) - a separate flag from td_pedestalDestroyed since the
+  // pedestal itself is still standing here, only the run is over.
+  if (data.getBoolean('td_hardcoreGameOver')) {
+    player.tell('§8§oThe horn has nothing left to call to.')
+    return
+  }
+
   // Cooldown dedup (20 ticks / 1 second), not just same-tick — both
   // ItemEvents.rightClicked and BlockEvents.rightClicked fire for one
   // physical click, and holding right-click generates repeated events
@@ -482,7 +502,11 @@ function useWaveHorn(player) {
   // phase) - see nearbyWaveMobCount's own comment for why.
   var isEndlessPhase = data.getInt('td_waveNumber') > WAVES.length
   var objective = waveObjective(player, data)
-  if (nearbyWaveMobCount(objective, level, 80, !isEndlessPhase) > 0 || pendingSpawns.length > 0) {
+  // Radius 80 -> 96 (2026-09-09), kept equal to wave_status.js's RADIUS:
+  // with the 48-64 spawn band plus the 4-block spreadplayers snap, a
+  // freshly spawned mob can legitimately be 68 blocks out.
+  if (nearbyWaveMobCount(objective, level, 96, !isEndlessPhase) > 0 || pendingSpawns.length > 0) {
+
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
     return
   }
@@ -597,10 +621,37 @@ function useWaveHorn(player) {
   // inside the square on every axis (worst case is the axis-aligned
   // angle, where the full radius equals the axis offset) - a small extra
   // margin keeps mobs off the exact edge, not just barely inside it.
-  var borderHalfWidth = level.getWorldBorder().getSize() / 2
-  var BORDER_SAFETY_MARGIN = 5
-  var SPAWN_DISTANCE_MAX = Math.max(15, Math.min(60, borderHalfWidth - BORDER_SAFETY_MARGIN))
-  var SPAWN_DISTANCE_MIN = Math.min(40, SPAWN_DISTANCE_MAX - 10)
+  //
+  // Fixed 48-64 block band from the pedestal (2026-09-09, direct playtest
+  // feedback: "mobs are spawning in the base. mob spawns must be a little
+  // ways away... so that I can expand the base and not have mobs spawn
+  // behind my lines" - 48-64 picked by the user from three offered
+  // bands). The 2026-09-08 clamp right below was the real cause: at
+  // border 50 (half-width 25) it collapsed the band to 10-20 blocks,
+  // which is inside the ~18-wide compound or pressed against its
+  // perimeter wall - mobs appeared behind the player's lines and, when
+  // outside a reinforced wall with no path to the marker, just stood
+  // there (the same playtest's "zombies just standing around"). Border
+  // briefly went to 150 the same day so the whole band fit inside it
+  // with margin, then back to 50 on 2026-09-09 (direct feedback - see
+  // playtest_starter_kit.js's BORDER_START comment) - what actually
+  // guarantees "not inside the compound" now is the rejection-sampling
+  // check in randomObjectiveRelativePosition() below, not border size, so
+  // the border could shrink back without reopening the regression. The
+  // border-box clamp right below stays too (a mob summoned even one block
+  // past the border gets stuck there for good, unable to path back in) -
+  // every spawn point still has to satisfy both checks.
+  var SPAWN_BAND_MIN = 48
+  var SPAWN_BAND_MAX = 64
+  var border = level.getWorldBorder()
+  var borderHalfWidth = border.getSize() / 2
+  var BORDER_SAFETY_MARGIN = 6 // spreadplayers maxRange 4, plus 2
+  var SPAWN_DISTANCE_MAX = Math.max(15, Math.min(SPAWN_BAND_MAX, borderHalfWidth - BORDER_SAFETY_MARGIN))
+  var SPAWN_DISTANCE_MIN = Math.min(SPAWN_BAND_MIN, SPAWN_DISTANCE_MAX - 10)
+  var spawnMinX = Math.ceil(border.getMinX() + BORDER_SAFETY_MARGIN)
+  var spawnMaxX = Math.floor(border.getMaxX() - BORDER_SAFETY_MARGIN)
+  var spawnMinZ = Math.ceil(border.getMinZ() + BORDER_SAFETY_MARGIN)
+  var spawnMaxZ = Math.floor(border.getMaxZ() - BORDER_SAFETY_MARGIN)
 
   // Real, confirmed root cause of the "nothing spawns" saga across this
   // whole pack's history (2026-09-02): Math.PI is undefined in this
@@ -622,12 +673,62 @@ function useWaveHorn(player) {
   // constant for the earlier, unconfirmed version of this same worry.
   var PI = 3.141592653589793
 
+  // Compound-aware rejection sampling (2026-09-09, paired with the border
+  // revert to 50 - see playtest_starter_kit.js's BORDER_START comment).
+  // With the border back to 50, a uniform distance band can land inside
+  // the compound's own footprint in some directions (its back wall sits
+  // ~17-20 blocks from the pedestal) even while comfortably outside it in
+  // others (~7-9 blocks to the side/gate walls) - distance alone can't
+  // guarantee "outside the base" anymore the way it could at border 150.
+  // Reads the compound's real persisted footprint (td_compoundX0/X1/Z0/Z1,
+  // playtest_starter_kit.js) and just re-rolls the angle/distance until
+  // the candidate lands outside it (padded a few blocks so mobs don't
+  // spawn hugging the outer wall face) - cheap (pure arithmetic, no chunk
+  // access) and self-correcting: whichever directions are actually clear
+  // of the compound get picked more often, with zero manual per-direction
+  // tuning. Falls back to skipping the check entirely if the compound
+  // bounds were never persisted (an old save predating this, or the
+  // marker's own fallback-failed case) rather than blocking spawning.
+  var COMPOUND_SPAWN_PADDING = 4
+  var COMPOUND_SPAWN_MAX_ATTEMPTS = 30
+  var hasCompoundBounds = data.contains('td_compoundX0')
+  var compoundX0 = hasCompoundBounds ? data.getInt('td_compoundX0') - COMPOUND_SPAWN_PADDING : 0
+  var compoundX1 = hasCompoundBounds ? data.getInt('td_compoundX1') + COMPOUND_SPAWN_PADDING : 0
+  var compoundZ0 = hasCompoundBounds ? data.getInt('td_compoundZ0') - COMPOUND_SPAWN_PADDING : 0
+  var compoundZ1 = hasCompoundBounds ? data.getInt('td_compoundZ1') + COMPOUND_SPAWN_PADDING : 0
+
+  function isInsideCompound(px, pz) {
+    if (!hasCompoundBounds) return false
+    return px >= compoundX0 && px <= compoundX1 && pz >= compoundZ0 && pz <= compoundZ1
+  }
+
   function randomObjectiveRelativePosition() {
+    for (var attempt = 0; attempt < COMPOUND_SPAWN_MAX_ATTEMPTS; attempt++) {
+      var point = rawObjectiveRelativePosition()
+      if (!isInsideCompound(point.x, point.z)) return point
+      if (attempt === COMPOUND_SPAWN_MAX_ATTEMPTS - 1) {
+        // Every attempt landed inside the compound (unusually tight
+        // border, or a wide compound) - last resort, not silently
+        // dropped: logged so this is visible in the next log check, still
+        // returns a real point (a mob spawning inside the compound
+        // occasionally beats the whole spawn silently failing).
+        console.log(`wave_spawner.js: could not find a spawn point outside the compound after ${COMPOUND_SPAWN_MAX_ATTEMPTS} attempts - falling back to (${point.x},${point.z})`)
+        return point
+      }
+    }
+  }
+
+  function rawObjectiveRelativePosition() {
     var angle = Math.random() * 2 * PI
     var distance = SPAWN_DISTANCE_MIN + Math.random() * (SPAWN_DISTANCE_MAX - SPAWN_DISTANCE_MIN)
+    var px = Math.floor(objective.x + Math.cos(angle) * distance)
+    var pz = Math.floor(objective.z + Math.sin(angle) * distance)
+    // Hard clamp into the live border box (see the band comment above) -
+    // a mob summoned even one block past the border is pinned there for
+    // good, unable to path back in.
     return {
-      x: Math.floor(objective.x + Math.cos(angle) * distance),
-      z: Math.floor(objective.z + Math.sin(angle) * distance),
+      x: Math.min(Math.max(px, spawnMinX), spawnMaxX),
+      z: Math.min(Math.max(pz, spawnMinZ), spawnMaxZ),
     }
   }
 

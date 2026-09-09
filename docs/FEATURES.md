@@ -2578,12 +2578,89 @@ diagnostic detail in `docs/MODS.md` if ever needed again):
 
 ## Hardcore mode
 
-**Hardcore mode — planned, parked, not built.** Direct request 2026-09-01:
-real permadeath stakes — player death or the amulet pedestal being
-destroyed both end the run — softened by Totems of Undying as a genuine
-"extra life" mechanic, since vanilla's own totem-prevents-death behavior
-already does exactly that automatically, no custom tracking needed for
-the totem itself.
+**Hardcore mode — fully built, real status as of 2026-09-09 (this
+section's own header below is stale, corrected here rather than
+rewritten in place so the history stays readable).** Direct request
+2026-09-01: real permadeath stakes — player death or the amulet
+pedestal being destroyed both end the run — softened by Totems of
+Undying as a genuine "extra life" mechanic, since vanilla's own
+totem-prevents-death behavior already does exactly that automatically,
+no custom tracking needed for the totem itself.
+
+**What's actually done, verified against real files, not this doc's own
+stale text**:
+- **Pedestal-destruction game-over — shipped 2026-09-03**,
+  `pedestal_destruction.js` — unconditional, not gated behind a
+  hardcore toggle (matches decision #1 below: the pedestal was never
+  meant to be hardened). Player death is explicitly still a non-event
+  ("easier for playtesting," per that file's own header) — this only
+  covers the pedestal half of "either ends the run."
+- **Both Totem-of-Undying sources — shipped 2026-09-08 (Track C)**:
+  a guaranteed drop from every boss-wave kill (`boss_wave.js`) and a
+  real crafting recipe, vanilla ships none
+  (`hardcore_totem_recipe.js`, 1 nether_star/2 diamond_block/1
+  gold_block/1 netherite_scrap).
+
+**Toggle — done, 2026-09-09.** `hardcore_toggle.js`: a `td_hardcoreEnabled`
+persistent flag (world-state marker pattern) set via a player-run
+`/hardcore enable`/`/hardcore disable` command, no permission gate (per
+decision #3 below). A tips-chapter quest ("Go Hardcore") documents the
+command.
+
+**Death hook — done, 2026-09-09.** `hardcore_death.js`. Real API finding,
+confirmed by decompiling the actual installed
+`kubejs-forge-2001.6.5-build.26.jar` directly (`javap` on
+`PlayerEvents.class`/`EntityEvents.class`), not assumed from memory of
+older KubeJS docs: `PlayerEvents` exposes no death handler at all
+(LOGGED_IN/LOGGED_OUT/RESPAWNED/TICK/CHAT/DECORATE_CHAT/ADVANCEMENT/
+INVENTORY_\*/CHEST_\* only) — real player death has to go through
+`EntityEvents.death` (`LivingEntityDeathEventJS`, wraps Forge's real
+`LivingDeathEvent`), filtered to `entity.type === 'minecraft:player'`
+the same way `flesh_death_sound.js` already filters mob types.
+
+**Real reason no inventory/totem check is needed in the handler**:
+vanilla's own totem-save mechanic (`LivingEntity#checkTotemDeathProtection`)
+runs inside `hurt()`, before `die()` is ever called — and
+`LivingDeathEvent` (what `EntityEvents.death` wraps) only fires from
+inside `die()`. A totem-saved hit never reaches this handler at all, so
+reaching it already proves the death was real — the same well-established
+vanilla/Forge ordering every "no totem farming" mod or datapack already
+relies on.
+
+**What it does, on a real death with the flag on**: freezes the
+countdown and undoes the night-lock (same cleanup
+`pedestal_destruction.js`'s own `triggerPedestalDestroyed()` does), then
+`gamemode spectator @a` — reapplied on `PlayerEvents.respawned` and
+`PlayerEvents.loggedIn` so it can't be undone by respawning or relogging,
+the actual "permanent" half of permadeath, reimplementing vanilla real
+Hardcore's own spectator-lock rather than the flag itself. A separate
+`td_hardcoreGameOver` flag, not reused from `td_pedestalDestroyed` — that
+one specifically means "the pedestal is gone" for other readers
+(`pedestal_health.js`, `quest_milestones.js`), which isn't true here.
+`wave_spawner.js`'s `useWaveHorn()` now blocks on this flag too, same
+message as the existing pedestal-destroyed block.
+
+**All-players-dead gate — added 2026-09-09, direct follow-up request**:
+a lone death while someone else is still alive no longer triggers
+anything - it's a completely normal death (respawn, recover gear from
+the Corpse mod's own grave, keep playing), same as without hardcore on.
+`hardcoreAllPlayersDead(server)` checks every currently-online player's
+`getHealth()` fresh at the moment of EACH death event before deciding to
+trigger - inherently agnostic to how long any respawn-delay mechanic
+keeps a player dead, since it only cares who's actually alive right now.
+Real curated API used here for the first time in this pack
+(`server.getPlayers()`, dispatches to `MinecraftServerKJS`'s own
+`kjs$getPlayers()` - same remap pattern as the already-proven
+`level.getEntities()`) - confirmed live via RCON that the call itself
+works with 0 players connected; `getHealth()` against an actual
+connected player couldn't be exercised in this environment (no
+graphical client) and needs a real hands-on check. For the realistic,
+tested case (one player, this pack's whole framing) this changes
+nothing - a lone player's own death always satisfies "everyone's dead."
+
+**Phase 5 is now fully built.** Not designed for multiplayer beyond this
+one gate, same caveat as before. Not yet playtest-confirmed — no
+graphical-client boot done this pass.
 
 **Not vanilla Hardcore — confirmed why, not assumed**: checked directly
 — Minecraft's native Hardcore flag is a **world-creation-time-only**
@@ -2624,34 +2701,16 @@ instead, same approach as everything else in this pack.
    standing, confirmed-real caution about building custom menus — see
    the still-unbuilt roguelike-composition-choice entry in IDEAS.md).
 
-**What actually needs building, not yet designed in detail**:
-- A `td_hardcoreEnabled`-style persistent flag (same pattern as every
-  other player-state flag in this pack), set via the toggle command.
-- A death-event hook that, when the flag is set and the player's actual
-  death wasn't intercepted by a totem (i.e., a real death happened),
-  forces permanent spectator mode and freezes further wave-triggering —
-  vanilla real Hardcore's own spectator-lock behavior, reimplemented,
-  not the flag itself.
-- A block-break/explosion detection on the pedestal specifically,
-  triggering the same game-over sequence as a real death when hardcore
-  is on. Needs checking whether `mobGriefing` (already on, given the
-  perimeter walls needed reinforcement specifically because zombies
-  dig/creepers explode) can actually destroy the pedestal's particular
-  block registration, or whether its blast resistance needs adjusting
-  to make "vulnerable" mean something real rather than accidentally
-  already-indestructible.
-- The totem drop (which kill(s) trigger it, what rarity) and the totem
-  recipe (materials) both still need real numbers, not just the
-  two-path decision above.
-- Not designed for multiplayer — this pack's whole framing (fixed
-  single spawn, "You're On Your Own" as the very first quest) is
-  singleplayer-specific; what "game over" means if a second player is
-  ever in the world isn't considered here.
+**Everything is now built** — see the corrected status block at the top
+of this section (2026-09-09): the pedestal block-break detection, both
+totem sources, the toggle flag/command, and the player-death hook are
+all done. Not designed for multiplayer — this pack's whole framing
+(fixed single spawn, "You're On Your Own" as the very first quest) is
+singleplayer-specific; what "game over" means if a second player is
+ever in the world isn't considered here.
 
-**Deliberately parked, not sent to build** — same reasoning as the
-storage/power system: this is real, ready design, not still being
-figured out, just sequenced behind the current playtest-feedback batch
-rather than adding another substantial parallel project.
+**Not yet playtest-confirmed** — see docs/QUEUE.md's entry for this.
+No sandbox/live boot done this pass.
 
 **Pedestal visual upgrade + mob-attack vulnerability — requested
 2026-09-04.** The visual-upgrade half shipped 2026-09-05 as part of the
@@ -4850,6 +4909,636 @@ first case this applied to.
 
 ---
 
+**Quest book redesign v3 ("fishbone") — specced, built and deployed
+2026-09-09.** Direct feedback: "it looks pretty lame." Reviewed the
+shipped book (repo `campaign.snbt`, live copy, all three live saves)
+against every prior quest-book instruction on file ("linear at the
+start," "chapters feel empty of fun," "doesn't sound human, be
+literal," "one quest per distinct item," "the book is the tutorial").
+Four direction calls confirmed via AskUserQuestion before writing this:
+direct voice with diary flavour only on milestones; milestones
+auto-complete from real game state; a Know Your Enemy rib; Tips &
+Tricks and Bounties kept, restyled only.
+
+**What's actually wrong with the current book (review findings, all
+from the real file, not impressions):**
+- The opening five spine quests have no `dependencies` at all — they
+  render as five unconnected circles, all available at once. Nothing
+  reads as a path.
+- "Sound the Horn" was removed in the 9a7a686 dedup; the one action
+  that starts the game isn't in the book. Its slot on the spine (x=4)
+  is empty with the repeatable "Lost the Horn?" floating above it.
+- "Open It" fans into six identical size-1.5 hexagons stacked at x=13
+  (amulet, waystone, spikes, wire, bear trap, crank) — a comb, no
+  grouping.
+- "Watch the Walls Grow" → "The Reckoning" (the story line) depends on
+  crafting barbed wire specifically. Build spikes instead and the main
+  line looks locked.
+- Every milestone is a manual checkbox; the book never reacts to a
+  wave clearing, a boss dying, the amulet being placed, the border
+  growing.
+- Tier 2/3 quests are scattered across x 19–31, y -0.5–7.5, with the
+  wave-5 milestone sitting at (22,0) inside the power cluster.
+- No chapter subtitle, no colour, no section framing; identical small
+  item icons everywhere. Tips & Tricks is a 5×3 grid of 1-XP
+  checkboxes. Rewards are the same 2–4 iron / 2–3 levels on almost
+  every quest.
+- **Two quests are factually broken against the current code**:
+  "Wired Different" is an item task on `immersiveengineering:
+  diesel_generator`, a multiblock that only exists as a formed block —
+  the item is creative-only, so the quest can never complete in
+  survival. "Spoils of War" says "better loot comes off tougher kills,"
+  but since the 2026-09-08 drop-rate redesign `loot_bag_drops.js`
+  applies the same flat odds to every wave mob (20% Uncommon, 6% Rare,
+  3% Epic, 2% Legendary per kill); `UNCOMMON_MOBS`/`RARE_MOBS`/
+  `EPIC_MOBS`/`LEGENDARY_MOBS` are only ever concatenated now and
+  differentiate nothing.
+
+**Operational findings, both load-bearing for the build:**
+- Live `campaign.snbt` has drifted from the repo a third time: 6 quest
+  ids differ (Anvils From Above, Room to Grow, No Cables Needed, The
+  Grid, Lost the Horn?, plus a dropped dependency on Sparks in the
+  Dark), every reward id was regenerated, and the 11876cd Tier 2 trap
+  swap is NOT deployed — live still has `Medieval Defense Turrets` and
+  `Vacuum blocks` in `mods/`, "Wired for War" still present, "Waste
+  Not" still targeting `vacuum_cleaner`. This redesign must ship
+  together with that swap (mods + KubeJS + quests), not before it.
+- All three live saves are 2026-09-09 test worlds; the only recorded
+  progress anywhere is Thin the Horde + Spoils of War in one of them.
+  Re-idding freely is safe right now and won't be again once real play
+  starts. Surviving quests keep their repo ids anyway (listed below);
+  new quests mint fresh ids at build time.
+
+**Design rules (the whole visual grammar, so it stays consistent):**
+- One `Campaign` chapter (id `1178FD42CF9984A2` kept, `filename:
+  "campaign"`), `progression_mode: "flexible"`, dependency lines shown.
+  Add a chapter `subtitle: ["Hold the pedestal. The waves don't
+  stop."]`.
+- **Spine** at y=0, x 0→24 in steps of 2, every quest `shape:
+  "rsquare"`, `size: 1.5d`, each depending on the previous one
+  (`dependencies` chain, no gaps). Milestones that the world can
+  detect use a `custom` task (no button, completed by the bridge
+  script below); the two pure story pages stay `checkmark`.
+- **Ribs** hang off the spine at the node where they become relevant,
+  chained left→right inside the rib, first node depending on its spine
+  node. Row spacing 3 units. Shapes encode type: `hexagon` = craft,
+  `diamond` = kill, `pentagon` = amulet/exploration. Size 1.0 unless
+  stated.
+- **Tinted panels** behind each rib via chapter `images`: one 16×16
+  pure-white PNG at `pack/kubejs/assets/kubejs/textures/quests/
+  panel.png` (generate with a 20-line Python zlib/struct script, no
+  PIL installed), referenced as `image: "kubejs:textures/quests/
+  panel.png"` with per-rib `color` (int RGB) and `alpha: 70`, `order:
+  0`. Tier colours match `tooltip_tier_colors.js` (Tier 1 green, Tier
+  2 yellow, Tier 3 red); enemy rib dark red; amulet rib purple.
+  **Confirm ChapterImage x/y anchor semantics (centre vs top-left)
+  from `ChapterImage#draw` in the 2001.4.22 jar before placing them**
+  — DeceasedCraft's files suggest top-left but it wasn't verified.
+- Every craft quest gets a one-line `subtitle` stating the real recipe
+  cost. Description colour: `&e` on the item name and `&c` on a
+  warning, sparingly, `&` codes only inside descriptions (proven in
+  CTE2's shipped book; not used in titles, unverified there).
+- Text voice: second person, literal, present tense, short. Diary
+  voice only on the six milestone pages marked *(diary)* below. No
+  "never worked out X" endings anywhere.
+- All numbers below come from the current code/jars (wave table,
+  `wave_status.js` timers, `base_expansion.js`, `loot_bag_drops.js`,
+  `boss_wave.js`, `wave_airdrop.js`, `pedestal_health.js`, decompiled
+  mob attribute constants, decompiled trap blocks, IE's own multiblock
+  NBT). If any of those change, the matching quest text changes with
+  them — that's the standing "book stays in sync" rule.
+
+**Layout (grid units; spine y=0):**
+
+```
+ y=-6  KNOW YOUR ENEMY   ◆zombie ◆husk ◆villager ◆drowned ◆mutant ◆blister ◆split ◆boomer ◆elite ◆horde ◆crawler ◆m.brute ◆demolition ◆z.brute ◆rotten
+                          x=6 ... step 1.5 ... x=27   (first node depends on Thin the Horde)
+ y=-3  BEYOND THE WALL                                ⬠amulet ⬠wear ⬠pedestal ⬠ruin ⬠waystone   (x=16..24, from Three Down)
+ y=-1.5                        ○ Lost the Horn? (x=6, size 0.75, repeatable)
+ y=0   SPINE  ▢Own ▢Time ▢Pedestal ▢Horn ▢Thin ▢Wave1 ▢Spoils ▢Open ▢Three ▢Wave5 ▢Wave8 ▢Boss ▢Wave15
+              x=0   2      4       6     8     10     12      14    16     18     20    22    24
+ y=+3  TIER 1                          ⬡spikes ⬡slime ⬡bear ⬡crank ⬡wire            (x=14..22, from Open It)
+ y=+6  TIER 2                                    ⬡collector ⬡tablet ⬡winding ⬡workbench ⬡m.blueprint ⬡ai base ⬡musket   (x=16..28, from Three Down)
+ y=+7.5                                                                      ⬡a.blueprint ⬡manual base ⬡anvil  (x=24..28, from workbench)
+ y=+9  TIER 3                                          ⬡barrel ⬡manual ⬡diesel ⬡flux ⬡tesla ⬡grid   (x=18..28, from Wave 5)
+ y=+10.5                                                       ⬡fan/flamethrower (x=20, from barrel)
+```
+
+**Spine (rsquare 1.5, y=0, chained):**
+1. (0) *"You're On Your Own"* — keep `46AB9754465218CF`, checkmark,
+   rewards keep (16 torches, 2 levels). *(diary)* "Whoever held this
+   post before you didn't make it, but they left the place standing,
+   and that's not nothing. Everything you need is in this book; Tab
+   opens it. Read the next few pages before you touch the horn."
+2. (2) *"Borrowed Time"* — keep `70DA454A61DDC3A1`, checkmark, rewards
+   keep (shield, 2 levels). *(diary)* "The sword and armour you're
+   wearing were theirs. Look close and the wear's already showing.
+   They hold for five waves, then they crumble, and whatever you've
+   found by then is what you fight with. Use them hard while you have
+   them."
+3. (4) *"Find the Pedestal"* — NEW, `observation` task (`observe_type:
+   0` = block, `to_observe: "supplementaries:pedestal"` — the block the
+   base actually places; `kubejs:amulet_pedestal` is the retired custom
+   block and only exists in pre-2026-09-05 saves, see the live-pass note
+   below), icon `supplementaries:pedestal`, rewards 4 iron ingots + 2
+   levels. "Walk up to the stone pedestal in the courtyard and look at it. That's
+   the &ePedestal&r, and it's the only thing the horde wants: every
+   wave mob paths straight for it, not for you. It has 300 health,
+   shown on a bar whenever you're within 64 blocks, and a mob within
+   reach hits it for its own attack damage. &cIf it reaches zero the
+   waves stop and the run is over.&r"
+4. (6) *"Sound the Horn"* — NEW, `custom` task, auto-completed when
+   `td_lastHornUseTick` > 0. Icon `kubejs:wave_horn`, subtitle
+   "Right-click the Wave Horn", reward 2 levels. "Hold the &eWave
+   Horn&r and right-click to call the next wave. Nothing comes until
+   you do, with one catch: after each clear a timer starts, and when
+   it runs out the wave comes on its own. About a minute and a half
+   after wave 1, a little longer each wave, four minutes and up from
+   wave 5. Use the gap to repair, restock and build. Then blow it."
+   - (6, -1.5) *"Lost the Horn?"* — keep `B69DA4CE08B1C6A5`, circle
+     `size: 0.75d`, `optional: true`, repeatable as now, depends on
+     Sound the Horn. "Right-click the checkmark for a spare Wave Horn.
+     It doesn't run out; claim it again whenever you lose one."
+5. (8) *"Thin the Horde"* — keep `7F675AEBC7301832`, kill 5
+   `minecraft:zombie`, rewards keep (3 iron, 3 levels). "Five plain
+   zombies, any way you like; turret and trap kills count. Wave 1 is
+   nine mobs: five zombies, three husks, one zombie villager. Enough
+   to find out whether your gear holds."
+6. (10) *"Wave One, Cleared"* — NEW, `custom`, auto when wave 1 is
+   cleared (`td_waveNumber >= 1 && !td_inWave`). Icon
+   `minecraft:iron_bars`, rewards 1 uncommon bag + 3 levels. "Every
+   mob down means the wave is cleared, the timer to the next one
+   starts, and the border grows: 5 blocks a wave for waves 1 to 3,
+   then 10, then 15, another 5 every three waves. More ground to hold
+   and more ground to loot." (Replaces "Watch the Walls Grow"
+   `689899208FC0ADF0`, which is dropped.)
+7. (12) *"Spoils of War"* — keep `3BFCD0E4AA8C5B36`, item
+   `bountybags:uncommon_loot_bag`, rewards keep. "Any wave mob can
+   drop a loot bag when it dies, and every one of them rolls the same
+   odds: 20% for an &eUncommon&r bag, 6% Rare, 3% Epic, 2% Legendary.
+   Tougher mobs don't carry better bags; they're just harder to kill.
+   Kill count is what pays."
+8. (14) *"Open It"* — keep `538A1BBC9A1B8EAC`, checkmark, rewards
+   keep. "Right-click a bag to open it. Uncommon bags carry iron,
+   copper, redstone, coal, gunpowder, arrows and gold nuggets. Rare
+   bags are where gold ingots, quartz, redstone blocks, iron blocks,
+   obsidian and ender pearls come from, which is what the amulet and
+   the Tier 2 recipes need. Every tier can carry &eShrapnel&r, the
+   turret material. Open bags as you get them; they do nothing in your
+   inventory."
+9. (16) *"Three Down"* — NEW, `custom`, auto when wave 3 clears. Icon
+   `mutantszombies:split_head_zombie_spawn_egg`, rewards 1 rare bag +
+   3 levels. "Three waves in, the roster changes. Wave 4 brings the
+   first &cBoomer&r and two Split Head Zombies; wave 5 the first
+   Elites. Check Know Your Enemy above before you blow the horn, and
+   spend what you've got: everything below this point on the tree is
+   buildable now."
+10. (18) *"It's Up to You Now"* — keep `03C4E700B07CBC15` (was "The
+    Reckoning"), task → `custom`, auto on `td_starterGearRemoved`. Icon
+    `minecraft:netherite_sword` (Damage 0), rewards golden apple + 1
+    rare bag + 5 levels (drops the old waystone/totem: the boss drops
+    the totem, wave 8 gives the waystone). *(diary)* "Five waves.
+    That's where whoever wore this gear before you stopped, and it's
+    where the gear stops too: the moment wave 5 clears, the sword and
+    armour turn to rust in your hands. From here you fight with what
+    you've made and what you've looted. The gaps between waves stretch
+    to four minutes and more now. Use every one of them."
+11. (20) *"The Last Written Wave"* — NEW, `custom`, auto when wave 8
+    clears. Icon `minecraft:map`, rewards 1 epic bag + 1 waystone + 5
+    levels. *(diary)* "Wave 8 is the last one anyone planned: a
+    Crawler on the walls, a Mutant Brute at the gate, a Demolition
+    Zombie throwing TNT. After this the waves don't stop and don't
+    repeat. Every one past 8 is an endless level, and each level adds
+    8% health, 5% damage and 2% speed on top of the last, with the
+    heavy mobs weighted in more as it climbs. Every fifth wave a supply
+    crate drops near the base with a map marker on it: a Legendary
+    bag, netherite scrap, a diamond block."
+12. (22) *"The Behemoth"* — NEW, `custom`, auto on the boss's death
+    (`EntityEvents.death`, entity tagged `td_boss`). Icon
+    `mutantszombies:mutant_brute_spawn_egg`, rewards 1 legendary bag +
+    8 levels. "Every tenth wave brings a boss on top of the wave.
+    &cThe Behemoth&r is a Mutant Brute with 600 health, 30 damage a
+    hit and full netherite, and you'll hear it coming. It drops a
+    &eTotem of Undying&r when it dies, and that's the one reliable
+    source of one. The same wave drops a supply crate."
+13. (24) *"No Ceiling"* — NEW, `custom`, auto when wave 15 clears.
+    Icon `minecraft:nether_star`, reward 1 legendary bag. *(diary)*
+    "Fifteen. Nobody's diary goes this far. There's no finale waiting
+    and no ending to reach, just the next wave, bigger than the last.
+    Whatever you've built by now is what you're taking into it."
+
+**Beyond the Wall rib (pentagon, y=-3, purple panel), first node
+depends on Three Down:**
+- (16) *"Not Just Jewelry"* — keep `7D3A5F912E6C0B48`, item
+  `kubejs:amulet`, subtitle "8 gold ingots in a ring", rewards keep.
+  "Eight gold ingots in a ring make the &eAmulet&r. Gold comes as
+  ingots from Rare bags or nuggets from Uncommon ones, nine to an
+  ingot. It goes in the Curios necklace slot in your inventory, not an
+  armour slot."
+- (18) *"Wear It"* — NEW, `custom`, auto per player when
+  `player.persistentData.td_amuletWorn` is true. Icon
+  `minecraft:golden_apple`, reward 2 levels. "While it's on you:
+  Regeneration, and Resistance, which takes 20% off every hit. And as
+  long as the amulet is anywhere but the pedestal, the border is a
+  wall: step over the line and it shoves you back."
+- (20) *"Leave It Behind"* — keep `4B8F2D6A93E7C051`, task →
+  `custom`, auto on `td_amuletOnPedestal`. Icon
+  `kubejs:amulet_pedestal`, rewards keep (4 ender pearls). "Right-click
+  the pedestal holding the amulet to set it down. You lose the buffs
+  and the border opens: you can walk out. Right-click the pedestal
+  again to take it back. The horde targets the pedestal either way;
+  what changes is whether you're inside the wall with it."
+- (22) *"Past the Line"* — NEW, `structure` task, `structure:
+  "#kubejs:ruins"` (new tag, see assets). Icon
+  `minecraft:cracked_stone_bricks`, rewards 1 rare bag + 3 levels.
+  "Stand inside any ruin, house, tower or city block out past the
+  border. Chest loot out there scales with distance from the base, so
+  the further you go the better the haul, and the longer the pedestal
+  stands on its own."
+- (24) *"A Stone That Remembers"* — keep `216966530DE6E3DB`, item
+  `waystones:waystone`, rewards keep. "There's a Waystone in the
+  courtyard. Craft another (recipe in JEI, press R on it), place it
+  wherever you're looting, and right-click either one to jump between
+  them."
+
+**Know Your Enemy rib (diamond, y=-6, dark-red panel), x = 6 + 1.5·i,
+chained in order of first appearance, first node depends on Thin the
+Horde. Icons are the real spawn eggs (`minecraft:*_spawn_egg`,
+`mutantszombies:*_spawn_egg`, `undeadnights:*_spawn_egg`,
+`zombiesmore:boomer_zombie_spawn_egg`). Kill tasks; counts and
+rewards as listed. No bag-tier claims anywhere (odds are flat).**
+Stats are the mobs' own base attributes from their entity classes; the
+endless scaling above stacks on top.
+1. Zombie (kill 3; 2 iron + 1 level): "Twenty health, hits for 3. The
+   floor of the whole roster, and most of wave 1."
+2. Husk (kill 3; 2 iron + 1 level): "A zombie that gives you Hunger on
+   hit. Same health, same speed."
+3. Zombie Villager (kill 3; 2 iron + 1 level): "A zombie in villager
+   clothes. Nothing special about it, and no, you can't cure one
+   mid-wave."
+4. Drowned (kill 3; 2 iron + 1 level): "From wave 2. Some carry
+   tridents and throw them; kill those first."
+5. Mutant Zombie (kill 1; 1 uncommon bag + 2 levels): "From wave 2.
+   24 health, 5 damage, and quicker than a zombie. The first step up."
+6. Blister Zombie (kill 1; 2 levels): "From wave 3. Same 24 health
+   and 5 damage as the Mutant Zombie; it just swings with the other
+   arm."
+7. Split Head Zombie (kill 1; 1 rare bag + 2 levels): "From wave 4,
+   again in wave 6. Slow, but it hits for 6."
+8. Boomer Zombie (kill 1; 1 epic bag + 3 levels): "From wave 4. Slow,
+   20 health. &cKill it or let it touch you and it turns into a
+   charged Boomer that can't be hurt and blows four seconds later&r:
+   blast, poison cloud, and it takes blocks with it. Shoot it early,
+   then get clear."
+9. Elite Zombie (kill 1; 3 levels): "From wave 5, in pairs. 5 armour,
+   hits for 6, quicker than a zombie and slower than the horde."
+10. Horde Zombie (kill 3; 3 levels): "From wave 6, in fours. Fast, 4
+    armour, and they climb over each other, so a wall one block higher
+    than the pile isn't a wall."
+11. Crawler (kill 1; 1 epic bag + 4 levels): "Wave 8. Six health and
+    dies to anything, but it's fast and it climbs straight up walls.
+    Turrets handle it better than you do."
+12. Mutant Brute (kill 1; 1 epic bag + 4 levels): "Wave 8, then the
+    endless waves. 120 health, 18 damage, 18 armour, can't be knocked
+    back, and it smashes trees in its way. Barbed wire and bear traps
+    buy time; turrets finish it."
+13. Demolition Zombie (kill 1; 1 epic bag + 4 levels): "Wave 8. It
+    carries TNT, lights it and throws it, and &cthe blast breaks
+    blocks, your walls included&r. Kill it at range."
+14. Zombie Brute (kill 1; 4 levels): "Endless waves only, from level
+    5. 100 health, 16 damage, 16 armour, knockback-immune, breaks
+    trees."
+15. Rotten Mutant (kill 1; 4 levels): "Endless waves only. 30 health,
+    hits for 7, slow." *(see flag: this mob is missing from every bag
+    list, so it drops nothing — loot fix, not a book fix)*
+
+**Tier 1 rib — Starting Defense (hexagon, y=+3, green panel), first
+node depends on Open It:**
+- (14) *"Better Than Nothing"* — keep `67A7BF98D2C077DE`, item
+  `simply_traps:spike_trap`, subtitle "4 sticks + 1 iron ingot",
+  rewards keep. "Anything that walks over a &eSpike Trap&r takes 2
+  damage a step, mobs and you alike. The cheapest defence in the pack.
+  Line the approach to the pedestal with them."
+- (16) *"Slow Them Down"* — NEW, item `simply_traps:slime_trap`,
+  subtitle "2 sticks + 1 smooth stone slab", rewards 2 iron + 1
+  level. "A &eSlime Trap&r drags anything crossing it down to a crawl.
+  No damage on its own, so pair it with spikes or wire, or put it
+  where a turret can see it."
+- (18) *"Something Crueler"* — keep `3F6D91E4A2C7B850`, item
+  `vds_bear_traps:bear_trap_open`, subtitle "1 iron ingot + 1 stone
+  pressure plate", rewards keep. "A &eBear Trap&r snaps shut on
+  whatever steps in it, hurts it and pins it, then reopens on its own.
+  In front of the pedestal a held mob is a free kill." (Corrects the
+  live text's "reset it by hand": `BearTrapClosedBlockAddedProcedure`
+  queues the reopen itself.)
+- (20) *"Turn the Crank"* — keep `30DB900D8BD39277`, task →
+  `observation` on `createaddition:rolling_mill`, subtitle "Look at
+  the Rolling Mill in the house", rewards keep (hand crank). "The
+  house has a Mechanical Press and a &eRolling Mill&r already set up,
+  with an empty shaft where a Hand Crank goes. Here's one. Put it on
+  and hold right-click to turn it: the mill rolls iron ingots into
+  iron wire."
+- (22) *"Sharpened Scrap"* — keep `1454951A7FB14A26`, item
+  `createaddition:barbed_wire`, subtitle "4 iron wire, diamond shape,
+  makes 2", rewards keep. "Four iron wire in a diamond make two
+  &eBarbed Wire&r. Anything inside it takes damage and moves at a
+  quarter speed. Two rows in front of the pedestal are worth more than
+  a wall."
+
+**Tier 2 rib — Automated Defense (hexagon, y=+6, yellow panel), first
+node depends on Three Down:**
+- (16) *"Waste Not"* — keep `573EEB3757B78B97`, item
+  `itemcollectors:basic_collector`, subtitle "1 quartz + 1 redstone
+  block + 3 iron blocks", rewards keep. "Put an &eItem Collector&r on
+  top of a chest and it pulls every dropped item within 5 blocks into
+  that chest; right-click it to shrink the range. All three materials
+  come out of Rare bags, so this is your first Tier 2 build."
+- (18) *"Read the Manual"* — NEW, item
+  `advanced_tower_defense_mod:tech_tablet_mechanics`, subtitle "Paper,
+  book, compass, redstone, iron nuggets, 1 Shrapnel", rewards 2
+  shrapnel + 2 levels. "The &eTech Tablet&r unlocks the turret chain;
+  every part below needs it or something made from it. Shrapnel drops
+  from loot bags of every tier."
+- (20) *"Wind It Up"* — NEW, item
+  `advanced_tower_defense_mod:winding_mechanism`, subtitle "2 Springs,
+  clock, compass, lever, tripwire hook, Speed Module, the tablet",
+  rewards 2 levels. "The &eWinding Mechanism&r drives every turret
+  base and the workbench itself. The Speed Module is SecurityCraft's,
+  the Springs are the turret mod's own; both recipes are in JEI."
+- (22) *"The Workbench"* — NEW, item
+  `advanced_tower_defense_mod:t_0_turret_workbench`, subtitle "Anvil,
+  paper, smithing table, winding mechanism, stripped oak log", rewards
+  3 levels. "Turrets aren't made in a crafting table. Place the
+  &eTurret Workbench&r, put a Blueprint in its top slot, fill the six
+  material slots it asks for and press Assemble."
+- (24) *"Musket Blueprint"* — NEW, item
+  `advanced_tower_defense_mod:blueprint_musket_turret`, subtitle "4
+  paper, flint, gunpowder, iron nugget, 2 Shrapnel", rewards 2
+  levels. "The Musket Sentry's blueprint. It goes in the workbench's
+  blueprint slot."
+- (26) *"A Base to Stand On"* — NEW, item
+  `advanced_tower_defense_mod:turret_base_t_0`, subtitle "Piston,
+  barrel, button, spring, tablet, winding mechanism, Smart Module, AI
+  Chip", rewards 3 levels. "The AI-controlled &eTurret Base&r. Place
+  it where the turret should stand, then set the assembled turret head
+  on top. The Smart Module is SecurityCraft's, the AI Chip is the
+  turret mod's."
+- (28) *"Beyond the Bow"* — keep `503260000FFBD462`, item
+  `advanced_tower_defense_mod:turret_head_t_0_mushket`, subtitle "8
+  iron, 1 Wooden Parts, 4 Stone Parts + blueprint, at the workbench",
+  rewards keep (8 buckshot, 3 levels). "The &eMusket Sentry&r picks
+  its own targets and fires buckshot at anything in range. It eats
+  Musket Buckshot, so keep the base stocked. First thing in the pack
+  that guards the pedestal while you're somewhere else."
+- Sub-row y=+7.5, hanging off The Workbench (22,6):
+  - (24) *"Anvil Blueprint"* — NEW, item
+    `advanced_tower_defense_mod:blueprint_anvil_launcher`, subtitle
+    "3 paper, chain, redstone, iron nugget, 4 Shrapnel", rewards 2
+    levels. "The Anvil Launcher's blueprint. Costs more Shrapnel than
+    the musket's."
+  - (26) *"Manual Base"* — NEW, item
+    `advanced_tower_defense_mod:manual_turret_base_t_0`, subtitle
+    "Same as the AI base, with redstone + a Redstone Module instead",
+    rewards 2 levels. "The &eManual Base&r has no AI: you set the
+    target coordinates on it yourself. That's what the launcher
+    wants."
+  - (28) *"Anvils From Above"* — keep `AD122F38A7F9E1FE`, item
+    `advanced_tower_defense_mod:turret_head_t_0_anvil_launcher`,
+    rewards keep (4 shrapnel, 3 levels). "Set a coordinate on the
+    manual base and the &eAnvil Launcher&r drops an anvil on it from
+    the sky: 60 damage to whatever's standing there. Slow and aimed by
+    hand, and it kills a Mutant Brute in two."
+
+**Tier 3 rib — Energetic Defense (hexagon, y=+9, red panel), first
+node depends on It's Up to You Now:**
+- (18) *"Room to Grow"* — keep `F82126526999A560`, item
+  `sophisticatedstorage:barrel`, subtitle "Planks, slabs and a lever",
+  rewards keep. "A Sophisticated &eBarrel&r holds more than a chest
+  and takes upgrades in place. No power needed. Build the storage
+  before the power, because the power chain is long."
+- (20) *"The Engineer's Manual"* — NEW, item
+  `immersiveengineering:manual`, subtitle "Book + lever", rewards 2
+  levels. "Immersive Engineering has its own book, and you'll need it:
+  every multiblock's layout is in there with a ghost preview you can
+  build against."
+- (22) *"Wired Different"* — keep `4B07331734543EB4`, task →
+  `observation` on `immersiveengineering:diesel_generator` (the formed
+  multiblock's block id; **fixes the uncompletable item task**),
+  subtitle "Look at a formed Diesel Generator", rewards keep. "The
+  &eDiesel Generator&r is 3 wide, 3 tall and 5 long: 13 Heavy
+  Engineering Blocks, 9 Radiators, 6 Steel Scaffolding, 5 Fluid
+  Pipes, 4 Generator blocks and 1 Redstone Engineering Block, formed
+  by right-clicking it with the Engineer's Hammer. It burns Biodiesel,
+  which means a Squeezer, a Fermenter and a Refinery first. This is
+  the deep end of the pack."
+- (24) *"No Cables Needed"* — keep `C7E75E99F3A7B653`, item
+  `fluxnetworks:flux_plug`, rewards keep. "A &eFlux Plug&r takes power
+  in, a Flux Point puts it out, and they share it over a named network
+  with no cable between them. Plug at the generator, Point at the
+  machine."
+- (26) *"Sparks in the Dark"* — keep `04DC756B047A09D4`, item
+  `immersiveengineering:tesla_coil`, subtitle "HV Capacitor, MV Coil,
+  3 aluminium plates, advanced electronics, iron component", rewards
+  keep. "Powered, the &eTesla Coil&r picks one target within 6 blocks
+  about every second and a half, hits it for 6 and stuns it. Put it
+  where the horde bunches up."
+- (28) *"The Grid"* — keep `C5A98E14436508F8`, item
+  `refinedstorage:controller`, rewards keep. "Refined Storage: a
+  &eController&r, a Disk Drive and a Grid on one power line, and every
+  chest becomes one searchable inventory. Quartz Enriched Iron is the
+  base material."
+- (20, +10.5) *"Turn Up the Heat"* — keep `5F728109F9913045`, task →
+  item `create:encased_fan`, subtitle "Shaft + Andesite Casing +
+  Propeller", rewards keep (nozzle), hangs off Room to Grow. "An
+  &eEncased Fan&r blowing through lava is a flamethrower: 4 damage and
+  10 seconds of fire to anything in the stream, refreshed every tick
+  it stays in. A Nozzle on the fan's output turns the straight stream
+  into a short burst all around it. Any rotation works, a Hand Crank
+  included, so this costs no power at all."
+
+**Tips & Tricks (chapter `A75528A8A9B6E2C2`) — same 12 quests, same
+ids, same rewards, restyled:** chapter subtitle "Keys and habits worth
+knowing". The six keybind tips (Z, R, U, M, Tab, A) become `rsquare`
+"keycaps" laid out like their place on a keyboard (Tab and A at the
+left, Z bottom-left, R and U top row, M bottom row); the six mouse/UI
+tips (middle-click sort, look-at info, right-click bag, Curios slot,
+waystone, crafting station) stay circles in a second cluster to the
+right. Text unchanged.
+
+**Bounties (chapter `32583EA8E824D51C`) — same 5 quests, ids, tasks
+and the reflection counter untouched:** chapter subtitle "Every kill
+counts, wave or not". Chain the five with `dependencies` so lines draw,
+`diamond` shapes at sizes 1.0 / 1.25 / 1.5 / 1.75, and `gear` size 2.0
+for the repeatable "Zombie Masher".
+
+**Bridge script — `pack/kubejs/server_scripts/quest_milestones.js`
+(new):**
+- A `QM_MILESTONES` table at the top: `{ key, taskId, check }` for the
+  nine auto quests: horn (`data.getInt('td_lastHornUseTick') > 0`),
+  wave1 / wave3 / wave8 / wave15 (`!data.getBoolean('td_inWave') &&
+  data.getInt('td_waveNumber') >= N`), gear
+  (`td_starterGearRemoved`), amuletOnPedestal (`td_amuletOnPedestal`),
+  amuletWorn (per player: `player.persistentData.getBoolean(
+  'td_amuletWorn')`), boss (event-driven, see below). Task ids are the
+  real minted ids from the new `campaign.snbt`, filled in at build.
+- Shared-state checks run from a `PlayerEvents.tick` throttled to
+  every 20 ticks, reading the marker via the shared top-level
+  `worldData(level)` from `world_state.js` (top-level functions are
+  shared across server scripts in this Rhino build; top-level vars are
+  not — everything here is `qm`-prefixed).
+- Completion goes through FTB Quests' own command, exactly the idiom
+  `bounty_kills.js` already runs live: `server.runCommandSilent(
+  'ftbquests change_progress @a complete <taskId>')` for shared
+  milestones, `ftbquests change_progress <player.username> complete
+  <taskId>` for the per-player amulet-worn one. No reflection needed
+  for boolean milestones (no progress bar to fill).
+- One-shot guards: `td_q_<key>` booleans on the marker's persistent
+  data (per world, survives restarts, resets naturally with a fresh
+  world), so the command isn't re-issued every poll.
+- Boss: `EntityEvents.death` filtered on `event.entity.getTags()
+  .contains('td_boss')` → complete for `@a`.
+- Rhino rules from this codebase: no function declarations nested in
+  blocks (use `var f = function`), stringify-and-compare any value
+  crossing a reflective boundary (none here), `node --check` before
+  deploy.
+
+**Assets:**
+- `pack/kubejs/data/kubejs/tags/worldgen/structure/ruins.json`:
+  `{"replace": false, "values": [ {"id": "...", "required": false},
+  ... ]}` listing every non-vanilla structure id currently referenced
+  by the pack's `structure_set` overrides (`abandoned_structures:*`,
+  `abandoned_urban:*`, `philipsruins:*`, `postapocalypse_structures:*`,
+  `the_lost_city:*`, `u_desert:*`, `watchtower_building:*`; villages
+  and ruined portals excluded — they're not "past the line" content).
+  `required: false` so a missing id degrades to "not in the tag"
+  instead of failing the whole tag load.
+- `pack/kubejs/assets/kubejs/textures/quests/panel.png`: 16×16
+  opaque white, generated in-repo by a tiny Python script (zlib +
+  struct; PIL isn't installed).
+
+**Deploy + verification plan:**
+1. Build from the REPO `campaign.snbt` (the source of truth; the live
+   copy's diverged ids carry no progress worth keeping — grep the three
+   live saves' `ftbquests/*.snbt` again right before deploying to
+   confirm that's still true). Back up live `config/ftbquests/` first.
+2. `node --check` the bridge script; brace-balance check on all three
+   `.snbt` files; JSON-validate the tag file.
+3. Full-mod-set sandbox boot with the Tier 2 swap's mod set (Item
+   Collectors in, Vacuum Blocks + Medieval Turrets out): expect FTB
+   Quests to report the new quest count with 0 parse errors, no
+   `kubejs:ruins` tag error in the log, 0 KubeJS script errors.
+4. RCON: `/ftbquests change_progress @a complete <id>` on one custom
+   task as a smoke test; `/setblock` the pedestal and the rolling mill
+   to confirm the observation targets are real block ids.
+5. **Needs one real client session, not sandbox-verifiable**: that
+   the observation and structure tasks fire in play, that chapter
+   images render where intended, that `&` codes render in
+   descriptions, and that the fishbone reads well at the default zoom.
+   Ask for it explicitly after deploy; don't report "verified" on
+   sandbox alone.
+6. Deploy together with the Tier 2 trap swap (mods, KubeJS, quests);
+   packwiz refresh; sync the deployed files back to the repo.
+
+**Flags raised by this review, not fixed here (each a one-line
+decision):**
+- **Rotten Mutant drops nothing.** It's in `WAVE_MOB_TYPES` and the
+  endless tier-3 pool but in none of the four bag lists in
+  `loot_bag_drops.js`, so it's the only wave mob with no bag roll.
+  Add it to any list (they all get the same flat odds) — one edit.
+- **Bag odds are flat.** If "tougher mob = better bag" is still the
+  intended feel, that's a loot-script change (per-tier odds), not a
+  book change; the book now states the flat truth.
+- **Tier 3 fuel chain reachability** on a flat wasteland is
+  unverified: biodiesel needs plant oil (seeds) and ethanol (crops or
+  sugar). The book describes the chain honestly; whether it's actually
+  completable here needs a real attempt or a deliberate fuel shortcut.
+- **Pedestal heal**: `healPedestalBy()` exists in `pedestal_health.js`
+  but its trigger wasn't traced; if it's a player action, "Find the
+  Pedestal" should teach it. Build session to confirm and add one
+  sentence if so.
+- **Workbench blueprint consumption** (kept or consumed on Assemble)
+  is unverified; the text doesn't claim either way.
+- **ChapterImage anchor semantics** — see design rules; confirm before
+  placing panels.
+
+**Built, sandbox-verified and deployed live 2026-09-09 (this session,
+after "send it"; no build peer dispatch).** The three chapter files are
+generated by a scratchpad `gen_quests.py` (fixed-seed ids; the nine
+milestone task ids are constants shared with `quest_milestones.js`):
+Campaign 56 quests (13 spine + Lost the Horn, 5 Beyond the Wall, 15 Know
+Your Enemy, 5 Tier 1, 10 Tier 2, 7 Tier 3), Tips 12, Bounties 5 = 73.
+Sandbox (a copy of the Tier 2 swap's own 81-mod sandbox on separate
+ports): `Loaded 1 chapter groups, 3 chapters, 73 quests`, 0 parse errors;
+`quest_milestones.js` loaded with no Rhino error; every task/icon item id
+parsed via `/give`; `kubejs:amulet_pedestal`, `createaddition:rolling_mill`
+and `immersiveengineering:diesel_generator` all placed via `/setblock`;
+`/locate structure #kubejs:ruins` resolved to `abandoned_urban:observatory`
+(the tag loads and resolves; a bogus tag errors as expected). Text fix
+made while building: FTB's KillTask only credits kills whose damage
+source is the player, so "Thin the Horde" now says turret/trap kills
+don't count (they do for Bounties). Deployed to the live instance with
+named-file copies only (a peer was editing other KubeJS files in the same
+tree): 3 chapters + `data.snbt`, `quest_milestones.js`, the quests
+texture + ruins tag, and the Tier 2 swap itself (`tier2_recipes.js`,
+`tooltip_tier_colors.js`, `turret_combat_feedback.js`; Vacuum Blocks +
+Medieval Turrets jars out, `itemcollectors` in **plus its two
+SuperMartijn642 lib jars, which were also missing on live** - live now
+matches the packwiz list exactly, 82/82). Backups: `config/
+ftbquests_backup_20260909_132415`, `mods_backup_20260909_132415`.
+`packwiz refresh` run. Not committed (this session commits only on
+request); working-tree files are listed in the QUEUE entry.
+
+**First live client pass (same day, 14:00)**: "layout reads well." The
+bridge is confirmed live from the save's own progress file: the horn and
+wave-1 milestone tasks both registered, the rolling-mill observation
+fired, kill tasks counted. The pedestal observation did NOT fire: it
+targeted `kubejs:amulet_pedestal`, which passed every id probe (the
+item/block still exists) but is not what `buildStarterBase` places — the
+real pedestal is `supplementaries:pedestal` (amulet_pedestal.js polls
+that block's own Container). Retargeted, regenerated (same ids), redeployed
+— takes effect on the next world load. Lesson, same family as "blockstate
+!= registered block": a placeable id is not the id in the world.
+
+**Second live finding, same session (14:10) - root cause of every id
+drift this pack has ever had.** The user's save referenced five ids that
+were in neither generation of the file. Decompiled
+`QuestObjectBase.parseHexId`: it is a bare `Long.parseLong(s, 16)` in a
+`NumberFormatException` catch, so any 16-hex id with leading digit 8-F
+(>= 2^63) parses as "no id", is treated as 0 and re-minted positive on
+load, after which FTB rewrites the file. Checked against the pre-deploy
+live backups: 0 negative-leading ids on live vs 34/97 (campaign), 8/21
+(bounties), 23/37 (tips) in repo HEAD - every historical repo/live drift
+in this pack (2026-09-03, 09-06, 09-09) was exactly this. Consequences
+fixed the same hour: all three chapters re-idded positive-only (keeping
+the five ids the live save already references, paired from the save's
+`started` timestamps); 6 of the 9 milestone task ids were negative and
+could never have been completed by the bridge (horn + wave 1 worked only
+because those two were positive) - re-idded in both the generator and
+`quest_milestones.js`; `bounty_kills.js` hardcoded two negative task ids
+(Exterminator, Reaper) whose `change_progress` calls could never hit a
+live task - corrected to the new ids. Rule recorded in memory and in
+IDEAS.md's working principles: hand-authored FTB Quests ids must start
+0-7; `grep -E '^\s*id: "[89A-F]'` over the quest folder must be empty
+before any deploy. Also: a first-attempt re-run of the generator minted
+NEW ids for every non-kept quest (its collision guard treated the ids
+already on disk as taken) and the deploy step shipped that file before
+the check ran - recovered by reproducing generation 1 from `git show
+HEAD` inputs and applying the id map; the generator now reuses on-disk
+ids by chapter/title/position and lives in `tools/quest_book/`.
+
+**Second live pass, after reload (14:25) - confirmed in play**: the
+pedestal observation fires on `supplementaries:pedestal`, the chapter
+image panels render on the client, and "Three Down" auto-completed on
+the wave-3 clear through the re-idded task id, which proves the whole
+positive-id bridge path. Only the `&` colour codes were left unticked in
+the user's checklist (see the note that follows this entry's checklist).
+
+**Original pre-pass checklist (kept for the record)**: the
+observation and structure tasks firing in play, the tinted panels
+rendering where intended, `&` codes rendering in descriptions, the
+fishbone reading well at default zoom, and a milestone auto-completing in
+play (blow the horn: "Sound the Horn" should tick within a second).
+
 ## Real playtest feedback batch, 2026-09-04
 
 27 items from a real extended playtest session, gathered and specced in
@@ -5476,42 +6165,10 @@ server" ceiling as the other visual mods this session.
 
 ## Tried and explicitly retired
 
-Kept here so these don't get re-proposed blind — each was built, given
-real effort, and deliberately removed on direct feedback, not because
-it was buggy or unfinished.
-
-**Shaders (Oculus + Spooklementary)** — *retired*, twice. Eleven
-tuning rounds (version-crash fix, brightness/shadow saga, isolating the
-fix to the shader's own intended lever, removing real-time shadows
-outright) all landed on a technically-defensible state, but the verdict
-was about the shader's whole aesthetic, not any remaining number ("im
-just not feeling the whole shader feel now"). A `minecraft:darkness`
-vanilla-effect alternative was tried the same day as a replacement —
-also didn't work, dropped without much post-mortem needed beyond "the
-Warden effect didn't work."
-
-**All fog** (border proximity fog + wave-time combat fog, via
-YetGamer's Custom Fog) — *retired*. Removed per direct request ("remove
-any visual effects work, like fog etc, and go back to basics"), taking
-Blood Moon's only real features (denser fog + a distinct title) down
-with it. Night-lock (forced night during a wave) is the only atmosphere
-effect left standing — a gameplay necessity (undead mobs burning),
-not a visual effect, so it stayed.
-
-**Roguelike permanent-buff choice popup** — *retired*. A `/tellraw`
-clickable-chat-menu implementation never reliably resolved the
-click-detection, which left a flag permanently stuck and silently
-blocked the Wave Horn *and* the countdown timer from ever working again
-— one buggy feature, three symptoms. Removed entirely rather than
-patched. If revisited: a real GUI (not chat) was researched as the
-fix — see IDEAS.md's "revisiting the popup" note for the villager-trade
-and custom-Menu leads, both unverified, neither built.
-
-**Inventory Profiles Next** (+ libIPN + Kotlin for Forge) — *retired*,
-twice, for footprint/unresolved-bugs reasons (a swipe-gesture conflict
-with Mouse Tweaks, a separate hover-highlight bug) against a "keep
-footprint small" pack that doesn't strictly need it. Mouse Tweaks alone
-still covers basic inventory management.
+Moved to `docs/archive/features_archive.md` (shaders, fog, roguelike
+buff popup, Inventory Profiles Next — all retired, kept for the record
+so they don't get re-proposed blind). Check that file before proposing
+any of these again.
 
 ---
 
@@ -6880,133 +7537,59 @@ same general "curated dispatch, not standard JS semantics" gap this
 codebase has already documented elsewhere (Rhino Java reflection
 quirks).
 
+## Live-feedback batch, 2026-09-09 (part 3)
+
+One item, direct ask: "can we put the waystone just next to the house
+rather than in the yard."
+
+### 1. Waystone moved from the yard to the house front
+
+**Before**: `playtest_starter_kit.js` placed the pre-placed Waystone at
+`centerX+3, wallY0, centerZ` - the middle of the courtyard, 3 blocks
+east of the pedestal, 7 blocks south of the house's real front wall.
+
+**Where it went, and why there**: decoded `abandoned_brick_house.nbt`
+directly (the live jar's copy, DataVersion 3465) rather than
+spot-checking for air. The house's real south wall is at local z=8
+(the bounding-box edge at z=10 is eave overhang, not wall), with the
+door alcove at x=4-5. The strip at local z=9 is open ground right in
+front of that wall. Of it, x=3-6 sit under a porch awning (brick_slab
+at local y=4, granite_wall railing at y=5) while x=7 and x=8 are open
+from the ground up to the roof eave. Picked **local (7, 1-2, 9)**: one
+block east of the door, beside the porch, backed by solid packed_mud at
+(7,1,8), and one block off the gate-to-door walkway line (the pedestal
+and gate both sit on local x=6) so it doesn't crowd the entrance.
+`facing=south` so its front looks out over the yard - the model is
+near-symmetric anyway (checked the mod's own blockstate/model JSON), so
+facing is cosmetic. Nothing else in the file writes to that row: the
+`HOUSE_REINFORCE_BLOCKS` z=9 entries are all y>=4 awning/railing
+blocks, and every broad `/fill` runs before the template.
+
+**Real ordering bug caught before shipping**: the original placement
+sat in the pedestal section, which runs BEFORE the house's
+`/place template`. The structure's NBT lists all 1716 cells of its
+12x13x11 volume, 1065 of them explicit `minecraft:air` - including the
+two target cells - so `/place template` would have overwritten the
+waystone with air and it would simply never have appeared. Moved the
+placement to right after the template + wet_sponge fill, alongside the
+other local-coordinate fixups. Same lesson as the earlier "only the
+bottom half rendered" bug: pre-placement into a templated structure has
+to respect what the template itself writes.
+
+**Verification**: `node --check` passes; deployed to the live instance.
+Fresh-world only - the base-build path never re-runs on an existing
+save, and no migration was added (a moved waystone would lose its
+activation, and the user regenerates worlds often enough that a
+fresh-world fix is the established precedent here). **Not yet
+confirmed in live play.**
+
 ## Structure spawn-exclusion floor — built 2026-09-09, SUPERSEDED the same day
 
-**Superseded by "Anchor-grid base placement" at the end of this file.**
-Kept for the record: the `exclusion_zone` mechanism identified here is
-real and is what the replacement builds on, but the numbers were wrong
-in a way that mattered — `hasStructureChunkInRange` is pure grid math
-over the other set's placement grid, so a `chunk_count` of 20 or 30
-against a 32-chunk-spacing anchor puts an anchor inside EVERY search
-box, i.e. every mid/far-tier set stopped generating anywhere, while
-nothing protected the actual base (which never sat on the anchor).
-
-Direct report with a Xaero's minimap screenshot: structures (villages,
-gas stations, pillager outposts, ruins) landing "way way too close" to
-spawn - the screenshot showed roughly a dozen distinct structures
-clustered within ~100 blocks of the player, overlapping each other.
-Same underlying issue the "part 2" item 1 entry above already flagged
-as an unfixed risk ("spawn landed too close to a big structure... not
-fixed, only worked around for this one report") - this is the real fix
-for that class of bug, not just this one report.
-
-**Root cause, not a guess**: `minecraft:random_spread` placement always
-evaluates a candidate position for the grid region containing true
-world coordinate (0,0), regardless of `spacing`/`separation` value -
-that region's own offset range is `[0, spacing-separation)` chunks,
-which starts at literally 0. Confirmed by re-reading this pack's own
-retune history: 2026-08-31 tightened spacing to guarantee reachable
-loot inside a then-tiny border, 2026-09-02 loosened it back because
-density read as "saturating from wave 1," and 2026-09-09 (900d52c)
-tightened it again into near/mid/far tiers (6/3, 14/7, 28/14 chunks) to
-re-align density with `structure_loot_progression.js`'s distance-based
-loot tiers. Each pass only ever changed the AVERAGE distance between
-repeats of the same structure - none of them could fix the minimum,
-because the near-origin region's floor is always 0 blocks regardless of
-spacing. This save's runtime-searched spawn also happened to land
-almost exactly at true (X:-4, Z:0), which is why every near-tier set's
-near-origin roll actually manifested as visible clutter instead of
-landing somewhere the player hasn't walked yet - and this isn't a fluke
-specific to this save, since vanilla's own spawn search already starts
-from (0,0) and expands outward, so most seeds keep spawn reasonably
-close to true origin too.
-
-**Fix: a real guaranteed minimum-distance floor**, not another spacing
-guess. Verified `exclusion_zone` (`{other_set, chunk_count}`) is a real
-1.20.1 field by extracting vanilla's own `pillager_outposts.json` from
-the exact installed client jar (`Install/versions/1.20.1/1.20.1.jar`) -
-it already excludes pillager outposts within 10 chunks of any village.
-This pack already uses the same mechanism successfully in 3 places
-(`u_desert:pillager_outpost` and `philipsruins:field_stone_ruins_rocks`
-vs. `minecraft:villages`, and 6 of `the_lost_city`'s own sets vs. its
-own `city` set) - reusing a pattern already proven in this exact repo,
-not introducing an unverified one.
-
-Built a dedicated anchor point at true world origin by overriding the
-vanilla `minecraft:ocean_monuments` structure_set
-(`pack/kubejs/data/minecraft/worldgen/structure_set/ocean_monuments.json`,
-new file - no prior override existed) to `spacing: 32, separation: 28`
-(32 is unchanged from vanilla's own stock value, only separation moved
-closer to it) - its region-(0,0) instance now lands within 0-64 blocks
-of true origin, deterministic within one chunk band. Picked
-`ocean_monuments` specifically because this world's biome source
-(`pack/kubejs/data/minecraft/dimension/overworld.json`) has no ocean
-biome at all (desert/badlands/plains/sunflower_plains/meadow only) - the
-anchor's own structure can never physically generate, so it's purely a
-math reference point, zero visual footprint. `exclusion_zone` uses the
-other set's grid-computed candidate position for distance checks
-independent of whether that structure actually passes its own biome
-check - same reason vanilla's own pillager-outpost/village exclusion
-already works this way.
-
-Added `exclusion_zone` (vs. `minecraft:ocean_monuments`) to every
-structure_set from the near/mid/far density pass, tiered to roughly
-double each tier's own existing spacing-chunk value plus a margin for
-the anchor's own small position uncertainty:
-- **Near tier -> `chunk_count: 10`** (~160 block floor): both
-  `abandoned_urban` sets (fire_tower, gas_station),
-  `philipsruins:desert_structures`, all 4 `postapocalypse_structures`
-  houses, and `minecraft:villages` itself (previously had no exclusion
-  at all).
-- **Mid tier -> `chunk_count: 20`** (~320 block floor): the remaining 5
-  `abandoned_urban` sets and 10 remaining `philipsruins` sets.
-- **Far tier -> `chunk_count: 30`** (~480 block floor):
-  `watchtower_building`'s 2 sets, plus `philipsruins:nether_ruins` and
-  `underground_structures` (48/24 spacing, previously untouched by any
-  retune pass).
-
-**2 files already had an `exclusion_zone` slot in use** (a structure_set
-can only hold one) - `u_desert:pillager_outpost` and
-`philipsruins:field_stone_ruins_rocks` both previously excluded 10/20
-chunks from `minecraft:villages` (anti-overlap, not anti-spawn-clutter).
-Swapped their target to the new anchor instead, same chunk_count each
-already had - trades away the "don't overlap a real village" guarantee
-for the reported bug's fix, a deliberate call given the report's
-severity.
-
-**Deliberately left alone**: `the_lost_city`'s 10 sets (explicit caution
-carried over from 900d52c - "has its own overlap safeguards, retuning
-it once already caused a real collision crash"; adding an exclusion
-field is a smaller change than retuning spacing but not worth the risk
-given 6 of its 10 sets already use their own single `exclusion_zone`
-slot against `the_lost_city:city` for internal collision safety).
-`abandoned_structures`' 4 sets (`berezka_api:berezkas_structure_placement`,
-a mod-custom placement type, not vanilla `random_spread` -
-`exclusion_zone` support unverified for this codec, and this set is
-already the least severe offender at 28-96 chunk spacing). Both are
-real, lower-severity gaps, not fixed here - flagged as a known follow-up
-if either keeps showing up close to spawn after this fix.
-
-Validated all 30 touched/new JSON files parse (`node -e
-"JSON.parse(...)"`), matching this pack's own JSON-syntax-check
-discipline. **Not yet verified via a real sandbox boot** - unlike this
-pack's usual worldgen-change practice (structure placement changes have
-caused 3 real world-creation crashes before: YUNG's Better Desert
-Temples, the noise-settings schema gap, the Radium chunk_region race),
-this pass reused only fields already proven live in this exact repo
-(`exclusion_zone` shape, `ocean_monuments`' own vanilla spacing value),
-but a real boot + `/locate` distance check against the new anchor is
-still the right verification step before calling this confirmed.
-
-**Real, honest limit, same as every other worldgen change in this
-pack**: structure placement is decided at chunk-generation time. The
-screenshot's own already-explored chunks near spawn were generated
-under the old settings and will keep exactly what's already there -
-this fix only changes what generates in chunks that haven't loaded yet.
-Seeing the fix reflected around spawn specifically needs either a fresh
-world, or the border/exploration eventually reaching not-yet-generated
-territory near the old spawn (unlikely to happen naturally, since
-that's precisely the area already explored).
+Moved to `docs/archive/features_archive.md`. Superseded the same day by
+"Anchor-grid base placement" below — the `exclusion_zone` mechanism it
+identified is real and is what the replacement builds on, but its
+`chunk_count` numbers were wrong (put an anchor inside every mid/far-tier
+set's search box, so those sets stopped generating anywhere).
 
 ## Anchor-grid base placement — 2026-09-09, replaces the login-time spawn search
 
@@ -7222,3 +7805,102 @@ it is keyed to the Brick House's wall geometry). `BUILDING_*` back to
 placed blocks read straight from the region files, not just the
 setblock-placed fixtures — the gap that let the morning's swap go
 unverified.
+
+## Playtest feedback batch, 2026-09-09 (part 4) — idle mobs, boomer cue, flat field, spawn band
+
+Four direct observations from the third fresh world of the day. All
+four were diagnosed against the live instance's newest save (`New
+Worldlklklklklklklk`: decoded entity/region files, its own
+`logs/kubejs/server.log`) before any code was touched; the literal
+1-4 checklist with per-item status lives in QUEUE.md under the same
+heading.
+
+**What the save actually showed.** The pedestal marker sat at
+(10248, 3, -7165) with `td_waveNumber 4`, `td_pedestalDestroyed 1`, border
+size 75 (50 + 5+5+5+10). No wave mob was alive, but 18 husks and a
+zombie villager stood 214-268 blocks out in two tight clusters, full
+health, `forge:spawn_type: "STRUCTURE"`, in chunks referencing
+`philipsruins:desert_structures` — every one tagged
+`td_retarget_stripped`, none `td_wave_mob`. The previous world had two
+more of the same at 281 blocks. Terrain: both worlds' decoded
+`WORLD_SURFACE`/`OCEAN_FLOOR` heightmaps put the ground at Y 1-2 with
+carver pits 3-5 blocks deep 20-60 blocks from the base (20 and 35
+columns ≥3 deep inside an 80-block radius respectively) and nothing
+higher than the buildings themselves.
+
+**1 + 4, one root cause.** The 2026-09-08 fix for "mobs pinned at the
+world border" clamped `wave_spawner.js`'s spawn distance to the border's
+live half-width minus 5. At the starting border of 50 that is
+`max 20 / min 10` — a 10-20 block ring around the pedestal, which is the
+inside of the ~18-wide compound or its perimeter wall. Mobs appeared
+behind the player's lines ("mobs are spawning in the base"), and a mob
+that landed outside a reinforced wall segment had no walkable path to
+the marker, so its attack goal never engaged and it stood at the wall;
+one that landed inside reached the invisible marker at once and idled
+there ("zombies just standing around"). The second idle population was
+the structure husks above: `mob_aggro.js` stripped their target AI and
+forced the pedestal target on any roster-type mob it could see, but
+they were outside the border, where vanilla pathfinding cannot produce
+a path at all, so they neither walked in nor — with their own goals
+gone — aggroed the player. Undead Nights was ruled out (its band is
+70-75 blocks and its natural spawns are all off), so were vanilla
+zombie reinforcements (need Hard difficulty and `doMobSpawning`, the
+world is Normal with spawning off).
+
+**Fixes shipped:**
+- `wave_spawner.js`: fixed 48-64 block band from the pedestal (the
+  user's pick of three offered bands), border clamp kept only as a
+  safety net, and every spawn point hard-clamped into the border box
+  minus 6 (spreadplayers' 4-block snap plus 2). Horn-gate count radius
+  80 → 96.
+- `playtest_starter_kit.js`: starting border `worldborder set 50` →
+  `BORDER_START = 150`. Required by the band: the pedestal is 5 blocks
+  north of the border centre and the snap adds 4, so 64+5+4 = 73 must
+  be under the 75 half-width. Exploration pacing is unaffected —
+  structures are excluded for 9 chunks around the base either way, and
+  `base_expansion.js` grows the border relatively (5/5/5/10/10/10/15/15,
+  now ending at 225 by wave 8; Undead Nights' 70-75 endless band is
+  inside from wave 9). Offline check of the math over 200k samples:
+  spawn distance 47.4-64.7, 163 points clamped, none able to leave the
+  border after the snap.
+- `wave_status.js`: `RADIUS` 80 → 96, equal to the horn gate.
+- `mob_aggro.js`: skips any roster mob outside the current world border
+  (no strip, no `setTarget`) — its own AI stays intact until the border
+  reaches it. Uses the same `getWorldBorder()` min/max reads
+  `amulet_border.js` has run live since August.
+
+**2. Boomer "ARMED" popup — audible only.** `boomer_zombie_explosion.js`
+no longer sends the title/subtitle pair when `boomer_charged` appears;
+the positional `entity.tnt.primed` cue stays, volume 1 → 2 (~32 blocks
+instead of ~16) since it is now the only warning.
+
+**3. Flat field.** New unconditional pass in `buildStarterBase`, run
+before anything of the compound is placed: the (2·79+1)² = 159×159
+square centred on the border centre (4 blocks past the starting border
+edge, the user's pick) is levelled to one plane at `floorY` — 16 layers
+above cleared to air, 8 layers below rebuilt solid in the site biome's
+own ground blocks (desert: 3 sand over sandstone; badlands: 2 red_sand
+over terracotta; fallback grass over dirt), plain fills so water/lava
+pockets and stray features go too. `starterFillBoxChunked()` splits
+each slab along its longest axis until every `/fill` is under vanilla's
+32768-block cap: 28 commands, 632,025 blocks, verified offline to tile
+the volume exactly once. The old footprint-only leveling pass stays and
+now finds nothing to do. Runs while the spawn-area pass still has the
+chunks loaded (10-chunk radius covers ±79 with room to spare).
+
+**Verification (done):** `node --check` on all five scripts; fresh-world
+sandbox boot with the five files synced (`world_test` rebuilt): base at
+(5128, 2, -4088), field pass logged and the base built in 1732 ms (was
+565), `Done` at 22 s. Read back from the saved region files, not the
+log: level.dat `BorderSize 150`; `WORLD_SURFACE` and `OCEAN_FLOOR`
+heightmaps over ±79 blocks all at Y 1 apart from the compound (0 pits),
+natural terrain with pits down to 8 deep resuming 1 block past the field
+edge; a 58×58 slab under the plane is exactly sand (3 layers) over
+sandstone with nothing else, the 5 layers above it are pure air; the
+pedestal reads `supplementaries:pedestal` at (5128, 2, -4093) and the
+spawn column is stone_bricks under air. Spawn-band math checked offline
+over 200k samples (47.4-64.7 blocks, no point able to leave the border
+after the snap). Deployed to the live instance's `kubejs/server_scripts`
+at 14:05 (the five files only). Not yet confirmed in play; the band's
+full 48-64 needs a fresh world (an existing world keeps its smaller
+border, so the band stays clamped there).

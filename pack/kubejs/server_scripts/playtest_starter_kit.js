@@ -475,6 +475,60 @@ function surfaceHeightAt(level, x, z) {
   return level.getHeight('MOTION_BLOCKING', x, z)
 }
 
+// Starting world border and the flat field around the base. BASE_FIELD_HALF
+// levels a little past the border edge on every side.
+//
+// **150 -> 50, 2026-09-09, direct playtest feedback: "the starting world
+// border is too big, move it back to 50."** 150 was chosen the same day
+// specifically to contain wave_spawner.js's 48-64-block spawn band without
+// clamping it down against the compound - reverting to 50 alone would have
+// reopened that exact regression (spawns collapsing to ~10-20 blocks,
+// landing inside/against the walls). Real fix shipped alongside this
+// revert, per the direct follow-up ("just make sure enemies cant spawn too
+// close to the base"): wave_spawner.js's spawn-point picker now rejects any
+// candidate that lands inside the compound's own real footprint (persisted
+// below as td_compoundX0/X1/Z0/Z1) instead of relying on a uniform
+// distance-from-pedestal band clamped to the border. The compound's own
+// footprint (pedestal to back wall is ~17-20 blocks, to the side/gate walls
+// 7-9) fits inside a 50 border (half-width 25) with real room on 3 of 4
+// sides - only the "straight north, away from the gate" direction is tight,
+// which the rejection-sampling naturally avoids by just retrying a
+// different angle rather than needing a bigger border. mob_aggro.js's own
+// stray-mob correction (see that file) is the safety net for whatever this
+// doesn't catch.
+const BORDER_START = 50
+const BASE_FIELD_HALF = BORDER_START / 2 + 4
+
+// /fill refuses any box over 32768 blocks; split along the longest axis
+// (Y first when it ties, so a wide flat slab becomes whole layers) until
+// every piece fits. Prefixed name on purpose: top-level FUNCTIONS share
+// one global slot across server_scripts files in this build (see
+// mob_aggro.js's collision writeup), plain `fillBox` is too generic.
+function starterFillBoxChunked(run, x0, y0, z0, x1, y1, z1, block) {
+  const FILL_COMMAND_MAX_BLOCKS = 32768
+  const sx = x1 - x0 + 1
+  const sy = y1 - y0 + 1
+  const sz = z1 - z0 + 1
+  if (sx <= 0 || sy <= 0 || sz <= 0) return
+  if (sx * sy * sz <= FILL_COMMAND_MAX_BLOCKS) {
+    run(`fill ${x0} ${y0} ${z0} ${x1} ${y1} ${z1} ${block}`)
+    return
+  }
+  if (sy > 1 && sy >= sx && sy >= sz) {
+    const ym = y0 + Math.floor(sy / 2) - 1
+    starterFillBoxChunked(run, x0, y0, z0, x1, ym, z1, block)
+    starterFillBoxChunked(run, x0, ym + 1, z0, x1, y1, z1, block)
+  } else if (sx >= sz) {
+    const xm = x0 + Math.floor(sx / 2) - 1
+    starterFillBoxChunked(run, x0, y0, z0, xm, y1, z1, block)
+    starterFillBoxChunked(run, xm + 1, y0, z0, x1, y1, z1, block)
+  } else {
+    const zm = z0 + Math.floor(sz / 2) - 1
+    starterFillBoxChunked(run, x0, y0, z0, x1, y1, zm, block)
+    starterFillBoxChunked(run, x0, y0, zm + 1, x1, y1, z1, block)
+  }
+}
+
 // Builds the whole starter compound at (x, z). Runs with no player in
 // the world (ServerEvents.loaded on a fresh world, see the hooks at the
 // bottom of this file), so everything here is server/level-based - the
@@ -520,7 +574,16 @@ function buildStarterBase(server, level, x, z) {
   // (Went to 58 for a few hours on 2026-09-09 for the 15-deep Red House;
   // back to 50 with the Brick House the same day - see the building
   // comment below.)
-  server.runCommandSilent('worldborder set 50')
+  // 50 -> BORDER_START (150) on 2026-09-09, playtest batch part 4, items
+  // 1 and 4: wave mobs now spawn a fixed 48-64 blocks from the pedestal
+  // (wave_spawner.js) and a mob summoned outside the border is pinned
+  // there for good, so the border has to contain the whole band from
+  // wave 1 (the old 50 collapsed the band to 10-20 blocks - inside the
+  // compound). Exploration pacing is untouched: structures are excluded
+  // for 9 chunks around the base anyway, so nothing reachable changes,
+  // and base_expansion.js's growth is a relative `worldborder add`.
+  server.runCommandSilent(`worldborder set ${BORDER_START}`)
+
   // Wave mobs deliberately spawn just beyond the border (wave_spawner.js)
   // and walk in - without this, vanilla's default border damage would
   // chip them (and the player, near the edge) for no reason this pack
@@ -614,6 +677,43 @@ function buildStarterBase(server, level, x, z) {
   const x0 = buildingX0 - SIDE_MARGIN
   const x1 = buildingX1 + SIDE_MARGIN
   const z0 = buildingZ0 - BACK_MARGIN
+
+  // Wide flat field (2026-09-09, direct playtest feedback: "I need the
+  // immediate area around the base to be flat (a couple of worlds I've
+  // started recently have big holes which messes with the defences
+  // idea)"; the user chose "out to the starting border edge" and "fully
+  // level to one height" from the offered options). Real terrain,
+  // decoded from both reported saves' heightmaps before writing this:
+  // the generator's surface is a pure Y gradient (ground at Y 1-2), but
+  // carver pits 3-5 blocks deep sit 20-60 blocks out - well past the
+  // footprint-only leveling pass right below (which stays, and now finds
+  // nothing left to do). Levels the whole (2*BASE_FIELD_HALF+1)^2 square
+  // centred on the border centre to one plane at floorY: everything
+  // above cleared to air, everything from floorY-8 up to floorY rebuilt
+  // solid in the site biome's own ground blocks. Plain fills, no
+  // `replace` filter - that also closes water/lava pockets and removes
+  // any feature junk at those heights. Split into <=32768-block pieces
+  // for vanilla's per-/fill cap (25 commands at the current size). Runs
+  // while the spawn-area pass still has these chunks loaded (10-chunk
+  // radius around the pinned spawn covers ±79 with room to spare) and
+  // before anything of the compound exists, so walls, floor and house
+  // all go down on the levelled plane.
+  const fieldX0 = x - BASE_FIELD_HALF
+  const fieldX1 = x + BASE_FIELD_HALF
+  const fieldZ0 = z - BASE_FIELD_HALF
+  const fieldZ1 = z + BASE_FIELD_HALF
+  const FIELD_CLEAR_ABOVE = 16
+  const FIELD_FILL_BELOW = 8
+  const siteBiome = biomeIdAt(level, x, z)
+  const fieldBlocks = siteBiome === 'minecraft:badlands'
+    ? { top: 'minecraft:red_sand', topDepth: 2, sub: 'minecraft:terracotta' }
+    : siteBiome === 'minecraft:desert'
+      ? { top: 'minecraft:sand', topDepth: 3, sub: 'minecraft:sandstone' }
+      : { top: 'minecraft:grass_block', topDepth: 1, sub: 'minecraft:dirt' }
+  starterFillBoxChunked(run, fieldX0, floorY + 1, fieldZ0, fieldX1, floorY + FIELD_CLEAR_ABOVE, fieldZ1, 'minecraft:air')
+  starterFillBoxChunked(run, fieldX0, floorY - FIELD_FILL_BELOW, fieldZ0, fieldX1, floorY - fieldBlocks.topDepth, fieldZ1, fieldBlocks.sub)
+  starterFillBoxChunked(run, fieldX0, floorY - fieldBlocks.topDepth + 1, fieldZ0, fieldX1, floorY, fieldZ1, fieldBlocks.top)
+  console.log(`playtest_starter_kit.js: flat field levelled to Y ${floorY} across (${fieldX0},${fieldZ0})-(${fieldX1},${fieldZ1}) in ${siteBiome} ground blocks`)
 
   // Real terrain-flatness verification across the WHOLE footprint, not
   // an assumption (2026-09-06, same seed-independence dispatch as the
@@ -930,26 +1030,13 @@ function buildStarterBase(server, level, x, z) {
   const centerZ = z1 - 7
 
   run(`setblock ${centerX} ${wallY0} ${centerZ} supplementaries:pedestal`)
-  // Real live ask, 2026-09-05: pre-place a Waystone in the yard on a
-  // fresh world, same pre-placement convention as the pedestal/kinetic
-  // rig above - one real, findable Waystone from the start, distinct
-  // position from the pedestal itself so the two don't overlap.
-  //
-  // Real bug fixed 2026-09-05 (live report: "only the bottom block is
-  // visible, top lights up ghost-block style with no texture"). Root
-  // cause, confirmed by decompiling WaystoneBlock/WaystoneBlockBase
-  // directly: waystones:waystone is a real two-block structure, same
-  // door/bed-style half=lower/half=upper blockstate pair, confirmed
-  // from the mod's own blockstates/waystone.json (separate
-  // waystone_bottom/waystone_top models per half). A real player
-  // placing one triggers the mod's own placement code, which explicitly
-  // sets the block ABOVE to half=upper - a bare /setblock only ever
-  // creates the block's registered default state (facing=north,
-  // half=lower), and never touches the space above at all, so nothing
-  // was ever placed there. Fixed by setting both halves explicitly,
-  // matching what real placement does.
-  run(`setblock ${centerX + 3} ${wallY0} ${centerZ} waystones:waystone[facing=north,half=lower]`)
-  run(`setblock ${centerX + 3} ${wallY0 + 1} ${centerZ} waystones:waystone[facing=north,half=upper]`)
+  // The pre-placed Waystone used to go here too (centerX+3, out in the
+  // yard beside the pedestal) - moved to the house front 2026-09-09,
+  // see the placement right after the building's own /place template
+  // below. It has to come AFTER the template now: the structure's NBT
+  // stores explicit air for every one of its 1716 cells (checked, not
+  // assumed), so anything placed inside its bounding box before
+  // /place template runs gets silently wiped by it.
 
   // No campfires or fire props anywhere in this build - direct request,
   // dropped entirely rather than reduced. The old braziers were called
@@ -1001,6 +1088,39 @@ function buildStarterBase(server, level, x, z) {
   // floor footprint. Replace-mode fill over just that one Y layer swaps
   // it for the same stone_bricks the rest of the compound floor uses.
   run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
+
+  // Pre-placed Waystone (real live ask, 2026-09-05: one real, findable
+  // Waystone from the start, same pre-placement convention as the
+  // pedestal/kinetic rig). **Moved 2026-09-09** (direct ask: "put the
+  // waystone just next to the house rather than in the yard") - was
+  // out in the open courtyard at centerX+3/centerZ, 3 blocks east of
+  // the pedestal. Now sits in the building's own local frame like the
+  // fixups below: local (7, 1-2, 9), the open strip directly in front
+  // of the house's real south wall (local z=8 - the bounding-box edge
+  // at z=10 is overhang, not wall), one block east of the door alcove
+  // (x=4-5) and just clear of the porch awning (brick_slab at local
+  // y=4 over x=3-6; x=7 is open from the ground up to the eave).
+  // Checked against the structure's real NBT, not assumed: the column
+  // is air at local y=1..3, the wall behind it at (7,1,8) is solid
+  // packed_mud, and nothing else in this file writes to that row (the
+  // HOUSE_REINFORCE_BLOCKS z=9 entries are all y>=4 awning/railing
+  // blocks). Faces south so its front looks out over the yard.
+  //
+  // Real bug fixed 2026-09-05 (live report: "only the bottom block is
+  // visible, top lights up ghost-block style with no texture"). Root
+  // cause, confirmed by decompiling WaystoneBlock/WaystoneBlockBase
+  // directly: waystones:waystone is a real two-block structure, same
+  // door/bed-style half=lower/half=upper blockstate pair, confirmed
+  // from the mod's own blockstates/waystone.json (separate
+  // waystone_bottom/waystone_top models per half). A real player
+  // placing one triggers the mod's own placement code, which explicitly
+  // sets the block ABOVE to half=upper - a bare /setblock only ever
+  // creates the block's registered default state (facing=north,
+  // half=lower), and never touches the space above at all, so nothing
+  // was ever placed there. Fixed by setting both halves explicitly,
+  // matching what real placement does.
+  run(`setblock ${buildingX0 + 7} ${floorY + 1} ${buildingZ0 + 9} waystones:waystone[facing=south,half=lower]`)
+  run(`setblock ${buildingX0 + 7} ${floorY + 2} ${buildingZ0 + 9} waystones:waystone[facing=south,half=upper]`)
 
   // Real playtest feedback batch, 2026-09-04 - furniture baked into this
   // structure's own NBT, not scripted (same class of fix as the
@@ -1134,6 +1254,18 @@ function buildStarterBase(server, level, x, z) {
     worldD.putInt('td_pedestalX', centerX)
     worldD.putInt('td_pedestalY', wallY0)
     worldD.putInt('td_pedestalZ', centerZ)
+    // Compound's own real footprint (the walled perimeter box, x0/x1/z0/z1
+    // computed above - NOT the wider flat field), persisted 2026-09-09
+    // alongside the border revert to 50 so wave_spawner.js's spawn-point
+    // picker and mob_aggro.js's stray-mob correction can both check "is
+    // this point actually inside the base" directly, instead of relying on
+    // a uniform distance-from-pedestal band that no longer reliably fits
+    // outside a 50 border in every direction (see BORDER_START's own
+    // comment above).
+    worldD.putInt('td_compoundX0', x0)
+    worldD.putInt('td_compoundX1', x1)
+    worldD.putInt('td_compoundZ0', z0)
+    worldD.putInt('td_compoundZ1', z1)
   }
 
   // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -

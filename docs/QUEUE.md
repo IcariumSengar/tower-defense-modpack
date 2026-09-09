@@ -21,6 +21,208 @@ reflect actual current status.
 
 ---
 
+## Automatic quest progress carryover across worlds — built + sandbox-verified, 2026-09-09
+
+Direct question: "on hardcore death or pedestal destruction, its game
+over. but im concerned that a player has already gone through all the
+quests, im wondering if its possible to keep quest book progress on a
+restart after game over?" First answer was "yes, but only via a manual
+copy" (FTB Quests stores each player's progress in one file INSIDE the
+current world's save — `<save>/ftbquests/<uuid>.snbt`, confirmed by
+reading a real one off the live instance; no export/import command
+exists for full progress, decompiled `FTBQuestsCommands.class` directly
+to check). User asked to try automating it instead of shipping the
+manual-only version.
+
+**Real technical unlock, tested live before building anything**: a
+KubeJS script genuinely can't reach a not-yet-created world directly -
+but it can stage the file through a THIRD location both world lifetimes
+independently see: `KubeJSPaths.CONFIG`, this modpack instance's own
+shared `kubejs/config` folder (same for every save under one instance,
+proven to survive a full server restart). Reaching it needed the
+already-documented `Class.forName` workaround
+([[feedback_rhino_java_reflection_quirks]] Rule 4) plus several new
+real findings along the way (a bare JS array/number don't coerce
+through raw `Method#invoke`, a `Path`'s concrete class hits a JDK
+module-access wall, `LevelResource.ROOT`/`MinecraftServer#getWorldPath`
+are SRG-obfuscated at the member level despite clean class names, and a
+genuinely new one - a `function` DECLARATION nested inside a `try {}`
+block doesn't hoist correctly in this Rhino build) - full writeup in
+that memory file, all confirmed live via RCON against a real booted
+dedicated-server sandbox, not guessed.
+
+**Built**: new `hardcore_quest_carryover.js` - `hqcExportProgress(player)`
+(called from both game-over triggers, `pedestal_destruction.js`'s
+`triggerPedestalDestroyed()` and `hardcore_death.js`'s
+`triggerHardcoreGameOver()`) snapshots the current save's progress file
+out to the shared carryover folder; a new `PlayerEvents.loggedIn`
+handler imports it back on any login where the CURRENT save's own
+progress file is missing or still looks like FTB Quests' own empty
+stub (a size threshold, not full SNBT parsing) - never overwrites real
+progress. `world_state.js`'s `tellQuestCarryoverTip` (the original
+manual-copy message) stays as the fallback for moving to a genuinely
+different install/PC, where no shared instance folder exists to stage
+through.
+
+**Verified for real, not just syntax-checked**: full 34-mod-set sandbox
+boot, 34/34 KubeJS server scripts, 0 errors. A dedicated integration
+test called the actual production functions (not a reimplementation)
+end to end: export → carryover file written and readable; import
+correctly REFUSED against an existing large (545-char) real-progress
+file, leaving it byte-for-byte unchanged; import correctly SUCCEEDED
+against a missing destination, restoring the exact carryover content.
+
+**Real, honest limitation, not glossed over**: no graphical client in
+this environment to test an actual fresh player login end-to-end -
+which of FTB Quests' own login handling and this file's own handler
+runs first isn't controlled here. Worst case if the timing loses that
+race is needing one relog for the import to show up, not a lost/
+clobbered import (the size-threshold guard means it never overwrites
+real progress either way) - but this needs a real hands-on check before
+calling the exact timing proven.
+
+---
+
+## Quest book redesign v3 ("fishbone") — BUILT + DEPLOYED LIVE 2026-09-09, needs one real client pass
+
+Direct feedback: "it looks pretty lame." Full review findings, design
+rules, layout, every quest's task/position/reward/text, the bridge
+script, assets and the verification plan are in FEATURES.md's "Quest
+book" section under the same heading — this entry only tracks status.
+
+**Direction confirmed with the user before the spec was written** (4
+AskUserQuestion calls, all the recommended option): direct voice with
+diary flavour only on the 6 milestone pages; milestones auto-complete
+from real game state via a new `quest_milestones.js`; a 15-quest Know
+Your Enemy rib; Tips & Tricks and Bounties kept and restyled only.
+
+**Shape**: one Campaign chapter, a 13-quest chained spine (rsquare
+1.5) with ribs hanging off it at the node where they become relevant:
+Know Your Enemy (diamond, y=-6), Beyond the Wall (pentagon, y=-3),
+Tier 1 (y=+3), Tier 2 (y=+6, +7.5), Tier 3 (y=+9, +10.5), each on a
+tinted panel. 51 Campaign quests (was 24), 23 of them new; 23 existing
+ids kept. Real tasks replace checkboxes wherever the world can detect
+the thing: observation (pedestal, rolling mill, formed diesel
+generator), structure (`#kubejs:ruins` tag), kill per mob, and nine
+custom-task milestones completed by the bridge through FTB Quests' own
+`change_progress` command (the idiom `bounty_kills.js` already runs
+live).
+
+**Two factual bugs in the shipped book fixed by the spec**: "Wired
+Different" was an item task on a multiblock-only block (never
+completable in survival — now an observation task); "Spoils of War"
+claimed tougher mobs drop better bags, but `loot_bag_drops.js` has
+applied the same flat 20/6/3/2% odds to every wave mob since the
+2026-09-08 drop-rate redesign.
+
+**Blockers/ordering**: must ship together with the Tier 2 trap swap
+(11876cd) — live still has Vacuum Blocks + Medieval Turrets in `mods/`
+and the pre-swap quests; live `campaign.snbt` has drifted from the repo
+a third time (6 quest ids, all reward ids). All three live saves are
+same-day test worlds with negligible progress, so re-idding is safe
+now. Deploy order and checks are in the FEATURES.md entry.
+
+**Done (same day, after "send it")**: built in this session, sandbox-
+verified (73 quests / 0 parse errors, observation blocks placeable, ruins
+tag resolves via `/locate`, bridge script loads) and deployed to the live
+instance together with the Tier 2 swap (jars swapped, Item Collectors'
+two SuperMartijn642 libs added - they were missing on live too - three
+swap scripts copied). Backups in `config/ftbquests_backup_20260909_132415`
+and `mods_backup_20260909_132415`. Full verification detail in the
+FEATURES.md entry. **Not committed** - working tree holds:
+`pack/config/ftbquests/quests/chapters/{campaign,tips_and_tricks,
+bounties}.snbt`, `pack/kubejs/server_scripts/quest_milestones.js` (new),
+`pack/kubejs/assets/kubejs/textures/quests/panel.png` (new),
+`pack/kubejs/data/kubejs/tags/worldgen/structure/ruins.json` (new),
+`pack/index.toml` + `pack/pack.toml` (packwiz refresh), this file and
+FEATURES.md. **First live pass 14:00**: layout reads well; horn + wave-1 milestones,
+kill tasks and the rolling-mill observation all registered in the save.
+Two fixes shipped by 14:15: pedestal observation retargeted to
+`supplementaries:pedestal` (the base never places the retired custom
+block), and the pack-wide FTB Quests negative-id root cause (see the
+FEATURES.md entry) - all chapters re-idded positive-only, 6 milestone ids
++ 2 hardcoded bounty tier ids fixed. Takes effect on the next world
+load. **Second live pass, after reload (14:25)**: confirmed by the user -
+"Find the Pedestal" ticked on looking at the stand, the tinted rib
+panels render, and "Three Down" auto-completed on clearing wave 3 (the
+first of the six re-idded milestones, so the positive-id bridge path is
+proven end to end). Not ticked: whether `&e`/`&c` codes render as colour
+- see the FEATURES.md entry for the follow-up.
+
+**Loot flags raised, separate one-line decisions**: Rotten Mutant is in
+no bag list and drops nothing; bag odds are flat across the whole
+roster (if "tougher = better bag" is still wanted, that's a loot-script
+change).
+
+---
+
+
+## Playtest feedback batch, 2026-09-09 (part 4) — 4 items, literal numbering — ALL BUILT, sandbox-verified, deployed to live 14:05, not yet confirmed in play
+
+Diagnosed against the live instance first (newest save `New
+Worldlklklklklklklk`, its `logs/kubejs/server.log`, decoded entity and
+region files), not from source alone. Status tags per item below are
+updated in place as each resolves.
+
+1. **Enemy pathing off / zombies just standing around — user answered
+   "both" (at the walls AND far out), both causes fixed, done.**
+   (a) Since the 2026-09-08 border clamp (item #6 of the 9-item batch
+   further down), `wave_spawner.js` spawns waves 1-8 at
+   `min(60, halfWidth-5)` max / `min(40, max-10)` min — at the starting
+   border of 50 that is a 10-20 block band around the pedestal, i.e.
+   inside the compound or pressed against the reinforced perimeter
+   (compound is ~18 wide, pedestal roughly central). A mob outside a
+   SecurityCraft wall has no walkable path to the marker (ESM digging
+   can't chew reinforced blocks, gate is one oak door) so its attack
+   goal never runs and it stands at the wall; a mob inside reaches the
+   invisible marker instantly and idles there (pedestal damage is a
+   proximity poll in `pedestal_health.js`, no attack animation).
+   (b) The newest save holds 18 husks + 1 zombie villager at 214-268
+   blocks from the base, `forge:spawn_type: "STRUCTURE"` (chunks
+   reference `philipsruins:desert_structures`), full health, every one
+   tagged `td_retarget_stripped`, none `td_wave_mob` — `mob_aggro.js`
+   strips their target AI and forces the pedestal target on any
+   roster-type mob it can see, but they sit outside the border (size 75
+   at wave 4), where vanilla pathing is impossible, so they never move
+   and — with their own target goals gone — never aggro the player
+   either. Previous save had 2 more of the same at 281 blocks.
+   Fix direction: item 4 removes (a); for (b) scope `mob_aggro.js` to
+   mobs inside the current world border (proven `getWorldBorder()`
+   min/max API from `amulet_border.js`), leaving out-of-border mobs'
+   own AI intact until the border reaches them.
+2. **Boomer "ARMED" popup — decided, done.** Title/subtitle removed from
+   `boomer_zombie_explosion.js`; the `entity.tnt.primed` cue at the
+   boomer's position stays as the audible prompt, volume raised 1 → 2
+   so it carries ~32 blocks instead of 16.
+3. **Flat immediate area around the base — done: user chose "out to the
+   starting border edge" + "fully level to one height"; 159×159 field
+   at floorY, sandbox-verified from the region files (0 pits inside,
+   sand/sandstone layering, compound placed on the plane, base build
+   565 → 1732 ms).**
+   Real terrain, decoded from both recent saves' heightmaps: the
+   generator surface is a pure Y gradient (ground at Y 1-2), but carver
+   pits 3-5 blocks deep sit 20-60 blocks from the base (newest world: 20
+   columns ≥3 deep inside 80 blocks; previous world: 35). The existing
+   leveling pass in `playtest_starter_kit.js` only covers the compound
+   footprint (±3 side / 2 back margin) and only fires when 9 sample
+   points deviate >1. Fix: an unconditional wide leveling pass before
+   the compound build — clear above `floorY`, fill air/water/lava below
+   it with the biome's own surface blocks (sand/sandstone on desert,
+   red_sand/terracotta on badlands), chunked under vanilla's
+   32768-blocks-per-`/fill` limit.
+4. **Mobs spawning inside the base — done: user chose the 48-64 band;
+   border start 50 → 150 (level.dat BorderSize 150 confirmed in the
+   sandbox save).** Note for the world already in progress: the band is
+   still clamped to that world's live border (75 at wave 4 → 21-31
+   blocks), the full 48-64 only applies on a fresh world. Fix as built:
+   a fixed spawn band well outside
+   the compound (user picks), starting border raised so the whole band
+   fits inside it (border ≥ 2×(max+6), else mobs get pinned at the
+   edge — the exact 2026-09-08 bug), `wave_status.js`'s 80-block
+   hostile-count `RADIUS` raised to keep counting them, border only
+   used as a safety clamp afterwards. Undead Nights' own 70-75 band
+   (endless phase) already lands inside the new border by wave 9.
+
 ## World-gen rebuild 2026-09-09 — anchor-grid base placement (supersedes the entry below it)
 
 Direct urgent report after the previous same-day attempt: "still
@@ -84,73 +286,11 @@ lever, not the search.
 
 ## SUPERSEDED (same day) — "RESOLVED 2026-09-09 — 3-item world-gen regression from the previous batch"
 
-Left for the record; its items 2 and 3 were wrong (a same-tick retry
-cannot fix the marker race, and the complaint was structures too close
-to the BASE, not to each other). Its working-tree edits were never
-deployed to the live instance and are replaced by the entry above.
-
-Direct live report the same day as the Red House swap + exclusion_zone
-batch (58dd0bb): "world gen is broken" — slow boot with a visible fall
-before the world loads, no starting base at all, and structures still
-landing too close together. Diagnosed directly against the live
-instance's own fresh `logs/latest.log` (a brand-new "New World" created
-that session), not guessed. All 3 traced to real, distinct causes:
-
-**1. Fall during boot.** The safety-hop `effect give @a
-minecraft:slow_falling 10 0 true` in `playtest_starter_kit.js` only
-covers 0.5s, on the assumption the biome search + spreadplayers landing
-right after it is near-instant. This same boot's log shows that stretch
-alone took ~32 real seconds (`findWastelandSpawn`'s ring search, up to
-4000 blocks) inside one blocked server tick — confirmed by the server's
-own "Can't keep up! Running 36276ms or 725 ticks behind" warning logged
-right after. Since the whole handler runs in one tick, the *client's*
-own local countdown of the 0.5s effect expires long before the server
-tick actually completes, so the client's own gravity prediction resumes
-normal-speed falling with no server packet yet arriving to correct it —
-exactly "fall while the other world loads." Fixed: duration bumped
-10 → 1200 ticks (60s, a real margin over the measured 36s worst case).
-
-**2. No starting base.** Real crash, same boot's log:
-`playtest_starter_kit.js#1226: TypeError: Cannot read property
-"persistentData" from undefined` — `findWorldStateEntity(level)` came
-back empty immediately after summoning the pedestal marker, under the
-same heavy synchronous load as #1. This block ran *before* the Red
-House placement, so the throw aborted the rest of the handler and the
-house (`/place template postapocalypse_structures:red_house` + all its
-interior fixups/loot removal) never ran — walls/pedestal/waystone were
-already down, but no house. Fixed: moved the marker/pedestal-state block
-to run *after* the house is fully placed (so a repeat only costs
-targeting/HP, never the visible base), and added a real retry
-(re-summon + re-query once) before giving up and logging an error
-instead of throwing.
-
-**3. Structures still too close.** The same batch's exclusion_zone fix
-anchored all 29 retuned structure_sets against a new
-`minecraft:ocean_monuments` override — an unrelated, sparse oceanic
-structure with no bearing on the actual density-tier structures
-colliding with each other. The same boot's log has real proof this did
-nothing: `[Berezka API] structure the_lost_city:train ... is spawned
-inside other structure the_lost_city:post`, `villages_city` inside
-`big_city_structure`, and cross-mod overlaps
-(`abandoned_structures:gas_station` inside `the_lost_city:roads`,
-`the_lost_city:train` inside `abandoned_structures:house1`). Real root
-cause: `the_lost_city:train.json` and `villages_city.json` were the only
-2 of Lost City's 12 own structure_sets missing the `exclusion_zone`
-their siblings already have against `the_lost_city:city`, and the
-previous session's 900d52c density retune tightened `abandoned_structures`
-etc. down to 28/14-chunk spacing without ever excluding them from Lost
-City's own (deliberately untouched, still sprawling) city footprint.
-Fixed: repointed all 29 files' `exclusion_zone.other_set` from
-`minecraft:ocean_monuments` to `the_lost_city:city` (the structure
-actually causing the collisions), added the same exclusion_zone to
-`train.json`/`villages_city.json` to match their siblings, and deleted
-the now-pointless `ocean_monuments.json` override (it also silently
-changed vanilla ocean monument separation from 5 to 28 — reverted to
-stock behavior as a side effect).
-
-**Not yet playtest-confirmed** — fixed from real log evidence and
-syntax-checked, but needs a fresh-world boot to verify the fall/base/
-spacing symptoms are actually gone.
+Moved to `docs/archive/queue_archive.md`. Left for the record only —
+its items 2 and 3 were wrong (a same-tick retry cannot fix the marker
+race, and the complaint was structures too close to the BASE, not to
+each other). Its working-tree edits were never deployed to the live
+instance and are replaced by the entry above.
 
 ---
 
@@ -264,53 +404,10 @@ SecurityCraft-module recipes read as a sensible cost in practice.
 
 ## RESOLVED 2026-09-09 — BountyBags TOML regeneration (was URGENT)
 
-**Confirmed fixed, checked directly against the live instance - no
-action needed.** `config/bountybags/*.toml` mtimes are now Sep 9 09:05
-(not the stale Sep 3 this entry originally recorded), and all 5
-previously-missing items are present: `uncommon_bag.toml` has
-gold_nugget/netherrack/arrow/carrot/kubejs:shrapnel, rare/epic both have
-kubejs:shrapnel, legendary has both kubejs:shrapnel and
-minecraft:totem_of_undying. Someone already did the delete-and-restart
-(or `/bountybags edit` restore-defaults) this fix called for, between
-this entry being written and now - not this session, not verified who.
-Worth a live playtest confirmation that drops actually happen at the
-expected rates, but the loot-table content itself is confirmed current.
-Original finding kept below for context.
-
-**Original finding, 2026-09-09**: BountyBags loot-table edits since
-2026-09-03 had never actually reached the live game. Found during the
-full-mod-set merge
-verification pass (Phase 0/1 + Track B + Track C + the multiplayer
-shared-state fix, all booted together for the first time). Not a bug
-in this pack's own scripts — a real, decompiled characteristic of the
-installed BountyBags jar: `LootDefinitionStore.loadAll()` reads
-`data/bountybags/loot_tables/items/*.json` into
-`config/bountybags/<tier>_bag.toml` exactly once, the first time that
-TOML file doesn't exist, and never again — every later boot reads only
-the TOML, never the JSON. A prior session already hit this once (see
-FEATURES.md's "Real bonus lesson" note) and patched the live
-`legendary_bag.toml` directly for the totem_of_undying drop, but that
-was a one-off, not a standing practice - checked the live CurseForge
-instance's actual `config/bountybags/*.toml` directly on 2026-09-09:
-every file's mtime is 2026-09-03, and `uncommon_bag.toml` is
-confirmed missing gold_nugget, netherrack, arrow, carrot, AND the new
-kubejs:shrapnel entry - five real additions across multiple sessions
-that were each individually believed shipped and never actually were.
-
-**Fix needed on the live instance (not something this session can do
-per [[feedback_live_save_write_permission_boundary]])**: either delete
-`config/bountybags/{uncommon,rare,epic,legendary}_bag.toml` (the 4
-tiers this pack actually uses - dragon/warden/wither are unused, see
-loot_bag_drops.js) so BountyBags regenerates them from the current JSON
-on next boot, or have an op run `/bountybags edit <tier>` in game and
-click Restore Defaults per tier (real command, decompiled and
-confirmed - `admin.edit` permission or op status required). Either way
-needs a real server restart/reload afterward and is worth a live
-playtest check that shrapnel (and the older missing items) actually
-drop now. Documented directly in `loot_bag_drops.js` and
-`shrapnel.js`'s own headers so this stops being a one-time lesson that
-doesn't generalize - check that comment before any future BountyBags
-loot-table edit.
+Moved to `docs/archive/queue_archive.md`. **Confirmed fixed, checked
+directly against the live instance - no action needed** (worth a live
+playtest confirmation that drop rates are as expected, but the
+loot-table content itself is confirmed current).
 
 ---
 
@@ -849,7 +946,7 @@ context) but isn't hard-blocked - could run in parallel with Phase 3.
 - Screenshake is cut - no real Forge 1.20.1 mod exists (verified
   Fabric-only), not part of this phase.
 
-### Phase 5 — Hardcore mode (independent toggle)
+### Phase 5 — Hardcore mode (independent toggle) — Done, 2026-09-09
 
 Folded in from "On hold," fully specced 2026-09-01 (see FEATURES.md's
 "Hardcore mode" section). Real permadeath (player death or pedestal
@@ -875,6 +972,67 @@ full design lands better once Phase 4 is in.
   for it once Phases 1-5 land.
 
 ## Ready to build
+
+**Hardcore mode toggle + death hook — both built, 2026-09-09.** Phase 5
+is now fully built. Both Totem-of-Undying sources (`boss_wave.js`'s
+boss-kill drop, `hardcore_totem_recipe.js`'s crafting recipe) and the
+pedestal-destruction game-over path (`pedestal_destruction.js`,
+unconditional, already live) were already done — checked against the
+actual files, not assumed.
+- **Toggle — done.** `td_hardcoreEnabled` persistent flag (world-state
+  pattern, same marker-entity storage as `td_pedestalDestroyed`/
+  `td_inWave`) plus a player-run `/hardcore enable`/`/hardcore disable`
+  command, no permission gate (this pack's standing "no GUI, player
+  flips it on themselves" choice) — new `hardcore_toggle.js`. Quest
+  added to `tips_and_tricks.snbt` ("Go Hardcore") describing the
+  command.
+- **Death hook — done.** New `hardcore_death.js`. Real API finding,
+  confirmed by decompiling the actual installed
+  `kubejs-forge-2001.6.5-build.26.jar` (javap on `PlayerEvents.class`/
+  `EntityEvents.class`), not assumed: KubeJS's `PlayerEvents` has no
+  death handler at all (only LOGGED_IN/LOGGED_OUT/RESPAWNED/TICK/CHAT/
+  DECORATE_CHAT/ADVANCEMENT/INVENTORY_*/CHEST_*) - real player death has
+  to go through `EntityEvents.death` (wraps Forge's `LivingDeathEvent`),
+  filtered to `entity.type === 'minecraft:player'` the same way
+  `flesh_death_sound.js` already filters mob types. No inventory/totem
+  check needed in the handler itself: vanilla's own totem-save check
+  runs inside `LivingEntity#hurt`, before `die()` - a totem-saved hit
+  never reaches `LivingDeathEvent` at all, so the handler firing already
+  proves the death was real. On a real death with the flag on: freezes
+  the countdown/undoes the night-lock (same cleanup
+  `pedestal_destruction.js` does), then `gamemode spectator @a` -
+  reapplied on `PlayerEvents.respawned` and `PlayerEvents.loggedIn` so
+  it can't be undone by respawning or relogging, the actual "permanent"
+  half of permadeath. Separate `td_hardcoreGameOver` flag, not reusing
+  `td_pedestalDestroyed` (that one specifically means "the pedestal is
+  gone" for other readers like `pedestal_health.js`/`quest_milestones.js`
+  - not true here). `wave_spawner.js`'s `useWaveHorn()` now blocks on
+  this flag too, same message as the existing pedestal-destroyed block.
+- All 4 touched/new scripts (`hardcore_toggle.js`, `hardcore_death.js`,
+  `wave_spawner.js`, plus the quest text) `node --check` clean;
+  `tips_and_tricks.snbt` brace/bracket-balanced, no id collisions
+  anywhere in `ftbquests/`.
+- **All-players-dead gate — added 2026-09-09, direct follow-up: "should
+  only trigger if all players are dead... a player can respawn, get
+  their body from the grave mod, and continue the game."** A lone death
+  while someone else is still alive is now a completely normal death
+  (respawn, recover gear from the Corpse mod's grave, keep playing) -
+  nothing hardcore-related fires until literally every currently-online
+  player is dead at once. New `hardcoreAllPlayersDead(server)`, checked
+  fresh at each individual death event (`server.getPlayers()`, real
+  curated API confirmed live via RCON - no precedent for it anywhere
+  else in this pack, `boss_wave.js`'s own header even notes avoiding it
+  for an unrelated reason), so this is inherently agnostic to whatever a
+  respawn-delay mechanic does to how long a player stays dead - it just
+  checks who's actually alive right now. Doesn't change tested
+  singleplayer behavior at all (one player's death always satisfies
+  "everyone's dead"). `getHealth()` against a real connected player
+  couldn't be exercised in this environment (no graphical client) -
+  flagged for a real hands-on check, same as the rest of this feature.
+Not designed for multiplayer beyond this one gate (same caveat as the
+rest of this pack). **Not yet playtest-confirmed** — no graphical-client
+boot done this pass, same standing caveat as everything else in this
+file.
 
 **9-item live feedback batch — built directly 2026-09-08, literal
 numbering. All code/quest-file changes done, syntax-checked, not yet
@@ -3826,23 +3984,9 @@ below); Phase 5 not started:
 
 ## Confirmed working (recent playtests)
 
-- **Structure mod aesthetic swap** — **user-confirmed**: structure
-  generation now reads as the intended abandoned aesthetic. When
-  Dungeons Arise/Structory: Towers removed, Apocalypse structures:
-  Abandoned city buildings + Abandoned Urban installed instead.
-- World-gen: `multi_noise` biome source (7-biome curated set), raised
-  floor depth, the whole 4-crash world-creation saga — **user-confirmed
-  fixed**.
-- The amulet + pedestal (worn buffs, border-crossing, marker
-  alignment/bob fix) — exercised directly through real bug reports
-  (marker misalignment, since fixed), so the core mechanic is proven
-  working even though the marker height fix itself isn't pixel-verified.
-- Vanilla desert pyramids disabled, Treasure2's mimic mechanic
-  identified (not a bug, left undocumented on purpose).
-- Base expansion's escalating growth curve — built, not separately
-  confirmed by name, but the same worldborder machinery has been
-  exercised repeatedly through the structure-reachability and world-gen
-  playtests since.
+Moved to `docs/archive/queue_archive.md` (structure mod aesthetic swap,
+world-gen multi_noise saga, amulet+pedestal, desert pyramids/mimic,
+base expansion growth curve — all user-confirmed working).
 
 ## Not ready yet — needs fleshing out in IDEAS.md first
 - Roguelike next-wave-composition choice — parked pending a GUI
@@ -4053,6 +4197,28 @@ file is still outstanding and unaffected by item 3 above (drop RATE
 lives in `loot_bag_drops.js`, re-evaluated fresh every boot - it's bag
 CONTENTS, in the cached TOML, that needs the manual delete/regenerate
 step). Still worth doing since it's the same underlying loot system.
+
+## Live-feedback batch, 2026-09-09 (part 3) - waystone moved to the house front, built, not yet confirmed in live play
+
+Direct ask: "can we put the waystone just next to the house rather than
+in the yard." Full reasoning in docs/FEATURES.md's own "Live-feedback
+batch, 2026-09-09 (part 3)" section - this entry only tracks status.
+
+1. **Waystone moved from the yard to the house front - built.** Was
+   `centerX+3`/`centerZ`, out in the open courtyard 3 blocks east of the
+   pedestal. Now placed in the building's own local frame at local
+   (7, 1-2, 9): the open strip directly in front of the house's real
+   south wall, one block east of the door alcove, clear of the porch
+   awning. Spot chosen by decoding `abandoned_brick_house.nbt` directly,
+   not by spot-checking air. **Real ordering bug caught before it
+   shipped**: the placement had to move to AFTER the `/place template`
+   line - the structure's NBT stores explicit air for all 1716 of its
+   cells, so the old position in the code (before the template) would
+   have been silently wiped by the house itself. `node --check` passes,
+   deployed to the live instance. **Fresh-world only, not retroactive**
+   (same as the 2026-09-05 waystone fix) - the current live world keeps
+   its yard waystone unless moved by hand; exact `/setblock` commands
+   for it were handed over in chat.
 
 ## Structure spawn-exclusion floor — built 2026-09-09, needs sandbox verification
 

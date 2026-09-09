@@ -58,10 +58,15 @@ EntityEvents.spawned((event) => {
   // this, move" moment clear and immediate instead, right at the exact
   // tick it becomes unstoppable (this handler already captures that exact
   // moment for the explosion queue above).
+  //
+  // Audible only (2026-09-09, direct playtest feedback: "the boomer armed
+  // pop up is not necessary, just want an audible prompt") - the
+  // title/subtitle pair that used to fire here is gone. The fuse hiss is
+  // positional (played AT the boomer, not on the player) so it also tells
+  // you which way to run; volume raised 1 -> 2 so it carries ~32 blocks
+  // instead of ~16, since it is now the only warning there is.
   var server = event.level.getServer()
-  server.runCommandSilent(`title @a title {"text":"ARMED","color":"red","bold":true}`)
-  server.runCommandSilent(`title @a subtitle {"text":"You cannot stop this one - move.","color":"gray"}`)
-  server.runCommandSilent(`playsound minecraft:entity.tnt.primed master @a ${x} ${y} ${z} 1 1`)
+  server.runCommandSilent(`playsound minecraft:entity.tnt.primed master @a ${x} ${y} ${z} 2 1`)
 })
 
 PlayerEvents.tick((event) => {

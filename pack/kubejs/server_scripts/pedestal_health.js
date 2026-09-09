@@ -299,6 +299,44 @@ PlayerEvents.tick((event) => {
   player.notify(heal.message)
 })
 
+// Right-click-to-heal (2026-09-09, direct ask: "the quest book says to
+// heal the pedestal you put the item on it and it disappears - I want to
+// just right click it and it heals, not putting the item on it... if the
+// amulet is on it, then this mechanic would work properly"). Gated on
+// td_amuletOnPedestal (amulet_pedestal.js) specifically, per that exact
+// ask, not just "a heal item is in hand." That gating is also what makes
+// this safe to hook directly, unlike the tick-poll heal above's own real
+// history (see its header): with the amulet already occupying the
+// pedestal's one display slot, Supplementaries' own canPlaceItem (no item
+// TYPE filter, "just checks the slot is empty" - amulet_pedestal.js's own
+// header) can never place anything else there, so nothing competes with
+// this handler for the same click the way a duplicate placement attempt
+// once did. Checked against the real stored pedestal coordinate, not just
+// the block id - Supplementaries' pedestal is a normal placeable block a
+// player could put down elsewhere too.
+//
+// Real limitation, not glossed over: not yet right-clicked in a live
+// game - flag this for confirmation on the next playtest, same bar as
+// every other untested first pass in this file.
+BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
+  var player = event.entity
+  var level = player.getLevel()
+  var data = worldData(level)
+  if (!data || !data.getBoolean('td_amuletOnPedestal')) return
+  if (!data.contains('td_pedestalX')) return
+
+  var pos = event.getBlock().getPos()
+  if (pos.getX() !== data.getInt('td_pedestalX') || pos.getY() !== data.getInt('td_pedestalY') || pos.getZ() !== data.getInt('td_pedestalZ')) return
+
+  var heal = PEDESTAL_HEAL_ITEMS[`${event.item.id}`]
+  if (!heal) return
+  if (!healPedestalByPercent(player, data, heal.percent)) return
+
+  event.item.shrink(1)
+  event.cancel()
+  player.notify(heal.message)
+})
+
 function pedestalAttackDamage(mob) {
   try {
     var attr = mob.getAttribute('minecraft:generic.attack_damage')

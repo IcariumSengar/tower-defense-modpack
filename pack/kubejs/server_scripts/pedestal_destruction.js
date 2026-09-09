@@ -82,6 +82,8 @@ function triggerPedestalDestroyed(player) {
   server.runCommandSilent('title @a subtitle {"text":"Everything it was holding back is gone with it.","color":"gray"}')
   player.tell('§c§lThe pedestal has fallen.')
   player.tell('§7Whatever it was keeping in check has nothing left to answer to.')
+  hqcExportProgress(player)
+  tellQuestCarryoverTip(player)
 
   // World stays fully playable after the loss - this only blocks the
   // Wave Horn (checked at useWaveHorn()'s own top, wave_spawner.js),

@@ -12,7 +12,7 @@
 		{
 			description: ["Every hostile you put down counts toward this, not just wave kills - turrets and traps get credit too. Twenty-five down. Just the start."]
 			icon: "minecraft:rotten_flesh"
-			id: "B1824D758BD5259D"
+			id: "605797091B509B1A"
 			rewards: [
 				{
 					id: "0B03B6486BCDFA0A"
@@ -20,22 +20,26 @@
 					xp_levels: 5
 				}
 				{
-					count: 1
-					id: "CF8DFC7225F517C0"
+					id: "23446B175E11DAF4"
 					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "42F2080CC88FFF1F"
-				max_progress: 25L
-				type: "custom"
-			}]
+			shape: "diamond"
+			size: 1.0d
+			tasks: [
+				{
+					id: "42F2080CC88FFF1F"
+					max_progress: 25L
+					type: "custom"
+				}
+			]
 			title: "First Blood"
 			x: 0.0d
 			y: 0.0d
 		}
 		{
+			dependencies: ["605797091B509B1A"]
 			description: ["A hundred kills. The horde doesn't get thinner, but your aim is getting better."]
 			icon: "minecraft:iron_sword"
 			id: "730D290220164ACC"
@@ -52,22 +56,27 @@
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "A690E47C2C2FFDB5"
-				max_progress: 100L
-				type: "custom"
-			}]
+			shape: "diamond"
+			size: 1.25d
+			tasks: [
+				{
+					id: "23C4C36D29BF9EDF"
+					max_progress: 100L
+					type: "custom"
+				}
+			]
 			title: "Exterminator"
 			x: 2.0d
 			y: 0.0d
 		}
 		{
+			dependencies: ["730D290220164ACC"]
 			description: ["Three hundred. This stopped being self-defense a while ago."]
 			icon: "minecraft:diamond_sword"
-			id: "C7A7064EA80C63C1"
+			id: "26D4AC6A4759FFDF"
 			rewards: [
 				{
-					id: "DBD0BD27F9A2AE98"
+					id: "4EC74101DA0401D3"
 					type: "xp_levels"
 					xp_levels: 15
 				}
@@ -78,16 +87,21 @@
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "57C0DB55E9655079"
-				max_progress: 300L
-				type: "custom"
-			}]
+			shape: "diamond"
+			size: 1.5d
+			tasks: [
+				{
+					id: "57C0DB55E9655079"
+					max_progress: 300L
+					type: "custom"
+				}
+			]
 			title: "Culling"
-			x: 4.0d
+			x: 4.25d
 			y: 0.0d
 		}
 		{
+			dependencies: ["26D4AC6A4759FFDF"]
 			description: ["Seven hundred fifty kills. Whatever is still coming at you, you're built for it now."]
 			icon: "minecraft:netherite_sword"
 			id: "716E054554316AE5"
@@ -98,48 +112,57 @@
 					xp_levels: 20
 				}
 				{
-					count: 1
-					id: "E20C2DD434AA49FD"
+					id: "26F887BCD4BAF48B"
 					item: "bountybags:epic_loot_bag"
 					type: "item"
 				}
 				{
-					count: 1
-					id: "82AFACFF977AA3F0"
+					id: "39AC1408E0C91095"
 					item: "minecraft:golden_apple"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "81F132C101C25BDA"
-				max_progress: 750L
-				type: "custom"
-			}]
+			shape: "diamond"
+			size: 1.75d
+			tasks: [
+				{
+					id: "1CB86244570F2424"
+					max_progress: 750L
+					type: "custom"
+				}
+			]
 			title: "Reaper"
-			x: 6.0d
+			x: 6.75d
 			y: 0.0d
 		}
 		{
 			can_repeat: "true"
+			dependencies: ["716E054554316AE5"]
 			description: ["Fifteen hundred kills, and counting. There's no ceiling on this one - claim it again every fifteen hundred after, for as long as they keep coming."]
 			icon: "bountybags:legendary_loot_bag"
 			id: "6C33E795D76D13CF"
 			repeat_cooldown: 1
-			rewards: [{
-				count: 1
-				id: "0FDBC49878804E0D"
-				item: "bountybags:legendary_loot_bag"
-				type: "item"
-			}]
-			tasks: [{
-				id: "1355429CD45AF725"
-				max_progress: 1500L
-				type: "custom"
-			}]
+			rewards: [
+				{
+					id: "0FDBC49878804E0D"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			tasks: [
+				{
+					id: "1355429CD45AF725"
+					max_progress: 1500L
+					type: "custom"
+				}
+			]
 			title: "Zombie Masher"
-			x: 8.0d
+			x: 9.5d
 			y: 0.0d
 		}
 	]
+	subtitle: ["Every kill counts, wave or not"]
 	title: "Bounties"
 }

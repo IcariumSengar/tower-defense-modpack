@@ -43,7 +43,13 @@ const HOSTILE_TYPES = [
   'mutantszombies:crawler',
 ]
 
-const RADIUS = 80
+// 80 -> 96 (2026-09-09, playtest batch part 4): wave mobs now spawn a
+// fixed 48-64 blocks from the pedestal (wave_spawner.js) and the
+// spreadplayers snap can add 4, so a fresh spawn can sit 68 blocks out -
+// 80 left too little slack for a mob knocked or wandering outward before
+// it turns in. Keep equal to wave_spawner.js's own horn-gate radius.
+const RADIUS = 96
+
 
 // Must match wave_spawner.js's WAVES.length — server_scripts don't
 // reliably share top-level scope across files (same duplication pattern

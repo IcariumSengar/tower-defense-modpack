@@ -26,15 +26,15 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/bounties.snbt"
-hash = "69624d5e72f22921a05b408219ee19dc4d0f7c4b5d982c6eac5da83fdbd652a0"
+hash = "968ddf9011be906fa71a9b642080fd5343839ebe2d6f270a7ed410e8f36a5c8d"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "78080b506bf7a948e56d8b21e13f9b49b21d32651a39582a8a8198bf384b381c"
+hash = "b56de8b09c91579a663c10c606d5c2a5289c82333678f6d6d23530c5d0d082b7"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
-hash = "941cfcebbb371ffe8d759a0d442d3174002e2c03b1d021e60bdca66f54c3df2c"
+hash = "3e46836fbea7693fffff0bc7316b7c07d8c53eda6c34d71249faa5a34305af87"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
@@ -47,6 +47,14 @@ hash = "4e3f33646330eb651b8c1679d49245e061b9d9a3eb4b09316a0f07837d8d968c"
 [[files]]
 file = "config/lootbeams/light_config.toml"
 hash = "309abcabddf5c98d08b92a0191ed95e2d90c1837572e2f70f73684ba208c9354"
+
+[[files]]
+file = "config/modernfix-mixins.properties"
+hash = "767d335425881699b395fe287ebf23b099f103606be8df1e66461173c7ba0a40"
+
+[[files]]
+file = "config/securitycraft-client.toml"
+hash = "ddeeeb4bd6a01136808a62543fad87da1ee84d3a386c29781b7f04781b3c226a"
 
 [[files]]
 file = "config/supplementaries-client.toml"
@@ -107,6 +115,10 @@ hash = "da479955a1e1a74c4a8737548fd15f4714cd2f0b15542276711a29d0f4f2de2b"
 [[files]]
 file = "kubejs/assets/kubejs/textures/item/wave_horn.png"
 hash = "fc4ceb66506bc37f9f3803248016df4b8b664ae002bfa1faa062d9b371ef65c5"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/panel.png"
+hash = "84fa319f11ad9113f7bc2b1c76a14b62763893bead1b877bb1adf5c16c44e592"
 
 [[files]]
 file = "kubejs/client_scripts/.gitkeep"
@@ -199,6 +211,10 @@ hash = "9263dddf4f2de0730f844ecf9eacca7c3b755648d76f2c5817761a955b766734"
 [[files]]
 file = "kubejs/data/kubejs/tags/worldgen/biome/wasteland.json"
 hash = "3f2e1330d669bb83820ed1f91ddcb9dd3cfd37561eebb1520a829b842bc6b000"
+
+[[files]]
+file = "kubejs/data/kubejs/tags/worldgen/structure/ruins.json"
+hash = "adc56b9694d57c2da85e83f8552842e133340cb759109d5e04a2cd3154b9a605"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/noise_settings/overworld_flat.json"
@@ -442,7 +458,7 @@ hash = "766f3292653f65b3e24795db6138c40f8c799b9d544282d0d4f09dccb91edb3c"
 
 [[files]]
 file = "kubejs/server_scripts/boomer_zombie_explosion.js"
-hash = "3551b88ad4c5a8c640dba4c9472b9744ba121f630af21b0f7b3b25c7abf4c426"
+hash = "e92785228f13230a6e3b0269a6bed54b4b94d5f30a92893bc59c666d79ccae56"
 
 [[files]]
 file = "kubejs/server_scripts/boss_wave.js"
@@ -450,7 +466,7 @@ hash = "1435a20fad13ef1bacb3ff8c0bbe4f0e8df2daf4f9b35b3144287458f38455d3"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
-hash = "4ca6a0cb8dd8af83df836528b041af07571cb7a16dbe35947d8580755dd0ae58"
+hash = "1d2fed64b06c46d024b1293371a48c2ef57a6cfa07e3d5422e6b90c2faa0b801"
 
 [[files]]
 file = "kubejs/server_scripts/enhanced_hordes_config.js"
@@ -459,6 +475,18 @@ hash = "60013815f922390de1208f214f9b831b4d438702ef3735ebdab6614e84d3d8ac"
 [[files]]
 file = "kubejs/server_scripts/flesh_death_sound.js"
 hash = "efe4663da4fb931fa85c7bbf4b8d129d6405007c1aebac6f075aa994afa7817f"
+
+[[files]]
+file = "kubejs/server_scripts/hardcore_death.js"
+hash = "c49adc90d21220862755287502fb96613745ab2bde4f15a956e776df2dcf1835"
+
+[[files]]
+file = "kubejs/server_scripts/hardcore_quest_carryover.js"
+hash = "8816b70c8c7f5d310d1f42889059bc288c7a034fddf857edf3b2005284d6a005"
+
+[[files]]
+file = "kubejs/server_scripts/hardcore_toggle.js"
+hash = "b44ed885c50b75faf753887df0445ebba0df865d2cbb76d65006130d0b2ca4ce"
 
 [[files]]
 file = "kubejs/server_scripts/hardcore_totem_recipe.js"
@@ -482,7 +510,7 @@ hash = "99715326d3fc31180b27440c608743297dd867821c4de8828fc17805192f90bc"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "cfffd1829215bdebd789334b82f7a92cfa0eb70f64c5cf4f3eb3c001bd72d2df"
+hash = "234055e2f9d178483a6f88576e66b6d3b9af819ce727c19be7e0a757288d12b1"
 
 [[files]]
 file = "kubejs/server_scripts/no_passive_mobs.js"
@@ -490,15 +518,19 @@ hash = "ac7aa51d845a25853c7ea5ffb893bffa537d9f689eb83a699d3aa85dbca827c0"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_destruction.js"
-hash = "a2f31c3fe1de115882374605df124b785bdf9bcdcd5b6bfb02f3a3c8f62b2044"
+hash = "e873780ccdb838f479316e0493289d76fcd9e80bb7e0fb7fb0d52070503035ad"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_health.js"
-hash = "8e16f983287f54cea06eb03c698efab84dbfe07822104d2ca5e2c2badf75062a"
+hash = "28bfa1d41a1dd256bcd67f04a2a59c908f6046051e6cfe84583c7248984d1bb9"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "80629527e82085e229c6aa55e18cb4e87ee9c06bfa4b77fc58e274d57971b917"
+hash = "f09fe6b1be6043c0938690fa0019d48c9219ecec89235aa3eae59c598559686a"
+
+[[files]]
+file = "kubejs/server_scripts/quest_milestones.js"
+hash = "e1e994fdcc6c904f150b5267e48c9d03d100ba1d2ba6ca7147ea9f76a79936ab"
 
 [[files]]
 file = "kubejs/server_scripts/structure_chest_loot_fix.js"
@@ -530,15 +562,15 @@ hash = "834931b0d473ae202863548afefe021553832c64da1ca97bca3b88bd65744548"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "86ffa2c666a1b5862e5ac998dce89b55d4ac438661157c267b76571e2f073943"
+hash = "d338ab73744e9616095c4abfe3b6bec3635ef3cf58f57d914473bc6b21364861"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "fd02193314a07dd950204bd0248a44e744f66ab9f219e6b3016aa543c2aa4ead"
+hash = "d7e2f196b6a9c02bf5b7e4e64ed51c0a1d5b76d83be3b4653ea575c712ea1bd5"
 
 [[files]]
 file = "kubejs/server_scripts/world_state.js"
-hash = "9b77d4a6ffc98ac0e034594b0a33003e268de52df15e7cc26270d507e9e818ae"
+hash = "7923a581532e168da7e3d482c18488b3db9d2b48b047f6b309b2a11b7c9cd676"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -969,3 +1001,7 @@ metafile = true
 file = "mods/zombie-more.pw.toml"
 hash = "ddcce00664237a752f97fa97c26cc7a14946427e3978e06f55789c1d29273e56"
 metafile = true
+
+[[files]]
+file = "options.txt"
+hash = "81eba44461dc132032edbd23dc5361a403727d13a9a3026d1f1178867266f5de"

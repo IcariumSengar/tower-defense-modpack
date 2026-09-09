@@ -1,0 +1,241 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "abandoned_structures:gas_station",
+      "required": false
+    },
+    {
+      "id": "abandoned_structures:house1",
+      "required": false
+    },
+    {
+      "id": "abandoned_structures:house2",
+      "required": false
+    },
+    {
+      "id": "abandoned_structures:tower",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:city",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:fire_tower",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:gas_station",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:motel",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:observatory",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:plane_crash",
+      "required": false
+    },
+    {
+      "id": "abandoned_urban:train",
+      "required": false
+    },
+    {
+      "id": "philipsruins:ancient_crypt",
+      "required": false
+    },
+    {
+      "id": "philipsruins:ancient_dungeon",
+      "required": false
+    },
+    {
+      "id": "philipsruins:ancient_ruins",
+      "required": false
+    },
+    {
+      "id": "philipsruins:ancient_towers",
+      "required": false
+    },
+    {
+      "id": "philipsruins:antiquus_crypta",
+      "required": false
+    },
+    {
+      "id": "philipsruins:badlands_start_dungeon",
+      "required": false
+    },
+    {
+      "id": "philipsruins:badlands_structures",
+      "required": false
+    },
+    {
+      "id": "philipsruins:bone_dungeon",
+      "required": false
+    },
+    {
+      "id": "philipsruins:desert_structures",
+      "required": false
+    },
+    {
+      "id": "philipsruins:field_stone_ruins",
+      "required": false
+    },
+    {
+      "id": "philipsruins:field_stone_ruins_rocks",
+      "required": false
+    },
+    {
+      "id": "philipsruins:level_one_ruins",
+      "required": false
+    },
+    {
+      "id": "philipsruins:level_three_ruins",
+      "required": false
+    },
+    {
+      "id": "philipsruins:level_two_ruins",
+      "required": false
+    },
+    {
+      "id": "philipsruins:level_two_ruins_pool",
+      "required": false
+    },
+    {
+      "id": "philipsruins:lost_soul_city",
+      "required": false
+    },
+    {
+      "id": "philipsruins:lost_soul_dungeon",
+      "required": false
+    },
+    {
+      "id": "philipsruins:sculk_dungeon",
+      "required": false
+    },
+    {
+      "id": "philipsruins:start_nether_ruin",
+      "required": false
+    },
+    {
+      "id": "philipsruins:underground_structures",
+      "required": false
+    },
+    {
+      "id": "postapocalypse_structures:abandoned_brick_house",
+      "required": false
+    },
+    {
+      "id": "postapocalypse_structures:red_mansion",
+      "required": false
+    },
+    {
+      "id": "postapocalypse_structures:redhouse",
+      "required": false
+    },
+    {
+      "id": "postapocalypse_structures:yellowhouse",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:big_city_structure",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:camp",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:city",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:factory",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:lighthouse",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:post",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:rails",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:roads",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:survivorscamp",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:tower",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:train",
+      "required": false
+    },
+    {
+      "id": "the_lost_city:villages_city",
+      "required": false
+    },
+    {
+      "id": "u_desert:desert_ruin/house",
+      "required": false
+    },
+    {
+      "id": "u_desert:desert_ruin/pillar",
+      "required": false
+    },
+    {
+      "id": "u_desert:desert_ruin/ring",
+      "required": false
+    },
+    {
+      "id": "u_desert:geyser",
+      "required": false
+    },
+    {
+      "id": "u_desert:oasis",
+      "required": false
+    },
+    {
+      "id": "u_desert:pillager_outpost/abandoned",
+      "required": false
+    },
+    {
+      "id": "u_desert:pillager_outpost/standard",
+      "required": false
+    },
+    {
+      "id": "u_desert:skeleton/croc",
+      "required": false
+    },
+    {
+      "id": "u_desert:skeleton/head",
+      "required": false
+    },
+    {
+      "id": "u_desert:skeleton/rib",
+      "required": false
+    },
+    {
+      "id": "watchtower_building:abandoned_watchtower",
+      "required": false
+    },
+    {
+      "id": "watchtower_building:fresh_watchtower",
+      "required": false
+    }
+  ]
+}

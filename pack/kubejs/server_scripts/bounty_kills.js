@@ -96,13 +96,17 @@ var BOUNTY_MOD_OBJECTIVE = 'td_bountyMod1500'
 var BOUNTY_REPEATABLE_INTERVAL = 1500
 var BOUNTY_REPEATABLE_TASK_ID = '1355429CD45AF725'
 
-// Fixed one-time tiers - bounties.snbt's own quest ids.
+// Fixed one-time tiers - bounties.snbt's own quest ids. `title` is only
+// used by the completion notice below (matches each tier's own quest
+// title in bounties.snbt) - the actual completion still goes entirely
+// through `change_progress complete`, this is display-only.
 var BOUNTY_FIXED_TIERS = [
-  { threshold: 25, taskId: '42F2080CC88FFF1F' },
-  { threshold: 100, taskId: 'A690E47C2C2FFDB5' },
-  { threshold: 300, taskId: '57C0DB55E9655079' },
-  { threshold: 750, taskId: '81F132C101C25BDA' },
+  { threshold: 25, taskId: '42F2080CC88FFF1F', title: 'First Blood' },
+  { threshold: 100, taskId: '23C4C36D29BF9EDF', title: 'Exterminator' },
+  { threshold: 300, taskId: '57C0DB55E9655079', title: 'Culling' },
+  { threshold: 750, taskId: '1CB86244570F2424', title: 'Reaper' },
 ]
+var BOUNTY_REPEATABLE_TITLE = 'Zombie Masher'
 
 ServerEvents.loaded((event) => {
   var server = event.server
@@ -148,9 +152,25 @@ EntityEvents.death((event) => {
   // the score passes through each threshold exactly once. Avoids re-
   // issuing `change_progress complete` on every kill for the rest of the
   // game once a tier is already past.
+  //
+  // Completion notice added 2026-09-09 (direct playtest feedback: "i
+  // killed a few enemies and it completed all of them in one go" - the
+  // completion logic itself checks out, exact-score-match can't double-
+  // fire or skip a tier, but there was genuinely zero player-facing
+  // feedback when one completed, unlike every other beat in this pack
+  // (wave clear, gear removal, pedestal alerts all get a title/toast).
+  // A player who racks up kills without the quest book open would only
+  // ever discover several silent completions at once, reading exactly
+  // like "it completed all of them in one go" even though each one fired
+  // on its own real kill). Same selector as the real completion command
+  // right above it, so this can never announce a tier that didn't
+  // actually complete.
   BOUNTY_FIXED_TIERS.forEach((tier) => {
     server.runCommandSilent(
       `execute as @a[scores={${BOUNTY_OBJECTIVE}=${tier.threshold}}] run ftbquests change_progress @s complete ${tier.taskId}`
+    )
+    server.runCommandSilent(
+      `execute as @a[scores={${BOUNTY_OBJECTIVE}=${tier.threshold}}] run tellraw @s {"text":"[Bounty] ${tier.title} complete - ${tier.threshold} kills.","color":"gold"}`
     )
   })
 
@@ -162,6 +182,9 @@ EntityEvents.death((event) => {
   server.runCommandSilent(`execute as @a run scoreboard players operation @s ${BOUNTY_MOD_OBJECTIVE} %= #const ${BOUNTY_MOD_OBJECTIVE}`)
   server.runCommandSilent(
     `execute as @a[scores={${BOUNTY_MOD_OBJECTIVE}=0}] run ftbquests change_progress @s complete ${BOUNTY_REPEATABLE_TASK_ID}`
+  )
+  server.runCommandSilent(
+    `execute as @a[scores={${BOUNTY_MOD_OBJECTIVE}=0}] run tellraw @s {"text":"[Bounty] ${BOUNTY_REPEATABLE_TITLE} complete - another ${BOUNTY_REPEATABLE_INTERVAL} kills banked.","color":"gold"}`
   )
 })
 
@@ -236,12 +259,12 @@ function bqInitProgressReflection(anyObj) {
     var teamDataCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.TeamData')
     var taskCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.task.Task')
     var questObjectCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.QuestObject')
-    var questObjectBaseCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.QuestObjectBase')
     var entityCls = bqResolveClass(anyObj, 'net.minecraft.world.entity.Entity')
     var stringCls = bqResolveClass(anyObj, 'java.lang.String')
-    var optionalCls = bqResolveClass(anyObj, 'java.util.Optional')
     var longCls = bqResolveClass(anyObj, 'java.lang.Long')
     var longPrimitiveCls = longCls.getField('TYPE').get(null)
+    var intCls = bqResolveClass(anyObj, 'java.lang.Integer')
+    var intPrimitiveCls = intCls.getField('TYPE').get(null)
 
     bqServerQuestFileInstance = serverQuestFileCls.getField('INSTANCE').get(null)
     var getBaseMethod = serverQuestFileCls.getMethod('getBase', [longPrimitiveCls])
@@ -250,14 +273,41 @@ function bqInitProgressReflection(anyObj) {
     bqSetProgressMethod = teamDataCls.getMethod('setProgress', [taskCls, longPrimitiveCls])
     bqLongValueOfMethod = longCls.getMethod('valueOf', [stringCls])
 
-    // Hex quest-object ids are real 64-bit values (e.g.
-    // "42F2080CC88FFF1F") - well beyond JS's safe-integer range, so this
-    // uses FTB Quests' own QuestObjectBase.parseHexId(String) (the exact
-    // method FTBQuestsCommands itself calls to turn a command's hex-id
-    // argument into a real long) instead of a lossy parseInt(id, 16), to
-    // resolve each task's actual Java object once via getBase(long).
-    var parseHexIdMethod = questObjectBaseCls.getMethod('parseHexId', [stringCls])
-    var optionalGetMethod = optionalCls.getMethod('get', [])
+    // Real live bug, found 2026-09-09 by reading the live instance's
+    // actual logs directly (not assumed) - every single boot that day (5
+    // separate sessions' logs, all identical) hit "[bounty_kills]
+    // progress-display reflection unavailable: JavaException:
+    // java.util.NoSuchElementException: No value present" from THIS
+    // function, meaning the whole progress-display sync below has never
+    // once actually run - bounty tasks kept showing FTB Quests' own
+    // default "custom" icon with no fill, never the intended bar/counter.
+    // Previously resolved each task id via FTB Quests' own
+    // QuestObjectBase.parseHexId(String) (returns Optional<Long>) then
+    // called Optional#get() on the result - empirically checked with a
+    // real jshell run against these exact 5 task-id strings first
+    // (42F2080CC88FFF1F etc.): Long.parseLong(id, 16) itself succeeds for
+    // every one of them (none overflow signed 64-bit - all 5 leading
+    // nibbles are 0-7, see reference_ftbquests_ids_must_be_positive.md),
+    // so the Optional coming back empty specifically through this
+    // REFLECTED call (not a real direct call) points at some Rhino/
+    // raw-invoke interop gap in how the returned Optional<Long> crosses
+    // back - not something worth chasing further given a simpler, already
+    // proven-reliable path exists. Routed through java.lang.Long's own
+    // parseLong(String, int) instead - the same plain JDK static-method
+    // pattern this file's own bqBoxLong/playtest_starter_kit.js's boxInt/
+    // boxBool already use successfully, sidestepping FTB Quests'
+    // Optional-wrapping helper entirely. The radix argument (16) has to
+    // be boxed as a real java.lang.Integer for the same reason bqBoxLong
+    // exists (raw Method#invoke doesn't get Rhino's normal argument
+    // coercion) - reflection's own return-value autoboxing (primitive
+    // long -> Long) is a different, unambiguous case already trusted
+    // elsewhere in this file (mob_aggro.js's pedestalAttackDamage/
+    // getValue() writeup), so idLong below needs no extra boxing step.
+    var longParseLongMethod = longCls.getMethod('parseLong', [stringCls, intPrimitiveCls])
+    var intValueOfMethod = intCls.getMethod('valueOf', [stringCls])
+    function bqBoxInt(n) {
+      return intValueOfMethod.invoke(null, [`${n}`])
+    }
 
     // Real live bug, 2026-09-09: shipped as a `function bqTaskForId(...)`
     // declaration nested inside this try block - threw "bqTaskForId is
@@ -272,8 +322,7 @@ function bqInitProgressReflection(anyObj) {
     // above). Fixed by making it a plain top-to-bottom `var` assignment
     // instead, which carries no hoisting ambiguity in any engine.
     var bqTaskForId = function (hexId) {
-      var optionalLong = parseHexIdMethod.invoke(null, [hexId])
-      var idLong = optionalGetMethod.invoke(optionalLong, [])
+      var idLong = longParseLongMethod.invoke(null, [hexId, bqBoxInt(16)])
       return getBaseMethod.invoke(bqServerQuestFileInstance, [idLong])
     }
 

@@ -400,6 +400,67 @@ function ensurePedestalMarker(player, level) {
   server.runCommandSilent(`forceload add ${x - 96} ${z - 96} ${x + 96} ${z + 96}`)
 }
 
+// Stray-mob correction (2026-09-09, direct playtest feedback: "some
+// zombies having strange pathing...just wander off into the distance
+// randomly", corroborated by a real /tdforceclear log entry the same
+// session that only found 3 of wave 1's 9 spawned mobs anywhere near the
+// pedestal). Real, plausible mechanism, not fully proven: once a forced
+// target's path is genuinely blocked/unreachable, a mob's own attack-goal
+// canUse()/canContinueToUse() simply stops requiring movement, freeing
+// whatever lower-priority goal is still alive in its own GOAL selector
+// (vanilla's WaterAvoidingRandomStrollGoal ships on every Monster
+// subclass) to take over - stripAutoRetargeting() below only ever strips
+// the TARGET selector, never touches goal-selector movement/attack goals,
+// so nothing corrects a mob that's wandered off this way. Also covers the
+// residual risk from the same-day border revert to 50
+// (playtest_starter_kit.js's BORDER_START comment): Undead Nights' own
+// endless-phase spawn_horde spawns 70-75 blocks from the player
+// (defaultconfigs/undeadnights-server.toml), which can briefly exceed a
+// freshly-shrunk border's own half-width right at the wave 8->9
+// transition before base_expansion.js's growth catches up - those mobs
+// would otherwise sit outside the border-membership check below
+// indefinitely, keeping their own fully intact AI with nothing to
+// re-acquire them.
+//
+// Flagged as unverified until the next playtest - a real, evidence-backed
+// theory, not a confirmed root cause. Any WAVE_MOB_TYPES entity found
+// beyond STRAY_DISTANCE of the pedestal (checked regardless of border
+// membership, unlike the strip/target block below - see that block's own
+// 2026-09-09 comment for why THAT check stays border-scoped) gets
+// teleported back to a fresh point just outside the compound's own real
+// footprint (td_compoundX0/X1/Z0/Z1, playtest_starter_kit.js) - same
+// rejection-sampling idea as wave_spawner.js's own
+// randomObjectiveRelativePosition(), redeclared here per this codebase's
+// per-file convention (top-level var/const don't share scope, and the
+// tuning here is genuinely different - a "pull back into the fight"
+// range, not a fresh-spawn band). Not killed, not warped onto the player
+// - just given a position the strip/target logic below can do something
+// useful with again.
+var STRAY_DISTANCE = 90
+var STRAY_DISTANCE_SQ = STRAY_DISTANCE * STRAY_DISTANCE
+var STRAY_RETURN_MIN = 20
+var STRAY_RETURN_MAX = 40
+var STRAY_RETURN_PADDING = 4
+var STRAY_CHECK_INTERVAL = 100 // 5 real seconds - not time-critical to catch instantly
+
+function isInsideCompoundBounds(data, px, pz) {
+  if (!data.contains('td_compoundX0')) return false
+  var pad = STRAY_RETURN_PADDING
+  return px >= data.getInt('td_compoundX0') - pad && px <= data.getInt('td_compoundX1') + pad &&
+    pz >= data.getInt('td_compoundZ0') - pad && pz <= data.getInt('td_compoundZ1') + pad
+}
+
+function pickStrayReturnPoint(data, cx, cz) {
+  for (var attempt = 0; attempt < 20; attempt++) {
+    var angle = Math.random() * 2 * 3.141592653589793
+    var distance = STRAY_RETURN_MIN + Math.random() * (STRAY_RETURN_MAX - STRAY_RETURN_MIN)
+    var px = Math.floor(cx + Math.cos(angle) * distance)
+    var pz = Math.floor(cz + Math.sin(angle) * distance)
+    if (!isInsideCompoundBounds(data, px, pz)) return { x: px, z: pz }
+  }
+  return { x: Math.floor(cx + STRAY_RETURN_MAX), z: Math.floor(cz) }
+}
+
 PlayerEvents.tick(function (event) {
   var player = event.entity
   var level = player.getLevel()
@@ -412,6 +473,8 @@ PlayerEvents.tick(function (event) {
     return e.getTags().contains('td_pedestal_target')
   })
   if (!aggroTarget) return
+
+  var checkStrayThisTick = level.getTime() % STRAY_CHECK_INTERVAL === 0
 
   // Real live decision, 2026-09-04: "retaliate + block path" - part 2.
   // HurtByTargetGoal (kept alive above) covers "fight back if hit," but
@@ -429,8 +492,43 @@ PlayerEvents.tick(function (event) {
   // "objective priority holds once the player stops interfering" shape
   // as the HurtByTargetGoal side above.
   var MELEE_BLOCK_RANGE = 3.5
+  // Border scoping (2026-09-09, real playtest finding behind "zombies just
+  // standing around", decoded from the reported save, not guessed): 18
+  // husks + a zombie villager sat 214-268 blocks from the base, every one
+  // `forge:spawn_type: "STRUCTURE"` (Philip's Ruins desert structures),
+  // every one already tagged td_retarget_stripped by this handler, none
+  // wave-spawned. They were outside the world border (size 75 at wave 4),
+  // where vanilla pathfinding cannot produce a path at all - so they never
+  // moved toward the forced pedestal target, and with their own target
+  // goals stripped they never aggroed the player either: permanently idle
+  // statues. Anything outside the current border is skipped entirely now
+  // (no strip, no setTarget) - its own AI stays intact until the border
+  // grows to include it, at which point it is handled like any other
+  // roster mob. Same min/max border reads amulet_border.js already relies
+  // on live. Wave mobs are always spawned inside the border
+  // (wave_spawner.js clamps every spawn point into it), so this changes
+  // nothing for them.
+  var border = level.getWorldBorder()
+  var borderMinX = border.getMinX()
+  var borderMaxX = border.getMaxX()
+  var borderMinZ = border.getMinZ()
+  var borderMaxZ = border.getMaxZ()
   level.getEntities().forEach(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
+    var ex = e.getX()
+    var ez = e.getZ()
+
+    if (checkStrayThisTick) {
+      var dxp = ex - aggroTarget.getX()
+      var dzp = ez - aggroTarget.getZ()
+      if (dxp * dxp + dzp * dzp > STRAY_DISTANCE_SQ) {
+        var back = pickStrayReturnPoint(aggroTarget.persistentData, aggroTarget.getX(), aggroTarget.getZ())
+        e.teleportTo(back.x, aggroTarget.getY(), back.z)
+        return
+      }
+    }
+
+    if (ex < borderMinX || ex > borderMaxX || ez < borderMinZ || ez > borderMaxZ) return
     // One-time per mob (any spawn origin - the deterministic wave_spawner.js
     // path and Undead Nights' own endless-phase spawn_horde both produce
     // WAVE_MOB_TYPES entities, and both need this) - see the real root

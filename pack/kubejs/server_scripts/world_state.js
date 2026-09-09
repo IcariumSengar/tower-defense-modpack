@@ -101,3 +101,31 @@ function migrateLegacySharedState(player, marker) {
     if (legacy.contains(key)) markerData.putBoolean(key, legacy.getBoolean(key))
   })
 }
+
+// Shared by both game-over triggers (pedestal_destruction.js,
+// hardcore_death.js) - direct question, 2026-09-09: "can quest book
+// progress carry over on a restart after game over?" Real answer: yes -
+// hardcore_quest_carryover.js's hqcExportProgress (called right before
+// this) already snapshots it automatically to this modpack instance's
+// own shared config folder, and any later login (in this same instance)
+// picks it up on its own. This tip is the fallback for the one case that
+// doesn't cover: moving to a different instance/PC entirely, where
+// nothing shared survives. FTB Quests stores progress in one small
+// per-player file INSIDE the current world's save folder
+// (`<save>/ftbquests/<uuid>.snbt`, confirmed by reading a real one from
+// the live instance directly), not account-wide, and ships no real
+// export/import command for full progress (`/ftbquests` only has
+// change_progress for one task at a time, plus a separate reward-table
+// export/import for unclaimed loot chests - a different thing,
+// confirmed by decompiling FTBQuestsCommands.class directly). The manual
+// copy works for the same reason the automatic version does: quest/task
+// ids come from the pack's own data (identical in every world using this
+// pack), and a player's UUID doesn't change between worlds either - same
+// file, copied verbatim into the new save's own ftbquests folder,
+// restores everything.
+function tellQuestCarryoverTip(player) {
+  player.tell('§7Quest progress for a new world in this same install is handled automatically.')
+  player.tell('§7Moving to a different install/PC instead? Copy')
+  player.tell(`§7"ftbquests/${player.uuid}.snbt" from this world's save folder into`)
+  player.tell('§7the new one\'s save folder (same file name) after creating it.')
+}

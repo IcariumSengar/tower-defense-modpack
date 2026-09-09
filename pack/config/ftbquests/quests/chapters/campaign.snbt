@@ -5,12 +5,64 @@
 	group: ""
 	icon: "minecraft:book"
 	id: "1178FD42CF9984A2"
+	images: [
+		{
+			alpha: 70
+			color: 5902095
+			height: 2.6d
+			image: "kubejs:textures/quests/panel.png"
+			rotation: 0.0d
+			width: 24.5d
+			x: 16.5d
+			y: -6.0d
+		}
+		{
+			alpha: 70
+			color: 4860522
+			height: 2.4d
+			image: "kubejs:textures/quests/panel.png"
+			rotation: 0.0d
+			width: 11.0d
+			x: 20.0d
+			y: -3.0d
+		}
+		{
+			alpha: 70
+			color: 3046706
+			height: 2.4d
+			image: "kubejs:textures/quests/panel.png"
+			rotation: 0.0d
+			width: 11.0d
+			x: 18.0d
+			y: 3.0d
+		}
+		{
+			alpha: 70
+			color: 12092939
+			height: 4.2d
+			image: "kubejs:textures/quests/panel.png"
+			rotation: 0.0d
+			width: 15.0d
+			x: 22.0d
+			y: 6.75d
+		}
+		{
+			alpha: 70
+			color: 9116186
+			height: 4.2d
+			image: "kubejs:textures/quests/panel.png"
+			rotation: 0.0d
+			width: 13.0d
+			x: 23.0d
+			y: 9.75d
+		}
+	]
 	order_index: 0
 	progression_mode: "flexible"
 	quest_links: [ ]
 	quests: [
 		{
-			description: ["Whoever was here before you didn't make it, but they left the place standing - that's not nothing. Sound the horn when you're actually ready, not before. Once you do, they're coming, and they don't stop until the wave's cleared."]
+			description: ["Whoever held this post before you didn't make it, but they left the place standing, and that's not nothing. Everything you need is in this book; Tab opens it. Read the next few pages before you touch the horn."]
 			icon: {
 				Count: 1
 				id: "minecraft:netherite_sword"
@@ -27,21 +79,26 @@
 				}
 				{
 					count: 16
-					id: "BE5F1A2DB7BE00D3"
+					id: "1C15FECB9B54C301"
 					item: "minecraft:torch"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "3BF8DCAF2F4960C2"
-				type: "checkmark"
-			}]
+			shape: "rsquare"
+			size: 1.5d
+			tasks: [
+				{
+					id: "3BF8DCAF2F4960C2"
+					type: "checkmark"
+				}
+			]
 			title: "You're On Your Own"
 			x: 0.0d
 			y: 0.0d
 		}
 		{
-			description: ["That sword and armor aren't yours to keep - look close and you can already see the wear starting to show. Get real use out of them while they still hold together, because whatever you find after has to carry you the rest of the way."]
+			dependencies: ["46AB9754465218CF"]
+			description: ["The sword and armour you're wearing were theirs. Look close and the wear's already showing. They hold for five waves, then they crumble, and whatever you've found by then is what you fight with. Use them hard while you have them."]
 			icon: "minecraft:clock"
 			id: "70DA454A61DDC3A1"
 			rewards: [
@@ -51,22 +108,114 @@
 					xp_levels: 2
 				}
 				{
-					count: 1
-					id: "F67B78E46E99A696"
-					item: "minecraft:shield"
+					id: "427E01BD0F0F4892"
+					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "42E75310C2F28FF9"
-				type: "checkmark"
-			}]
+			shape: "rsquare"
+			size: 1.5d
+			tasks: [
+				{
+					id: "42E75310C2F28FF9"
+					type: "checkmark"
+				}
+			]
 			title: "Borrowed Time"
 			x: 2.0d
 			y: 0.0d
 		}
 		{
-			description: ["Five's not much, but it'll tell you fast whether your gear can actually handle this. Count resets every wave. The numbers only go up from here, so don't get comfortable."]
+			dependencies: ["70DA454A61DDC3A1"]
+			description: [
+				"Walk up to the stone pedestal in the courtyard and look at it. That's the &ePedestal&r, and it's the only thing the horde wants: every wave mob paths straight for it, not for you. It has 300 health, shown on a bar whenever you're within 64 blocks, and a mob within reach hits it for its own attack damage. &cIf it reaches zero the waves stop and the run is over.&r"
+				"It can be healed: right-click it holding a golden carrot for 10% back, or a nether star for a full heal. The item goes onto the stand and is used up."
+			]
+			icon: "supplementaries:pedestal"
+			id: "1FCDA02A8AF6F019"
+			rewards: [
+				{
+					count: 4
+					id: "37352A7AD2CAFA58"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					id: "52D6205BB957746D"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Look at the pedestal in the courtyard"
+			tasks: [
+				{
+					id: "10F793B5172FD712"
+					observe_type: 0
+					timer: 0L
+					to_observe: "supplementaries:pedestal"
+					type: "observation"
+				}
+			]
+			title: "Find the Pedestal"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1FCDA02A8AF6F019"]
+			description: ["Hold the &eWave Horn&r and right-click to call the next wave. Nothing comes until you do, with one catch: after each clear a timer starts, and when it runs out the wave comes on its own. About a minute and a half after wave 1, a little longer each wave, four minutes and up from wave 5. Use the gap to repair, restock and build. Then blow it."]
+			icon: "kubejs:wave_horn"
+			id: "2965C45D5F6A0991"
+			rewards: [
+				{
+					id: "035C228778FC17F0"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Right-click the Wave Horn"
+			tasks: [
+				{
+					id: "5A1C0E7B93D4F216"
+					type: "custom"
+				}
+			]
+			title: "Sound the Horn"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			can_repeat: "true"
+			dependencies: ["2965C45D5F6A0991"]
+			description: ["Right-click the checkmark for a spare Wave Horn. It doesn't run out; claim it again whenever you lose one."]
+			icon: "kubejs:wave_horn"
+			id: "37396865FD18B131"
+			optional: true
+			repeat_cooldown: 60
+			rewards: [
+				{
+					id: "084A9BC575EFFB50"
+					item: "kubejs:wave_horn"
+					type: "item"
+				}
+			]
+			size: 0.75d
+			tasks: [
+				{
+					id: "2C829246152E3F8D"
+					type: "checkmark"
+				}
+			]
+			title: "Lost the Horn?"
+			x: 6.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["2965C45D5F6A0991"]
+			description: ["Five plain zombies by your own hand; turret and trap kills don't count here (they do for the Bounties tab). Wave 1 is nine mobs: five zombies, three husks, one zombie villager. Enough to find out whether your gear holds."]
 			icon: "minecraft:zombie_head"
 			id: "7F675AEBC7301832"
 			rewards: [
@@ -77,49 +226,92 @@
 				}
 				{
 					count: 3
-					id: "D962E29F0A8B927B"
+					id: "17DBC0F53999DDAC"
 					item: "minecraft:iron_ingot"
 					type: "item"
 				}
 			]
-			tasks: [{
-				entity: "minecraft:zombie"
-				id: "2FBB03E59B623145"
-				type: "kill"
-				value: 5L
-			}]
+			shape: "rsquare"
+			size: 1.5d
+			tasks: [
+				{
+					entity: "minecraft:zombie"
+					id: "2FBB03E59B623145"
+					type: "kill"
+					value: 5L
+				}
+			]
 			title: "Thin the Horde"
-			x: 6.0d
-			y: 0.0d
-		}
-		{
-			description: ["Bags don't always drop, but when they do, grab them - better loot comes off tougher kills. Worth going after the harder targets for that reason alone."]
-			icon: "bountybags:uncommon_loot_bag"
-			id: "3BFCD0E4AA8C5B36"
-			rewards: [{
-				count: 2
-				id: "F7DF023D7AD78BE4"
-				item: "minecraft:emerald"
-				type: "item"
-			}
-			{
-				count: 2
-				id: "80F9C1D996680B95"
-				item: "bountybags:uncommon_loot_bag"
-				type: "item"
-			}]
-			tasks: [{
-				consume_items: false
-				id: "24986BBE1C6FBBCF"
-				item: "bountybags:uncommon_loot_bag"
-				type: "item"
-			}]
-			title: "Spoils of War"
 			x: 8.0d
 			y: 0.0d
 		}
 		{
-			description: ["Open bags as you get them rather than hoarding - they don't do anything sitting in your inventory. I kept a few unopened once, convinced myself they'd be worth more later. They weren't."]
+			dependencies: ["7F675AEBC7301832"]
+			description: ["Every mob down means the wave is cleared, the timer to the next one starts, and the border grows: 5 blocks a wave for waves 1 to 3, then 10, then 15, another 5 every three waves. More ground to hold and more ground to loot."]
+			icon: "minecraft:iron_bars"
+			id: "0CBAE9737A4869E9"
+			rewards: [
+				{
+					id: "00A5AF2CB46308BC"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+				{
+					id: "295D83DBFA4DD2DA"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when wave 1 is cleared"
+			tasks: [
+				{
+					id: "6B2D1F8CA4E50327"
+					type: "custom"
+				}
+			]
+			title: "Wave One, Cleared"
+			x: 10.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0CBAE9737A4869E9"]
+			description: ["Any wave mob can drop a loot bag when it dies, and every one of them rolls the same odds: 20% for an &eUncommon&r bag, 6% Rare, 3% Epic, 2% Legendary. Tougher mobs don't carry better bags; they're just harder to kill. Kill count is what pays."]
+			icon: "bountybags:uncommon_loot_bag"
+			id: "3BFCD0E4AA8C5B36"
+			rewards: [
+				{
+					count: 2
+					id: "44891F4D84D4A6AE"
+					item: "minecraft:emerald"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "0F27AEF7E1CA72EA"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Pick up a loot bag"
+			tasks: [
+				{
+					consume_items: false
+					id: "24986BBE1C6FBBCF"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+			]
+			title: "Spoils of War"
+			x: 12.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["3BFCD0E4AA8C5B36"]
+			description: ["Right-click a bag to open it. Uncommon bags carry iron, copper, redstone, coal, gunpowder, arrows and gold nuggets. Rare bags are where gold ingots, quartz, redstone blocks, iron blocks, obsidian and ender pearls come from, which is what the amulet and the Tier 2 recipes need. Every tier can carry &eShrapnel&r, the turret material. Open bags as you get them; they do nothing in your inventory."]
 			icon: "minecraft:chest"
 			id: "538A1BBC9A1B8EAC"
 			rewards: [
@@ -130,28 +322,196 @@
 				}
 				{
 					count: 2
-					id: "AB71671B6AE1AAD1"
+					id: "62F6B788A2B81D16"
 					item: "minecraft:iron_ingot"
 					type: "item"
 				}
 				{
 					count: 2
-					id: "AE85176DBD4A39E5"
+					id: "07DEDA920215050D"
 					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "4B770968EBD48DB3"
-				type: "checkmark"
-			}]
+			shape: "rsquare"
+			size: 1.5d
+			tasks: [
+				{
+					id: "4B770968EBD48DB3"
+					type: "custom"
+				}
+			]
 			title: "Open It"
-			x: 10.0d
+			x: 14.0d
 			y: 0.0d
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["The shrine's been empty a while - whoever wore this before isn't coming back for it. Melt down enough gold and you can make another; the recipe's simple once you've got the materials. Wear it and you get stronger, and you can cross the border without the world pushing you back. Leave it on the stand and you lose that, but nothing else changes about what's coming for this place."]
+			description: ["Three waves in, the roster changes. Wave 4 brings the first &cBoomer&r and two Split Head Zombies; wave 5 the first Elites. Check Know Your Enemy above before you blow the horn, and spend what you've got: everything below this point on the tree is buildable now."]
+			icon: "mutantszombies:split_head_zombie_spawn_egg"
+			id: "0882BEAE557D28DD"
+			rewards: [
+				{
+					id: "78C122E597037501"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+				{
+					id: "625E25CEC51CF406"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when wave 3 is cleared"
+			tasks: [
+				{
+					id: "7C3E209DB5F61438"
+					type: "custom"
+				}
+			]
+			title: "Three Down"
+			x: 16.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0882BEAE557D28DD"]
+			description: ["Five waves. That's where whoever wore this gear before you stopped, and it's where the gear stops too: the moment wave 5 clears, the sword and armour turn to rust in your hands. From here you fight with what you've made and what you've looted. The gaps between waves stretch to four minutes and more now. Use every one of them."]
+			icon: {
+				Count: 1
+				id: "minecraft:netherite_sword"
+				tag: {
+					Damage: 0
+				}
+			}
+			id: "03C4E700B07CBC15"
+			rewards: [
+				{
+					id: "720A183E1795E9EE"
+					item: "minecraft:golden_apple"
+					type: "item"
+				}
+				{
+					id: "28A5066F320BD531"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+				{
+					id: "5CCFFA9E49497C98"
+					type: "xp_levels"
+					xp_levels: 5
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when wave 5 is cleared"
+			tasks: [
+				{
+					id: "0D4F31AEC6072549"
+					type: "custom"
+				}
+			]
+			title: "It's Up to You Now"
+			x: 18.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["03C4E700B07CBC15"]
+			description: [
+				"Wave 8 is the last one anyone planned: a Crawler on the walls, a Mutant Brute at the gate, a Demolition Zombie throwing TNT. After this the waves don't stop and don't repeat. Every one past 8 is an endless level, and each level adds 8% health, 5% damage and 2% speed on top of the last, with the heavy mobs weighted in more as it climbs."
+				"Every fifth wave a supply crate drops near the base with a map marker on it: a Legendary bag, netherite scrap, a diamond block."
+			]
+			icon: "minecraft:map"
+			id: "42EDC7E6DB5ABFAA"
+			rewards: [
+				{
+					id: "6099752CC711A228"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					id: "3216F1BC6F4F8CC4"
+					item: "waystones:waystone"
+					type: "item"
+				}
+				{
+					id: "7F90A3AE03FEFCD1"
+					type: "xp_levels"
+					xp_levels: 5
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when wave 8 is cleared"
+			tasks: [
+				{
+					id: "1E5042BFD718365A"
+					type: "custom"
+				}
+			]
+			title: "The Last Written Wave"
+			x: 20.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["42EDC7E6DB5ABFAA"]
+			description: ["Every tenth wave brings a boss on top of the wave. &cThe Behemoth&r is a Mutant Brute with 600 health, 30 damage a hit and full netherite, and you'll hear it coming. It drops a &eTotem of Undying&r when it dies, and that's the one reliable source of one. The same wave drops a supply crate."]
+			icon: "mutantszombies:mutant_brute_spawn_egg"
+			id: "3E279D8E8116478F"
+			rewards: [
+				{
+					id: "5067FD3DB1AD8107"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+				{
+					id: "5CA335D33C57D026"
+					type: "xp_levels"
+					xp_levels: 8
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes when a boss dies"
+			tasks: [
+				{
+					id: "2F6153C0E829476B"
+					type: "custom"
+				}
+			]
+			title: "The Behemoth"
+			x: 22.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["3E279D8E8116478F"]
+			description: ["Fifteen. Nobody's diary goes this far. There's no finale waiting and no ending to reach, just the next wave, bigger than the last. Whatever you've built by now is what you're taking into it."]
+			icon: "minecraft:nether_star"
+			id: "10969EB1485216B4"
+			rewards: [
+				{
+					id: "23FF921409BFCDF7"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when wave 15 is cleared"
+			tasks: [
+				{
+					id: "307264D1F93A587C"
+					type: "custom"
+				}
+			]
+			title: "No Ceiling"
+			x: 24.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0882BEAE557D28DD"]
+			description: ["Eight gold ingots in a ring make the &eAmulet&r. Gold comes as ingots from Rare bags or nuggets from Uncommon ones, nine to an ingot. It goes in the Curios necklace slot in your inventory, not an armour slot."]
 			icon: "kubejs:amulet"
 			id: "7D3A5F912E6C0B48"
 			rewards: [
@@ -162,24 +522,107 @@
 				}
 				{
 					count: 4
-					id: "B95D6FAE3CEEEF51"
+					id: "6A08D40380B22723"
 					item: "minecraft:golden_carrot"
 					type: "item"
 				}
 			]
-			tasks: [{
-				consume_items: false
-				id: "5C0E7A34D2F9B168"
-				item: "kubejs:amulet"
-				type: "item"
-			}]
+			shape: "pentagon"
+			subtitle: "8 gold ingots in a ring"
+			tasks: [
+				{
+					consume_items: false
+					id: "5C0E7A34D2F9B168"
+					item: "kubejs:amulet"
+					type: "item"
+				}
+			]
 			title: "Not Just Jewelry"
-			x: 13.0d
-			y: -2.0d
+			x: 16.0d
+			y: -3.0d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["A stone that remembers where you stood. Set one down, and the distance between here and anywhere else you've claimed stops mattering - step through, not across. Whoever built the first one wasn't thinking about convenience. They were thinking about how far they'd have to run if it all went wrong."]
+			dependencies: ["7D3A5F912E6C0B48"]
+			description: ["While it's on you: Regeneration, and Resistance, which takes 20% off every hit. And as long as the amulet is anywhere but the pedestal, the border is a wall: step over the line and it shoves you back."]
+			icon: "minecraft:golden_apple"
+			id: "46EBB02979D3B684"
+			rewards: [
+				{
+					id: "7D3ECFAF89767E22"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Put the amulet in the Curios slot"
+			tasks: [
+				{
+					id: "418375E20A4B698D"
+					type: "custom"
+				}
+			]
+			title: "Wear It"
+			x: 18.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["46EBB02979D3B684"]
+			description: ["Right-click the pedestal holding the amulet to set it down. You lose the buffs and the border opens: you can walk out. Right-click the pedestal again to take it back. The horde targets the pedestal either way; what changes is whether you're inside the wall with it."]
+			icon: "supplementaries:pedestal"
+			id: "4B8F2D6A93E7C051"
+			rewards: [
+				{
+					count: 4
+					id: "5B3E933A60B40430"
+					item: "minecraft:ender_pearl"
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Set the amulet on the pedestal"
+			tasks: [
+				{
+					id: "529486F31B5C7A9E"
+					type: "custom"
+				}
+			]
+			title: "Leave It Behind"
+			x: 20.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["4B8F2D6A93E7C051"]
+			description: ["Stand inside any ruin, house, tower or city block out past the border. Chest loot out there scales with distance from the base, so the further you go the better the haul, and the longer the pedestal stands on its own."]
+			icon: "minecraft:cracked_stone_bricks"
+			id: "4F1477C0746CED34"
+			rewards: [
+				{
+					id: "2C2342F50FE1654E"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+				{
+					id: "0F99737CE8C1B242"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Stand inside any ruin beyond the border"
+			tasks: [
+				{
+					id: "3DB744E1A6C3BF21"
+					structure: "#kubejs:ruins"
+					type: "structure"
+				}
+			]
+			title: "Past the Line"
+			x: 22.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["4F1477C0746CED34"]
+			description: ["There's a Waystone in the courtyard. Craft another (recipe in JEI, press R on it), place it wherever you're looting, and right-click either one to jump between them."]
 			icon: "waystones:waystone"
 			id: "216966530DE6E3DB"
 			rewards: [
@@ -195,19 +638,467 @@
 					type: "item"
 				}
 			]
-			tasks: [{
-				consume_items: false
-				id: "0536AD0E341D2F75"
-				item: "waystones:waystone"
-				type: "item"
-			}]
+			shape: "pentagon"
+			subtitle: "Craft a Waystone"
+			tasks: [
+				{
+					consume_items: false
+					id: "0536AD0E341D2F75"
+					item: "waystones:waystone"
+					type: "item"
+				}
+			]
 			title: "A Stone That Remembers"
-			x: 13.0d
-			y: -3.5d
+			x: 24.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["7F675AEBC7301832"]
+			description: ["Twenty health, hits for 3. The floor of the whole roster, and most of wave 1."]
+			icon: "minecraft:zombie_spawn_egg"
+			id: "025466C9BEC5BE9D"
+			rewards: [
+				{
+					count: 2
+					id: "2D0CF85238BED841"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					id: "7BDC34B98EE362BB"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill 3"
+			tasks: [
+				{
+					entity: "minecraft:zombie"
+					id: "1E63160F7D12C940"
+					type: "kill"
+					value: 3L
+				}
+			]
+			title: "Zombie"
+			x: 6.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["025466C9BEC5BE9D"]
+			description: ["A zombie that gives you Hunger on hit. Same health, same speed."]
+			icon: "minecraft:husk_spawn_egg"
+			id: "17E8AFE1D66BD66C"
+			rewards: [
+				{
+					count: 2
+					id: "7429B51683F3FEF5"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					id: "222950B5B4689610"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill 3"
+			tasks: [
+				{
+					entity: "minecraft:husk"
+					id: "00561BD9979AC803"
+					type: "kill"
+					value: 3L
+				}
+			]
+			title: "Husk"
+			x: 7.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["17E8AFE1D66BD66C"]
+			description: ["A zombie in villager clothes. Nothing special about it, and no, you can't cure one mid-wave."]
+			icon: "minecraft:zombie_villager_spawn_egg"
+			id: "1D2DB95A7A2F4468"
+			rewards: [
+				{
+					count: 2
+					id: "0959B0CCC67BCD42"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					id: "20B45E722DCDE09A"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill 3"
+			tasks: [
+				{
+					entity: "minecraft:zombie_villager"
+					id: "0E8DC64CBE84AD2F"
+					type: "kill"
+					value: 3L
+				}
+			]
+			title: "Zombie Villager"
+			x: 9.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["1D2DB95A7A2F4468"]
+			description: ["From wave 2. Some carry tridents and throw them; kill those first."]
+			icon: "minecraft:drowned_spawn_egg"
+			id: "7F6C9D395DDA731E"
+			rewards: [
+				{
+					count: 2
+					id: "75C6D0C8D2FBB42B"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					id: "5F73A1CC8BEA9E67"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill 3"
+			tasks: [
+				{
+					entity: "minecraft:drowned"
+					id: "0EBE628E466F665D"
+					type: "kill"
+					value: 3L
+				}
+			]
+			title: "Drowned"
+			x: 10.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["7F6C9D395DDA731E"]
+			description: ["From wave 2. 24 health, 5 damage, and quicker than a zombie. The first step up."]
+			icon: "mutantszombies:mutant_zombie_spawn_egg"
+			id: "573C16E8A7C2E9B1"
+			rewards: [
+				{
+					id: "192A2A3B0E93BD42"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+				{
+					id: "505720393B6ABB21"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:mutant_zombie"
+					id: "3E497370A1D21909"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Mutant Zombie"
+			x: 12.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["573C16E8A7C2E9B1"]
+			description: ["From wave 3. Same 24 health and 5 damage as the Mutant Zombie; it just swings with the other arm."]
+			icon: "mutantszombies:blister_zombie_spawn_egg"
+			id: "44913AF82EB04C5C"
+			rewards: [
+				{
+					id: "573D2674DEBC1DB0"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:blister_zombie"
+					id: "6F14812734963563"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Blister Zombie"
+			x: 13.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["44913AF82EB04C5C"]
+			description: ["From wave 4, again in wave 6. Slow, but it hits for 6."]
+			icon: "mutantszombies:split_head_zombie_spawn_egg"
+			id: "4DB74CC3A8304108"
+			rewards: [
+				{
+					id: "70765D7C29E89B9D"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+				{
+					id: "28637E2C3D0DC91B"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:split_head_zombie"
+					id: "379E7551E5B3A32B"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Split Head Zombie"
+			x: 15.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["4DB74CC3A8304108"]
+			description: ["From wave 4. Slow, 20 health. &cKill it or let it touch you and it turns into a charged Boomer that can't be hurt and blows four seconds later&r: blast, poison cloud, and it takes blocks with it. Shoot it early, then get clear."]
+			icon: "zombiesmore:boomer_zombie_spawn_egg"
+			id: "16591FA9177F0E93"
+			rewards: [
+				{
+					id: "5BD25A8E2FF3AACE"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					id: "395E65A879FDE0A8"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "zombiesmore:boomer_zombie"
+					id: "0D968B02E2FC2A48"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Boomer Zombie"
+			x: 16.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["16591FA9177F0E93"]
+			description: ["From wave 5, in pairs. 5 armour, hits for 6, quicker than a zombie and slower than the horde."]
+			icon: "undeadnights:elite_zombie_spawn_egg"
+			id: "1A2D83B45E8BFAF1"
+			rewards: [
+				{
+					id: "433A09F6F1495FB3"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "undeadnights:elite_zombie"
+					id: "5E808F56B64511FA"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Elite Zombie"
+			x: 18.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["1A2D83B45E8BFAF1"]
+			description: ["From wave 6, in fours. Fast, 4 armour, and they climb over each other, so a wall one block higher than the pile isn't a wall."]
+			icon: "undeadnights:horde_zombie_spawn_egg"
+			id: "643DE5D901EF47EF"
+			rewards: [
+				{
+					id: "52D91A44079BF8BE"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill 3"
+			tasks: [
+				{
+					entity: "undeadnights:horde_zombie"
+					id: "09F8613940E56AD6"
+					type: "kill"
+					value: 3L
+				}
+			]
+			title: "Horde Zombie"
+			x: 19.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["643DE5D901EF47EF"]
+			description: ["Wave 8. Six health and dies to anything, but it's fast and it climbs straight up walls. Turrets handle it better than you do."]
+			icon: "mutantszombies:crawler_spawn_egg"
+			id: "138F8B5037B3BCB1"
+			rewards: [
+				{
+					id: "7EC9592EFCA4F6C3"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					id: "38CF2A972B68A9B3"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:crawler"
+					id: "6A16CCE4E137C495"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Crawler"
+			x: 21.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["138F8B5037B3BCB1"]
+			description: ["Wave 8, then the endless waves. 120 health, 18 damage, 18 armour, can't be knocked back, and it smashes trees in its way. Barbed wire and bear traps buy time; turrets finish it."]
+			icon: "mutantszombies:mutant_brute_spawn_egg"
+			id: "660933A263779675"
+			rewards: [
+				{
+					id: "42F5356772B57FE1"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					id: "1C9C548BF9E1B21A"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:mutant_brute"
+					id: "50049A86911E6890"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Mutant Brute"
+			x: 22.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["660933A263779675"]
+			description: ["Wave 8. It carries TNT, lights it and throws it, and &cthe blast breaks blocks, your walls included&r. Kill it at range."]
+			icon: "undeadnights:demolition_zombie_spawn_egg"
+			id: "0CF20A9914C828E9"
+			rewards: [
+				{
+					id: "1B2A158A6FE4D3F1"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					id: "2ED3F880AD8C2E71"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "undeadnights:demolition_zombie"
+					id: "7B2479D6D173650C"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Demolition Zombie"
+			x: 24.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["0CF20A9914C828E9"]
+			description: ["Endless waves only, from level 5. 100 health, 16 damage, 16 armour, knockback-immune, breaks trees."]
+			icon: "mutantszombies:zombie_brute_spawn_egg"
+			id: "4655A729AC448B0A"
+			rewards: [
+				{
+					id: "7D49C61871B608A3"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:zombie_brute"
+					id: "47314F1E329CAF98"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Zombie Brute"
+			x: 25.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["4655A729AC448B0A"]
+			description: ["Endless waves only. 30 health, hits for 7, slow."]
+			icon: "mutantszombies:rotten_mutant_spawn_egg"
+			id: "1ADC31A48FF6907E"
+			rewards: [
+				{
+					id: "393AB35234AAC086"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+			]
+			shape: "diamond"
+			subtitle: "Kill one"
+			tasks: [
+				{
+					entity: "mutantszombies:rotten_mutant"
+					id: "3E6AAF35299207C3"
+					type: "kill"
+					value: 1L
+				}
+			]
+			title: "Rotten Mutant"
+			x: 27.0d
+			y: -6.0d
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Iron bars set into stone - not much, but it hurts whatever steps on it, and it costs almost nothing. Something to lean on before you have built anything sturdier."]
+			description: ["Anything that walks over a &eSpike Trap&r takes 2 damage a step, mobs and you alike. The cheapest defence in the pack. Line the approach to the pedestal with them."]
 			icon: "simply_traps:spike_trap"
 			id: "67A7BF98D2C077DE"
 			rewards: [
@@ -224,52 +1115,54 @@
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "1D65A5F1829C7DD2"
-				item: "simply_traps:spike_trap"
-				type: "item"
-			}]
-			title: "Better Than Nothing"
-			x: 13.0d
-			y: -0.5d
-		}
-		{
-			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Wire it right and it does two things at once - cuts and slows anything that tries to push through. Needs power to make, not just a workbench; the rig for that's already set up in here somewhere."]
-			icon: "createaddition:barbed_wire"
-			id: "1454951A7FB14A26"
-			rewards: [
+			subtitle: "4 sticks + 1 iron ingot"
+			tasks: [
 				{
-					id: "0892955D880F0E2C"
-					type: "xp"
-					xp: 10
-				}
-				{
-					count: 4
-					id: "2E48F2F054CCB1FE"
-					item: "minecraft:iron_ingot"
+					consume_items: false
+					id: "1D65A5F1829C7DD2"
+					item: "simply_traps:spike_trap"
 					type: "item"
 				}
 			]
-			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "655A19AD37263BC9"
-				item: "createaddition:barbed_wire"
-				type: "item"
-			}]
-			title: "Sharpened Scrap"
-			x: 13.0d
-			y: 1.5d
+			title: "Better Than Nothing"
+			x: 14.0d
+			y: 3.0d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["A Bear Trap won't kill on its own, but it holds whatever steps in it in place - long enough for you or something else to finish the job. Reset it by hand once it's sprung."]
+			dependencies: ["67A7BF98D2C077DE"]
+			description: ["A &eSlime Trap&r drags anything crossing it down to a crawl. No damage on its own, so pair it with spikes or wire, or put it where a turret can see it."]
+			icon: "simply_traps:slime_trap"
+			id: "21A35285BDFA71C4"
+			rewards: [
+				{
+					count: 2
+					id: "313FB77D5CBC34D1"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+				{
+					id: "7AED7D6F847F6A22"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "hexagon"
+			subtitle: "2 sticks + 1 smooth stone slab"
+			tasks: [
+				{
+					consume_items: false
+					id: "2806382EE2A3D032"
+					item: "simply_traps:slime_trap"
+					type: "item"
+				}
+			]
+			title: "Slow Them Down"
+			x: 16.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["21A35285BDFA71C4"]
+			description: ["A &eBear Trap&r snaps shut on whatever steps in it, hurts it and pins it, then reopens on its own. In front of the pedestal a held mob is a free kill."]
 			icon: "vds_bear_traps:bear_trap_open"
 			id: "3F6D91E4A2C7B850"
 			rewards: [
@@ -286,21 +1179,22 @@
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "5D7488609EA3E850"
-				item: "vds_bear_traps:bear_trap_open"
-				type: "item"
-			}]
+			subtitle: "1 iron ingot + 1 stone pressure plate"
+			tasks: [
+				{
+					consume_items: false
+					id: "5D7488609EA3E850"
+					item: "vds_bear_traps:bear_trap_open"
+					type: "item"
+				}
+			]
 			title: "Something Crueler"
-			x: 13.0d
+			x: 18.0d
 			y: 3.0d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
-			description: ["Whoever built the press and mill in here never got around to powering them - there's an open slot where a crank should sit. Here's one already made - set it in place and it'll finish the job."]
+			dependencies: ["3F6D91E4A2C7B850"]
+			description: ["The house has a Mechanical Press and a &eRolling Mill&r already set up, with an empty shaft where a Hand Crank goes. Here's one. Put it on and hold right-click to turn it: the mill rolls iron ingots into iron wire."]
 			icon: "create:hand_crank"
 			id: "30DB900D8BD39277"
 			rewards: [
@@ -310,71 +1204,61 @@
 					xp: 10
 				}
 				{
-					count: 1
-					id: "C98B0A210AD669D6"
+					id: "441017D89321470E"
 					item: "create:hand_crank"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Get the mill running"
-			tasks: [{
-				id: "210CD7D6975E275B"
-				type: "checkmark"
-			}]
+			subtitle: "Look at the Rolling Mill in the house"
+			tasks: [
+				{
+					id: "26BA97507EFA5579"
+					observe_type: 0
+					timer: 0L
+					to_observe: "createaddition:rolling_mill"
+					type: "observation"
+				}
+			]
 			title: "Turn the Crank"
-			x: 13.0d
-			y: 4.5d
+			x: 20.0d
+			y: 3.0d
 		}
 		{
-			dependencies: ["1454951A7FB14A26"]
-			description: ["Every wall you're not standing behind yet is still just desert. Clear what's in front of you and the line moves - more ground to hold, more reasons it might not hold."]
-			icon: "minecraft:map"
-			id: "689899208FC0ADF0"
+			dependencies: ["30DB900D8BD39277"]
+			description: ["Four iron wire in a diamond make two &eBarbed Wire&r. Anything inside it takes damage and moves at a quarter speed. Two rows in front of the pedestal are worth more than a wall."]
+			icon: "createaddition:barbed_wire"
+			id: "1454951A7FB14A26"
 			rewards: [
 				{
-					id: "1C41A9C1424FE8A4"
-					type: "xp_levels"
-					xp_levels: 3
+					id: "0892955D880F0E2C"
+					type: "xp"
+					xp: 10
 				}
 				{
-					count: 8
-					id: "17E0B5750CFFCC00"
-					item: "minecraft:iron_bars"
+					count: 4
+					id: "2E48F2F054CCB1FE"
+					item: "minecraft:iron_ingot"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "2282360EBA016659"
-				type: "checkmark"
-			}]
-			title: "Watch the Walls Grow"
-			x: 16.0d
-			y: 0.0d
+			shape: "hexagon"
+			subtitle: "4 iron wire, diamond shape, makes 2"
+			tasks: [
+				{
+					consume_items: false
+					id: "655A19AD37263BC9"
+					item: "createaddition:barbed_wire"
+					type: "item"
+				}
+			]
+			title: "Sharpened Scrap"
+			x: 22.0d
+			y: 3.0d
 		}
 		{
-			dependencies: ["7D3A5F912E6C0B48"]
-			description: ["The stand's been waiting a long time for something to hold. Set the pendant down and the wall stops being a wall - for you, anyway. You lose whatever it was giving you, but you can cross the border now. Just remember the pedestal's what's being watched, not you - don't leave it standing alone too long."]
-			icon: "supplementaries:pedestal"
-			id: "4B8F2D6A93E7C051"
-			rewards: [{
-				count: 4
-				id: "AFAF72CBF04F1A35"
-				item: "minecraft:ender_pearl"
-				type: "item"
-			}]
-			tasks: [{
-				id: "057900B083CDA998"
-				type: "checkmark"
-			}]
-			title: "Leave It Behind"
-			x: 19.0d
-			y: -2.0d
-		}
-		{
-			dependencies: ["1454951A7FB14A26"]
-			description: ["Set it on top of a chest and it pulls loose drops in from every direction within reach - no rig, no aiming, just somewhere for the items to land. Beats chasing every drop across the yard by hand."]
+			dependencies: ["0882BEAE557D28DD"]
+			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. All three materials come out of Rare bags, so this is your first Tier 2 build."]
 			icon: "itemcollectors:basic_collector"
 			id: "573EEB3757B78B97"
 			rewards: [
@@ -391,26 +1275,163 @@
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "26CCD7A04ABD1646"
-				item: "itemcollectors:basic_collector"
-				type: "item"
-			}]
+			subtitle: "1 quartz + 1 redstone block + 3 iron blocks"
+			tasks: [
+				{
+					consume_items: false
+					id: "26CCD7A04ABD1646"
+					item: "itemcollectors:basic_collector"
+					type: "item"
+				}
+			]
 			title: "Waste Not"
-			x: 19.0d
-			y: 4.5d
+			x: 16.0d
+			y: 6.0d
 		}
 		{
-			dependencies: ["1454951A7FB14A26"]
-			description: ["A mounted gun, not a bow-on-a-stick - fires musket shells at anything that gets close, and it's just as hands-off once it's mounted. Assemble it at a Turret Workbench (Tier 0): the blueprint slot takes the Musket Turret blueprint, then load the six material slots and hit assemble. Keep musket shells stocked - this one actually burns through its ammo."]
+			dependencies: ["573EEB3757B78B97"]
+			description: ["The &eTech Tablet&r unlocks the turret chain; every part below needs it or something made from it. Shrapnel drops from loot bags of every tier."]
+			icon: "advanced_tower_defense_mod:tech_tablet_mechanics"
+			id: "40CDA831CF25531D"
+			rewards: [
+				{
+					count: 2
+					id: "23A0EE0EB22CB3B9"
+					item: "kubejs:shrapnel"
+					type: "item"
+				}
+				{
+					id: "24F40D4553BFE6BF"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Paper, book, compass, redstone, iron nuggets, 1 Shrapnel"
+			tasks: [
+				{
+					consume_items: false
+					id: "327B6ADAC1FD9888"
+					item: "advanced_tower_defense_mod:tech_tablet_mechanics"
+					type: "item"
+				}
+			]
+			title: "Read the Manual"
+			x: 18.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["40CDA831CF25531D"]
+			description: ["The &eWinding Mechanism&r drives every turret base and the workbench itself. The Speed Module is SecurityCraft's, the Springs are the turret mod's own; both recipes are in JEI."]
+			icon: "advanced_tower_defense_mod:winding_mechanism"
+			id: "6EAAE3A942426207"
+			rewards: [
+				{
+					id: "4F7BD94DD6A7958B"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "hexagon"
+			subtitle: "2 Springs, clock, compass, lever, tripwire hook, Speed Module, the tablet"
+			tasks: [
+				{
+					consume_items: false
+					id: "5E3657E8AF32EC9A"
+					item: "advanced_tower_defense_mod:winding_mechanism"
+					type: "item"
+				}
+			]
+			title: "Wind It Up"
+			x: 20.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["6EAAE3A942426207"]
+			description: ["Turrets aren't made in a crafting table. Place the &eTurret Workbench&r, put a Blueprint in its top slot, fill the six material slots it asks for and press Assemble."]
+			icon: "advanced_tower_defense_mod:t_0_turret_workbench"
+			id: "784320F35DE3827B"
+			rewards: [
+				{
+					id: "316D3CFC07CA8325"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Anvil, paper, smithing table, winding mechanism, stripped oak log"
+			tasks: [
+				{
+					consume_items: false
+					id: "208836A291255B36"
+					item: "advanced_tower_defense_mod:t_0_turret_workbench"
+					type: "item"
+				}
+			]
+			title: "The Workbench"
+			x: 22.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["784320F35DE3827B"]
+			description: ["The Musket Sentry's blueprint. It goes in the workbench's blueprint slot."]
+			icon: "advanced_tower_defense_mod:blueprint_musket_turret"
+			id: "609316D1AD547BF1"
+			rewards: [
+				{
+					id: "3E5787E8BE1382F2"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "hexagon"
+			subtitle: "4 paper, flint, gunpowder, iron nugget, 2 Shrapnel"
+			tasks: [
+				{
+					consume_items: false
+					id: "5DF3F8D376754447"
+					item: "advanced_tower_defense_mod:blueprint_musket_turret"
+					type: "item"
+				}
+			]
+			title: "Musket Blueprint"
+			x: 24.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["609316D1AD547BF1"]
+			description: ["The AI-controlled &eTurret Base&r. Place it where the turret should stand, then set the assembled turret head on top. The Smart Module is SecurityCraft's, the AI Chip is the turret mod's."]
+			icon: "advanced_tower_defense_mod:turret_base_t_0"
+			id: "0C1B97231505C649"
+			rewards: [
+				{
+					id: "11A329B822ECA4CE"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Piston, barrel, button, spring, tablet, winding mechanism, Smart Module, AI Chip"
+			tasks: [
+				{
+					consume_items: false
+					id: "40C1113D9CD4110F"
+					item: "advanced_tower_defense_mod:turret_base_t_0"
+					type: "item"
+				}
+			]
+			title: "A Base to Stand On"
+			x: 26.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["0C1B97231505C649"]
+			description: ["The &eMusket Sentry&r picks its own targets and fires buckshot at anything in range. It eats Musket Buckshot, so keep the base stocked. First thing in the pack that guards the pedestal while you're somewhere else."]
 			icon: "advanced_tower_defense_mod:turret_head_t_0_mushket"
 			id: "503260000FFBD462"
 			rewards: [
 				{
-					id: "E35F7199341D70D3"
+					id: "1E3D67693F669EB9"
 					type: "xp_levels"
 					xp_levels: 3
 				}
@@ -422,52 +1443,164 @@
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "A heavier gun for the wall"
-			tasks: [{
-				consume_items: false
-				id: "CEAF7D7BDF085913"
-				item: "advanced_tower_defense_mod:turret_head_t_0_mushket"
-				type: "item"
-			}]
+			subtitle: "8 iron, 1 Wooden Parts, 4 Stone Parts + blueprint, at the workbench"
+			tasks: [
+				{
+					consume_items: false
+					id: "0F618E50E49DEC82"
+					item: "advanced_tower_defense_mod:turret_head_t_0_mushket"
+					type: "item"
+				}
+			]
 			title: "Beyond the Bow"
-			x: 19.0d
+			x: 28.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["784320F35DE3827B"]
+			description: ["The Anvil Launcher's blueprint. Costs more Shrapnel than the musket's."]
+			icon: "advanced_tower_defense_mod:blueprint_anvil_launcher"
+			id: "47CBFB8EE22E3895"
+			rewards: [
+				{
+					id: "6B7BE94F876B7095"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "hexagon"
+			subtitle: "3 paper, chain, redstone, iron nugget, 4 Shrapnel"
+			tasks: [
+				{
+					consume_items: false
+					id: "763F021C1E4730F9"
+					item: "advanced_tower_defense_mod:blueprint_anvil_launcher"
+					type: "item"
+				}
+			]
+			title: "Anvil Blueprint"
+			x: 24.0d
 			y: 7.5d
 		}
 		{
-			dependencies: ["503260000FFBD462"]
-			description: ["No auto-targeting on this one - you aim it yourself, at a fixed set of coordinates, and it drops an anvil on whatever's standing there. Slow, heavy-handed, and it hits hard. Needs its own base (a manual one, not the AI-controlled base the Musket Sentry uses) and a blueprint of its own before you can put one together at the Turret Workbench."]
-			icon: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
-			id: "AD122F38A7F9E1FE"
+			dependencies: ["47CBFB8EE22E3895"]
+			description: ["The &eManual Base&r has no AI: you set the target coordinates on it yourself. That's what the launcher wants."]
+			icon: "advanced_tower_defense_mod:manual_turret_base_t_0"
+			id: "1EE09F6455AB8712"
 			rewards: [
 				{
-					id: "DB2924EE65942CD9"
+					id: "50509193242CE880"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Same as the AI base, with redstone + a Redstone Module instead"
+			tasks: [
+				{
+					consume_items: false
+					id: "2C1EA4E8B76C4543"
+					item: "advanced_tower_defense_mod:manual_turret_base_t_0"
+					type: "item"
+				}
+			]
+			title: "Manual Base"
+			x: 26.0d
+			y: 7.5d
+		}
+		{
+			dependencies: ["1EE09F6455AB8712"]
+			description: ["Set a coordinate on the manual base and the &eAnvil Launcher&r drops an anvil on it from the sky: 60 damage to whatever's standing there. Slow and aimed by hand, and it kills a Mutant Brute in two."]
+			icon: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
+			id: "23DD76C89862B547"
+			rewards: [
+				{
+					id: "66B59B57BD2A95E8"
 					type: "xp_levels"
 					xp_levels: 3
 				}
 				{
 					count: 4
-					id: "93D96EE13520A11A"
+					id: "44F75F99CAC49F55"
 					item: "kubejs:shrapnel"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Drop the hammer"
-			tasks: [{
-				consume_items: false
-				id: "CF4EFDBE43242D23"
-				item: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
-				type: "item"
-			}]
+			subtitle: "3 iron, 7 Wooden Parts, 14 Stone Parts + blueprint, at the workbench"
+			tasks: [
+				{
+					consume_items: false
+					id: "611FDB0AAFFFCD03"
+					item: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
+					type: "item"
+				}
+			]
 			title: "Anvils From Above"
-			x: 21.0d
+			x: 28.0d
 			y: 7.5d
 		}
 		{
-			dependencies: ["503260000FFBD462"]
-			description: ["Burns fuel instead of scrap - real power, not the trickle a hand crank gives you. Everything past this point wants what this makes; nothing runs without it."]
+			dependencies: ["03C4E700B07CBC15"]
+			description: ["A Sophisticated &eBarrel&r holds more than a chest and takes upgrades in place. No power needed. Build the storage before the power, because the power chain is long."]
+			icon: "sophisticatedstorage:barrel"
+			id: "5C44D121F112749F"
+			rewards: [
+				{
+					id: "32F2C9982116069C"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+				{
+					count: 4
+					id: "75C72F3A8359B386"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Planks, slabs and a lever"
+			tasks: [
+				{
+					consume_items: false
+					id: "52019608CE1659F9"
+					item: "sophisticatedstorage:barrel"
+					type: "item"
+				}
+			]
+			title: "Room to Grow"
+			x: 18.0d
+			y: 9.0d
+		}
+		{
+			dependencies: ["5C44D121F112749F"]
+			description: ["Immersive Engineering has its own book, and you'll need it: every multiblock's layout is in there with a ghost preview you can build against."]
+			icon: "immersiveengineering:manual"
+			id: "3F1186E1CA1B9236"
+			rewards: [
+				{
+					id: "61AC756B4DBB0A7C"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Book + lever"
+			tasks: [
+				{
+					consume_items: false
+					id: "2D74F3DACD064D68"
+					item: "immersiveengineering:manual"
+					type: "item"
+				}
+			]
+			title: "The Engineer's Manual"
+			x: 20.0d
+			y: 9.0d
+		}
+		{
+			dependencies: ["3F1186E1CA1B9236"]
+			description: ["The &eDiesel Generator&r is 3 wide, 3 tall and 5 long: 13 Heavy Engineering Blocks, 9 Radiators, 6 Steel Scaffolding, 5 Fluid Pipes, 4 Generator blocks and 1 Redstone Engineering Block, formed by right-clicking it with the Engineer's Hammer. It burns Biodiesel, which means a Squeezer, a Fermenter and a Refinery first. This is the deep end of the pack."]
 			icon: "immersiveengineering:diesel_generator"
 			id: "4B07331734543EB4"
 			rewards: [
@@ -478,91 +1611,94 @@
 				}
 				{
 					count: 4
-					id: "FBBFB87F39FCBED8"
+					id: "0628C5E05ED48FF7"
 					item: "minecraft:copper_ingot"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Build the tech chain"
-			tasks: [{
-				consume_items: false
-				id: "929E026BCC985C55"
-				item: "immersiveengineering:diesel_generator"
-				type: "item"
-			}]
-			title: "Wired Different"
-			x: 25.0d
-			y: 3.0d
-		}
-		{
-			dependencies: ["503260000FFBD462"]
-			description: ["Holds more than a chest ever will, and it upgrades in place instead of needing replaced. Doesn't need power - just somewhere to sit."]
-			icon: "sophisticatedstorage:barrel"
-			id: "F82126526999A560"
-			rewards: [
+			subtitle: "Look at a formed Diesel Generator"
+			tasks: [
 				{
-					id: "9133C9FE5D5DC56D"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-				{
-					count: 4
-					id: "F6C839696611D160"
-					item: "minecraft:iron_ingot"
-					type: "item"
+					id: "08AB30CBF8B142A1"
+					observe_type: 0
+					timer: 0L
+					to_observe: "immersiveengineering:diesel_generator"
+					type: "observation"
 				}
 			]
-			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Build the tech chain"
-			tasks: [{
-				consume_items: false
-				id: "52019608CE1659F9"
-				item: "sophisticatedstorage:barrel"
-				type: "item"
-			}]
-			title: "Room to Grow"
-			x: 25.0d
-			y: 7.0d
+			title: "Wired Different"
+			x: 22.0d
+			y: 9.0d
 		}
 		{
 			dependencies: ["4B07331734543EB4"]
-			description: ["Set one at the generator, another wherever something needs feeding, and the power finds its own way there - no wire between them. Whatever you plug in downstream just works."]
+			description: ["A &eFlux Plug&r takes power in, a Flux Point puts it out, and they share it over a named network with no cable between them. Plug at the generator, Point at the machine."]
 			icon: "fluxnetworks:flux_plug"
-			id: "C7E75E99F3A7B653"
+			id: "4F7597CFC2BED87F"
 			rewards: [
 				{
-					id: "85F7215E77AB0D42"
+					id: "01E9B18BD388FAC7"
 					type: "xp_levels"
 					xp_levels: 2
 				}
 				{
 					count: 8
-					id: "F53E61C8EF2A7523"
+					id: "29A52298F11180E8"
 					item: "minecraft:redstone"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Build the tech chain"
-			tasks: [{
-				consume_items: false
-				id: "6930B743A3CDA08B"
-				item: "fluxnetworks:flux_plug"
-				type: "item"
-			}]
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "6930B743A3CDA08B"
+					item: "fluxnetworks:flux_plug"
+					type: "item"
+				}
+			]
 			title: "No Cables Needed"
-			x: 28.0d
-			y: 1.5d
+			x: 24.0d
+			y: 9.0d
 		}
 		{
-			dependencies: ["4B07331734543EB4"]
-			description: ["A real network, not a pile of chests you have to remember. Feed it power and it'll sort, fetch, and craft on request - if you can be bothered to wire it in."]
+			dependencies: ["4F7597CFC2BED87F"]
+			description: ["Powered, the &eTesla Coil&r picks one target within 6 blocks about every second and a half, hits it for 6 and stuns it. Put it where the horde bunches up."]
+			icon: "immersiveengineering:tesla_coil"
+			id: "04DC756B047A09D4"
+			rewards: [
+				{
+					id: "4ABE7C34407EAFA6"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+				{
+					id: "682CC9C2AC1D45BA"
+					item: "minecraft:lightning_rod"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "HV Capacitor, MV Coil, 3 aluminium plates, advanced electronics, iron component"
+			tasks: [
+				{
+					consume_items: false
+					id: "09C28999F88F8224"
+					item: "immersiveengineering:tesla_coil"
+					type: "item"
+				}
+			]
+			title: "Sparks in the Dark"
+			x: 26.0d
+			y: 9.0d
+		}
+		{
+			dependencies: ["04DC756B047A09D4"]
+			description: ["Refined Storage: a &eController&r, a Disk Drive and a Grid on one power line, and every chest becomes one searchable inventory. Quartz Enriched Iron is the base material."]
 			icon: "refinedstorage:controller"
-			id: "C5A98E14436508F8"
+			id: "216C05D4AB41FC1C"
 			rewards: [
 				{
 					id: "4B4C22EF7409EFF4"
@@ -577,129 +1713,51 @@
 				}
 			]
 			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Build the tech chain"
-			tasks: [{
-				consume_items: false
-				id: "A6789EF8AE0A3FA1"
-				item: "refinedstorage:controller"
-				type: "item"
-			}]
-			title: "The Grid"
-			x: 28.0d
-			y: 4.5d
-		}
-		{
-			dependencies: ["C7E75E99F3A7B653"]
-			description: ["Give it a redstone signal and enough charge and it picks something nearby and puts it down - doesn't care which one, doesn't stop to think about it. First real teeth this place has had that don't need you standing behind them."]
-			icon: "immersiveengineering:tesla_coil"
-			id: "04DC756B047A09D4"
-			rewards: [
+			subtitle: "Quartz Enriched Iron, processors, a machine casing"
+			tasks: [
 				{
-					id: "9B1C9955CE1A068C"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-				{
-					count: 1
-					id: "B511A7783688070C"
-					item: "minecraft:lightning_rod"
+					consume_items: false
+					id: "3D83B08BEB5C675D"
+					item: "refinedstorage:controller"
 					type: "item"
 				}
 			]
-			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Build the tech chain"
-			tasks: [{
-				consume_items: false
-				id: "09C28999F88F8224"
-				item: "immersiveengineering:tesla_coil"
-				type: "item"
-			}]
-			title: "Sparks in the Dark"
-			x: 31.0d
-			y: 1.5d
+			title: "The Grid"
+			x: 28.0d
+			y: 9.0d
 		}
 		{
-			dependencies: ["503260000FFBD462"]
-			description: ["A fan blowing over lava does more than move air - point a Nozzle down a corridor and anything that walks through comes out burning. Needs a crank or a wheel to turn it, not power off the grid - a different kind of running machine, cheaper to start."]
+			dependencies: ["5C44D121F112749F"]
+			description: ["An &eEncased Fan&r blowing through lava is a flamethrower: 4 damage and 10 seconds of fire to anything in the stream, refreshed every tick it stays in. A Nozzle on the fan's output turns the straight stream into a short burst all around it. Any rotation works, a Hand Crank included, so this costs no power at all."]
 			icon: "create:nozzle"
 			id: "5F728109F9913045"
 			rewards: [
 				{
-					id: "95479A859DF0BA7F"
+					id: "4239E5515D56E088"
 					type: "xp"
 					xp: 10
 				}
 				{
-					count: 1
-					id: "CB59BF2C503D4EB3"
+					id: "62B52A7C3B321423"
 					item: "create:nozzle"
 					type: "item"
 				}
 			]
-			subtitle: "Get the fire going"
-			tasks: [{
-				id: "B97E166BD58ACAFF"
-				type: "checkmark"
-			}]
-			title: "Turn Up the Heat"
-			x: 25.0d
-			y: -0.5d
-		}
-		{
-			dependencies: ["689899208FC0ADF0"]
-			description: ["Five waves was as far as whoever held this post before you got. You have matched that, and the gear has finally given out - it was never going to last past this point anyway. Eight was the last wave anyone bothered planning for - after that, it just keeps escalating, no ceiling anyone has found yet. Whatever gear and defenses you have built by now are what you are taking into it. I do not know how far it actually goes. Maybe you will be the one who finds out."]
-			icon: "minecraft:nether_star"
-			id: "03C4E700B07CBC15"
-			rewards: [
+			shape: "hexagon"
+			subtitle: "Shaft + Andesite Casing + Propeller"
+			tasks: [
 				{
-					count: 1
-					id: "957C394328E80099"
-					item: "minecraft:golden_apple"
-					type: "item"
-				}
-				{
-					count: 1
-					id: "705272EEB13CEAD5"
-					item: "waystones:waystone"
-					type: "item"
-				}
-				{
-					count: 1
-					id: "5A2E82C7BB547506"
-					item: "minecraft:totem_of_undying"
+					consume_items: false
+					id: "74D5F4EB37E661B7"
+					item: "create:encased_fan"
 					type: "item"
 				}
 			]
-			tasks: [{
-				id: "530B75E9DB0F03E9"
-				type: "checkmark"
-			}]
-			title: "The Reckoning"
-			x: 22.0d
-			y: 0.0d
-		}
-		{
-			can_repeat: "true"
-			description: ["Right-click it to call the next wave when you're ready - it won't come on its own until the timer runs out. Lost yours somewhere, or want a spare before things get hairy? Claim this again whenever you need another - it doesn't run out."]
-			icon: "kubejs:wave_horn"
-			id: "B69DA4CE08B1C6A5"
-			repeat_cooldown: 60
-			rewards: [{
-				count: 1
-				id: "B954E5DE3CCE5286"
-				item: "kubejs:wave_horn"
-				type: "item"
-			}]
-			tasks: [{
-				id: "2C829246152E3F8D"
-				type: "checkmark"
-			}]
-			title: "Lost the Horn?"
-			x: 4.0d
-			y: -2.0d
+			title: "Turn Up the Heat"
+			x: 20.0d
+			y: 10.5d
 		}
 	]
+	subtitle: ["Hold the pedestal. The waves don't stop."]
 	title: "Campaign"
 }

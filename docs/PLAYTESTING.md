@@ -23,9 +23,14 @@ to what's actually live right now and worth checking.
   respawns land there too), with a small walled starter base
   (SecurityCraft reinforced perimeter, one gate) wrapped around a
   pre-placed building (Abandoned Brick House, `postapocalypse_structures`).
-- **Worldborder** starts at 58, grows on every wave clear by an
-  escalating amount (`20 + 5·floor((waveNumber-1)/2)`) — reaches 278 by
-  wave 8.
+- **Worldborder** starts at 150 (raised from 50 on 2026-09-09 so the
+  whole wave-mob spawn band fits inside it), grows on every wave clear
+  by an escalating amount (`5 + 5·floor((waveNumber-1)/3)`) — reaches
+  225 by wave 8.
+- **Flat field**: the ground is levelled to one plane out to 4 blocks
+  past the starting border edge (a 159×159 square) before the base is
+  built — no pits, rises, water or lava pockets anywhere inside it.
+  Check the field edge for a clean step down/up to natural terrain.
 - **Natural mob spawning disabled** — the Wave Horn is the only mob
   source.
 
@@ -51,8 +56,12 @@ forces the real generator via a datapack override regardless.
   blocks) feel right against the worldborder, or too far/close? Does
   skeleton damage feel under-scaled relative to melee mobs (a known,
   unaddressed gap — scaling doesn't touch arrow damage)?
-- Mobs spawn beyond the worldborder and walk in, staggered, with a
-  sound cue before each — not clustered near the player.
+- Mobs spawn a fixed 48-64 blocks from the pedestal (inside the border,
+  never closer, since 2026-09-09) and walk in, staggered, with a sound
+  cue before each — nothing should ever appear inside or against the
+  compound walls.
+- Boomer Zombie arming is audible only (a TNT fuse hiss at the mob) —
+  the red "ARMED" popup was removed 2026-09-09.
 
 **The amulet + pedestal**
 - Amulet starts unequipped in inventory (not auto-equipped — this was

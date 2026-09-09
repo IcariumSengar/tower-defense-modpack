@@ -421,6 +421,14 @@ Mostly still genuinely open:
 
 ## Working principles (apply these going forward, don't re-litigate)
 
+- **FTB Quests ids must start with hex 0-7** (found 2026-09-09): FTB
+  Quests 2001.4.22 parses ids with a plain `Long.parseLong(s, 16)`, so any
+  hand-written 16-hex id starting 8-F overflows, is treated as missing,
+  and is silently re-minted on every load - the actual cause of every
+  repo-vs-live id drift this pack has had, and of hardcoded task ids in
+  KubeJS (`change_progress`) that never fire. Before deploying anything
+  under `pack/config/ftbquests`, `grep -E '^\s*id: "[89A-F]'` must be
+  empty. Full note in FEATURES.md's quest book v3 entry.
 - **Loot shouldn't hand out shortcuts to what a placed home machine
   already makes** — direct principle (2026-09-06): the pack is built
   around a real choice between staying home (crafting/building with
