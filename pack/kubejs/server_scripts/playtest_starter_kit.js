@@ -302,12 +302,16 @@ function boxBool(anyObj, b) {
 var BASE_ANCHOR_SET_ID = 'kubejs:base_anchor'
 var BASE_ANCHOR_SPACING_CHUNKS = 64
 // Must match the smallest exclusion_zone chunk_count used across the
-// structure_set overrides (12; the sprawling Lost City / Abandoned
-// Urban city sets use 16). 12 chunks past the anchor chunk = the
-// nearest allowed placement chunk starts ~200 blocks from the base
-// centre, the same 200-block target the old search aimed for and could
-// never reach.
-var STRUCTURE_CLEAR_CHUNKS = 12
+// structure_set overrides (9; the sprawling Lost City / Abandoned Urban
+// city sets use 13). 9 chunks past the anchor chunk = the nearest
+// allowed placement chunk starts ~150 blocks from the base centre.
+// **12 -> 9, 2026-09-09, direct playtest feedback on the first live
+// world built this way** ("the structures are slightly too far
+// away... but only slightly" - nearest was 254 blocks in the sandbox,
+// most 600+): three chunks closer, still more than double the wave-8
+// border half-width (~67), so nothing can ever generate inside the
+// campaign's playable area.
+var STRUCTURE_CLEAR_CHUNKS = 9
 // Grid rings searched around world origin: 10 rings = 21x21 anchor
 // points, 10240 blocks each way. Sized from real data, not a guess:
 // the first two sandbox seeds of this code each had exactly ONE

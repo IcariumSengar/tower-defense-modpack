@@ -12,7 +12,7 @@
     "salt": 2064486891,
     "exclusion_zone": {
       "other_set": "kubejs:base_anchor",
-      "chunk_count": 12
+      "chunk_count": 9
     }
   }
 }

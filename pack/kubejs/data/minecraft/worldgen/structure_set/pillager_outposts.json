@@ -3,7 +3,7 @@
     "type": "minecraft:random_spread",
     "exclusion_zone": {
       "other_set": "kubejs:base_anchor",
-      "chunk_count": 12
+      "chunk_count": 9
     },
     "frequency": 0.2,
     "frequency_reduction_method": "legacy_type_1",

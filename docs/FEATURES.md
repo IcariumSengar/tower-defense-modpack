@@ -7188,3 +7188,19 @@ site, but the lever for "the base should read as wasteland all around"
 is the `multi_noise` blend in `overworld.json`, which the user chose to
 keep as-is on 2026-09-09 pending real play — a decision for them, not
 this fix.
+
+**First live playtest, same day.** The user's new world ran the whole
+path exactly as the sandbox did (site 197ms, desert with wasteland
+surroundings, spawn area 17.3s on the integrated server, base built in
+707ms, player logged in at the courtyard, no crash, no lag warning,
+four region files). Decoded the save's region files directly: Red House
+present with its sponge layer swapped and all 30 barrels gone, facade
+and ground-floor door on the courtyard side, walls/stake walls/
+pedestal/waystone/rig all placed, floor flush with the sand surface.
+Feedback: "the structures are slightly too far away... but only
+slightly" — floor cut 12 → 9 chunks (13 for the sprawling city sets),
+`STRUCTURE_CLEAR_CHUNKS` and both loot scripts' radii moved with it
+(+150 instead of +200). Numeric change inside the proven-safe range
+(any value under half the 64-chunk anchor spacing), deployed live
+without a second sandbox boot. The user also answered "base wrong"
+without detail — being chased as a separate item.

@@ -92,11 +92,12 @@ var TARGET_BLOCK_IDS = [
 // of (1171, -499), a one-seed coordinate that has been stale since the
 // spawn became a runtime search on 2026-09-06 (both fresh worlds this
 // morning put the base 2,200 and 3,700 blocks from it). FAR_DISTANCE
-// shifted +200 (120 -> 320) alongside structure_loot_progression.js's
+// shifted +150 (120 -> 270) alongside structure_loot_progression.js's
 // radii, for the same reason: the anchor-grid base placement guarantees
-// no structure can start within ~200 blocks of the base, so the old
-// threshold would have made every reachable chest "far".
-var FAR_DISTANCE = 320
+// no structure can start within ~150 blocks of the base (9-chunk floor,
+// cut from 12 on first-playtest feedback), so the old threshold would
+// have made every reachable chest "far".
+var FAR_DISTANCE = 270
 var NEAR_TABLE = 'minecraft:chests/simple_dungeon'
 var FAR_TABLE = 'minecraft:chests/stronghold_corridor'
 

@@ -35,15 +35,17 @@
 // put the base 2,200 and 3,700 blocks away from it, so every chest in
 // the world was being tiered against a point nobody was near.
 //
-// Radii shifted +200 (60/120 -> 260/320) the same day: the anchor-grid
+// Radii shifted +150 (60/120 -> 210/270) the same day: the anchor-grid
 // base placement (playtest_starter_kit.js) now guarantees no structure
-// set has a placement chunk within 12 chunks (~200 blocks) of the base,
+// set has a placement chunk within 9 chunks (~150 blocks) of the base,
 // so the old 60/120 bands would have made every reachable chest
 // top-tier from wave 1. The band WIDTHS are unchanged - "first 60
 // blocks of structures are mid, everything past that high" is exactly
 // what it was, just measured from where structures can actually start.
-var MID_TIER_RADIUS = 260
-var HIGH_TIER_RADIUS = 320
+// (Shipped as +200 for a few hours while the floor was 12 chunks; the
+// floor was cut to 9 on first-playtest feedback and this moved with it.)
+var MID_TIER_RADIUS = 210
+var HIGH_TIER_RADIUS = 270
 
 var MID_TIER_POOL = [
   { item: 'minecraft:iron_ingot', weight: 25, min: 2, max: 4 },

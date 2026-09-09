@@ -51,9 +51,17 @@ user's own three items.
    being excluded from the entire world, nothing protected the base).
    New `kubejs:base_anchor` set (spacing 64/separation 63 → placement
    chunk pinned to exactly (64i, 64j)), 52 structure_set overrides
-   excluded 12 chunks (16 for sprawling city sets) around it, and the
-   base is placed ON the nearest desert/badlands anchor chunk — a
-   guaranteed ~200-block structure-free radius, no search needed.
+   excluded around it, and the base is placed ON the nearest
+   desert/badlands anchor chunk — a guaranteed structure-free radius,
+   no search needed. Shipped at 12 chunks (~200 blocks, nearest real
+   structure 254), then **cut to 9 chunks (13 for sprawling city sets)
+   the same afternoon** on first-playtest feedback ("slightly too far
+   away... but only slightly").
+
+**First live playtest (same day): load, spawn-in-courtyard, full
+compound and structure distance all confirmed working from the live
+log and decoded save. Still open: user answered "base wrong" without
+saying what — awaiting detail.**
 
 Also fixed while in there: `structure_loot_progression.js` and
 `structure_chest_loot_fix.js` still measured distance from a hardcoded
