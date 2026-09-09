@@ -203,7 +203,10 @@ nothing built or installed from this:**
   Its basic Arrow Turret/Musket Sentry would be redundant with the
   already-live, quest-integrated Medieval Defense Turrets though — this
   is a "supplement Tier 2/3 with one specific piece" candidate, not a
-  Tier 2 replacement.
+  Tier 2 replacement. **Superseded 2026-09-09**: direct feedback called
+  the Arrow Turret itself weak/boring and a thematic mismatch — Musket
+  Sentry is now specced as the actual Tier 2 replacement, not a
+  supplement. See docs/FEATURES.md's "Tier 2 trap replacements" section.
 - **Tower Defense Units** ("The Angerer" taunt totem, Sniping Turret) —
   **ruled out**. Real files list tops out at 1.18.2; no 1.20.1 build
   exists at all, despite the dump's confidence.

@@ -8,17 +8,18 @@
 //
 // Real item ids used below, not guessed - pulled directly from this
 // pack's own re-recipe files (tier1_recipes.js/tier2_recipes.js are the
-// real source of truth for which item belongs to which tier, not
-// docs/QUEUE.md's own summary line, which turned out to be stale: it
-// still calls Vacuum Blocks "Tier 1" even though tier2_recipes.js's own
-// header comment and file placement have treated it as Tier 2 since the
-// Trapcraft removal - Vacuum Blocks/Arrow Turret both re-recipe off the
-// Tier 2 (Rare-pool) loot tier, not Tier 1's Common pool. Fixed in this
-// pass by coloring per the real recipe-file tier, not the stale doc line
-// - see docs/FEATURES.md for the correction note.
+// real source of truth for which item belongs to which tier).
 //
-// Tier 3 has no items yet (not built this session) - nothing to color
-// there until Phase 3 ships real item ids.
+// **Updated 2026-09-09** - Tier 2 replacements: `vacuum_cleaner:
+// vacuum_block_tier_1`/`medievalturrets:bow_turret_item` both dropped
+// (mods uninstalled, see tier2_recipes.js's header) for
+// `itemcollectors:basic_collector` and Advanced Tower Defense's two real
+// turret-head items (`turret_head_t_0_mushket`/
+// `turret_head_t_0_anvil_launcher` - the actual held/placed items, not
+// the hardcoded-assemble-only base blocks). Tier 3 items added for the
+// first time - real ids pulled from `campaign.snbt`'s own Tier 3 quest
+// chapter (Storage & power system, Track C's Tesla Coil/Create Nozzle),
+// not guessed.
 const TIER_COLORS = {
   1: { code: '§a', label: 'Tier 1 - Starting Defense' }, // green
   2: { code: '§e', label: 'Tier 2 - Automated Defense' }, // yellow
@@ -30,8 +31,15 @@ const TIER_ITEMS = {
   'simply_traps:stake_wall': 1,
   'simply_traps:slime_trap': 1,
   'vds_bear_traps:bear_trap_open': 1,
-  'vacuum_cleaner:vacuum_block_tier_1': 2,
-  'medievalturrets:bow_turret_item': 2,
+  'itemcollectors:basic_collector': 2,
+  'advanced_tower_defense_mod:turret_head_t_0_mushket': 2,
+  'advanced_tower_defense_mod:turret_head_t_0_anvil_launcher': 2,
+  'immersiveengineering:diesel_generator': 3,
+  'immersiveengineering:tesla_coil': 3,
+  'refinedstorage:controller': 3,
+  'sophisticatedstorage:barrel': 3,
+  'fluxnetworks:flux_plug': 3,
+  'create:nozzle': 3,
 }
 
 ItemEvents.tooltip((event) => {

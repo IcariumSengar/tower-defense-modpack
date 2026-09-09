@@ -374,8 +374,8 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["Pulls dropped items in from straight ahead of it - point it at a hopper feeding a chest and drops walk themselves in. Not a wide net like whatever the last owner had rigged; aim it where the fighting actually happens."]
-			icon: "vacuum_cleaner:vacuum_block_tier_1"
+			description: ["Set it on top of a chest and it pulls loose drops in from every direction within reach - no rig, no aiming, just somewhere for the items to land. Beats chasing every drop across the yard by hand."]
+			icon: "itemcollectors:basic_collector"
 			id: "573EEB3757B78B97"
 			rewards: [
 				{
@@ -396,7 +396,7 @@
 			tasks: [{
 				consume_items: false
 				id: "26CCD7A04ABD1646"
-				item: "vacuum_cleaner:vacuum_block_tier_1"
+				item: "itemcollectors:basic_collector"
 				type: "item"
 			}]
 			title: "Waste Not"
@@ -405,38 +405,7 @@
 		}
 		{
 			dependencies: ["1454951A7FB14A26"]
-			description: ["An Auto-Turret picks its own targets in range and fires without you doing anything, real unlimited ammo despite how it looks - nothing to restock. First thing in this place that can actually watch a wall while you're somewhere else. It spawns facing a random direction until it finds something to shoot, and it can wander off its post if nothing's around to fight for a while - don't expect it to hold one fixed spot forever."]
-			icon: "medievalturrets:bow_turret_item"
-			id: "74779308DEED321D"
-			rewards: [
-				{
-					id: "0F62E8F07D9945A4"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-				{
-					count: 32
-					id: "AE5741917ABA8A11"
-					item: "minecraft:arrow"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			size: 1.5d
-			subtitle: "Turn scrap into defenses"
-			tasks: [{
-				consume_items: false
-				id: "0AE9B4E0C4263BE8"
-				item: "medievalturrets:bow_turret_item"
-				type: "item"
-			}]
-			title: "Wired for War"
-			x: 19.0d
-			y: 6.0d
-		}
-		{
-			dependencies: ["74779308DEED321D"]
-			description: ["A heavier sentry than the Arrow Turret - fires musket shells at anything that gets close, and it's just as hands-off once it's mounted. Assemble it at a Turret Workbench (Tier 0): the blueprint slot takes the Musket Turret blueprint, then load the six material slots and hit assemble. Keep musket shells stocked - unlike the Arrow Turret, this one actually burns through its ammo."]
+			description: ["A mounted gun, not a bow-on-a-stick - fires musket shells at anything that gets close, and it's just as hands-off once it's mounted. Assemble it at a Turret Workbench (Tier 0): the blueprint slot takes the Musket Turret blueprint, then load the six material slots and hit assemble. Keep musket shells stocked - this one actually burns through its ammo."]
 			icon: "advanced_tower_defense_mod:turret_head_t_0_mushket"
 			id: "503260000FFBD462"
 			rewards: [
@@ -466,7 +435,7 @@
 			y: 7.5d
 		}
 		{
-			dependencies: ["74779308DEED321D"]
+			dependencies: ["503260000FFBD462"]
 			description: ["No auto-targeting on this one - you aim it yourself, at a fixed set of coordinates, and it drops an anvil on whatever's standing there. Slow, heavy-handed, and it hits hard. Needs its own base (a manual one, not the AI-controlled base the Musket Sentry uses) and a blueprint of its own before you can put one together at the Turret Workbench."]
 			icon: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
 			id: "AD122F38A7F9E1FE"
@@ -497,7 +466,7 @@
 			y: 7.5d
 		}
 		{
-			dependencies: ["74779308DEED321D"]
+			dependencies: ["503260000FFBD462"]
 			description: ["Burns fuel instead of scrap - real power, not the trickle a hand crank gives you. Everything past this point wants what this makes; nothing runs without it."]
 			icon: "immersiveengineering:diesel_generator"
 			id: "4B07331734543EB4"
@@ -528,7 +497,7 @@
 			y: 3.0d
 		}
 		{
-			dependencies: ["74779308DEED321D"]
+			dependencies: ["503260000FFBD462"]
 			description: ["Holds more than a chest ever will, and it upgrades in place instead of needing replaced. Doesn't need power - just somewhere to sit."]
 			icon: "sophisticatedstorage:barrel"
 			id: "F82126526999A560"
@@ -652,7 +621,7 @@
 			y: 1.5d
 		}
 		{
-			dependencies: ["74779308DEED321D"]
+			dependencies: ["503260000FFBD462"]
 			description: ["A fan blowing over lava does more than move air - point a Nozzle down a corridor and anything that walks through comes out burning. Needs a crank or a wheel to turn it, not power off the grid - a different kind of running machine, cheaper to start."]
 			icon: "create:nozzle"
 			id: "5F728109F9913045"
