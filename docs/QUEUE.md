@@ -67,6 +67,11 @@ it). Reverted to the Abandoned Brick House with every Brick-House
 fixup and its wall reinforcement restored from 9de1941; border back to
 50. Sandbox-verified from the region files.**
 
+**CONFIRMED IN PLAY, 2026-09-09 (third fresh world of the day): "Yes,
+sorted" — base, Brick House and structure distance all read right.
+Only the biome-blend question (wasteland rarity) stays open, by the
+user's own choice to judge it after more play.**
+
 Also fixed while in there: `structure_loot_progression.js` and
 `structure_chest_loot_fix.js` still measured distance from a hardcoded
 (1171, -499) — now read from the marker, radii shifted +200.
