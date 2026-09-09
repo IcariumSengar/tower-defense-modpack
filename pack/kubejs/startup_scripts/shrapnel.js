@@ -36,6 +36,15 @@
 // data/bountybags/loot_tables/items/*.json tables), a real "combat
 // funds your tech" resource, not a shortcut.
 //
+// **Live deploy gotcha, see loot_bag_drops.js's own header for the full
+// decompiled explanation**: BountyBags caches these JSON tables into
+// config/bountybags/*.toml exactly once and never re-reads them - the
+// live instance's own bag TOMLs are stale as of 2026-09-03, so this
+// item does not actually drop in the live game yet. Needs the live
+// TOML regenerated (delete the file, or an op runs `/bountybags edit
+// <tier>` -> Restore Defaults) before this is really live, not just
+// committed.
+//
 // Texture: no ready-made scrap-metal icon existed in this pack's own
 // custom-item set (amulet.js/wave_horn.js each ship their own single
 // custom PNG) - generated a small original 16x16 RGBA sprite (a few

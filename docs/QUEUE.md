@@ -21,6 +21,44 @@ reflect actual current status.
 
 ---
 
+## URGENT, needs a human action on the live instance — found 2026-09-09
+
+**BountyBags loot-table edits since 2026-09-03 have never actually
+reached the live game.** Found during the full-mod-set merge
+verification pass (Phase 0/1 + Track B + Track C + the multiplayer
+shared-state fix, all booted together for the first time). Not a bug
+in this pack's own scripts — a real, decompiled characteristic of the
+installed BountyBags jar: `LootDefinitionStore.loadAll()` reads
+`data/bountybags/loot_tables/items/*.json` into
+`config/bountybags/<tier>_bag.toml` exactly once, the first time that
+TOML file doesn't exist, and never again — every later boot reads only
+the TOML, never the JSON. A prior session already hit this once (see
+FEATURES.md's "Real bonus lesson" note) and patched the live
+`legendary_bag.toml` directly for the totem_of_undying drop, but that
+was a one-off, not a standing practice - checked the live CurseForge
+instance's actual `config/bountybags/*.toml` directly on 2026-09-09:
+every file's mtime is 2026-09-03, and `uncommon_bag.toml` is
+confirmed missing gold_nugget, netherrack, arrow, carrot, AND the new
+kubejs:shrapnel entry - five real additions across multiple sessions
+that were each individually believed shipped and never actually were.
+
+**Fix needed on the live instance (not something this session can do
+per [[feedback_live_save_write_permission_boundary]])**: either delete
+`config/bountybags/{uncommon,rare,epic,legendary}_bag.toml` (the 4
+tiers this pack actually uses - dragon/warden/wither are unused, see
+loot_bag_drops.js) so BountyBags regenerates them from the current JSON
+on next boot, or have an op run `/bountybags edit <tier>` in game and
+click Restore Defaults per tier (real command, decompiled and
+confirmed - `admin.edit` permission or op status required). Either way
+needs a real server restart/reload afterward and is worth a live
+playtest check that shrapnel (and the older missing items) actually
+drop now. Documented directly in `loot_bag_drops.js` and
+`shrapnel.js`'s own headers so this stops being a one-time lesson that
+doesn't generalize - check that comment before any future BountyBags
+loot-table edit.
+
+---
+
 ## Desert dominance + structure sparseness — live feedback 2026-09-08
 
 Direct feedback, unprompted by any roadmap item: "the all one big giant
