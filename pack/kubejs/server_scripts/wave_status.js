@@ -329,6 +329,17 @@ PlayerEvents.tick((event) => {
     // permanently on every mob wave_spawner.js actually summons - see
     // its own comment at the summon point for the full story.
     if (!isEndlessPhase && !e.getTags().contains('td_wave_mob')) return false
+    // The exact scenario this comment already predicted is now real
+    // (2026-09-10, docs/FEATURES.md's "Structure spawners for real
+    // danger") - structure guard mobs are tagged `td_structure_guard`
+    // directly in their spawner's own SpawnData NBT (add_spawner.js).
+    // Excluded unconditionally, not just gated by isEndlessPhase like the
+    // td_wave_mob check above: the isEndlessPhase branch above skips the
+    // td_wave_mob check entirely (endless-phase mobs can't carry it
+    // either), which would otherwise let a structure guard within RADIUS
+    // of the objective during wave 9+ get miscounted the same way this
+    // block was originally written to prevent.
+    if (e.getTags().contains('td_structure_guard')) return false
     // A killed mob plays a ~1 second death animation before actually
     // being removed from the world, so it's still present in
     // getEntities() during that window - excluding anything already at

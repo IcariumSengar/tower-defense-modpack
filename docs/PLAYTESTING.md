@@ -94,6 +94,18 @@ fantasy/floating-content swap, both since confirmed shipping)
   moderate structure spacing, not fully eliminated. If it recurs, check
   the crash report's own Details/Feature section for which structure was
   involved before assuming it's the newest thing added.
+- **Structure spawners, built 2026-09-10, not yet playtest-confirmed**:
+  6 structures now carry real mob spawners (`abandoned_brick_house`,
+  `abandoned_urban:gas_station`/`fire_tower`, `philipsruins:
+  desert_pyramid`, `watchtower_building:ab_watchtower_big_tower`,
+  `abandoned_structures:zapravka`), 1-3 each, tougher further from
+  spawn. This could only be verified up to the point of "the spawner
+  block/NBT is correct" in this environment (no connected player to
+  actually trigger one) — the real things to check in play: does a
+  spawner actually produce mobs when you're nearby, do those mobs stay
+  and guard the structure (attack you) rather than walking off toward
+  the base/pedestal, and does killing one drop a loot bag/count toward
+  a Bounty quest like a normal kill.
 
 **FTB Quests**
 - Book auto-given on first login. "Basics" chapter (12 quests including

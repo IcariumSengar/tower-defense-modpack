@@ -973,6 +973,31 @@ full design lands better once Phase 4 is in.
 
 ## Ready to build
 
+**Structure spawners for real danger — BUILT 2026-09-10.** Full writeup
+in FEATURES.md's "Base & structures" section (same heading, "Build
+results" sub-entry). Supersedes the two older entries below in this
+file ("Structure spawners — held, not sent yet" and its "gate is
+clear" follow-up) — both correctly identified this as unblocked but
+neither reflected the real technique; kept below for history, not
+current. Short version: 6 structure `.nbt` files (near/mid/far tiers,
+2 mods each) got a real `minecraft:spawner` block added via the same
+datapack-override technique already proven twice (horse-entity strip,
+barrel LootTable clear) — never touches `structure_set` spacing/pool
+logic, so the crash risk this pack's jigsaw history would suggest
+doesn't apply here. Real improvement found over the original plan: the
+guard-mob exclusion tag (`td_structure_guard`, needed so `mob_aggro.js`
+doesn't force spawner mobs onto the pedestal) is baked directly into
+the spawner's own `SpawnData`/`Tags` NBT, not detected via spawn-reason
+reflection — simpler and more certain, verified live in a throwaway
+sandbox. 3 cross-system exclusion fixes shipped alongside
+(`mob_aggro.js`, `wave_status.js`, `wave_spawner.js`'s Wave Horn gate).
+**Real, honest gap**: no graphical client in this environment, so
+actual in-structure mob spawning and the guard-mob behavior itself are
+unconfirmed until your own playtest — everything that could be verified
+without a connected player (structure NBT byte-diffs, the spawner NBT
+shape round-tripping through the real game, the Tags-on-spawn mechanism)
+was verified live, not assumed.
+
 **Hardcore mode toggle + death hook — both built, 2026-09-09.** Phase 5
 is now fully built. Both Totem-of-Undying sources (`boss_wave.js`'s
 boss-kill drop, `hardcore_totem_recipe.js`'s crafting recipe) and the
@@ -2888,7 +2913,10 @@ below); Phase 5 not started:
    time, but placement/density reassessment waits until the user has
    actually seen the redesigned base in a fresh world.
 
-- **Structure spawners — held, not sent yet.** Add spawners to
+- **Structure spawners — held, not sent yet.** SUPERSEDED 2026-09-10,
+  see "Ready to build" near the top of this file — the "processors"
+  technique named below turned out not to match anything this pack
+  actually built; kept here for history only. Add spawners to
   structures for real danger via the same `processors` technique as
   the chest-loot fix below. Deliberately sequenced *after* the aesthetic
   structure variety pass and the Abandoned Urban chest fix (both sent
@@ -3277,7 +3305,10 @@ below); Phase 5 not started:
   **Structure spawners were held back pending this and the aesthetic
   pass being confirmed stable** — the aesthetic pass shipped clean
   (see above) and this item is now resolved, so that sequencing gate is
-  clear; spawners can be considered next if wanted.
+  clear; spawners can be considered next if wanted. SUPERSEDED
+  2026-09-10 by the fresh "Ready to build" entry near the top of this
+  file — the gate-cleared finding here still holds, but re-drafted from
+  scratch rather than sent as originally scoped.
 - **Savanna spawn + vegetation-clearing regression — done, real bug
   found and fixed 2026-09-06.** Diagnosed live on the actual reported
   world first, not guessed: the savanna_plateau landing was correct

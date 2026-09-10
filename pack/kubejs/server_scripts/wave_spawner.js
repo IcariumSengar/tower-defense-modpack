@@ -402,6 +402,14 @@ function staggerGapForWave(waveNumber) {
 function nearbyWaveMobCount(origin, level, radius, requireTag) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
+    // Structure guard mobs (2026-09-10, docs/FEATURES.md's "Structure
+    // spawners for real danger") are tagged `td_structure_guard` directly
+    // in their spawner's own SpawnData NBT - excluded unconditionally,
+    // not just when requireTag is true, since the requireTag===false
+    // branch below (endless phase) is exactly where one of these could
+    // otherwise sit within `radius` of the objective and wrongly block
+    // Wave Horn reuse.
+    if (e.getTags().contains('td_structure_guard')) return false
     if (requireTag !== false && !e.getTags().contains('td_wave_mob')) return false
     // Same fix as wave_status.js - a killed mob lingers ~1 second
     // (death animation) before actual removal, so exclude anything

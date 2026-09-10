@@ -515,6 +515,26 @@ PlayerEvents.tick(function (event) {
   var borderMaxZ = border.getMaxZ()
   level.getEntities().forEach(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
+    // Structure spawners (2026-09-10, docs/FEATURES.md's "Structure
+    // spawners for real danger") - mobs a spawner block places inside one
+    // of the 6 edited structure pieces reuse WAVE_MOB_TYPES ids on purpose
+    // (same zombie-apocalypse roster everywhere, per this pack's own
+    // roster pivot), which means this loop would otherwise force them onto
+    // the pedestal marker exactly like a real wave mob - walking off to go
+    // "defend the base" instead of guarding the structure they spawned in,
+    // silently defeating the whole feature for anything inside the current
+    // border (see that FEATURES.md entry's own real finding: a live
+    // Philip's Ruins husk case only kept intact AI because it happened to
+    // sit outside the border at the time). Tagged `td_structure_guard`
+    // directly in the spawner's own SpawnData/SpawnPotentials "entity"
+    // compound (add_spawner.js, the scratch builder that wrote those 6
+    // .nbt overrides) - vanilla's own Entity#load() applies a Tags list
+    // from that NBT like any summoned entity, so this needs no spawn-
+    // reason detection at all. Skipped before the stray-mob correction
+    // too, not just the border/pedestal-targeting below - that system
+    // exists to pull LOST wave mobs back toward the fight, which would
+    // drag a structure guard away from its own structure if it ran here.
+    if (e.getTags().contains('td_structure_guard')) return
     var ex = e.getX()
     var ez = e.getZ()
 

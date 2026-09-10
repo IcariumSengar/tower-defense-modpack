@@ -2365,6 +2365,282 @@ candidate pending the first real playtest — that playtest happened, the
 desert temple bug it surfaced led directly to the broader "drop desert,
 pick structure mods for real variety" decision instead.
 
+**Structure spawners for real danger — BUILT 2026-09-10, sandbox-
+verified where this environment allows, needs a real playtest for the
+rest.** Original ask (2026-09-02): structures should be
+genuinely dangerous to explore, not just decoration with loot. Held
+back at the time (docs/QUEUE.md's "Structure spawners" entry) pending
+the aesthetic structure-variety pass and the Abandoned Urban chest-loot
+fix landing and proving stable, per the user's own sequencing call —
+both shipped clean and that gate cleared 2026-09-06, but nothing was
+actually sent after that. Re-examined fresh here rather than reviving
+the old entry verbatim, since real state has moved a lot since
+2026-09-06 (structure density retuned, loot radii bumped 60/120 →
+210/270, anchor-grid base placement replaced the old spawn search) and
+the old entry's own proposed technique doesn't match what this pack
+actually ended up building since.
+
+**Real correction to the held entry's own premise**: it said to use
+"the same `processors` technique as the chest-loot fix" — checked
+`structure_chest_loot_fix.js` directly, and that fix does NOT use
+vanilla structure processors at all (this pack has never actually built
+one). It's a runtime `BlockEvents.rightClicked` check that assigns a
+real vanilla `LootTable` tag to an empty container at the moment a
+player opens it, if reflection confirms the container sits inside one
+of 4 target mods' own generated structures. That mechanism doesn't
+transfer to spawners anyway — a spawner has to already exist and be
+doing its thing before a player arrives, not get patched in reactively
+on interaction. The actual technique this pack has proven twice for
+adding/removing baked structure content is different and simpler: a
+`pack/kubejs/data/<namespace>/structures/<piece>.nbt` **datapack
+override**, hand-edited with `prismarine-nbt` and shipped as a real
+file in the repo — same layer Minecraft already uses to let a datapack
+override any vanilla or mod-provided structure template. Used for the
+Lost City horse-entity strip (`villages_city_main_tile1.nbt`, stripped
+3 baked `minecraft:horse` entities, left the other 17 entities and all
+blocks untouched) and the postapocalypse_structures barrel fix
+(`abandoned_brick_house.nbt`, cleared a stray `LootTable` tag on
+placement) — both verified byte-identical except the one intended
+change, both live with zero structure-gen crashes. **This is the real
+technique to use for spawners too**: add a `minecraft:spawner` block +
+its block-entity NBT (`SpawnData`, `SpawnCount`, `MaxNearbyEntities`,
+`RequiredPlayerRange`, `MinSpawnDelay`/`MaxSpawnDelay`) into a handful
+of specific structure `.nbt` files, shipped as overrides. Worth noting
+explicitly: this only ever touches placed block/block-entity content
+*inside* an already-existing piece — it never touches a
+`structure_set`'s spacing/separation/pool weighting, which is the
+actual thing behind this pack's real jigsaw crash history (the Radium
+`chunk_region` race, the Philip's Ruins density-caused spawn-search
+failure). The crash risk here is categorically lower than the original
+held entry assumed, not just "the gate cleared."
+
+**Real, load-bearing finding that has to be designed around, not
+discovered after shipping**: `mob_aggro.js`'s main tick loop matches
+*every* entity whose type appears in `WAVE_MOB_TYPES` — regardless of
+spawn origin — and forces it onto the permanent pedestal marker
+(stripping its target selector first) as soon as it's inside the
+current world border; only entities outside the border are left with
+intact AI. There's already a real, live example of exactly this
+boundary: the 2026-09-09 "zombies just standing around" diagnosis found
+18 husks + a zombie villager sitting 214-268 blocks out in Philip's
+Ruins desert structures, `forge:spawn_type: STRUCTURE`, genuinely never
+wave-spawned — and because they were outside the border at the time,
+`mob_aggro.js` correctly left their own AI (ESM's aggressive default
+targeting) completely intact. Had the border already reached them,
+they'd have been stripped and forced to walk toward the pedestal
+instead of guarding anything. Since near/mid-tier structures (the ones
+retuned 2026-09-09 to land 16-250 blocks out) sit *inside* the border
+from early-mid game onward — exactly where a player will actually run
+into a spawner — reusing an existing `WAVE_MOB_TYPES` id for structure
+spawners without an exclusion would silently defeat the whole feature
+there: guard mobs would just wander off toward the base like every
+other wave mob, never actually guarding the structure.
+
+**Fix required, not optional, before this ships**: tag
+structure-spawner-spawned mobs (a new tag, e.g. `td_structure_guard`)
+at the moment they spawn, and add one early-skip line to
+`mob_aggro.js`'s `forEach` loop for any entity carrying it — same shape
+as the existing border-exclusion skip a few lines above it, not a new
+mechanism. Left untouched, such a mob keeps its full native AI (ESM's
+own 6-goal aggressive target selector included, since
+`stripAutoRetargeting()` is simply never called on it) — which is
+actually a better fit for "structure guard" than anything this pack
+would have to hand-build, since ESM is already tuned to be more
+aggressive than vanilla. **Real question to verify live before relying
+on it, not assumed**: the cleanest signal for "this mob came from a
+structure spawner" is Forge's own spawn-reason data — `forge:spawn_type`
+was read directly off entity NBT during the 2026-09-09 diagnosis (a raw
+save-file dump), confirming Forge does tag spawn origin somewhere on
+the entity, but it hasn't been confirmed yet that this is reachable
+through a live KubeJS call (`entity.getPersistentData()` or similar) at
+`EntityEvents.spawned` time, the hook that actually needs to read it.
+`no_passive_mobs.js` already confirmed `EntityEvents.spawned` fires
+reliably for real natural spawns in this build; `EntityEvents.checkSpawn`
+was separately confirmed to NOT fire for natural spawns and was never
+tested against spawner-block spawns specifically. First real step of
+the build, before writing any of the rest: summon a test spawner in a
+sandbox, confirm `EntityEvents.spawned` actually fires for its output
+and that the spawn-reason field is readable from script. If it isn't,
+the fallback is reusing `structure_chest_loot_fix.js`'s own
+structure-containment reflection (already proven) as a spawn-time
+position check instead of a spawn-reason read — more expensive per
+spawn but a known-working substitute.
+
+**Free side effects, no extra code needed**: `loot_bag_drops.js`'s
+`addEntityLootModifier` calls and `bounty_kills.js`'s
+`BOUNTY_HOSTILE_TYPES` check both match by entity type globally, not by
+tag — so a structure guard's death automatically rolls BountyBags loot
+at the normal per-type odds and counts toward Bounty quest progress,
+same as any other kill of that mob type. And the 2026-09-01
+"hostiles remaining"/Wave Horn reuse-gate fix already requires a
+persistent `td_wave_mob` tag (set only at `wave_spawner.js`'s own
+summon point) for the deterministic 1-8-wave phase specifically because
+of an earlier real bug where a structure-spawned mob got miscounted as
+a wave mob — that protection is already live and needs no rework here.
+
+**Scope, reusing already-decided tiers rather than inventing new
+ones**: tie spawner density/toughness to the same near/mid/far split
+the 2026-09-09 structure density retune just built, and reuse
+`wave_spawner.js`'s existing `ENDLESS_OTHER_TIERS` 3-tier mob grouping
+directly rather than designing a new roster split:
+- **Near tier** (the 8 files retuned to 6/3 spacing — both
+  `abandoned_urban` gas_station/fire_tower, `philipsruins:
+  desert_structures`, `u_desert:pillager_outpost`, all 4
+  `postapocalypse_structures` houses): 0-1 spawner per targeted piece,
+  `ENDLESS_OTHER_TIERS[0]` roster (husk/drowned/zombie_villager) — a
+  light, early-game threat matching how close/reachable these are.
+- **Mid tier** (the 16 remaining `philipsruins`/`abandoned_urban`
+  files): 1-2 spawners, `ENDLESS_OTHER_TIERS[1]` (mutant_zombie/
+  blister_zombie/split_head_zombie/boomer_zombie).
+- **Far tier** (both `watchtower_building` sets, all 3
+  `abandoned_structures` sets): 2-3 spawners, `ENDLESS_OTHER_TIERS[2]`
+  (elite_zombie/horde_zombie/demolition_zombie/zombie_brute/
+  mutant_brute/rotten_mutant/crawler) — genuinely dangerous, matching
+  the "found later, higher value" framing loot rarity already uses at
+  this same distance band.
+- **Not every file in each tier** — 1-2 representative pieces per mod
+  family per tier, same "small deliverable now, wider coverage later
+  once proven" pattern this pack has used for every other structure
+  pass (the density retune itself went near-tier-first before mid/far).
+  Exact piece selection needs the same direct-decompile identification
+  the horse-strip fix used, not guessed from filenames.
+
+**Verification bar, matching this pack's own standing practice for
+anything touching structure NBT**: full 73-mod sandbox boot, clean;
+`/locate` + fly to a real placed instance of at least one edited piece
+per tier and confirm the spawner block/entity is actually there and
+actually spawning; confirm — this is the real new risk, not the old
+crash-history one — that a spawned guard mob does NOT path toward the
+pedestal and instead aggros the player on approach; confirm a guard
+kill both drops a loot bag and advances Bounty progress; confirm
+"hostiles remaining"/Wave Horn counters do NOT count guard kills. Byte-
+diff each edited `.nbt` via `prismarine-nbt` to confirm only the
+intended spawner block/block-entity changed, same discipline as the
+horse-strip fix. One genuinely new risk this pack hasn't hit yet: every
+prior structure-NBT override removed or rewrote content that already
+existed (an entity, a tag) — this is the first one that adds a new
+block-entity from scratch, so the spawner's own NBT shape needs to be
+built correctly (not just parse cleanly) and confirmed to actually fire
+in a live sandbox before it ships.
+
+**Build results, 2026-09-10.** Built the same session the spec above
+was drafted, once the user said "build it."
+
+**Real improvement found over the spec's own plan while building it**:
+the spec above proposed detecting spawn origin at `EntityEvents.spawned`
+time (Forge's own spawn-reason data, unconfirmed whether it's readable
+from script) as the signal for the `mob_aggro.js` exclusion. Turned out
+unnecessary — vanilla's own spawner `SpawnData`/`SpawnPotentials`
+"entity" compound can carry arbitrary extra entity NBT, including a
+`Tags` list, and `Entity#load()` applies it the same way it would for
+any summoned entity. So `td_structure_guard` is baked directly into
+each spawner's own NBT at structure-authoring time (no runtime tagging
+script needed at all) — a strictly more certain mechanism than spawn-
+reason detection, since it doesn't depend on anything about this exact
+Forge build being verified first. **Verified live**: summoned a real
+husk with `{Tags:["td_structure_guard"]}` in a throwaway sandbox and
+confirmed via `/data get entity` that the tag lands exactly as
+expected — same entity-load code path the spawner's `SpawnData` uses.
+
+**6 structure files edited** (1 near/1 mid/1 far pairing across the
+6 mod-family targets named above, matching the "1-2 representative
+pieces, not every file" scope — exact `.nbt` piece ids resolved from
+each mod's own real `template_pool`/Berezka worldgen JSON, not guessed
+from filenames):
+- Near (`ENDLESS_OTHER_TIERS[0]`: husk/drowned/zombie_villager), 1
+  spawner each: `postapocalypse_structures:abandoned_brick_house`
+  (built on top of the existing repo override that already clears its
+  barrel's `LootTable` tag — both fixes coexist in the same file),
+  `abandoned_urban:gas_station`.
+- Mid (`ENDLESS_OTHER_TIERS[1]`: mutant_zombie/blister_zombie/
+  split_head_zombie/boomer_zombie), 2 spawners each:
+  `philipsruins:desert_pyramid` (swapped in for the originally-named
+  `desert_ruin1` — that file turned out to have no valid interior floor
+  candidate under the placement rules below), `abandoned_urban:
+  fire_tower` (one spawner on the ground floor, one 13 blocks up — the
+  tower is 29 blocks tall).
+- Far (`ENDLESS_OTHER_TIERS[2]`: elite_zombie/horde_zombie/
+  demolition_zombie/zombie_brute/mutant_brute/rotten_mutant/crawler), 3
+  spawners each: `watchtower_building:ab_watchtower_big_tower` (spread
+  from y+1 to y+40 up the real tower), `abandoned_structures:zapravka`
+  (the real piece behind the `gas_station` structure id — resolved from
+  its own `worldgen/template_pool/gas_station.json`, since this mod
+  ships no worldgen of its own; this pack's own override registers it).
+
+**Placement method, not hand-picked coordinates**: a scratch Node
+script (`prismarine-nbt`) builds a position → block-state lookup from
+every voxel in the file (these structures list one entry per voxel, so
+this is exact, not sampled), filters for real floor candidates (air,
+solid non-liquid block directly below, air headroom above, at least 1
+block in from every edge), then spreads the requested count across that
+candidate list by stride rather than clustering them. Each chosen
+air-voxel entry is spliced out and replaced by the new spawner entry
+(not left as a duplicate-position pair) — cleaner diff, no reliance on
+structure-placement list-order behavior.
+
+**Verified, real not assumed**:
+- **Byte-diff, all 6 files, 6/6 pass**: size and every other original
+  block entry unchanged; exactly the intended number of air voxels
+  replaced by `minecraft:spawner`; zero duplicate-position entries;
+  `minecraft:spawner` added to the palette only where it wasn't already
+  present (`desert_pyramid` already had one).
+- **Live sandbox, real not simulated**: fresh Forge 47.4.10 + KubeJS
+  throwaway server (JDK 17, matching the live instance's own runtime -
+  the environment's default `java` resolves to JDK 18, which this
+  deliberately avoided). `/setblock` with the exact shipped
+  `SpawnData`/`SpawnPotentials`/`Tags` NBT accepted with zero errors,
+  and `/data get block` read back byte-identical to what was set -
+  confirms the spawner block-entity codec accepts this NBT shape
+  exactly as built, not just that it parses as valid SNBT.
+- **Real, honest limitation, same one this project's docs already note
+  repeatedly**: no graphical client in this environment, so nothing
+  requiring a connected player could be exercised live - the spawner's
+  own `RequiredPlayerRange` gate (vanilla, well-established, not in
+  doubt) means it will never actually fire without one nearby, and
+  `mob_aggro.js`'s whole tick handler runs on `PlayerEvents.tick`,
+  which never fires with zero players connected. Both the actual
+  in-structure mob spawning and the `td_structure_guard` skip's real
+  in-game effect (guard stays near its structure, doesn't get forced
+  onto the pedestal) are unconfirmed until the user's own playtest -
+  same standing caveat as virtually every other player-behavior change
+  in this pack's history.
+
+**3 cross-system fixes shipped alongside the structure files**, found
+by checking every other consumer of `WAVE_MOB_TYPES`/`HOSTILE_TYPES`
+for the same false-positive risk the spec's own `mob_aggro.js` finding
+raised, not just fixing the one place first noticed:
+- `mob_aggro.js`: the planned fix - skips any `td_structure_guard`
+  entity before the stray-mob correction, border check, or pedestal-
+  targeting, so it keeps its real native AI (ESM's own aggressive
+  target selector included, since `stripAutoRetargeting()` never runs
+  on it) instead of walking off toward the base.
+- `wave_status.js`'s "hostiles remaining" counter: this file's own
+  2026-09-01 comment already predicted exactly this scenario ("any
+  vanilla zombie/skeleton/spider from a nearby structure's real spawner
+  block... within RADIUS got miscounted") but its fix
+  (`!isEndlessPhase && !td_wave_mob`) only covers the deterministic 1-8
+  phase - during endless phase (wave 9+) that whole check is bypassed,
+  which would have let a structure guard within `RADIUS` of the
+  objective get miscounted as a live hostile. Added an unconditional
+  `td_structure_guard` exclusion ahead of it.
+- `wave_spawner.js`'s `nearbyWaveMobCount` (the Wave Horn reuse gate):
+  same gap, same fix - `requireTag === false` during endless phase
+  would otherwise let a structure guard within the horn's 96-block
+  check radius wrongly block horn reuse.
+- **Deliberately left alone**: `bounty_kills.js`'s `BOUNTY_HOSTILE_TYPES`
+  and `loot_bag_drops.js`'s entity loot modifiers both match by mob
+  type globally already, no tag involved - a structure guard kill
+  drops a loot bag and advances Bounty progress automatically, exactly
+  the free side effect the spec predicted, confirmed by reading both
+  files rather than assumed. `pedestal_health.js`'s proximity damage
+  check and `/tdforceclear` were also checked and left alone on
+  purpose - both are fine (arguably correct) to still catch a guard
+  that a player has physically led back to the pedestal or is standing
+  next to when force-clearing.
+
+All 4 touched/new server scripts (`mob_aggro.js`, `wave_status.js`,
+`wave_spawner.js`) `node --check` clean.
+
 ---
 
 ## The amulet
