@@ -2641,6 +2641,373 @@ raised, not just fixing the one place first noticed:
 All 4 touched/new server scripts (`mob_aggro.js`, `wave_status.js`,
 `wave_spawner.js`) `node --check` clean.
 
+**Live playtest, 2026-09-10 — "when I spawned in I was attacked by a
+tonne of mobs... the mobs spawned in structures should stay there,
+that's what makes them dangerous." Root-caused off the live save and
+fixed the same session.** Diagnosed from the live instance directly
+(logs/latest.log + both fresh saves decoded with `prismarine-nbt`), not
+reasoned from source — and the first two theories were wrong:
+- *Not* structure `spawn_overrides` (Philip's Ruins/u_desert do carry
+  monster lists, but `doMobSpawning false` is set at server start
+  before the player joins, so they never run).
+- *Not just* the spawner blocks — although one real bug was there: the
+  starter base is built by `/place template postapocalypse_structures:
+  abandoned_brick_house`, the exact template that got a near-tier
+  spawner the day before. The player spawns inside its 14-block
+  trigger range; the log shows "slain by Husk" 29 seconds after
+  joining, and both saves have that spawner (`SpawnData` husk +
+  `td_structure_guard`) 20 blocks from spawn. Fixed in
+  `playtest_starter_kit.js`: one `fill ... air replace
+  minecraft:spawner` over the whole building footprint right after
+  placement — holds for any future template swap too.
+- **The real supply**: both saves had **43-48 husks piled on the spawn
+  point**, every one tagged `td_retarget_stripped` and *none*
+  `td_structure_guard`, all with empty `ForgeData` — so not from any
+  spawner, not from any spawn event. Scanned all 230 structure NBTs:
+  they are **entities baked into jigsaw pieces** — u_desert's
+  `_mob_/husk.nbt` (one husk per piece, placed over and over by its
+  outpost/ruin pools, the same way its outposts get pillagers) and
+  Philip's `desert_pyramid.nbt` (3 husks each). Placed with the chunk,
+  no tags, no spawn event (same path as the Lost City horses). Once
+  yesterday's one-tag gating put those structures in every biome, the
+  supply near the base exploded — and `mob_aggro.js` matched wave mobs
+  by *type only*, so its stray-correction (any roster-type mob >90
+  blocks from the pedestal → teleported to 20-40 blocks from it, every
+  5 s, regardless of border) hoovered every baked husk in loaded chunks
+  to the base, then forced them onto the pedestal with the player
+  standing on it. The 23/15 pillagers/vindicators in the same saves,
+  equally untagged, stayed exactly where they were — they're not
+  roster types, which is the whole tell.
+
+**Fix — the rule the user stated, made literal: only a mob positively
+identified as wave-spawned is ever touched.** `td_wave_mob` (set at
+`wave_spawner.js`'s summon point since 2026-09-01) is now required in
+every phase by every consumer — `mob_aggro.js`'s strip/target/stray
+loop, `wave_status.js`'s "hostiles remaining" counter, and
+`wave_spawner.js`'s Wave Horn reuse gate (`nearbyWaveMobCount`, the
+`requireTag` parameter removed). The endless-phase type-only fallback
+that existed because Undead Nights' `spawn_horde` mobs couldn't carry
+the tag is gone: decompiled the mod first — `SpawnHordeCommand` →
+`SpawnProcess.synchronousHordeSpawner` → `spawnHordeImplementation`
+loops `spawnHordeMob` for the whole horde *inside the command call*
+(only cave-spawn searching is asynchronous, and this pack keeps it
+off) — so `wave_spawner.js` now snapshots every untagged roster-type
+UUID the instant before issuing `spawn_horde`, then tags every
+roster-type mob not in that snapshot within 128 blocks of the player
+as `td_wave_mob` immediately after the command returns, with a
+5-second tick-window sweep as a safety net (`tdTagHordeMobs`). Known,
+accepted edge: a structure mob whose chunk loads inside that 5 s and
+128 blocks gets conscripted into the wave. Structure mobs — spawner
+guards and baked pieces alike — now keep their own AI wherever they
+are: ESM's 64-block awareness makes a ruin genuinely dangerous to walk
+into, and nothing drags its occupants home. The Forge spawn-type route
+was checked and ruled out first: this Forge build stamps no spawn-type
+data on any of these mobs (empty `ForgeData` on all 91), so no
+"origin" signal exists to key on — positive wave identification was
+the only sound design.
+
+Also fixed while in the log: `bounty_kills.js`'s `bqBoxInt` was still
+a `function` declaration nested in a `try` — the exact Rhino hoisting
+bug this file already documents and fixed for `bqTaskForId` — so
+"progress-display reflection unavailable: bqBoxInt is not a function"
+fired on every boot and the bounty counter display has never worked
+live. Same one-line `var` fix.
+
+**Verified**: `node --check` clean on all five touched scripts; the
+same throwaway sandbox booted with the six live scripts and reported
+them loaded with zero errors (Rhino's own parse — the check Node can't
+do). **Not verifiable here, needs the user**: the actual in-play
+behaviour (no mobs at spawn-in; ruins keep their husks; a horn'd
+endless wave still counts, targets and clears correctly with the new
+tagging) — no connected player in this environment, same standing
+caveat. Existing worlds keep their already-dragged husks; this is a
+fresh-world fix.
+
+**Wasteland re-skin + one-tag structure gating — spec 2026-09-10, ready
+to build, not sent.** Direct ask: "review the biome decision for the
+world gen... structure generation and variation is subject to which
+biome these structures are compatible with. How can I leverage fun and
+varied structure generation with the flat, wasteland look and feel."
+Direction confirmed with the user (2 AskUserQuestion, both the
+recommended option): **varied wasteland** (dead-grass plains/meadow as
+the base, badlands kept as red/orange accents, desert sparse) and
+**every active structure gated to one pack-owned tag**.
+
+**Real audit, read from every installed structure mod's own
+`worldgen/structure/*.json` + biome tags in the jars, not guessed** —
+against the current 5 in-world biomes (plains, sunflower_plains,
+meadow, desert, badlands; `overworld.json`'s 7 noise points):
+- *Reachable now*: nearly everything, because the biome set was already
+  picked for structure-tag frequency (IDEAS.md's BOP entry) and plains
+  is the workhorse — `#forge:is_plains`/`#berezka_api:is_plains` (all 8
+  postapocalypse_structures + abandoned_structures pieces), every
+  abandoned_urban set except fire_tower, both watchtowers, all of Lost
+  City's city/post/roads/rails/factory/train/survivorscamp/villages,
+  and every Philip's Ruins surface set that lists plains.
+- *Starved*: the whole desert/badlands-only set — Philip's
+  `desert_structures`/`sand_house`/`badlands_structures`, u_desert's
+  `desert_ruin`/`oasis`/`pillager_outpost`/`skeleton` (`#c:is_desert`
+  fallbacks only) and `geyser` (badlands). Alive on paper, ~0% in the
+  sampled origin area since the 2026-09-08 biome cut — the trade-off
+  accepted 2026-09-09.
+- *Dead outright, in ACTIVE structure_sets*: `the_lost_city:tower`
+  (forest/taiga only), `the_lost_city:camp` (`forest` only),
+  `abandoned_urban:fire_tower` (only `meadow` of its 16 biomes is in
+  this world). Philip's `pumpkin_ruins`/`rare_ruin` are also
+  forest/jungle-gated but aren't in any active set — already inert, no
+  action.
+
+**The real problem is that biome ID does two jobs** — terrain look *and*
+structure gating — so every "more desert / less desert" swing chasing a
+wasteland look drags structure availability with it (the whole
+2026-09-08→09 oscillation). Fix: break the coupling. Keep vanilla biome
+IDs so every mod's gating keeps working; change what those biomes
+*look* like, and separately stop letting biome decide what generates.
+
+**A. Biome re-skin** — datapack overrides at
+`data/minecraft/worldgen/biome/{plains,sunflower_plains,meadow}.json`,
+each a verbatim copy of the real 1.20.1 file extracted from the exact
+running server jar (`server-1.20.1-20230612.114412-extra.jar`, same
+versioned-artifact rule the noise-settings rebuild learned the hard
+way), edited only where listed:
+- `effects.grass_color`/`foliage_color` → **badlands' own** 9470285 /
+  10387789 (vanilla's real dead-grass palette, read from its biome
+  JSON — not an invented colour); `water_color` → swamp's 6388580
+  (muddy). Sky/fog left alone.
+- Step-9 (vegetal) features: drop `trees_plains`/`trees_meadow`,
+  `flower_plains`/`flower_meadow`, `patch_sunflower`, `patch_pumpkin`,
+  `patch_sugar_cane`, `patch_tall_grass_2`, `patch_grass_plain`; add
+  `patch_dead_bush_2` and `patch_grass_badlands` (desert/badlands' own
+  sparse-grass and dead-bush placed features — every id here is read
+  from the extracted biome JSONs, none guessed). Keep `glow_lichen`/
+  mushrooms. `spawners` untouched (`no_passive_mobs.js` and the
+  gamerule already own that).
+- Desert and badlands biome JSONs **not overridden** — they're the
+  accents; they already look the part.
+- Surface: extend the pack-owned `overworld_flat.json` `surface_rule`
+  with a plains/sunflower_plains/meadow branch that reuses the exact
+  `wooded_badlands` coarse_dirt noise-threshold pattern already in
+  that file (three `minecraft:surface` noise bands → coarse dirt) —
+  same file, same schema, already proven to load. Optional 4th band →
+  gravel if it reads too uniform.
+- `overworld.json`'s noise points deliberately left as-is (still 2/7
+  desert+badlands). The re-skin changes what "too much desert" even
+  means — retune only after the user has seen it.
+- `playtest_starter_kit.js`'s vegetation-clearing pass stays (one-time,
+  cheap, belt-and-braces) but most of its job moves to the biome layer,
+  world-wide instead of spawn-radius-only.
+- **Invariant, user-stated 2026-09-10: the shallow ground stays exactly
+  as it is** ("I need to keep the 'ground is only 16 blocks deep before
+  bedrock'"). Depth lives in `overworld_flat.json`'s `noise.min_y: -16`
+  / `height: 336` and the two `y_clamped_gradient` density functions
+  (solid at Y1, air by Y3 → ~18 blocks of ground over bedrock). None of
+  those are touched by this build: biome JSONs carry no terrain shaping
+  at all in 1.20.1 (colours, features, spawns only), and the
+  `surface_rule` edit only chooses which block sits at the surface,
+  never how deep it goes. Any future pass that wants to change the
+  look must keep it that way — edit `surface_rule`/biome JSONs, never
+  `noise`/`noise_router`.
+
+**Why not a biome mod instead (asked 2026-09-10, answered, not
+pursued).** "Why don't we leverage a mod that comes with better/more
+diverse biomes — will this help the structure gen mods?" No — it works
+against them. Every structure here gates on *vanilla* biome ids: the
+majority (abandoned_urban, the_lost_city, watchtower_building) use
+explicit lists like `["plains","forest","taiga"]`, which a
+`biomesoplenty:*`/`terralith:*` biome can never satisfy — every chunk
+of mod biome is a chunk those structures can't generate in. Only the
+tag-gated ones (`#forge:is_plains`, `#minecraft:is_forest`, Berezka's
+`is_plains`) would pick up mod biomes, and only if the mod tags its
+biomes into those conventions. Part B (the one-tag override) is what
+actually fixes gating, and it works regardless of which biomes exist —
+biome mod = look, tag override = availability; orthogonal. What a
+biome mod could add is a nicer wasteland *look*, but on this world most
+of it wouldn't render: terrain shape is the pack's flat density
+function and surface blocks come from the pack-owned `surface_rule`
+(BOP's dried-salt ground is a TerraBlender-injected surface rule;
+Terralith's come from its own noise settings — neither applies here),
+so you'd get grass colour + dead trees, which the re-skin already
+delivers with zero new dependencies. The earlier "BOP + TerraBlender
+incompatible" call (this file's own entry further up) was reasoned
+from TerraBlender's design — it injects its own biome source over the
+same overworld file this pack overrides — not tested; noted for
+honesty, doesn't change the answer. **Fallback if the re-skin still
+reads thin after a real look**: cherry-pick one or two specific mod
+biomes *by id* into the pack's own `multi_noise` list, add them to
+`#kubejs:ruins_biomes` so structures still generate there, and
+sandbox-check how one renders under the pack's surface rule before
+committing. **No candidate biomes are named here on purpose** — the
+user asked "which biomes are you targeting?" (2026-09-10) and the
+honest answer was that none had been checked against a real mod's
+1.20.1 biome list; naming one would be exactly the "verify the mod
+actually does the specific thing" mistake this pack keeps catching.
+If this fallback is ever wanted, the first step is pulling the real
+jars (BOP needs TerraBlender loaded, which is its own risk) and listing
+every biome's ground blocks, vegetation features and colours before
+shortlisting. Not in this build, and not started.
+
+**B. One gating tag** — new
+`data/kubejs/tags/worldgen/biome/ruins_biomes.json` = the 5 in-world
+biomes. **Not** the existing `kubejs:wasteland` tag: `BARE_WASTELAND_
+BIOMES` (`playtest_starter_kit.js:129`, used by the anchor-site pick at
+:402) relies on that meaning desert/badlands specifically. Then
+override every *active surface* structure's `worldgen/structure/<id>.json`
+with a verbatim copy of the mod's own file (all fields — `start_pool`,
+`step`, `terrain_adaptation`, `spawn_overrides`, `size`,
+`max_distance_from_center`, any custom `type` fields — an override
+replaces the whole file, same discipline as the structure_set
+overrides) changing only `biomes` → `"#kubejs:ruins_biomes"`. Scope =
+exactly the structure ids named in this pack's own active structure_set
+overrides, ~55 files: abandoned_structures (4), abandoned_urban (7),
+postapocalypse_structures (4), watchtower_building (2), the_lost_city
+surface pieces (big_city_structure, camp, city, factory, post, rails,
+roads, survivorscamp, tower, train, villages_city), Philip's Ruins
+surface sets (ancient_crypt, ancient_dungeon, ancient_ruins,
+ancient_towers, antiquus_crypta, badlands_start_dungeon,
+badlands_structures, desert_structures, field_stone_ruins,
+field_stone_ruins_rocks, level_one/two/three_ruins,
+level_two_ruins_pool, lost_soul_city, start_nether_ruin), u_desert
+(desert_ruin ×3, geyser, oasis, pillager_outpost ×2, skeleton ×3).
+- **Deliberately excluded**: Philip's `underground_structures` set
+  (lost_soul_dungeon/bone_dungeon/underground_structures/sculk_dungeon
+  — deep-dark/underground pieces that need far more than the ~18
+  blocks of ground this world has between its Y1-3 surface and bedrock
+  at -16; widening would surface them or fail, same shape as the
+  unlootable desert-temple problem), `the_lost_city:lighthouse` (deep ocean, none
+  exists), `infinity_city` (its own dimension), all vanilla sets
+  (villages' spacing was widened on purpose for aggro reasons),
+  `supplementaries:way_sign`, `kubejs:base_anchor`.
+- **Density, not glossed over**: today most placement *attempts* fail
+  the biome check; after this they succeed, so effective density rises
+  to the nominal spacing the 2026-09-09 retune was calibrated for. That
+  was the point of the retune, but it's a real change — same fresh-world
+  sandbox boot + crash-log check as every structure change. Expect the
+  Berezka self-heal overlap event more often; that's the mod's own
+  handler, not a crash.
+
+**C. Follow-on decision, deliberately not made here**: once plains reads
+as wasteland, `BARE_WASTELAND_BIOMES` could admit plains/meadow — the
+anchor-site pick would then land the base far nearer origin and the
+long desert hunts (3600+ blocks on some seeds) go away. Left untouched
+in this spec; ask before changing what "wasteland" means to the anchor
+pick.
+
+**Verification plan**: same throwaway sandbox as the spawner build, plus
+the 6 structure mods + Berezka API. Fresh world → clean `Done`;
+`/locate structure` from origin for every revived/un-starved piece
+(`the_lost_city:tower`/`camp`, `abandoned_urban:fire_tower`,
+`philipsruins:desert_structures`, `u_desert:pillager_outpost`) — expect
+real hits within a few hundred blocks where today they're
+absent/3800+ out; `/execute if biome` grid sample confirms biome *ids*
+are unchanged by the override; block-sample a fresh plains chunk for
+zero `oak_log`/flower blocks (feature strip) and real coarse_dirt
+patches. **Real limit**: grass/foliage/water colour is client-side
+rendering — unverifiable here, the user judges it in-game.
+
+**Build results, 2026-09-10 — built the same session, once the user
+picked "do the former" (vanilla-only) over evaluating a biome mod.**
+
+*What shipped* (all under `pack/kubejs/data/`, built by a scratch Node
+script from the real source files, not hand-typed):
+- `minecraft/worldgen/biome/{plains,sunflower_plains,meadow}.json` —
+  verbatim copies from `server-1.20.1-20230612.114412-extra.jar` with
+  exactly the spec'd edits: `grass_color` 9470285 / `foliage_color`
+  10387789 (badlands' own), `water_color` 6388580 (swamp's), step-9
+  vegetal list rebuilt to `[glow_lichen, patch_grass_badlands,
+  patch_dead_bush_2, brown_mushroom_normal, red_mushroom_normal]`
+  (meadow: the first three — it never had mushrooms). Every other step,
+  `spawners`, temperature, sky/fog untouched.
+- `overworld_flat.json`: one 61-line block inserted right after the
+  existing `wooded_badlands` rule in the first floor sequence —
+  plains/sunflower_plains/meadow → the same three `minecraft:surface`
+  noise bands → `coarse_dirt`. `git diff` is exactly that block;
+  `noise.min_y`/`height`/density functions byte-identical (the
+  ground-depth invariant above holds by construction).
+- `kubejs/tags/worldgen/biome/ruins_biomes.json` — the 5 in-world
+  biomes.
+- **52** structure overrides (`<ns>/worldgen/structure/<id>.json`),
+  each a verbatim copy of the mod's own file with only `biomes` →
+  `"#kubejs:ruins_biomes"` — field-diffed against the sources, 52/52
+  only-`biomes`-changed. Four Philip's Ruins sources carry `//`
+  comments (Gson-lenient); stripped, not preserved.
+
+*Real finding while verifying, fixed before shipping — the spec's own
+exclusion rule was right but my set-name filter missed two cases*:
+`philipsruins:ancient_dungeon` (`start_height` absolute **-30**, step
+`underground_structures`, no heightmap projection) and
+`philipsruins:lost_soul_city` (absolute **-40**) are underground pieces
+living in "surface" structure_sets, and both were already active
+*before* this build (`#is_overworld` / plains in their tags). **Where
+they actually go — a real property of this world, not previously
+written down**: the pack overrides the overworld *generator*
+(`noise.min_y: -16`) but not the *dimension type* (still vanilla
+`minecraft:overworld`, `min_y: -64`), so the world is in-bounds from
+-64 up and the noise only fills from -16 — leaving a 48-block air void
+under the bedrock. Confirmed live: `execute if block 19 -60 -115 air`
+passes, bedrock at -14, and a 40×47×40 `/fill` count of the void band
+found zero non-air blocks. Any structure with an absolute negative
+start below -16 generates *in that void* — real blocks, floating,
+sealed off by bedrock, unreachable. Fixed the way the spec intended
+for underground pieces: both structure_sets made inert (`spacing:
+4096, separation: 1`, the established pattern), their two overrides
+dropped (54 → 52); re-boot confirmed `/locate` now puts them 5,286 and
+35,804 blocks out. Safe for quests: `#kubejs:ruins` lists every member
+`required: false` with 50+ alternatives. The other sub-surface starts
+checked and left alone: `ancient_crypt`/`antiquus_crypta` (-5,
+heightmap-projected, buried crypts within the 18-block ground),
+`ancient_ruins` (-1), u_desert's skeletons (-2..-5 — half-buried
+bones, intended). **Not the cause of the log errors, despite first
+looking like it**: the boot log's repeated `HangingEntity at invalid
+position: BlockPos{19,-37,-115}` recurred at the *identical*
+coordinates on a second, different-seed world with those two sets
+inert — so it's seed-independent and not placement-related at all.
+That message comes from `HangingEntity#readAdditionalSaveData` when an
+item frame/painting's baked `TileX/TileY/TileZ` NBT is >16 blocks from
+its real placed position; vanilla has already set the real position
+from `Pos`, so it just logs and carries on. Scanned all 230 structure
+NBTs across the 7 mods with `prismarine-nbt`: 184 hanging entities
+carry absolute tile coords from their authors' build worlds;
+(19,-37,-115) is an item frame in `abandoned_urban:fire_tower.nbt`,
+(738,-55,-704) one in `abandoned_structures:zapravka.nbt`. Purely
+cosmetic log spam, pre-existing mod content — it showed up in this
+boot precisely because this build revived `fire_tower`. Left alone.
+
+*Verified live, real not assumed* — fresh Forge 47.4.10 + KubeJS +
+the 7 structure mods + Berezka/Supplementaries/Moonlight/BountyBags/
+Curios sandbox, brand-new world on the pack's own dimension override:
+- Clean `Done (16.9s)`; no `Unbound values`, no `Feature order cycle`
+  (a scripted pairwise check of every feature step across all 5
+  in-world biomes also found 0 ordering conflicts beforehand).
+- **Gating**: `/locate` from origin — `the_lost_city:tower` **384**
+  blocks, `the_lost_city:camp` **565** (both never generated before:
+  forest/taiga-only), `abandoned_urban:fire_tower` **249** (was
+  meadow-only, nearest meadow 1340 blocks out),
+  `philipsruins:desert_structures` **237** (was 3823),
+  `u_desert:pillager_outpost/standard` **202** (was 4460),
+  `u_desert:oasis` 387, `watchtower_building:abandoned_watchtower` 569,
+  `abandoned_structures:gas_station` 176, `abandoned_brick_house` 226.
+- **Biome ids unchanged and the override source in use**: `locate
+  biome` plains at origin, meadow 1340, desert 2875, badlands 2672;
+  `forest` and `taiga` genuinely "could not find" — this is the pack's
+  multi_noise, not vanilla terrain.
+- **Feature strip + surface**: an 81×81 plains sample at origin,
+  counted with `/fill … replace` — `oak_log` **0** (Y0-7), `dandelion`
+  **0**, `poppy` **0**, `tall_grass` **0**; `dead_bush` **52**,
+  `coarse_dirt` **4051**, `grass_block` **2336** on the surface layer —
+  i.e. ~63% bare coarse dirt / ~37% dead grass. Heavier on dirt than
+  the spec's "patches" wording implied; kept as the first pass, since
+  the user judges the look in-game. Dropping the middle band
+  (-0.1818..0.1818) is the one-line lever if it reads too barren.
+- **Pre-existing noise, not from this build**: the `MobSpawnSettings:
+  Value must be positive: 0` pair comes from The Lost City's own biome
+  JSONs (weight-0 spawner) during Berezka's resource listing; the
+  curios/bountybags/supplementaries errors are the minimal sandbox
+  lacking the pack's scripts and Farmer's Delight.
+- **Not verifiable here, same as spec'd**: the actual grass/foliage/
+  water colours (client-side rendering) and the `u_desert:oasis` —
+  an oasis in dead plains is thematically odd; user chose "everything,
+  one tag," easy to pull back to desert-only if it grates.
+
 ---
 
 ## The amulet

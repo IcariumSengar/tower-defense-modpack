@@ -535,6 +535,23 @@ PlayerEvents.tick(function (event) {
     // exists to pull LOST wave mobs back toward the fight, which would
     // drag a structure guard away from its own structure if it ran here.
     if (e.getTags().contains('td_structure_guard')) return
+    // Real live bug, 2026-09-10 ("attacked by a tonne of mobs when I
+    // spawned in" - 48 husks piled on the spawn point in the save, every
+    // one tagged td_retarget_stripped by this loop, none td_wave_mob):
+    // matching by TYPE alone was never enough. Roster-type mobs also
+    // arrive baked into structure NBTs (u_desert's jigsaw `_mob_/husk`
+    // piece, Philip's desert_pyramid - no tags, no spawn event, no Forge
+    // spawn-type data, confirmed off the save), and once structures
+    // generate in every biome the stray-correction below hoovered every
+    // one of them in loaded chunks to the base, then this forced them
+    // onto the pedestal with the player standing on it. The rule now is
+    // the one the user stated: structure mobs stay in their structures.
+    // Only a mob POSITIVELY identified as wave-spawned - td_wave_mob, set
+    // at wave_spawner.js's own summon point, and swept onto Undead
+    // Nights' horde mobs right after spawn_horde (see tdTagHordeMobs
+    // there) - is ever stripped, targeted, or pulled back. Everything
+    // else keeps its own AI, wherever it is.
+    if (!e.getTags().contains('td_wave_mob')) return
     var ex = e.getX()
     var ez = e.getZ()
 

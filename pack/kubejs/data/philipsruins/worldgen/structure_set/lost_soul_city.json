@@ -8,8 +8,8 @@
   "placement": {
     "type": "minecraft:random_spread",
     "salt": 121229911,
-    "spacing": 14,
-    "separation": 7,
+    "spacing": 4096,
+    "separation": 1,
     "exclusion_zone": {
       "other_set": "kubejs:base_anchor",
       "chunk_count": 9

@@ -399,18 +399,69 @@ function staggerGapForWave(waveNumber) {
 // for why: "regardless of player position" (docs/FEATURES.md's own
 // stated intent for the amulet) can't hold if this still measured
 // distance from the player.
-function nearbyWaveMobCount(origin, level, radius, requireTag) {
+// Endless-phase horde tagging (2026-09-10, real live bug - see
+// mob_aggro.js's td_wave_mob gate comment for the incident). Undead
+// Nights' spawn_horde creates its mobs itself, untagged, so every
+// consumer of "is this a wave mob" used to fall back to type-only
+// matching during waves 9+ - which is indistinguishable from a husk baked
+// into a nearby structure. Fix: snapshot every untagged roster-type
+// entity's UUID the instant spawn_horde is issued, then for
+// HORDE_TAG_WINDOW_TICKS afterwards tag any roster-type mob that was NOT
+// in that snapshot (and isn't a structure guard) as td_wave_mob, within
+// HORDE_TAG_RADIUS of the player - the horde spawns 70-75 blocks out
+// (defaultconfigs/undeadnights-server.toml). A structure mob whose chunk
+// happens to load inside that window and radius gets conscripted into
+// the wave; a bounded, rare edge accepted over type-only matching.
+// Decompiled the mod before sizing this, not guessed: SpawnHordeCommand
+// -> SpawnProcess.synchronousHordeSpawner -> spawnHordeImplementation
+// loops spawnHordeMob for the whole horde INSIDE the command call (the
+// only asynchronous path is the cave-spawn search, which this pack's
+// config keeps off), so every horde mob already exists when spawn_horde
+// returns - the first tdTagHordeMobs call right after the command does
+// the real work, and this window is a 5-second safety net for any mob
+// that lands a tick late.
+var HORDE_TAG_WINDOW_TICKS = 100
+var HORDE_TAG_RADIUS = 128
+var tdHordeTagUntil = 0
+var tdHordeTagSnapshot = {}
+
+function tdSnapshotUntaggedRosterMobs(level) {
+  var snap = {}
+  level.getEntities().forEach(function (e) {
+    if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
+    if (e.getTags().contains('td_wave_mob')) return
+    snap[`${e.uuid}`] = true
+  })
+  return snap
+}
+
+function tdTagHordeMobs(player, level) {
+  var tagged = 0
+  level.getEntities().forEach(function (e) {
+    if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
+    var tags = e.getTags()
+    if (tags.contains('td_wave_mob') || tags.contains('td_structure_guard')) return
+    if (tdHordeTagSnapshot[`${e.uuid}`]) return
+    var dx = e.getX() - player.getX()
+    var dz = e.getZ() - player.getZ()
+    if (dx * dx + dz * dz > HORDE_TAG_RADIUS * HORDE_TAG_RADIUS) return
+    tags.add('td_wave_mob')
+    tagged++
+  })
+  return tagged
+}
+
+// td_wave_mob is required in every phase now (2026-09-10) - the old
+// requireTag=false endless-phase fallback to type-only matching is gone,
+// since tdTagHordeMobs above puts the tag on Undead Nights' mobs too.
+// Takes a plain {x,y,z} origin, not a player - see waveObjective() below
+// for why: "regardless of player position" (docs/FEATURES.md's own
+// stated intent for the amulet) can't hold if this still measured
+// distance from the player.
+function nearbyWaveMobCount(origin, level, radius) {
   return level.getEntities().filter(function (e) {
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
-    // Structure guard mobs (2026-09-10, docs/FEATURES.md's "Structure
-    // spawners for real danger") are tagged `td_structure_guard` directly
-    // in their spawner's own SpawnData NBT - excluded unconditionally,
-    // not just when requireTag is true, since the requireTag===false
-    // branch below (endless phase) is exactly where one of these could
-    // otherwise sit within `radius` of the objective and wrongly block
-    // Wave Horn reuse.
-    if (e.getTags().contains('td_structure_guard')) return false
-    if (requireTag !== false && !e.getTags().contains('td_wave_mob')) return false
+    if (!e.getTags().contains('td_wave_mob')) return false
     // Same fix as wave_status.js - a killed mob lingers ~1 second
     // (death animation) before actual removal, so exclude anything
     // already at 0 health rather than waiting for it to disappear.
@@ -513,7 +564,7 @@ function useWaveHorn(player) {
   // Radius 80 -> 96 (2026-09-09), kept equal to wave_status.js's RADIUS:
   // with the 48-64 spawn band plus the 4-block spreadplayers snap, a
   // freshly spawned mob can legitimately be 68 blocks out.
-  if (nearbyWaveMobCount(objective, level, 96, !isEndlessPhase) > 0 || pendingSpawns.length > 0) {
+  if (nearbyWaveMobCount(objective, level, 96) > 0 || pendingSpawns.length > 0) {
 
     player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
     return
@@ -759,7 +810,17 @@ function useWaveHorn(player) {
       data.putInt('td_lastEndlessLevel', endlessLevel)
       server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
     }
+    // Snapshot BEFORE the command so nothing the horde itself creates is
+    // in it, then open the tagging window (tdTagHordeMobs, run from the
+    // PlayerEvents.tick handler below).
+    tdHordeTagSnapshot = tdSnapshotUntaggedRosterMobs(level)
+    tdHordeTagUntil = currentTick + HORDE_TAG_WINDOW_TICKS
     server.runCommandSilent(`execute as @a at @s run undeadnights spawn_horde`)
+    // The horde spawns synchronously inside that command (see
+    // HORDE_TAG_WINDOW_TICKS's comment), so tag it right here - the tick
+    // window below only mops up stragglers.
+    var hordeTagged = tdTagHordeMobs(player, level)
+    console.log(`wave_spawner.js: endless wave ${waveNumber} - tagged ${hordeTagged} Undead Nights horde mob(s) as td_wave_mob immediately after spawn_horde`)
 
     // Deterministic baseline layer, additive on top of spawn_horde above
     // (see ENDLESS_OTHER_TIERS/pickEndlessOtherType's own comment for the
@@ -928,12 +989,20 @@ BlockEvents.rightClicked(function (event) {
 // within a single tick — even same-type mobs due on the same tick can't
 // collide on the tag (see the comment above summon in the loop below).
 PlayerEvents.tick(function (event) {
-  if (pendingSpawns.length === 0) return
-
   var player = event.entity
   var level = player.getLevel()
-  var server = player.getServer()
   var currentTick = level.getTime()
+
+  // Endless-phase horde tagging window (see tdTagHordeMobs above) -
+  // every 10 ticks while open, same throttle mob_aggro.js uses.
+  if (currentTick <= tdHordeTagUntil && currentTick % 10 === 0) {
+    var newlyTagged = tdTagHordeMobs(player, level)
+    if (newlyTagged > 0) console.log(`wave_spawner.js: tagged ${newlyTagged} Undead Nights horde mob(s) as td_wave_mob`)
+  }
+
+  if (pendingSpawns.length === 0) return
+
+  var server = player.getServer()
   var stillPending = []
 
   pendingSpawns.forEach(function (spawn) {

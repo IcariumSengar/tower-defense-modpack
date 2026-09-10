@@ -106,6 +106,30 @@ fantasy/floating-content swap, both since confirmed shipping)
   and guard the structure (attack you) rather than walking off toward
   the base/pedestal, and does killing one drop a loot bag/count toward
   a Bounty quest like a normal kill.
+- **Structure mobs stay put — fixed 2026-09-10 after the "attacked by a
+  tonne of mobs at spawn" playtest, needs a fresh world to confirm**:
+  the starter house no longer carries a spawner, and only real wave
+  mobs (tagged `td_wave_mob`) are ever pulled toward the pedestal —
+  husks baked into desert ruins/outposts and spawner guards keep their
+  own AI where they are. Check: nothing attacks you at spawn-in; ruins
+  and outposts still have husks/pillagers in them when you walk up;
+  waves 1-8 behave as before; and an endless wave (9+) still shows a
+  live "hostiles remaining" count that reaches 0 and clears — that
+  phase's mobs now get tagged right after the horde spawns, so a wave
+  that never clears or a count stuck above 0 would mean the tagging
+  missed some.
+- **Wasteland re-skin + one-tag structure gating, built 2026-09-10,
+  not yet seen in-game**: plains/sunflower_plains/meadow now use
+  badlands' dead-grass colours, no trees/flowers/tall grass, dead
+  bushes, and ~60% coarse-dirt patches through the surface; every
+  structure generates in every biome. Needs a **fresh world** (biome and
+  structure changes only affect new chunks). Things to judge that
+  couldn't be checked here: does the grass/foliage colour actually read
+  as dead wasteland rather than "sick green"? Is the coarse-dirt ratio
+  too barren (a one-band tweak if so)? Do Lost City towers/camps,
+  fire towers, and the desert ruins/outposts now show up within a few
+  hundred blocks? Does a `u_desert` oasis in dead plains look wrong
+  enough to pull back to desert-only?
 
 **FTB Quests**
 - Book auto-given on first login. "Basics" chapter (12 quests including

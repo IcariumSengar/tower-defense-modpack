@@ -305,7 +305,11 @@ function bqInitProgressReflection(anyObj) {
     // getValue() writeup), so idLong below needs no extra boxing step.
     var longParseLongMethod = longCls.getMethod('parseLong', [stringCls, intPrimitiveCls])
     var intValueOfMethod = intCls.getMethod('valueOf', [stringCls])
-    function bqBoxInt(n) {
+    // Same nested-declaration hoisting bug as bqTaskForId just below
+    // (live log 2026-09-10: "bqBoxInt is not a function, it is undefined"
+    // on every boot, silently disabling the whole progress display) -
+    // same fix, a plain `var` assignment.
+    var bqBoxInt = function (n) {
       return intValueOfMethod.invoke(null, [`${n}`])
     }
 

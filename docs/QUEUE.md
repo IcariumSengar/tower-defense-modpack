@@ -973,6 +973,55 @@ full design lands better once Phase 4 is in.
 
 ## Ready to build
 
+**"Attacked by a tonne of mobs when I spawned in" — live playtest
+2026-09-10, root-caused off the save, FIXED same session, deployed to
+live, needs a fresh-world playtest.** Full writeup in FEATURES.md's
+"Base & structures" (entry right after the structure-spawners build
+results). Two real causes: the starter base is placed from the same
+`abandoned_brick_house` template that got a spawner the day before
+(now stripped from the base footprint after placement), and — the real
+volume — 43-48 husks *baked into jigsaw pieces* (u_desert's `_mob_/husk`,
+Philip's desert_pyramid) that `mob_aggro.js`'s type-only matching and
+stray-correction dragged to the base once those structures generated
+everywhere. Fix is the rule you stated: only `td_wave_mob`-tagged mobs
+are ever touched, in every phase; Undead Nights' endless hordes now get
+the tag right after `spawn_horde` (decompiled: it spawns synchronously).
+Structure mobs stay put with their own AI. Also fixed the never-worked
+bounty counter display (`bqBoxInt` hoisting bug, from the same log).
+
+**Wasteland re-skin + one-tag structure gating — BUILT 2026-09-10,
+sandbox-verified (gating, biome ids, feature strip, surface); colours
+need your eyes; deployed to live.** Full spec + "Build results" in
+FEATURES.md's "Base & structures" section (same heading). Real find
+along the way: two Philip's Ruins "surface" sets (`ancient_dungeon`,
+`lost_soul_city`) are underground pieces starting at Y-30/-40 — they
+generate in a 48-block air void that exists *under* the bedrock
+(dimension type -64 vs noise -16), floating and unreachable, already
+doing so before this build; made inert. The `HangingEntity at invalid
+position` log spam is unrelated: baked item-frame tile coords in
+`fire_tower.nbt`/`zapravka.nbt`, cosmetic, pre-existing. Measured surface mix at origin ~63% coarse dirt /
+37% dead grass — the middle noise band is the lever if too barren. User-confirmed direction: varied
+wasteland (dead-grass plains/meadow base, badlands accents, desert
+sparse) + every active surface structure gated to a single
+`#kubejs:ruins_biomes` tag. Real finding behind it, read from the jars:
+the current biome set already reaches most content, but biome ID is
+doing two jobs (look + gating) — that coupling is what caused the
+2026-09-08→09 desert oscillation, and it leaves Lost City `tower`/`camp`
+and Philip's/u_desert's desert pieces dead or starved. Two halves: (A)
+override the 3 green biome JSONs (verbatim from the exact 1.20.1 jar)
+to badlands' own dead-grass colours + stripped trees/flowers + coarse-
+dirt surface bands; (B) ~55 structure JSON overrides changing only
+`biomes`, with underground/ocean/dimension pieces deliberately
+excluded. Density will rise to the retune's nominal spacing — needs
+the usual fresh-world boot + crash check. Colours can't be verified
+here (client-side). One follow-on left open on purpose: whether the
+anchor-site biome preference should then admit plains too. Clarified
+2026-09-10: the ~18-block ground depth (`noise.min_y: -16`, density
+gradients) is an explicit invariant this build never touches; a biome
+mod was asked about and answered — it wouldn't help structure gating
+(they gate on vanilla ids), only the look, and most of a mod biome's
+look wouldn't render under the pack's own flat noise/surface rule.
+
 **Structure spawners for real danger — BUILT 2026-09-10.** Full writeup
 in FEATURES.md's "Base & structures" section (same heading, "Build
 results" sub-entry). Supersedes the two older entries below in this

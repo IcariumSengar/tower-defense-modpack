@@ -1089,6 +1089,17 @@ function buildStarterBase(server, level, x, z) {
   // it for the same stone_bricks the rest of the compound floor uses.
   run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
 
+  // Real live bug, 2026-09-10: this same template is also one of the six
+  // structures that carry a real mob spawner for the structure-danger
+  // feature (docs/FEATURES.md, "Structure spawners for real danger"), and
+  // /place template copies it in verbatim - the player spawns inside its
+  // 14-block trigger range and it fed husks straight into the base
+  // ("slain by Husk" 29s after joining, confirmed in the live log and
+  // the save's own block entities). The base is meant to be the one safe
+  // place; strip any spawner from the whole building footprint right
+  // after placement, so this holds for any future template swap too.
+  run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY + 13} ${buildingZ1} minecraft:air replace minecraft:spawner`)
+
   // Pre-placed Waystone (real live ask, 2026-09-05: one real, findable
   // Waystone from the start, same pre-placement convention as the
   // pedestal/kinetic rig). **Moved 2026-09-09** (direct ask: "put the
