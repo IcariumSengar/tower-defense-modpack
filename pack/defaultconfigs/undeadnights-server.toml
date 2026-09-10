@@ -28,7 +28,13 @@ gracePeriod = 0
 #If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false
 sendHordeNightsCountdownMessage = false
 #If true, the horde has spawned message and the horde sound are enabled | default: true
-hordeSpawnedMessageAndSound = true
+# Set false 2026-09-10 (direct feedback: wave-start chat noise). This flag
+# gates the "A horde has spawned!" chat line AND the horde scream together;
+# wave_spawner.js replays the scream itself at every endless wave start so
+# only the chat line is lost. The mod's other two lines (difficulty set /
+# trying to spawn hordes) are silenced by running those commands as the
+# world-state marker instead of the player - see wave_spawner.js.
+hordeSpawnedMessageAndSound = false
 #Minimum distance a horde will spawn away from the player | default: 70
 #Range: 10 ~ 256
 #Reverted to the mod's own default 2026-09-01, real bug found on the

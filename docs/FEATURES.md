@@ -3221,6 +3221,24 @@ diagnostic detail in `docs/MODS.md` if ever needed again):
 
 ## Hardcore mode
 
+**No respawn, 2026-09-10.** Playtest: "i enabled hardcore mode and i
+died but i was able to respawn." The live log for that death shows the
+hook fired exactly as built (game-over chat, spectator applied, quest
+export) — the gap was the death screen: vanilla only removes the Respawn
+button when the *level* is hardcore, a flag the client receives once at
+login that a runtime toggle can't flip, so Respawn was still offered (and
+led into spectator, which read as "I respawned"). `hardcore_death.js` now
+ends the session instead of the life: 80 ticks after death (the GAME
+OVER title's full fade-in + hold), every online player is disconnected
+with the game-over text as the disconnect reason (KubeJS's
+`ServerPlayer#kick(Component)`, confirmed present in the installed jar;
+vanilla 1.20.1's kick has no host guard). A Respawn clicked inside that
+window kicks immediately from the respawn hook. Reopening the world lands
+in spectator with a GAME OVER reminder title — the "look around what you
+lost" path. Popup framing now matches the pedestal loss: "GAME OVER" is
+the title, the reason ("Hardcore: you have fallen, and nothing caught
+you") its subtitle. Not yet confirmed with a real death since the change.
+
 **Hardcore mode — fully built, real status as of 2026-09-09 (this
 section's own header below is stale, corrected here rather than
 rewritten in place so the history stays readable).** Direct request
@@ -5737,7 +5755,15 @@ from the real file, not impressions):**
    spend what you've got: everything below this point on the tree is
    buildable now."
 10. (18) *"It's Up to You Now"* — keep `03C4E700B07CBC15` (was "The
-    Reckoning"), task → `custom`, auto on `td_starterGearRemoved`. Icon
+    Reckoning"), task → `custom`, auto on `td_starterGearRemoved`.
+    **`invisible: true` since 2026-09-10** (playtest: "it's a spoiler") —
+    FTB Quests' own invisible-until-completed flag, so the node and its
+    diary text only appear the moment wave 5 clears and the gear goes.
+    Because FTB hides any quest whose only dependency is an invisible,
+    incomplete quest (`Quest.isVisible` → `anyMatch(dep.isVisible)`,
+    decompiled), The Last Written Wave and the Tier 3 rib's first node
+    were re-pointed to depend on Three Down instead, so they stay
+    visible-but-locked before wave 5. Icon
     `minecraft:netherite_sword` (Damage 0), rewards golden apple + 1
     rare bag + 5 levels (drops the old waystone/totem: the boss drops
     the totem, wave 8 gives the waystone). *(diary)* "Five waves.
@@ -5806,7 +5832,11 @@ depends on Three Down:**
 
 **Know Your Enemy rib (diamond, y=-6, dark-red panel), x = 6 + 1.5·i,
 chained in order of first appearance, first node depends on Thin the
-Horde. Icons are the real spawn eggs (`minecraft:*_spawn_egg`,
+Horde. *Boomer Zombie (7) removed 2026-09-10* — the mob was pulled from
+every wave on 2026-09-09, so its kill quest was uncompletable; Elite
+Zombie now chains off Split Head Zombie, the seven nodes after it shift
+left one slot (rib now 14 nodes, x = 6..25.5, panel width 23 centred at
+15.75), and Three Down's text no longer promises a Boomer at wave 4. Icons are the real spawn eggs (`minecraft:*_spawn_egg`,
 `mutantszombies:*_spawn_egg`, `undeadnights:*_spawn_egg`,
 `zombiesmore:boomer_zombie_spawn_egg`). Kill tasks; counts and
 rewards as listed. No bag-tier claims anywhere (odds are flat).**
@@ -7621,6 +7651,22 @@ to here for.
 
 ### Realistic Airdrop - real mod verification, not trusted from the spec
 
+**"Airdrop incoming" cues, 2026-09-10** (playtest: "it dropped but i
+missed the plane coming over and stuff, i want to know when to look
+up"). The old single "SUPPLIES INBOUND" title fired in the same tick as
+the wave-cleared popup (and, at wave 5, the gear-removal title) and was
+overwritten before it could be read. `wave_airdrop.js` now only
+*schedules* the drop on wave clear (`td_airdropDueTick`, 240 ticks out,
+past both the wave-clear popup and the queued wave-5 follow-up) and
+launches the plane from its own tick handler with a "LOOK UP / Supply
+plane inbound" title plus a bell at every player. The falling crate is a
+real entity (`dyairdrop:airdrop`, summoned by the plane at tick 105 of
+its flight — decompiled `PlaneticksneoProcedure`) that the mod swaps
+for the crate block + Xaero waypoint on landing, so a 10-tick poll while
+a drop is in flight (`td_airdropWatch`) turns "crate seen, then gone"
+into a "Supply crate down - it's marked on your map" subtitle. The
+mod's own plane sound and coordinates chat line are untouched.
+
 The spec's own "already-verified facts" (only two 1.20.1 files existed,
 both CurseForge Beta) turned out to be stale - re-checked directly
 against CurseForge via `api.cfwidget.com` (no API key needed, real file
@@ -7802,7 +7848,7 @@ spec before picking one:
   stretch (stays undefended by design) and a small buffer either side of
   the gate opening.
 
-### Slime Trap - evaluated, built as a minor Tier 1 addition
+### Slime Trap - evaluated, built as a minor Tier 1 addition (REMOVED 2026-09-10 with the Bear Trap, on feedback - see QUEUE.md's 19-item batch, item 17)
 
 Decompiled `SlimeTrapBlock.class`/
 `SlimeTrapEntityCollidesInTheBlockProcedure.class`: zero damage, a weak
@@ -8547,3 +8593,67 @@ after the snap). Deployed to the live instance's `kubejs/server_scripts`
 at 14:05 (the five files only). Not yet confirmed in play; the band's
 full 48-64 needs a fresh world (an existing world keeps its smaller
 border, so the band stays clamped there).
+
+## Second playtest feedback batch, 2026-09-10 (19 items) - real findings
+
+Tracking checklist lives in QUEUE.md ("19-item playtest feedback batch");
+this entry records only the things that change how the pack is
+understood, each verified against the installed artifact:
+
+- **FTB Quests 2001.4.22 `CustomTask` does not persist `max_progress`.**
+  It has `maxProgress`/`setMaxProgress(long)` and syncs it over the
+  network, but no `readData` override - the snbt key is ignored and every
+  custom task loads with max 1. Any script that calls
+  `TeamData.setProgress` on a custom task therefore completes it on the
+  first increment unless it sets the max itself first.
+  `bounty_kills.js` now does (`bqApplyMaxProgress`, at
+  `ServerEvents.loaded`, which KubeJS posts at SERVER_STARTING - after
+  FTB Quests' SERVER_BEFORE_START load and before any login sync).
+- **Undead Nights' commands message the source entity directly**
+  (`getEntity().sendSystemMessage`), so `runCommandSilent` can't mute
+  them - but running them `execute as` the world-state marker armor
+  stand does, because vanilla `Entity#sendSystemMessage` is a no-op for
+  non-players. `spawn_horde` with no targets hordes every player in the
+  source's level regardless of who the source is.
+  `hordeSpawnedMessageAndSound=false` drops the third line and the
+  scream; the scream is replayed from `wave_spawner.js`.
+- **Zombie More and Mutants and Zombies both ship natural night spawns
+  for every overworld biome** (`forge:add_spawns` biome modifiers in the
+  jars). That is where the "early boomers" came from - and Explosive/
+  Cursed/Tank Zombies, Spitters and Brutes were spawning the same way.
+  Stripped with `forge:none` overrides under
+  `kubejs/data/<modid>/forge/biome_modifier/`; mobs now come only from
+  waves, hordes and structure spawners. Add this to the mod-readd
+  checklist: a mob mod's `data/<id>/forge/biome_modifier/` folder is an
+  autonomous spawn system.
+- **Two mods are now shipped as constant-patched jars** (see MODS.md):
+  Realistic Airdrop's plane speed (3.0 -> 1.0 blocks/tick; the crate
+  drop is distance-keyed so the landing point is unchanged) and Xaero's
+  World Border's line thickness (4/2 -> 2/1). Neither value is
+  configurable; both were `private static final` constants inlined into
+  bytecode. `tools/patch_class_constants.py` rewrites constant-pool
+  entries by value and refuses ambiguous matches.
+- **Boss waves never fired before this batch**: `boss_wave.js` read the
+  wave number from `player.persistentData` after that state had moved
+  onto the marker entity. Fixed; first boss is wave 10.
+- **Looted supply crates remove themselves** (`wave_airdrop.js`), keyed
+  on the block entity's saved NBT (`LootTable` gone + `Items` empty), not
+  on the item capability - reading the capability would unpack the loot
+  table early.
+- **Endless-phase vocabulary is "Horde N"** everywhere past the written
+  waves (`tdWaveLabel` in `wave_spawner.js`); waves 1-8 keep "Wave N".
+- **Quest-progress carryover is gone** (dropped on feedback); progress is
+  per world.
+- **The quest book now reveals itself progressively**: every dependent
+  quest in Campaign and Bounties carries `hide_until_deps_complete: true`
+  (the user's pick over switching the chapter to linear). Progression
+  stays flexible, so tasks still count before their quest is visible.
+- **Tier 1 is Spike Trap + Barbed Wire**; Slime Trap and Bear Trap quests,
+  recipes and the bear-trap mod are gone. Nothing replaces them by choice.
+- **No Forge 1.20.1 crafting-table mod avoids the Tinkers-style side
+  panel**: Nearby Crafting (panel-free) is Fabric/NeoForge only. Crafting
+  Station Improved stays.
+- **Middle-click sort fails in every container kind** per the user; the
+  proposed fix (held) is Inventory Profiles Next, which has real Forge
+  1.20.1 builds and draws explicit sort buttons.
+- **Round-2 verification**: second sandbox boot after the quest/trap edits - FTB Quests "Loaded 1 chapter groups, 3 chapters, 71 quests" (was 73), 33/33 scripts (32 + a sandbox probe), bounty max progress applied on tick 1 again, no errors; deployed live afterwards.

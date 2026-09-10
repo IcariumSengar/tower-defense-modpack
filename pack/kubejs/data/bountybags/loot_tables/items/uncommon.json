@@ -23,7 +23,8 @@
         { "type": "minecraft:item", "name": "minecraft:netherrack", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 8, "max": 16 } }] },
         { "type": "minecraft:item", "name": "minecraft:arrow", "weight": 25, "functions": [{ "function": "minecraft:set_count", "count": { "min": 8, "max": 16 } }] },
         { "type": "minecraft:item", "name": "minecraft:carrot", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 5 } }] },
-        { "type": "minecraft:item", "name": "kubejs:shrapnel", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] }
+        { "type": "minecraft:item", "name": "kubejs:shrapnel", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 4 } }] },
+        { "type": "minecraft:item", "name": "minecraft:sugar_cane", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 3, "max": 6 } }] }
       ]
     }
   ]

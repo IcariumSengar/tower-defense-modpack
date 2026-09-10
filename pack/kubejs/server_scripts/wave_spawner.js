@@ -287,8 +287,25 @@ var WAVES = [
   // the slot the original proposal gave "Flesh Unseen" - see the real
   // correction in this block's own header comment for why that mob was
   // dropped.
-  [['mutantszombies:crawler', 1], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 3]],
+  // Crawler 1 -> 4 (2026-09-10, direct ask: "more crawlers as it's a new
+  // mob type and I want the player to be taken off guard") - wave 8 is the
+  // Crawler's debut and the only written wave it appears in, so the pack
+  // of four is the beat, not a single scout.
+  [['mutantszombies:crawler', 4], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 3]],
 ]
+
+// Endless-phase vocabulary (2026-09-10, direct ask: the wave-start popup
+// "from wave 8 onwards ... rename this and any other new wave popup to use
+// the horde vocab"). Every player-facing label past the written waves says
+// "Horde N" instead of "Wave N": the start title/subtitle and toast here,
+// the boss title (boss_wave.js), the cleared subtitle and the hostiles
+// action bar (wave_status.js), the countdown, and the one wave-start chat
+// line. Shared as a top-level function (the reliable cross-file idiom in
+// this Rhino build); WAVES is this file's own roster, so "written" is
+// defined in exactly one place.
+function tdWaveLabel(waveNumber) {
+  return (waveNumber > WAVES.length ? 'Horde ' : 'Wave ') + waveNumber
+}
 
 // Also the endless-phase horde roster's own mob set (see
 // undeadnights_horde_mobs_config.json) - kept as a superset, same as
@@ -422,6 +439,11 @@ function staggerGapForWave(waveNumber) {
 // that lands a tick late.
 var HORDE_TAG_WINDOW_TICKS = 100
 var HORDE_TAG_RADIUS = 128
+// The world-state marker (world_state.js's findWorldStateEntity: the
+// td_pedestal_target-tagged armor stand playtest_starter_kit.js creates) -
+// used as the silent command source for Undead Nights' commands, see the
+// chat-noise note in useWaveHorn's endless branch.
+var WAVE_STATE_MARKER_SELECTOR = '@e[type=minecraft:armor_stand,tag=td_pedestal_target,limit=1]'
 var tdHordeTagUntil = 0
 var tdHordeTagSnapshot = {}
 
@@ -806,16 +828,35 @@ function useWaveHorn(player) {
     // only calling `difficulty set` when the level genuinely changes.
     // (`data` is already in scope from this function's own top - see
     // useWaveHorn()'s own opening lines.)
+    // **Chat noise fix, 2026-09-10** (direct ask: "a lot of noise/alerts in
+    // chat when a new wave is started. can it just state that wave x has
+    // started"). Both Undead Nights commands talk to the player directly -
+    // decompiled DifficultyLevelCommand/SpawnHordeCommand: every line
+    // ("Difficulty level set to: Endless N", "Trying to spawn hordes for
+    // all available players.") goes through `source.getEntity()
+    // .sendSystemMessage(...)`, NOT the command source's feedback channel,
+    // so runCommandSilent's suppressed-output flag never touched them. A
+    // vanilla Entity#sendSystemMessage is a no-op for anything that isn't
+    // a ServerPlayer, so the commands now run AS the world-state marker
+    // armor stand (the same entity worldData() lives on): getEntity() is
+    // non-null (no NPE - the real reason `execute as` was needed at all),
+    // the message goes nowhere, and spawn_horde without targets still
+    // hordes every player in the source's level (`getLevel().players()`,
+    // filtered to Player instances - confirmed in the bytecode). The third
+    // line, "A horde has spawned!", is the mod's own hordeSpawnedMessageAndSound
+    // flag (now false in defaultconfigs/undeadnights-server.toml); the horde
+    // scream it also gated is replayed below so the sound survives.
     if (data.getInt('td_lastEndlessLevel') !== endlessLevel) {
       data.putInt('td_lastEndlessLevel', endlessLevel)
-      server.runCommandSilent(`execute as @a at @s run undeadnights difficulty set ${endlessLevel}`)
+      server.runCommandSilent(`execute as ${WAVE_STATE_MARKER_SELECTOR} run undeadnights difficulty set ${endlessLevel}`)
     }
     // Snapshot BEFORE the command so nothing the horde itself creates is
     // in it, then open the tagging window (tdTagHordeMobs, run from the
     // PlayerEvents.tick handler below).
     tdHordeTagSnapshot = tdSnapshotUntaggedRosterMobs(level)
     tdHordeTagUntil = currentTick + HORDE_TAG_WINDOW_TICKS
-    server.runCommandSilent(`execute as @a at @s run undeadnights spawn_horde`)
+    server.runCommandSilent(`execute as ${WAVE_STATE_MARKER_SELECTOR} run undeadnights spawn_horde`)
+    server.runCommandSilent('execute as @a at @s run playsound undeadnights:horde_scream hostile @s ~ ~ ~ 1 1')
     // The horde spawns synchronously inside that command (see
     // HORDE_TAG_WINDOW_TICKS's comment), so tag it right here - the tick
     // window below only mops up stragglers.
@@ -879,9 +920,11 @@ function useWaveHorn(player) {
     // chat window") - the title/subtitle pair below already pops up the
     // wave-start moment itself, this just adds the difficulty/baseline
     // numbers the subtitle's generic text doesn't carry.
-    player.notify(`§6Wave ${waveNumber} - endless horde, difficulty ${endlessLevel}, +${baselineZombieCount + baselineOtherCount} baseline`)
-    server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}","color":"gold","bold":true}`)
-    server.runCommandSilent(`title @a subtitle {"text":"An endless horde approaches...","color":"white"}`)
+    player.notify(`§6${tdWaveLabel(waveNumber)} - difficulty ${endlessLevel}, +${baselineZombieCount + baselineOtherCount} baseline`)
+    server.runCommandSilent(`title @a title {"text":"${tdWaveLabel(waveNumber).toUpperCase()}","color":"gold","bold":true}`)
+    server.runCommandSilent(`title @a subtitle {"text":"The horde approaches...","color":"white"}`)
+    // The one chat line per wave start (2026-09-10) - see the noise note above.
+    server.runCommandSilent(`tellraw @a {"text":"${tdWaveLabel(waveNumber)} has started.","color":"gold"}`)
     // Real placeholder sound, 2026-09-05 - direct ask: something audible
     // at the exact wave-start moment, vanilla bell for now, explicitly
     // swappable for something scarier later. Wired here too, not just
@@ -933,6 +976,10 @@ function useWaveHorn(player) {
   // rather than an unverified KubeJS-specific title API.
   server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"${totalMobs} mobs incoming!","color":"white"}`)
+  // The one chat line per wave start (2026-09-10, direct ask: "can it just
+  // state that wave x has started") - the 2026-09-09 removal took every
+  // chat line out; this puts exactly one back.
+  server.runCommandSilent(`tellraw @a {"text":"Wave ${displayWave} has started.","color":"gold"}`)
   // Real placeholder sound, 2026-09-05 - direct ask: play something when
   // a wave starts, vanilla bell for now, explicitly a placeholder the
   // user may swap for something scarier later.
@@ -1123,5 +1170,11 @@ PlayerEvents.tick(function (event) {
   var minutes = Math.floor(totalSeconds / 60)
   var seconds = totalSeconds % 60
   var secondsDisplay = seconds < 10 ? '0' + seconds : '' + seconds
-  player.setStatusMessage(`§b⏱ Next wave in: ${minutes}:${secondsDisplay}`)
+  // Same action-bar sharing rule as wave_status.js's hostile counter
+  // (2026-09-10): a pedestal under-attack alert between waves - a straggler
+  // or a wandering structure mob at the pedestal - shows here instead of
+  // the countdown for its window, rather than being overwritten by it.
+  var pedestalAlert = pedestalAlertActionbarText(data, currentTick)
+  var nextLabel = data.getInt('td_waveNumber') + 1 > WAVES.length ? 'horde' : 'wave'
+  player.setStatusMessage(pedestalAlert || `§b⏱ Next ${nextLabel} in: ${minutes}:${secondsDisplay}`)
 })

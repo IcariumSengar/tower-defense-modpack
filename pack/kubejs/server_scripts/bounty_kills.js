@@ -81,6 +81,26 @@ var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:generic_kill',
 ]
 
+// **max_progress is NOT read from bounties.snbt - real root cause of "all
+// five bounties completed at once", 2026-09-10.** Decompiled the installed
+// ftb-quests-forge-2001.4.22.jar's CustomTask directly: it has a
+// `maxProgress` field (default 1), a public `setMaxProgress(long)`, and
+// writes/reads it over the NETWORK (writeNetData/readNetData) - but has
+// NO readData/writeData override at all, so the `max_progress: 25L` lines
+// in bounties.snbt are silently ignored and every bounty task loads with
+// max 1. The progress-display sync below (bqSyncPlayerProgress) then did
+// exactly what it was told: setProgress(task, min(killCount, 25)) = 1 on
+// the very first kill, and TeamData.setProgress treats progress >= max as
+// completion - so all five tiers (Zombie Masher included, 1 % 1500 = 1)
+// completed in the same millisecond, confirmed in the live save's
+// ftbquests/<uuid>.snbt (identical timestamps on all five). The fix is
+// bqApplyMaxProgress below: set the real max on each task object via its
+// own public setter, at ServerEvents.loaded (KubeJS posts that at
+// SERVER_STARTING; FTB Quests loads the file at SERVER_BEFORE_START, and
+// the client receives maxProgress in the login sync AFTER both - so the
+// bar reads x/25, not x/1). The snbt `max_progress` values are left in
+// place as documentation of intent; they do nothing on their own.
+//
 // bounties.snbt's tasks are `type: "custom"`, not "checkmark" (2026-09-08
 // fix, real ask: bounties should complete on the kill event, not be
 // clickable). Decompiled dev/ftb/mods/ftbquests/quest/task/CheckmarkTask
@@ -195,9 +215,9 @@ EntityEvents.death((event) => {
 // change_progress <players> complete|reset <id>`, no "set progress to N"
 // subcommand exists in this version, which is why the `complete` calls
 // above only ever flip a task from 0 to fully done with nothing showing
-// in between. CustomTask does support a real max_progress + progress bar
-// (now set per-task in bounties.snbt) - it's just never been populated
-// because nothing calls the set-progress command that doesn't exist.
+// in between. CustomTask does support a real max progress + progress bar -
+// but NOT via the snbt file (see the max_progress note near the top of
+// this file); bqApplyMaxProgress sets it through the task's own setter.
 //
 // Fix: reach `TeamData.setProgress(Task, long)` directly via reflection,
 // the same Class.forName bootstrap this codebase already uses elsewhere
@@ -227,6 +247,7 @@ var bqGetOrCreateTeamDataMethod = null
 var bqIsCompletedMethod = null
 var bqSetProgressMethod = null
 var bqLongValueOfMethod = null
+var bqSetMaxProgressMethod = null
 // {task: <CustomTask>, threshold: <number>} per fixed tier, plus the
 // repeatable task on its own - resolved once at init via ServerQuestFile's
 // own getBase(long), not re-looked-up on every kill. threshold itself
@@ -251,9 +272,16 @@ function bqBoxLong(n) {
   return bqLongValueOfMethod.invoke(null, [`${n}`])
 }
 
+// Returns true once the task objects are resolved. Sets bqProgressInitDone
+// only on success or on a genuine reflection failure - NOT when FTB Quests'
+// ServerQuestFile simply isn't there yet, so the caller can retry.
+// **Timing, found in the sandbox 2026-09-10:** at KubeJS ServerEvents.loaded
+// FTB Quests has no ServerQuestFile.INSTANCE yet (Method#invoke on a null
+// target -> "Cannot invoke Object.getClass() because obj is null"), so the
+// first real chance is the first server tick after "Done", which still
+// precedes any client's login sync - see the ServerEvents.tick handler.
 function bqInitProgressReflection(anyObj) {
-  if (bqProgressInitDone) return
-  bqProgressInitDone = true
+  if (bqProgressInitDone) return bqProgressAvailable
   try {
     var serverQuestFileCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.ServerQuestFile')
     var teamDataCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.TeamData')
@@ -267,6 +295,7 @@ function bqInitProgressReflection(anyObj) {
     var intPrimitiveCls = intCls.getField('TYPE').get(null)
 
     bqServerQuestFileInstance = serverQuestFileCls.getField('INSTANCE').get(null)
+    if (!bqServerQuestFileInstance) return false // not loaded yet - retry later
     var getBaseMethod = serverQuestFileCls.getMethod('getBase', [longPrimitiveCls])
     bqGetOrCreateTeamDataMethod = serverQuestFileCls.getMethod('getOrCreateTeamData', [entityCls])
     bqIsCompletedMethod = teamDataCls.getMethod('isCompleted', [questObjectCls])
@@ -330,14 +359,54 @@ function bqInitProgressReflection(anyObj) {
       return getBaseMethod.invoke(bqServerQuestFileInstance, [idLong])
     }
 
+    var resolved = []
     BOUNTY_FIXED_TIERS.forEach((tier) => {
-      bqFixedTierTasks.push({ task: bqTaskForId(tier.taskId), threshold: tier.threshold })
+      resolved.push({ task: bqTaskForId(tier.taskId), threshold: tier.threshold })
     })
-    bqRepeatableTask = bqTaskForId(BOUNTY_REPEATABLE_TASK_ID)
+    var repeatable = bqTaskForId(BOUNTY_REPEATABLE_TASK_ID)
+    if (repeatable === null || resolved.some((entry) => entry.task === null)) return false // file exists but isn't populated yet
+    bqFixedTierTasks = resolved
+    bqRepeatableTask = repeatable
+
+    // CustomTask#setMaxProgress(long) - public, clean name (FTB Quests is
+    // not SRG-obfuscated), resolved off the task's own runtime class.
+    var customTaskCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.task.CustomTask')
+    bqSetMaxProgressMethod = customTaskCls.getMethod('setMaxProgress', [longPrimitiveCls])
+    bqProgressInitDone = true
+    bqApplyMaxProgress()
+    return true
   } catch (e) {
+    bqProgressInitDone = true
     bqProgressAvailable = false
     console.log(`[bounty_kills] progress-display reflection unavailable: ${e}`)
+    return false
   }
+}
+
+// First server ticks after "Done": retries bqInitProgressReflection until
+// FTB Quests' file is populated (normally the very first tick), then stops
+// polling. Bounded so a genuinely missing quest file can't keep this alive.
+var bqInitTicksTried = 0
+var BQ_INIT_MAX_TICKS = 1200
+ServerEvents.tick((event) => {
+  if (bqProgressInitDone || bqInitTicksTried >= BQ_INIT_MAX_TICKS) return
+  bqInitTicksTried++
+  if (bqInitProgressReflection(event.server)) console.log(`[bounty_kills] bounty tasks resolved on server tick ${bqInitTicksTried}`)
+  else if (bqInitTicksTried === BQ_INIT_MAX_TICKS) console.log('[bounty_kills] gave up waiting for ServerQuestFile - bounty max progress NOT applied')
+})
+
+// See the max_progress note above BOUNTY_OBJECTIVE. Idempotent - safe to
+// call from ServerEvents.loaded and again from the first player tick.
+function bqApplyMaxProgress() {
+  if (!bqSetMaxProgressMethod) return
+  var applied = []
+  bqFixedTierTasks.forEach((entry) => {
+    bqSetMaxProgressMethod.invoke(entry.task, [bqBoxLong(entry.threshold)])
+    applied.push(`${entry.task.getMaxProgress()}`)
+  })
+  bqSetMaxProgressMethod.invoke(bqRepeatableTask, [bqBoxLong(BOUNTY_REPEATABLE_INTERVAL)])
+  applied.push(`${bqRepeatableTask.getMaxProgress()}`)
+  console.log(`[bounty_kills] bounty task max progress applied: ${applied.join('/')}`)
 }
 
 function bqSyncPlayerProgress(player, killCount) {

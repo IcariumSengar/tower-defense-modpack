@@ -191,7 +191,9 @@ function spawnBoss(player, data, waveNumber) {
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} players @a`)
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} visible true`)
 
-  server.runCommandSilent(`title @a title {"text":"WAVE ${waveNumber}: BOSS","color":"dark_red","bold":true}`)
+  // Endless-phase vocabulary (2026-09-10): tdWaveLabel (wave_spawner.js)
+  // says "Horde N" past the written waves, so this reads "HORDE 10: BOSS".
+  server.runCommandSilent(`title @a title {"text":"${tdWaveLabel(waveNumber).toUpperCase()}: BOSS","color":"dark_red","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"${BOSS_NAME} has arrived.","color":"red"}`)
   server.runCommandSilent(`tellraw @a {"text":"[Boss] ${BOSS_NAME} is out there somewhere - find it and end it.","color":"red"}`)
   server.runCommandSilent(`playsound ${BOSS_MUSIC} master @a ~ ~ ~ 1 1`)
@@ -202,10 +204,19 @@ function spawnBoss(player, data, waveNumber) {
 // Cadence trigger - watches td_waveNumber (set by wave_spawner.js's
 // useWaveHorn(), both the hand-authored 1-8 path and the endless-phase
 // path) rather than calling into that file directly. Cross-file
-// coordination via persistentData, same established idiom as
+// coordination via the shared world state, same established idiom as
 // wave_status.js's own countdown auto-trigger into wave_spawner.js -
 // keeps this file fully additive, zero edits to the large, mature
-// wave_spawner.js. Throttled every 4 ticks, matching wave_status.js's
+// wave_spawner.js.
+//
+// **Real live bug, fixed 2026-09-10 ("got to wave 11 and didn't see any
+// bosses"):** this read `player.persistentData`, but td_waveNumber moved
+// onto the marker entity (world_state.js's worldData(), the LAN-readiness
+// pass) - the player copy is a stale legacy value, 0 in every new world,
+// so `waveNumber <= 0` returned on every tick and no boss ever spawned.
+// The live log confirms waves 9-12 ran with no "[Boss]" line. Now reads
+// worldData(level) like every other consumer; td_bossLastSpawnedWave moves
+// there with it. Throttled every 4 ticks, matching wave_status.js's
 // own throttle for the same "cheap poll, no need for 20/s precision"
 // reasoning - the isBossAlive() world-entity scan only actually runs
 // when the modulo/dedup guards already pass, i.e. at most once per real
@@ -215,7 +226,8 @@ PlayerEvents.tick((event) => {
   var level = player.getLevel()
   if (level.getTime() % 4 !== 0) return
 
-  var data = player.persistentData
+  var data = worldData(level)
+  if (!data) return
   var waveNumber = data.getInt('td_waveNumber')
   if (waveNumber <= 0) return
   if (waveNumber % BOSS_WAVE_INTERVAL !== 0) return

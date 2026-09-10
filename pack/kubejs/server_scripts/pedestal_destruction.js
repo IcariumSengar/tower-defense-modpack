@@ -77,10 +77,17 @@ function triggerPedestalDestroyed(player) {
   // Same "big on-screen title, chat is easy to miss mid-fight" pattern
   // as every other major beat in this pack (wave-cleared, gear removal,
   // wave-incoming) - matching tone against those, not inventing a new
-  // voice.
-  server.runCommandSilent('title @a title {"text":"THE PEDESTAL HAS FALLEN","color":"red","bold":true}')
-  server.runCommandSilent('title @a subtitle {"text":"Everything it was holding back is gone with it.","color":"gray"}')
-  player.tell('§c§lThe pedestal has fallen.')
+  // voice. One popup since 2026-09-10 (direct feedback: "the pedestal has
+  // fallen popup should be part of the game over message, i.e. that's the
+  // reason for a game over") - GAME OVER is the title, the fallen pedestal
+  // its subtitle, instead of two separate popups five seconds apart that
+  // read as unrelated. Same shape hardcore_death.js uses for its own
+  // ending. The wither sting matches that file too - a run ending should
+  // sound like one, not just appear in text.
+  server.runCommandSilent('title @a title {"text":"GAME OVER","color":"red","bold":true}')
+  server.runCommandSilent('title @a subtitle {"text":"The pedestal has fallen. Everything it was holding back is loose.","color":"red"}')
+  server.runCommandSilent('playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 0.6')
+  player.tell('§c§lGame over - the pedestal has fallen.')
   player.tell('§7Whatever it was keeping in check has nothing left to answer to.')
 
   // Real gap, direct playtest report 2026-09-09: "im not seeing a way to
@@ -97,9 +104,13 @@ function triggerPedestalDestroyed(player) {
   // first is even readable, the exact bug that queue was built to fix
   // for the wave-5/pacing announcements; reusing it here instead of
   // re-inventing the same fix a third time.
-  queueDelayedTitle(player, 'GAME OVER', 'Start a new world to try again - quest book progress carries over automatically.', 'red')
-  hqcExportProgress(player)
-  tellQuestCarryoverTip(player)
+  // Since 2026-09-10 the queued second popup carries only the "what now"
+  // line (empty title, subtitle only - the same empty-title trick
+  // wave_status.js's wave-cleared subtitle uses), because GAME OVER itself
+  // is already the first popup's title above. (The quest-progress
+  // carryover it used to mention was dropped the same day - see
+  // world_state.js.)
+  queueDelayedTitle(player, '', 'Start a new world to try again.', 'red')
 
   // World stays fully playable after the loss - this only blocks the
   // Wave Horn (checked at useWaveHorn()'s own top, wave_spawner.js),

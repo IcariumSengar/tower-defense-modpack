@@ -274,7 +274,7 @@
 			y: 3.0d
 		}
 		{
-			description: ["Run /hardcore enable to flip on real permadeath for this world - optional, and off by default. Die with it on and no Totem of Undying saves you, and the run is over for good."]
+			description: ["Run /hardcore enable to flip on real permadeath for this world - optional, and off by default. Die with it on and no Totem of Undying saves you, and the run is over for good: no respawn, you are dropped out of the world, and it only ever opens again as a spectator."]
 			icon: "minecraft:totem_of_undying"
 			id: "5A1D9C3E7F208B46"
 			rewards: [

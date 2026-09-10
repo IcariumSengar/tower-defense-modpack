@@ -443,6 +443,10 @@ var STRAY_RETURN_MAX = 40
 var STRAY_RETURN_PADDING = 4
 var STRAY_CHECK_INTERVAL = 100 // 5 real seconds - not time-critical to catch instantly
 
+// See the retaliation block in the tick handler below (2026-09-10).
+var AGGRO_RETALIATION_TICKS = 160 // 8s of chasing whoever hit it, per hit
+var aggroRetaliation = {} // mob uuid -> level tick the current retaliation window ends
+
 function isInsideCompoundBounds(data, px, pz) {
   if (!data.contains('td_compoundX0')) return false
   var pad = STRAY_RETURN_PADDING
@@ -580,6 +584,44 @@ PlayerEvents.tick(function (event) {
     var isBlockingPath = dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
     var desiredTarget = isBlockingPath ? player : aggroTarget
 
+    // Retaliation actually held for a while (2026-09-10). Real playtest
+    // finding behind "enemies don't climb the ladder, get stuck": the
+    // 2026-09-04 decision kept HurtByTargetGoal alive so a mob "fights
+    // back if hit" - but this very re-assert below undid it within 10
+    // ticks, every time (a retaliating mob's target is the player, which
+    // never equals the marker, so it was forced straight back). In play
+    // that meant a player on the wall top shooting down was never chased
+    // for more than half a second, and only the one mob standing directly
+    // underneath (inside MELEE_BLOCK_RANGE in 3D) ever kept the player as
+    // its target long enough for ladder_climb_assist.js to act on it -
+    // exactly the "one mob climbed, the rest got stuck" report. A stripped
+    // wave mob can only ever acquire a PLAYER target from this handler's
+    // own blocking-path rule or from HurtByTargetGoal, so "current target
+    // is a player and it isn't our doing" IS the retaliation signal - no
+    // damage-source reflection needed. Honoured for a bounded window from
+    // the moment it's first seen (AGGRO_RETALIATION_TICKS), then the
+    // marker is re-asserted as before; the next hit starts a fresh window,
+    // so a player who keeps shooting keeps their attention, and one who
+    // stops loses it again. Window tracked in a plain per-file map keyed by
+    // uuid, same idiom as ladder_climb_assist.js's own state.
+    var currentTarget = e.getTarget()
+    var currentTargetUuid = currentTarget ? `${currentTarget.uuid}` : null
+    var mobUuid = `${e.uuid}`
+    if (!isBlockingPath && currentTarget && `${currentTarget.type}` === 'minecraft:player') {
+      var retaliateUntil = aggroRetaliation[mobUuid]
+      if (retaliateUntil === undefined) {
+        retaliateUntil = level.getTime() + AGGRO_RETALIATION_TICKS
+        aggroRetaliation[mobUuid] = retaliateUntil
+      }
+      if (level.getTime() < retaliateUntil) {
+        desiredTarget = currentTarget
+      } else {
+        delete aggroRetaliation[mobUuid]
+      }
+    } else if (aggroRetaliation[mobUuid] !== undefined) {
+      delete aggroRetaliation[mobUuid]
+    }
+
     // Real fix, 2026-09-05 (live report + a real controlled sandbox
     // test: "walling off the base is easy" - wave-6+ digger/climber
     // mobs never actually breach a wall despite the correctly-extended
@@ -600,8 +642,6 @@ PlayerEvents.tick(function (event) {
     // actually changed the target (the original "enforce forced
     // targeting" safety net this handler exists for), just skips the
     // call entirely when nothing needs to change.
-    var currentTarget = e.getTarget()
-    var currentTargetUuid = currentTarget ? `${currentTarget.uuid}` : null
     if (currentTargetUuid !== `${desiredTarget.uuid}`) {
       e.setTarget(desiredTarget)
     }

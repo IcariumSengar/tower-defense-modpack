@@ -60,8 +60,29 @@ forces the real generator via a datapack override regardless.
   never closer, since 2026-09-09) and walk in, staggered, with a sound
   cue before each — nothing should ever appear inside or against the
   compound walls.
-- Boomer Zombie arming is audible only (a TNT fuse hiss at the mob) —
-  the red "ARMED" popup was removed 2026-09-09.
+- Boomer Zombies are out of every wave (pulled 2026-09-09 for balance)
+  and out of the quest book (2026-09-10) — seeing one anywhere is a bug.
+- **Enemies climb ladders — rebuilt 2026-09-10, first pass mostly
+  failed, re-fixed same day (retaliation now holds for 8s per hit in
+  `mob_aggro.js`).** Stand on the wall top and shoot a wave mob: for the
+  next 8 seconds it should chase you instead of the pedestal, walk to
+  the foot of the nearest ladder that reaches your height, press into it
+  and climb, then step off at the top. Stop hitting it and it should go
+  back to the pedestal after ~8s. Watch for: mobs still bouncing between
+  you and the pedestal, mobs bobbing at the top without stepping off.
+  **Known limit**: wide mobs (Mutant Brute, Mutant Zombie) can't fit
+  their feet into a ladder column against a wall and will never climb.
+- **Airdrop cues — 2026-09-10, not yet seen in play.** On a wave-5/10/15
+  clear the plane no longer launches in the same instant as the
+  wave-cleared popup: 12 seconds later a "LOOK UP" title + bell sound
+  fires as the plane spawns (the plane's own engine sound plays too),
+  and a "Supply crate down - it's marked on your map" subtitle fires the
+  moment the crate lands. Check the "LOOK UP" actually precedes the plane
+  passing overhead, and that the landing line fires once, not repeatedly.
+- **Pedestal under-attack alert is now action-bar text** (2026-09-10, the
+  second "smaller font" ask) — it replaces the hostiles-remaining counter
+  / next-wave countdown line for 4 seconds, with the same anvil sound and
+  gold chat line. Confirm it's readable and that the counter comes back.
 
 **The amulet + pedestal**
 - Amulet starts unequipped in inventory (not auto-equipped — this was
@@ -75,8 +96,9 @@ forces the real generator via a datapack override regardless.
   pixel-verified — worth a visual check.
 
 **Tier 1 defenses**
-- Craft Trapcraft's Spikes and Bear Trap (both from Common-tier loot
-  materials) and plain vanilla oak fence. Bear Trap should hold a mob in
+- Craft the Spike Trap (4 sticks + 1 iron ingot) and plain vanilla oak
+  fence. (Bear Trap and Slime Trap were removed 2026-09-10; the old Bear
+  Trap check below is history.) Bear Trap should hold a mob in
   place on contact and be resettable; Spikes should damage on contact.
 
 **Structure generation** (rebuilt twice — desert-only dropped, then a
@@ -131,7 +153,61 @@ fantasy/floating-content swap, both since confirmed shipping)
   hundred blocks? Does a `u_desert` oasis in dead plains look wrong
   enough to pull back to desert-only?
 
+**Game over / hardcore (2026-09-10 rework, needs a real death to confirm)**
+- Pedestal destroyed: one popup — "GAME OVER" with "The pedestal has
+  fallen" as its subtitle and a wither sting — then a "start a new world"
+  subtitle 5 seconds later. Not two separate popups any more.
+- `/hardcore enable`, then die: "GAME OVER / Hardcore: you have fallen"
+  on the death screen, then ~4 seconds later you are disconnected from
+  the world with the game-over text as the reason. **You should never get
+  a working Respawn** — clicking it inside those 4 seconds should
+  disconnect you immediately instead. Reopening the world drops you in
+  as a spectator with a GAME OVER reminder. Quest progress does NOT
+  carry into a new world (the carryover feature was dropped 2026-09-10).
+
+**Second batch, 2026-09-10 (19 items) — what to look for**
+- Chat at a wave start is exactly one line, "Wave 3 has started." /
+  "Horde 9 has started." — no "Difficulty level set to", no "Trying to
+  spawn hordes", no "A horde has spawned!". The horde scream should still
+  play at an endless wave start.
+- Past wave 8 every label says Horde: "HORDE 9" / "The horde
+  approaches...", "HORDE 9 CLEARED", the hostiles bar, "Next horde in",
+  and "HORDE 10: BOSS".
+- Wave 10 brings The Behemoth (bossbar, pigstep, "[Boss]" line). It never
+  spawned before this batch.
+- Wave 8 has four Crawlers.
+- The supply plane is about three times slower (roughly 7 s in view);
+  the crate should still land 10-30 blocks from you. Once you've taken
+  everything out of the crate it puffs away on its own within a second.
+- The world-border line on the world map (M) is half as thick and light
+  blue instead of red.
+- No Boomers, Explosive/Cursed/Tank Zombies, Brutes or Spitters wandering
+  in at night outside the waves — they only arrive with a wave, a horde,
+  or from a structure spawner.
+- Legendary bags hand out a Totem of Undying far less often (~1 in 8 bags).
+- The Last Written Wave and The Behemoth quest texts are spoiler-free.
+- The quest book reveals itself as you go: on a fresh world only You're
+  On Your Own is visible; each quest appears when the one before it
+  completes (the tinted rib panels stay visible as empty placeholders).
+  Bounties show one tier at a time.
+- Tier 1 is Spike Trap and Barbed Wire only - no Slime Trap or Bear Trap
+  quests, no bear trap in JEI. The starter base still has its Stake Walls.
+
 **FTB Quests**
+- "Open It" should tick the moment you right-click any loot bag, and
+  "Wear It" the moment the amulet goes into the Curios slot (both were
+  silently broken until 2026-09-10 — a UUID-addressed command FTB Quests
+  rejects). On a world where you already tried them, each gets exactly
+  one retry: open another bag / re-equip the amulet.
+- Bounty tasks show a real item icon (rotten flesh, swords, legendary
+  bag) instead of FTB's rainbow "custom" placeholder, and a kill counter
+  that fills 1/25, 2/25... First Blood should complete at exactly 25
+  kills, Exterminator at 100 — NOT all five on the first kill (that was
+  the 2026-09-10 max-progress bug, fixed the same day).
+- "It's Up to You Now" is invisible until wave 5 clears, then appears
+  between Three Down and The Last Written Wave with its diary text. The
+  Tier 3 rib and The Last Written Wave now hang off Three Down, so they
+  should still be visible (locked) before wave 5.
 - Book auto-given on first login. "Basics" chapter (12 quests including
   2 amulet side-quests) and "Tier 1" chapter (2 quests, both gated on
   Basics quest 6) should both be present and gate correctly.

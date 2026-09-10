@@ -2443,3 +2443,44 @@ rather than chasing it a third time.
 4. Once it's actually installed via `packwiz modrinth add` /
    `packwiz curseforge add`, status flips to `testing`; once played and
    confirmed working, `confirmed`.
+
+## Patched jars, 2026-09-10 (plain files in `pack/mods/`, no packwiz metafile)
+
+Both replace a packwiz metafile that was removed the same day; both were
+made with `tools/patch_class_constants.py` from the exact jar the live
+instance had installed, then javap-verified (constant pool shows the new
+value, class still parses, entry counts match). Neither mod exposes the
+value in any config - they were `private static final` constants
+inlined into bytecode, confirmed by decompiling.
+
+- `dyairdrop-1.1.0-1.20.1-beta-tdslowplane.jar` (Realistic Airdrop,
+  CurseForge file 7689163): `net/mcreator/dyairdrop/procedures/
+  PlaneticksProcedure.class`, Double 3.0 -> 1.0 - the plane's per-tick
+  velocity (re-asserted every 5 ticks). The crate drop is keyed on
+  distance flown (`dpassed == length`) and despawn on 2x the drop tick,
+  so only the speed changes. Retune: rerun the tool with `D:1.0=<new>`.
+- `xaeroworldborder-1.0.0-tdthin.jar` (Modrinth vfOkGQEG):
+  `dev/alazi/xaeroworldborder/client/map/WorldBorderElementRenderer.class`,
+  Doubles 4.0 -> 2.0 and 2.0 -> 1.0 (outline / core line widths) and
+  Integer -788582352 -> -799670273 (core colour 0xD0FF3030 red ->
+  0xD055FFFF light blue, chosen 2026-09-10). The outline is the other
+  Integer, -1879048192 (0x90000000); to recolour again patch from the
+  ORIGINAL jar (Modrinth vfOkGQEG / z9DhUpQg) with
+  `I:-788582352=<ARGB as signed int>` plus the two Double specs. The jar's `WorldBorderMapOverlay`
+  class is never registered (dead code); leave it.
+
+If either mod is updated, the patch has to be redone against the new
+jar (the tool aborts unless each value matches exactly once). The
+CurseForge app may re-download the original jar on a profile repair -
+delete it again if a plain `dyairdrop-1.1.0-1.20.1-beta.jar` or
+`xaeroworldborder-1.0.0.jar` reappears next to the patched one.
+
+## Removed 2026-09-10: V01D's Bear Traps
+
+`packwiz remove v01ds-bear-traps`, jar deleted from the live instance.
+Only ever used for the Tier 1 "Something Crueler" quest and its
+hand-written recipe; both were removed on direct feedback ("not great",
+"remove them, no replacement"). Simply Traps stays (Spike Trap, Stake
+Wall); its Slime Trap block is still registered but has no recipe and no
+quest. Worlds that still contain a placed bear trap get Forge's one-time
+"missing registry entries" prompt and the block becomes air.

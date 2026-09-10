@@ -352,7 +352,13 @@ PlayerEvents.tick((event) => {
   const wasInWave = data.getBoolean('td_inWave')
 
   if (hostileCount > 0) {
-    player.setStatusMessage(`§c⚔ Wave ${waveNumber} — Hostiles remaining: ${hostileCount}`)
+    // The pedestal under-attack alert rides the action bar since
+    // 2026-09-10 (pedestal_health.js's firePedestalAlert - direct ask for
+    // a smaller font). This counter rewrites the bar 5x/second and would
+    // wipe it instantly, so while that alert's window is open it shows
+    // the alert line instead of the count.
+    var pedestalAlert = pedestalAlertActionbarText(data, level.getTime())
+    player.setStatusMessage(pedestalAlert || `§c⚔ ${tdWaveLabel(waveNumber)} — Hostiles remaining: ${hostileCount}`)
     if (!wasInWave) {
       data.putBoolean('td_inWave', true)
     }
@@ -369,7 +375,8 @@ PlayerEvents.tick((event) => {
     // nothing since the text is blank. Subtitle text itself already
     // renders at vanilla's smaller fixed HUD scale vs. the title line.
     player.getServer().runCommandSilent(`title @a title {"text":""}`)
-    player.getServer().runCommandSilent(`title @a subtitle {"text":"WAVE ${waveNumber} CLEARED","color":"green","bold":true}`)
+    // "HORDE N CLEARED" past the written waves - tdWaveLabel, wave_spawner.js.
+    player.getServer().runCommandSilent(`title @a subtitle {"text":"${tdWaveLabel(waveNumber).toUpperCase()} CLEARED","color":"green","bold":true}`)
     // Real live ask, 2026-09-05: persistent HUD element for waves
     // cleared, not just this title/chat moment - the sidebar objective
     // itself is created once at login in playtest_starter_kit.js, real

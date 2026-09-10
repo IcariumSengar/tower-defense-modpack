@@ -76,12 +76,32 @@ function qmCompleteShared(server, data, key) {
 }
 
 // Per-player milestone: flag on the player's own persistentData.
+//
+// **Real bug fixed 2026-09-10** (direct playtest reports, both at once:
+// "the open it quest isnt triggering on opening a loot bag" and "wear it
+// quest isnt triggering on amulet equip" - the only two milestones that
+// go through THIS function; every shared one via `@a` above worked). This
+// used to run `ftbquests change_progress <uuid> complete <id>`. Decompiled
+// FTB Quests 2001.4.22's FTBQuestsCommands directly: the `<players>` slot
+// is built with `EntityArgument.players()` (SRG m_91470_ = new
+// EntityArgument(single=false, playersOnly=true), confirmed against the
+// real client jar). Vanilla's EntitySelectorParser marks any raw-UUID
+// selector as `includesEntities`, and a players-only argument rejects
+// that with "Only players may be affected by this command, but the
+// provided selector includes entities" - the same reason `/give <uuid>`
+// fails in vanilla. runCommandSilent swallowed the error, the flag below
+// was already set, so it silently never retried. Routed through `execute
+// as <uuid> run ... @s` instead: `execute as` takes entities() (a UUID is
+// fine there) and `@s` is a self-selector, which players() explicitly
+// allows - the exact shape bounty_kills.js already runs live for the
+// Bounties tiers. The flag key changed (td_qp_) so worlds where the old
+// command already failed once get exactly one real retry.
 function qmCompleteForPlayer(player, key) {
-  var flag = 'td_q_' + key
+  var flag = 'td_qp_' + key
   var pdata = player.persistentData
   if (pdata.getBoolean(flag)) return
   pdata.putBoolean(flag, true)
-  player.getServer().runCommandSilent('ftbquests change_progress ' + player.uuid + ' complete ' + QM_TASKS[key])
+  player.getServer().runCommandSilent('execute as ' + player.uuid + ' run ftbquests change_progress @s complete ' + QM_TASKS[key])
 }
 
 PlayerEvents.tick(function (event) {

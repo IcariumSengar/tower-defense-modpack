@@ -31,10 +31,10 @@ ServerEvents.recipes((event) => {
     I: 'minecraft:iron_ingot',
   })
 
-  event.shapeless('vds_bear_traps:bear_trap_open', [
-    'minecraft:iron_ingot',
-    'minecraft:stone_pressure_plate',
-  ])
+  // Bear Trap recipe removed 2026-09-10 (direct feedback: "the slime trap
+  // and the bear trap are not great" -> "remove them, no replacement");
+  // V01D's Bear Traps is uninstalled with it. Tier 1 is Spike Trap +
+  // Barbed Wire (+ the pre-placed Stake Walls).
 
   // WWZ counter-mechanic + Slime Trap evaluation (2026-09-08, Phase 1).
   // Both from Simply Traps (already installed for the Spike Trap above) -
@@ -81,12 +81,8 @@ ServerEvents.recipes((event) => {
   // this pack doesn't actually have" problem Bear Trap hit. Re-recipied
   // below using materials already in the Tier 1 economy instead, same
   // cost tier as Spike Trap.
+  // Slime Trap removed from Tier 1 the same day as the Bear Trap (see above).
+  // The stock recipe stays removed so the block never shows as craftable;
+  // Simply Traps itself stays installed for the Spike Trap and Stake Wall.
   event.remove({ output: 'simply_traps:slime_trap' })
-  event.shaped('simply_traps:slime_trap', [
-    'S S',
-    ' T ',
-  ], {
-    S: 'minecraft:stick',
-    T: 'minecraft:smooth_stone_slab',
-  })
 })

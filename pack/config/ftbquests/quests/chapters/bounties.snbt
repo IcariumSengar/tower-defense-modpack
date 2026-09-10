@@ -29,6 +29,7 @@
 			size: 1.0d
 			tasks: [
 				{
+					icon: "minecraft:rotten_flesh"
 					id: "42F2080CC88FFF1F"
 					max_progress: 25L
 					type: "custom"
@@ -40,6 +41,7 @@
 		}
 		{
 			dependencies: ["605797091B509B1A"]
+			hide_until_deps_complete: true
 			description: ["A hundred kills. The horde doesn't get thinner, but your aim is getting better."]
 			icon: "minecraft:iron_sword"
 			id: "730D290220164ACC"
@@ -60,6 +62,7 @@
 			size: 1.25d
 			tasks: [
 				{
+					icon: "minecraft:iron_sword"
 					id: "23C4C36D29BF9EDF"
 					max_progress: 100L
 					type: "custom"
@@ -71,6 +74,7 @@
 		}
 		{
 			dependencies: ["730D290220164ACC"]
+			hide_until_deps_complete: true
 			description: ["Three hundred. This stopped being self-defense a while ago."]
 			icon: "minecraft:diamond_sword"
 			id: "26D4AC6A4759FFDF"
@@ -91,6 +95,7 @@
 			size: 1.5d
 			tasks: [
 				{
+					icon: "minecraft:diamond_sword"
 					id: "57C0DB55E9655079"
 					max_progress: 300L
 					type: "custom"
@@ -102,6 +107,7 @@
 		}
 		{
 			dependencies: ["26D4AC6A4759FFDF"]
+			hide_until_deps_complete: true
 			description: ["Seven hundred fifty kills. Whatever is still coming at you, you're built for it now."]
 			icon: "minecraft:netherite_sword"
 			id: "716E054554316AE5"
@@ -126,6 +132,7 @@
 			size: 1.75d
 			tasks: [
 				{
+					icon: "minecraft:netherite_sword"
 					id: "1CB86244570F2424"
 					max_progress: 750L
 					type: "custom"
@@ -138,6 +145,7 @@
 		{
 			can_repeat: "true"
 			dependencies: ["716E054554316AE5"]
+			hide_until_deps_complete: true
 			description: ["Fifteen hundred kills, and counting. There's no ceiling on this one - claim it again every fifteen hundred after, for as long as they keep coming."]
 			icon: "bountybags:legendary_loot_bag"
 			id: "6C33E795D76D13CF"
@@ -153,6 +161,7 @@
 			size: 2.0d
 			tasks: [
 				{
+					icon: "bountybags:legendary_loot_bag"
 					id: "1355429CD45AF725"
 					max_progress: 1500L
 					type: "custom"

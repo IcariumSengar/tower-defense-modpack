@@ -157,13 +157,39 @@ var PEDESTAL_ALERT_MESSAGES = {
 // message instead of being dropped, since chat is a separate channel that
 // won't get overwritten by wave_status.js's own actionbar-based hostile
 // counter the way a second title/subtitle call would.
-function firePedestalAlert(server, tier) {
+//
+// **Action bar, not subtitle, 2026-09-10** (direct ask, second time:
+// "reduce the font size of the pedestal is being attacked message"). The
+// subtitle line is the smallest thing the /title system can draw (2x HUD
+// scale); the only smaller on-screen text slot is the action bar (1x -
+// half the subtitle's size), which is where this lives now. The action
+// bar is shared with wave_status.js's hostile counter and wave_spawner.js's
+// next-wave countdown, both of which rewrite it every few ticks and would
+// wipe this instantly - so the alert is also stored on the shared world
+// state (td_pedestalAlertText/td_pedestalAlertUntilTick) and both of those
+// writers show it INSTEAD of their own line while the window is open (via
+// pedestalAlertActionbarText below - a top-level function, the reliably
+// shared cross-file idiom in this build). Outside a wave/countdown nothing
+// else touches the bar, so the one direct `title ... actionbar` here is
+// enough on its own. Chat flavor line + anvil sound unchanged.
+var PEDESTAL_ALERT_ACTIONBAR_TICKS = 80
+
+function firePedestalAlert(server, data, tier, now) {
   var msg = PEDESTAL_ALERT_MESSAGES[tier]
   if (!msg) return
-  server.runCommandSilent(`title @a title {"text":""}`)
-  server.runCommandSilent(`title @a subtitle {"text":"${msg[0]}","color":"red","bold":true}`)
+  data.putString('td_pedestalAlertText', '§c§l' + msg[0])
+  data.putInt('td_pedestalAlertUntilTick', now + PEDESTAL_ALERT_ACTIONBAR_TICKS)
+  server.runCommandSilent(`title @a actionbar {"text":"${msg[0]}","color":"red","bold":true}`)
   server.runCommandSilent(`tellraw @a {"text":"${msg[1]}","color":"gold"}`)
   server.runCommandSilent(`execute as @a at @s run playsound ${PEDESTAL_ALERT_SOUND} hostile @s ~ ~ ~ 1 1`)
+}
+
+// Shared with wave_status.js/wave_spawner.js (see above): the alert text to
+// show in the action bar right now, or null once the window has closed.
+function pedestalAlertActionbarText(data, now) {
+  if (!data.contains('td_pedestalAlertUntilTick')) return null
+  if (now >= data.getInt('td_pedestalAlertUntilTick')) return null
+  return data.getString('td_pedestalAlertText')
 }
 
 // Real heal mechanics, 2026-09-05 (quick-fix scope only, per direct
@@ -392,12 +418,12 @@ PlayerEvents.tick((event) => {
     var newAlertTier = pedestalAlertTierForHealth(health, PEDESTAL_MAX_HEALTH)
     if (newAlertTier > data.getInt('td_pedestalAlertTier')) {
       data.putInt('td_pedestalAlertTier', newAlertTier)
-      firePedestalAlert(player.getServer(), newAlertTier)
+      firePedestalAlert(player.getServer(), data, newAlertTier, level.getTime())
     }
     return
   }
 
-  firePedestalAlert(player.getServer(), 4)
+  firePedestalAlert(player.getServer(), data, 4, level.getTime())
   data.putInt('td_pedestalHealth', 0)
 
   // Visually match "the pedestal has fallen" - break the actual block

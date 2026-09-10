@@ -21,7 +21,376 @@ reflect actual current status.
 
 ---
 
-## Automatic quest progress carryover across worlds — built + sandbox-verified, 2026-09-09
+## 19-item playtest feedback batch (second batch, 2026-09-10) — 15 built, 4 need your call
+
+Literal checklist against the user's own numbering. Every item was
+diagnosed against the live instance first (newest save `New World45646`
+and its `ftbquests/<uuid>.snbt`, `logs/latest.log`'s `[CHAT]` lines, an
+entity census decoded from `entities/*.mca`) and the real installed jars
+(javap on ftb-quests, UndeadNights, dyairdrop, xaeroworldborder,
+simply_traps, craftingstation, inventorysorter, kubejs), not reasoned from
+source. Sandbox status is the last paragraph of this section.
+
+1. **Done.** Quest-progress carryover dropped outright:
+   `hardcore_quest_carryover.js` deleted (and removed from the live
+   instance along with its `kubejs/config/hardcore_quest_carryover/`
+   staging folder), `world_state.js`'s manual-copy tip removed, both
+   game-over triggers no longer call it, the pedestal-loss "what now"
+   subtitle and the hardcore kick screen no longer mention it. Quest
+   progress is per world again.
+2. **Done - thinner AND light blue (your pick).** Xaero's World Border 1.0.0
+   has no config at all: the line is two compile-time constants inlined
+   into `WorldBorderElementRenderer` (a 4px dark outline under a 2px red
+   core, colours 0x90000000 / 0xD0FF3030). The only way to change it is
+   to patch the jar, so the pack now ships
+   `mods/xaeroworldborder-1.0.0-tdthin.jar` (constant-pool patch via
+   `tools/patch_class_constants.py`: 4.0→2.0, 2.0→1.0 - half as thick;
+   core colour 0xD0FF3030 red → 0xD055FFFF light blue, the HUD's §b). A second `WorldBorderMapOverlay` class exists in the jar
+   but is never registered (dead code), so only the renderer was
+   patched. The packwiz metafile is gone; the patched jar is indexed as
+   a plain file.
+3. **Done - real root cause found in the live save.** All five bounty
+   quests completed in the SAME millisecond (identical `completed`
+   timestamps for First Blood/Exterminator/Culling/Reaper/Zombie Masher,
+   10 s after Sound the Horn - i.e. on the first kill). Decompiled the
+   installed FTB Quests 2001.4.22 `CustomTask`: it has `maxProgress`
+   (default 1) with a public `setMaxProgress(long)` and sends it over the
+   network, but has NO `readData` override - `max_progress: 25L` in
+   bounties.snbt is silently ignored, every bounty task's max is 1, and
+   `bounty_kills.js`'s progress sync (alive since the 2026-09-10 bqBoxInt
+   fix) set progress 1 on the first kill, which FTB treats as complete.
+   Fix: `bqApplyMaxProgress()` sets the real max on each task object via
+   its own setter on the first server tick after "Done" (a
+   `ServerEvents.tick` retry - at `ServerEvents.loaded` FTB Quests'
+   ServerQuestFile does not exist yet, found in the sandbox), which is
+   still before any client's login sync, so the client shows x/25. The
+   current world (`New World45646`) already has all five marked complete;
+   to repair it in place run `/ftbquests change_progress @a reset <id>`
+   for 605797091B509B1A, 730D290220164ACC, 26D4AC6A4759FFDF,
+   716E054554316AE5 and 6C33E795D76D13CF (the scoreboard kill count is
+   untouched, so the bars refill on the next sync).
+4. **Done - your pick: keep flexible, hide until unlocked.** The live save shows
+   what "all at once" was: Thin the Horde + the Zombie and Husk
+   Know-Your-Enemy quests completed in the same millisecond (a
+   Sharpness-100 sweep kills several mobs in one swing), then Wave One
+   Cleared, Spoils of War and Open It one second later. Structurally the
+   Campaign chapter is `progression_mode: "flexible"`, which lets every
+   kill/item/observation task progress before its dependencies are done
+   - so nothing is ever gated, only laid out. Options: (a) switch the
+   chapter to linear, so a task only counts once the quest before it is
+   complete - the spine then reads in order (You're On Your Own → Borrowed
+   Time → Find the Pedestal before the horn matters) and the bridged
+   milestones still fire (`change_progress` bypasses dependency checks);
+   the Know-Your-Enemy rib would need to become a fan off Thin the Horde
+   rather than a chain, because a strict chain stalls on Zombie Villager
+   (only ever 1 in the written waves). (b) keep flexible but
+   `hide_until_deps_complete` on the ribs so they *appear* piecemeal
+   (they'd still complete silently in clumps). (c) leave it. **Built as
+   (b)**: `hide_until_deps_complete: true` on every quest with a
+   dependency - all 52 dependent Campaign quests and the 4 chained
+   Bounties - so the book shows only the frontier plus what's done, and
+   each rib appears at the node it hangs off. The tinted rib panels stay
+   visible (they are chapter images, not quests), so an empty panel now
+   reads as "something goes here". Progress still counts early by
+   design of this option.
+5. **Done - same fix as 3.** The "[Bounty] First Blood complete - 25
+   kills" chat line was the exact-score path working correctly; the quest
+   showed nothing because it had already been completed by the bug above
+   on kill 1. With max progress real, the quest completes (toast, reward)
+   at 25 and the chat line is redundant confirmation.
+6. **Done, sandbox-measured.** The plane's speed is a hard-coded 3.0
+   blocks/tick set every 5 ticks inside `PlaneticksProcedure` (the
+   procedure `dyairdrop:plane` actually runs; the crate drop is
+   distance-based, `dpassed == length`, and despawn is 2× the drop tick,
+   so slowing the plane does not move the drop point). Patched to 1.0
+   blocks/tick in `mods/dyairdrop-1.1.0-1.20.1-beta-tdslowplane.jar`
+   (same tool as item 2). Measured over RCON in the sandbox: 0.84
+   blocks/tick average (drag between re-asserts), crate entity released
+   after ~68 blocks - about 7 s in view instead of ~2.5 s. One constant
+   to retune.
+7. **Done.** `wave_airdrop.js`: right-clicking the large crate records
+   its position; a 10-tick poll reads the block entity's saved NBT and
+   removes the block (poof + sound) the first time the loot has been
+   unpacked (`LootTable` key gone) AND the `Items` list is empty. Reads
+   NBT rather than the item capability on purpose - touching the
+   capability would unpack the loot with no player. The mod's own
+   randomTick timer never did this. The Xaero waypoint is client-side
+   and stays.
+8. **Done - sweep.** Grep for carryover/carries over/hqc across
+   `server_scripts`, all three quest chapters and the docs: the only
+   mentions left are the comments saying it was dropped. QUEUE.md's own
+   2026-09-09 section is retitled DROPPED below; PLAYTESTING.md's
+   hardcore bullet corrected.
+9. **Done.** The Last Written Wave: the Crawler/Brute/Demolition roster
+   sentence is gone; the crate line stays.
+10. **Done.** Wave 8 Crawler count 1 → 4 (`WAVES[7]`), 10 mobs total.
+11. **Done.** The Behemoth: no stats, no name, no Totem/crate mention -
+    "something the rest make way for... you'll know it when it arrives."
+12. **Done.** Legendary bag `totem_of_undying` weight 16 → 3 of 112
+    across 5 rolls: a Legendary bag carries a totem ~13% of the time now
+    (was ~54%). Boss drop and the crafting recipe are unchanged.
+13. **Done - and it wasn't the waves.** Boomers are in no written wave
+    (pulled 2026-09-09) and only in the endless "other types" tier. The
+    ones you met were Zombie More's OWN natural night spawns: the jar
+    ships `forge:add_spawns` biome modifiers for every overworld biome
+    (boomer weight 10, plus crawler 40 in packs of 4, explosive_zombie 20
+    in packs of 4, cursed 15, tank 15 - three of those aren't even in the
+    roster). Entity census of the live save: 2 boomers alive right now.
+    Mutants and Zombies does the same for all 8 of its mobs
+    (`#minecraft:is_overworld`, brute weight 5, zombie_brute 8, rotten
+    mutant 12, spitter 9...) - which is the same class of thing as the
+    2026-09-04 "brutes before wave 8" complaint. Both mods' natural spawns
+    are now stripped with `forge:none` datapack overrides under
+    `kubejs/data/<mod>/forge/biome_modifier/` (13 files) - the same
+    override technique the structure-NBT fixes use. **Widened on
+    purpose** to the second mod; revert = delete the 8 mutantszombies
+    files. Every one of those mobs still arrives exactly where the wave
+    roster/horde config/structure spawners put it.
+14. **Done, sandbox-verified silent.** The noise at an endless wave start
+    was three Undead Nights lines ("Difficulty level set to: Endless N",
+    "Trying to spawn hordes for all available players.", "A horde has
+    spawned!"). The first two are sent straight to the command source's
+    entity (`Entity#sendSystemMessage`), bypassing runCommandSilent - so
+    both commands now run `execute as` the world-state marker armor stand
+    (`WAVE_STATE_MARKER_SELECTOR`), for which that call is a no-op; the
+    horde still targets every player in the level (verified in the
+    bytecode). The third is the mod's `hordeSpawnedMessageAndSound` flag,
+    now false in `defaultconfigs/undeadnights-server.toml` (and copied
+    into the current world's serverconfig); it also gated the horde
+    scream, which `wave_spawner.js` now plays itself. Exactly one chat
+    line per wave start remains, for every wave: "Wave N has started." /
+    "Horde N has started." Left alone: the pedestal under-attack flavour
+    line ("Something has found it - get back now.") - that one is the
+    pedestal alert, not the wave start; say if it should go too.
+15. **Done.** `tdWaveLabel()` (wave_spawner.js): past wave 8 every label
+    says Horde - start title "HORDE 9" + "The horde approaches...",
+    the toast, the chat line, "HORDE 9 CLEARED", the hostiles action bar,
+    "Next horde in", and "HORDE 10: BOSS". Waves 1-8 unchanged.
+16. **Done - real bug.** `boss_wave.js` read `td_waveNumber` from
+    `player.persistentData`, but wave state moved onto the marker entity
+    (worldData) in the LAN-readiness pass - the player copy is 0 in every
+    new world, so the trigger returned every tick. Live log: waves 9-12
+    ran with no "[Boss]" line. Now reads `worldData(level)`; the
+    `td_bossLastSpawnedWave` guard moved with it. First boss: wave 10.
+17. **Done - your pick: remove them, no replacement.** Slow Them Down and
+    Something Crueler deleted from the Tier 1 rib; Turn the Crank now hangs
+    off Better Than Nothing and the rib is Spike Trap → Hand Crank →
+    Barbed Wire (panel narrowed 11 → 7). Both recipes removed from
+    `tier1_recipes.js` (the Slime Trap's stock recipe stays removed so it
+    never shows as craftable), both entries dropped from the tooltip tier
+    colours, and V01D's Bear Traps uninstalled (`packwiz remove`, jar
+    removed from the live instance). A world that still has a placed bear
+    trap will show Forge's "missing registry entries" prompt once and turn
+    it into air. The options that were on the table, for the record:
+    Simply Traps also ships Circular Barbed Wire (concertina, 2.0 dmg
+    every 2 ticks on contact - twice the Spike Trap's rate, same
+    smooth-stone-slab cost class), Stake (floor spikes, 1.0/2 ticks) and
+    Grass Trap (looks like grass, deletes itself 5 ticks after something
+    steps on it - a pit trap if you dig the hole). Advanced Tower Defense
+    has Aerial Mine / Water Mine / Tar Barrel. Tier 2 promotable: the
+    Anvil Launcher (Anvils From Above). Slime Trap is genuinely weak
+    (0.175 push, zero damage). Not changed yet.
+18. **Left as is (your call), research done - no drop-in exists on Forge
+    1.20.1.** Every "Tinkers crafting station" spin-off (Crafting Station,
+    Crafting Station: JEI Edition, Crafting Station: J/EMI Edition Updated,
+    Crafting Station Improved) is the same Tinkers' design: the adjacent
+    inventory is drawn as a panel to the LEFT of the grid, which is the
+    thing covering the bookmarks. The one mod that does it with NO panel -
+    Nearby Crafting (the vanilla grid silently pulls from containers within
+    8 blocks) - ships Fabric and NeoForge builds only (checked the Modrinth
+    version list: no `forge` loader for 1.20.1). Crafting Station Improved has one config key
+    (`display items in table`), no side option; the panel is hard-coded
+    130 px to the LEFT of the GUI, and its JEI handler DOES register that
+    panel as an exclusion area - so JEI isn't drawing under it, it just
+    has almost no room left for the bookmark column at your GUI scale.
+    Options: (a) Sophisticated Storage's `crafting_upgrade` (already
+    installed, zero footprint: a crafting tab inside each chest/barrel,
+    right side), (b) Tom's Simple Storage's crafting terminal (one new
+    jar), (c) a lower GUI scale. Not changed yet.
+19. **Answer: it fails everywhere (all four kinds of container). Proposal
+    below, held for your go-ahead.** With no container-specific pattern,
+    the likely causes are Inventory Sorter's own rules rather than a
+    single incompatibility: (1) it only fires when the middle-click lands
+    on a slot square, never on the frame or between slots; (2) it sorts
+    the *section the clicked slot belongs to* - a click on your own
+    inventory rows sorts those rows, not the chest, and the hotbar is
+    never sorted; (3) in Sophisticated containers a different sort
+    (Sophisticated Core's, same middle click, different order) runs.
+    Proposed replacement: Inventory Profiles Next (Forge 1.20.1 build
+    1.10.20, Feb 2026, 1.4 MB, needs libIPN + Kotlin for Forge - the
+    latter is already installed): explicit Sort buttons drawn on every
+    container GUI, plus "move all" and slot locking, so there is nothing
+    to aim. Inventory Sorter would be removed with it. Not installed -
+    say the word. Inventory Sorter only acts
+    when the middle-click lands on a *valid slot* (decompiled
+    `KeyHandler` → `ContainerContext.validSlot`); clicking empty GUI
+    space does nothing, and its built-in slot blacklist covers Curios
+    and every Sophisticated Storage slot - so in a Sophisticated barrel
+    it's Sophisticated Core's OWN middle-click sort that runs (both mods
+    are bound to middle click, different ordering rules). Nothing is
+    server-blacklisted (`inventorysorter-server.toml` lists are empty).
+    Which container is flaky decides the fix - asked in chat.
+
+**Verification (sandbox, 2026-09-10)**: fresh dedicated-server boot from the live instance's mod set with the patched jars: 33/33 KubeJS server scripts, 0 errors, base built, no biome-modifier load errors (the two "Spawn data: Value must be positive: 0" lines are in last session's boot logs too). RCON: `execute as <marker> run undeadnights difficulty set 1` / `spawn_horde` ran with no output and no exception; a summoned `dyairdrop:plane` averaged 0.84 blocks/tick and released the crate entity after ~68 blocks; `airdropCrateLooted()` returned false for an unopened crate (LootTable key), false for a crate holding one diamond, true for `Items:[]`; `[bounty_kills] bounty task max progress applied: 25/100/300/750/1500` on server tick 1 (a first draft at `ServerEvents.loaded` hit a null ServerQuestFile - fixed before deploy). Not coverable without a player: the actual in-game chat, titles, boss spawn at wave 10, crate right-click trigger, and the map line - PLAYTESTING.md lists them. **Round 2 (same day, after your answers)**: rebooted again with the hide-until-unlocked flags, the two trap quests removed and the bear-trap jar out - FTB Quests parsed "3 chapters, 71 quests", 33/33 scripts, bounty init on tick 1; deployed live.
+
+---
+
+## 10-item playtest feedback batch — built + deployed live 2026-09-10, needs a real pass
+
+Literal checklist against the user's own numbering (with the "First
+Blood" screenshot attached to item 4). Every code change is deployed to
+the live instance (scripts + quest chapters copied, verified byte-
+identical); they take effect the next time a world is opened.
+
+1. **Done.** "The pedestal has fallen" is now the *subtitle* of a single
+   "GAME OVER" popup (plus a wither sting), not a separate popup five
+   seconds ahead of it; the queued follow-up carries only the "start a
+   new world" line. `pedestal_destruction.js`. Hardcore's ending was
+   reframed the same way for consistency.
+2. **Done.** Pedestal under-attack alert moved from the subtitle (2x HUD
+   scale) to the action bar (1x, half the size) — the only smaller slot
+   /title has. The bar is shared with the hostiles counter and the
+   next-wave countdown, so the alert is stored on world state
+   (`td_pedestalAlertText`/`UntilTick`) and both writers show it instead
+   of their own line for 80 ticks (`pedestalAlertActionbarText`, shared
+   top-level function). `pedestal_health.js`, `wave_status.js`,
+   `wave_spawner.js`.
+3. **Rebuilt.** `ladder_climb_assist.js` replaced outright. Real reason
+   the 2026-09-08 pass never showed: vanilla mobs already climb when
+   they stand in a ladder block *and press into a wall*
+   (`LivingEntity#travel`'s `horizontalCollision && onClimbable()` →
+   0.2/tick) — what they lack is any reason to walk into one, since the
+   pathfinder never plans a route up. New version: a `td_wave_mob` whose
+   `getTarget()` is ≥1.5 blocks above it and whose navigation is idle/
+   stalled scans 6 blocks around for a ladder column whose top reaches
+   the target's height, paths to its foot (`getNavigation().moveTo`),
+   then stops its nav and points its `MoveControl` at the wall block
+   behind the ladder one block above its head so vanilla lifts it every
+   tick. Structure guards untouched.
+   **First real playtest (same day, 15:23 session, New World45646):
+   items 9 and 10 confirmed working; this one "one mob climbed (maybe a
+   vanilla zombie), the rest don't climb, get stuck."** Diagnosed from
+   the save + log, not guessed: the player was on the wall top (y=5)
+   beside one of the base's own 3-block ladders; the climber was the mob
+   standing directly underneath, inside `mob_aggro.js`'s 3.5-block
+   "blocking path" radius in 3D, so it was the ONLY mob whose target was
+   the player for more than 10 ticks. Every other mob had the player as
+   its target only for the instant HurtByTargetGoal set it - mob_aggro's
+   own re-assert forced the ground-level marker straight back, every 10
+   ticks, so the ladder script correctly saw "target not above me" and
+   stood down. That re-assert had been silently defeating the 2026-09-04
+   "retaliate when hit" decision all along. **Fix, deployed live**:
+   `mob_aggro.js` now honours a player target it didn't assign itself
+   (the only way a stripped wave mob gets one is HurtByTargetGoal) for
+   `AGGRO_RETALIATION_TICKS` (160 = 8s) from first sight, then re-asserts
+   the marker; each new hit opens a fresh window. Ladder script also
+   tops up upward velocity only when a mob inside a column hasn't risen
+   since the last check - the attack goal's 20-tick re-path can steal
+   the MoveControl for a moment. **Sandbox-probed Rhino finding along
+   the way**: `setDeltaMovement(x, y, z)` and `push(x, y, z)` don't
+   resolve from JS numbers in this build (Rhino binds the single-object
+   Vec3/Entity overload and throws "Can't find method ...(number,number,
+   number)") - which means the 2026-09-08 first pass's only mechanism
+   never ran even once, inside its try/catch. The nudge uses the Vec3
+   overload (`setDeltaMovement(new Vec3d(...))`, verified by reading the
+   velocity back). Real limitation:
+   wide mobs (Mutant Brute, Mutant Zombie) physically can't get their
+   feet into a 1-block ladder column against a wall, so they will never
+   climb; standard-size zombies/husks/drowned/Elites/Horde do. Needs the
+   next play session to confirm - with hits keeping attention for 8s,
+   the way to test is: stand on the wall, shoot a mob, watch it come up.
+4. **Done.** Bounty tasks had no `icon` of their own, so FTB drew its
+   "custom" placeholder (the quest icon — rotten flesh in the screenshot
+   — was fine). Each task now carries its quest's icon. `bounties.snbt`.
+   Note: the screenshot's session loaded scripts at 12:01, *before* the
+   12:14 `bqBoxInt` fix reached live, so the kill counter still wasn't
+   running there either — first boot after this deploy is the real test.
+5. **Done — real root cause, shared with item 7.** `quest_milestones.js`
+   completed per-player milestones with `ftbquests change_progress
+   <uuid> complete <id>`. Decompiled FTB Quests 2001.4.22: that slot is
+   `EntityArgument.players()` (SRG `m_91470_` = `(single=false,
+   playersOnly=true)`, checked against the real client jar), and
+   vanilla marks a raw-UUID selector `includesEntities`, which a
+   players-only argument rejects ("Only players may be affected…", the
+   same reason `/give <uuid>` fails). `runCommandSilent` swallowed it and
+   the one-shot flag was already set. Now `execute as <uuid> run
+   ftbquests change_progress @s complete <id>` (entities() accepts a
+   UUID; `@s` is a self-selector players() allows — the shape
+   `bounty_kills.js` already runs live). Flag key renamed `td_qp_` so
+   existing worlds get one real retry.
+6. **Done.** Three Down no longer promises "the first Boomer" at wave 4;
+   the Boomer Zombie Know-Your-Enemy quest (uncompletable since the
+   2026-09-09 wave pull) is removed, Elite Zombie re-chained to Split
+   Head Zombie, the seven later nodes shifted left one slot, panel
+   narrowed. PLAYTESTING.md's stale "Boomer arming is audible" line
+   replaced. Roster copies in scripts deliberately untouched (see
+   `wave_spawner.js`'s pull note — inert without a live boomer).
+7. **Done** — same fix as 5 ("Wear It" is the other per-player milestone).
+8. **Done.** "It's Up to You Now" is `invisible: true` — FTB's own
+   invisible-until-completed flag — so it only appears when wave 5
+   clears. Its two dependents (The Last Written Wave, Tier 3's Room to
+   Grow) re-pointed to Three Down, because FTB hides a quest whose only
+   dependency is an invisible incomplete one (`Quest.isVisible`,
+   decompiled). Kept rather than deleted so the diary payoff and rewards
+   still land at the moment they describe.
+9. **Done.** Airdrop no longer launches in the wave-clear tick (its title
+   was being overwritten by the wave-cleared popup — and at wave 5 by
+   the gear-removal title — in the same tick). `wave_airdrop.js`
+   schedules it 240 ticks out, then fires "LOOK UP / Supply plane
+   inbound" + a bell at every player as the plane spawns, and polls
+   (10 ticks, only while in flight) for the `dyairdrop:airdrop` crate
+   entity to announce "Supply crate down - it's marked on your map" the
+   moment it lands. The mod's own plane sound and coordinates chat line
+   stay.
+10. **Done — diagnosed from the live log, not guessed.** The 12:28:19
+    death shows the hook fired (game-over chat, "Your game mode has been
+    updated to Spectator Mode", quest export) and a respawn ~9s later.
+    The gap was the death screen: the client only drops the Respawn
+    button for a level-hardcore world, which a runtime toggle can't
+    become. `hardcore_death.js` now kicks every online player 80 ticks
+    after the death with the game-over text as the disconnect reason
+    (KubeJS `kjs$kick(Component)`, present in the installed jar; vanilla
+    1.20.1 `/kick` has no host guard); a Respawn clicked inside that
+    window kicks immediately; reopening the world lands in spectator
+    with a GAME OVER reminder. Go Hardcore tip text updated.
+
+**Quest generator is stale** (`tools/quest_book/gen_quests.py`): a dry
+run into scratch re-minted ~half the ids and reverted several
+hand-edited descriptions (Open It is still a checkmark task there), so
+it must NOT be re-run against the current chapters — every quest edit in
+this batch was made directly in the `.snbt` files. Re-syncing the
+generator is a separate job.
+
+**Sandbox verification (real dedicated-server boot, same day)**: fresh
+Forge 47.4.10 server built from the live instance's mods minus the 5
+packwiz client-only jars; 34/34 KubeJS server scripts (33 + a probe)
+loaded with 0 errors; FTB Quests loaded "3 chapters, 73 quests" with no
+parse complaint (55 + 13 + 5 titles = 73, i.e. the Boomer removal and
+`invisible: true` both parsed). A sandbox-only `/ladderprobe` command
+called every clean name the rewrite uses against a real summoned husk
+and a real placed ladder: `block.properties.get('facing')` = "west",
+`getTarget`/`setTarget`, `getNavigation().isDone()/moveTo()/stop()` and
+`getMoveControl().setWantedPosition()` all resolved, and
+`findLadderColumn` returned the right column. Then the mechanics
+themselves: after that single `setWantedPosition` at the wall behind a
+6-block ladder, the husk walked into the ladder and climbed from y=0 to
+y=6 on its own over ~12s, ending standing on top of the wall next to its
+target — vanilla's press-into-wall climb, no per-tick nudging. The FTB
+root cause for items 5/7 was reproduced with the real command: the old
+`change_progress <uuid>` form returns "Only players may be affected by
+this command, but the provided selector includes entities"; the new
+`execute as <uuid> run … @s` form runs clean. Not covered by the
+sandbox (no player online, so no PlayerEvents.tick, no death, no
+kick): the automatic ladder-seeking loop end to end, the kick, the
+action-bar alert, and the airdrop cues — those need the real pass.
+Recipe for rebuilding this sandbox is in memory
+(`reference_sandbox_server_recipe`).
+
+---
+
+## DROPPED 2026-09-10 — Automatic quest progress carryover across worlds (was: built + sandbox-verified, 2026-09-09)
+
+**Dropped on direct feedback the next day** ("Its buggy and im not invested in the idea"): script deleted, tips and texts removed, live staging folder deleted. Kept below for the technical findings only.
 
 Direct question: "on hardcore death or pedestal destruction, its game
 over. but im concerned that a player has already gone through all the
@@ -1335,7 +1704,10 @@ before committing.
    INBOUND" title/countdown UI as-is (independent of which mod supplies
    the crate). **Not yet built** - spec ready, holding behind the same
    playtest-first gate as the rest of this session's work.
-6. **Done, commit a92468c (2026-09-08).** New `ladder_climb_assist.js` -
+6. **Done, commit a92468c (2026-09-08). SUPERSEDED 2026-09-10** — never
+   worked in play; rewritten as a target-aware ladder-seeking behavior,
+   see the 2026-09-10 batch entry (item 3) at the top of this file. New
+   `ladder_climb_assist.js` -
    a throttled tick handler detects a wave mob stuck next to a
    ladder/vine on its path axis and applies a direct upward
    `setDeltaMovement` nudge. Real prior history: this was investigated

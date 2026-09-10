@@ -29,8 +29,6 @@ const TIER_COLORS = {
 const TIER_ITEMS = {
   'simply_traps:spike_trap': 1,
   'simply_traps:stake_wall': 1,
-  'simply_traps:slime_trap': 1,
-  'vds_bear_traps:bear_trap_open': 1,
   'itemcollectors:basic_collector': 2,
   'advanced_tower_defense_mod:turret_head_t_0_mushket': 2,
   'advanced_tower_defense_mod:turret_head_t_0_anvil_launcher': 2,

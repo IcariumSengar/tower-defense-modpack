@@ -24,6 +24,26 @@
 // reaches this handler at all, so reaching it here already proves the
 // death was real - the same well-established vanilla/Forge ordering
 // every "no totem farming" mod or datapack already relies on.
+//
+// **No respawn, 2026-09-10** - direct playtest report: "i enabled hardcore
+// mode and i died but i was able to respawn." The live log for that death
+// shows this hook DID fire (game-over chat, "Your game mode has been
+// updated to Spectator Mode", the quest-progress export) - the gap was the
+// death screen itself. Vanilla only removes the Respawn button when the
+// LEVEL is hardcore, a flag the client receives once at login and that
+// this pack's runtime-toggled mode can't flip, so the player was still
+// offered "Respawn", took it, and came back (as a spectator - technically
+// locked out, but it read as "I respawned"). Fixed by ending the session
+// instead of the life: HARDCORE_KICK_DELAY_TICKS after the death - long
+// enough for the GAME OVER title and sting to land on the death screen -
+// every online player is disconnected with the game-over text as the
+// disconnect reason (ServerPlayer#kick via KubeJS's own kjs$kick(Component),
+// confirmed present in the installed jar; vanilla 1.20.1's kick has no
+// "can't kick the host" guard either, checked against the real client
+// jar's KickCommand). Reopening the world afterwards drops straight into
+// spectator (the login hook below) so the world can still be looked
+// around, never played. If Respawn is clicked before the delay elapses,
+// the respawn hook below kicks immediately instead.
 EntityEvents.death((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'minecraft:player') return
@@ -57,10 +77,8 @@ EntityEvents.death((event) => {
 // in this pack (boss_wave.js's own header explicitly notes it avoided
 // needing "a confirmed level.getPlayers()-style API" for its own,
 // unrelated reason), so verified fresh here via RCON rather than
-// assumed. getHealth() itself couldn't be exercised against a real
-// connected player in this environment (no graphical client, same
-// standing limitation as every other real-player-only check in this
-// pack) - flag this specific piece for a real hands-on check.
+// assumed. Confirmed for real on 2026-09-10 by the live death itself:
+// the lone player's own death passed this check and the game-over ran.
 function hardcoreAllPlayersDead(server) {
   var players = server.getPlayers()
   for (var i = 0; i < players.length; i++) {
@@ -69,14 +87,32 @@ function hardcoreAllPlayersDead(server) {
   return true
 }
 
+var HARDCORE_KICK_DELAY_TICKS = 80 // vanilla title fade-in (10) + hold (70): the GAME OVER title plays out fully first
+var HARDCORE_KICK_POLL_TICKS = 10
+
+function hardcoreKickReason() {
+  return '§4§lGAME OVER\n\n§cHardcore was on, and nothing caught you this time.\n§7The run is over. Start a new world to try again.\n\n§8Reopen this world to look around it as a spectator.'
+}
+
+function hardcoreKickAll(server) {
+  var players = server.getPlayers()
+  for (var i = 0; i < players.length; i++) {
+    try {
+      players[i].kick(hardcoreKickReason())
+    } catch (e) {
+      console.log('hardcore_death.js: kick failed: ' + e)
+    }
+  }
+}
+
 // Shared, idempotent-guarded (td_hardcoreGameOver) game-over sequence -
 // mirrors pedestal_destruction.js's own triggerPedestalDestroyed() shape
-// (same countdown/night-lock cleanup, same title+tell pattern) but a
-// genuinely harder real outcome, matching the actual ask: real
-// permadeath, not just "can't fight more waves." A separate flag from
-// td_pedestalDestroyed on purpose - that one specifically means "the
-// pedestal is gone" for other scripts reading it (pedestal_health.js,
-// quest_milestones.js), which isn't true here.
+// (same countdown/night-lock cleanup, same "GAME OVER + reason" popup
+// framing since 2026-09-10) but a genuinely harder real outcome, matching
+// the actual ask: real permadeath, not just "can't fight more waves." A
+// separate flag from td_pedestalDestroyed on purpose - that one
+// specifically means "the pedestal is gone" for other scripts reading it
+// (pedestal_health.js, quest_milestones.js), which isn't true here.
 function triggerHardcoreGameOver(player, level) {
   var data = worldData(level)
   if (!data) return
@@ -91,48 +127,74 @@ function triggerHardcoreGameOver(player, level) {
   }
   data.putBoolean('td_countdownActive', false)
 
-  server.runCommandSilent('title @a title {"text":"HARDCORE: YOU HAVE FALLEN","color":"dark_red","bold":true}')
-  server.runCommandSilent('title @a subtitle {"text":"No totem answered this time. The run ends here.","color":"gray"}')
+  // One popup, "GAME OVER" first and the reason as its subtitle - the
+  // same shape pedestal_destruction.js uses since 2026-09-10 (direct
+  // feedback there: the reason "should be part of the game over message").
+  server.runCommandSilent('title @a title {"text":"GAME OVER","color":"dark_red","bold":true}')
+  server.runCommandSilent('title @a subtitle {"text":"Hardcore: you have fallen, and nothing caught you.","color":"red"}')
   server.runCommandSilent('playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 0.6')
-  player.tell('§4§lThe run is over.')
+  player.tell('§4§lGame over - the run ends here.')
   player.tell('§7Hardcore was on, and nothing was left to catch you this time.')
-  // Same "how do I actually restart" gap as pedestal_destruction.js's own
-  // game-over popup, same fix - see that file's comment for the full
-  // reasoning on reusing wave_status.js's queueDelayedTitle here.
-  queueDelayedTitle(player, 'GAME OVER', 'Start a new world to try again - quest book progress carries over automatically.', 'red')
-  hqcExportProgress(player)
-  tellQuestCarryoverTip(player)
 
   // @a, not a name/UUID-targeted selector - matches every other command
   // in this file and this pack's standing "not designed for multiplayer"
   // scope (docs/FEATURES.md), same convention pedestal_destruction.js's
   // own title/tellraw calls already use.
   server.runCommandSilent('gamemode spectator @a')
+
+  // The actual "no respawn" - see the header. Scheduled, not immediate,
+  // so the title/sting above are seen on the death screen first.
+  data.putInt('td_hardcoreKickTick', level.getTime() + HARDCORE_KICK_DELAY_TICKS)
 }
+
+// Delayed disconnect. Driven from any online player's tick rather than
+// the dead one specifically - ServerPlayer#doTick (and with it Forge's
+// PlayerTickEvent, what PlayerEvents.tick rides on) keeps running for a
+// player sitting on the death screen, but nothing here depends on that
+// being true for the one who died: whoever ticks first fires it for all.
+PlayerEvents.tick((event) => {
+  var player = event.player
+  var level = player.getLevel()
+  if (level.getTime() % HARDCORE_KICK_POLL_TICKS !== 0) return
+  var data = worldData(level)
+  if (!data || !data.getBoolean('td_hardcoreGameOver')) return
+  if (!data.contains('td_hardcoreKickTick')) return
+  if (level.getTime() < data.getInt('td_hardcoreKickTick')) return
+  data.remove('td_hardcoreKickTick')
+  hardcoreKickAll(player.getServer())
+})
 
 // Real respawn happens on a fresh tick after death regardless of
 // gamemode - PlayerEvents.respawned fires once per respawn (confirmed in
 // the same PlayerEvents.class decompile above), the exact moment vanilla
 // would otherwise drop the player back into survival. Re-applies
 // spectator every time so this can't be undone by dying once, respawning
-// and carrying on - the real "permanent" half of permadeath, reimplementing
-// vanilla real Hardcore's own spectator-lock rather than the flag itself.
+// and carrying on - and, since 2026-09-10, ends the session right there:
+// a respawn after a hardcore game-over only happens if Respawn was clicked
+// inside the kick delay, and the answer is the same disconnect either way.
 PlayerEvents.respawned((event) => {
   var player = event.player
   var data = worldData(player.getLevel())
   if (!data) return
   if (!data.getBoolean('td_hardcoreGameOver')) return
   player.getServer().runCommandSilent('gamemode spectator @a')
+  data.remove('td_hardcoreKickTick')
+  hardcoreKickAll(player.getServer())
 })
 
 // Same re-lock on login - covers leaving and rejoining the world after a
 // hardcore death from an earlier session (the marker's persistentData
 // survives a server restart, same as every other shared flag in
-// world_state.js).
+// world_state.js). Deliberately NOT a kick: this is the "look around the
+// world you lost" path the disconnect text points at - spectator only,
+// with a reminder popup so it can't be mistaken for a live run.
 PlayerEvents.loggedIn((event) => {
   var player = event.player
   var data = worldData(player.getLevel())
   if (!data) return
   if (!data.getBoolean('td_hardcoreGameOver')) return
-  player.getServer().runCommandSilent('gamemode spectator @a')
+  var server = player.getServer()
+  server.runCommandSilent('gamemode spectator @a')
+  server.runCommandSilent('title @a title {"text":"GAME OVER","color":"dark_red","bold":true}')
+  server.runCommandSilent('title @a subtitle {"text":"This run ended in hardcore. Spectating only - start a new world to play again.","color":"gray"}')
 })
