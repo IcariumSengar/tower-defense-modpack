@@ -88,6 +88,14 @@ function giveStarterKit(player) {
   player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
+  // Manual fallback for the starter power rig (see starter_flux_network.js)
+  // - if the reflection-based auto-link ever fails on a given world, this
+  // is the mod's own real tool for linking the pre-placed generator/plug/
+  // battery upstairs by hand (right-click each once), no different from
+  // wiring any future turret to the network later. Given regardless of
+  // whether auto-link succeeds, since it's the normal way to add MORE
+  // devices to the network later anyway, not just a failure fallback.
+  player.give(Item.of('fluxnetworks:flux_configurator', 1))
 }
 
 // Seed-independent spawn-biome search (2026-09-06) - real replacement
@@ -816,8 +824,12 @@ function buildStarterBase(server, level, x, z) {
   const VEGETATION_Y_HIGH = floorY + 16
   const VEGETATION_Y_CHUNK = 16
   VEGETATION_BLOCKS.forEach((block) => {
-    for (let yStart = VEGETATION_Y_LOW; yStart <= VEGETATION_Y_HIGH; yStart += VEGETATION_Y_CHUNK) {
-      const yEnd = Math.min(yStart + VEGETATION_Y_CHUNK - 1, VEGETATION_Y_HIGH)
+    // var, not let/const - same Rhino "redeclaration" quirk as the
+    // breach loops below (see pickBreachRanges' own comment); a loop
+    // body's let/const that runs more than one iteration isn't safe in
+    // this build, even nested inside a forEach callback.
+    for (var yStart = VEGETATION_Y_LOW; yStart <= VEGETATION_Y_HIGH; yStart += VEGETATION_Y_CHUNK) {
+      var yEnd = Math.min(yStart + VEGETATION_Y_CHUNK - 1, VEGETATION_Y_HIGH)
       run(`fill ${vx0} ${yStart} ${vz0} ${vx1} ${yEnd} ${vz1} minecraft:air replace ${block}`)
     }
   })
@@ -924,10 +936,16 @@ function buildStarterBase(server, level, x, z) {
     const usableMax = coordMax - BREACH_CORNER_BUFFER
     if (usableMax - usableMin < BREACH_MIN_WIDTH) return picked
     for (let attempt = 0; attempt < BREACHES_PER_WALL * 10 && picked.length < BREACHES_PER_WALL; attempt++) {
-      const width = BREACH_MIN_WIDTH + Math.floor(Math.random() * (BREACH_MAX_WIDTH - BREACH_MIN_WIDTH + 1))
-      const start = usableMin + Math.floor(Math.random() * Math.max(1, usableMax - usableMin - width + 1))
-      const end = start + width - 1
-      const blocked = excludeRanges.concat(picked).some((r) => breachRangesOverlap(start, end, r[0], r[1]))
+      // var, not const/let - this function is called 4x per base build
+      // (once per wall) and this exact Rhino build throws "redeclaration
+      // of var width" on the 2nd call if these are block-scoped inside a
+      // loop body (real crash, 2026-09-11: aborted the whole base build,
+      // house included, both at world-start and the login fallback -
+      // see this file's own header comment on Rhino let/const quirks).
+      var width = BREACH_MIN_WIDTH + Math.floor(Math.random() * (BREACH_MAX_WIDTH - BREACH_MIN_WIDTH + 1))
+      var start = usableMin + Math.floor(Math.random() * Math.max(1, usableMax - usableMin - width + 1))
+      var end = start + width - 1
+      var blocked = excludeRanges.concat(picked).some((r) => breachRangesOverlap(start, end, r[0], r[1]))
       if (!blocked) picked.push([start, end])
     }
     return picked
@@ -946,10 +964,16 @@ function buildStarterBase(server, level, x, z) {
     return BREACH_RUBBLE_BLOCKS[Math.floor(Math.random() * BREACH_RUBBLE_BLOCKS.length)]
   }
 
-  for (let wx = x0; wx <= x1; wx++) {
-    const z0Breach = inAnyBreachRange(wx, z0WallBreaches)
-    const z1Breach = inAnyBreachRange(wx, z1WallBreaches)
-    for (let wy = wallY0; wy <= wallY1; wy++) {
+  // var throughout these two wall loops (and every loop below down to
+  // the entrance carve) - not let/const. Real crash, 2026-09-11: this
+  // exact Rhino build throws "redeclaration of var z0Breach" (and every
+  // other loop-body let/const here) once a loop runs a 2nd+ iteration,
+  // aborting the whole base build (walls, pedestal, house) partway
+  // through. Same fix as pickBreachRanges' own comment above.
+  for (var wx = x0; wx <= x1; wx++) {
+    var z0Breach = inAnyBreachRange(wx, z0WallBreaches)
+    var z1Breach = inAnyBreachRange(wx, z1WallBreaches)
+    for (var wy = wallY0; wy <= wallY1; wy++) {
       run(`setblock ${wx} ${wy} ${z0} ${z0Breach ? 'minecraft:air' : perimeterWallBlock(wx, z0)}`)
       run(`setblock ${wx} ${wy} ${z1} ${z1Breach ? 'minecraft:air' : perimeterWallBlock(wx, z1)}`)
     }
@@ -958,11 +982,11 @@ function buildStarterBase(server, level, x, z) {
     if (z0Breach && Math.random() < 0.5) run(`setblock ${wx} ${wallY0} ${z0 - 1} ${randomBreachRubble()}`)
     if (z1Breach && Math.random() < 0.5) run(`setblock ${wx} ${wallY0} ${z1 + 1} ${randomBreachRubble()}`)
   }
-  for (let wz = z0; wz <= z1; wz++) {
-    const isWeakWall = wz >= WEAK_WALL_Z0 && wz <= WEAK_WALL_Z1
-    const x0Breach = !isWeakWall && inAnyBreachRange(wz, x0WallBreaches)
-    const x1Breach = inAnyBreachRange(wz, x1WallBreaches)
-    for (let wy = wallY0; wy <= wallY1; wy++) {
+  for (var wz = z0; wz <= z1; wz++) {
+    var isWeakWall = wz >= WEAK_WALL_Z0 && wz <= WEAK_WALL_Z1
+    var x0Breach = !isWeakWall && inAnyBreachRange(wz, x0WallBreaches)
+    var x1Breach = inAnyBreachRange(wz, x1WallBreaches)
+    for (var wy = wallY0; wy <= wallY1; wy++) {
       if (isWeakWall) {
         run(`setblock ${x0} ${wy} ${wz} ${wy <= wallY0 + 1 ? 'minecraft:cobblestone' : 'minecraft:air'}`)
       } else {
@@ -1004,7 +1028,7 @@ function buildStarterBase(server, level, x, z) {
     run(`setblock ${sx} ${sy} ${sz} simply_traps:stake_wall[facing=${facing}]`)
   }
 
-  for (let wx = x0; wx <= x1; wx += STAKE_WALL_SPACING) {
+  for (var wx = x0; wx <= x1; wx += STAKE_WALL_SPACING) {
     // z0 run (back wall) - also skips the new breach columns above, same
     // "stays undefended" reasoning as WEAK_WALL below: a trap guarding an
     // intentional gap defeats the point of it being a gap.
@@ -1018,7 +1042,7 @@ function buildStarterBase(server, level, x, z) {
       placeStakeWall(wx, wallY0 + 1, z1 + 1, 'south')
     }
   }
-  for (let wz = z0; wz <= z1; wz += STAKE_WALL_SPACING) {
+  for (var wz = z0; wz <= z1; wz += STAKE_WALL_SPACING) {
     // x0 run (west wall) - skip the WEAK_WALL stretch and the new breach
     // columns, all meant to stay undefended (see the comments above).
     if ((wz < WEAK_WALL_Z0 || wz > WEAK_WALL_Z1) && !inAnyBreachRange(wz, x0WallBreaches)) {
@@ -1034,8 +1058,8 @@ function buildStarterBase(server, level, x, z) {
   // Entrance changed 2026-09-04 (direct ask, real playtest feedback
   // batch): genuinely open 3-wide, 3-tall gap, no door block at all -
   // was a single 1-wide oak_door.
-  for (let wx = doorX - 1; wx <= doorX + 1; wx++) {
-    for (let wy = wallY0; wy <= wallY0 + 2; wy++) {
+  for (var wx = doorX - 1; wx <= doorX + 1; wx++) {
+    for (var wy = wallY0; wy <= wallY0 + 2; wy++) {
       run(`setblock ${wx} ${wy} ${z1} minecraft:air`)
     }
   }
@@ -1231,7 +1255,18 @@ function buildStarterBase(server, level, x, z) {
   // waterloggable block auto-inherits waterlogged=true, same as
   // hand-placing into water would, which is what was rendering as "water
   // inside the crafting table." Forcing it off explicitly.
-  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station[waterlogged=false]`)
+  //
+  // Moved one block right (x+5 -> x+6), direct ask 2026-09-11: "can you
+  // move the starting crafting table one block to the right." The vacated
+  // x+5 cell gets cleared to air below - nothing else in this file reads
+  // it, and leaving it alone would keep whatever the raw structure NBT had
+  // there (the water-source "kitchen sink" noted above), re-exposing the
+  // exact bug this section already fixed once. The new x+6 cell is one of
+  // the 4 stripped_spruce_log counter props the double-chest section below
+  // clears to air - that section's own air-clear for this exact cell is
+  // removed to match, so this placement is the one that sticks.
+  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} minecraft:air`)
+  run(`setblock ${buildingX0 + 6} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station[waterlogged=false]`)
   // Cauldron + tripwire hook - direct removal request.
   run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 5} minecraft:air`)
   run(`setblock ${buildingX0 + 8} ${floorY + 2} ${buildingZ0 + 5} minecraft:air`)
@@ -1260,7 +1295,9 @@ function buildStarterBase(server, level, x, z) {
   // fix just above - no known fluid source under these exact cells, but
   // cheap insurance against the same "inherited from replaced water"
   // class of bug.
-  run(`setblock ${buildingX0 + 6} ${floorY + 1} ${buildingZ0 + 4} minecraft:air`)
+  //
+  // x+6's own air-clear removed 2026-09-11 - the moved crafting station
+  // above now occupies this cell instead (see that section's comment).
   run(`setblock ${buildingX0 + 7} ${floorY + 1} ${buildingZ0 + 4} minecraft:chest[facing=south,type=right,waterlogged=false]`)
   run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 4} minecraft:chest[facing=south,type=left,waterlogged=false]`)
   run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 6} minecraft:air`)
@@ -1295,6 +1332,39 @@ function buildStarterBase(server, level, x, z) {
   ;[3, 4, 5, 6].forEach((lx) => {
     run(`setblock ${buildingX0 + lx} ${floorY + 5} ${buildingZ0 + 4} minecraft:air`)
   })
+
+  // Starter power rig - direct ask 2026-09-11: the house comes with a
+  // working Culinary Generator + Flux Plug + Basic Flux Storage already
+  // placed, in the same upstairs room the trapdoor-bed clearing above
+  // opened up (real free floor space, not a new cutout). Bio generator +
+  // Flux Plug directly stacked (Plug reads the generator's Forge Energy
+  // capability off the shared face, no cabling - the whole "no cables
+  // needed" point of Flux Networks); Basic Flux Storage two tiles over,
+  // acting as an early-game buffer so short bursts (a Tesla Coil zap, a
+  // turret volley) don't have to draw the generator's raw 4096 Flux/t
+  // directly. Real Flux Networks numbers, decompiled from
+  // FluxConfig$Server (not guessed): Basic Flux Storage is 2,000,000 Flux
+  // capacity / 20,000 Flux/t transfer, crafted from 6 Flux Blocks + 2
+  // glass panes - the right early tier, nowhere near Herculean/
+  // Gargantuan's footprint. The 3 blocks aren't wired into a live network
+  // yet at this point (no player exists during world-build) - that
+  // happens in starter_flux_network.js's login handler, which needs
+  // these exact coordinates, hence persisting them below.
+  const bioGeneratorX = buildingX0 + 3
+  const bioGeneratorY = floorY + 5
+  const bioGeneratorZ = buildingZ0 + 4
+  const fluxPlugX = bioGeneratorX
+  const fluxPlugY = bioGeneratorY + 1
+  const fluxPlugZ = bioGeneratorZ
+  const fluxBatteryX = buildingX0 + 5
+  const fluxBatteryY = floorY + 5
+  const fluxBatteryZ = buildingZ0 + 4
+  run(`setblock ${bioGeneratorX} ${bioGeneratorY} ${bioGeneratorZ} generatorgalore:culinary_generator`)
+  run(`setblock ${fluxPlugX} ${fluxPlugY} ${fluxPlugZ} fluxnetworks:flux_plug`)
+  run(`setblock ${fluxBatteryX} ${fluxBatteryY} ${fluxBatteryZ} fluxnetworks:basic_flux_storage`)
+  // Persisted to worldD once it's declared below (markerEntity's
+  // persistentData isn't available yet at this point in the function) -
+  // see the td_pedestalX/Y/Z block further down, same pattern.
 
   // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
   // note on the amulet objective fix): the pedestal is the permanent
@@ -1375,6 +1445,22 @@ function buildStarterBase(server, level, x, z) {
     worldD.putInt('td_compoundX1', x1)
     worldD.putInt('td_compoundZ0', z0)
     worldD.putInt('td_compoundZ1', z1)
+  }
+
+  // Starter power rig coordinates (blocks already placed above) - read by
+  // starter_flux_network.js's login handler to create the real Flux
+  // Network and link these 3 blocks into it (deferred to login since
+  // createNetwork needs a real Player, and none exists during world-build).
+  if (worldD) {
+    worldD.putInt('td_bioGeneratorX', bioGeneratorX)
+    worldD.putInt('td_bioGeneratorY', bioGeneratorY)
+    worldD.putInt('td_bioGeneratorZ', bioGeneratorZ)
+    worldD.putInt('td_fluxPlugX', fluxPlugX)
+    worldD.putInt('td_fluxPlugY', fluxPlugY)
+    worldD.putInt('td_fluxPlugZ', fluxPlugZ)
+    worldD.putInt('td_fluxBatteryX', fluxBatteryX)
+    worldD.putInt('td_fluxBatteryY', fluxBatteryY)
+    worldD.putInt('td_fluxBatteryZ', fluxBatteryZ)
   }
 
   // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
@@ -1835,6 +1921,58 @@ PlayerEvents.loggedIn((event) => {
     // player, which is exactly why the migration could never reach this
     // point if it lived any later in this function.
     migrateLegacySharedState(player, existingMarker)
+
+    // Retroactive starter power rig, 2026-09-11 - real playtest report
+    // ("not seeing the generator and the flux plug"): this save's base
+    // was already built (existingMarker exists) by a version of
+    // buildStarterBase from before the power rig existed, so the
+    // world-build gate above (which only fires once per world, ever)
+    // never re-runs and this save never got the 3 blocks or the
+    // td_bioGenerator*/td_fluxPlug*/td_fluxBattery* keys starter_flux_
+    // network.js needs. Gated on worldD's own td_bioGeneratorX key
+    // rather than a separate flag - a genuinely fresh world already has
+    // it (buildStarterBase writes it directly), so this only ever does
+    // anything on an old save, and only once (the write below makes
+    // every later login see the key and skip straight past). Coordinates
+    // reconstructed from td_pedestalX/Y/Z with the same fixed offsets
+    // buildStarterBase itself derives them through (doorX/wallY0/z1 ->
+    // buildingX0/floorY/buildingZ0 -> the rig's own +3/+5/+4/-1/-11
+    // offsets) since BUILDING_WIDTH/GATE_OFFSET/etc. aren't in scope
+    // here - see that function's power-rig section for the real numbers.
+    var worldD = existingMarker.persistentData
+    if (!worldD.contains('td_bioGeneratorX')) {
+      var pedX = worldD.getInt('td_pedestalX')
+      var pedY = worldD.getInt('td_pedestalY')
+      var pedZ = worldD.getInt('td_pedestalZ')
+      var rigBioGeneratorX = pedX - 3
+      var rigBioGeneratorY = pedY + 4
+      var rigBioGeneratorZ = pedZ - 11
+      var rigFluxPlugX = rigBioGeneratorX
+      var rigFluxPlugY = rigBioGeneratorY + 1
+      var rigFluxPlugZ = rigBioGeneratorZ
+      var rigFluxBatteryX = pedX - 1
+      var rigFluxBatteryY = pedY + 4
+      var rigFluxBatteryZ = pedZ - 11
+      server.runCommandSilent(`setblock ${rigBioGeneratorX} ${rigBioGeneratorY} ${rigBioGeneratorZ} generatorgalore:culinary_generator`)
+      server.runCommandSilent(`setblock ${rigFluxPlugX} ${rigFluxPlugY} ${rigFluxPlugZ} fluxnetworks:flux_plug`)
+      server.runCommandSilent(`setblock ${rigFluxBatteryX} ${rigFluxBatteryY} ${rigFluxBatteryZ} fluxnetworks:basic_flux_storage`)
+      worldD.putInt('td_bioGeneratorX', rigBioGeneratorX)
+      worldD.putInt('td_bioGeneratorY', rigBioGeneratorY)
+      worldD.putInt('td_bioGeneratorZ', rigBioGeneratorZ)
+      worldD.putInt('td_fluxPlugX', rigFluxPlugX)
+      worldD.putInt('td_fluxPlugY', rigFluxPlugY)
+      worldD.putInt('td_fluxPlugZ', rigFluxPlugZ)
+      worldD.putInt('td_fluxBatteryX', rigFluxBatteryX)
+      worldD.putInt('td_fluxBatteryY', rigFluxBatteryY)
+      worldD.putInt('td_fluxBatteryZ', rigFluxBatteryZ)
+      // giveStarterKit (below) already gave this returning player their
+      // one-time kit long ago (td_playtestKitGiven is already true), so
+      // its own new flux_configurator line never reaches them - give it
+      // directly here instead, same fallback-linking-tool reasoning as
+      // starter_flux_network.js's own header comment.
+      player.give(Item.of('fluxnetworks:flux_configurator', 1))
+      console.log(`playtest_starter_kit.js: retrofitted starter power rig onto a pre-existing world at (${rigBioGeneratorX}, ${rigBioGeneratorY}, ${rigBioGeneratorZ}) - starter_flux_network.js will link it on this same login`)
+    }
   }
 
   // Per-player pieces only from here on. Vanilla's own /setworldspawn
