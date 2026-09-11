@@ -391,7 +391,6 @@
 			hide_until_deps_complete: true
 			description: [
 				"Wave 8 is the last one anyone planned. Past it nobody bothered counting: every one after is a horde, bigger than the last, and none of them repeat. How much bigger, and what walks in with them, isn't written down anywhere. You'll feel it before anyone could tell you."
-				"Every fifth wave a supply crate drops near the base with a map marker on it: a Legendary bag, netherite scrap, a diamond block."
 			]
 			icon: "minecraft:map"
 			id: "42EDC7E6DB5ABFAA"
@@ -509,6 +508,7 @@
 			tasks: [
 				{
 					consume_items: false
+					only_from_crafting: true
 					id: "5C0E7A34D2F9B168"
 					item: "kubejs:amulet"
 					type: "item"
@@ -1092,7 +1092,7 @@
 				}
 			]
 			title: "Cheap and Cheerful"
-			x: 15.5d
+			x: 14.0d
 			y: 1.5d
 		}
 		{
@@ -1324,33 +1324,6 @@
 			y: 7.5d
 		}
 		{
-			dependencies: ["5034B45EB70EE642"]
-			hide_until_deps_complete: true
-			description: ["Doesn't attack - it shoots down incoming arrows and fireballs before they reach you or your other traps. Needs a Sentry to build, so it's the last piece of this line, not the first."]
-			icon: "securitycraft:trophy_system"
-			id: "42D2FBFF1FE00D15"
-			rewards: [
-				{
-					id: "4FCD0AD125529107"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-			]
-			shape: "hexagon"
-			subtitle: "A Sentry, an iron block, 2 sticks"
-			tasks: [
-				{
-					consume_items: false
-					id: "238226AAC24241AB"
-					item: "securitycraft:trophy_system"
-					type: "item"
-				}
-			]
-			title: "Trophy System"
-			x: 22.0d
-			y: 7.5d
-		}
-		{
 			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
 			description: [
@@ -1431,7 +1404,7 @@
 		{
 			dependencies: ["5C44D121F112749F"]
 			hide_until_deps_complete: true
-			description: ["Immersive Engineering has its own book, and you'll need it: every multiblock's layout is in there with a ghost preview you can build against."]
+			description: ["Optional. Immersive Engineering has its own book: every multiblock's layout is in there with a ghost preview you can build against. Handy alongside the generator and traps below, but nothing here needs it in hand - build straight from JEI if you'd rather skip it."]
 			icon: "immersiveengineering:manual"
 			id: "3F1186E1CA1B9236"
 			rewards: [
@@ -1442,7 +1415,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Book + lever"
+			subtitle: "Book + lever (optional reference for the IE builds below)"
 			tasks: [
 				{
 					consume_items: false
@@ -1452,14 +1425,14 @@
 				}
 			]
 			title: "The Engineer's Manual"
-			x: 18.0d
-			y: 9.0d
+			x: 20.0d
+			y: 7.5d
 		}
 		{
-			dependencies: ["3F1186E1CA1B9236"]
+			dependencies: ["5C44D121F112749F"]
 			hide_until_deps_complete: true
-			description: ["The &eDiesel Generator&r is 3 wide, 3 tall and 5 long: 13 Heavy Engineering Blocks, 9 Radiators, 6 Steel Scaffolding, 5 Fluid Pipes, 4 Generator blocks and 1 Redstone Engineering Block, formed by right-clicking it with the Engineer's Hammer. It burns Biodiesel, which means a Squeezer, a Fermenter and a Refinery first. This is the deep end of the pack."]
-			icon: "immersiveengineering:diesel_generator"
+			description: ["The &eCulinary Generator&r burns any food item for Flux - rotten flesh included, so every zombie you drop feeds it. Craft a Copper Generator, then upgrade it through Iron and Gold before the Culinary recipe unlocks: a Gold Generator plus Bread, 2 crops, 2 eggs and a redstone block. The eggs are a loot find - stores and farms out in the ruins carry them."]
+			icon: "generatorgalore:culinary_generator"
 			id: "4B07331734543EB4"
 			rewards: [
 				{
@@ -1475,14 +1448,13 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Look at a formed Diesel Generator"
+			subtitle: "Copper -> Iron -> Gold -> Culinary Generator. Tuned to match the Diesel Generator it replaces - 4096 Flux/t, plenty for the Tesla Coil and both turrets running at once."
 			tasks: [
 				{
+					consume_items: false
 					id: "08AB30CBF8B142A1"
-					observe_type: 0
-					timer: 0L
-					to_observe: "immersiveengineering:diesel_generator"
-					type: "observation"
+					item: "generatorgalore:culinary_generator"
+					type: "item"
 				}
 			]
 			title: "Wired Different"
@@ -1586,6 +1558,72 @@
 			title: "The Grid"
 			x: 26.0d
 			y: 9.0d
+		}
+		{
+			dependencies: ["4F7597CFC2BED87F"]
+			hide_until_deps_complete: true
+			description: ["Auto-aims and fires on its own at anything hostile in range, no redstone clock needed - just power and a signal to enable it. Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."]
+			icon: "immersiveengineering:turret_gun"
+			id: "54BAD02969997982"
+			rewards: [
+				{
+					id: "50FA12E0581897E2"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+				{
+					count: 4
+					id: "6C8A1F3D0B4E7295"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Revolver, Revolver Magazine, Turntable, a Sentry, a Flux Point. 64 Flux/t just watching, +32 more while it's actually firing."
+			tasks: [
+				{
+					consume_items: false
+					id: "3EB5BAD6EDFB3551"
+					item: "immersiveengineering:turret_gun"
+					type: "item"
+				}
+			]
+			title: "Point and Shoot"
+			x: 22.0d
+			y: 10.5d
+		}
+		{
+			dependencies: ["4F7597CFC2BED87F"]
+			hide_until_deps_complete: true
+			description: ["Sprays whatever fluid it's fed at anything hostile in range, with a pilot light to set the spray alight if it's flammable. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."]
+			icon: "immersiveengineering:turret_chem"
+			id: "63884A2BC335FF75"
+			rewards: [
+				{
+					id: "2ACCFFF12C5158CC"
+					type: "xp_levels"
+					xp_levels: 4
+				}
+				{
+					count: 4
+					id: "1A5D9C3E7B2F0684"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Chemthrower, Metal Barrel, Turntable, an Electrified Iron Fence, a Flux Point. 64 Flux/t just watching, +32 more while it's actually spraying."
+			tasks: [
+				{
+					consume_items: false
+					id: "0222F84A14DD6F97"
+					item: "immersiveengineering:turret_chem"
+					type: "item"
+				}
+			]
+			title: "Liquid Fire"
+			x: 24.0d
+			y: 10.5d
 		}
 	]
 	subtitle: ["Hold the pedestal. The waves don't stop."]

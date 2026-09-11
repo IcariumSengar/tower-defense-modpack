@@ -52,7 +52,6 @@ var BOUNTY_HOSTILE_TYPES = [
   'mutantszombies:mutant_zombie',
   'mutantszombies:blister_zombie',
   'mutantszombies:split_head_zombie',
-  'zombiesmore:boomer_zombie',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',

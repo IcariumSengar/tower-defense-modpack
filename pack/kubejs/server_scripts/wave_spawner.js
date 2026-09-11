@@ -230,17 +230,27 @@
 // phase's explosive per-level growth - just "a little more," per the
 // direct ask, not a difficulty overhaul.
 //
-// Boomer Zombie pulled from every wave (waves 4/5/7) 2026-09-09, direct
-// ask: "remove the boomers for now, i cant figure out how to balance
-// these, they keep blowing up my pedestal" - a real balance problem
-// (boomer_zombie_explosion.js's own block-destroying blast, see that
-// file), not a bug. Removed here only, not from every roster copy
-// elsewhere (mob_aggro.js/pedestal_health.js/wave_status.js/
-// bounty_kills.js/flesh_death_sound.js/ladder_climb_assist.js/
-// loot_bag_drops.js) - those are all inert without a live boomer to
-// match against, and leaving them means re-adding this mob later (once
-// it's balanced) is just restoring these 3 array entries, not a wider
-// re-wire.
+// Boomer Zombie: pulled from every wave (waves 4/5/7) 2026-09-09 ("remove
+// the boomers for now, i cant figure out how to balance these, they keep
+// blowing up my pedestal" - a real balance problem, boomer_zombie_
+// explosion.js's own block-destroying blast, not a bug), then narrowed to
+// a rare endless-phase pick 2026-09-10 ("just make them rarer, less
+// frequent"), then **removed entirely 2026-09-11** ("just remove boomers
+// entirely from the game" - a direct, unambiguous supersession of the
+// "rarer" call from one day earlier). Fully purged this time, not left
+// as inert roster-copy entries the way the 2026-09-09 pull did:
+// zombiesmore:boomer_zombie is gone from WAVE_MOB_TYPES,
+// ENDLESS_OTHER_TIERS, pickEndlessOtherType's own reroll (removed, no
+// longer needed), and every roster-copy array elsewhere (mob_aggro.js/
+// pedestal_health.js/wave_status.js/bounty_kills.js/flesh_death_sound.js/
+// loot_bag_drops.js's EPIC_MOBS/epicsiegemod-common.toml's 4 mob lists).
+// boomer_zombie_explosion.js (the block-destroying blast this mob alone
+// needed) is deleted outright - dead code once the mob can never spawn.
+// Zombies More itself is LEFT INSTALLED (not uninstalled) - its own
+// natural-spawn biome-modifier override (kubejs/data/zombiesmore/forge/
+// biome_modifier/boomer_zombie_biome_modifier.json) still blocks the mod's
+// own worldgen spawns and must stay for boomer to be genuinely gone, not
+// just absent from this pack's own spawn logic.
 var WAVES = [
   [['minecraft:zombie', 5], ['minecraft:husk', 3], ['minecraft:zombie_villager', 1]],
   [['minecraft:zombie', 4], ['minecraft:husk', 3], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 3]],
@@ -291,7 +301,19 @@ var WAVES = [
   // mob type and I want the player to be taken off guard") - wave 8 is the
   // Crawler's debut and the only written wave it appears in, so the pack
   // of four is the beat, not a single scout.
-  [['mutantszombies:crawler', 4], ['mutantszombies:mutant_brute', 1], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 3]],
+  //
+  // Mutant Brute pulled from this wave entirely, 2026-09-10 (direct ask:
+  // "move the brutes to later waves, say from wave 20") - the 2026-09-04
+  // fix above already pushed brutes back from wave 7 to wave 8; this is
+  // the same feedback again, one tier further out. Backfilled by bumping
+  // Horde Zombie 3 -> 4 (already this wave's own reinforcement pick, see
+  // above) rather than introducing anything new, same "more of what's
+  // already established" pattern as the 2026-09-04 fix - keeps this
+  // wave's total at 10 mobs (docs/QUEUE.md item #10). See
+  // BRUTE_TIER_MIN_LEVEL below for the matching endless-phase change -
+  // no brute of either type (zombie_brute/mutant_brute) can appear before
+  // wave 20 now, hand-authored or endless.
+  [['mutantszombies:crawler', 4], ['undeadnights:demolition_zombie', 1], ['undeadnights:elite_zombie', 1], ['undeadnights:horde_zombie', 4]],
 ]
 
 // Endless-phase vocabulary (2026-09-10, direct ask: the wave-start popup
@@ -322,7 +344,6 @@ var WAVE_MOB_TYPES = [
   'mutantszombies:mutant_zombie',
   'mutantszombies:blister_zombie',
   'mutantszombies:split_head_zombie',
-  'zombiesmore:boomer_zombie',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
@@ -348,8 +369,29 @@ var WAVE_MOB_TYPES = [
 // n climbs").
 var ENDLESS_OTHER_TIERS = [
   ['minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager'],
-  ['mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie', 'zombiesmore:boomer_zombie'],
-  ['undeadnights:elite_zombie', 'undeadnights:horde_zombie', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute', 'mutantszombies:rotten_mutant', 'mutantszombies:crawler'],
+  ['mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie'],
+  // Crawler weighted up 2026-09-10 (direct ask: "more crawlers... to make
+  // the game harder") - listed 3x instead of once, so it's 3 of 7 picks
+  // here (~43%) instead of 1 of 5 (20%). Real reason it's the pick for
+  // "harder," not just "more mobs": decompiled CrawlerEntity.class
+  // directly - it implements Advanced Wall Climber API's own
+  // IAdvancedClimber with a real ClimberPathNavigator, so it can climb
+  // straight up a chokepoint wall's face instead of needing to path
+  // around or through it, on top of already being faster than a vanilla
+  // zombie (0.3 movement speed vs. 0.23). The other 4 tier-2 mobs keep
+  // equal odds against each other, just diluted by Crawler's bigger slice.
+  ['undeadnights:elite_zombie', 'undeadnights:horde_zombie', 'undeadnights:demolition_zombie', 'mutantszombies:rotten_mutant', 'mutantszombies:crawler', 'mutantszombies:crawler', 'mutantszombies:crawler'],
+  // Brute-only tier, split out of tier 2 above 2026-09-10 (direct ask:
+  // "move the brutes to later waves, say from wave 20"). Both brutes used
+  // to share tier 2 and its single BRUTE_TIER_MIN_LEVEL gate below -
+  // pushing that gate back to wave 20 would have dragged elite_zombie/
+  // horde_zombie/demolition_zombie/rotten_mutant/crawler back with it
+  // too, even though only the brutes were ever the complaint (2026-09-04's
+  // "brutes are very tanky... should be coming in later waves" - this is
+  // the same feedback, one tier further out). Splitting them into their
+  // own tier lets BRUTE_TIER_MIN_LEVEL move without touching tier 2's
+  // original level-5 unlock.
+  ['mutantszombies:zombie_brute', 'mutantszombies:mutant_brute'],
 ]
 
 // Real tuning fix, 2026-09-05 (direct live report: 2 Zombie/Mutant
@@ -359,13 +401,57 @@ var ENDLESS_OTHER_TIERS = [
 // - with baseline `m` at ~15 picks for wave 9, a real ~7-8% chance of
 // hitting 2+ brutes purely by binomial variance, matching what was
 // reported. Not "reduce the odds," the ask was "push toward later
-// levels" - tier 2 (which includes both confirmed tank mobs,
-// zombie_brute/mutant_brute, alongside elite_zombie/horde_zombie/
-// demolition_zombie/rotten_mutant/crawler) is now HARD-GATED to zero
-// weight below BRUTE_TIER_MIN_LEVEL, not just low-probability - a
-// player literally cannot see one from this pool before that level,
-// then it ramps up steadily past it.
-var BRUTE_TIER_MIN_LEVEL = 5
+// levels" - tier 2 was HARD-GATED to zero weight below this level, not
+// just low-probability - a player literally cannot see one from this
+// pool before that level, then it ramps up steadily past it.
+//
+// **Split 2026-09-10**: this used to gate the whole tier, brutes
+// included (see the tier-split comment above ENDLESS_OTHER_TIERS) -
+// renamed from BRUTE_TIER_MIN_LEVEL to TIER2_MIN_LEVEL since it no
+// longer has anything to do with brutes specifically, value unchanged
+// (elite_zombie/horde_zombie/demolition_zombie/rotten_mutant/crawler
+// still unlock at wave 13 exactly as before).
+var TIER2_MIN_LEVEL = 5
+// Brutes' own gate, split out 2026-09-10 (direct ask: "move the brutes
+// to later waves, say from wave 20") - moved from 5 to 12 (endless level
+// = waveNumber - WAVES.length, and WAVES.length is 8, so level 12 is
+// wave 20 exactly). Mutant Brute's wave 8 hand-authored appearance was
+// also removed (WAVES[7] above) for the same reason - no brute of
+// either type before wave 20 now, hand-authored or endless.
+var BRUTE_TIER_MIN_LEVEL = 12
+
+// Brute speed fix, 2026-09-10 (direct ask: "the brutes aren't hard they
+// are just annoying and tanky"). Decompiled both real entity classes
+// directly (net/petemc/mutantszombies/entity/{Zombie,Mutant}BruteEntity.
+// class createAttributes(), same jar this pack ships): zombie_brute is
+// 100 HP/16 damage/16 armor at 0.21 movement speed, mutant_brute 120
+// HP/18 damage/18 armor at 0.2 - both SLOWER than a vanilla zombie's
+// 0.23, and both have full (1.0) knockback resistance on top of that.
+// That's the real mechanism behind "annoying and tanky, not hard": a
+// player who just walks (let alone sprints) away never gets hit at all,
+// so the fight is either a non-event or a tedious stationary grind - the
+// high HP/armor/damage never gets to matter. Not touching HP/damage/
+// armor at all, only movement speed, via the same summon-NBT Attributes
+// override boss_wave.js already uses for "The Behemoth" (which had this
+// exact same problem and gets the same fix there). 0.28 - faster than
+// every other roster mob except Crawler's dedicated 0.3 swarm speed, so
+// a Brute can now actually run a player down instead of just standing
+// in the way.
+var BRUTE_SPEED_FIX_TYPES = ['mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
+var BRUTE_MOVEMENT_SPEED = 0.28
+
+// Mutant Brute HP halved, 2026-09-11 (direct ask: "make the brute's health
+// 50% of what they currently are" - clarified to Mutant Brute specifically,
+// not Zombie Brute, when both existed as candidates). Native class default
+// is 120 (decompiled, see this section's own comment above) - halved to 60.
+// Zombie Brute's 100 HP is deliberately untouched. Same summon-NBT
+// Attributes override mechanism as BRUTE_SPEED_FIX_TYPES/boss_wave.js's own
+// health override - `Health:` also has to be set alongside the
+// `generic.max_health` attribute (not just the attribute alone), same as
+// boss_wave.js's summon NBT does, or the entity spawns at its old native
+// max HP with the new lower cap only affecting future healing/regen, not
+// its actual starting health.
+var MUTANT_BRUTE_MAX_HEALTH = 60
 
 function pickEndlessOtherType(waveNumber) {
   // Weight shift is keyed on endlessLevel (1-40), not the raw wave
@@ -373,12 +459,26 @@ function pickEndlessOtherType(waveNumber) {
   // hordeSizeScaleFactor/undeadnights_difficulty_config.json already use,
   // rather than stretching arbitrarily for a very long campaign.
   var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
-  var tier2Weight = endlessLevel < BRUTE_TIER_MIN_LEVEL ? 0 : Math.min(60, (endlessLevel - BRUTE_TIER_MIN_LEVEL + 1) * 3)
-  var weights = [Math.max(5, 40 - endlessLevel), 30, tier2Weight]
-  var totalWeight = weights[0] + weights[1] + weights[2]
+  // Ramp rate steepened 2026-09-10 (direct ask: "the waves need to ramp
+  // up in difficulty way more quickly") - *3 -> *5 and cap 60 -> 80 for
+  // both. Deliberately NOT touching TIER2_MIN_LEVEL/BRUTE_TIER_MIN_LEVEL
+  // themselves - those are the exact unlock levels the peer session just
+  // set this same day on a direct, explicit ask ("move the brutes to
+  // later waves, say from wave 20"), so brutes still can't appear before
+  // level 12/wave 20. This only makes each tier dominate faster once it
+  // DOES unlock - tier2 hits its new cap by level 20 (was level 25), the
+  // brute tier by level 28 (was level 32).
+  var tier2Weight = endlessLevel < TIER2_MIN_LEVEL ? 0 : Math.min(80, (endlessLevel - TIER2_MIN_LEVEL + 1) * 5)
+  var bruteWeight = endlessLevel < BRUTE_TIER_MIN_LEVEL ? 0 : Math.min(80, (endlessLevel - BRUTE_TIER_MIN_LEVEL + 1) * 5)
+  var weights = [Math.max(5, 40 - endlessLevel), 30, tier2Weight, bruteWeight]
+  var totalWeight = weights[0] + weights[1] + weights[2] + weights[3]
   var roll = Math.random() * totalWeight
-  var tierIndex = roll < weights[0] ? 0 : roll < weights[0] + weights[1] ? 1 : 2
+  var tierIndex = roll < weights[0] ? 0 : roll < weights[0] + weights[1] ? 1 : roll < weights[0] + weights[1] + weights[2] ? 2 : 3
   var tier = ENDLESS_OTHER_TIERS[tierIndex]
+  // Boomer's own reroll (added 2026-09-10 to make it rarer, not removed)
+  // deleted 2026-09-11 along with the rest of the mob - see this file's
+  // WAVES header comment for the full removal writeup. Plain uniform pick
+  // again, same as every other tier here.
   return tier[Math.floor(Math.random() * tier.length)]
 }
 
@@ -457,6 +557,54 @@ function tdSnapshotUntaggedRosterMobs(level) {
   return snap
 }
 
+// Compound safety net for Undead Nights' own spawn_horde mobs - real
+// playtest report (2026-09-11): "an enemy spawned in my house. this
+// shouldn't happen." spawn_horde is that mod's own opaque command
+// (distanceMin/distanceMax band around the player, defaultconfigs/
+// undeadnights-server.toml - see useWaveHorn's own comment on this) and
+// never goes through this file's randomObjectiveRelativePosition/
+// isInsideCompound check at all, so if the player is standing inside
+// the compound when a horde fires, the mod can and does place horde
+// mobs anywhere within its own band regardless of walls - straight
+// inside the player's own house included. This is the only hook this
+// pack has into those otherwise-opaque spawns (right where they're
+// already being walked once to tag them td_wave_mob), so it's also the
+// only place a fix can land: any mob landing inside the padded compound
+// footprint gets pushed out to just past its nearest wall instead,
+// same rectangle the scripted campaign spawner avoids (playtest_starter_
+// kit.js writes td_compoundX0/X1/Z0/Z1 once the base finishes building).
+// No-ops entirely on an old save with no persisted compound footprint.
+var TD_COMPOUND_RELOCATE_PADDING = 4
+
+function tdRelocateIfInsideCompound(entity, level) {
+  var data = worldData(level)
+  if (!data || !data.contains('td_compoundX0')) return
+  var x0 = data.getInt('td_compoundX0') - TD_COMPOUND_RELOCATE_PADDING
+  var x1 = data.getInt('td_compoundX1') + TD_COMPOUND_RELOCATE_PADDING
+  var z0 = data.getInt('td_compoundZ0') - TD_COMPOUND_RELOCATE_PADDING
+  var z1 = data.getInt('td_compoundZ1') + TD_COMPOUND_RELOCATE_PADDING
+  var ex = entity.getX()
+  var ez = entity.getZ()
+  if (ex < x0 || ex > x1 || ez < z0 || ez > z1) return // already outside
+
+  // Push out along whichever wall is nearest - cheapest way clear of the
+  // rectangle, no pathfinding/chunk access needed.
+  var distWest = ex - x0
+  var distEast = x1 - ex
+  var distNorth = ez - z0
+  var distSouth = z1 - ez
+  var minDist = Math.min(distWest, distEast, distNorth, distSouth)
+  var nx = ex
+  var nz = ez
+  if (minDist === distWest) nx = x0 - 1
+  else if (minDist === distEast) nx = x1 + 1
+  else if (minDist === distNorth) nz = z0 - 1
+  else nz = z1 + 1
+
+  entity.teleportTo(nx, entity.getY(), nz)
+  console.log(`wave_spawner.js: relocated a horde ${entity.type} out of the compound, (${Math.floor(ex)},${Math.floor(ez)}) -> (${Math.floor(nx)},${Math.floor(nz)})`)
+}
+
 function tdTagHordeMobs(player, level) {
   var tagged = 0
   level.getEntities().forEach(function (e) {
@@ -468,6 +616,7 @@ function tdTagHordeMobs(player, level) {
     var dz = e.getZ() - player.getZ()
     if (dx * dx + dz * dz > HORDE_TAG_RADIUS * HORDE_TAG_RADIUS) return
     tags.add('td_wave_mob')
+    tdRelocateIfInsideCompound(e, level)
     tagged++
   })
   return tagged
@@ -492,6 +641,39 @@ function nearbyWaveMobCount(origin, level, radius) {
     var dy = e.getY() - origin.y
     var dz = e.getZ() - origin.z
     return dx * dx + dy * dy + dz * dz <= radius * radius
+  }).length
+}
+
+// Concurrent-alive spawn cap (2026-09-11, real playtest report: "serious
+// lag around wave 20"). Root cause confirmed against a real instance log,
+// not guessed: the endless-phase baseline layer below spawns on an
+// exponential curve (steepened the same day for a separate, real,
+// direct ask - "the waves need to ramp up in difficulty way more
+// quickly" - so the fix here can't just be "make the curve gentler
+// again," that would undo a different explicit request). By wave 20 that
+// curve alone wants ~111 new mobs in one staggered burst, ~307 by wave
+// 30, ~841 by wave 40 (simulated, not guessed) - each one costing several
+// synchronous commands (summon/spreadplayers/tag) on top of ongoing
+// AI/targeting every tick after that, which is exactly what produced the
+// real "Can't keep up! ... 163 ticks behind" warnings in the log.
+//
+// Rather than shrinking the formula (fights the difficulty-ramp ask
+// above), this caps how many td_wave_mob entities are allowed ALIVE AT
+// ONCE, checked in the pendingSpawns-draining tick handler below - a
+// spawn whose turn has come up but would push the alive count over the
+// cap just stays queued instead of firing, and gets retried on a later
+// tick once something has died to free a slot. The formula's full total
+// still eventually reaches the world exactly as designed, just spread
+// out over the fight instead of dumped in one tick-lag spike - the
+// intended chaos/difficulty is preserved, only the PEAK simultaneous
+// entity/command load is bounded. Global (not radius-limited, unlike
+// nearbyWaveMobCount above) since server tick cost comes from every live
+// wave mob regardless of how far it's wandered from the pedestal.
+var MAX_CONCURRENT_WAVE_MOBS = 60
+
+function countAliveWaveMobs(level) {
+  return level.getEntities().filter(function (e) {
+    return WAVE_MOB_TYPES.includes(`${e.type}`) && e.getTags().contains('td_wave_mob') && e.getHealth() > 0
   }).length
 }
 
@@ -783,18 +965,47 @@ function useWaveHorn(player) {
     return px >= compoundX0 && px <= compoundX1 && pz >= compoundZ0 && pz <= compoundZ1
   }
 
+  // Real playtest report (2026-09-11): "an enemy spawned in my house.
+  // this shouldn't happen." The random reject-and-resample loop above
+  // used to fall back to whatever its last (possibly inside-compound)
+  // attempt was once it ran out of tries - accepted at the time as
+  // better than silently dropping the spawn, but a growing compound
+  // (base_expansion.js) eats more and more of the fixed 48-64 band over
+  // a long campaign, so that "rare" fallback stops being rare. Real
+  // fix: when resampling fails, compute a point that's geometrically
+  // guaranteed clear of the compound rectangle instead of gambling on
+  // one more random draw - project outward from the compound's own
+  // nearest edge rather than from the objective's radius.
+  function guaranteedOutsideCompoundPoint() {
+    var side = Math.floor(Math.random() * 4) // 0=N(-Z) 1=S(+Z) 2=W(-X) 3=E(+X)
+    var px, pz
+    if (side === 0) {
+      px = compoundX0 + Math.random() * (compoundX1 - compoundX0)
+      pz = compoundZ0 - 1
+    } else if (side === 1) {
+      px = compoundX0 + Math.random() * (compoundX1 - compoundX0)
+      pz = compoundZ1 + 1
+    } else if (side === 2) {
+      px = compoundX0 - 1
+      pz = compoundZ0 + Math.random() * (compoundZ1 - compoundZ0)
+    } else {
+      px = compoundX1 + 1
+      pz = compoundZ0 + Math.random() * (compoundZ1 - compoundZ0)
+    }
+    return {
+      x: Math.min(Math.max(Math.floor(px), spawnMinX), spawnMaxX),
+      z: Math.min(Math.max(Math.floor(pz), spawnMinZ), spawnMaxZ),
+    }
+  }
+
   function randomObjectiveRelativePosition() {
     for (var attempt = 0; attempt < COMPOUND_SPAWN_MAX_ATTEMPTS; attempt++) {
       var point = rawObjectiveRelativePosition()
       if (!isInsideCompound(point.x, point.z)) return point
       if (attempt === COMPOUND_SPAWN_MAX_ATTEMPTS - 1) {
-        // Every attempt landed inside the compound (unusually tight
-        // border, or a wide compound) - last resort, not silently
-        // dropped: logged so this is visible in the next log check, still
-        // returns a real point (a mob spawning inside the compound
-        // occasionally beats the whole spawn silently failing).
-        console.log(`wave_spawner.js: could not find a spawn point outside the compound after ${COMPOUND_SPAWN_MAX_ATTEMPTS} attempts - falling back to (${point.x},${point.z})`)
-        return point
+        var safePoint = guaranteedOutsideCompoundPoint()
+        console.log(`wave_spawner.js: could not find a spawn point outside the compound after ${COMPOUND_SPAWN_MAX_ATTEMPTS} random attempts - using a guaranteed-outside point (${safePoint.x},${safePoint.z}) instead`)
+        return safePoint
       }
     }
   }
@@ -811,6 +1022,65 @@ function useWaveHorn(player) {
       x: Math.min(Math.max(px, spawnMinX), spawnMaxX),
       z: Math.min(Math.max(pz, spawnMinZ), spawnMaxZ),
     }
+  }
+
+  // Underground ambush spawns (2026-09-10, direct ask: "can you make the
+  // enemies be able to dig through to the base from underground"). Every
+  // spawn above lands outside the compound on purpose
+  // (randomObjectiveRelativePosition's whole job) - reaching the base has
+  // only ever meant walking in from outside. This is the opposite: a mob
+  // summoned already buried under the compound's own footprint, sealed in
+  // solid ground with no walkable path to its forced target (the
+  // pedestal, via mob_aggro.js). That satisfies the real, decompiled
+  // precondition on ESM_EntityAIDigging.canUse() documented elsewhere in
+  // this file's history (digger.getNavigation().isDone() - the mob's own
+  // pathfinding has to have already given up) so its digger AI (already
+  // enabled pack-wide in epicsiegemod-common.toml) takes over instead of
+  // the mob just standing there. Which direction it actually digs is the
+  // AI's own pathing choice, not scripted here - unverified beyond that
+  // documented precondition, same real limitation noted there (no player
+  // connected in a headless sandbox means mob_aggro.js's targeting loop
+  // never runs). Needs a real playtest to confirm it reads as "coming up
+  // from underground," not just that the mob stops idling.
+  var UNDERGROUND_DIG_DEPTH = 6
+  function undergroundAmbushPos() {
+    var px, pz
+    if (data.contains('td_compoundX0')) {
+      px = data.getInt('td_compoundX0') + Math.floor(Math.random() * (data.getInt('td_compoundX1') - data.getInt('td_compoundX0') + 1))
+      pz = data.getInt('td_compoundZ0') + Math.floor(Math.random() * (data.getInt('td_compoundZ1') - data.getInt('td_compoundZ0') + 1))
+    } else {
+      // No persisted compound bounds (old save) - fall back tight to the
+      // objective itself, the best available stand-in for "under the base."
+      px = Math.floor(objective.x) + Math.floor(Math.random() * 7) - 3
+      pz = Math.floor(objective.z) + Math.floor(Math.random() * 7) - 3
+    }
+    // Forces the chunk to actually load/generate before reading the
+    // heightmap (reference_kubejs_loadtime_gotchas: getHeight alone
+    // returns -64 on an unloaded chunk) - same call surfaceHeightAt() in
+    // playtest_starter_kit.js already relies on for the same reason.
+    level.getBlock(px, 64, pz).getId()
+    var surfaceY = level.getHeight('MOTION_BLOCKING', px, pz)
+    return { x: px, y: surfaceY - UNDERGROUND_DIG_DEPTH, z: pz }
+  }
+
+  // Wave 3+ only - the compound/walls exist from wave 1
+  // (playtest_starter_kit.js builds them at world start), and this is
+  // meant to punish relying on them once the player's had a couple of
+  // waves to settle in, not ambush them before they understand the base
+  // at all.
+  //
+  // Counts raised 2026-09-10 (direct ask, calling these "mining zombies" -
+  // this IS that mechanic, there's no mob of that name in any installed
+  // mod; confirmed nothing named "mining" exists in Mutants and Zombies/
+  // Zombies More/Undead Nights before assuming - "more mining zombies to
+  // make the game harder" means more of these). Was 0/1/2 for waves <3/
+  // <7/8, capped at 4 in endless; now ramps higher and starts one wave
+  // earlier, same "punish relying on the walls" logic as before, just
+  // pushed further since the whole batch this lands in is about raising
+  // difficulty generally.
+  function undergroundAmbushCountForWave(n) {
+    if (n > WAVES.length) return Math.min(2 + Math.floor((Math.min(n - WAVES.length, 40)) / 5), 6)
+    return n < 2 ? 0 : (n < 5 ? 1 : (n < 7 ? 2 : 3))
   }
 
   if (waveNumber > WAVES.length) {
@@ -869,8 +1139,8 @@ function useWaveHorn(player) {
     // confirmed against docs/QUEUE.md's own worked table - NOT
     // endlessLevel, which is anchored to the 1-40 difficulty scale
     // instead and used only for the other-type weighting above).
-    //   z = round(10 + n*1.054^n)  -- vanilla zombie count
-    //   m = round(5 + n*1.01^n)    -- "other types," tier-weighted
+    //   z = round(12 + n*1.09^endlessLevel)  -- vanilla zombie count
+    //   m = round(7 + n*1.05^endlessLevel)   -- "other types," tier-weighted
     // Reuses this same function's own randomObjectiveRelativePosition/
     // pendingSpawns/staggerGapForWave - front-loaded continuous stream at
     // wave start (staggerGapForWave's own 4-tick/0.2s floor is already
@@ -883,8 +1153,24 @@ function useWaveHorn(player) {
     // have needed measuring first; the separate, already-queued general
     // FPS/world-load investigation is unrelated and still stands on its
     // own.
-    var baselineZombieCount = Math.round(10 + waveNumber * Math.pow(1.054, waveNumber))
-    var baselineOtherCount = Math.round(5 + waveNumber * Math.pow(1.01, waveNumber))
+    //
+    // Steepened 2026-09-10 (direct ask: "the waves need to ramp up in
+    // difficulty way more quickly"). The exponent term now runs on
+    // endlessLevel (already capped at 40 above), not the raw uncapped
+    // waveNumber the original formula used - simulated both before
+    // picking these numbers (node, not guessed): the old uncapped formula
+    // was actually MILDER than this one through the wave range anyone
+    // realistically reaches (e.g. wave 30 total baseline 200 -> 307, wave
+    // 40: 403 -> 841) while also quietly heading toward a real problem of
+    // its own at extreme wave counts (wave 100: 19519, a genuine perf
+    // cliff, uncapped exponent compounding against uncapped waveNumber
+    // forever) - capping the exponent's own input fixes that latent issue
+    // for free while still ramping harder everywhere that actually gets
+    // played. `n` (the linear factor) is still the real uncapped
+    // waveNumber, so this never plateaus outright, just stops
+    // double-compounding past level 40.
+    var baselineZombieCount = Math.round(12 + waveNumber * Math.pow(1.09, endlessLevel))
+    var baselineOtherCount = Math.round(7 + waveNumber * Math.pow(1.05, endlessLevel))
     var baselineStaggerGap = staggerGapForWave(waveNumber)
     var baselineIndex = 0
     for (var zi = 0; zi < baselineZombieCount; zi++) {
@@ -912,6 +1198,23 @@ function useWaveHorn(player) {
         spawnTick: mSpawnTick,
         soundTick: mSpawnTick - SOUND_LEAD_TICKS,
         soundPlayed: false,
+      })
+      baselineIndex++
+    }
+
+    var undergroundAmbushCount = undergroundAmbushCountForWave(waveNumber)
+    for (var ui = 0; ui < undergroundAmbushCount; ui++) {
+      var uPos = undergroundAmbushPos()
+      var uSpawnTick = currentTick + baselineIndex * baselineStaggerGap
+      pendingSpawns.push({
+        mobType: 'minecraft:zombie',
+        x: uPos.x,
+        y: uPos.y,
+        z: uPos.z,
+        spawnTick: uSpawnTick,
+        soundTick: uSpawnTick - SOUND_LEAD_TICKS,
+        soundPlayed: false,
+        underground: true,
       })
       baselineIndex++
     }
@@ -965,6 +1268,24 @@ function useWaveHorn(player) {
       totalMobs++
     }
   })
+
+  var undergroundAmbushCount = undergroundAmbushCountForWave(waveNumber)
+  for (var ui = 0; ui < undergroundAmbushCount; ui++) {
+    var uPos = undergroundAmbushPos()
+    var uSpawnTick = currentTick + mobIndex * staggerGap
+    pendingSpawns.push({
+      mobType: 'minecraft:zombie',
+      x: uPos.x,
+      y: uPos.y,
+      z: uPos.z,
+      spawnTick: uSpawnTick,
+      soundTick: uSpawnTick - SOUND_LEAD_TICKS,
+      soundPlayed: false,
+      underground: true,
+    })
+    mobIndex++
+    totalMobs++
+  }
 
   var displayWave = Math.min(waveNumber, WAVES.length)
   // Chat line removed 2026-09-09 (real playtest ask: "less noise from the
@@ -1051,6 +1372,14 @@ PlayerEvents.tick(function (event) {
 
   var server = player.getServer()
   var stillPending = []
+  // Concurrent-alive cap (see MAX_CONCURRENT_WAVE_MOBS's own comment
+  // above nearbyWaveMobCount) - one real scan per tick, only while
+  // pendingSpawns is non-empty (the guard above), so this cost only
+  // exists during an active spawn-in window, not all the time. Tracked
+  // locally and incremented per actual summon below rather than
+  // rescanning every entry, so a whole tick's worth of ready spawns is
+  // gated off one real world query instead of one per mob.
+  var aliveWaveMobCount = countAliveWaveMobs(level)
 
   pendingSpawns.forEach(function (spawn) {
     if (!spawn.soundPlayed && currentTick >= spawn.soundTick) {
@@ -1058,6 +1387,16 @@ PlayerEvents.tick(function (event) {
         `playsound minecraft:ambient.cave ambient @a ${spawn.x} ${spawn.y} ${spawn.z} 1 0.6`
       )
       spawn.soundPlayed = true
+    }
+    // At the cap - this spawn's turn has come up, but summoning it would
+    // push the live wave-mob count over the ceiling, so it stays queued
+    // and gets retried next tick (spawnTick already <= currentTick, so
+    // no further stagger delay once a slot frees up). Checked AFTER the
+    // sound cue above on purpose - a capped spawn should still announce
+    // itself on schedule, not go silent just because it's waiting.
+    if (currentTick >= spawn.spawnTick && aliveWaveMobCount >= MAX_CONCURRENT_WAVE_MOBS) {
+      stillPending.push(spawn)
+      return
     }
     if (currentTick >= spawn.spawnTick) {
       // td_wave_mob (2026-09-01, real bug found in playtest: the
@@ -1088,7 +1427,24 @@ PlayerEvents.tick(function (event) {
       // it. Applies to every wave mob now, not just the amulet case -
       // no real downside outside it either, since td_wave_mob-tagged
       // mobs are meant to be fought, not left to quietly disappear.
-      var summonNbt = '{Attributes:[{Name:"generic.follow_range",Base:128}],PersistenceRequired:1b,Tags:["td_justSpawned","td_wave_mob"]}'
+      // td_undergroundAmbush (2026-09-10) marks the buried-under-the-base
+      // spawns queued by undergroundAmbushPos() above - tagged separately
+      // from plain td_wave_mob purely so a stuck/idle report is easy to
+      // grep for later, no other consumer reads it.
+      var summonTags = spawn.underground ? '["td_justSpawned","td_wave_mob","td_undergroundAmbush"]' : '["td_justSpawned","td_wave_mob"]'
+      // See BRUTE_SPEED_FIX_TYPES/BRUTE_MOVEMENT_SPEED's own comment above
+      // for why this is here - real decompiled brute speed is slower than
+      // a vanilla zombie, which is the actual reason they read as tanky
+      // filler instead of a threat.
+      var speedFix = BRUTE_SPEED_FIX_TYPES.indexOf(spawn.mobType) !== -1
+        ? `,{Name:"generic.movement_speed",Base:${BRUTE_MOVEMENT_SPEED}}`
+        : ''
+      // See MUTANT_BRUTE_MAX_HEALTH's own comment above for why both the
+      // attribute AND the top-level Health field are needed.
+      var isMutantBrute = spawn.mobType === 'mutantszombies:mutant_brute'
+      var healthFix = isMutantBrute ? `,{Name:"generic.max_health",Base:${MUTANT_BRUTE_MAX_HEALTH}}` : ''
+      var healthField = isMutantBrute ? `,Health:${MUTANT_BRUTE_MAX_HEALTH}.0f` : ''
+      var summonNbt = `{Attributes:[{Name:"generic.follow_range",Base:128}${speedFix}${healthFix}],PersistenceRequired:1b,Tags:${summonTags}${healthField}}`
       // td_justSpawned added and removed within this same synchronous
       // block, so the very next spawn processed (even same tick, even
       // same mob type) can never see a stale tag from this one.
@@ -1097,12 +1453,18 @@ PlayerEvents.tick(function (event) {
       server.runCommandSilent(
         `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} ${summonNbt}`
       )
-      server.runCommandSilent(
-        `spreadplayers ${spawn.x} ${spawn.z} 0 4 false @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest]`
-      )
+      // Underground ambush spawns skip this entirely - spreadplayers is a
+      // heightmap-aware "snap to the real surface" correction, which would
+      // just undo the whole point of summoning this one buried underground.
+      if (!spawn.underground) {
+        server.runCommandSilent(
+          `spreadplayers ${spawn.x} ${spawn.z} 0 4 false @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest]`
+        )
+      }
       server.runCommandSilent(
         `tag @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest] remove td_justSpawned`
       )
+      aliveWaveMobCount++
     } else {
       stillPending.push(spawn)
     }

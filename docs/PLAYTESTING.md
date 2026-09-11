@@ -231,3 +231,123 @@ fantasy/floating-content swap, both since confirmed shipping)
   stop.
 - The vanilla jigsaw structure-generation race condition (see above) is
   mitigated, not guaranteed gone.
+
+## Structure loot (2026-09-11 pass)
+
+- **Loot boxes**: open a Lootr chest in any Lost City building. A `store`
+  should read like a raided supermarket (food, an iron/redstone/gunpowder
+  stack or two, often ammo or a gun, sometimes eggs/milk/cake). Watchtower
+  barrels should give ammo + torches/planks, not coal and sticks.
+- **Regular storage**: right-click an EMPTY barrel inside a Lost City house
+  or an Abandoned Urban building. It should fill with a mixed "someone left
+  this here" haul on first open (occasionally almost nothing). Second open:
+  normal barrel.
+- **Your own storage is safe**: place a vanilla barrel out in a ruin, leave it
+  empty, open it - it must stay empty. Break it and place it again - still
+  empty.
+- **Distance**: chests past ~270 blocks from the pedestal should show the
+  premium finds on top (diamonds, ender pearls, blaze powder, magma blocks);
+  210-270 shows resource blocks/gunpowder/clay.
+- **No cobweb walls**: a chest that is mostly cobwebs means a table was
+  missed - note which structure.
+
+## Useless-loot trim (2026-09-11, not yet confirmed live)
+
+- **Uncommon bounty bags** (the everyday wave-kill drop) should no longer
+  ever contain cobblestone, bone, netherrack or sugar cane - open several
+  and confirm none of those four show up.
+- **IMPORTANT - this one needs a live-instance step before it'll show up
+  at all**: BountyBags caches bag contents into `config/bountybags/
+  uncommon_bag.toml` on first boot and ignores the JSON after that. Delete
+  that file (or run `/bountybags edit uncommon` in-game and click Restore
+  Defaults) before this trim can be observed - otherwise the bag will still
+  hand out the old contents no matter how the repo JSON reads.
+- **Scavenged filler** (barrels/junk-drawer rolls via `scav_filler.json`):
+  cobweb, bone and bowl should no longer appear; paper, string, rotten
+  flesh and leather still can.
+
+## Tier 3 recipes (loot-aligned, 2026-09-11)
+
+- **JEI, press R on each**: Culinary Generator shows bread + 2 eggs + 2
+  crops + redstone block on a Gold Generator (no cake). Flux Core shows an
+  ender pearl in the middle (no Eye of Ender). Tesla Coil shows lightning
+  rod / LV coils + gold block / steel + Flux Point. Heavy Engineering shows
+  gold, not electrum.
+- **Steel**: drop an iron ingot in a vanilla Blast Furnace - it should come
+  out as an IE Steel Ingot.
+- **Flux Dust**: craft obsidian + 4 redstone, and separately try the mod's
+  own way (obsidian on bedrock at y=-16, throw redstone on it) - both
+  should give dust.
+- **Gun Turret ammo**: 4 empty casings + 2 gunpowder + 2 iron nuggets in a
+  plain crafting grid gives 4 Casull rounds.
+- **Refined Storage**: Processor Binding from string + rotten flesh;
+  Construction Core from a basic processor + lapis.
+
+## 2026-09-11 feedback fixes
+
+Direct feedback batch, four items - real root cause found and fixed for
+each, none yet confirmed in real play.
+
+- **"Not Just Jewelry" didn't tick on crafting the amulet.** Root cause,
+  confirmed by decompiling the installed `ftb-quests-forge-2001.4.22.jar`:
+  the task lacked `only_from_crafting`, so FTB Quests only ever checked
+  it against the player's main-inventory contents (a periodic scan that
+  never looks at Curios slots) - crafting the amulet and immediately
+  equipping it into the Curios necklace slot, the obvious next move,
+  removed it from the only inventory that scan reads before the check
+  could ever catch it. Now `only_from_crafting: true`, which drives
+  completion straight off the crafting event itself, independent of
+  where the item ends up next. Check: craft the amulet, quest should
+  tick immediately even if you equip it right away.
+- **The Engineer's Manual gated the whole IE tech tree.** It sat inline
+  between Room to Grow and Wired Different (Culinary Generator), so
+  crafting the book was mandatory before the generator, Flux Plug, Tesla
+  Coil or either turret would even unlock. Made it a sibling of Wired
+  Different instead (same dependency, moved off the main line) so it's
+  now a genuinely optional side-quest alongside the IE builds, not a
+  gate in front of them. Check: Wired Different should unlock as soon as
+  Room to Grow completes, with or without the manual.
+- **A wave mob spawned inside the house.** Two real causes, both fixed
+  in `wave_spawner.js`: (1) the scripted campaign spawner's own
+  reject-and-resample loop used to fall back to a possibly-inside-
+  compound point once it ran out of tries - now computes a point
+  projected outward from the compound rectangle's nearest edge instead,
+  which is geometrically guaranteed clear. (2) Undead Nights' own
+  `spawn_horde` command (the endless-phase horde spawner) never went
+  through that check at all - it's a fully opaque mod command with its
+  own distance-from-player band, walls or compound bounds included.
+  Added a safety net right where horde mobs are already tagged
+  `td_wave_mob`: any mob landing inside the compound's padded footprint
+  gets pushed out to just past its nearest wall. Check across several
+  waves, including into the endless phase, that nothing spawns inside
+  the compound perimeter.
+- **Wood Stakes/Spike Traps dropped an item when worn down.** The
+  destroy-on-0-HP path in `trap_durability.js` used `setblock ... air
+  destroy`, which is vanilla's own player-mining removal mode - real
+  item drop included. Switched to `setblock ... air replace` (no drop,
+  no automatic effects) plus an explicit break particle/sound so it
+  still reads as "the trap broke," just without leaving anything behind.
+  Check: let a mob wear down a Wooden Stake and a Spike Trap - both
+  should vanish with a break effect and nothing on the ground.
+
+## 5-item feedback batch (2026-09-11) - real checks needed
+
+- **Trophy System removed.** Should no longer appear in JEI/crafting at
+  all - not a bug if it's simply gone.
+- **Trap iron costs trimmed + loot bumped.** Craft a Sentry (should feel
+  like ~20 ingots' worth, not 36), a Cage Trap (~12, not 28), an I.M.S.
+  (~16, not 24). Open a few Uncommon bounty bags and see if iron feels
+  less scarce than before. Say honestly if it still feels too expensive
+  - the recipes can be trimmed further.
+- **Bouncing Betty/Claymore player and block safety.** Deliberately
+  trigger a Bouncing Betty and a Claymore near your own build (or near
+  yourself). Neither should damage you or break any block - only a mob
+  standing in the blast should take damage.
+- **Sentry firing feedback.** Place a Sentry where it can see a mob and
+  let it fire. You should see a muzzle-flash particle at the Sentry and
+  an impact particle where the bullet lands.
+- **Lag - not a code fix, a real-machine finding.** If the "constant"
+  lag is still there after closing other background apps (this Claude
+  Code session/VS Code, browser tabs, etc.) while playing, or after
+  lowering the CurseForge instance's allocated RAM below 10GB, say so -
+  that would mean the cause is something else and needs a fresh look.

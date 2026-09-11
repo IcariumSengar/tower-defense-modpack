@@ -1,0 +1,2 @@
+#Set this to false if you want mines to not break blocks when they explode. If this is set to true, the blockExplosionDropDecay gamerule will be respected [default: true]
+mineExplosionsBreakBlocks = false

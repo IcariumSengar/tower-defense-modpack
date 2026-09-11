@@ -24,6 +24,13 @@
 // Create's only other live use, the Tier 3 Flamethrower Nozzle quest,
 // was cut with it - see docs/MODS.md). `create:nozzle`'s Tier 3 entry
 // dropped, nothing replaces it.
+//
+// **Also same day** - IE's Diesel Generator swapped for Generator
+// Galore's Culinary Generator (single block, burns any food item
+// including rotten flesh, no Refinery/biodiesel chain) as Tier 3's
+// power source - see campaign.snbt's "Wired Different". IE's Gun
+// Turret/Chemthrower Turret added alongside the Tesla Coil as Tier 3's
+// powered-trap roster (see tier3_turret_recipes.js).
 const TIER_COLORS = {
   1: { code: '§a', label: 'Tier 1 - Starting Defense' }, // green
   2: { code: '§e', label: 'Tier 2 - Automated Defense' }, // yellow
@@ -41,9 +48,10 @@ const TIER_ITEMS = {
   'securitycraft:cage_trap': 2,
   'securitycraft:electrified_iron_fence': 2,
   'securitycraft:ims': 2,
-  'securitycraft:trophy_system': 2,
-  'immersiveengineering:diesel_generator': 3,
+  'generatorgalore:culinary_generator': 3,
   'immersiveengineering:tesla_coil': 3,
+  'immersiveengineering:turret_gun': 3,
+  'immersiveengineering:turret_chem': 3,
   'refinedstorage:controller': 3,
   'sophisticatedstorage:barrel': 3,
   'fluxnetworks:flux_plug': 3,

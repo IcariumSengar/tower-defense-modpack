@@ -359,7 +359,6 @@ var WAVE_MOB_TYPES = [
   'mutantszombies:mutant_zombie',
   'mutantszombies:blister_zombie',
   'mutantszombies:split_head_zombie',
-  'zombiesmore:boomer_zombie',
   'undeadnights:elite_zombie',
   'undeadnights:horde_zombie',
   'undeadnights:demolition_zombie',
@@ -581,7 +580,20 @@ PlayerEvents.tick(function (event) {
     var dx = e.getX() - player.getX()
     var dy = e.getY() - player.getY()
     var dz = e.getZ() - player.getZ()
-    var isBlockingPath = dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
+    // LAN playtest, 2026-09-10 ("one player died, zombies stopped aggroing
+    // the pedestal, including the other player who was still alive"): a
+    // dead player sits frozen on their death-screen position but keeps
+    // ticking (see hardcore_death.js's own note on this), so their corpse
+    // was still satisfying this distance check every 10-tick cycle -
+    // permanently "blocking the path" for whichever mobs happened to be
+    // standing on top of it when it died, since a corpse never moves out
+    // of MELEE_BLOCK_RANGE the way a live player would. Those mobs got
+    // desiredTarget=player (the dead body) forever instead of ever
+    // reverting to the pedestal. getHealth() <= 0 is this codebase's own
+    // existing "is dead" check (wave_spawner.js, wave_status.js) - reused
+    // here rather than a fresh isAlive() call.
+    var isBlockingPath = player.getHealth() > 0 &&
+      dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
     var desiredTarget = isBlockingPath ? player : aggroTarget
 
     // Retaliation actually held for a while (2026-09-10). Real playtest
@@ -607,7 +619,13 @@ PlayerEvents.tick(function (event) {
     var currentTarget = e.getTarget()
     var currentTargetUuid = currentTarget ? `${currentTarget.uuid}` : null
     var mobUuid = `${e.uuid}`
-    if (!isBlockingPath && currentTarget && `${currentTarget.type}` === 'minecraft:player') {
+    // Same 2026-09-10 fix as above, other side: a mob that acquired a
+    // player target from HurtByTargetGoal (kept alive for retaliation)
+    // before that player died would otherwise hold the retaliation window
+    // open against a corpse for the full 8s, then immediately reopen it
+    // every cycle after via the isBlockingPath branch above - never
+    // reverting to the pedestal while that player stays dead.
+    if (!isBlockingPath && currentTarget && `${currentTarget.type}` === 'minecraft:player' && currentTarget.getHealth() > 0) {
       var retaliateUntil = aggroRetaliation[mobUuid]
       if (retaliateUntil === undefined) {
         retaliateUntil = level.getTime() + AGGRO_RETALIATION_TICKS

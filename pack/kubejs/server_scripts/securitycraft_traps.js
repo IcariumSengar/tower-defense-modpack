@@ -31,11 +31,21 @@ ServerEvents.recipes((event) => {
   // Shrapnel's own "kill mobs to fund your tech" design intent alive
   // (see shrapnel.js's header) now that its original gate -
   // tech_tablet_mechanics - no longer exists.
+  //
+  // Iron cost trimmed 2026-09-11 (direct feedback: "a lot of trap
+  // recipes require iron, I don't have enough to craft what I want").
+  // The original 3x iron_block bottom row wasn't the "small step up
+  // from vanilla" it looked like - iron_block is 9 ingots each, so
+  // that row alone was 27 ingots, for 36 total with Portable Radar's
+  // own 7-ingot prereq folded in. Center block kept (still a real,
+  // meaningful material cost past just ingots) but the two outer
+  // corners drop to plain ingots: new total 4 ingot + 1 block (9) + 7
+  // (radar) = 20, down from 36.
   event.remove({ output: 'securitycraft:sentry' })
   event.shaped('securitycraft:sentry', [
     'SDR',
     'IPI',
-    'BBB',
+    'IBI',
   ], {
     S: 'kubejs:shrapnel',
     D: 'minecraft:dispenser',
@@ -48,6 +58,12 @@ ServerEvents.recipes((event) => {
   // I.M.S. (Intelligent Munitions System) - refillable mine holding up
   // to 4 Bouncing Betties, auto-launches them to track down and
   // detonate on anything entering its radius.
+  //
+  // Iron cost trimmed 2026-09-11, same feedback as Sentry above: the
+  // center iron_block (9 ingots) was the biggest single ingredient
+  // here even before the 4 Bouncing Betties (2 ingots each) and
+  // Portable Radar (7) are counted - dropped to a plain ingot. New
+  // total 8 (Betties) + 1 (ingot) + 7 (radar) = 16, down from 24.
   event.remove({ output: 'securitycraft:ims' })
   event.shaped('securitycraft:ims', [
     'BPB',
@@ -56,36 +72,46 @@ ServerEvents.recipes((event) => {
   ], {
     B: 'securitycraft:bouncing_betty',
     P: 'securitycraft:portable_radar',
-    I: 'minecraft:iron_block',
+    I: 'minecraft:iron_ingot',
   })
 
-  // Trophy System - defensive counter-battery, shoots down incoming
-  // arrows/fireballs from range rather than attacking. Still needs a
-  // Sentry as an ingredient (real stock recipe), which is fine now
-  // that Sentry itself is reachable without the Reinforcer.
+  // Trophy System removed entirely, 2026-09-11 (direct feedback: "serves
+  // no purpose as there are no air based enemies attacks"). Checked
+  // before cutting it, not just taken on faith: this pack's roster has no
+  // bow-wielding mobs and no dispenser-arrow traps (skeletons were
+  // stripped in the zombie-apocalypse pivot - see the old
+  // turret_combat_feedback.js's own scope-caveat comment, git history),
+  // and Demolition Zombie (zombiesmore's Explosive Zombie) attacks by
+  // throwing a `zombiesmore:dynamite_projectile` that detonates a real
+  // TNT-type explosion (decompiled `DynamiteProjectileProjectileHits*`
+  // procedures directly) - not an arrow or fireball, the only two
+  // projectile types the Trophy System's own counter-battery AI shoots
+  // down. No hostile in this pack's actual roster gives it anything to
+  // intercept. No re-recipe added back - just the stock recipe removal
+  // below, same treatment as the Universal Block Reinforcer got. Quest
+  // node removed from campaign.snbt, tier color entry removed from
+  // tooltip_tier_colors.js.
   event.remove({ output: 'securitycraft:trophy_system' })
-  event.shaped('securitycraft:trophy_system', [
-    ' T ',
-    ' B ',
-    'S S',
-  ], {
-    T: 'securitycraft:sentry',
-    B: 'minecraft:iron_block',
-    S: 'minecraft:stick',
-  })
 
   // Cage Trap - non-lethal, traps a mob/player (except the owner) in a
   // block cage on contact.
+  //
+  // Iron cost trimmed 2026-09-11, same feedback as Sentry/I.M.S. above:
+  // this was the single worst offender - 3x iron_block for 27 ingots,
+  // 28 total with the bars. Down to 1 block + 2 ingots: 9 + 2 + ~1
+  // (bars) = ~12, still a real step up from Electrified Fence's plain-
+  // ingot cost but no longer the most expensive trap in the roster.
   event.remove({ output: 'securitycraft:cage_trap' })
   event.shaped('securitycraft:cage_trap', [
     'BBB',
     'GRG',
-    'III',
+    'JKJ',
   ], {
     B: 'minecraft:iron_bars',
     G: 'minecraft:gold_ingot',
     R: 'minecraft:redstone',
-    I: 'minecraft:iron_block',
+    J: 'minecraft:iron_ingot',
+    K: 'minecraft:iron_block',
   })
 
   // Electrified Iron Fence - unbreakable fence, shocks anyone but the

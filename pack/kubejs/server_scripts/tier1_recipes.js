@@ -21,13 +21,23 @@
 //   trapcraft:bear_trap (iron_ingot + stone_pressure_plate), so the
 //   quest's "craft it" framing stays accurate.
 ServerEvents.recipes((event) => {
+  // Spike Trap re-costed 2026-09-10 (direct ask: "the iron spike are too
+  // easy to make... i want the iron spike to deal more damage but are
+  // harder to make"). Old recipe (4 sticks + 1 iron ingot) made it barely
+  // more expensive than the new Wooden Stake tier below it (see
+  // campaign.snbt's new "Cheap and Cheerful" quest) - not a real iron
+  // investment. Real precedent for the new cost: Trapcraft's own
+  // `trapcraft:spikes` (the mod this replaced, see this file's own header)
+  // charged 5x iron_ingot with no wood at all - reused exactly, not
+  // invented. Damage bumped to match (simplytraps.toml's
+  // SpikeDamageMultiplier 1.0 -> 2.0, doubling its per-step hit) so the
+  // higher cost buys something real.
   event.remove({ output: 'simply_traps:spike_trap' })
   event.shaped('simply_traps:spike_trap', [
-    'S S',
+    'I I',
     ' I ',
-    'S S',
+    'I I',
   ], {
-    S: 'minecraft:stick',
     I: 'minecraft:iron_ingot',
   })
 

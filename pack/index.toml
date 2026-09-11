@@ -26,7 +26,7 @@ hash = "4ab63052b50d36b48a27731b89f8ee6df828e061d74d71d0be0b007f91f0e68a"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "859afd7dd072b4da28aa0a503d563109d2364873f08c471b0e6762af73ba48ce"
+hash = "d95698e008fa6100269a56d5398bdc5a8c9b2940430267938d3d2c32ad26d5ba"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -35,6 +35,14 @@ hash = "dc6bf510e41f75d22e6f3f1c69aa2ede8f5d050253389751f7a1f9471bba89b5"
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
 hash = "ada02480bd90dae94378b9144a9b38365cbcfdd0657fd5d2e25772043b21509c"
+
+[[files]]
+file = "config/generatorgalore/defaults.lock"
+hash = "13b500bc92ebb31ad3e1e93fd7d682d363e82fa425dafc4bdea6d7b5dd49d4a6"
+
+[[files]]
+file = "config/generatorgalore/generators/culinary.json"
+hash = "d4d409f1925c0081427cf7f0ace7e5e2c7d1be2417aad51a6ebe15cb92ef8069"
 
 [[files]]
 file = "config/lithium.properties"
@@ -51,6 +59,10 @@ hash = "767d335425881699b395fe287ebf23b099f103606be8df1e66461173c7ba0a40"
 [[files]]
 file = "config/securitycraft-client.toml"
 hash = "ddeeeb4bd6a01136808a62543fad87da1ee84d3a386c29781b7f04781b3c226a"
+
+[[files]]
+file = "config/securitycraft-common.toml"
+hash = "8dcbc970a11d4a1d7d514d4186a2f05dbb60efc45706d4f5fa1003c22a585e45"
 
 [[files]]
 file = "config/simplytraps.toml"
@@ -126,7 +138,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/client_scripts/tooltip_tier_colors.js"
-hash = "37467dbcf360e1c612799c51cb6b94f04da9d2204f2fb68c1c9fa0ddbc2b63db"
+hash = "4ab0ff3bd12aac672e83199651f5b12147bdfd0a7052b128bc947aab9151ae36"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/structures/zapravka.nbt"
@@ -233,12 +245,52 @@ file = "kubejs/data/abandoned_urban/worldgen/structure_set/train.json"
 hash = "ced678936745c1485bd7fcf7a85dd3db3678cf4b37b7460dea1fd175e65abca5"
 
 [[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/berezkahousesmall_0.json"
+hash = "ab3881af2211efb5e36f2bc2034d09b0d7f6438f98e28aea65c3c14727a2e351"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/car.json"
+hash = "04df4b08cad1c435d378a16230e2b2621e2a2e3650c4a864513819d58229ac1f"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/diningroom.json"
+hash = "b5d9cb7a9beee2324224be50373903d3ce72f0ce1d8e7b2e0ef304a11722cfc9"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/empty_chest.json"
+hash = "bb62222da253cd28df1c7d27a1157460bbed13cb0a241d13a573330d276b4ea1"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/farm.json"
+hash = "c673f8f68ab849f1a16ef026417d2dc850bc9dd76c2c15eb3fa0a49de8e1f142"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/gas_station.json"
+hash = "f447aaa63cf6862abb257c4a679b4a9952035176d2af9526b9e0fa8a7cc40fa0"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/simple_chest.json"
+hash = "cc2cc374c49fef28624f1ea43e4fdd0bcde2dcec11ff13c24b1a2ebb19660a48"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/simple_chest2.json"
+hash = "f551a4e602e3cfacee4ee36430ba150e8e816569b9fdf943d484b4ac0d539b6c"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/store.json"
+hash = "1f0b4d1e44e5dea2628f67fd12eb9284c138de0b460b989cd0968a62b9cdde49"
+
+[[files]]
+file = "kubejs/data/berezka_api/loot_tables/chests/tower_chest.json"
+hash = "13041faa0d36f8741fe17c98cb3ee8c4811150da89b8066c805ee0d3ca544abd"
+
+[[files]]
 file = "kubejs/data/bountybags/loot_tables/items/epic.json"
 hash = "0e5d06ed873abdda83ffa48c0ac9498938c4922207706f0f77ac40acf4726e3c"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/legendary.json"
-hash = "dbe14bb11826971ed37ea6666b00200812ee6aad143f119a58d1f11d074f70b8"
+hash = "8c86d9cbd154a1098adcbdd9035ea25feaabfa09e79af6a7a3fbec7284174eaa"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/rare.json"
@@ -246,7 +298,7 @@ hash = "75c973f58be89aa10498ad32994f6ab92723f9a5d943d0f7e0be8c2524511c68"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/uncommon.json"
-hash = "8786ed3a6e2cbd15f721696beb2255974675b3c72e074f817bfee0bb16cc08cd"
+hash = "8ef8ded83bd8c4e0197f93e0dcf2c8a9eff62e92421199cea7078f5decc2a2ae"
 
 [[files]]
 file = "kubejs/data/curios/tags/items/necklace.json"
@@ -259,6 +311,38 @@ hash = "2104e96527eba9ba96b58ebc68e0140a85905d14bdf8789da098793fd47d0011"
 [[files]]
 file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_armory.json"
+hash = "20f97035939e3d7ae8f6e0c56521b8d4a39e88fd57d7c0f42edda69324e5f083"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_building.json"
+hash = "a4bc310ab5fcc94f3e7386f240b7975ac2f79e5b2c319805cd303300df79dbb0"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_dairy.json"
+hash = "edd7652973eab18550de7f5a1fd4c81bb55fd524020203276bf960917299728e"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_filler.json"
+hash = "ed9166f207ac7d62bd11a7bd1a22bba1d3d2ece45725a3bbeecaec92e2ae8e45"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_food.json"
+hash = "39f43d8a9acf7f17a789dc075c6e54878400c6faaec88eabea618b4ec7898a6f"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_hardware.json"
+hash = "d5ca545e1f92171f11052efae297f8a87689f4df1560047137af62efeb8b3364"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_treasure.json"
+hash = "582f959f0cfa1381981237e278ca4008be26cb113209e2e1fe430954cb979cc1"
+
+[[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scavenge_storage.json"
+hash = "5639530455065db7e179620caf5835041f3792accc48e76b9d8aa41b450f32a2"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json"
@@ -287,6 +371,10 @@ hash = "741922d1f21c12ac82034a68663e4ef5c82b0a3e89fddbe3deb9c0d664588da4"
 [[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
 hash = "902cd6d4af2c70d27067bcd5ffd2c6156b03b04b79f593d609df9d83e0caec9e"
+
+[[files]]
+file = "kubejs/data/minecraft/loot_tables/chests/houseloot.json"
+hash = "ab3881af2211efb5e36f2bc2034d09b0d7f6438f98e28aea65c3c14727a2e351"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/biome/meadow.json"
@@ -466,15 +554,15 @@ hash = "224505b2dc8c534edb4a99c78e3e1ab725920bce4274437f16fe7b0ab8e2ad07"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/cobwebs.json"
-hash = "685b0c5b5cd029f397cc3da838c28127a37fabf9581abc78765e412c16b8d5be"
+hash = "f54ec92f87822c371b975c3e32e069d87a4651203f175c08c7aa7b1e447c029a"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/food.json"
-hash = "f40772fcfdef163525c8b6a00eef9df82d5b6c87c320e0f308697f174442d59a"
+hash = "a03643f524be7d0f6f7b8ae18c3ee93af36a9b001b3c0d123a58a6bddb7a13ac"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/trash.json"
-hash = "d9c1f382076ac86661f1fdba99e623171f54f842cf32b3a7e4ebc20c3418612b"
+hash = "a8d25fdb5b660e398c96280a6537034c89d317314abd1aaee018116d6cd54672"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/structures/abandoned_brick_house.nbt"
@@ -697,6 +785,14 @@ file = "kubejs/data/u_desert/worldgen/structure_set/skeleton.json"
 hash = "bfbd2514c00ee17b26b6d731110e0ecf9fed7c57cee066a33527023a3944eefe"
 
 [[files]]
+file = "kubejs/data/watchtower_building/loot_tables/chests/fresh_towerloot.json"
+hash = "d8ba04aaf0b432c61e643b6cfaf1e5417cf1dd0a0ab245f8b5c71a78a7ca3881"
+
+[[files]]
+file = "kubejs/data/watchtower_building/loot_tables/chests/towerloot.json"
+hash = "84382d0aae4abbd2e0f389550a236cd1724608667bff2a345dff55b0d4faf821"
+
+[[files]]
 file = "kubejs/data/watchtower_building/structures/ab_watchtower_big_tower.nbt"
 hash = "3e69a81a88fdf0ef0ed9c710de609dd4be1d4f67dbd181a7805ffeff991ffaec"
 
@@ -757,6 +853,10 @@ file = "kubejs/server_scripts/boss_wave.js"
 hash = "0e24f4de4774cbea262788f4764ac44166c66d2f3267a146d91fa6830e48d5a9"
 
 [[files]]
+file = "kubejs/server_scripts/bouncing_betty_safety.js"
+hash = "c03ac751d409c24cca4e2cb54a654152a876d87445475fbd86d5195ce694cca7"
+
+[[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
 hash = "410e438474c345f50e05a347237105c116c8e698ff0f519633532cf8ce2a347c"
 
@@ -786,7 +886,7 @@ hash = "fa561199ccb8ec81077c97daae6b5611b4ef79b6182bd091aedc65581b49b9c3"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "5766d476a614a045cd530b84e5df4ae01489c4505c6762586603a9eacec7ccc9"
+hash = "43787d595cf6145d5f64b78d0485de1c68d3f6b55a742446cb1db3eebb421bb1"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
@@ -814,7 +914,7 @@ hash = "07ad466349641292b988da13136d1d460e469980b888f45b78a2831c08c14920"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "02cf143dc990ec4c47d192b4635a1815ebad86f7099f187d98dffb84922ba82b"
+hash = "93f030bc3ea24acf82d80c4855543a3c6d12fedc5fbbc16e0b380870c701091e"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
@@ -825,12 +925,16 @@ file = "kubejs/server_scripts/securitycraft_traps.js"
 hash = "397489e6730c9ca3a2a39093e55fac6b0e9d6f53c076273e769a0f9dd624b81f"
 
 [[files]]
+file = "kubejs/server_scripts/starter_flux_network.js"
+hash = "a802ee522652c36982137df1776e011b6842916b59ea56e577c356fade27b922"
+
+[[files]]
 file = "kubejs/server_scripts/structure_chest_loot_fix.js"
-hash = "73b6bfe8bcf6b06cc45b30e9b5b12ac9bbb80767342fc7bb50b0a708f0cb556e"
+hash = "e0fd16e75af2853765275d965dbc5f3c7d1f1eb21b91b443349433421fa1a82f"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
-hash = "a414db73c51978fc0aa7364654c0d6ef64f6f8d5129f5cdd5bbdf7c40d41b795"
+hash = "b05338069fb4c0b4a76bdccd3baac7763f0ad9db9e896728eae95b810f4932bf"
 
 [[files]]
 file = "kubejs/server_scripts/tesla_coil_cinematics.js"
@@ -845,8 +949,16 @@ file = "kubejs/server_scripts/tier2_recipes.js"
 hash = "ba429e99aa8c35d68a06b62aea522f2603887d5af68d2a99de6d0c20587f2508"
 
 [[files]]
+file = "kubejs/server_scripts/tier3_loot_aligned_recipes.js"
+hash = "8a318f23349d3140c9c69663567b8771f628292bfa2eb5ae8c67e5a36a475978"
+
+[[files]]
+file = "kubejs/server_scripts/tier3_turret_recipes.js"
+hash = "3e77a2f436b593a55aa5e1a8c5f7628172287843dbcc1526b0e8362636733f22"
+
+[[files]]
 file = "kubejs/server_scripts/trap_durability.js"
-hash = "b8aa1a66d05216cb0de2e1254a49f4439a206ec36279ba9f9f2246de760d51f4"
+hash = "bb5b807b1024c6bbb3919e443e9eb89186321ec81d580d9314bb273e1e2bb427"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
@@ -854,7 +966,7 @@ hash = "81cc4015afee60a6cc26d3371e2de66555fafd2967c22eb2246e8a6c29481d44"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "227382eaa2ede96a83e3dd91ad70fe9afbcfcea740595c1754c26d370c857bd3"
+hash = "5a667ffe9d9900f765fba9858993b9fc1f55ead2faa629e51be886b3f440a121"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
@@ -1041,6 +1153,11 @@ metafile = true
 [[files]]
 file = "mods/geckolib.pw.toml"
 hash = "898fd2704dd260ae8f3dc20b4416439751f0a9e76367c4f0bbdac886b6987802"
+metafile = true
+
+[[files]]
+file = "mods/generatorgalore.pw.toml"
+hash = "cfaf8f0740463fa0c787ce540b1994be5fc135245e14a107e29fe3ff935f1679"
 metafile = true
 
 [[files]]

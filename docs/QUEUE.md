@@ -21,6 +21,375 @@ reflect actual current status.
 
 ---
 
+## 5-item playtest feedback batch: Trophy System cut, trap explosions player/block-safe, iron cost trimmed, Sentry firing feedback, lag investigated — 2026-09-11
+
+Literal checklist against the user's own numbering:
+
+1. **Done.** "Can we just remove the trophy system trap - it serves no
+   purpose as there are no air-based enemy attacks." Checked before
+   cutting it, not taken on faith: no bow-wielding mob and no
+   dispenser-arrow trap exists in this roster (skeletons stripped in the
+   zombie-apocalypse pivot), and Demolition Zombie's thrown-dynamite
+   attack detonates a plain TNT-type explosion (decompiled directly),
+   not the arrow/fireball projectile types Trophy System's own
+   counter-battery AI shoots down. Recipe removed in
+   `securitycraft_traps.js`, no re-recipe added. Quest node and tier-
+   color entry removed to match.
+2. **Done - two smaller moves, not one big one (your call).** "A lot of
+   trap recipes require iron, I don't have enough to craft what I
+   want." Real cause, not a vague impression: `iron_block` is 9 ingots
+   each, and the Reinforced-component removal upstream had swapped
+   several recipes onto 2-3 iron_block a piece - Sentry cost 36 ingots
+   total (2 ingot + 3 block + Portable Radar's own 7), Cage Trap ~28 (3
+   block + bars), I.M.S. 24 (4 Bouncing Betty + 1 block + radar).
+   - **Recipes trimmed** (`securitycraft_traps.js`): each dropped from
+     multiple iron_block down to exactly one (the rest become plain
+     ingots) - Sentry 36→20, Cage Trap 28→~12, I.M.S. 24→16. Still a
+     real material step up over Electrified Fence's plain-ingot cost,
+     just no longer wildly disproportionate to it.
+   - **Loot bumped too** (`bountybags:loot_tables/items/uncommon.json`):
+     iron_ingot weight 22→30, count 2-4→3-5 - a second, modest bump on
+     top of the 2026-09-04 doubling, since that one was tuned for a
+     lighter pre-SecurityCraft trap economy.
+   - Not live-verified this round - **real ask: try affording a
+     Sentry/Cage Trap/I.M.S. from a normal wave-clearing pace and say
+     whether it still feels too steep.**
+3. **Done.** "Either the Bouncing Betty or the Claymore exploded and
+   destroyed my own blocks - can these only harm enemies, not players."
+   New `mine_player_safety.js` - found and fixed two real bugs in the
+   previous same-day attempt, not a tweak: (1) the entity-id typo that
+   meant Bouncing Betty's own player-hurt cancellation was dead code
+   from the start (checking `securitycraft:bouncing_betty` when the
+   live spawned entity actually registers as
+   `securitycraft:bouncingbetty`, no underscore), and (2) Claymore was
+   never covered by that mechanism at all - it explodes from its own
+   block position directly, no entity ever spawned, decompile-confirmed.
+   Real fix: `LevelEvents.afterExplosion`, positive-matched against a
+   tracked Claymore-position registry and a Bouncing-Betty spawn-
+   position/detonation-window registry (not a blanket "null exploder"
+   check, which would have also defanged Demolition Zombie's own real
+   dynamite attack) - removes the player from the affected-entities list
+   and clears all affected blocks only for a matched explosion. `node
+   --check` passed; **real ask: trigger a Bouncing Betty and a Claymore
+   near your own build and confirm no player damage, no block loss.**
+4. **Done.** "Can the sentries have a particle effect that tells me
+   it's firing - we added a cool particle effect feature earlier."
+   That earlier feature (`turret_combat_feedback.js`) was deleted
+   with Advanced Tower Defense the same day SecurityCraft's traps took
+   over Tier 2 - re-hooked onto the real replacement rather than
+   reinvented. New `sentry_combat_feedback.js`: decompiled SecurityCraft's
+   `Sentry`/`Bullet` classes directly (every shot is a real
+   `securitycraft:bullet` entity, an `AbstractArrow`) - a muzzle-flash
+   particle on bullet spawn, an impact particle on anything hurt by
+   arrow-type damage (this roster has no other arrow source). Deliberately
+   skipped the old system's third effect (a per-tick tracer scan) - a
+   real recurring tick cost for a purely cosmetic trail nobody asked
+   for this time. **Real ask: place a Sentry, let it fire, confirm you
+   see both the muzzle flash and the impact effect.**
+5. **Investigated, no code change - a real, verifiable finding, not a
+   guess.** "There's some new lag I'm experiencing." Checked the live
+   instance's `logs/latest.log` first (this pack's own standing
+   practice) - no TPS/"Can't keep up" warnings anywhere in the session,
+   which rules out a straightforward server-tick regression. Asked
+   where it happens: **"all the time / constant, not tied to any
+   activity"** - which points away from worldgen/combat-specific causes
+   (the log's ~250 "Empty or non-existent pool" worldgen warnings for
+   `abandoned_urban`/`the_lost_city` are real but only fire during chunk
+   generation, not constantly) and toward ambient memory pressure
+   instead. Checked this machine directly: 16.6GB total RAM, but only
+   ~3.4GB free *at idle with no game running at all* - something is
+   already using ~13GB in the background. The CurseForge launch args
+   request a 10GB heap (`-Xmx10048m`) for the Minecraft client alone;
+   with that little headroom, Windows falls back to Memory Compression
+   (confirmed running, ~1.5GB) and likely real paging, which reads as
+   constant stutter independent of anything happening in-game. Top
+   background consumers at idle: this Claude Code session + VS Code
+   (~2.3GB combined) and the CurseForge/Overwolf launcher shell itself
+   (~700MB) - not modpack code, a real host-machine constraint. **Not a
+   code fix - flagged honestly rather than guessing at a script to
+   blame. Two real levers, your call: close this session/VS Code (or
+   don't run them while playing), and/or lower the CurseForge instance's
+   allocated RAM below 10GB in its settings** (most 1.20.1 modpacks this
+   size run fine on 6-8GB) **so the client isn't competing that hard for
+   headroom.**
+
+---
+
+## 4-item playtest batch: Wired Different confirmed done, Behemoth HP/armor cut, Sentry default mode, Simple Guns explainer — 2026-09-11
+
+Direct feedback, 4 items, handled in the user's own numbering:
+
+1. **"the wired different should be the quest for the culinery generator
+   (i call it the bio generator). its the deisel generator, this has been
+   taken out as its too complicated to build."** Already done - checked
+   the live `campaign.snbt` directly rather than assuming, and this exact
+   change shipped the same day in the "Tier 3 recipes aligned with loot"
+   session above ("Wired Different" now takes `generatorgalore:
+   culinary_generator` as a real `item` task, description/subtitle
+   rewritten to match, old diesel_generator `observation` task removed -
+   it could never complete in survival anyway, the multiblock's item was
+   creative-only). Nothing further needed here.
+2. **"the behemoth just isnt working as a boss - too tanky cant kill. can
+   we think of something else here."** Second complaint about this
+   specific boss - the first one (2026-09-10, see `boss_wave.js`'s own
+   header) got answered by adding the Demolisher as a second, different
+   boss fight rather than touching Behemoth's own numbers, so the real
+   problem was never fixed. Two real, compounding changes this time, not
+   a guessed number - see `boss_wave.js`'s "Behemoth HP/armor cut" header
+   paragraph for the full derivation:
+   - `maxHealth` 600 → 350 (drops the deliberate "tankier than Demolisher"
+     asymmetry that was the actual complaint, rather than inventing a new
+     number for both).
+   - Armor is now per-boss (`armorMaterial` field) - Behemoth moves from
+     full netherite to full iron; Demolisher, unreported, stays netherite.
+     Ran vanilla's own armor formula by hand for both: netherite's
+     toughness stat reduces a typical low-per-hit weapon (~4 damage,
+     roughly what an arrow/bullet lands) by ~77%, iron's zero toughness
+     only ~52% - toughness specifically crushes exactly the pack's actual
+     anti-boss kit (turret/sentry fire), not just raw HP. Both changes
+     together land closer to a 3-4x real time-to-kill cut, not the ~1.7x
+     either alone would give.
+   - **Not live-verified this round** - a local sandbox boot was attempted
+     for RCON verification (per the standing sandbox recipe) but the
+     machine only had ~1.3GB free physical memory at the time (something
+     else was already using the rest) and the JVM crashed on native
+     allocation before reaching world load. Backed off rather than fight
+     a memory-constrained boot - the armor/NBT string-building logic was
+     still checked in isolation with plain `node -e` (confirmed the
+     per-material `ArmorItems` template produces byte-identical output to
+     the old hardcoded netherite string for Demolisher, and a correctly
+     formed iron equivalent for Behemoth), and `node --check` passed. Real
+     ask: **fight a wave-10 Behemoth and confirm it's actually killable
+     now**, then report back.
+3. **"what are the fuel tanks for in simply guns. how does the laser gun
+   work?"** Informational, no code change - answered by decompiling
+   `simple_guns_reworked-1.9.9` directly (Vineflower against the exact
+   jar in the live instance, not summarized/assumed):
+   - **Fuel Tank**: Flame Thrower ammo, not a block/machine input. Empty
+     Fuel Tank crafts from iron+copper; filling it (blaze powder x2 +
+     magma cream + water bucket + empty tank) makes a real Fuel Tank.
+     Pressing Reload while holding the Flame Thrower with a Fuel Tank in
+     inventory (and the weapon's own "ammo" NBT below 1) consumes one
+     Fuel Tank, adds 30 to the weapon's ammo pool, hands back an Empty
+     Fuel Tank to refill and reuse, and applies a 120-tick cooldown - a
+     magazine-reload idiom, not a generator/power item. The Flame
+     Thrower itself deals 0 direct hit damage; its real damage is
+     entirely from setting the target on fire for 100 ticks.
+   - **Laser Gun**: consumes 1 Energized Dust per shot directly from
+     inventory on right-click (no reload/magazine, no fuel tank
+     involvement at all), fires a fast `RayEntity` projectile (velocity
+     multiplier 3.0, no gravity) for 4 direct damage, plays its own
+     `laser` sound. Simplest weapon in the mod - single-consumable,
+     instant-fire, no ammo pool.
+4. **"can the sentry default to aggressive: mobs only by default when i
+   put it down."** New `sentry_default_mode.js` - decompiled SecurityCraft's
+   `Sentry`/`SentryItem` classes directly: the mode is hardcoded to
+   Camouflage-Hostiles&Players at placement time in Java (`setUpSentry()`),
+   no config option exists. Fixed via the mod's own real public API
+   (`Sentry.toggleMode(Player, int, boolean)`, sets an explicit mode
+   ordinal, no reflection needed) - `EntityEvents.spawned` on
+   `securitycraft:sentry`, guarded to only fire while the entity's still
+   at the untouched factory-default mode, then flips it to
+   `AGGRESSIVE_H` (ordinal 4 - aggressive stance, mobs-only targeting).
+   The guard exists because this KubeJS event also fires for a sentry
+   reloading from disk on chunk load (confirmed from KubeJS's own doc
+   comment on the event, and from the handler chain - Architectury's
+   `EntityEvent.ADD` callback KubeJS subscribes to doesn't even receive
+   Forge's real `loadedFromDisk` flag) - without the guard every chunk
+   reload would silently stomp a player's own later mode change back to
+   aggressive. Full reasoning and the one accepted edge case (a player
+   deliberately dialing a sentry back to the exact factory-default mode
+   will see it flip to aggressive on its next reload) live in the
+   script's own header. `node --check` passed; not live-RCON-verified
+   this round for the same memory-constrained-sandbox reason as item 2 -
+   **real ask: place a fresh Sentry and confirm it's already set to
+   Aggressive - Mobs Only without touching it.**
+
+---
+
+## Structure loot pass: scavenge tables + empty-container fix - built, sandbox-verified, deployed 2026-09-11
+
+Direct ask: loot boxes and the regular storage (barrels) inside structures
+should carry the materials that make a trip out feel like coming home with a
+haul. Full writeup in FEATURES.md ("Structure loot pass"). Short version: a
+real NBT census showed The Lost City is 1,352 empty barrels + 1,487 cobweb
+tables (Berezka API's, not "zero tables"), Abandoned Urban has 97 empties the
+old fix never targeted, Watchtowers roll coal and sticks. Shipped: 7 shared
+`kubejs:chests/scav_*` sub-tables, overrides for every junk table (10
+berezka_api + houseloot + 2 watchtower + 3 postapocalypse), a
+`scavenge_storage` table for empties, `structure_chest_loot_fix.js`
+rewritten to "far from pedestal + not player-placed" (no reflection),
+distance premium retuned (blaze powder / magma blocks / clay now reachable).
+Andesite dropped (Create is gone).
+
+**Open**:
+- Real client pass (PLAYTESTING.md "Structure loot"): open a Lost City
+  store chest through Lootr, open an empty barrel, and confirm a barrel YOU
+  place far from base does not fill itself.
+- Volume watch: a Lost City block is hundreds of containers. If the haul
+  feels like too much, the first knob is `scavenge_storage`'s 0-2 rolls and
+  the premium second-roll chances, not the flavour tables.
+- ~~Tier 3 sourcing gaps need a decision~~ **Resolved same day by
+  re-recipe** (user's call: "tweak the recipes so that they make sense with
+  what is already in the loot tables") - see FEATURES.md "Tier 3 recipes
+  aligned with loot": Tesla Coil rebuilt from copper/gold/steel/Flux Point,
+  steel via the vanilla blast furnace, electrum -> gold, treated wood from
+  planks + coal, Flux Core on ender pearls, RS binding on rotten flesh,
+  Culinary Generator on bread + eggs. Real client check still owed: open
+  JEI on each Tier 3 item and confirm the new recipe is the one shown.
+
+---
+
+## Starter power rig (house pre-wired) — built 2026-09-11, one real bug found and fixed, re-verifying the fix
+
+Direct follow-up to the Tier 3 entry below: "can the house start with a bio
+generator connected to a battery, the battery acts as an early game
+buffer with a flux plug attached to it, the flux network is set up
+already." Real design fork surfaced first (pre-placing working Tier 3
+power undercuts the just-built quest-gated progression) - user's call:
+pre-place it, keep it simple, don't restructure the quest chain.
+
+- **3 blocks added to the pre-built starter house** (`playtest_starter_kit
+  .js`'s `buildStarterBase`), upstairs in the room the trapdoor-bed
+  clearing already opened up: `generatorgalore:culinary_generator` +
+  `fluxnetworks:flux_plug` stacked directly on top (Plug reads the
+  generator's Forge Energy capability off the shared face - the actual
+  "no cables needed" mechanic), plus `fluxnetworks:basic_flux_storage` as
+  the early-game buffer. Real numbers, decompiled from
+  `FluxConfig$Server`, not guessed: Basic tier is 2,000,000 Flux capacity
+  / 20,000 Flux/t transfer, crafted from 6 Flux Blocks + 2 glass panes -
+  correctly scaled for "early buffer," nowhere near Herculean/
+  Gargantuan's footprint.
+- **New file `starter_flux_network.js`**: on first login, real Java
+  reflection (this pack's own established `resolveClass`/
+  `findMethodByNameAndShape`/`boxInt` bootstrap, reused directly rather
+  than redeclared - shared across server_scripts files already) calls
+  into Flux Networks' own `FluxNetworkData.createNetwork(...)` API for
+  the first time ever in this pack, creating a real private network
+  ("House Grid") owned by the joining player.
+- **Real bug found live, not shipped blind**: the first version linked
+  the plug/battery by `/data merge block ... {networkID:...}` - the
+  reflection half worked perfectly (sandbox-confirmed: real network id
+  returned, every method-shape match including the 5-arg `createNetwork`
+  overload resolved first try), but the NBT merge alone never took effect
+  on the already-loaded tile - this area is permanently forceloaded from
+  world-build time, so the tile never naturally reloads to pick the value
+  up during a real session. Proven two ways: fed the generator, waited,
+  battery stayed at 0 energy; then a full server restart with zero
+  further commands made it start flowing (680,000 -> 1,340,000 over
+  10s) - confirming the NBT value was right all along, just never live.
+  A real player's first login would have reported success and silently
+  moved zero power forever.
+- **Real fix**: `TileFluxDevice.connect(FluxNetwork)` (decompiled, public,
+  the mod's own live-linking method) called directly on
+  `level.getBlockEntity([x,y,z])` - no reflection needed for this part,
+  same "call a public custom-mod method directly on the bound Java
+  object" pattern already proven in `amulet_pedestal.js`. Passes the
+  same real `network` object straight through from `createNetwork()`.
+- **Fallback, regardless of whether auto-link works**: every player also
+  gets a real `fluxnetworks:flux_configurator` in their starter kit - the
+  mod's own normal linking tool, three right-clicks, not a special-cased
+  safety net.
+- **Confirmed live 2026-09-11, same test that caught the bug**: read
+  `getNetworkID()` directly off the live tile objects immediately after
+  `connect()` (both reported the real network id, proving actual
+  registration, not just a non-throwing call), then fed the generator and
+  watched the battery's real energy rise +660,000 in 10s with zero
+  restart in between - the exact thing that silently failed before.
+  Generator correctly backpressured once the battery hit its 2,000,000
+  cap. Fix is real and conclusively verified, not just plausible.
+
+## Tier 3: bio generator + interleaved-recipe turrets — built 2026-09-11, sandbox verification in progress
+
+Direct ask: replace the Diesel Generator (a 3×3×5 multiblock needing a
+Squeezer/Fermenter/Refinery biodiesel chain — real, but "the deep end of
+the pack" per its own quest text and never playtested) with a single-block
+generator fueled by rotten flesh, then add real powered traps on top of
+the Flux Networks/Tesla Coil chain already built 2026-09-08 (see "Roadmap:
+tier-by-tier feature-rich buildout" below). Also surfaced along the way:
+SecurityCraft's Tier 2 trap roster has no Forge Energy capability at all —
+"powered traps" had to mean new machines, not a Tier 2 retrofit.
+
+- **Generator Galore** added (CurseForge 691049/7187726, no dependencies).
+  Its Culinary Generator (`generatorgalore:culinary_generator`) is a real
+  single block with `fuelType: "FOOD"` — confirmed via the jar's own
+  `data/generatorgalore/generators/culinary.json`, not guessed — so it
+  burns any food item, rotten flesh included. Reached via a short tier
+  ladder (Copper → Iron → Gold → Culinary, plain crafting-table recipes
+  each step), not a from-scratch single craft.
+- **Real power math, found by decompiling both jars directly** - not just
+  the manual pages, the actual compiled `IEServerConfig$Machines` config
+  defaults: Tesla Coil = 256 Flux/t idle + 512/hit; each turret = 64
+  Flux/t just monitoring + 32 more while firing. All three idling at once
+  costs 384 Flux/t, against the stock Culinary Generator's 8 Flux/t.
+  **Went through three wrong/failed fixes before landing on the real one,
+  all same day (2026-09-11)**: (1) a player-wired lever gating power to
+  only-during-waves (rejected - "I don't remember seeing this", never
+  actually agreed to); (2) generator-count/tier-upgrade math ("build
+  several Culinary Generators, or upgrade to Honey tier via a bee farm") -
+  also rejected ("no not a bee farm!"); (3) a `ServerEvents.
+  highPriorityData` + `event.addJson` KubeJS datapack override targeting
+  `generatorgalore:generators/culinary` - sandbox-verified to have real
+  API but **zero actual effect**: a live RCON test (place the block, feed
+  it, measure real FE accumulation) showed the stock 8 Flux/t rate
+  unchanged. Root cause, found by decompiling `GeneratorRegistry.
+  discoverGeneratorFiles()`: this mod never reads its generator stats
+  through Minecraft's resource/datapack system at all - it copies its
+  bundled jsons out of its own jar via raw `Files.copy` straight into
+  `<config>/generatorgalore/generators/` during FML mod construction,
+  before any datapack (KubeJS's included) is even loaded. **Real fix**:
+  ship `pack/config/generatorgalore/generators/culinary.json` (4096
+  Flux/t, matching IE's `dieselGen_output`) directly as a tracked config
+  file, plus `pack/config/generatorgalore/defaults.lock` (empty marker) -
+  both required together, since decompiling `setupDefaultFiles()`/
+  `copyFiles()` showed that without the lock file, the mod's first-boot
+  path force-overwrites any existing culinary.json with `REPLACE_
+  EXISTING`; the lock file (mimicking "defaults already set up") makes it
+  skip files that already exist instead. **Confirmed live 2026-09-11**,
+  same RCON behavioral test that caught fix #3 being broken: placed the
+  block, fed it rotten flesh, `generationRate` field read `16384.0` (4
+  nutrition x 4096, exactly as predicted vs. the stock rate's `32.0` in
+  the earlier failed test), buffer filled from 0 to its 100,000 cap in
+  ~1-2 ticks instead of the ~17-18/tick the broken fix showed. culinary.
+  json also confirmed to survive a real boot unmodified on disk. No
+  redstone automation, no extra farm system either way - turrets/coils
+  are player-placed at unknown positions regardless, so there was never
+  anything to hook a script-driven toggle to.
+- **Gun Turret + Chemthrower Turret** (`immersiveengineering:turret_gun`/
+  `turret_chem`, both real — confirmed via the installed IE jar directly,
+  not assumed) added as Tier 3's powered-trap roster alongside the Tesla
+  Coil. Re-recipied (`tier3_turret_recipes.js`) to interleave mods per
+  direct ask: 2 of each turret's 6 stock ingredient slots swapped —
+  `component_electronic_adv` (which pulled in a Plastic/Refinery
+  dependency neither turret needs anymore) → a Tier 2 SecurityCraft item
+  (Sentry for the Gun Turret, Electrified Iron Fence for the Chem
+  Turret), and `toolupgrade_railgun_scope` → `fluxnetworks:flux_point`,
+  so the turret is built with its own network draw already wired in.
+  This is also the resolution to the long-parked "SecurityCraft modules
+  as turret-recipe components" idea (see the Roadmap section below) —
+  its original target (Advanced Tower Defense/MDT) got cut entirely
+  2026-09-11 before it was ever built, so it landed here instead, on IE's
+  turrets, once those became the real Tier 3 powered-trap pick.
+- **Quests**: "Wired Different" rewritten off the old diesel_generator
+  observation task (which could never complete in survival — the
+  multiblock's item was creative-only, a real pre-existing bug, now moot)
+  onto a real `item` task on the Culinary Generator. Two new quests added,
+  "Point and Shoot" (Gun Turret) and "Liquid Fire" (Chem Turret), both
+  branching off "No Cables Needed" (the Flux Point quest).
+- **tooltip_tier_colors.js** updated: `diesel_generator` entry replaced
+  with `culinary_generator`, both turrets added as Tier 3.
+- **Sandbox boot + RCON verification - done, passed clean**: 70 quests
+  loaded (0 parse errors), 33/33 KubeJS server scripts (0 errors), all new
+  item/block ids real (`culinary_generator`, `turret_gun`, `turret_chem`,
+  `flux_point`), `/setblock` confirmed for all 3 new/changed blocks. None
+  of this touched a live save. Still unverified in real play: whether the
+  real generator-count math above (build several Culinary Generators in
+  parallel, or upgrade toward Honey tier) lands as a satisfying base-
+  building investment or just feels like busywork - that's a real-play
+  question, not something a sandbox boot can answer.
+
+---
+
 ## Quest book explains the barrel/stack-upgrade loot fix — 2026-09-11
 
 Direct follow-up to the loot-volume conversation below: "update the quest
@@ -147,6 +516,165 @@ a "missing registry" error before calling this fully done.
 
 ---
 
+## Boomer Zombie — fully removed, 2026-09-11
+
+Direct ask: "just remove boomers entirely from the game" - a clean,
+unambiguous supersession of 2026-09-10's "just make them rarer" call one
+day earlier (see that day's batch below for the rarity-nerf version this
+replaces). Unlike the original 2026-09-09 wave-pull, which deliberately
+left every roster-copy array in place ("inert without a live boomer,"
+restoring them later would just mean re-adding 3 array entries), this
+pass purges it everywhere on the reasoning that "entirely" means gone
+from the whole pack, not just unreachable in practice:
+
+- `wave_spawner.js`: gone from `WAVE_MOB_TYPES`, `ENDLESS_OTHER_TIERS`
+  (its only remaining live spawn path), and `pickEndlessOtherType`'s own
+  rarity-reroll (deleted outright, no longer needed - back to a plain
+  uniform per-tier pick).
+- Every roster-copy array: `mob_aggro.js`, `bounty_kills.js`,
+  `wave_status.js`, `pedestal_health.js`, `flesh_death_sound.js`,
+  `loot_bag_drops.js`'s `EPIC_MOBS` (now a single-entry array -
+  elite_zombie is the only Epic-tier mob left, same "honest consequence"
+  this file already accepted for Rare after TFTH's removal).
+- `epicsiegemod-common.toml`'s 4 mob lists (digger/building/jumping/
+  targeting).
+- `boomer_zombie_explosion.js` deleted outright - the block-destroying
+  blast this mob alone needed, dead code once it can never spawn again.
+  Nothing else referenced it (checked before deleting).
+
+**Left alone, on purpose**: Zombies More itself stays installed, and its
+own natural-spawn biome-modifier override
+(`kubejs/data/zombiesmore/forge/biome_modifier/
+boomer_zombie_biome_modifier.json`, from the 2026-09-09 "natural spawns"
+fix) stays too - that's what actually keeps the mod's own worldgen from
+spawning the mob, independent of this pack's own spawn logic. Uninstalling
+the mod entirely (it has no other mob in the live roster) wasn't done
+here - a bigger, separate decision, flagged but not assumed.
+
+`packwiz refresh` run, hashes clean. Not committed or deployed to the
+live instance yet.
+
+---
+
+## 3-item playtest feedback batch (fourth round, 2026-09-10) — all built, need a real pass
+
+Landed in the same working tree as the peer session's own same-day pass
+(second boss + brute pacing move to wave 20, `boss_wave.js`/
+`wave_spawner.js`) - built on top of their changes, not around them; no
+overlap in what each touched.
+
+1. **Done.** "The waves need to ramp up in difficulty way more quickly."
+   Two separate levers, both in `wave_spawner.js`:
+   - The endless-phase deterministic baseline formulas (`baselineZombieCount`/
+     `baselineOtherCount`) had their exponent term switched from the raw,
+     uncapped `waveNumber` to the already-capped `endlessLevel` (max 40),
+     with steeper coefficients (1.054→1.09 zombie, 1.01→1.05 other,
+     additive bases +2). Simulated both curves with node before picking
+     numbers, not guessed: this is HARDER through the entire wave range
+     anyone realistically plays (wave 30 baseline total 200→307, wave 40:
+     403→841) while also fixing a real latent problem in the old uncapped
+     formula - it was quietly heading toward a genuine performance cliff
+     at extreme wave counts (wave 100: 19,519 baseline mobs) since an
+     uncapped exponent was compounding against an uncapped linear term
+     forever. Capping the exponent's input alone fixes that for free.
+   - `pickEndlessOtherType`'s tier-2/brute-tier weight ramp rate (how fast
+     each tier saturates toward its max share once unlocked) steepened
+     from `+3/level, cap 60` to `+5/level, cap 80`. Deliberately did NOT
+     touch `TIER2_MIN_LEVEL`/`BRUTE_TIER_MIN_LEVEL` themselves - those are
+     the exact unlock levels the peer session set this same day on a
+     direct, explicit ask ("move the brutes to later waves, say from wave
+     20"), so brutes still can't appear before wave 20. This only makes
+     each tier dominate its pool faster once it's actually unlocked.
+2. **Done - real root cause found, not just a stat bump.** "The brutes
+   aren't hard, they're just annoying and tanky." Decompiled both real
+   entity classes directly (`net/petemc/mutantszombies/entity/
+   {Zombie,Mutant}BruteEntity.class createAttributes()`, the exact jar
+   this pack ships): zombie_brute is 100 HP/16 dmg/16 armor at **0.21**
+   movement speed, mutant_brute 120 HP/18 dmg/18 armor at **0.2** - both
+   SLOWER than a vanilla zombie's 0.23, and both have full (1.0)
+   knockback resistance on top of that. That's the actual mechanism: a
+   player who just walks away never gets hit, so the high HP/damage never
+   gets to matter - the fight is either a non-event or a tedious
+   stationary grind. Fixed via the same summon-NBT Attributes-override
+   technique this pack already uses for boss stats, movement speed only
+   (HP/damage/armor untouched): 0.28 for the regular mobs
+   (`wave_spawner.js`'s `BRUTE_SPEED_FIX_TYPES`/`BRUTE_MOVEMENT_SPEED`),
+   0.3 for the Behemoth boss (`boss_wave.js`, same real problem - a boss
+   with 600 HP a player can just walk away from is worse, not better).
+   Both now faster than every roster mob except Crawler's dedicated 0.3
+   swarm speed.
+3. **Done - one assumption stated plainly.** "The game needs more
+   crawlers and mining zombies to make the game harder." No mob named
+   "mining zombie" exists in any installed mod (checked Mutants and
+   Zombies/Zombies More/Undead Nights directly before assuming) - reading
+   this as the underground-ambush mechanic from this file's own previous
+   entry above (item 1 in the third-round batch), the only mechanic in
+   this pack that matches "mining"/digging into the base. If that's
+   wrong, say what "mining zombies" actually refers to.
+   - **Crawlers**: real reason this is a good "harder" pick, not just
+     "more mobs" - decompiled `CrawlerEntity.class` directly, it
+     implements Advanced Wall Climber API's `IAdvancedClimber` with a
+     real `ClimberPathNavigator`, so it can climb straight up a
+     chokepoint wall's face instead of needing to path around or through
+     it (a real answer to the wall's own documented "pillaring-over"
+     gap), on top of already being faster than a vanilla zombie (0.3 vs.
+     0.23). Weighted 3x in `ENDLESS_OTHER_TIERS` tier 2 (was 1x) - ~43%
+     of a tier-2 pick now instead of 20%, the other tier-2 mobs keep even
+     odds against each other.
+   - **Underground ambush ("mining zombies")**: counts raised across the
+     board in `undergroundAmbushCountForWave` - hand-authored waves now
+     start at wave 2 (was 3) and ramp 1→2→3 by wave 7 (was 1→2 flat);
+     endless phase now starts at 2 and caps at 6 (was 1 and capped at 4).
+
+---
+
+## 2-item playtest feedback batch (third round, 2026-09-10) — both built, need a real pass
+
+1. **Done - new mechanic, not a bug fix.** "Can the enemies dig through to
+   the base from underground" - mobs have only ever spawned on the real
+   surface outside the compound (`randomObjectiveRelativePosition`'s own
+   rejection sampling keeps them OUT, then `/spreadplayers` snaps them
+   onto the heightmap), so digging in from below was structurally
+   impossible before this. Epic Siege Mod's digger AI is already enabled
+   pack-wide (`epicsiegemod-common.toml`) but only fires once a mob's own
+   pathfinding has genuinely given up (decompiled precondition,
+   `ESM_EntityAIDigging.canUse()`'s `getNavigation().isDone()` - see this
+   file's earlier chokepoint-walls entry). Added a second, much smaller
+   spawn category in `wave_spawner.js` (`undergroundAmbushPos`/
+   `undergroundAmbushCountForWave`): a plain zombie summoned already
+   buried under the compound's own real footprint (read from the
+   persisted `td_compoundX0..Z1` bounds; falls back to right under the
+   pedestal on an old save without them), skipping the `/spreadplayers`
+   surface correction entirely so it stays buried instead of getting
+   snapped back to the top. Starts at wave 3 (1 mob), 2 from wave 7 on,
+   1-4 in the endless phase scaling with `endlessLevel`. **Real
+   limitation, stated plainly (same shape as the chokepoint-walls
+   entry)**: whether it actually breaks upward vs. some other direction
+   toward the pedestal is the AI's own pathing choice, not scripted here
+   - `mob_aggro.js`'s forced-targeting loop can't run in a headless
+   sandbox with no player connected, so this is a well-evidenced
+   hypothesis (it satisfies the AI's own documented precondition), not a
+   confirmed one. Needs a real playtest to confirm it actually reads as
+   "digging up from underground."
+2. **Done - narrowed, not removed (your correction).** Asked to "remove
+   the boomer from the mob roster" first; when the follow-up question
+   asked how thorough, the answer was "just make them rarer, less
+   frequent on the roster" instead - scoped to that, not a removal.
+   Boomer's only remaining live spawn path is `ENDLESS_OTHER_TIERS`' tier
+   2 inside `pickEndlessOtherType` (already out of every written wave
+   since 2026-09-09, and Zombies More's own natural spawns are already
+   blocked pack-wide, per item 13 of the second batch below). Added a
+   reroll whenever the flat per-tier pick lands on Boomer, cutting its
+   share of a tier-2 pick from an even 1-in-4 (25%) to 1-in-16 (~6%) -
+   the other 3 tier-2 mobs keep their original odds against each other.
+   Every other roster-copy array (the ESM config lists, mob_aggro.js,
+   bounty_kills.js, wave_status.js, pedestal_health.js,
+   loot_bag_drops.js's EPIC_MOBS, flesh_death_sound.js) is untouched,
+   same as the original 2026-09-09 pull - still inert without a live
+   boomer to match against.
+
+---
+
 ## 19-item playtest feedback batch (second batch, 2026-09-10) — 15 built, 4 need your call
 
 Literal checklist against the user's own numbering. Every item was
@@ -219,6 +747,11 @@ source. Sandbox status is the last paragraph of this section.
    visible (they are chapter images, not quests), so an empty panel now
    reads as "something goes here". Progress still counts early by
    design of this option.
+   **Reversed 2026-09-10, live LAN feedback**: in practice the panels
+   read as "weird", not "something goes here" - a big tinted rectangle
+   sitting there with mostly-hidden icons inside. `campaign.snbt`'s
+   5-entry `images` array emptied (`images: []`), deployed to the live
+   instance.
 5. **Done - same fix as 3.** The "[Bounty] First Blood complete - 25
    kills" chat line was the exact-score path working correctly; the quest
    showed nothing because it had already been completed by the bug above
@@ -1329,6 +1862,10 @@ first (everything else in this phase needs them).
 - **SecurityCraft modules as turret-recipe components - done, 2026-09-09**
   (MDT half moot - Arrow Turret/MDT itself cut the same day, see "Tier 2
   trap replacements + Track C follow-ups" near the top of this file).
+  **Real implementation landed 2026-09-11**, not on MDT/ATD (both fully
+  removed by then) but on IE's Gun/Chemthrower Turret once those became
+  Tier 3's powered-trap pick - see "Tier 3: bio generator + interleaved-
+  recipe turrets" near the top of this file.
 - **Turret combat-feedback effects - done, 2026-09-09** - see the same
   entry.
 - **Tooltip tier color-coding, extended to Tier 2 items - done,

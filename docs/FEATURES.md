@@ -370,6 +370,9 @@ exception from the loot-philosophy change above.
   the quest book rebuild below should reference "Turn the Crank," not
   invent a second name/quest for the same thing.**
 - **Committed** (30588f6).
+- **Retired 2026-09-11** - Create left the pack (f527e7c), so the Hand
+  Crank this existed for is gone; andesite was removed from all three
+  tables in the "Structure loot pass" entry below.
 
 **Legendary loot bag jackpot + beam-of-light visual — fleshed out and
 queued 2026-09-05.** Raised in the "some ideas..." batch as item 1:
@@ -769,6 +772,230 @@ JSON once and never re-reads the JSON afterward — the live instance's
 already-generated `uncommon_bag.toml` needed a direct edit too, same
 gotcha the legendary-tier totem_of_undying fix hit earlier. Editing the
 source JSON alone is not enough on an existing save.
+
+**Structure loot pass: scavenge tables, junk-table overrides, empty-container
+fix rewrite - built, sandbox-verified and deployed 2026-09-11.** Direct ask: "do
+a pass at loot boxes as well as regular storage like barrels in structures and
+make sure they have the desired materials in the loot tables that would make
+the player feel like they can come back to base with a good haul, rather than
+stay at home." Three real findings first, all from parsing every container
+block entity in every structure mod's NBT files in the live jars (a proper NBT
+census with a palette lookup, not a string grep - the earlier grep missed
+Philip's Ruins' singular `philipsruins:chest/...` path entirely):
+- **The Lost City was cobwebs and empty barrels.** 2,916 containers: 1,352
+  completely empty (46%, almost all barrels), 1,487 tagged with Berezka API's
+  own tables - `berezka_api:chests/store` (566), `simple_chest` (475: five
+  rolls of cobweb-vs-one-iron), `empty_chest` (180: ten cobwebs),
+  `berezkahousesmall_0` (126), `simple_chest2` (90), `farm`, `car`,
+  `diningroom`, `tower_chest`, plus one the library registers as
+  `minecraft:chests/houseloot`. This doc's earlier "Lost City ships ZERO chest
+  loot tables" claim was true of its own namespace and wrong in effect: the
+  tables ship inside `berezka_api-1.2.9.6`'s jar. The reflection-based empty-
+  chest fix never worked for Berezka-placed structures (its own header said
+  so), and Abandoned Urban's 97 empty barrels were never in its target list.
+  Abandoned Watchtowers' 157 tagged barrels rolled coal, sticks, cobwebs, a
+  torch and a chicken. postapocalypse_structures' own 131 containers are 74
+  `cobwebs` / 33 `trash` / 24 `food`. Philip's Ruins (17 own tables, all
+  present, gunpowder/iron/diamonds) and Unnamed Desert (4) are fine and
+  untouched.
+- **Andesite was dead weight.** Gated into structure chests on 2026-09-05
+  purely for Create's Hand Crank; Create left the pack 2026-09-11 (f527e7c) and
+  nothing references andesite any more. Dropped from all three postapocalypse
+  tables.
+- **Tier 3 needs things this world can't make** (found by tracing every live
+  recipe chain to a real in-world source): the Culinary Generator's stock
+  recipe is a Gold Generator + cake + 2 crops + 2 eggs + redstone block, in a
+  world where `no_passive_mobs.js` cancels every cow and chicken (egg-hatched
+  chicks included); every Flux Plug/Point needs a Flux Core, which needs an
+  Eye of Ender (blaze powder); IE steel needs Blast Bricks, which need magma
+  blocks; the Coke Oven's bricks need clay, in a world with no water (sea
+  level -63). None of that is in the quest book. See "Open Tier 3 sourcing
+  gaps" at the end of this entry.
+
+**Built:**
+- **Seven shared scavenge sub-tables** (`data/kubejs/loot_tables/chests/
+  scav_{hardware,food,building,armory,treasure,dairy,filler}.json`), one
+  weighted roll each, composed into the real tables via vanilla
+  `minecraft:loot_table` entries so every structure mod shares one economy.
+  Hardware is what the tech tree actually eats - iron, redstone, gunpowder,
+  copper, gold, coal, string, iron bars, tripwire hooks, stone buttons,
+  gravel, flint, quartz, lapis, obsidian, TNT. Building is logs/planks/cobble/
+  stone bricks/torches/ladders/glass/clay/bricks/sand and a rare cobweb.
+  Armory is Simple Guns ammo and grenades, arrows, bows/crossbows, a weighted
+  gun pick (pistol to sniper, commoner guns heavier - same shape as the
+  airdrop) and iron weapons/armour. Treasure is emeralds/diamonds/pearls/
+  resource blocks/enchanted books/XP bottles with a sliver of netherite
+  scrap. Dairy is eggs, milk buckets, cake, sugar, wheat - the Culinary
+  Generator's inputs, which exist nowhere else. Filler is paper/string/
+  rotten flesh - each has a real sink (paper -> books for enchanting,
+  string -> Refined Storage's Processor Binding, rotten flesh -> Culinary
+  Generator fuel). Shrapnel stays bag-only on purpose ("kill mobs to fund
+  your tech"); nothing a pre-placed home machine makes is in any table (the
+  standing loot-shortcut rule).
+- **Every junk table overridden pack-side**, same datapack-override
+  technique the postapocalypse tables already used: all ten `berezka_api`
+  tables + `minecraft:chests/houseloot` (`data/berezka_api/loot_tables/
+  chests/`, `data/minecraft/loot_tables/chests/houseloot.json`), both
+  Watchtower tables (`data/watchtower_building/loot_tables/chests/`), and
+  the three postapocalypse tables reworked in place. Each keeps its flavour:
+  a `store` is the supermarket (2-3 food, 1-2 hardware, 60% an armory roll,
+  0-1 treasure, 50% dairy), a `farm` is seeds + dairy, a `car` is hardware
+  and maybe a gun, a `diningroom` is food + guaranteed dairy, a
+  `tower_chest` is ammo + hardware + maybe a spyglass, a `gas_station` keeps
+  its coal/charcoal/flint-and-steel pool. Cobwebs drop from the dominant
+  entry everywhere to a rare 1-3 filler roll.
+- **`kubejs:chests/scavenge_storage`** for empty world-gen containers: 0-2
+  hardware, 0-2 building, 0-1 food, a 20% armory roll, 0-1 filler - a barrel
+  someone left things in, occasionally almost nothing.
+- **`structure_chest_loot_fix.js` rewritten without any structure lookup.**
+  At first right-click, a plain chest/trapped chest/barrel/dispenser/dropper
+  that is untagged, empty, more than 100 blocks from the pedestal (structure
+  sets are excluded for 9 chunks around the base, so nothing inside that
+  radius can be world-gen storage - and the base's own script-placed double
+  chest is safe) and not in the player-placed registry gets the storage
+  table merged as {LootTable, LootTableSeed}. `BlockEvents.placed`/`broken`
+  maintain `td_playerContainers` on the shared marker (same string-registry
+  idiom as `trap_durability.js`); script/command-placed blocks never fire
+  `placed`, which is exactly right. Covers the Lost City's 1,352 and
+  Abandoned Urban's 97 empties the old version could never reach. ~200 lines
+  of reflection gone.
+- **`structure_loot_progression.js` retuned**: mid pool (210-270 blocks) is
+  iron/gold/redstone blocks/gunpowder/copper blocks/quartz/lapis blocks/
+  emerald/clay/iron block; high pool (270+) is diamond/emerald/gold block/
+  ender pearl/**blaze powder**/**magma block**/netherite scrap/diamond block/
+  the smithing template. Premium rolls changed from a flat 2 to 1 + 40% (mid)
+  / 1 + 50% (high): with every container now carrying real materials and a
+  Lost City block holding hundreds of them, two guaranteed premium rolls
+  each would have turned a far city into a diamond mine.
+- **`docs` corrected**: the "Lost City ships ZERO chest loot tables" reasoning
+  in `structure_loot_progression.js`'s header is rewritten; the type-level
+  rule stays because it is still the right shape (it also covers Abandoned
+  Urban's vanilla tables and every empty barrel the fix tags).
+
+**Verification (sandbox, 2026-09-11)**: fresh dedicated-server boot on the
+live mod set (cloned from the Tier 3 session's sandbox, run on its own
+ports), 36/36 server scripts, 0 errors, no loot-table parse errors, base
+built. Over RCON, `execute positioned ... run loot insert` + `data get block`
+for all 24 tables at 150 blocks from the pedestal - every one rolled real
+items through the nested sub-tables (store: apple/bread/carrot/iron x8/
+leather; diningroom: cooked meat, pumpkin pie, a milk bucket; gas_station:
+copper/charcoal/kelp; tower_chest: rifle ammo + gold nuggets; empty_chest:
+planks/iron nuggets/2 cobwebs). Distance premium confirmed on a plain filler
+roll: at 240 blocks redstone blocks/emeralds/gunpowder/clay landed on top; at
+300 blocks diamonds, ender pearls, netherite scrap, the smithing template and
+blaze powder x4. The empty-container fix was exercised over RCON through a sandbox-only
+probe command calling `sclfMaybeAssign` directly (commands only register
+at server start, so this took a full restart, not a script reload): an
+empty barrel 300 blocks out -> `assigned`, and `already-tagged` on the
+second call; the same barrel after a simulated player placement ->
+`player-placed`, after un-marking -> `assigned`; a barrel 10 blocks from
+the pedestal -> `near-base`; a barrel holding one stone -> `has-items`; a
+stone block -> `not-target`; and a tagged chest read back via `data get
+block` as `{LootTable: "kubejs:chests/scavenge_storage"}` with its `Items`
+key gone - vanilla's own lazy-unpack shape. Deployed to the live instance
+(every copied file diffed byte-identical). **Not coverable without a player**: Lootr's
+per-player chest opening (it converts tagged containers at generation, so
+the overrides reach it, but nobody has opened one), and a real right-click on
+a real Lost City barrel - PLAYTESTING.md lists both.
+
+**Useless-loot trim, 2026-09-11 (direct feedback: "theres alot of useless
+loot in the game... ideally i only want stuff dropping thats useful"),
+same day as the structure loot pass above.** Checked every item against a
+real sink (a recipe, a fuel use, food, ammo, or building material for
+defenses) rather than trimming by feel. Two changes, both to loot the
+player sees constantly rather than rare structure finds:
+- **BountyBags Uncommon** (`bountybags/loot_tables/items/uncommon.json`,
+  the wave-kill bag every zombie/husk/drowned has a ~20% chance to drop -
+  by far the most-opened loot source in the game): dropped `cobblestone`,
+  `bone`, `netherrack` and `sugar_cane` - none has a recipe, fuel, or food
+  use anywhere in this pack's scripts (checked by grep, not assumed), and
+  netherrack in particular had no thematic tie to a wasteland base build
+  either. Everything else in the table (logs, food, ore/ingots, string,
+  leather, gunpowder, redstone, arrows, shrapnel) has a real, traced sink.
+  **BountyBags caches its loot tables into `config/bountybags/*.toml` on
+  first boot and never re-reads the JSON after that (see loot_bag_drops.js's
+  own "STOP" note)** - this edit needs the live instance's
+  `config/bountybags/uncommon_bag.toml` deleted (regenerates from this JSON
+  on next boot) or an op running `/bountybags edit uncommon` and clicking
+  Restore Defaults in-game, same as every previous bag-contents change.
+- **`scav_filler.json`**: dropped `cobweb`, `bone` and `bowl` - none had a
+  traced use either (`bowl` wasn't even in this doc's own description of
+  what filler was supposed to contain, a sign it was drift rather than
+  intent). Kept `paper`, `string`, `rotten_flesh` and `leather`, each with
+  a real sink (see the "Built" bullet above). `scav_building.json`'s own
+  rare cobweb and `scav_hardware.json`/`scav_treasure.json` etc. were left
+  alone - those are either active building material for player-built
+  defenses or already 100% real-sink items with no filler in them.
+
+**Open Tier 3 sourcing gaps - surfaced, not decided here.** Loot now
+supplies eggs/milk/cake (dairy), blaze powder and magma blocks (high pool)
+and clay (building + mid pool). Still uncraftable as shipped: the Tesla
+Coil's stock recipe (aluminum plates, electrum via silver, an advanced
+electronic component that needs Plastic from a Refinery) - IE's ores use
+`ie_range` placements and this world's noise floor is min_y -16, so the deep
+ores are largely absent. Whether Tier 3 gets re-recipied, fed by loot (IE
+ingots as far-structure finds would fit "things you can't get at home"), or
+a Nether trip becomes part of the loop is a design call for the user, tracked
+in QUEUE.md.
+
+**Tier 3 recipes aligned with loot - built, sandbox-verified and deployed
+2026-09-11.** Direct follow-up to the structure loot pass above: "tweak the
+recipes so that they make sense with what is already in the loot tables."
+Every quest-book item was traced from its recipe down to raw inputs against
+the live jars (Generator Galore 1.2.5, Flux Networks 7.2.1.15, IE
+10.2.0-183, Refined Storage 1.12.4, Simple Guns 1.9.9) and only inputs this
+world cannot produce were swapped, each for the nearest material that IS in
+a loot table or a mob drop. Tier 1/2 (Simply Traps, SecurityCraft, Item
+Collectors, Sophisticated Storage) needed nothing - already all-vanilla from
+loot. Shipped as `tier3_loot_aligned_recipes.js` (a new file, so the Tier 3
+session's `tier3_turret_recipes.js` is untouched - its two turret recipes
+now resolve because every intermediate they name does). Each new recipe has
+an explicit `kubejs:loot_aligned/<name>` id.
+- **Culinary Generator + Gold->Culinary upgrade**: cake -> bread. Eggs
+  stay - they are the deliberate dairy loot find (`scav_dairy`, rolled by
+  Lost City stores/farms/dining rooms and postapocalypse food chests).
+  "Wired Different" quest text updated to match.
+- **Flux Core**: Eye of Ender -> ender pearl (still 4 per craft). Plus a
+  plain crafting route for Flux Dust (obsidian + 4 redstone -> 4) next to
+  the mod's own in-world one (drop redstone onto obsidian that sits on
+  bedrock - `enableFluxRecipe` is on in the live server config, bedrock is
+  at y=-16, 18 blocks under the y~2 surface), which nothing in the pack
+  explained.
+- **Steel**: the vanilla blast furnace now blasts iron ingots into IE steel
+  (0.7 xp, 200 ticks). IE's Blast Furnace multiblock (magma blocks, far
+  loot only) still works as before.
+- **Heavy Engineering**: electrum -> gold ingots. Real ore facts from the
+  live `immersiveengineering-server.toml`: silver's band is -48..32
+  (trapezoid, so thin at the edges) against this world's -16..2 stone
+  column; bauxite is 32..112, entirely above the surface, so aluminum
+  never generates here at all.
+- **Treated wood**: planks + coal -> 2 (single-row grid) alongside the
+  creosote route. The Coke Oven's 27 bricks need ~72 clay; clay is in loot
+  now, but at that volume it was a wall, not a gate. The Coke Oven stays
+  relevant for creosote as Chem Turret fuel.
+- **Casull revolver rounds** (what the Gun Turret fires): 4 casings + 2
+  gunpowder + 2 iron nuggets -> 4 in a plain grid. The stock route is an
+  Engineer's Workbench blueprint needing lead nuggets.
+- **Refined Storage**: Processor Binding's slime balls -> rotten flesh (no
+  slimes spawn - natural spawns are stripped); Construction Core's
+  glowstone -> lapis. Everything else in the Controller/Grid chain (quartz,
+  silicon from smelted quartz, iron, redstone, diamond, glass, a chest) was
+  already in loot.
+- **Tesla Coil rebuilt**: a lightning rod on top, two LV coils flanking a
+  gold block, steel either side of a Flux Point (the "born wired"
+  convention the turret recipes set). The stock recipe needed aluminum
+  plates, an MV coil (electrum wire) and an Advanced Electronic Component
+  (Plastic -> Refinery).
+- **Simple Guns Fuel Tank** (flame thrower ammo): blaze powder x2 + magma
+  cream -> 2 gunpowder + 2 coal.
+- **Left alone on purpose**: Waystones' Warp Stone (amethyst shards - the
+  biome JSONs keep `amethyst_geode`, whose -58..30 band overlaps the stone
+  column, so geodes do generate here), the potato cannon's Charged Potato
+  (blaze powder is a far-loot find and it's a joke gun), the Laser Gun
+  (shulker shell + amethyst; airdrop-only exotic), Shrapnel (bag-only by
+  design) and the Totem (Nether Star from Legendary bags by design).
+
+**Verification (sandbox, 2026-09-11)**: Fresh sandbox boot with the script (37/37 server scripts, 0 errors): KubeJS reported `Added 24 recipes, removed 21 recipes, 0 failed`; a probe over RCON found all eight replaced stock recipes ABSENT (`generatorgalore:generators/culinary`, `generatorgalore:upgrades/gold_to_culinary_upgrade`, `fluxnetworks:fluxcore`, `immersiveengineering:crafting/heavy_engineering`, `immersiveengineering:crafting/tesla_coil`, `refinedstorage:processor_binding`, `refinedstorage:construction_core`, `simple_guns_reworked:rtank`) and IE's untouched revolver / turntable / metal barrel / sheetmetal-slab recipes still present. A second pass after adding the generatorgalore guard (`/reload`, 38/38 scripts, 0 failed recipes) resolved every tag the file uses to real items (`#forge:eggs` -> egg + turtle egg, `#forge:crops` -> wheat/carrot/potato/beetroot/nether wart/flax, `#forge:sheetmetals/steel` -> sheetmetal_steel, `#forge:ingots/gold`, `#minecraft:planks`, `#forge:string`) and read all 12 `kubejs:loot_aligned/*` recipes back out of the recipe manager with exactly the intended ingredients (tesla_coil <= lightning rod, 2 LV coils, gold block, 2 steel, flux point; flux_core -> 4x <= 4 flux dust, 4 obsidian, 1 ender pearl; processor_binding -> 8x <= string, rotten flesh, string). Deployed to the live instance with the guard active: that instance has no Generator Galore jar yet (the Tier 3 session hasn't deployed it), so the two generator recipes stay dormant there until it lands, and the "Wired Different" text edit lives in the repo's campaign.snbt, which is that session's not-yet-deployed version. Not coverable without a player: crafting each item in a real grid and the JEI display - PLAYTESTING.md lists them.
 
 **Amulet/pedestal: wave mobs don't actually converge on the base —
 requested 2026-09-03, built and deployed 2026-09-04 (commit 5293a3f).**

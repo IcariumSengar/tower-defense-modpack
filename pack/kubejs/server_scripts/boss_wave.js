@@ -76,6 +76,33 @@
 // exactly as parked, IDEAS.md updated to record the now-decided cadence
 // only.
 //
+// **Behemoth HP/armor cut, 2026-09-11** (second direct complaint about
+// this specific boss: "the behemoth just isnt working as a boss - too
+// tanky cant kill" - the first one, 2026-09-10 above, got answered by
+// adding the Demolisher as an alternate fight rather than touching
+// Behemoth itself, so the underlying number was never actually fixed).
+// Two real, compounding changes, not one guessed number:
+// - **maxHealth 600 -> 350.** Was deliberately set higher than
+//   Demolisher's 350 to give it a distinct "the tank" identity - that
+//   asymmetry is exactly what's not working, so this drops it to parity
+//   instead of guessing a new number for both.
+// - **Armor material is now per-boss (`armorMaterial` below) - Behemoth
+//   moves from netherite to iron, Demolisher stays netherite,
+//   unconfirmed-but-unreported so left alone.** Full netherite is 20
+//   armor / 12 toughness; full iron is 15 armor / 0 toughness. Ran
+//   vanilla's own damage formula (`CombatRules.getDamageAfterAbsorb`:
+//   `f1 = clamp(armor - damage/(2+toughness/4), armor*0.2, 20)`, final
+//   damage `= raw * (1 - f1/25)`) by hand for both: on a 4-damage hit
+//   (typical low-end arrow/bullet tier) netherite's toughness term drags
+//   f1 up to 19.2 - only ~0.9 real damage gets through, ~77% reduced.
+//   Iron's zero toughness leaves f1 at 13 for the same hit - ~1.9 damage
+//   gets through, close to double. Toughness is specifically what
+//   crushes low-per-hit weapons hardest, which is exactly the shape of
+//   this pack's actual anti-boss kit (turret/sentry fire, arrows) - not
+//   just a smaller health bar, the thing making hits feel like they
+//   weren't landing at all. Both changes together cut real time-to-kill
+//   by roughly 3-4x, not the ~1.7x either change would give alone.
+//
 // **Real, considered non-fix**: the boss is a genuine
 // `mutantszombies:mutant_brute` entity, so it still has its own normal
 // ~2% per-kill Legendary-bag roll from loot_bag_drops.js's existing
@@ -114,14 +141,17 @@ var BOSS_TYPES = {
     entityType: 'mutantszombies:mutant_brute',
     name: 'The Behemoth',
     nameColor: 'dark_red',
-    maxHealth: 600,
+    maxHealth: 350,
     attackDamage: 30,
+    armorMaterial: 'iron',
     // Real decompiled baseline for mutant_brute (net/petemc/mutantszombies/
     // entity/MutantBruteEntity.class createAttributes(), 2026-09-10): 0.2
     // movement speed, SLOWER than a vanilla zombie's 0.23 - a walking
     // player can outdistance it forever. Direct feedback on the regular
     // (non-boss) mob was "not hard, just annoying and tanky" - doubly true
-    // for a boss with 600 HP a player can just walk away from. Same fix as
+    // for a boss with a big health bar a player can just walk away from
+    // (600 at the time this was written, cut to 350 in the 2026-09-11 pass
+    // above - the walk-away math doesn't change either way). Same fix as
     // wave_spawner.js's own BRUTE_MOVEMENT_SPEED, not matched to it exactly
     // (0.3 here, slightly above) since a boss earns being the fastest thing
     // in the fight.
@@ -136,6 +166,7 @@ var BOSS_TYPES = {
     nameColor: 'gold',
     maxHealth: 350,
     attackDamage: 15,
+    armorMaterial: 'netherite',
     music: 'minecraft:music_disc.11',
     arrivalSound: 'minecraft:entity.tnt.primed',
     arrivalSubtitle: 'is rigging the base to blow.',
@@ -243,7 +274,11 @@ function spawnBoss(player, data, waveNumber) {
   // too - see the "Second boss added" header paragraph) with zero extra
   // code needed anywhere else in this pack.
   var speedAttribute = boss.movementSpeed !== undefined ? `,{Name:"generic.movement_speed",Base:${boss.movementSpeed}}` : ''
-  var summonNbt = `{CustomName:'${nameJson}',CustomNameVisible:1b,PersistenceRequired:1b,DeathLootTable:"minecraft:empty",Tags:["td_boss","td_bossJustSpawned","td_wave_mob"],Attributes:[{Name:"generic.max_health",Base:${boss.maxHealth}},{Name:"generic.attack_damage",Base:${boss.attackDamage}},{Name:"generic.follow_range",Base:128}${speedAttribute}],Health:${boss.maxHealth}.0f,ArmorItems:[{id:"minecraft:netherite_boots",Count:1b},{id:"minecraft:netherite_leggings",Count:1b},{id:"minecraft:netherite_chestplate",Count:1b},{id:"minecraft:netherite_helmet",Count:1b}],ArmorDropChances:[0.0f,0.0f,0.0f,0.0f]}`
+  // Armor material is per-boss now (see the "Behemoth HP/armor cut" header
+  // paragraph above) - was a hardcoded netherite set shared by both bosses.
+  var armorMaterial = boss.armorMaterial || 'netherite'
+  var armorItems = `[{id:"minecraft:${armorMaterial}_boots",Count:1b},{id:"minecraft:${armorMaterial}_leggings",Count:1b},{id:"minecraft:${armorMaterial}_chestplate",Count:1b},{id:"minecraft:${armorMaterial}_helmet",Count:1b}]`
+  var summonNbt = `{CustomName:'${nameJson}',CustomNameVisible:1b,PersistenceRequired:1b,DeathLootTable:"minecraft:empty",Tags:["td_boss","td_bossJustSpawned","td_wave_mob"],Attributes:[{Name:"generic.max_health",Base:${boss.maxHealth}},{Name:"generic.attack_damage",Base:${boss.attackDamage}},{Name:"generic.follow_range",Base:128}${speedAttribute}],Health:${boss.maxHealth}.0f,ArmorItems:${armorItems},ArmorDropChances:[0.0f,0.0f,0.0f,0.0f]}`
 
   server.runCommandSilent(`summon ${boss.entityType} ${x} ${y} ${z} ${summonNbt}`)
   // Same ground-height correction technique as wave_spawner.js's own
