@@ -10,16 +10,14 @@
 // pack's own re-recipe files (tier1_recipes.js/tier2_recipes.js are the
 // real source of truth for which item belongs to which tier).
 //
-// **Updated 2026-09-09** - Tier 2 replacements: `vacuum_cleaner:
-// vacuum_block_tier_1`/`medievalturrets:bow_turret_item` both dropped
-// (mods uninstalled, see tier2_recipes.js's header) for
-// `itemcollectors:basic_collector` and Advanced Tower Defense's two real
-// turret-head items (`turret_head_t_0_mushket`/
-// `turret_head_t_0_anvil_launcher` - the actual held/placed items, not
-// the hardcoded-assemble-only base blocks). Tier 3 items added for the
-// first time - real ids pulled from `campaign.snbt`'s own Tier 3 quest
-// chapter (Storage & power system, Track C's Tesla Coil/Create Nozzle),
-// not guessed.
+// **Updated 2026-09-11** - Advanced Tower Defense removed entirely
+// (both turret-head items cut, see tier2_recipes.js's header and
+// securitycraft_traps.js) and replaced with SecurityCraft's ranged/
+// proximity trap roster. All 7 stay under Tier 2 - "Automated Defense"
+// fits them literally (Sentry/I.M.S./Trophy System act on their own
+// once placed) and none of them use power, so they don't belong in
+// Tier 3's "Energetic Defense" bucket, which stays reserved for the
+// separately-planned Immersive Engineering/Flux Networks power system.
 const TIER_COLORS = {
   1: { code: '§a', label: 'Tier 1 - Starting Defense' }, // green
   2: { code: '§e', label: 'Tier 2 - Automated Defense' }, // yellow
@@ -27,11 +25,17 @@ const TIER_COLORS = {
 }
 
 const TIER_ITEMS = {
+  'simply_traps:stake': 1,
   'simply_traps:spike_trap': 1,
   'simply_traps:stake_wall': 1,
   'itemcollectors:basic_collector': 2,
-  'advanced_tower_defense_mod:turret_head_t_0_mushket': 2,
-  'advanced_tower_defense_mod:turret_head_t_0_anvil_launcher': 2,
+  'securitycraft:bouncing_betty': 2,
+  'securitycraft:claymore': 2,
+  'securitycraft:sentry': 2,
+  'securitycraft:cage_trap': 2,
+  'securitycraft:electrified_iron_fence': 2,
+  'securitycraft:ims': 2,
+  'securitycraft:trophy_system': 2,
   'immersiveengineering:diesel_generator': 3,
   'immersiveengineering:tesla_coil': 3,
   'refinedstorage:controller': 3,

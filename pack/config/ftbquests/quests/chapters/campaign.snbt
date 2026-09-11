@@ -5,58 +5,7 @@
 	group: ""
 	icon: "minecraft:book"
 	id: "1178FD42CF9984A2"
-	images: [
-		{
-			alpha: 70
-			color: 5902095
-			height: 2.6d
-			image: "kubejs:textures/quests/panel.png"
-			rotation: 0.0d
-			width: 23.0d
-			x: 15.75d
-			y: -6.0d
-		}
-		{
-			alpha: 70
-			color: 4860522
-			height: 2.4d
-			image: "kubejs:textures/quests/panel.png"
-			rotation: 0.0d
-			width: 11.0d
-			x: 20.0d
-			y: -3.0d
-		}
-		{
-			alpha: 70
-			color: 3046706
-			height: 2.4d
-			image: "kubejs:textures/quests/panel.png"
-			rotation: 0.0d
-			width: 7.0d
-			x: 16.0d
-			y: 3.0d
-		}
-		{
-			alpha: 70
-			color: 12092939
-			height: 4.2d
-			image: "kubejs:textures/quests/panel.png"
-			rotation: 0.0d
-			width: 15.0d
-			x: 22.0d
-			y: 6.75d
-		}
-		{
-			alpha: 70
-			color: 9116186
-			height: 4.2d
-			image: "kubejs:textures/quests/panel.png"
-			rotation: 0.0d
-			width: 13.0d
-			x: 23.0d
-			y: 9.75d
-		}
-	]
+	images: []
 	order_index: 0
 	progression_mode: "flexible"
 	quest_links: [ ]
@@ -1116,7 +1065,40 @@
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
-			description: ["Anything that walks over a &eSpike Trap&r takes 2 damage a step, mobs and you alike. The cheapest defence in the pack. Line the approach to the pedestal with them."]
+			description: ["Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."]
+			icon: "simply_traps:stake"
+			id: "159356F3DD573B5A"
+			rewards: [
+				{
+					id: "3038C036C7C69387"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+				{
+					count: 4
+					id: "2C305A9C3CBF6035"
+					item: "minecraft:stick"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "3 logs"
+			tasks: [
+				{
+					consume_items: false
+					id: "67F59FED54017B44"
+					item: "simply_traps:stake"
+					type: "item"
+				}
+			]
+			title: "Cheap and Cheerful"
+			x: 15.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["159356F3DD573B5A"]
+			hide_until_deps_complete: true
+			description: ["Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."]
 			icon: "simply_traps:spike_trap"
 			id: "67A7BF98D2C077DE"
 			rewards: [
@@ -1133,7 +1115,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "4 sticks + 1 iron ingot"
+			subtitle: "5 iron ingots"
 			tasks: [
 				{
 					consume_items: false
@@ -1246,270 +1228,201 @@
 			y: 6.0d
 		}
 		{
-			dependencies: ["573EEB3757B78B97"]
+			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
-			description: ["The &eTech Tablet&r unlocks the turret chain; every part below needs it or something made from it. Shrapnel drops from loot bags of every tier."]
-			icon: "advanced_tower_defense_mod:tech_tablet_mechanics"
-			id: "40CDA831CF25531D"
+			description: ["Step on it, it launches into the air, then explodes. Simple, cheap, and it doesn't care who trips it - keep it off your own patrol routes."]
+			icon: "securitycraft:bouncing_betty"
+			id: "0779CC4FD2E4B480"
 			rewards: [
 				{
-					count: 2
-					id: "23A0EE0EB22CB3B9"
-					item: "kubejs:shrapnel"
-					type: "item"
-				}
-				{
-					id: "24F40D4553BFE6BF"
+					id: "5DF778D6C059C299"
 					type: "xp_levels"
 					xp_levels: 2
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Paper, book, compass, redstone, iron nuggets, 1 Shrapnel"
+			subtitle: "Heavy weighted pressure plate, 2 iron, 2 gunpowder"
 			tasks: [
 				{
 					consume_items: false
-					id: "327B6ADAC1FD9888"
-					item: "advanced_tower_defense_mod:tech_tablet_mechanics"
+					id: "673E50EF3BE9432A"
+					item: "securitycraft:bouncing_betty"
 					type: "item"
 				}
 			]
-			title: "Read the Manual"
+			title: "Bouncing Betty"
 			x: 18.0d
 			y: 6.0d
 		}
 		{
-			dependencies: ["40CDA831CF25531D"]
+			dependencies: ["0779CC4FD2E4B480"]
 			hide_until_deps_complete: true
-			description: ["The &eWinding Mechanism&r drives every turret base and the workbench itself. The Speed Module is SecurityCraft's, the Springs are the turret mod's own; both recipes are in JEI."]
-			icon: "advanced_tower_defense_mod:winding_mechanism"
-			id: "6EAAE3A942426207"
+			description: ["A directional mine: trips when anything walks within 5 blocks in front of it, explodes a second later. Right-click with Wire Cutters to defuse it if you need to move it, flint and steel to re-arm."]
+			icon: "securitycraft:claymore"
+			id: "1F577A9343223A6D"
 			rewards: [
 				{
-					id: "4F7BD94DD6A7958B"
+					id: "653851D50DDFA35B"
 					type: "xp_levels"
 					xp_levels: 2
 				}
 			]
 			shape: "hexagon"
-			subtitle: "2 Springs, clock, compass, lever, tripwire hook, Speed Module, the tablet"
+			subtitle: "2 tripwire hooks, string, a Bouncing Betty, redstone, gunpowder"
 			tasks: [
 				{
 					consume_items: false
-					id: "5E3657E8AF32EC9A"
-					item: "advanced_tower_defense_mod:winding_mechanism"
+					id: "7A8E569590B31998"
+					item: "securitycraft:claymore"
 					type: "item"
 				}
 			]
-			title: "Wind It Up"
+			title: "Claymore"
 			x: 20.0d
 			y: 6.0d
 		}
 		{
-			dependencies: ["6EAAE3A942426207"]
+			dependencies: ["1F577A9343223A6D"]
 			hide_until_deps_complete: true
-			description: ["Turrets aren't made in a crafting table. Place the &eTurret Workbench&r, put a Blueprint in its top slot, fill the six material slots it asks for and press Assemble."]
-			icon: "advanced_tower_defense_mod:t_0_turret_workbench"
-			id: "784320F35DE3827B"
+			description: ["Place it on top of a block and the &eSentry&r starts shooting on its own - no wiring, no workbench. Right-click it to cycle Idle/Camouflage/Aggressive and pick what it targets. It never runs out of arrows unless you load something else into a locked chest underneath it. First thing in the pack that guards the pedestal while you're somewhere else."]
+			icon: "securitycraft:sentry"
+			id: "5034B45EB70EE642"
 			rewards: [
 				{
-					id: "316D3CFC07CA8325"
+					id: "66D07EFF5BBA2A44"
 					type: "xp_levels"
 					xp_levels: 3
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Anvil, paper, smithing table, winding mechanism, stripped oak log"
+			subtitle: "Iron, a Dispenser, a Portable Radar, Shrapnel, iron blocks"
 			tasks: [
 				{
 					consume_items: false
-					id: "208836A291255B36"
-					item: "advanced_tower_defense_mod:t_0_turret_workbench"
+					id: "43F4A5C34EB23096"
+					item: "securitycraft:sentry"
 					type: "item"
 				}
 			]
-			title: "The Workbench"
+			title: "Sentry"
 			x: 22.0d
 			y: 6.0d
 		}
 		{
-			dependencies: ["784320F35DE3827B"]
+			dependencies: ["1F577A9343223A6D"]
 			hide_until_deps_complete: true
-			description: ["The Musket Sentry's blueprint. It goes in the workbench's blueprint slot."]
-			icon: "advanced_tower_defense_mod:blueprint_musket_turret"
-			id: "609316D1AD547BF1"
+			description: ["Non-lethal: anything but you that touches it gets sealed in a block cage instead of hurt. Good for catching something alive, or just buying time."]
+			icon: "securitycraft:cage_trap"
+			id: "72711938503E2603"
 			rewards: [
 				{
-					id: "3E5787E8BE1382F2"
+					id: "38D93BE9AC163E6E"
 					type: "xp_levels"
 					xp_levels: 2
 				}
 			]
 			shape: "hexagon"
-			subtitle: "4 paper, flint, gunpowder, iron nugget, 2 Shrapnel"
+			subtitle: "Iron bars, gold, redstone, iron blocks"
 			tasks: [
 				{
 					consume_items: false
-					id: "5DF3F8D376754447"
-					item: "advanced_tower_defense_mod:blueprint_musket_turret"
+					id: "62AD1744DCAE5AFB"
+					item: "securitycraft:cage_trap"
 					type: "item"
 				}
 			]
-			title: "Musket Blueprint"
+			title: "Cage Trap"
 			x: 24.0d
 			y: 6.0d
 		}
 		{
-			dependencies: ["609316D1AD547BF1"]
+			dependencies: ["1F577A9343223A6D"]
 			hide_until_deps_complete: true
-			description: ["The AI-controlled &eTurret Base&r. Place it where the turret should stand, then set the assembled turret head on top. The Smart Module is SecurityCraft's, the AI Chip is the turret mod's."]
-			icon: "advanced_tower_defense_mod:turret_base_t_0"
-			id: "0C1B97231505C649"
+			description: ["Looks like a normal fence, but it's unbreakable and shocks anyone but you who touches it. Line a chokepoint with it and mobs pay for every step."]
+			icon: "securitycraft:electrified_iron_fence"
+			id: "659544B22656B3CD"
 			rewards: [
 				{
-					id: "11A329B822ECA4CE"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-			]
-			shape: "hexagon"
-			subtitle: "Piston, barrel, button, spring, tablet, winding mechanism, Smart Module, AI Chip"
-			tasks: [
-				{
-					consume_items: false
-					id: "40C1113D9CD4110F"
-					item: "advanced_tower_defense_mod:turret_base_t_0"
-					type: "item"
-				}
-			]
-			title: "A Base to Stand On"
-			x: 26.0d
-			y: 6.0d
-		}
-		{
-			dependencies: ["0C1B97231505C649"]
-			hide_until_deps_complete: true
-			description: ["The &eMusket Sentry&r picks its own targets and fires buckshot at anything in range. It eats Musket Buckshot, so keep the base stocked. First thing in the pack that guards the pedestal while you're somewhere else."]
-			icon: "advanced_tower_defense_mod:turret_head_t_0_mushket"
-			id: "503260000FFBD462"
-			rewards: [
-				{
-					id: "1E3D67693F669EB9"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-				{
-					count: 8
-					id: "13621461570D6AD1"
-					item: "advanced_tower_defense_mod:mushket_shell"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			subtitle: "8 iron, 1 Wooden Parts, 4 Stone Parts + blueprint, at the workbench"
-			tasks: [
-				{
-					consume_items: false
-					id: "0F618E50E49DEC82"
-					item: "advanced_tower_defense_mod:turret_head_t_0_mushket"
-					type: "item"
-				}
-			]
-			title: "Beyond the Bow"
-			x: 28.0d
-			y: 6.0d
-		}
-		{
-			dependencies: ["784320F35DE3827B"]
-			hide_until_deps_complete: true
-			description: ["The Anvil Launcher's blueprint. Costs more Shrapnel than the musket's."]
-			icon: "advanced_tower_defense_mod:blueprint_anvil_launcher"
-			id: "47CBFB8EE22E3895"
-			rewards: [
-				{
-					id: "6B7BE94F876B7095"
+					id: "77DEA6274E01CA7C"
 					type: "xp_levels"
 					xp_levels: 2
 				}
 			]
 			shape: "hexagon"
-			subtitle: "3 paper, chain, redstone, iron nugget, 4 Shrapnel"
+			subtitle: "Iron, an Oak Fence"
 			tasks: [
 				{
 					consume_items: false
-					id: "763F021C1E4730F9"
-					item: "advanced_tower_defense_mod:blueprint_anvil_launcher"
+					id: "3C09DC92729EDA8F"
+					item: "securitycraft:electrified_iron_fence"
 					type: "item"
 				}
 			]
-			title: "Anvil Blueprint"
-			x: 24.0d
-			y: 7.5d
-		}
-		{
-			dependencies: ["47CBFB8EE22E3895"]
-			hide_until_deps_complete: true
-			description: ["The &eManual Base&r has no AI: you set the target coordinates on it yourself. That's what the launcher wants."]
-			icon: "advanced_tower_defense_mod:manual_turret_base_t_0"
-			id: "1EE09F6455AB8712"
-			rewards: [
-				{
-					id: "50509193242CE880"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "hexagon"
-			subtitle: "Same as the AI base, with redstone + a Redstone Module instead"
-			tasks: [
-				{
-					consume_items: false
-					id: "2C1EA4E8B76C4543"
-					item: "advanced_tower_defense_mod:manual_turret_base_t_0"
-					type: "item"
-				}
-			]
-			title: "Manual Base"
+			title: "Electrified Fence"
 			x: 26.0d
-			y: 7.5d
+			y: 6.0d
 		}
 		{
-			dependencies: ["1EE09F6455AB8712"]
+			dependencies: ["0779CC4FD2E4B480"]
 			hide_until_deps_complete: true
-			description: ["Set a coordinate on the manual base and the &eAnvil Launcher&r drops an anvil on it from the sky: 60 damage to whatever's standing there. Slow and aimed by hand, and it kills a Mutant Brute in two."]
-			icon: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
-			id: "23DD76C89862B547"
+			description: ["Holds up to 4 Bouncing Betties and fires them at anything that gets close - each one tracks its target down before it goes off. Refill it by right-clicking with more Bouncing Betties."]
+			icon: "securitycraft:ims"
+			id: "17860922A24C885A"
 			rewards: [
 				{
-					id: "66B59B57BD2A95E8"
+					id: "15B94DCA3F4F89F3"
 					type: "xp_levels"
 					xp_levels: 3
 				}
-				{
-					count: 4
-					id: "44F75F99CAC49F55"
-					item: "kubejs:shrapnel"
-					type: "item"
-				}
 			]
 			shape: "hexagon"
-			subtitle: "3 iron, 7 Wooden Parts, 14 Stone Parts + blueprint, at the workbench"
+			subtitle: "2 Bouncing Betties, a Portable Radar, an iron block"
 			tasks: [
 				{
 					consume_items: false
-					id: "611FDB0AAFFFCD03"
-					item: "advanced_tower_defense_mod:turret_head_t_0_anvil_launcher"
+					id: "50B70581F2A03FF1"
+					item: "securitycraft:ims"
 					type: "item"
 				}
 			]
-			title: "Anvils From Above"
-			x: 28.0d
+			title: "I.M.S."
+			x: 20.0d
+			y: 7.5d
+		}
+		{
+			dependencies: ["5034B45EB70EE642"]
+			hide_until_deps_complete: true
+			description: ["Doesn't attack - it shoots down incoming arrows and fireballs before they reach you or your other traps. Needs a Sentry to build, so it's the last piece of this line, not the first."]
+			icon: "securitycraft:trophy_system"
+			id: "42D2FBFF1FE00D15"
+			rewards: [
+				{
+					id: "4FCD0AD125529107"
+					type: "xp_levels"
+					xp_levels: 3
+				}
+			]
+			shape: "hexagon"
+			subtitle: "A Sentry, an iron block, 2 sticks"
+			tasks: [
+				{
+					consume_items: false
+					id: "238226AAC24241AB"
+					item: "securitycraft:trophy_system"
+					type: "item"
+				}
+			]
+			title: "Trophy System"
+			x: 22.0d
 			y: 7.5d
 		}
 		{
 			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
-			description: ["A Sophisticated &eBarrel&r holds more than a chest and takes upgrades in place. No power needed. Build the storage before the power, because the power chain is long."]
+			description: [
+				"Loot bags and wave drops pile up fast. A Sophisticated &eBarrel&r holds far more than a chest and takes upgrades in its own slots - no crafting station, no power needed. Build the storage before the power chain, because that one's long."
+				"Right-click it open like a chest. Any upgrade you own drops straight into a slot on the right side of its screen and applies instantly."
+			]
 			icon: "sophisticatedstorage:barrel"
 			id: "5C44D121F112749F"
 			rewards: [
@@ -1544,6 +1457,42 @@
 			title: "Room to Grow"
 			x: 16.0d
 			y: 9.0d
+		}
+		{
+			dependencies: ["5C44D121F112749F"]
+			hide_until_deps_complete: true
+			description: [
+				"A Stack Upgrade multiplies how much fits in every slot of the barrel it's placed in - Tier 1 alone is a real jump. Each higher tier eats the one below it plus a loot-tier material, so it scales with whatever bags you're already opening: iron, then gold, then diamond."
+				"This is the actual fix for a full inventory - stop hauling everything on your back and dump it in the barrel instead."
+			]
+			icon: "sophisticatedstorage:stack_upgrade_tier_1"
+			id: "2F51A8D6B4C0E793"
+			rewards: [
+				{
+					id: "4B73CAF8D6E20915"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+				{
+					count: 4
+					id: "5C84DB09E7F31A26"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Upgrade Base (4 iron + 5 planks, ring pattern) + 8 logs around it"
+			tasks: [
+				{
+					consume_items: false
+					id: "3A62B9E7C5D1F804"
+					item: "sophisticatedstorage:stack_upgrade_tier_1"
+					type: "item"
+				}
+			]
+			title: "Bigger on the Inside"
+			x: 16.0d
+			y: 10.5d
 		}
 		{
 			dependencies: ["5C44D121F112749F"]

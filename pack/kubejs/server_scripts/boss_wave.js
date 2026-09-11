@@ -46,6 +46,29 @@
 //   learned from - see docs/QUEUE.md's 25-item batch #3's cobweb writeup
 //   for that history) plus full netherite armor for visual weight.
 //
+// **Second boss added, 2026-09-10** (direct feedback: "the behemoth boss
+// is just tanky. can you put in another type of boss"). Behemoth is a
+// pure stat-stick by design (see the paragraph above) - no special
+// ability, just more HP/damage than anything else in the roster, so
+// every boss fight plays out the same way. `undeadnights:demolition_zombie`
+// ("The Demolisher") is a genuinely different fight, not a second tank:
+// decompiling `DemolitionZombieEntity.class` directly confirms it adds a
+// real `TntIgniteAndThrowGoal` to its own `addBehaviourGoals` unconditionally
+// - it ignites and throws live primed TNT at range on its own, the exact
+// "defense-breaching" capability this pack already uses it for elsewhere
+// (WAVES[7], the endless horde pool) - not reflavored melee. Deliberately
+// lower max health/attack damage than Behemoth (see BOSS_TYPES below) -
+// its danger is area damage from the TNT, not trading blows, so
+// Behemoth-level HP would just make it a slower second tank instead of a
+// different fight. The two alternate by boss index (`bossConfigForWave`)
+// - odd (wave 10, 30, 50...) stays Behemoth so nothing already fought in
+// live play (wave 10, per docs/QUEUE.md) changes identity retroactively;
+// even (wave 20, 40, 60...) is the Demolisher, debuting at wave 20 -
+// coincidentally the same wave brutes (Behemoth's own base mob) start
+// reappearing in the regular roster again per wave_spawner.js's
+// BRUTE_TIER_MIN_LEVEL, but that's two separate asks landing on the same
+// number, not a shared mechanic.
+//
 // **This does NOT resolve the "preview vs. reward-exclusive" fork also
 // sitting in that IDEAS.md entry, and does NOT build the actual
 // auto-placed-building mechanic** - only the cadence question was shared
@@ -76,19 +99,66 @@
 
 var BOSS_WAVE_INTERVAL = 10
 var BOSS_BOSSBAR_ID = 'kubejs:main_boss'
-// Real vanilla track, not a fabricated custom .ogg - no real tool exists
-// in this environment to synthesize a convincing music file, and this
-// pack's own precedent (FEATURES.md's Tesla Coil entry) already treats a
-// custom .ogg as optional ("optionally a custom tesla_zap.ogg"). Played
-// via the "master" category with player-relative `~ ~ ~` coordinates -
-// the exact same call shape wave_spawner.js's own wave-start cue already
-// uses (`playsound ... master @a ~ ~ ~ 1 1`), proven working in this pack.
-var BOSS_MUSIC = 'minecraft:music_disc.pigstep'
-var BOSS_ENTITY_TYPE = 'mutantszombies:mutant_brute'
-var BOSS_NAME = 'The Behemoth'
-var BOSS_MAX_HEALTH = 600
-var BOSS_ATTACK_DAMAGE = 30
 var BOSS_BOSSBAR_RANGE_UNUSED = null // bossbar players set to @a below - a boss fight is meant to be seen/heard pack-wide, unlike the pedestal's distance-limited ambient bar.
+
+// Two boss identities (see the "Second boss added" header paragraph
+// above for the full reasoning). Real vanilla music tracks throughout,
+// not fabricated custom .oggs - no real tool exists in this environment
+// to synthesize a convincing music file, and this pack's own precedent
+// (FEATURES.md's Tesla Coil entry) already treats a custom .ogg as
+// optional. Played via the "master" category with player-relative
+// `~ ~ ~` coordinates - the exact same call shape wave_spawner.js's own
+// wave-start cue already uses, proven working in this pack.
+var BOSS_TYPES = {
+  behemoth: {
+    entityType: 'mutantszombies:mutant_brute',
+    name: 'The Behemoth',
+    nameColor: 'dark_red',
+    maxHealth: 600,
+    attackDamage: 30,
+    // Real decompiled baseline for mutant_brute (net/petemc/mutantszombies/
+    // entity/MutantBruteEntity.class createAttributes(), 2026-09-10): 0.2
+    // movement speed, SLOWER than a vanilla zombie's 0.23 - a walking
+    // player can outdistance it forever. Direct feedback on the regular
+    // (non-boss) mob was "not hard, just annoying and tanky" - doubly true
+    // for a boss with 600 HP a player can just walk away from. Same fix as
+    // wave_spawner.js's own BRUTE_MOVEMENT_SPEED, not matched to it exactly
+    // (0.3 here, slightly above) since a boss earns being the fastest thing
+    // in the fight.
+    movementSpeed: 0.3,
+    music: 'minecraft:music_disc.pigstep',
+    arrivalSound: 'minecraft:entity.wither.spawn',
+    arrivalSubtitle: 'has arrived.',
+  },
+  demolisher: {
+    entityType: 'undeadnights:demolition_zombie',
+    name: 'The Demolisher',
+    nameColor: 'gold',
+    maxHealth: 350,
+    attackDamage: 15,
+    music: 'minecraft:music_disc.11',
+    arrivalSound: 'minecraft:entity.tnt.primed',
+    arrivalSubtitle: 'is rigging the base to blow.',
+  },
+}
+
+// Odd boss index (wave 10, 30, 50...) -> Behemoth, even (wave 20, 40,
+// 60...) -> Demolisher. Keeping wave 10 as Behemoth specifically (rather
+// than starting the alternation from index 0) means the boss identity
+// already fought in live play per docs/QUEUE.md never changes
+// retroactively - only later boss waves gain the new variety.
+function bossConfigForWave(waveNumber) {
+  var bossIndex = waveNumber / BOSS_WAVE_INTERVAL
+  return bossIndex % 2 === 0 ? BOSS_TYPES.demolisher : BOSS_TYPES.behemoth
+}
+
+// Reverse lookup for the death handler below, which only has the dead
+// entity's real type to go on (nothing upstream of it persists which
+// boss config spawned it) - needed there to stop the right boss's own
+// music track, not the other one's.
+function bossConfigForEntityType(entityType) {
+  return `${entityType}` === BOSS_TYPES.demolisher.entityType ? BOSS_TYPES.demolisher : BOSS_TYPES.behemoth
+}
 
 // Same waveObjective() shape as wave_spawner.js/wave_status.js - the
 // pedestal's own fixed td_pedestalX/Y/Z, redeclared here per this
@@ -108,9 +178,13 @@ function bossWaveObjective(player, data) {
   return { x: player.getX(), y: player.getY(), z: player.getZ() }
 }
 
+// No entity-type check needed - td_boss is only ever added by spawnBoss
+// below, on whichever boss type bossConfigForWave picked, so the tag
+// alone is a reliable, type-agnostic "is a boss alive" marker now that
+// there are two possible boss entity types instead of one.
 function isBossAlive(level) {
   return level.getEntities().filter(function (e) {
-    return `${e.type}` === BOSS_ENTITY_TYPE && e.getTags().contains('td_boss') && e.getHealth() > 0
+    return e.getTags().contains('td_boss') && e.getHealth() > 0
   }).length > 0
 }
 
@@ -118,6 +192,7 @@ function spawnBoss(player, data, waveNumber) {
   var server = player.getServer()
   var level = player.getLevel()
   var objective = bossWaveObjective(player, data)
+  var boss = bossConfigForWave(waveNumber)
 
   // Same real Math.PI-undefined-in-this-build workaround as
   // wave_spawner.js's own randomObjectiveRelativePosition() - confirmed
@@ -148,7 +223,7 @@ function spawnBoss(player, data, waveNumber) {
   // `'`, not `"`) - the extremely common `CustomName:'{"text":"..."}'`
   // shape seen throughout vanilla data packs/commands, not this pack's
   // own invention.
-  var nameJson = `{"text":"${BOSS_NAME}","color":"dark_red","bold":true}`
+  var nameJson = `{"text":"${boss.name}","color":"${boss.nameColor}","bold":true}`
   // Real vanilla Entity/Mob NBT throughout - ArmorItems is the fixed
   // [boots, leggings, chestplate, helmet] order, ArmorDropChances is a
   // SEPARATE parallel float list (not embedded per-item) that zeroes
@@ -162,43 +237,46 @@ function spawnBoss(player, data, waveNumber) {
   // automatically counts toward wave_status.js's "hostiles remaining"
   // check (a boss wave can't silently read as cleared while the boss
   // still lives) and mob_aggro.js's/pedestal_health.js's own
-  // TYPE-matched pedestal-targeting/melee-damage logic (mutant_brute is
-  // already in every one of those lists) with zero extra code needed
-  // anywhere else in this pack.
-  var summonNbt = `{CustomName:'${nameJson}',CustomNameVisible:1b,PersistenceRequired:1b,DeathLootTable:"minecraft:empty",Tags:["td_boss","td_bossJustSpawned","td_wave_mob"],Attributes:[{Name:"generic.max_health",Base:${BOSS_MAX_HEALTH}},{Name:"generic.attack_damage",Base:${BOSS_ATTACK_DAMAGE}},{Name:"generic.follow_range",Base:128}],Health:${BOSS_MAX_HEALTH}.0f,ArmorItems:[{id:"minecraft:netherite_boots",Count:1b},{id:"minecraft:netherite_leggings",Count:1b},{id:"minecraft:netherite_chestplate",Count:1b},{id:"minecraft:netherite_helmet",Count:1b}],ArmorDropChances:[0.0f,0.0f,0.0f,0.0f]}`
+  // TYPE-matched pedestal-targeting/melee-damage logic (both
+  // mutant_brute and demolition_zombie are already in every one of
+  // those lists, checked before demolition_zombie became a boss option
+  // too - see the "Second boss added" header paragraph) with zero extra
+  // code needed anywhere else in this pack.
+  var speedAttribute = boss.movementSpeed !== undefined ? `,{Name:"generic.movement_speed",Base:${boss.movementSpeed}}` : ''
+  var summonNbt = `{CustomName:'${nameJson}',CustomNameVisible:1b,PersistenceRequired:1b,DeathLootTable:"minecraft:empty",Tags:["td_boss","td_bossJustSpawned","td_wave_mob"],Attributes:[{Name:"generic.max_health",Base:${boss.maxHealth}},{Name:"generic.attack_damage",Base:${boss.attackDamage}},{Name:"generic.follow_range",Base:128}${speedAttribute}],Health:${boss.maxHealth}.0f,ArmorItems:[{id:"minecraft:netherite_boots",Count:1b},{id:"minecraft:netherite_leggings",Count:1b},{id:"minecraft:netherite_chestplate",Count:1b},{id:"minecraft:netherite_helmet",Count:1b}],ArmorDropChances:[0.0f,0.0f,0.0f,0.0f]}`
 
-  server.runCommandSilent(`summon ${BOSS_ENTITY_TYPE} ${x} ${y} ${z} ${summonNbt}`)
+  server.runCommandSilent(`summon ${boss.entityType} ${x} ${y} ${z} ${summonNbt}`)
   // Same ground-height correction technique as wave_spawner.js's own
   // staggered mob spawns - summon at a rough estimate, then
   // /spreadplayers (vanilla's real heightmap-aware placement command,
   // works on any entity selector) onto the actual surface, tag-then-
   // immediately-untag so it can't collide with a later spawn.
   server.runCommandSilent(
-    `spreadplayers ${x} ${z} 0 6 false @e[type=${BOSS_ENTITY_TYPE},tag=td_bossJustSpawned,limit=1,sort=nearest]`
+    `spreadplayers ${x} ${z} 0 6 false @e[type=${boss.entityType},tag=td_bossJustSpawned,limit=1,sort=nearest]`
   )
   server.runCommandSilent(
-    `tag @e[type=${BOSS_ENTITY_TYPE},tag=td_bossJustSpawned,limit=1,sort=nearest] remove td_bossJustSpawned`
+    `tag @e[type=${boss.entityType},tag=td_bossJustSpawned,limit=1,sort=nearest] remove td_bossJustSpawned`
   )
 
   // Real vanilla /bossbar, same call shape as pedestal_health.js's
   // ensurePedestalBossbar/updatePedestalBossbar - `players @a` here
   // rather than a distance-gated selector, since a boss fight is a
   // pack-wide event, not ambient status.
-  server.runCommandSilent(`bossbar add ${BOSS_BOSSBAR_ID} "${BOSS_NAME}"`)
+  server.runCommandSilent(`bossbar add ${BOSS_BOSSBAR_ID} "${boss.name}"`)
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} color red`)
-  server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} max ${BOSS_MAX_HEALTH}`)
-  server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} value ${BOSS_MAX_HEALTH}`)
+  server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} max ${boss.maxHealth}`)
+  server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} value ${boss.maxHealth}`)
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} players @a`)
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} visible true`)
 
   // Endless-phase vocabulary (2026-09-10): tdWaveLabel (wave_spawner.js)
   // says "Horde N" past the written waves, so this reads "HORDE 10: BOSS".
   server.runCommandSilent(`title @a title {"text":"${tdWaveLabel(waveNumber).toUpperCase()}: BOSS","color":"dark_red","bold":true}`)
-  server.runCommandSilent(`title @a subtitle {"text":"${BOSS_NAME} has arrived.","color":"red"}`)
-  server.runCommandSilent(`tellraw @a {"text":"[Boss] ${BOSS_NAME} is out there somewhere - find it and end it.","color":"red"}`)
-  server.runCommandSilent(`playsound ${BOSS_MUSIC} master @a ~ ~ ~ 1 1`)
+  server.runCommandSilent(`title @a subtitle {"text":"${boss.name} ${boss.arrivalSubtitle}","color":"red"}`)
+  server.runCommandSilent(`tellraw @a {"text":"[Boss] ${boss.name} is out there somewhere - find it and end it.","color":"red"}`)
+  server.runCommandSilent(`playsound ${boss.music} master @a ~ ~ ~ 1 1`)
   server.runCommandSilent(`particle minecraft:large_smoke ${x} ${y + 1} ${z} 1.5 1.5 1.5 0.02 80`)
-  server.runCommandSilent(`playsound minecraft:entity.wither.spawn hostile @a ${x} ${y} ${z} 1 0.6`)
+  server.runCommandSilent(`playsound ${boss.arrivalSound} hostile @a ${x} ${y} ${z} 1 0.6`)
 }
 
 // Cadence trigger - watches td_waveNumber (set by wave_spawner.js's
@@ -249,8 +327,10 @@ PlayerEvents.tick((event) => {
   var level = player.getLevel()
   if (level.getTime() % BOSS_BOSSBAR_UPDATE_THROTTLE !== 0) return
 
+  // No entity-type check needed here either - see isBossAlive's own
+  // comment above.
   var bosses = level.getEntities().filter(function (e) {
-    return `${e.type}` === BOSS_ENTITY_TYPE && e.getTags().contains('td_boss') && e.getHealth() > 0
+    return e.getTags().contains('td_boss') && e.getHealth() > 0
   })
   if (bosses.length === 0) return
 
@@ -260,16 +340,19 @@ PlayerEvents.tick((event) => {
 
 // Boss-kill loot + cleanup (docs/FEATURES.md's boss-wave spectacle
 // entry's "boss-kill loot" detail + docs/QUEUE.md Roadmap Phase 5's
-// boss-kill-drop Totem half). Real ids verified before use, not
-// guessed - `securitycraft:universal_block_reinforcer_lvl1` confirmed by
-// downloading and hash-checking the actual installed SecurityCraft jar
-// (sha1 6184ca6af68a0a4e8ca4dd28a542b5d1a6c2e3ab, matching
-// pack/mods/securitycraft.pw.toml exactly) and reading its own lang
-// file directly - the original research's guessed
-// `securitycraft:universal_block_reinforcer` (no tier suffix) is NOT a
-// real item id in this build; SecurityCraft ships 3 tiered variants
-// (lvl1/lvl2/lvl3), lvl1 used here as the appropriate low tier for an
-// early-boss reward.
+// boss-kill-drop Totem half).
+//
+// **Reinforcer drop swapped for a Sentry, 2026-09-11** - the Universal
+// Block Reinforcer was dropped from the pack entirely (see
+// securitycraft_traps.js's own header: every SecurityCraft trap re-
+// recipe was rebuilt around plain vanilla materials specifically so
+// nothing needs the Reinforcer anymore). The boss kill now hands the
+// player a guaranteed Sentry instead - `securitycraft:sentry` confirmed
+// real against the same installed jar (sha1
+// 6184ca6af68a0a4e8ca4dd28a542b5d1a6c2e3ab, matching
+// pack/mods/securitycraft.pw.toml) - turning the boss fight into the
+// moment players get their first auto-turret, not just a crafting-tool
+// unlock.
 //
 // **Totem of Undying: 100% guaranteed on every boss kill, not an RNG
 // roll on top of an already-hard fight.** This is the real "boss-kill-
@@ -293,16 +376,21 @@ EntityEvents.death((event) => {
   var x = entity.getX()
   var y = entity.getY()
   var z = entity.getZ()
+  // Which boss config actually spawned this entity isn't persisted
+  // anywhere - the real entity type is all this handler has to go on,
+  // so bossConfigForEntityType looks it up in reverse (needed to stop
+  // the right boss's own music track, not the other one's).
+  var boss = bossConfigForEntityType(entity.type)
 
   server.runCommandSilent(`bossbar remove ${BOSS_BOSSBAR_ID}`)
-  server.runCommandSilent(`stopsound @a master ${BOSS_MUSIC}`)
+  server.runCommandSilent(`stopsound @a master ${boss.music}`)
 
-  server.runCommandSilent(`title @a title {"text":"${BOSS_NAME} FALLS","color":"gold","bold":true}`)
+  server.runCommandSilent(`title @a title {"text":"${boss.name} FALLS","color":"gold","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"The base breathes easier - for now.","color":"gray"}`)
   server.runCommandSilent(`playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 1`)
   server.runCommandSilent(`particle minecraft:totem_of_undying ${x} ${y + 1} ${z} 1.0 1.0 1.0 0.02 100`)
 
-  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"securitycraft:universal_block_reinforcer_lvl1",Count:1b}}`)
+  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"securitycraft:sentry",Count:1b}}`)
   server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"kubejs:shrapnel",Count:12b}}`)
   server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"minecraft:totem_of_undying",Count:1b}}`)
 })

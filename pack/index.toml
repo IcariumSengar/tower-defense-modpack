@@ -10,7 +10,7 @@ hash = "108c4151cb64cc39375bb6ff0d7108abe7645dfaf62bc2f696ab76f008c194c0"
 
 [[files]]
 file = "config/createaddition-common.toml"
-hash = "2884ac3a44f6b6f6cf18b0c7d1a2d3fafca0c72b69c0d52df9c8b503053be949"
+hash = "c3f1b86b7c1f67d30c0919f5d6d43a0e7fc9b0adc16e13ee4dde4d3eadea6617"
 
 [[files]]
 file = "config/dyairdrop.toml"
@@ -18,7 +18,7 @@ hash = "aa9670c78c29262bdac56d5971d8078cc390f832ef1adcea0de208276d0f2d4c"
 
 [[files]]
 file = "config/epicsiegemod-common.toml"
-hash = "8b3091e6f65b238fa4e3f03bbec82930280faaf0c5cd50c4951a1b68e0417b3f"
+hash = "55ad159259fbbabcec67b557c39a7e9fef820a347e55f6437fd8e98c47e60240"
 
 [[files]]
 file = "config/ftbquests/quests/chapter_groups.snbt"
@@ -30,7 +30,7 @@ hash = "4ab63052b50d36b48a27731b89f8ee6df828e061d74d71d0be0b007f91f0e68a"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "687490316cc067de9d3cc9e1dab287c2f2d626343cd7f12c9d10a05e18222556"
+hash = "37ca3eb8ba54a96099a3bcb3e9c908e80f790f23cf60a6bf6c7628b693ba9e06"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -55,6 +55,10 @@ hash = "767d335425881699b395fe287ebf23b099f103606be8df1e66461173c7ba0a40"
 [[files]]
 file = "config/securitycraft-client.toml"
 hash = "ddeeeb4bd6a01136808a62543fad87da1ee84d3a386c29781b7f04781b3c226a"
+
+[[files]]
+file = "config/simplytraps.toml"
+hash = "d02bfd579ad95ed5caa45f9110d711f9c4aedd981fe8fc3494e1bef181f7fe0a"
 
 [[files]]
 file = "config/supplementaries-client.toml"
@@ -126,7 +130,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/client_scripts/tooltip_tier_colors.js"
-hash = "80221f5f4ffb6f0267ff2abae9d955b1f8f959aa14c0b979f7c2dd62ab315d2c"
+hash = "f7dfa83dbd86334f0d4508bf0cfe496d8ef289e8ec6359f94bbe3fd10ab271fb"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/structures/zapravka.nbt"
@@ -753,16 +757,12 @@ file = "kubejs/server_scripts/base_expansion.js"
 hash = "766f3292653f65b3e24795db6138c40f8c799b9d544282d0d4f09dccb91edb3c"
 
 [[files]]
-file = "kubejs/server_scripts/boomer_zombie_explosion.js"
-hash = "e92785228f13230a6e3b0269a6bed54b4b94d5f30a92893bc59c666d79ccae56"
-
-[[files]]
 file = "kubejs/server_scripts/boss_wave.js"
-hash = "3245b0f8c9b3996d89ea6162d11cf5e3f6dcc222c94e8c4240072cff96d10ed3"
+hash = "2eb9271663ad5c8a5a1587d16cbb7b7dc724f6fe4cd03a8f145b0f8d0793735a"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
-hash = "eb3654be3fd9423fe82b2688a504682d1bdac519efbfc2eb821163af2037d8a0"
+hash = "410e438474c345f50e05a347237105c116c8e698ff0f519633532cf8ce2a347c"
 
 [[files]]
 file = "kubejs/server_scripts/enhanced_hordes_config.js"
@@ -770,7 +770,7 @@ hash = "60013815f922390de1208f214f9b831b4d438702ef3735ebdab6614e84d3d8ac"
 
 [[files]]
 file = "kubejs/server_scripts/flesh_death_sound.js"
-hash = "efe4663da4fb931fa85c7bbf4b8d129d6405007c1aebac6f075aa994afa7817f"
+hash = "a7ee3fb59234b15a74981ccc997260a5330437ce41e8e55f02b5284249b2b471"
 
 [[files]]
 file = "kubejs/server_scripts/hardcore_death.js"
@@ -790,7 +790,7 @@ hash = "fa561199ccb8ec81077c97daae6b5611b4ef79b6182bd091aedc65581b49b9c3"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "635bd4e0f995c39e725f62d37a1a2bcdec298f7bdeb64eb3b7b556103f2b60f7"
+hash = "5766d476a614a045cd530b84e5df4ae01489c4505c6762586603a9eacec7ccc9"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
@@ -802,7 +802,7 @@ hash = "99715326d3fc31180b27440c608743297dd867821c4de8828fc17805192f90bc"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "e87a428e9ed65e37c6c1697150b5bfe584192692a079fdd5bc3582cee176cee7"
+hash = "c30cce2212b4befa085c05d1ce15092b43b88996af11683a41768762356f1288"
 
 [[files]]
 file = "kubejs/server_scripts/no_passive_mobs.js"
@@ -814,11 +814,11 @@ hash = "db212fc7c9b6ea77ba4783cea4af89639d5b3bb27891940f1a236b794f099838"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_health.js"
-hash = "a3b79f29da6ae71662f37f348d9502fda6ff3006cf73069efaa10c86a6c27c51"
+hash = "07ad466349641292b988da13136d1d460e469980b888f45b78a2831c08c14920"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "8e730b06d55eefee981acf9cee7e361694c04ea96868788f096f1347c392ede6"
+hash = "855fdc0d3aa46246bb4376346123330bf84aa15d471b387dab8228aa7cb9690b"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
@@ -838,11 +838,15 @@ hash = "a61e68a0198f1ca34f7afc4066c824ca1e5624f215808da5f1dc0add19dcf47e"
 
 [[files]]
 file = "kubejs/server_scripts/tier1_recipes.js"
-hash = "8ba7b6abdeeff30078b3175f1c745147eede0f7a43e5130c1de52d814a19f984"
+hash = "a6885db1a692fa24fca11a43407087dce7ccf6e0abbe095088458ffcfaf4ed67"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
 hash = "c460ac612ea9cdefd932f94c1a0591a179fde8b73f850d84ffa085c955b878ac"
+
+[[files]]
+file = "kubejs/server_scripts/trap_durability.js"
+hash = "b8aa1a66d05216cb0de2e1254a49f4439a206ec36279ba9f9f2246de760d51f4"
 
 [[files]]
 file = "kubejs/server_scripts/turret_combat_feedback.js"
@@ -854,11 +858,11 @@ hash = "bee705d99298912366ed6f49a8edef3eab894b5ecf101f80abff28dc0c829198"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "3b1d86f09f6fe4cf1d9427a1977c893a927e05f0a8a447acef0389620742b14e"
+hash = "227382eaa2ede96a83e3dd91ad70fe9afbcfcea740595c1754c26d370c857bd3"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "be1a8ec61dd609cc5827862be067239e957743c47aee6982ac76cfce99ea383b"
+hash = "9669b62898be4c19cf10df2bd623c4d0ee4b58e486879f8e9e3be17ea9d66ecc"
 
 [[files]]
 file = "kubejs/server_scripts/world_state.js"
@@ -902,11 +906,6 @@ metafile = true
 [[files]]
 file = "mods/abandoned-watchtowers.pw.toml"
 hash = "b7c88d8a2b58f8729e735cd858459b96b33c851a94263118a6763e7c4dfd3118"
-metafile = true
-
-[[files]]
-file = "mods/advanced-tower-defense.pw.toml"
-hash = "821d2dec63cceecb357c092b0ed89ff9938cb4a1987e4f62baec8eb99d959e6a"
 metafile = true
 
 [[files]]
@@ -1206,6 +1205,11 @@ metafile = true
 [[files]]
 file = "mods/selene.pw.toml"
 hash = "2720aee58db6299559f89ea9dc8b1d573b8324f2b4af1e594c5239607585487b"
+metafile = true
+
+[[files]]
+file = "mods/simple-guns-reworked.pw.toml"
+hash = "e30eae8cbe6349caee7e9b2bb372999368629a8d7b00cd7d819052b6439108cc"
 metafile = true
 
 [[files]]
