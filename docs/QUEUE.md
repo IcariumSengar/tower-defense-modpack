@@ -21,6 +21,132 @@ reflect actual current status.
 
 ---
 
+## Quest book explains the barrel/stack-upgrade loot fix — 2026-09-11
+
+Direct follow-up to the loot-volume conversation below: "update the quest
+book so that making a sophisticated barrel and associated upgrades is
+explained and well understood so that a player can deal with the loot
+overspill."
+
+Checked the live `campaign.snbt` directly rather than trusting the older
+`FEATURES.md`/memory description of this quest, which turned out stale -
+that text described "Room to Grow" as gated behind the Tier 3 rib (behind
+"It's Up to You Now"); the real, current quest (id `5C44D121F112749F`)
+only depends on `0882BEAE557D28DD` ("Three Down," which auto-completes on
+a wave 3 clear and explicitly says "everything below this point on the
+tree is buildable now") - the barrel quest is already visible from wave 3
+on, alongside Item Collectors/Anvils From Above. So the actual gap wasn't
+accessibility, it was explanation: the existing description mentioned
+"takes upgrades in place" but never said what an upgrade does, what it
+costs, or that stack upgrades are a separate item you have to make and
+place yourself.
+
+Two changes, both live-deployed:
+- **"Room to Grow" description rewritten** to name the actual problem
+  (loot bags/wave drops piling up) as the reason to build the barrel, and
+  added a line on the interaction itself (right-click open, drop upgrades
+  into the slot on the right - real Sophisticated Storage mechanic, no
+  crafting station involved).
+- **New quest, "Bigger on the Inside"** (id `2F51A8D6B4C0E793`), depends on
+  Room to Grow being complete, hexagon shape at (16, 10.5) - a satellite
+  node just below Room to Grow, not inserted into the Storage & Power
+  rib's main x=16→22 chain so it doesn't disturb the Engineer's
+  Manual/Wired Different/No Cables Needed sequence. Task: obtain
+  `sophisticatedstorage:stack_upgrade_tier_1`. Real recipe confirmed by
+  extracting the exact installed `sophisticatedstorage`/`sophisticatedcore`
+  jars from the live instance and reading their recipe JSON directly (not
+  assumed from general mod knowledge): `upgrade_base` (4 iron + 5 planks,
+  ring pattern) + 8 logs around it → Tier 1. Description explains the
+  escalation (each higher tier consumes the one below it plus a loot-tier
+  material - iron→gold→diamond for tiers 2→3→4, confirmed from
+  `stack_upgrade_tier_2/3/4.json`), so a player who reads it understands
+  the whole ladder, not just the first rung.
+
+Both new/edited quest ids avoid the `8`-`F` leading-nibble trap
+(`reference_ftbquests_ids_must_be_positive`) - `5C44D121F112749F`'s own id
+is untouched (only its description text changed, so existing per-world
+quest progress isn't disturbed), and the new quest's id/task id/reward ids
+all start `2`-`5`. Deployed by copying the edited `campaign.snbt` directly
+into the live instance (byte-identical diff confirmed) - takes effect next
+time that world's quest data reloads. Structural sanity check only
+(brace/bracket/quote-count balance) - **not confirmed by a real FTB Quests
+parse** (that needs a boot, which needs a player click to see for real);
+worth opening the quest book after this to confirm both nodes render where
+expected before calling it done.
+
+---
+
+## Airdrop weapon/ammo/grenade variety + loot volume reviewed — 2026-09-11
+
+Direct feedback, two parts: "too many items from loot bags or other" (with
+an explicit fork - "if theres an easier path to getting a sophisticated
+barrel with stack upgrades then i may reconsider this idea") and "the
+airdrop chest always contains the same loot... what if these airdrops gave
+you guns and ammo and grenades?"
+
+**Loot volume - no change, real alternative already exists.** Checked
+before touching any drop rate a third time (`loot_bag_drops.js` has already
+been cut twice on real playtest complaints: ~0.74→~0.31 expected bags/kill
+2026-09-09, then Rare cut again same day - see that file's own header for
+the full math). `docs/FEATURES.md`'s "Storage & power system" entry
+confirms `sophisticatedstorage:barrel` deliberately kept on its own stock
+recipe (planks/slabs/lever, no re-recipe layer, no quest/advancement gate)
+- the "Tier 3" tag is a tooltip/quest-book category only, not a crafting
+lock. Presented this to the user; **decided: keep loot as-is, build a
+barrel + stack upgrade instead** - no code change.
+
+**Airdrop variety - built.** `kubejs:chests/wave_airdrop.json`'s 3 pools
+(legendary bag / netherite scrap / diamond block) were fully static -
+`rolls: 1` with a single entry each, only counts randomized - exactly why
+every drop read as identical. No firearm or grenade mod existed anywhere
+in this pack. Researched real Forge 1.20.1 options (not guessed from
+memory - checked the actual per-version file lists): **Simple Guns:
+reworked** (CurseForge project 437035, file 7924023,
+`simple_guns_reworked-1.9.9-forge-1.20.1.jar`, 695.8 KB, zero dependencies,
+uploaded Apr 2026 - fresh, not stale) beat **Throwable Explosives** (22 KB,
+but just flings primed TNT, no ammo economy, last updated mid-2024) since
+it covers guns AND ammo AND a real `grenade` item in one small package -
+confirmed by decompiling the exact jar's `SimpleGunsReworkedModItems.class`
+constant pool directly, not the mod's lang file (which still carries stale
+`item.simple_guns.*` keys from before the "reworked" rename - not real
+registry ids). Real ids: 16 guns (pistol/revolver/submachine_gun/
+tommy_gun/double_barrel_shotgun/shotgun/automatic_shotgun/assault_rifle/
+dmr/sniper/heavy_sniper/bazooka/flame_thrower/minguguuggn/laser_gun/
+potato_cannon), 7 ammo/consumable types (pistol_ammo/rifle_ammo/
+shotgun_ammo/sniper_ammo covering the 4 core families, rocket/fuel_tank/
+charged_potato as the bazooka/flame_thrower/potato_cannon's own specialty
+ammo), `grenade`. Added via `packwiz curseforge add`; sha1
+`f3661ffc75382ca9f625f50434607df2c784f3b8` confirmed matching between the
+downloaded jar and packwiz's recorded hash before deploying.
+
+3 new pools added to `wave_airdrop.json`, **additive only** - the original
+3 pools are untouched: one weighted pick across all 16 guns (commoner guns
+weighted higher, first-pass numbers not playtested), 2 weighted ammo rolls,
+a guaranteed 2-4 grenades. All items confirmed player-craftable via the
+mod's own stock vanilla-material recipes too (e.g. grenade = 4x
+iron_nugget + gunpowder, `data/simple_guns_reworked/recipes/rgrneade.json`)
+- putting them in loot is a deliberate call, direct ask, same shape as the
+2026-09-05 vanilla-only loot rule retirement, not an oversight of the "no
+loot shortcuts for a home machine's own output" principle. No re-recipe
+layer added (matches this pack's standing "don't re-recipe stock mod
+content" convention).
+
+**Verification**: `node --check` clean on the edited script; loot table
+JSON parses clean (`node -e "JSON.parse(...)"`). Jar deployed to the live
+instance's `mods/` (sha1-verified), updated loot table + script copied
+byte-identical into the live instance's `kubejs/`. **Not yet done**: a
+full fresh-mod-set sandbox boot (per `reference_sandbox_server_recipe`) -
+skipped here since this is a zero-dependency, no-reflection, no-NBT
+addition (a new stock-registered item mod + a static loot table edit),
+which `feedback_peer_efficiency_calibration`'s own "full reboots for
+worldgen/reflection/NBT work, RCON-verify the rest" line puts well below
+the reboot threshold - but it hasn't been confirmed booting yet either.
+Real open item: `/loot spawn` a `kubejs:chests/wave_airdrop` roll (or wait
+for the next real wave-5 airdrop) to confirm the new pools resolve without
+a "missing registry" error before calling this fully done.
+
+---
+
 ## 19-item playtest feedback batch (second batch, 2026-09-10) — 15 built, 4 need your call
 
 Literal checklist against the user's own numbering. Every item was

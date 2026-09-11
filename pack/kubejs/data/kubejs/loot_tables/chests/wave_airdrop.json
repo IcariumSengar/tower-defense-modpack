@@ -30,6 +30,100 @@
           ]
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "simple_guns_reworked:pistol", "weight": 15 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:revolver", "weight": 12 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:submachine_gun", "weight": 10 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:tommy_gun", "weight": 8 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:shotgun", "weight": 8 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:double_barrel_shotgun", "weight": 8 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:automatic_shotgun", "weight": 5 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:assault_rifle", "weight": 6 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:dmr", "weight": 5 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:sniper", "weight": 4 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:potato_cannon", "weight": 4 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:laser_gun", "weight": 3 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:flame_thrower", "weight": 3 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:heavy_sniper", "weight": 3 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:minguguuggn", "weight": 2 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:bazooka", "weight": 2 }
+      ]
+    },
+    {
+      "rolls": 2,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:pistol_ammo",
+          "weight": 5,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 16.0, "max": 32.0 } }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:rifle_ammo",
+          "weight": 5,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 12.0, "max": 24.0 } }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:shotgun_ammo",
+          "weight": 4,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 8.0, "max": 16.0 } }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:sniper_ammo",
+          "weight": 3,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 4.0, "max": 8.0 } }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:charged_potato",
+          "weight": 3,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 6.0, "max": 12.0 } }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:rocket",
+          "weight": 2,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 4.0 } }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:fuel_tank",
+          "weight": 2,
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 4.0 } }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "simple_guns_reworked:grenade",
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 4.0 } }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -67,6 +67,36 @@
 //   not a puzzle.
 // - `<map>` = true - drops the Xaero waypoint described above.
 //
+// **Weapon/ammo/grenade pools added 2026-09-11**, direct feedback: airdrops
+// always gave the exact same 3 items (legendary bag + netherite scrap +
+// diamond block, kept unchanged below) - flat, no variety. No firearm mod
+// was installed in this pack; **Simple Guns: reworked** added (CurseForge
+// project 437035, file 7924023, `simple_guns_reworked-1.9.9-forge-1.20.1.jar`,
+// zero dependencies, real Forge 1.20.1 build - confirmed fresh, uploaded
+// Apr 2026, not a stale pick) - single small MCreator mod (same shape as
+// dyairdrop/TFTH/Advanced Tower Defense already in this pack) that covers
+// guns, ammo AND a grenade in one zero-footprint jar, so no second mod was
+// needed. Real item/registry ids below confirmed by decompiling the exact
+// installed jar's `SimpleGunsReworkedModItems.class` constant pool directly,
+// not guessed from the mod's lang file alone (which also carries stale
+// `item.simple_guns.*` keys from before the "reworked" rename - those are
+// NOT real registry ids, only `simple_guns_reworked:*` ones are). 16 guns,
+// 7 ammo/consumable types (pistol_ammo/rifle_ammo/shotgun_ammo/sniper_ammo
+// cover the 4 core gun families; rocket/fuel_tank/charged_potato are the
+// bazooka/flame_thrower/potato_cannon's own specialty ammo) plus
+// `simple_guns_reworked:grenade` - all real, all player-craftable via the
+// mod's own stock vanilla-material recipes too (e.g. grenade = 4x
+// iron_nugget + gunpowder, confirmed from `data/simple_guns_reworked/
+// recipes/rgrneade.json`) - putting them in loot here is a deliberate
+// choice, same call as retiring the vanilla-only loot rule for "kills should
+// feel like progressing your tech" (see `docs/IDEAS.md`), not an oversight
+// of the "no loot shortcuts for a home machine's own output" principle.
+// 3 new pools in `wave_airdrop.json`, additive only - the original 3 pools
+// are untouched: one weighted pick across all 16 guns (commoner/weaker guns
+// weighted higher - first-pass numbers, not playtested), 2 weighted ammo
+// rolls, and a guaranteed 2-4 grenades. No re-recipe layer added, matching
+// this pack's existing "don't re-recipe stock mod content" convention (see
+// FEATURES.md's Storage & power system entry for the precedent).
 // Real config judgment calls (pack/config/dyairdrop.toml, header comment
 // there has the full reasoning): `enable=false` (this pack's own trigger
 // replaces the mod's autonomous global-event airdrop entirely, not
