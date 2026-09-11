@@ -2,11 +2,14 @@
   "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": 1,
+      "rolls": {
+        "min": 2,
+        "max": 3
+      },
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_filler",
+          "name": "kubejs:chests/scav_food",
           "weight": 1
         }
       ]
@@ -16,17 +19,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_building",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_hardware",
+          "name": "kubejs:chests/scav_dairy",
           "weight": 1
         }
       ]
@@ -39,11 +32,10 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_treasure",
+          "name": "kubejs:chests/scav_filler",
           "weight": 1
         }
       ]
     }
-  ],
-  "random_sequence": "postapocalypse_structures:chests/cobwebs"
+  ]
 }

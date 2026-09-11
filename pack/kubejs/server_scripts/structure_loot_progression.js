@@ -3,29 +3,25 @@
 // the further out/later it's found" - the piece held during the
 // exploration-pacing retune pending the Treasure2 decision, now
 // unblocked). Layers a bonus pool on top of whatever a chest already
-// rolls, gated by real distance from the fixed spawn point at
-// loot-roll time - additive, not replacing, same technique already
-// proven on postapocalypse_structures' own chests.
+// rolls, gated by real distance from the base at loot-roll time -
+// additive, not replacing.
 //
 // Targets the CHEST loot context TYPE (LootJS.core.LootContextType),
-// not specific loot table IDs - real research found table-ID targeting
-// wouldn't actually cover this pack's 3 remaining structure mods
-// correctly:
-//   - the_lost_city ships ZERO chest loot tables across all 205 of its
-//     own structure NBTs (confirmed by decompiling every one directly,
-//     not guessed) - nothing to target there by table ID.
-//   - abandoned_urban's chests overwhelmingly reuse plain VANILLA
-//     tables (village_butcher, stronghold_corridor, simple_dungeon,
-//     shipwreck_treasure, etc. - confirmed the same way, 35 structures
-//     scanned), not custom ones - targeting those specific table IDs
-//     would also buff every real vanilla village/dungeon/stronghold/
-//     shipwreck the world generates, not just abandoned_urban's own
-//     buildings.
-// A type-level "any chest opened this far from spawn gets better loot"
-// rule sidesteps both problems, covers postapocalypse_structures' own
-// tables too, and matches the actual design intent (loot gets better
-// with exploration distance) more directly than an incomplete table
-// allowlist would have.
+// not specific loot table IDs. **Corrected 2026-09-11**: the reason
+// originally given here ("the_lost_city ships ZERO chest loot tables")
+// was wrong - a real census of the mod's NBT files shows its 1,487
+// tagged containers point at `berezka_api:chests/*` tables (store,
+// simple_chest, empty_chest, ...) that ship inside the Berezka API jar.
+// Those are now overridden pack-side (data/berezka_api/loot_tables/
+// chests/*.json, see docs/FEATURES.md's "Structure loot pass"), so
+// table-ID targeting would have been possible after all - but the
+// type-level rule is still the right shape: it also covers Abandoned
+// Urban's plain vanilla tables (village/dungeon/stronghold/shipwreck,
+// shared with real vanilla structures), Philip's Ruins' 17 own tables,
+// Unnamed Desert's 4, Watchtowers' 2, postapocalypse_structures' 3, and
+// every empty barrel structure_chest_loot_fix.js tags, without listing
+// any of them.
+//
 // Distance is measured from the REAL base, read live from the permanent
 // td_pedestal_target marker's own persistentData (world_state.js's
 // worldData()) - **real bug fixed 2026-09-09**: this file still carried a
@@ -47,24 +43,46 @@
 var MID_TIER_RADIUS = 210
 var HIGH_TIER_RADIUS = 270
 
+// **Pools retuned 2026-09-11 (structure loot pass, direct ask: chests and
+// barrels in structures should carry "the desired materials that would
+// make the player feel like they can come back to base with a good
+// haul").** The old pools were gem-flavoured (lapis/gold/emerald) and
+// didn't map onto what the tech tree actually consumes. Checked every
+// live recipe chain first (Tier 2 SecurityCraft traps, Simple Guns ammo,
+// Generator Galore's ladder, Flux Networks, Sophisticated stack upgrades,
+// IE's coke oven/blast furnace) - the real sinks are iron, redstone,
+// gunpowder, copper, gold, quartz, clay (coke bricks) and, for the whole
+// Flux Networks chain, blaze powder (Flux Core = obsidian + flux dust +
+// EYE OF ENDER, and nothing in this world drops blaze rods - no Nether
+// route is mentioned anywhere in the quest book). Mid keeps the
+// "next step up" feel (blocks, not dust); high is where the genuinely
+// unobtainable-at-home things live: blaze powder, magma blocks (9 build
+// one IE Blast Furnace - the only steel route), netherite scrap, the
+// smithing template.
 var MID_TIER_POOL = [
-  { item: 'minecraft:iron_ingot', weight: 25, min: 2, max: 4 },
-  { item: 'minecraft:gold_ingot', weight: 20, min: 2, max: 3 },
-  { item: 'minecraft:lapis_block', weight: 15, min: 1, max: 2 },
-  { item: 'minecraft:redstone_block', weight: 15, min: 1, max: 2 },
-  { item: 'minecraft:copper_block', weight: 10, min: 2, max: 4 },
+  { item: 'minecraft:iron_ingot', weight: 25, min: 3, max: 6 },
+  { item: 'minecraft:gold_ingot', weight: 18, min: 2, max: 4 },
+  { item: 'minecraft:redstone_block', weight: 14, min: 1, max: 2 },
+  { item: 'minecraft:gunpowder', weight: 14, min: 4, max: 8 },
+  { item: 'minecraft:copper_block', weight: 10, min: 1, max: 2 },
+  { item: 'minecraft:quartz', weight: 10, min: 3, max: 6 },
+  { item: 'minecraft:lapis_block', weight: 8, min: 1, max: 2 },
   { item: 'minecraft:emerald', weight: 8, min: 1, max: 2 },
+  { item: 'minecraft:clay_ball', weight: 8, min: 4, max: 8 },
+  { item: 'minecraft:iron_block', weight: 6, min: 1, max: 1 },
 ]
 
 var HIGH_TIER_POOL = [
   { item: 'minecraft:diamond', weight: 20, min: 1, max: 2 },
-  { item: 'minecraft:emerald', weight: 18, min: 2, max: 4 },
-  { item: 'minecraft:gold_block', weight: 15, min: 1, max: 2 },
-  { item: 'minecraft:netherite_scrap', weight: 10, min: 1, max: 1 },
-  { item: 'minecraft:diamond_block', weight: 6, min: 1, max: 1 },
+  { item: 'minecraft:emerald', weight: 16, min: 2, max: 4 },
+  { item: 'minecraft:gold_block', weight: 12, min: 1, max: 2 },
   { item: 'minecraft:ender_pearl', weight: 12, min: 2, max: 4 },
+  { item: 'minecraft:blaze_powder', weight: 12, min: 2, max: 4 },
+  { item: 'minecraft:magma_block', weight: 8, min: 2, max: 4 },
+  { item: 'minecraft:netherite_scrap', weight: 8, min: 1, max: 1 },
+  { item: 'minecraft:diamond_block', weight: 5, min: 1, max: 1 },
   // 2026-09-08, direct ask: a rare structure-chest find, not a bag
-  // reward. Weight 4, deliberately rarer than diamond_block's 6 -
+  // reward. Weight 4, deliberately rarer than diamond_block's 5 -
   // "you'll find it if you are lucky in a structure."
   { item: 'minecraft:netherite_upgrade_smithing_template', weight: 4, min: 1, max: 1 },
 ]
@@ -84,9 +102,13 @@ function randomCount(entry) {
   return entry.min + Math.floor(Math.random() * (entry.max - entry.min + 1))
 }
 
-// 1-2 rolls, same "bonus on top, not a full extra pool" shape as
-// postapocalypse_structures' own treasure-pool overrides.
-var BONUS_ROLLS = 2
+// One guaranteed premium roll plus a chance of a second (was a flat 2 every
+// time). Changed 2026-09-11 alongside the pass above: the base tables and
+// the empty-barrel fix now put real materials in every container, and a
+// Lost City block holds hundreds of them, so two guaranteed premium rolls
+// per container on top would have turned a far city into a diamond mine.
+var SECOND_ROLL_CHANCE_MID = 0.4
+var SECOND_ROLL_CHANCE_HIGH = 0.5
 
 LootJS.modifiers((event) => {
   event.addLootTypeModifier('chest').apply((context) => {
@@ -99,14 +121,18 @@ LootJS.modifiers((event) => {
     var dist = Math.sqrt(dx * dx + dz * dz)
 
     var pool = null
+    var secondRollChance = 0
     if (dist > HIGH_TIER_RADIUS) {
       pool = HIGH_TIER_POOL
+      secondRollChance = SECOND_ROLL_CHANCE_HIGH
     } else if (dist > MID_TIER_RADIUS) {
       pool = MID_TIER_POOL
+      secondRollChance = SECOND_ROLL_CHANCE_MID
     }
     if (!pool) return
 
-    for (var i = 0; i < BONUS_ROLLS; i++) {
+    var rolls = 1 + (Math.random() < secondRollChance ? 1 : 0)
+    for (var i = 0; i < rolls; i++) {
       var entry = weightedRoll(pool)
       context.addLoot(Item.of(entry.item, randomCount(entry)))
     }

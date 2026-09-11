@@ -115,7 +115,11 @@
 // forced duplicate.
 const UNCOMMON_MOBS = ['minecraft:zombie', 'minecraft:husk', 'minecraft:drowned', 'minecraft:zombie_villager', 'minecraft:zombified_piglin', 'mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'undeadnights:horde_zombie']
 const RARE_MOBS = ['mutantszombies:split_head_zombie']
-const EPIC_MOBS = ['undeadnights:elite_zombie', 'zombiesmore:boomer_zombie']
+// Boomer Zombie removed 2026-09-11 (full roster purge - see
+// wave_spawner.js's WAVES header comment) - Epic tier is a single mob now,
+// same "honest consequence, not papered over" reasoning the comment above
+// already applied to Rare.
+const EPIC_MOBS = ['undeadnights:elite_zombie']
 const LEGENDARY_MOBS = ['mutantszombies:crawler', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
 // **Redesigned 2026-09-08, direct ask - real design change, not a
@@ -192,6 +196,35 @@ const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
 // volume problem in the cut above. Quest book's own "Spoils of War"
 // description (campaign.snbt) restates these exact numbers - kept in
 // sync with this change, not left stale.
+//
+// **Totem of Undying cut, 2026-09-11, direct playtest report: "im getting
+// too many tokens of undying. this item needs to be super rare."**
+// Checked the live cache per this file's own STOP note above before
+// touching anything - the totem entry had drifted badly out of sync
+// between the two copies: this JSON still had the original weight (3 of
+// 99, ~14% per bag), but the live `config/bountybags/legendary_bag.toml`
+// had it manually patched up to 16 (of 112, ~54% chance of at least one
+// totem per Legendary bag - the actual live number the report is about,
+// confirmed by reading the live file directly, not assumed from this
+// JSON). Cut to 2 in both copies (of 98 here / 98 there, ~10% per bag) -
+// real, deliberate "super rare" cut given a Legendary bag itself only
+// drops on 2% of wave-mob kills (loot_bag_drops.js above), so a totem's
+// real per-kill odds land around 0.2%, not the ~1% the old live value
+// worked out to.
+//
+// **Oak log weight raised, 2026-09-11, direct playtest report: "not
+// getting enough logs in the loot... used to make wooden traps but also
+// early game wall defence."** Real root cause is this pack's own design,
+// not a loot-table oversight: the base spawns in desert/badlands
+// wasteland on purpose (docs/QUEUE.md's wasteland-feel work) and the
+// spawn area's own vegetation-clearing pass strips what few trees exist
+// nearby (playtest_starter_kit.js) - there is close to no natural
+// tree-punching available, so log income is genuinely loot-gated in a way
+// vanilla never is. oak_log was already the single highest-weighted entry
+// in the Uncommon table (40, ahead of iron_nugget's 30) before this, and
+// still wasn't enough - raised 40 -> 70 (both this JSON and the live
+// `uncommon_bag.toml`, already in sync so only one real edit each) to
+// make it a clearly felt bump, not a marginal one.
 //
 // `LootJS.modifiers(...)` / `.addEntityLootModifier(id).randomChance(n).addLoot(id)`
 // - same confirmed-working pattern as the old system, just pointed at

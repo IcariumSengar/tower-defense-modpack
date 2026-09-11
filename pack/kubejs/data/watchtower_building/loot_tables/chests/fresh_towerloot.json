@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_filler",
+          "name": "kubejs:chests/scav_armory",
           "weight": 1
         }
       ]
@@ -39,11 +39,10 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_treasure",
+          "name": "kubejs:chests/scav_food",
           "weight": 1
         }
       ]
     }
-  ],
-  "random_sequence": "postapocalypse_structures:chests/cobwebs"
+  ]
 }
