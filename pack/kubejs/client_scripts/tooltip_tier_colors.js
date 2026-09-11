@@ -18,6 +18,12 @@
 // once placed) and none of them use power, so they don't belong in
 // Tier 3's "Energetic Defense" bucket, which stays reserved for the
 // separately-planned Immersive Engineering/Flux Networks power system.
+//
+// **Same day** - Create and Create Addition removed entirely too
+// (Barbed Wire felt redundant next to the new SecurityCraft roster;
+// Create's only other live use, the Tier 3 Flamethrower Nozzle quest,
+// was cut with it - see docs/MODS.md). `create:nozzle`'s Tier 3 entry
+// dropped, nothing replaces it.
 const TIER_COLORS = {
   1: { code: '§a', label: 'Tier 1 - Starting Defense' }, // green
   2: { code: '§e', label: 'Tier 2 - Automated Defense' }, // yellow
@@ -41,7 +47,6 @@ const TIER_ITEMS = {
   'refinedstorage:controller': 3,
   'sophisticatedstorage:barrel': 3,
   'fluxnetworks:flux_plug': 3,
-  'create:nozzle': 3,
 }
 
 ItemEvents.tooltip((event) => {

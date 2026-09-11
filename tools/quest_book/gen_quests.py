@@ -275,15 +275,7 @@ T1c = quest("Something Crueler", 18, 3, [t_item("vds_bear_traps:bear_trap_open",
     [r_lvl(2, "6B2E8A0C41D5F937"), r_item("minecraft:redstone", 8, "44D5604B84263E75")],
     ["A &eBear Trap&r snaps shut on whatever steps in it, hurts it and pins it, then reopens on its own. In front of the pedestal a held mob is a free kill."],
     qid="3F6D91E4A2C7B850", deps=[T1b["id"]], icon="vds_bear_traps:bear_trap_open", subtitle="1 iron ingot + 1 stone pressure plate", **HX)
-T1d = quest("Turn the Crank", 20, 3, [t_obs("createaddition:rolling_mill")],
-    [r_xp(10, "2F71CD6D28876113"), r_item("create:hand_crank", 1, "C98B0A210AD669D6")],
-    ["The house has a Mechanical Press and a &eRolling Mill&r already set up, with an empty shaft where a Hand Crank goes. Here's one. Put it on and hold right-click to turn it: the mill rolls iron ingots into iron wire."],
-    qid="30DB900D8BD39277", deps=[T1c["id"]], icon="create:hand_crank", subtitle="Look at the Rolling Mill in the house", **HX)
-T1e = quest("Sharpened Scrap", 22, 3, [t_item("createaddition:barbed_wire", "655A19AD37263BC9")],
-    [r_xp(10, "0892955D880F0E2C"), r_item("minecraft:iron_ingot", 4, "2E48F2F054CCB1FE")],
-    ["Four iron wire in a diamond make two &eBarbed Wire&r. Anything inside it takes damage and moves at a quarter speed. Two rows in front of the pedestal are worth more than a wall."],
-    qid="1454951A7FB14A26", deps=[T1d["id"]], icon="createaddition:barbed_wire", subtitle="4 iron wire, diamond shape, makes 2", **HX)
-Q += [T1a, T1b, T1c, T1d, T1e]
+Q += [T1a, T1b, T1c]
 
 # ---- Tier 2 (hexagon, y=+6 / +7.5) ----
 ATD = "advanced_tower_defense_mod:"
@@ -347,11 +339,7 @@ T3f = quest("The Grid", 28, 9, [t_item("refinedstorage:controller", "A6789EF8AE0
     [r_lvl(3, "4B4C22EF7409EFF4"), r_item("minecraft:iron_ingot", 4, "4C6F2A7BFB0E2D46")],
     ["Refined Storage: a &eController&r, a Disk Drive and a Grid on one power line, and every chest becomes one searchable inventory. Quartz Enriched Iron is the base material."],
     qid="C5A98E14436508F8", deps=[T3e["id"]], icon="refinedstorage:controller", subtitle="Quartz Enriched Iron, processors, a machine casing", **HX)
-T3g = quest("Turn Up the Heat", 20, 10.5, [t_item("create:encased_fan")],
-    [r_xp(10, "95479A859DF0BA7F"), r_item("create:nozzle", 1, "CB59BF2C503D4EB3")],
-    ["An &eEncased Fan&r blowing through lava is a flamethrower: 4 damage and 10 seconds of fire to anything in the stream, refreshed every tick it stays in. A Nozzle on the fan's output turns the straight stream into a short burst all around it. Any rotation works, a Hand Crank included, so this costs no power at all."],
-    qid="5F728109F9913045", deps=[T3a["id"]], icon="create:nozzle", subtitle="Shaft + Andesite Casing + Propeller", **HX)
-Q += [T3a, T3b, T3c, T3d, T3e, T3f, T3g]
+Q += [T3a, T3b, T3c, T3d, T3e, T3f]
 
 campaign = {
     "default_hide_dependency_lines": False,

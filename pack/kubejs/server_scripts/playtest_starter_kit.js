@@ -888,21 +888,90 @@ function buildStarterBase(server, level, x, z) {
   const WEAK_WALL_Z0 = z0
   const WEAK_WALL_Z1 = z0 + 2
 
-  for (let wx = x0; wx <= x1; wx++) {
-    for (let wy = wallY0; wy <= wallY1; wy++) {
-      run(`setblock ${wx} ${wy} ${z0} ${perimeterWallBlock(wx, z0)}`)
-      run(`setblock ${wx} ${wy} ${z1} ${perimeterWallBlock(wx, z1)}`)
+  // "Loads of breaches" pass, 2026-09-10 (direct ask: "can the starting
+  // base's perimeter wall be way more delapidated on spawn"). WEAK_WALL
+  // above and the gate opening (further down, doorX-1..doorX+1 on the z1
+  // wall - already genuinely open, no door block) were the only two
+  // deliberate gaps until now. This scatters several more real,
+  // full-height holes (wallY0 to wallY1, all air - actually walkable
+  // through, not WEAK_WALL's shorter-but-still-2-blocks-solid treatment)
+  // around ALL FOUR wall runs, each with a rubble scatter at its outer
+  // foot echoing WEAK_WALL's own gravel/cobblestone dressing just below.
+  // Kept clear of the wall corners (BREACH_CORNER_BUFFER) and the gate
+  // opening (BREACH_GATE_BUFFER on the z1/front wall) so those two
+  // landmarks stay readable, and clear of WEAK_WALL's own stretch on the
+  // west wall so the two systems never double up in the same spot.
+  const BREACH_MIN_WIDTH = 2
+  const BREACH_MAX_WIDTH = 3
+  const BREACH_CORNER_BUFFER = 3
+  const BREACH_GATE_BUFFER = 4
+  const BREACHES_PER_WALL = 3
+  const BREACH_RUBBLE_BLOCKS = ['minecraft:gravel', 'minecraft:cobblestone', 'minecraft:mossy_cobblestone']
+
+  function breachRangesOverlap(aStart, aEnd, bStart, bEnd) {
+    return aStart <= bEnd && aEnd >= bStart
+  }
+
+  // Picks up to BREACHES_PER_WALL non-overlapping [start,end] ranges
+  // along [coordMin, coordMax], clear of corners and any exclude range.
+  // Bounded attempt count rather than a guaranteed count - a short wall
+  // or heavy exclusion can legitimately end up with fewer breaches, same
+  // bounded-rejection-sampling shape as wave_spawner.js's own
+  // randomObjectiveRelativePosition, not a bug if a wall comes up short.
+  function pickBreachRanges(coordMin, coordMax, excludeRanges) {
+    const picked = []
+    const usableMin = coordMin + BREACH_CORNER_BUFFER
+    const usableMax = coordMax - BREACH_CORNER_BUFFER
+    if (usableMax - usableMin < BREACH_MIN_WIDTH) return picked
+    for (let attempt = 0; attempt < BREACHES_PER_WALL * 10 && picked.length < BREACHES_PER_WALL; attempt++) {
+      const width = BREACH_MIN_WIDTH + Math.floor(Math.random() * (BREACH_MAX_WIDTH - BREACH_MIN_WIDTH + 1))
+      const start = usableMin + Math.floor(Math.random() * Math.max(1, usableMax - usableMin - width + 1))
+      const end = start + width - 1
+      const blocked = excludeRanges.concat(picked).some((r) => breachRangesOverlap(start, end, r[0], r[1]))
+      if (!blocked) picked.push([start, end])
     }
+    return picked
+  }
+
+  function inAnyBreachRange(coord, ranges) {
+    return ranges.some((r) => coord >= r[0] && coord <= r[1])
+  }
+
+  const z0WallBreaches = pickBreachRanges(x0, x1, [])
+  const z1WallBreaches = pickBreachRanges(x0, x1, [[doorX - BREACH_GATE_BUFFER, doorX + BREACH_GATE_BUFFER]])
+  const x0WallBreaches = pickBreachRanges(z0, z1, [[WEAK_WALL_Z0 - 1, WEAK_WALL_Z1 + 1]])
+  const x1WallBreaches = pickBreachRanges(z0, z1, [])
+
+  function randomBreachRubble() {
+    return BREACH_RUBBLE_BLOCKS[Math.floor(Math.random() * BREACH_RUBBLE_BLOCKS.length)]
+  }
+
+  for (let wx = x0; wx <= x1; wx++) {
+    const z0Breach = inAnyBreachRange(wx, z0WallBreaches)
+    const z1Breach = inAnyBreachRange(wx, z1WallBreaches)
+    for (let wy = wallY0; wy <= wallY1; wy++) {
+      run(`setblock ${wx} ${wy} ${z0} ${z0Breach ? 'minecraft:air' : perimeterWallBlock(wx, z0)}`)
+      run(`setblock ${wx} ${wy} ${z1} ${z1Breach ? 'minecraft:air' : perimeterWallBlock(wx, z1)}`)
+    }
+    // Rubble at each breach's outer foot, not every column - a scattered
+    // pile reads better than a solid debris line the same width as the hole.
+    if (z0Breach && Math.random() < 0.5) run(`setblock ${wx} ${wallY0} ${z0 - 1} ${randomBreachRubble()}`)
+    if (z1Breach && Math.random() < 0.5) run(`setblock ${wx} ${wallY0} ${z1 + 1} ${randomBreachRubble()}`)
   }
   for (let wz = z0; wz <= z1; wz++) {
+    const isWeakWall = wz >= WEAK_WALL_Z0 && wz <= WEAK_WALL_Z1
+    const x0Breach = !isWeakWall && inAnyBreachRange(wz, x0WallBreaches)
+    const x1Breach = inAnyBreachRange(wz, x1WallBreaches)
     for (let wy = wallY0; wy <= wallY1; wy++) {
-      if (wz >= WEAK_WALL_Z0 && wz <= WEAK_WALL_Z1) {
+      if (isWeakWall) {
         run(`setblock ${x0} ${wy} ${wz} ${wy <= wallY0 + 1 ? 'minecraft:cobblestone' : 'minecraft:air'}`)
       } else {
-        run(`setblock ${x0} ${wy} ${wz} ${perimeterWallBlock(x0, wz)}`)
+        run(`setblock ${x0} ${wy} ${wz} ${x0Breach ? 'minecraft:air' : perimeterWallBlock(x0, wz)}`)
       }
-      run(`setblock ${x1} ${wy} ${wz} ${perimeterWallBlock(x1, wz)}`)
+      run(`setblock ${x1} ${wy} ${wz} ${x1Breach ? 'minecraft:air' : perimeterWallBlock(x1, wz)}`)
     }
+    if (x0Breach && Math.random() < 0.5) run(`setblock ${x0 - 1} ${wallY0} ${wz} ${randomBreachRubble()}`)
+    if (x1Breach && Math.random() < 0.5) run(`setblock ${x1 + 1} ${wallY0} ${wz} ${randomBreachRubble()}`)
   }
   // Cobweb debris removed 2026-09-04 (direct ask, real playtest feedback
   // batch) - the gravel/rubble scatter below stays, only the cobweb line
@@ -936,24 +1005,30 @@ function buildStarterBase(server, level, x, z) {
   }
 
   for (let wx = x0; wx <= x1; wx += STAKE_WALL_SPACING) {
-    // z0 run (back wall).
-    placeStakeWall(wx, wallY0, z0 - 1, 'north')
-    placeStakeWall(wx, wallY0 + 1, z0 - 1, 'north')
-    // z1 run (gate wall) - skip near the doorX opening.
-    if (Math.abs(wx - doorX) > STAKE_WALL_GATE_BUFFER) {
+    // z0 run (back wall) - also skips the new breach columns above, same
+    // "stays undefended" reasoning as WEAK_WALL below: a trap guarding an
+    // intentional gap defeats the point of it being a gap.
+    if (!inAnyBreachRange(wx, z0WallBreaches)) {
+      placeStakeWall(wx, wallY0, z0 - 1, 'north')
+      placeStakeWall(wx, wallY0 + 1, z0 - 1, 'north')
+    }
+    // z1 run (gate wall) - skip near the doorX opening and breach columns.
+    if (Math.abs(wx - doorX) > STAKE_WALL_GATE_BUFFER && !inAnyBreachRange(wx, z1WallBreaches)) {
       placeStakeWall(wx, wallY0, z1 + 1, 'south')
       placeStakeWall(wx, wallY0 + 1, z1 + 1, 'south')
     }
   }
   for (let wz = z0; wz <= z1; wz += STAKE_WALL_SPACING) {
-    // x0 run (west wall) - skip the WEAK_WALL stretch entirely, it's
-    // meant to stay undefended (see the comment above).
-    if (wz < WEAK_WALL_Z0 || wz > WEAK_WALL_Z1) {
+    // x0 run (west wall) - skip the WEAK_WALL stretch and the new breach
+    // columns, all meant to stay undefended (see the comments above).
+    if ((wz < WEAK_WALL_Z0 || wz > WEAK_WALL_Z1) && !inAnyBreachRange(wz, x0WallBreaches)) {
       placeStakeWall(x0 - 1, wallY0, wz, 'west')
       placeStakeWall(x0 - 1, wallY0 + 1, wz, 'west')
     }
-    placeStakeWall(x1 + 1, wallY0, wz, 'east')
-    placeStakeWall(x1 + 1, wallY0 + 1, wz, 'east')
+    if (!inAnyBreachRange(wz, x1WallBreaches)) {
+      placeStakeWall(x1 + 1, wallY0, wz, 'east')
+      placeStakeWall(x1 + 1, wallY0 + 1, wz, 'east')
+    }
   }
 
   // Entrance changed 2026-09-04 (direct ask, real playtest feedback
@@ -1566,54 +1641,13 @@ function buildStarterBase(server, level, x, z) {
     run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} ${block}`)
   })
 
-  // Pre-placed Tier 1 kinetic rig (2026-09-03, direct request: pre-place
-  // a finished Rolling Mill "same way it already ships with a furnace
-  // etc.", so the only remaining player task is crafting a Hand Crank
-  // and connecting it).
-  //
-  // **Real hotfix 2026-09-03**: the original indoor spot (local x=4-6,
-  // z=9 in the building's own NBT) was wrong - not bad math, a wrong
-  // reading of the space. It turned out to be the open, unwalled yard
-  // strip right outside the building's real entrance, not a room -
-  // landed the rig in the walkway between the gate and the door,
-  // exactly the live bug report ("blocking it"). Refit indoors first
-  // (local x=7,z=5-7, beside the building's own furnace, confirmed
-  // enclosed by parsing the structure's real NBT) - then **relocated
-  // outdoors entirely 2026-09-05** (docs/FEATURES.md, direct request:
-  // "the pre-placed Create rig... feels cramped inside the building -
-  // relocate it to the yard too, off to one side, clearly secondary to
-  // the pedestal"). Sits along the east wall, one courtyard row north
-  // of the dais platform (rigZ = centerZ-2), a real gap from both the
-  // platform (ends at centerZ-1) and the grave arc (starts at
-  // centerZ-3) - checked against those real coordinates, not assumed
-  // clear just because it moved outdoors.
-  //
-  // The Depot goes BENEATH the Press, not on top - confirmed from the
-  // mod's own ponder text ("Input items can be dropped or placed on a
-  // Depot under the Press"), the opposite of the Rolling Mill, which
-  // takes items dropped directly onto itself.
-  //
-  // **Real fix 2026-09-06**: the outdoor relocation above placed the
-  // Press directly on top of the Depot (one block up, zero clearance).
-  // Direct bug report: "the press and depot hasnt got a space in the
-  // middle which it needs to function" - the real requirement, per the
-  // user directly, is a full block of open air between them (Press TWO
-  // blocks above the Depot, not one). Confirmed live in a sandbox before
-  // shipping: a creative Motor powering the Press alone, an iron ingot
-  // fed onto the Depot via a hopper - at 1-block spacing the Press never
-  // engaged (Ticks stayed 0 for 20+ real seconds); moved to 2-block
-  // spacing, the same setup produced a real `Finished:1b`/`Mode:1` press
-  // cycle and the Depot's held item genuinely converted from
-  // `minecraft:iron_ingot` to `create:iron_sheet`. Mill stays at its old
-  // XZ (rigMillX, wallY0), still not face-adjacent to the Press either
-  // way - not reconnected to it, per "leave them physically disconnected
-  // for now."
-  const rigZ = centerZ - 2
-  const rigPressX = x1 - 2
-  const rigMillX = x1 - 3
-  run(`setblock ${rigMillX} ${wallY0} ${rigZ} createaddition:rolling_mill[facing=west]`)
-  run(`setblock ${rigPressX} ${wallY0} ${rigZ} create:depot`)
-  run(`setblock ${rigPressX} ${wallY0 + 2} ${rigZ} create:mechanical_press[facing=west]`)
+  // Pre-placed Tier 1 kinetic rig - removed 2026-09-11 along with Create
+  // and Create Addition entirely (direct feedback: Barbed Wire felt
+  // redundant next to the new SecurityCraft trap roster, and Create's
+  // only other live use, the Tier 3 Flamethrower Nozzle quest, was cut
+  // with it - see docs/MODS.md's Removed mods section). The Rolling
+  // Mill/Depot/Mechanical Press this used to place here are gone; no
+  // replacement rig placed.
 
   return { centerX: centerX, centerY: wallY0, centerZ: centerZ, spawnX: x, spawnY: y, spawnZ: z, marker: markerEntity }
 }

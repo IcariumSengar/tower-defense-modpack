@@ -1129,72 +1129,6 @@
 			y: 3.0d
 		}
 		{
-			dependencies: ["67A7BF98D2C077DE"]
-			hide_until_deps_complete: true
-			description: ["The house has a Mechanical Press and a &eRolling Mill&r already set up, with an empty shaft where a Hand Crank goes. Here's one. Put it on and hold right-click to turn it: the mill rolls iron ingots into iron wire."]
-			icon: "create:hand_crank"
-			id: "30DB900D8BD39277"
-			rewards: [
-				{
-					id: "2F71CD6D28876113"
-					type: "xp"
-					xp: 10
-				}
-				{
-					id: "441017D89321470E"
-					item: "create:hand_crank"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			subtitle: "Look at the Rolling Mill in the house"
-			tasks: [
-				{
-					id: "26BA97507EFA5579"
-					observe_type: 0
-					timer: 0L
-					to_observe: "createaddition:rolling_mill"
-					type: "observation"
-				}
-			]
-			title: "Turn the Crank"
-			x: 16.0d
-			y: 3.0d
-		}
-		{
-			dependencies: ["30DB900D8BD39277"]
-			hide_until_deps_complete: true
-			description: ["Four iron wire in a diamond make two &eBarbed Wire&r. Anything inside it takes damage and moves at a quarter speed. Two rows in front of the pedestal are worth more than a wall."]
-			icon: "createaddition:barbed_wire"
-			id: "1454951A7FB14A26"
-			rewards: [
-				{
-					id: "0892955D880F0E2C"
-					type: "xp"
-					xp: 10
-				}
-				{
-					count: 4
-					id: "2E48F2F054CCB1FE"
-					item: "minecraft:iron_ingot"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			subtitle: "4 iron wire, diamond shape, makes 2"
-			tasks: [
-				{
-					consume_items: false
-					id: "655A19AD37263BC9"
-					item: "createaddition:barbed_wire"
-					type: "item"
-				}
-			]
-			title: "Sharpened Scrap"
-			x: 18.0d
-			y: 3.0d
-		}
-		{
 			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
 			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. All three materials come out of Rare bags, so this is your first Tier 2 build."]
@@ -1652,38 +1586,6 @@
 			title: "The Grid"
 			x: 26.0d
 			y: 9.0d
-		}
-		{
-			dependencies: ["5C44D121F112749F"]
-			hide_until_deps_complete: true
-			description: ["An &eEncased Fan&r blowing through lava is a flamethrower: 4 damage and 10 seconds of fire to anything in the stream, refreshed every tick it stays in. A Nozzle on the fan's output turns the straight stream into a short burst all around it. Any rotation works, a Hand Crank included, so this costs no power at all."]
-			icon: "create:nozzle"
-			id: "5F728109F9913045"
-			rewards: [
-				{
-					id: "4239E5515D56E088"
-					type: "xp"
-					xp: 10
-				}
-				{
-					id: "62B52A7C3B321423"
-					item: "create:nozzle"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			subtitle: "Shaft + Andesite Casing + Propeller"
-			tasks: [
-				{
-					consume_items: false
-					id: "74D5F4EB37E661B7"
-					item: "create:encased_fan"
-					type: "item"
-				}
-			]
-			title: "Turn Up the Heat"
-			x: 18.0d
-			y: 10.5d
 		}
 	]
 	subtitle: ["Hold the pedestal. The waves don't stop."]

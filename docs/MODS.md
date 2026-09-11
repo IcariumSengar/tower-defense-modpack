@@ -39,7 +39,6 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 | V01D's Bear Traps | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/v01ds-bear-traps) | BETA build (1.20.1 Forge) | Added 2026-09-08, replaces Trapcraft's Bear Trap (`bear_trap_open`). Ships with no crafting recipe at all (world-gen only, confirmed by decompile) — a KubeJS recipe was added from scratch in `tier1_recipes.js` | Standalone, no dependencies | testing |
 | Treasure2 | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/treasure2) | 4.0.5 (1.20.1 Forge) | Added 2026-08-30 for the desert-biome structure-generation plan — desert ruins/wishing wells + general surface/dungeon structures, 18+ tiered locked treasure chests including Mimic Chests. Confirmed directly from its own structure JSONs that these actually target the `minecraft:desert` biome this world uses | Requires GottschCore (added alongside it) | testing |
 | GottschCore | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/gottschcore) | 2.8.0 (1.20.1 Forge) | Hard dependency of Treasure2 | — | required |
-| Create | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/create) | 6.0.8 (1.20.1 Forge) | Added 2026-08-30 for the Schematicannon/Schematic-and-Quill/Schematic Table — the base-expansion-into-rooms mechanic (see FEATURES.md's "Base expansion into rooms/corridors"). Full mod, not an extraction — see the Custom glue entry below for why the planned "standalone" extraction was rejected | Jar-in-jars Flywheel, Ponder, Registrate, and MixinExtras itself (`META-INF/jarjar/`, confirmed from the jar directly) — no separate packwiz entries needed for any of them. Optional JEI integration satisfied by the JEI version already installed | testing |
 | Curios API | [Modrinth](https://modrinth.com/mod/curios) | 5.14.1+1.20.1 (Forge) | Added 2026-08-30 for the amulet (FEATURES.md's "The amulet") — the current, actively-maintained accessory-slot mod; Baubles (the older equivalent) has no Forge 1.20.1 build at all | Ships slot *types* but grants zero slots to any entity by default — this pack grants 1 necklace slot itself via `pack/kubejs/data/kubejs/curios/slots/necklace.json`, confirmed against Curios' own `CuriosSlotManager.java` source | testing |
 | KubeJS-Curios | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/kubejs-curios) | 1.0.4 (1.20.1 Forge) | Added 2026-08-30 alongside Curios API — bridges Curios' equip/unequip/tick-while-worn hooks to KubeJS scripts. CurseForge project 1255211, author zhaijineet — a *different*, same-named project (Prunoideae/KubeJS-Curios) also exists with a different API; installed the one the actual CurseForge listing links to, not assumed from the name | Requires Curios API, Architectury API, KubeJS, Rhino — all already present, packwiz added no new dependency chain | testing |
 | Sophisticated Storage | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/sophisticated-storage) | 1.4.86 (1.20.1 Forge) | Added 2026-09-08 (Roadmap Phase 3) — upgradeable barrels/chests with filtering, the storage half of the Tier 3 "tech pack feel" power/storage system. See FEATURES.md's "Storage & power system" entry | Requires Sophisticated Core (packwiz auto-added it, confirmed real dependency via both packwiz's resolver and the jar's own `mods.toml`). Ships ~25 bundled advancement/recipe files referencing Sophisticated Backpacks (a separate, NOT-installed mod, same author) — real, non-fatal `Unknown item id` log noise on every boot, flagged not fixed | testing |
@@ -53,6 +52,23 @@ tested, no known issues), `testing` (added, not yet verified), `flagged`
 
 ## Removed mods
 
+- **Create** (CurseForge, 6.0.8, 1.20.1 Forge) + **Create: Crafts &
+  Additions** (CurseForge, 1.3.3, 1.20.1 Forge, hard-depends on Create) —
+  Create added 2026-08-30 for the Schematicannon/base-expansion-into-
+  rooms mechanic (never actually built - blocked on a player hand-
+  exporting a `.nbt` schematic, "no coding session can produce
+  headlessly"); Create Addition added alongside it for Barbed Wire, the
+  Tier 1 defense item crafted from its Rolling Mill's iron wire. Both
+  uninstalled entirely 2026-09-11, direct feedback: Barbed Wire felt
+  redundant next to the new SecurityCraft trap roster
+  ([[project_tier2_securitycraft_traps]]-adjacent decision). This also
+  cut Create's other live use - the Tier 3 "Turn Up the Heat" Flamethrower
+  Nozzle quest (`create:nozzle`/`create:encased_fan`), dropped with no
+  replacement per direct instruction, plus the pre-placed Rolling Mill/
+  Depot/Mechanical Press rig at the starting base
+  (`playtest_starter_kit.js`). Create Addition's own Tesla Coil was
+  installed but never wired into anything (Immersive Engineering's
+  Tesla Coil was used instead, see that row above) - no loss there.
 - **Advanced Tower Defense** (CurseForge, 3.7, 1.20.1 Forge) — added
   2026-09-08 (Track C) for Musket Sentry + Anvil Launcher, promoted to
   the Tier 2 gate 2026-09-09, removed entirely 2026-09-11 after direct
