@@ -55,13 +55,18 @@
 // Counts are a first-pass guess, easy to retune (same pattern as
 // base_expansion.js's tuning).
 //
-// Uses a plain custom item (kubejs:wave_horn), not vanilla's Goat Horn —
-// tried Goat Horn first for the free texture/sound, but
-// ItemEvents.rightClicked never fires at all while an item is on
-// cooldown (confirmed from KubeJSItemEventHandler.java's own dispatch
-// logic), and Goat Horn has a real vanilla cooldown built in. A plain
-// item has no cooldown, so the event reliably fires; a manual sound
-// effect below keeps the horn feel.
+// **Historical note (kept for the technical reasoning below, which
+// mostly still applies): this used to be triggered by a plain custom
+// item, kubejs:wave_horn, not vanilla's Goat Horn — tried Goat Horn
+// first for the free texture/sound, but ItemEvents.rightClicked never
+// fires at all while an item is on cooldown (confirmed from
+// KubeJSItemEventHandler.java's own dispatch logic), and Goat Horn has a
+// real vanilla cooldown built in. A plain item has no cooldown, so the
+// event reliably fired; a manual sound effect below keeps the horn feel.
+// The item itself is GONE as of 2026-09-13 (see the note block section
+// further down) — only the "why a plain item" reasoning above is now
+// moot, the "both events fire for one click" / Rhino-quirk / accessor
+// findings below still describe the note block's own handler exactly.**
 //
 // Commands run via player.getServer().runCommandSilent(...), not
 // player.runCommandSilent(...) — the latter executes with the player's
@@ -73,7 +78,8 @@
 // confirmed in-game that both fire for the same click (contrary to
 // Forge's documented "RightClickItem only fires when not targeting a
 // block" — that rule didn't hold in practice here), so a same-tick
-// dedup guard below prevents double-processing a single click.
+// dedup guard below prevents double-processing a single click. (Now only
+// BlockEvents.rightClicked remains — see the historical note above.)
 //
 // Player access is event.entity, not event.player — neither
 // ItemClickedEventJS nor BlockRightClickedEventJS expose a .player
@@ -251,17 +257,25 @@
 // biome_modifier/boomer_zombie_biome_modifier.json) still blocks the mod's
 // own worldgen spawns and must stay for boomer to be genuinely gone, not
 // just absent from this pack's own spawn logic.
+// Filler zombie/husk counts trimmed 2026-09-12 (real 3-player playtest
+// feedback: "too difficult with three players" - waves 1-8 had only ever
+// had mobs ADDED since launch, never trimmed, so several independent
+// "make it harder" asks compounded into a total nobody had tuned for a
+// group). Cut only the generic zombie/husk reinforcement counts - every
+// named/signature mob (Crawler's pack of 4, split_head_zombie's gold-drop
+// counts, Elite/Horde Zombie, etc.) is untouched. Waves 7-8 have no plain
+// zombie/husk filler to cut, so they're unchanged.
 var WAVES = [
-  [['minecraft:zombie', 5], ['minecraft:husk', 3], ['minecraft:zombie_villager', 1]],
-  [['minecraft:zombie', 4], ['minecraft:husk', 3], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 3]],
-  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 3]],
-  [['minecraft:zombie', 3], ['minecraft:husk', 3], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2]],
+  [['minecraft:zombie', 3], ['minecraft:husk', 2], ['minecraft:zombie_villager', 1]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['minecraft:drowned', 2], ['mutantszombies:mutant_zombie', 3]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['minecraft:drowned', 1], ['mutantszombies:mutant_zombie', 2], ['mutantszombies:blister_zombie', 3]],
+  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['mutantszombies:blister_zombie', 2], ['mutantszombies:split_head_zombie', 2]],
   // Elite Zombie (Undead Nights' own, real distinct stat block per its
   // own bytecode - slower but hits harder than Horde Zombie) replaces
   // the ravager as this wave's toughest mob. Now doing double duty as
   // both its own slot and Flesh Suffer's replacement (see the roster
   // header comment above) - a real duplication, not a fresh identity.
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['undeadnights:elite_zombie', 2]],
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['undeadnights:elite_zombie', 2]],
   // Undead Nights' own zombies arrive as a numbers-focused reinforcement
   // wave - a real, intended "horde grows" beat, not filler. Horde Zombie
   // now also stands in for Flesh Brute I's slot (see roster header
@@ -275,7 +289,7 @@ var WAVES = [
   // appearance here, plus the endless-phase addition in
   // undeadnights_horde_mobs_config.json, gives it real ongoing
   // presence instead of 2 individuals in the entire campaign.
-  [['minecraft:zombie', 2], ['minecraft:husk', 2], ['undeadnights:horde_zombie', 4], ['mutantszombies:split_head_zombie', 2]],
+  [['minecraft:zombie', 1], ['minecraft:husk', 1], ['undeadnights:horde_zombie', 4], ['mutantszombies:split_head_zombie', 2]],
   // **Real fix, 2026-09-04**: this wave originally previewed Mutant
   // Brute and Zombie Brute a wave early (filling Flesh Hunter II's and
   // Flesh Boomer's old TFTH slots) - real playtest feedback found this
@@ -746,11 +760,25 @@ function useWaveHorn(player) {
     return
   }
 
+  var currentTick = level.getTime()
+
+  // Real minimum floor on the PASSIVE countdown only, 2026-09-12 (direct
+  // ask: "the time between the waves should be a minimum 10 mins") - see
+  // wave_status.js's own countdownTicksForWave()/MIN_WAVE_GAP_TICKS
+  // comment. That version also gated this manual path on the same
+  // td_countdownEndTick floor, so spam-clicking the horn couldn't skip
+  // past the 10-minute minimum either. **Reverted 2026-09-15, direct ask:
+  // "the player shouldn't have to wait 10 mins between waves if they
+  // don't want to, they can call the wave early, just like with the horn
+  // item"** - the floor still governs how long the passive countdown/
+  // auto-trigger waits (wave_status.js), it just no longer blocks a
+  // manual call. Restores this function's original "manual override
+  // always works" behavior from before that floor existed.
+
   // Cooldown dedup (20 ticks / 1 second), not just same-tick — both
   // ItemEvents.rightClicked and BlockEvents.rightClicked fire for one
   // physical click, and holding right-click generates repeated events
   // across many ticks, so a same-tick-only check wasn't enough.
-  var currentTick = level.getTime()
   var lastTick = data.getInt('td_lastHornUseTick')
   if (currentTick - lastTick < 20) return
   data.putInt('td_lastHornUseTick', currentTick)
@@ -779,7 +807,9 @@ function useWaveHorn(player) {
   // the countdown... the timer is a forcing function for players who
   // don't act, not a removal of the existing manual trigger") - cancels
   // it here so the countdown tick handler below doesn't also fire
-  // useWaveHorn a second time once it independently reaches zero.
+  // useWaveHorn a second time once it independently reaches zero. Holds
+  // for the whole countdown window again as of 2026-09-15 - see the
+  // MIN_WAVE_GAP_TICKS comment above.
   data.putBoolean('td_countdownActive', false)
 
   var waveNumber = data.getInt('td_waveNumber') + 1
@@ -1307,19 +1337,50 @@ function useWaveHorn(player) {
   server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
 }
 
-// Covers right-clicking with nothing targeted (rare on Superflat, but
-// possible e.g. looking up).
-ItemEvents.rightClicked('kubejs:wave_horn', function (event) {
-  useWaveHorn(event.entity)
-})
-
-// Covers right-clicking while targeting a block — the common case on
-// Superflat. No per-item filter exists for this event (it filters by
-// block, not held item), so it's unfiltered and checks the held item
-// itself.
-BlockEvents.rightClicked(function (event) {
-  if (event.item.getId() !== 'kubejs:wave_horn') return
-  useWaveHorn(event.entity)
+// Wave Horn note block (2026-09-12, direct ask: "wave horn a note block
+// upstairs that spawns the wave") - a physical fixture in the base
+// itself. Placed once at world-build time (playtest_starter_kit.js,
+// td_waveNoteBlockX/Y/Z) in the upstairs power-rig room.
+//
+// **The kubejs:wave_horn item was removed entirely, 2026-09-13** (direct
+// ask: "now that the wave horn is a block, no need for the item") - this
+// note block is now the ONLY way to sound the horn, not a second one
+// alongside it. Its own ItemEvents.rightClicked('kubejs:wave_horn', ...)
+// and the item-filtered BlockEvents.rightClicked handler that used to sit
+// here are both gone along with startup_scripts/wave_horn.js's item
+// registration, the starter-kit give() in playtest_starter_kit.js, and
+// the quest book's own "Lost the Horn?" spare-item quest (campaign.snbt/
+// gen_quests.py) - "Sound the Horn" stays, retargeted at this block
+// instead. td_lastHornUseTick (set inside useWaveHorn() regardless of
+// caller) already drove that quest's completion check
+// (quest_milestones.js), so nothing needed to change there.
+//
+// Filtered by real block TYPE via
+// BlockEvents.rightClicked('minecraft:note_block', ...) (confirmed real
+// per-block-type filtering, same call shape amulet_pedestal.js/
+// pedestal_health.js already use for their own single fixed block), then
+// matched against the exact stored position - every OTHER note block a
+// player places anywhere else in the world stays a plain, harmless note
+// block, only this one specific one calls useWaveHorn(). Deliberately
+// does NOT event.cancel() the vanilla note-changing behavior - letting
+// the block also cycle its own pitch on each click is a harmless, on-
+// theme side effect ("sounding the alarm"), and pedestal_health.js's own
+// header already documents a real case where event.cancel() didn't
+// reliably suppress a mod's native block interaction - not worth risking
+// here for a purely cosmetic vanilla behavior.
+BlockEvents.rightClicked('minecraft:note_block', function (event) {
+  var player = event.entity
+  var level = player.getLevel()
+  var data = worldData(level)
+  if (!data || !data.contains('td_waveNoteBlockX')) return
+  // Same event.getBlock().getPos() accessor pedestal_health.js's own
+  // BlockEvents.rightClicked('supplementaries:pedestal', ...) handler
+  // uses for the identical "is this THE specific placed block" check.
+  var pos = event.getBlock().getPos()
+  if (pos.getX() !== data.getInt('td_waveNoteBlockX') ||
+    pos.getY() !== data.getInt('td_waveNoteBlockY') ||
+    pos.getZ() !== data.getInt('td_waveNoteBlockZ')) return
+  useWaveHorn(player)
 })
 
 // Processes pendingSpawns - plays a positioned sound-first cue shortly
@@ -1537,6 +1598,12 @@ PlayerEvents.tick(function (event) {
   // or a wandering structure mob at the pedestal - shows here instead of
   // the countdown for its window, rather than being overwritten by it.
   var pedestalAlert = pedestalAlertActionbarText(data, currentTick)
+  // airdropInboundActionbarText (wave_airdrop.js) - this is the real target
+  // window for that reminder: the every-5th-wave airdrop launches partway
+  // through this exact countdown gap, see that function's own header for
+  // why it shares this line the same way pedestalAlert already does rather
+  // than writing to the action bar directly from its own tick handler.
+  var airdropAlert = airdropInboundActionbarText(data, currentTick)
   var nextLabel = data.getInt('td_waveNumber') + 1 > WAVES.length ? 'horde' : 'wave'
-  player.setStatusMessage(pedestalAlert || `§b⏱ Next ${nextLabel} in: ${minutes}:${secondsDisplay}`)
+  player.setStatusMessage(pedestalAlert || airdropAlert || `§b⏱ Next ${nextLabel} in: ${minutes}:${secondsDisplay}`)
 })

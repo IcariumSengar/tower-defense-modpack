@@ -446,6 +446,12 @@ var STRAY_CHECK_INTERVAL = 100 // 5 real seconds - not time-critical to catch in
 var AGGRO_RETALIATION_TICKS = 160 // 8s of chasing whoever hit it, per hit
 var aggroRetaliation = {} // mob uuid -> level tick the current retaliation window ends
 
+// Lure Block redirect radius (2026-09-12) - see the tick handler below and
+// lure_block.js's own header for the full feature. MUST match that file's
+// own LURE_ATTRACT_RADIUS constant (redeclared per-file, see this file's
+// own header on why top-level var/const don't share across files here).
+var LURE_ATTRACT_RADIUS = 40
+
 function isInsideCompoundBounds(data, px, pz) {
   if (!data.contains('td_compoundX0')) return false
   var pad = STRAY_RETURN_PADDING
@@ -594,7 +600,19 @@ PlayerEvents.tick(function (event) {
     // here rather than a fresh isAlive() call.
     var isBlockingPath = player.getHealth() > 0 &&
       dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
-    var desiredTarget = isBlockingPath ? player : aggroTarget
+
+    // Lure Block (2026-09-12, direct ask - see lure_block.js for the full
+    // feature). nearestActiveLure is that file's own shared top-level
+    // FUNCTION; LURE_ATTRACT_RADIUS (declared near this file's other
+    // constants above) is redeclared rather than shared with lure_block.js
+    // (var/const don't cross files reliably in this codebase - see this
+    // file's own header) and MUST match that file's own constant of the
+    // same name. Checked only when the player isn't already blocking this
+    // mob's path - a lure redirects mobs that would otherwise walk past
+    // toward the pedestal, it doesn't override a mob already forced to
+    // deal with the player standing in its face.
+    var nearbyLure = isBlockingPath ? null : nearestActiveLure(level, ex, ez, LURE_ATTRACT_RADIUS)
+    var desiredTarget = isBlockingPath ? player : (nearbyLure || aggroTarget)
 
     // Retaliation actually held for a while (2026-09-10). Real playtest
     // finding behind "enemies don't climb the ladder, get stuck": the

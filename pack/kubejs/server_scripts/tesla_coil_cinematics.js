@@ -70,16 +70,78 @@
 // (distinct from `ieTeslaPrimary`, the coil's own sneak+screwdriver
 // player self-test damage - deliberately not matched here, this is a
 // combat-cinematics hook, not a player-safety one).
+// **Made "cooler", 2026-09-15 direct ask** (alongside the Sentry's own
+// feedback getting the same treatment, see sentry_combat_feedback.js).
+// Three layers instead of one: the `electric_spark` burst now spreads
+// vertically the full height of the target (reading as a bolt striking
+// down through them, not just a puff at chest height), a tighter `crit`
+// pop adds a sharper "impact" snap at the moment of the hit, and one
+// `flash` (the same bright camera-flash particle a Totem of Undying
+// pop uses - a real vanilla particle, not custom) sells a single bright
+// strike instant. Sound layered the same way: the existing rolling
+// `thunder` boom plus a new sharp `lightning_bolt.impact` crack under
+// it, the actual "CRACK" half of a real lightning strike vanilla itself
+// splits across these same two sound events. `flash` and
+// `entity.lightning_bolt.impact` are standard vanilla ids (Totem pop /
+// the LightningBolt entity's own two-part sound respectively) - not
+// re-verified via decompile this pass the way the rest of this file's
+// IE-specific claims were, but a wrong particle/sound id just silently
+// no-ops rather than erroring, so the risk is purely cosmetic.
+//
+// **Real jagged bolt shape added, 2026-09-16 direct follow-up: "the tesla
+// coil animation can be cool too. I want a cool electricity bolt."** The
+// straight vertical `electric_spark` column below reads more like a
+// standing spark burst than an actual bolt. Real constraint this has to
+// work around: `event.getSource()` for IE's `ieTesla` damage type carries
+// no reference back to the coil block/position at all (confirmed from the
+// same `ElectricDamageSource`/`TeslaCoilBlockEntity` decompile this file's
+// own header already did - it's a plain entity-only damage source, no
+// `getSourcePosition()` override), and this hook is deliberately generic
+// over EVERY Tesla Coil in the world, not just the one starter coil this
+// pack happens to track a persisted position for (tesla_coil_auto_power.js
+// only manages that one specific coil's power, for exactly this reason -
+// see its own header) - so there's no real coil-to-target line available
+// to draw here regardless. A strike falling from directly overhead
+// instead - vanilla's own lightning always comes from the sky, so this
+// reads as a real "lightning bolt" on sight without needing the coil's
+// own position at all. `drawJaggedBolt` walks from a fixed height above
+// the target down to the hit point in a handful of segments, jittering
+// each one sideways (`Math.random` - an established pattern already used
+// elsewhere in this codebase, e.g. wave_spawner.js's own breach-range
+// picker) with the jitter tapering to zero at the target, so the bolt
+// actually terminates ON the entity instead of drifting past it - a real
+// jagged fork shape, not a straight line. Kept as its own function rather
+// than inlined purely because the segment/jitter math reads clearer named
+// than crammed into the hurt handler below.
+function drawJaggedBolt(server, x, y, z) {
+  var SEGMENTS = 6
+  var BOLT_HEIGHT = 10 // blocks above the hit point the bolt "originates" from
+  var MAX_JITTER = 1.4 // widest sideways wobble, at the top of the bolt
+  for (var i = SEGMENTS; i >= 0; i--) {
+    var t = i / SEGMENTS // 1 at the top, 0 at the target
+    var jitter = MAX_JITTER * t
+    var px = x + (Math.random() - 0.5) * jitter
+    var py = y + BOLT_HEIGHT * t
+    var pz = z + (Math.random() - 0.5) * jitter
+    server.runCommandSilent(`particle minecraft:electric_spark ${px} ${py} ${pz} 0.08 0.08 0.08 0.01 6`)
+  }
+}
 EntityEvents.hurt((event) => {
   var source = event.getSource()
   if (source.getType() !== 'ieTesla') return
   var entity = event.getEntity()
   var level = entity.level
   if (level.isClientSide) return
+  var x = entity.getX()
+  var y = entity.getY() + entity.getBbHeight() / 2
+  var z = entity.getZ()
+  drawJaggedBolt(level.getServer(), x, y, z)
+  level.getServer().runCommandSilent(`particle minecraft:crit ${x} ${y} ${z} 0.25 0.25 0.25 0.1 15`)
+  level.getServer().runCommandSilent(`particle minecraft:flash ${x} ${y} ${z} 0 0 0 0 1`)
   level.getServer().runCommandSilent(
-    `particle minecraft:electric_spark ${entity.getX()} ${entity.getY() + entity.getBbHeight() / 2} ${entity.getZ()} 0.3 0.3 0.3 0.02 40`
+    `playsound minecraft:entity.lightning_bolt.thunder hostile @a ${x} ${entity.getY()} ${z} 0.5 1.4`
   )
   level.getServer().runCommandSilent(
-    `playsound minecraft:entity.lightning_bolt.thunder hostile @a ${entity.getX()} ${entity.getY()} ${entity.getZ()} 0.5 1.4`
+    `playsound minecraft:entity.lightning_bolt.impact hostile @a ${x} ${entity.getY()} ${z} 0.6 1.1`
   )
 })

@@ -25,14 +25,47 @@
 // pellet) - that was a real recurring tick cost for a purely cosmetic
 // trail the direct ask never mentioned; a Sentry's bullet is a fast, short-
 // lived vanilla arrow and reads fine without one.
+//
+// **Made "cooler", 2026-09-15 direct ask** (same pass as tesla_coil_
+// cinematics.js's own upgrade, same reasoning applies here). Muzzle
+// flash gets a real third layer on top of the existing `crit` spark: a
+// `smoke` puff for a "shot just fired" read and one `flash` (the bright
+// Totem-pop particle) for a punchy muzzle pop, instead of a lone crit
+// burst. Impact gets a bigger `crit` burst, its own `smoke` puff, and a
+// NEW sound - there wasn't one here before at all; vanilla arrows only
+// ever get a dedicated hit sound on BLOCK impact, not entity impact, so
+// a Sentry bullet connecting with something was silent beyond the
+// target's own hurt sound. `entity.player.attack.crit` (vanilla's own
+// melee-crit "ting") reused here as a generic sharp impact cue - a real,
+// extremely common vanilla sound id, not re-verified via decompile this
+// pass (unlike the mod-specific claims elsewhere in this file), but
+// non-fatal if ever wrong - `/playsound` on a bad id just silently no-ops.
+//
+// **Muzzle flash strengthened, 2026-09-16 direct follow-up: "the animation
+// on the sentry when it fires is not showing well."** The 2026-09-15 pass
+// above only widened the on-HIT effect (see that comment) - this muzzle
+// burst itself was untouched and stayed at its original, easy-to-miss
+// counts/spread (10 crit/0.15, 6 smoke/0.1, no dedicated sound at all). A
+// Sentry's bullet is a small, fast-moving vanilla arrow fired from a
+// stationary turret with no muzzle geometry of its own to draw the eye, so
+// a subtle particle blip at its spawn point is genuinely easy to lose
+// against a wave fight's own particle/mob noise. Counts/spread roughly
+// doubled, plus a real fire-and-forget cue that didn't exist before:
+// `item.crossbow.shoot` (a real vanilla mechanical "thwip" id, fitting for
+// a bolt-firing turret) at every shot - sound reliably cuts through visual
+// clutter in a way a particle alone can't.
 EntityEvents.spawned((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'securitycraft:bullet') return
   var level = event.level
   if (level.isClientSide) return
-  level.getServer().runCommandSilent(
-    `particle minecraft:crit ${entity.getX()} ${entity.getY()} ${entity.getZ()} 0.15 0.15 0.15 0.01 6`
-  )
+  var x = entity.getX()
+  var y = entity.getY()
+  var z = entity.getZ()
+  level.getServer().runCommandSilent(`particle minecraft:crit ${x} ${y} ${z} 0.25 0.25 0.25 0.05 22`)
+  level.getServer().runCommandSilent(`particle minecraft:smoke ${x} ${y} ${z} 0.2 0.2 0.2 0.03 12`)
+  level.getServer().runCommandSilent(`particle minecraft:flash ${x} ${y} ${z} 0 0 0 0 1`)
+  level.getServer().runCommandSilent(`playsound minecraft:item.crossbow.shoot neutral @a ${x} ${y} ${z} 0.5 1.6`)
 })
 
 EntityEvents.hurt((event) => {
@@ -41,7 +74,10 @@ EntityEvents.hurt((event) => {
   var entity = event.getEntity()
   var level = entity.level
   if (level.isClientSide) return
-  level.getServer().runCommandSilent(
-    `particle minecraft:crit ${entity.getX()} ${entity.getY() + entity.getBbHeight() / 2} ${entity.getZ()} 0.25 0.25 0.25 0.05 10`
-  )
+  var x = entity.getX()
+  var y = entity.getY() + entity.getBbHeight() / 2
+  var z = entity.getZ()
+  level.getServer().runCommandSilent(`particle minecraft:crit ${x} ${y} ${z} 0.3 0.3 0.3 0.08 18`)
+  level.getServer().runCommandSilent(`particle minecraft:smoke ${x} ${y} ${z} 0.2 0.2 0.2 0.03 8`)
+  level.getServer().runCommandSilent(`playsound minecraft:entity.player.attack.crit hostile @a ${x} ${y} ${z} 0.6 1.3`)
 })

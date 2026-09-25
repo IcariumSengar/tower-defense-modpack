@@ -111,24 +111,47 @@ const GEAR_REMOVAL_WAVE = 5
 // (COUNTDOWN_WAVE5_BASE_TICKS), and growth continues +300 ticks/wave from
 // there with NO ceiling - the old flat cap is gone entirely, replaced by
 // this second, uncapped ramp. `COUNTDOWN_KINK_WAVE` is kept as its own
-// constant rather than reusing `PACING_ANNOUNCE_WAVE`, same reasoning as
-// that constant's own note below - they're the same wave number by
-// design intent this time, but still two independently-named concepts.
+// constant rather than reusing `GEAR_REMOVAL_WAVE` - same wave number by
+// design intent this time, but still an independently-named concept (when
+// the countdown curve's own shape changes, not when starter gear is
+// removed).
 const COUNTDOWN_BASE_TICKS = 1800
 const COUNTDOWN_STEP_TICKS = 300
 const COUNTDOWN_WAVE5_BASE_TICKS = 4800
 const COUNTDOWN_KINK_WAVE = 5
-// `PACING_ANNOUNCE_WAVE` is deliberately its own constant, not reused from
-// GEAR_REMOVAL_WAVE, even though they're the same wave number right now -
-// these are two independent narrative beats that happen to coincide, not
-// one dependent on the other.
-const PACING_ANNOUNCE_WAVE = 5
+// Own constant, same reasoning as COUNTDOWN_KINK_WAVE just above -
+// coincides with GEAR_REMOVAL_WAVE right now but is an independent
+// narrative beat (playtest_starter_kit.js's starter trap showcase, see
+// placeStarterTraps()'s own header comment), not derived from it.
+const STARTER_TRAPS_REMOVAL_WAVE = 5
+
+// Real floor, 2026-09-12 (direct ask: "the time between the waves should
+// be a minimum 10 mins"). Before this, the escalating curve above was
+// genuinely under 10 minutes for most of the campaign - wave 1 was 90s,
+// even wave 10 only reached 5m15s (4800 + 300*5 ticks). This is a hard
+// floor on the value this function returns, so the passive countdown
+// display/auto-trigger (this file) never counts down faster than 10
+// minutes. Supersedes this file's own escalating-curve design intent for
+// every wave the curve would otherwise have put under 10 minutes (waves
+// 1-28 at the constants above) - the curve still governs anything past
+// that (wave 29+, where 4800+300*(w-5) already exceeds 12000 on its own),
+// so nothing above is deleted, just floored.
+//
+// **No longer gates the manual horn, 2026-09-15** (direct ask: "the
+// player shouldn't have to wait 10 mins between waves if they don't want
+// to, they can call the wave early, just like with the horn item").
+// Briefly (2026-09-12 through 2026-09-15) wave_spawner.js's useWaveHorn()
+// also checked td_countdownEndTick against this same floor, so a manual
+// call was blocked until 10 minutes had genuinely passed - that gate is
+// gone; see useWaveHorn()'s own comment. This constant now only paces the
+// passive countdown a player who does nothing waits out.
+const MIN_WAVE_GAP_TICKS = 12000 // 10 minutes
 
 function countdownTicksForWave(waveNumber) {
-  if (waveNumber < COUNTDOWN_KINK_WAVE) {
-    return COUNTDOWN_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - 1)
-  }
-  return COUNTDOWN_WAVE5_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - COUNTDOWN_KINK_WAVE)
+  var raw = waveNumber < COUNTDOWN_KINK_WAVE
+    ? COUNTDOWN_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - 1)
+    : COUNTDOWN_WAVE5_BASE_TICKS + COUNTDOWN_STEP_TICKS * (waveNumber - COUNTDOWN_KINK_WAVE)
+  return Math.max(MIN_WAVE_GAP_TICKS, raw)
 }
 
 const FIXED_WAVE_EVENTS = [
@@ -168,24 +191,99 @@ const FIXED_WAVE_EVENTS = [
       player.tell('§c§lIt\'s up to you now.')
     },
   },
+  // The wave-5 "THE NIGHTS GROW LONGER" / "you'll have more time to
+  // prepare from here on" beat that used to live here (fired alongside
+  // the gear-removal title above, same wave) was removed entirely
+  // 2026-09-16 - direct feedback: "the after wave 5 you have more time
+  // message is redundant as we have fixed it to 10 mins between waves."
+  // Correct catch: MIN_WAVE_GAP_TICKS (above) has floored EVERY wave's
+  // gap to the same flat 10 minutes since 2026-09-12, waves 1-4 included
+  // - countdownTicksForWave's escalating curve never actually reaches a
+  // value the floor doesn't immediately override until wave 29. So the
+  // gap was already a flat 10 minutes before wave 5 too; the message's
+  // own promise ("more time from here on") never described a real change
+  // to point at, making it actively misleading rather than just noise.
   {
-    wave: PACING_ANNOUNCE_WAVE,
-    flagKey: 'td_pacingAnnounced',
+    wave: STARTER_TRAPS_REMOVAL_WAVE,
+    flagKey: 'td_starterTrapsRemoved',
     action: (player) => {
-      // Fires alongside the gear-removal beat above at the same wave
-      // (real coincidence, not a dependency - see the COUNTDOWN_*
-      // comment above). Real bug fixed 2026-09-05 (live report: reads
-      // as one instant message, not two): both this event and
-      // GEAR_REMOVAL_WAVE's own action call `/title @a title` in the
-      // same forEach pass, same tick - vanilla's title system resets
-      // the fade-in/stay/fade-out timer on every new `/title` call, so
-      // this one's title instantly overwrote gear-removal's before it
-      // could actually be read. Queued via pendingDelayedTitles instead
-      // of firing immediately - see that array's own comment below for
-      // the delay and why.
-      // Chat line removed 2026-09-09 (real playtest ask: "less noise from
-      // the chat window") - queueDelayedTitle above already pops this up.
-      queueDelayedTitle(player, 'THE NIGHTS GROW LONGER', "You'll have more time to prepare from here on.")
+      // Removes the pre-placed Tesla Coil (+ its multiblock slave half
+      // and Flux Point), the Electrified Iron Fence gate frame, and the
+      // Sentry placeStarterTraps() (playtest_starter_kit.js) put down at
+      // world-build/retrofit time - see that function's own header
+      // comment for the full mechanism/gotcha writeup. Tesla Coil
+      // coordinates read straight off the world marker rather than
+      // recomputed, same "don't rederive what's already persisted"
+      // reasoning as every other fixed-position reader in this pack. The
+      // fence frame is the one exception - starterFencePositions()
+      // (playtest_starter_kit.js, top-level FUNCTIONS share across
+      // server_scripts files in this exact KubeJS build) derives its
+      // whole layout fresh from td_pedestalX/Y/Z instead, since it was
+      // never given its own persisted coordinates in the first place -
+      // see that function's own comment.
+      const server = player.getServer()
+      const data = worldData(player.getLevel())
+      if (data && data.contains('td_starterTeslaCoilX')) {
+        // Power block tesla_coil_auto_power.js was toggling - cleared here
+        // too so a lever doesn't linger after the coil it's attached to is
+        // gone (that script itself stops acting on td_starterTrapsRemoved
+        // being set, just below). West of the master, not above it, since
+        // the coil's own 2026-09-15 upright fix (facing=up, dummy moved
+        // above the master, toggle moved to a lever on the master's west
+        // face) - see that script's updated header comment.
+        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaCoilX') - 1} ${data.getInt('td_starterTeslaCoilY')} ${data.getInt('td_starterTeslaCoilZ')} minecraft:air`)
+        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaCoilX')} ${data.getInt('td_starterTeslaCoilY')} ${data.getInt('td_starterTeslaCoilZ')} minecraft:air`)
+        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaCoilDummyX')} ${data.getInt('td_starterTeslaCoilDummyY')} ${data.getInt('td_starterTeslaCoilDummyZ')} minecraft:air`)
+        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaFluxPointX')} ${data.getInt('td_starterTeslaFluxPointY')} ${data.getInt('td_starterTeslaFluxPointZ')} minecraft:air`)
+        // Gate wall z and the flank-hole ranges both come from
+        // playtest_starter_kit.js's helpers (top-level functions are
+        // global across server_scripts): td_compoundZ1 with the pre-fort
+        // +7 as the old-save fallback, and flank ranges only on a
+        // td_layoutVersion 2 save - on anything older those columns are
+        // solid wall and this loop would punch holes in it.
+        starterFencePositions(data.getInt('td_pedestalX'), data.getInt('td_pedestalY'), starterGateWallZ(data), starterFenceFlanksFromData(data)).forEach((pos) => {
+          server.runCommandSilent(`setblock ${pos[0]} ${pos[1]} ${pos[2]} minecraft:air`)
+        })
+      }
+      // Tag-matched, not coordinate-matched - it's a real entity, not a
+      // block (see placeStarterTraps()'s own header comment).
+      server.runCommandSilent('kill @e[type=securitycraft:sentry,tag=td_starter_trap_sentry]')
+      // Real playtest bug, 2026-09-15: "the sentry block was destroyed
+      // after wave 5 as expected but it dropped on the ground. it needs
+      // to be gone for good, just like the electric fence." Decompiled
+      // Sentry.remove(RemovalReason) directly - it unconditionally
+      // Block.popResource()s a real securitycraft:sentry item (plus its
+      // disguise/allowlist/speed modules if any are installed) on EVERY
+      // removal path, /kill included, with no check on the removal reason
+      // at all. No way to suppress that from the mod's side via commands,
+      // so the drop is cleaned up here instead, same tick: Sentry.m_6478_
+      // (its move()) is a real no-op override (decompiled - Sentries never
+      // actually walk), so it's still sitting exactly where it was
+      // summoned. That spot was never given its own persisted coordinates
+      // (same as the fence frame just above - starterFencePositions()'s
+      // own comment), so it's recomputed the same way: doorX-5/wallY0+3/z1
+      // relative to td_pedestalX/Y and the gate wall (starterGateWallZ -
+      // td_compoundZ1, or the pre-fort +7 on an old save), matching
+      // placeStarterTraps()'s own summon call exactly.
+      // `var`, NOT `const`, 2026-09-22 - real live crash found in the
+      // instance log at the wave-5 clear: "TypeError: redeclaration of var
+      // sentryX (wave_status.js#269)" thrown by Rhino's putConstImpl. In
+      // this KubeJS Rhino build a `const` declared inside a nested block
+      // (this `if`) of a function that ALSO contains a closure (the
+      // .forEach arrow above) is registered as a plain var by the parser,
+      // so the const-assignment path rejects it at runtime. The throw
+      // aborted the whole wave-clear handler mid-way: the countdown to
+      // wave 6 was never started (no timer on screen, no auto-trigger) and
+      // the Sentry's dropped item was never cleaned up. Function-top-level
+      // consts (`server`/`data` above) are unaffected - only block-scoped
+      // ones inside a closure-holding function hit this.
+      if (data && data.contains('td_pedestalX')) {
+        var sentryX = data.getInt('td_pedestalX') - 5
+        var sentryY = data.getInt('td_pedestalY') + 3
+        var sentryZ = starterGateWallZ(data)
+        server.runCommandSilent(`kill @e[type=minecraft:item,x=${sentryX},y=${sentryY},z=${sentryZ},distance=..1.5]`)
+      }
+      player.tell('§8§o[The scavenged defenses spark, seize up, and fall dark for good.]')
     },
   },
 ]
@@ -357,7 +455,13 @@ PlayerEvents.tick((event) => {
     // wipe it instantly, so while that alert's window is open it shows
     // the alert line instead of the count.
     var pedestalAlert = pedestalAlertActionbarText(data, level.getTime())
-    player.setStatusMessage(pedestalAlert || `§c⚔ ${tdWaveLabel(waveNumber)} — Hostiles remaining: ${hostileCount}`)
+    // airdropInboundActionbarText (wave_airdrop.js) - shares this action-bar
+    // line the same way pedestalAlert already does, see that function's own
+    // header. Only realistically overlaps here on a fast manual-horn call
+    // that starts the next wave while a drop from the last one is still
+    // being watched.
+    var airdropAlert = airdropInboundActionbarText(data, level.getTime())
+    player.setStatusMessage(pedestalAlert || airdropAlert || `§c⚔ ${tdWaveLabel(waveNumber)} — Hostiles remaining: ${hostileCount}`)
     if (!wasInWave) {
       data.putBoolean('td_inWave', true)
     }

@@ -1,0 +1,20 @@
+#Direct ask 2026-09-16: grenade/rocket turret explosions should never
+#break blocks or hurt the player, and this should hold for every OMT
+#Reborn turret, not just these two. Real defaults confirmed by
+#decompiling the installed omtreborn-1.1.0.jar's own OMTConfig.java
+#(ConfigTurrets) directly, not guessed - block-destroy for
+#grenades/rockets/railgun is already false out of the box, pinned here
+#explicitly anyway so a future mod update can't silently flip it back
+#(same "pin the default, don't just trust it" precedent as
+#securitycraft-server.toml's sentry_bullet_damage entry).
+[Turrets]
+    canRocketsDestroyBlocks = false
+    canGrenadesDestroyBlocks = false
+    canRailgunDestroyBlocks = false
+    #If turrets can target players
+    #Real default is true - flipped off here. OMTUtil.canDamagePlayer()
+    #(decompiled directly) short-circuits to false immediately when this
+    #is off, before any per-base "Attacks Players" toggle or owner check
+    #even runs - covers every turret type this mod has, current and
+    #future, not just Grenade/Rocket.
+    globalCanTargetPlayers = false

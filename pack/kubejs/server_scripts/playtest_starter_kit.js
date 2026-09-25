@@ -83,7 +83,10 @@ function starterGearNbt(extra) {
 // below).
 function giveStarterKit(player) {
   player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
-  player.give(Item.of('kubejs:wave_horn', 1))
+  // kubejs:wave_horn item removed entirely, 2026-09-13 (direct ask: "now
+  // that the wave horn is a block, no need for the item") - the upstairs
+  // note block (this same function's own waveNoteBlockX/Y/Z placement,
+  // further down) is now the only way to sound the horn.
   player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
   player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
@@ -537,6 +540,282 @@ function starterFillBoxChunked(run, x0, y0, z0, x1, y1, z1, block) {
   }
 }
 
+// Starter trap showcase (2026-09-12, direct ask: "pre deploy traps in
+// the base... disappear after wave 5... tesla coils and other cool
+// traps from the tiers, give the player an idea of how and what can be
+// built"). Removed again at wave_status.js's STARTER_TRAPS_REMOVAL_WAVE
+// - same beat as the starter sword/armor (GEAR_REMOVAL_WAVE there), so
+// from wave 5 on the player is defending with defenses they built, not
+// ones they inherited. Shared between the fresh-world build path
+// (buildStarterBase, below) and the existing-save retrofit in the login
+// handler - takes the compound's own wall/gate coordinates as plain
+// arguments (both callers already have them, one live, one read back
+// off the marker's own td_compoundX0/X1/Z0/Z1) rather than recomputing
+// them a second way.
+//
+// Real gotchas found by decompiling the actual installed jars first
+// (immersiveengineering-10.2.0-183, securitycraft-1.10.2.1), not
+// guessed:
+// - `immersiveengineering:tesla_coil` is a real 2-block multiblock
+//   (TeslaCoilBlockEntity implements IHasDummyBlocks). A player placing
+//   it triggers placeDummies(), which sets a second "slave" block one
+//   space in the facing direction with `multiblockslave=true` (a real
+//   registered property, confirmed in TeslaCoilBlock's own
+//   m_7926_/createBlockStateDefinition) - a bare /setblock only ever
+//   touches the one position it's given, so the slave half is set
+//   explicitly below to match what real placement does.
+// - Its tickServer() only ever runs when canRun() is true, and canRun()
+//   is gated on isRSPowered() (XORed against a redstoneControlInverted
+//   flag that starts false) - unlike every other Tier 3 machine this
+//   pack has shipped so far, real Forge Energy alone isn't enough, it
+//   also needs a live redstone signal. No block placed directly under
+//   it here anymore (2026-09-15, direct ask: "if I only want it to
+//   attack if enemies are near do I just need a lever to turn it on?")
+//   - a permanent redstone_block used to sit there, but tickServer() has
+//   zero target-selection logic of its own (see the next bullet), so a
+//   lever would only change WHO flips power on, not WHEN - it'd still
+//   zap a random living thing the instant it's on. tesla_coil_auto_power.js
+//   now owns this position instead: a throttled proximity check swaps
+//   redstone_block/air in based on real td_wave_mob presence, the same
+//   tag-gated approach every other trap/aggro system in this pack
+//   already uses.
+// - Real, more important finding: TeslaCoilBlockEntity has NO owner
+//   check anywhere in its tick method - it picks ONE RANDOM LivingEntity
+//   within a 6-block cube outright (a real `RANDOM.nextInt()` pick, not
+//   the closest one - corrected 2026-09-15, tesla_coil_cinematics.js's
+//   own header had this right from the start), and applies a lesser
+//   residual field effect to everyone else in a 9-block cube, player
+//   included, unconditionally. Originally placed at the compound's NE
+//   exterior corner (outside the BACK wall) specifically because of
+//   this, for maximum distance from the gate/defense line. **Moved to
+//   the front wall 2026-09-15 (direct ask: "can the tesla coil be setup
+//   at the front part of the perimeter wall")** - still the same 3-block
+//   outside-the-wall margin as before, just mirrored to the z1/gate side
+//   instead of z0, so it's now visible in the thick of a wave fight
+//   rather than tucked away. That margin keeps it ~11-12 blocks from
+//   both the fixed spawn point and the gate opening (outside its own
+//   9-block residual-field radius), but a player who wanders along the
+//   front wall face will come well within zap range - accepted with this
+//   ask, not missed. Worth a direct report back after the first live
+//   wave defense with it up front.
+// - **Moved again, same day: mounted ON TOP of the wall, mirroring the
+//   Sentry, instead of freestanding 3 blocks out in front of it** (direct
+//   ask: "can the tesla coil be setup on the wall like the sentry, at the
+//   front"). The wall is only 1 block thick (confirmed from the wall-
+//   build loop just above this function: a single fixed z1 with fx
+//   varying - no second thickness column), so the 2-block multiblock
+//   can't keep its old north/south orientation up there (both halves
+//   would need the SAME z1, one block apart in z, which doesn't fit a
+//   1-thick wall) - re-oriented to `facing=west` instead, so both halves
+//   sit at the same z1, offset in x, running along the wall's own length
+//   the same way the Sentry already does. Placed at doorX+5 (mirroring
+//   the Sentry's own doorX-5, on the OTHER side of the gate - keeps them
+//   visually spread out rather than stacked on the same spot) at
+//   wallY0+3, the exact height the Sentry already stands at. Explicit
+//   stone_bricks support placed under both multiblock halves AND the
+//   Flux Point, same reasoning as the Sentry's own platform fix just
+//   below - the wall-breach RNG can hollow out any column including this
+//   one, and an unsupported Tesla Coil sitting over a hole would look
+//   broken even if it doesn't technically fall (redstone-powered blocks
+//   don't check for gravity, but a floating coil over open sky reads as
+//   a bug, not a feature). Real side-effect caught before shipping:
+//   tesla_coil_auto_power.js's own redstone toggle used to swap
+//   redstone_block/air in the block directly BELOW the coil - harmless
+//   underground at the old ground-level spot, but the block below the
+//   coil is now the wall's own load-bearing top course, so toggling it
+//   to air would punch a hole in the wall every time the coil powers
+//   down. Retargeted to the block directly ABOVE the coil instead (open
+//   air either way, no structural or wall-breach interaction) - see that
+//   script's own updated comment.
+// - **Corrected same day, direct follow-up: "the tesla coil is lying on
+//   its side. it should be placed upright" + "instead of the redstone
+//   block on top of the tesla coil can you make it a lever on the
+//   side."** `facing=west` above was a real bug, not a style choice -
+//   decompiled the blockstate json directly: `teslacoil_split`'s base
+//   model is authored LYING DOWN, and only the `facing=up`/`facing=down`
+//   variants apply the x:-90/x:90 rotation that stands it up; every
+//   horizontal facing (including the `west` used here) just spins that
+//   same lying-down model around the vertical axis. Also re-decompiled
+//   `TeslaCoilBlockEntity.placeDummies()` to confirm what "upright" does
+//   to the multiblock shape before changing it: the slave half is always
+//   placed at `master.relative(getFacing())`, so `facing=up` puts the
+//   slave directly ABOVE the master (a real 2-tall vertical machine, the
+//   mod's own normal/intended orientation - `getFacingLimitation()`
+//   returns `SIDE_CLICKED`, meaning a survival player clicking the TOP of
+//   a floor block to place it gets exactly this) instead of beside it.
+//   That frees up the old dummy's spot one block west of the master,
+//   which is where the lever now goes instead - attached directly to the
+//   master's own west face. IE's `isRSPowered()` checks all 6 neighbors
+//   (see tesla_coil_auto_power.js's own header), so a lever touching the
+//   coil works exactly like the old floating redstone_block above it,
+//   just wall-mounted instead of floating and flippable instead of
+//   summoned/despawned. The lever block itself is placed once here and
+//   never removed - tesla_coil_auto_power.js only ever flips its
+//   `powered` state from here on.
+// - `securitycraft:electrified_iron_fence` shocks any Player who isn't
+//   its owner (or allowlisted) for 6 damage every 20 ticks of contact -
+//   decompiled ElectrifiedIronFenceBlock.hurtOrConvertEntity() directly.
+//   An unclaimed fence (the default for a console /setblock, same as
+//   this pack's existing reinforced-wall blocks) would shock the player
+//   too; deliberately left unowned here and claimed on the real player's
+//   first login instead (see the owner-assignment block in the login
+//   handler below) since no Player object exists yet at this
+//   world-build/retrofit point. A mob touching it is neither a Player
+//   nor an OwnableEntity, so it takes the block's other branch instead -
+//   a real lightning strike - a working "anything that isn't the owner"
+//   alarm effect.
+// - `securitycraft:sentry` is a real ENTITY (not a block) that
+//   self-destroys the instant the block under it isn't solid
+//   (Sentry.m_8119_()/tick(), decompiled) - summoned on top of the gate
+//   wall, not /setblock, and placed outside the gate's own
+//   BREACH_GATE_BUFFER so it's guaranteed solid wall underneath, not a
+//   random breach column. Its placement item hardcodes the mode to
+//   CAMOUFLAGE_HP (targets players AND mobs) and only reaches
+//   AGGRESSIVE_H (mobs-only) via a real player's UseOnContext -
+//   sentry_default_mode.js already exists for this (direct 2026-09-11
+//   ask) and fires from EntityEvents.spawned, which also covers a plain
+//   /summon, so it flips to mobs-only the same tick it's summoned, no
+//   new code needed for that part.
+// Electrified Iron Fence positions flanking the gate opening, shared
+// across placement (placeStarterTraps below), wave-5 removal
+// (wave_status.js's STARTER_TRAPS_REMOVAL_WAVE beat) and first-login
+// owner assignment (the login handler below) - one source of truth for
+// the layout instead of three copies drifting apart. Pure function of
+// doorX/wallY0/z1, all independently recoverable from the persisted
+// pedestal position (td_pedestalX/Y/Z, z1 = td_pedestalZ + 7 - see the
+// retrofit code's own comment), so nothing about the fence itself needs
+// its own persisted coordinates.
+//
+// Originally just 2 single posts at doorX-2/doorX+2 (wallY0 only) - real
+// playtest feedback 2026-09-15: "can the fence at the front span the
+// entire gap, atm there are only two fence blocks in the corners." Then
+// widened to a full gate FRAME (both posts full wall height plus a
+// header across the top of the 3-tall opening), leaving the
+// doorX-1..doorX+1 span walkable at wallY0/wallY0+1.
+//
+// **Fully sealed, same day, direct follow-up: "make the fence block the
+// front hole in the wall... dont mind if it blocks me in as its just the
+// start."** electrified_iron_fence is a plain solid block (confirmed:
+// SecurityCraft ships no gate/passable variant of it), so "block the
+// hole" now means exactly that - every column doorX-2..doorX+2 (the 2
+// original corner posts plus the previously-open doorX-1..doorX+1 gap),
+// full wall height, no walkable opening left at all. Simpler than the
+// old frame-shaped version too, not just more solid. var, not let/const
+// in a loop body - same Rhino redeclaration quirk as pickBreachRanges
+// above; fx/fy are declared once via `var fx, fy` outside the loop
+// specifically to avoid it.
+//
+// **Flank holes added 2026-09-22 (three-front fort, docs/FEATURES.md):**
+// the two fixed collapsed sections on the flank walls get the gate's
+// treatment - boarded with the electrified fence until wave 5 ("every
+// hole the previous occupant boarded comes down at wave 5"), the direct
+// pick over leaving them open from wave 1. `flanks` is {x0, x1, centerZ}
+// on a fort-layout save and null on anything older (see
+// starterFenceFlanksFromData below) - on an old save those columns are
+// solid wall, and the wave-5 removal would punch holes in it.
+function starterFencePositions(doorX, wallY0, z1, flanks) {
+  var positions = []
+  var fx, fy, fz
+  for (fx = doorX - 2; fx <= doorX + 2; fx++) {
+    for (fy = wallY0; fy <= wallY0 + 2; fy++) positions.push([fx, fy, z1])
+  }
+  if (flanks) {
+    for (fz = flanks.centerZ - 1; fz <= flanks.centerZ + 1; fz++) {
+      for (fy = wallY0; fy <= wallY0 + 2; fy++) {
+        positions.push([flanks.x0, fy, fz])
+        positions.push([flanks.x1, fy, fz])
+      }
+    }
+  }
+  return positions
+}
+
+// Gate wall z for any save. td_compoundZ1 has been persisted at build
+// since 2026-09-09; the literal +7 is the pre-fort layout's fixed
+// pedestal-to-gate gap and only applies to a save older than that key.
+// The fort moved the pedestal to 9 from the gate, so every "+7" that used
+// to be scattered across wave_status.js and the login handler reads this
+// instead (top-level functions are global across server_scripts files -
+// see mob_aggro.js's collision writeup, hence the specific name).
+function starterGateWallZ(data) {
+  return data.contains('td_compoundZ1') ? data.getInt('td_compoundZ1') : data.getInt('td_pedestalZ') + 7
+}
+
+// td_layoutVersion 2 = three-front fort, written at build. getInt on a
+// missing key is 0, so every older save falls through to null here.
+function starterFenceFlanksFromData(data) {
+  if (!data || data.getInt('td_layoutVersion') < 2) return null
+  return { x0: data.getInt('td_compoundX0'), x1: data.getInt('td_compoundX1'), centerZ: data.getInt('td_pedestalZ') }
+}
+
+function placeStarterTraps(run, x0, x1, z0, z1, doorX, wallY0, flanks) {
+  // Wall-mounted, mirroring the Sentry - see this function's header
+  // comment for the full reasoning (doorX+5 mirrors the Sentry's own
+  // doorX-5 on the other side of the gate; facing=up stands the coil
+  // upright, its own multiblock slave stacking directly above it rather
+  // than needing a second wall-length column like a horizontal facing
+  // would).
+  const teslaCoilX = doorX + 5
+  const teslaCoilY = wallY0 + 3
+  const teslaCoilZ = z1
+  const TESLA_FACING = 'up' // stands the coil upright; slave half sits directly above the master (see this function's header comment)
+  // Explicit solid support under the coil, regardless of whatever the
+  // wall-breach RNG did to this column - same reasoning as the Sentry's
+  // own stone_bricks platform below.
+  run(`setblock ${teslaCoilX} ${wallY0 + 2} ${teslaCoilZ} minecraft:stone_bricks`)
+  // Power block below deliberately NOT placed here - tesla_coil_auto_power.js
+  // manages a position dynamically (lever powered=true/false only while a
+  // real td_wave_mob is in range), see this function's own header comment.
+  run(`setblock ${teslaCoilX} ${teslaCoilY} ${teslaCoilZ} immersiveengineering:tesla_coil[facing=${TESLA_FACING}]`)
+  const teslaCoilDummyX = teslaCoilX
+  const teslaCoilDummyY = teslaCoilY + 1
+  const teslaCoilDummyZ = teslaCoilZ
+  run(`setblock ${teslaCoilDummyX} ${teslaCoilDummyY} ${teslaCoilDummyZ} immersiveengineering:tesla_coil[facing=${TESLA_FACING},multiblockslave=true]`)
+  // Lever on the master's own west face - the old dummy's spot before the
+  // coil stood upright, now free. Placed once here and never removed;
+  // tesla_coil_auto_power.js only flips its `powered` state.
+  run(`setblock ${teslaCoilX - 1} ${teslaCoilY} ${teslaCoilZ} minecraft:lever[face=wall,facing=west,powered=false]`)
+  const teslaFluxPointX = teslaCoilX + 1
+  const teslaFluxPointY = teslaCoilY
+  const teslaFluxPointZ = teslaCoilZ
+  run(`setblock ${teslaFluxPointX} ${wallY0 + 2} ${teslaFluxPointZ} minecraft:stone_bricks`)
+  run(`setblock ${teslaFluxPointX} ${teslaFluxPointY} ${teslaFluxPointZ} fluxnetworks:flux_point`)
+
+  // Real bug caught in a sandbox boot, 2026-09-12: 5 blocks clear of the
+  // gate opening is outside BREACH_GATE_BUFFER (4), which only keeps
+  // breach RANGES from starting inside the gate buffer - it does nothing
+  // to stop one from being rolled a few blocks further down the same
+  // wall and landing exactly here anyway (real, randomized, confirmed by
+  // summoning into an air-breached column on the very first sandbox
+  // boot: Sentry.m_8119_() discards itself the instant the block below
+  // isn't solid, decompiled - the entity vanished the same tick with no
+  // error logged anywhere, silent by design). Fixed by placing the
+  // Sentry's own solid platform explicitly, regardless of whatever the
+  // wall-breach RNG did to the real wall at this column - the same
+  // stone_bricks the compound's own floor already uses elsewhere.
+  run(`setblock ${doorX - 5} ${wallY0 + 2} ${z1} minecraft:stone_bricks`)
+  // Real second bug caught in the same sandbox pass, on a different
+  // fresh-world site (negative X this time): `${doorX - 5}.5` is STRING
+  // concatenation, not arithmetic - for a negative doorX-5 (e.g. -1021)
+  // it produces the literal text "-1021.5", which is 0.5 more NEGATIVE
+  // than -1021, not "-1021 + 0.5" (-1020.5) - so the entity spawned
+  // centered over the block one further west/negative than the support
+  // block just placed above, standing over nothing. Every other spawn
+  // position in this file already does real addition (`centerX + 0.5`,
+  // see the marker/fallback-summon code above) - this one now matches.
+  run(`summon securitycraft:sentry ${doorX - 5 + 0.5} ${wallY0 + 3} ${z1 + 0.5} {Tags:["td_starter_trap_sentry"]}`)
+
+  starterFencePositions(doorX, wallY0, z1, flanks).forEach(([fx, fy, fz]) => {
+    run(`setblock ${fx} ${fy} ${fz} securitycraft:electrified_iron_fence`)
+  })
+
+  return {
+    teslaCoilX: teslaCoilX, teslaCoilY: teslaCoilY, teslaCoilZ: teslaCoilZ,
+    teslaCoilDummyX: teslaCoilDummyX, teslaCoilDummyY: teslaCoilDummyY, teslaCoilDummyZ: teslaCoilDummyZ,
+    teslaFluxPointX: teslaFluxPointX, teslaFluxPointY: teslaFluxPointY, teslaFluxPointZ: teslaFluxPointZ,
+  }
+}
+
 // Builds the whole starter compound at (x, z). Runs with no player in
 // the world (ServerEvents.loaded on a fresh world, see the hooks at the
 // bottom of this file), so everything here is server/level-based - the
@@ -621,18 +900,21 @@ function buildStarterBase(server, level, x, z) {
 
   const run = (cmd) => server.runCommandSilent(cmd)
 
-  // Layout wraps around a real postapocalypse_structures building
-  // instead of the old hand-built shell - gate sits just off the fixed
-  // spawn point, courtyard runs north from there, then the building,
-  // then a back margin closing out the compound. Swapped from Red
-  // Mansion to Abandoned Brick House the same day (2026-09-01, direct
-  // feedback: "this mansion is too big"). Same mod, same aesthetic
-  // family, already installed - no new dependency. Watchtower removed
-  // entirely 2026-09-03 (direct request: "it serves no purpose now that
-  // we have a better starting structure" - its original 4-sided-lookout
-  // reasoning assumed border-relative mob spawns, stale since spawns
-  // went player-relative 2026-09-01, and it stood outside the compound's
-  // own back wall regardless, never part of the defended perimeter).
+  // Layout, rebuilt 2026-09-22 as the "three-front fort" (docs/FEATURES.md,
+  // "Three-front fort" under Base & structures - the live diagnosis, the
+  // spawn-band maths and the structure census live there, not here). Gate
+  // sits just off the fixed spawn point, 8 open rows of yard run north to
+  // the pedestal, 4 more open rows, then the command post, then a back
+  // margin closing out the compound. The pedestal is 9 from the gate and
+  // 9 from each flank wall by construction; the building is the protected
+  // rear. Replaces the Abandoned Brick House layout described below
+  // (pedestal 7 from the gate, 17 from the back wall with the whole house
+  // in between), whose geometry funnelled every wave onto the gate.
+  // Watchtower removed entirely 2026-09-03 (direct request: "it serves no
+  // purpose now that we have a better starting structure") - it was never
+  // part of the defended perimeter.
+  //
+  // History of the building this replaces, kept as-is:
   //
   // **Red House swap reverted, 2026-09-09.** Earlier the same day the
   // building was swapped to Red House on a misdiagnosis: a live report
@@ -648,27 +930,30 @@ function buildStarterBase(server, level, x, z) {
   // from commit 9de1941, the last version that shipped it. Real
   // dimensions, decompiled from the mod's own NBT: 12 wide x 13 tall x
   // 11 deep, DataVersion 3465.
-  const BUILDING_WIDTH = 12
-  const BUILDING_DEPTH = 11
-  const BUILDING_HEIGHT = 13
-  // 4 → 8 (2026-09-05, "the pedestal area is lacking any oomph... I
-  // want this to be the heart of the base, the centre point to
-  // everything"): the centered dais/step/grave-arc redesign below needs
-  // real room that the old 4-row courtyard didn't have. Every other
-  // measurement in this file (walls, gate, building) already derives
-  // from this constant, so the whole compound just grows northward with
-  // it - no other coordinate needed a manual adjustment.
-  // 8 → 11 (2026-09-04, real playtest feedback batch: "push the front
-  // wall out 3 blocks so the pedestal isn't right at the opening") -
-  // matched by the same +3 on the pedestal's own gate-offset below, so
-  // every OTHER relative gap this constant feeds (rig-to-building,
-  // pedestal-to-building) stays exactly what it was - only the
-  // gate-to-pedestal buffer actually grows. Checked, not assumed: a
-  // naive +3 on just the pedestal offset alone (without this) would have
-  // put the kinetic rig's own Z coordinate exactly on the building's
-  // front wall line - caught before shipping, not live.
-  const COURTYARD_DEPTH = 11
-  const SIDE_MARGIN = 3
+  // Command post: the_lost_city:cafe4, placed rotated clockwise_90 so its
+  // boarded east doorway faces the yard (the placement section below has
+  // the rotation mapping). NBT size 9x10x9, real footprint 8 (local x) by
+  // 9 (local z); after rotation that is 9 wide (world x) by 8 deep (world
+  // z), plus a vine column hanging on the yard face. Decompiled from the
+  // mod's own NBT (nbtlib, DataVersion 3465), not guessed.
+  const BUILDING_WIDTH = 9
+  const BUILDING_DEPTH = 8
+  const BUILDING_HEIGHT = 10
+  // Open rows between the gate wall and the pedestal (was 7 - the whole
+  // reason for the rebuild), and between the pedestal and the building's
+  // front face.
+  const PEDESTAL_GATE_GAP = 9
+  const PEDESTAL_BUILDING_GAP = 4
+  // Rows inside the gate that stay empty of free-standing scripted
+  // placements - the Sentry's and Tesla Coil's arcs land here. Direct pick
+  // ("open kill zone inside the gate"); the inner barricade and work alley
+  // offered alongside it were declined. The gate platform's wall-hugging
+  // props (further down) are the one thing in this zone. Checked once at
+  // build (the console.error below), otherwise a rule for future edits.
+  const KILL_ZONE_DEPTH = 6
+  // 3 -> 5 with the 9-wide building, so x0/x1 land at x-9/x+9 and both
+  // flanks match the gate distance exactly (they were 9 and 8 before).
+  const SIDE_MARGIN = 5
   const BACK_MARGIN = 2
   // Gate sits 2 blocks north of the player's own spawn point, not on
   // top of it - a real bug caught before ever reaching the sandbox: a
@@ -676,15 +961,26 @@ function buildStarterBase(server, level, x, z) {
   // player inside/on top of a solid door every single login.
   const GATE_OFFSET = 2
 
+  const z1 = z + GATE_OFFSET
+  // The pedestal - every other coordinate hangs off it. On the gate's own
+  // X, PEDESTAL_GATE_GAP rows in. Persisted further down as
+  // td_pedestalX/Y/Z; everything outside this function reads that.
+  const centerX = doorX
+  const centerZ = z1 - PEDESTAL_GATE_GAP
   const buildingX0 = x - Math.floor(BUILDING_WIDTH / 2)
   const buildingX1 = buildingX0 + BUILDING_WIDTH - 1
-  const z1 = z + GATE_OFFSET
-  const buildingZ1 = z1 - COURTYARD_DEPTH - 1
+  const buildingZ1 = centerZ - PEDESTAL_BUILDING_GAP - 1
   const buildingZ0 = buildingZ1 - BUILDING_DEPTH + 1
 
   const x0 = buildingX0 - SIDE_MARGIN
   const x1 = buildingX1 + SIDE_MARGIN
   const z0 = buildingZ0 - BACK_MARGIN
+  // Border fit (BORDER_START 50 = half-width 25, centred on the spawn):
+  // z0 = z-21 against the border's north edge at z-25, 4 blocks clear;
+  // x0/x1 = x-9/x+9. Recheck if BUILDING_DEPTH or either gap ever grows.
+  if (centerZ > z1 - KILL_ZONE_DEPTH - 1 || buildingZ1 + 1 > z1 - KILL_ZONE_DEPTH - 1) {
+    console.error('playtest_starter_kit.js: layout constants put the pedestal or the command post inside the gate kill zone - recheck PEDESTAL_GATE_GAP / PEDESTAL_BUILDING_GAP / KILL_ZONE_DEPTH')
+  }
 
   // Wide flat field (2026-09-09, direct playtest feedback: "I need the
   // immediate area around the base to be flat (a couple of worlds I've
@@ -955,10 +1251,29 @@ function buildStarterBase(server, level, x, z) {
     return ranges.some((r) => coord >= r[0] && coord <= r[1])
   }
 
+  // Three-front fort, 2026-09-22: one FIXED collapsed section per flank
+  // wall, 3 wide, level with the pedestal - full-height air with the same
+  // rubble roll as the random breaches ("plain like the existing
+  // breaches" was the explicit pick over any ramp/sally-port dressing).
+  // Pushed onto the flank breach lists after the random picker runs, so
+  // the wall loop, rubble scatter and stake-wall skip below all treat it
+  // as a breach with no new code path. The random picker keeps clear of
+  // the fixed hole AND the flank firing post beside it (centerZ+2..+4 plus
+  // its ladder column at +5 - see the platforms section) so the post
+  // always sits on solid wall; the front wall's exclusion widens from the
+  // old gate buffer to the whole gate platform (doorX+-7, ladders
+  // included).
+  const FLANK_BREACH_Z0 = centerZ - 1
+  const FLANK_BREACH_Z1 = centerZ + 1
+  const FLANK_RESERVED_Z0 = centerZ - 2
+  const FLANK_RESERVED_Z1 = centerZ + 5
+  const GATE_PLATFORM_REACH = 7
   const z0WallBreaches = pickBreachRanges(x0, x1, [])
-  const z1WallBreaches = pickBreachRanges(x0, x1, [[doorX - BREACH_GATE_BUFFER, doorX + BREACH_GATE_BUFFER]])
-  const x0WallBreaches = pickBreachRanges(z0, z1, [[WEAK_WALL_Z0 - 1, WEAK_WALL_Z1 + 1]])
-  const x1WallBreaches = pickBreachRanges(z0, z1, [])
+  const z1WallBreaches = pickBreachRanges(x0, x1, [[doorX - GATE_PLATFORM_REACH, doorX + GATE_PLATFORM_REACH]])
+  const x0WallBreaches = pickBreachRanges(z0, z1, [[WEAK_WALL_Z0 - 1, WEAK_WALL_Z1 + 1], [FLANK_RESERVED_Z0, FLANK_RESERVED_Z1]])
+  const x1WallBreaches = pickBreachRanges(z0, z1, [[FLANK_RESERVED_Z0, FLANK_RESERVED_Z1]])
+  x0WallBreaches.push([FLANK_BREACH_Z0, FLANK_BREACH_Z1])
+  x1WallBreaches.push([FLANK_BREACH_Z0, FLANK_BREACH_Z1])
 
   function randomBreachRubble() {
     return BREACH_RUBBLE_BLOCKS[Math.floor(Math.random() * BREACH_RUBBLE_BLOCKS.length)]
@@ -1125,23 +1440,20 @@ function buildStarterBase(server, level, x, z) {
   // the pedestal-to-building and rig-to-building gaps this whole layout
   // already depends on stay exactly what they were; only the
   // gate-to-pedestal distance actually grows (4 -> 7 blocks).
-  const centerX = doorX
-  const centerZ = z1 - 7
-
+  // centerX/centerZ come from the layout constants at the top of this
+  // function (PEDESTAL_GATE_GAP - 9 rows in from the gate as of the
+  // 2026-09-22 fort; the "z1-7" this comment block describes is history).
   run(`setblock ${centerX} ${wallY0} ${centerZ} supplementaries:pedestal`)
-  // The pre-placed Waystone used to go here too (centerX+3, out in the
-  // yard beside the pedestal) - moved to the house front 2026-09-09,
-  // see the placement right after the building's own /place template
-  // below. It has to come AFTER the template now: the structure's NBT
-  // stores explicit air for every one of its 1716 cells (checked, not
-  // assumed), so anything placed inside its bounding box before
-  // /place template runs gets silently wiped by it.
+  // The Waystone sits beside the command post's door - placed right after
+  // the template below. It has to come AFTER the template: a structure's
+  // NBT stores explicit air for every cell it covers, so anything placed
+  // inside its box first gets silently wiped by /place template.
 
   // No campfires or fire props anywhere in this build - direct request,
   // dropped entirely rather than reduced. The old braziers were called
   // out by name as part of what read badly ("hot garbage... campfires
-  // specifically") - this isn't an oversight, it's the ask, unchanged
-  // from the circular-altar rebuild this replaces.
+  // specifically") - this isn't an oversight, it's the ask. cafe4's own
+  // baked campfire is stripped below for the same reason.
 
   // Grave markers removed entirely 2026-09-04 (direct ask, real
   // playtest feedback batch) - a knowing call, not a missed-context
@@ -1150,221 +1462,346 @@ function buildStarterBase(server, level, x, z) {
   // wave_status.js) and that tie-in is being dropped on purpose, per
   // explicit confirmation, not because it went unrecognized.
 
-  // Abandoned Brick House (2026-09-01, docs/FEATURES.md's "Redesign
-  // direction" - replaces the old hand-built single-room shack with a
-  // real professionally-modeled structure, since no amount of /fill
-  // detail fixed the "terrible" verdict on the old hand-typed shell).
-  // Swapped in from Red Mansion the same day (direct feedback: "this
-  // mansion is too big") - same mod, same postapocalypse aesthetic,
-  // 12x13x11 (barely bigger than the original hand-built 11x11
-  // footprint), real dimensions confirmed by decompiling the mod's own
-  // NBT directly (DataVersion 3465 matches this pack's install exactly)
-  // - not guessed. /place template loads a mod-registered structure the
-  // same clean way as a vanilla one, already confirmed in a live sandbox
-  // test for this same mod's Red Mansion. Its 8 chests/barrels already
-  // carry LootTable refs pointing at
-  // postapocalypse_structures:chests/{trash,cobwebs,food} - the exact
-  // tables this pack already buffed with real treasure earlier this
-  // session (see docs/QUEUE.md's Phase 3 entry) - so this is free
-  // upgraded starting loot, not something that needed clearing/replacing.
-  // Placed at floorY, not wallY0 - the building's own local y=0 layer is
-  // its floor/foundation material (matching the courtyard's floorY
-  // block below the walkable surface), so its local y=1 walkable ground
-  // floor lines up exactly with the courtyard's own walkable surface at
-  // wallY0 - placing at wallY0 instead would leave the building's floor
-  // sitting 2 blocks above the courtyard, an awkward step up right at
-  // its own front rather than a level walk-in (the exact bug caught and
-  // fixed for the Red Mansion placement this same day).
-  run(`place template postapocalypse_structures:abandoned_brick_house ${buildingX0} ${floorY} ${buildingZ0}`)
-
-  // Same real bug class caught for the Red Mansion, confirmed present
-  // here too by parsing this building's own NBT directly before
-  // shipping: /place template bypasses the mod's own worldgen
-  // block_ignore processor (which strips these during natural jigsaw
-  // generation), and the raw NBT has a 78-block wet_sponge layer at its
-  // own local y=0 (a "leave the terrain alone here" foundation marker)
-  // that would otherwise show up as visible sponge across the ground
-  // floor footprint. Replace-mode fill over just that one Y layer swaps
-  // it for the same stone_bricks the rest of the compound floor uses.
-  run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY} ${buildingZ1} minecraft:stone_bricks replace minecraft:wet_sponge`)
-
-  // Real live bug, 2026-09-10: this same template is also one of the six
-  // structures that carry a real mob spawner for the structure-danger
-  // feature (docs/FEATURES.md, "Structure spawners for real danger"), and
-  // /place template copies it in verbatim - the player spawns inside its
-  // 14-block trigger range and it fed husks straight into the base
-  // ("slain by Husk" 29s after joining, confirmed in the live log and
-  // the save's own block entities). The base is meant to be the one safe
-  // place; strip any spawner from the whole building footprint right
-  // after placement, so this holds for any future template swap too.
-  run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY + 13} ${buildingZ1} minecraft:air replace minecraft:spawner`)
-
-  // Pre-placed Waystone (real live ask, 2026-09-05: one real, findable
-  // Waystone from the start, same pre-placement convention as the
-  // pedestal/kinetic rig). **Moved 2026-09-09** (direct ask: "put the
-  // waystone just next to the house rather than in the yard") - was
-  // out in the open courtyard at centerX+3/centerZ, 3 blocks east of
-  // the pedestal. Now sits in the building's own local frame like the
-  // fixups below: local (7, 1-2, 9), the open strip directly in front
-  // of the house's real south wall (local z=8 - the bounding-box edge
-  // at z=10 is overhang, not wall), one block east of the door alcove
-  // (x=4-5) and just clear of the porch awning (brick_slab at local
-  // y=4 over x=3-6; x=7 is open from the ground up to the eave).
-  // Checked against the structure's real NBT, not assumed: the column
-  // is air at local y=1..3, the wall behind it at (7,1,8) is solid
-  // packed_mud, and nothing else in this file writes to that row (the
-  // HOUSE_REINFORCE_BLOCKS z=9 entries are all y>=4 awning/railing
-  // blocks). Faces south so its front looks out over the yard.
+  // Command post: the_lost_city:cafe4 (2026-09-22, docs/FEATURES.md's
+  // "Three-front fort" - replaces the Abandoned Brick House; every
+  // Brick-House-specific fixup that used to live here (sponge layer, sink
+  // water, bookcase/terracotta/trapdoor-bed clearing, green roof patch,
+  // counter logs, HOUSE_REINFORCE_BLOCKS) went with it - each one was a
+  // coordinate inside that one NBT, nothing else read them). Picked from
+  // a census of all 658 structure NBTs in the installed jars (247 with a
+  // footprint <= 12; the other finalists were house_with_car and the
+  // clean cafe0): 9x10x9 NBT, real footprint 8x9, cyan terracotta over
+  // stone brick, 45 vines, boarded windows, and the last occupant's
+  // smithing table / cartography table / stonecutter / crafting table
+  // still inside - the "someone held out here" read the brief asked for.
+  // Every coordinate below was read from the NBT layer by layer
+  // (nbtlib), same discipline as the Brick House before it.
   //
-  // Real bug fixed 2026-09-05 (live report: "only the bottom block is
-  // visible, top lights up ghost-block style with no texture"). Root
-  // cause, confirmed by decompiling WaystoneBlock/WaystoneBlockBase
-  // directly: waystones:waystone is a real two-block structure, same
-  // door/bed-style half=lower/half=upper blockstate pair, confirmed
-  // from the mod's own blockstates/waystone.json (separate
-  // waystone_bottom/waystone_top models per half). A real player
-  // placing one triggers the mod's own placement code, which explicitly
-  // sets the block ABOVE to half=upper - a bare /setblock only ever
-  // creates the block's registered default state (facing=north,
-  // half=lower), and never touches the space above at all, so nothing
-  // was ever placed there. Fixed by setting both halves explicitly,
-  // matching what real placement does.
-  run(`setblock ${buildingX0 + 7} ${floorY + 1} ${buildingZ0 + 9} waystones:waystone[facing=south,half=lower]`)
-  run(`setblock ${buildingX0 + 7} ${floorY + 2} ${buildingZ0 + 9} waystones:waystone[facing=south,half=upper]`)
+  // Rotation: the NBT's one doorway is on its local EAST wall (x=7); the
+  // yard is SOUTH of the building, so it's placed `clockwise_90` (east ->
+  // south). Vanilla rotates about the placement pos with a zero pivot,
+  // so local (lx, ly, lz) -> world (pos.x - lz, pos.y + ly, pos.z + lx) -
+  // the footprint extends to NEGATIVE x from the placement pos. Placing
+  // at (buildingX1, floorY, buildingZ0) therefore lands it exactly on
+  // buildingX0..buildingX1 / buildingZ0..buildingZ1, with the local-x=8
+  // vine column hanging one row further south on the yard face.
+  // cafeLocal() is the one place that mapping lives; every post-
+  // placement coordinate in this section is written in the NBT's own
+  // local space so it can be checked against the decompile directly.
+  //
+  // Placed at floorY, not wallY0: local y=0 is a full 9x9 stone-brick
+  // foundation pad (flush with the levelled ground), so the walkable
+  // ground floor (local y=1) lines up with the yard at wallY0 - the same
+  // convention, and the same off-by-one bug class, as the Brick House.
+  function cafeLocal(lx, ly, lz) {
+    return { x: buildingX1 - lz, y: floorY + ly, z: buildingZ0 + lx }
+  }
+  run(`place template the_lost_city:cafe4 ${buildingX1} ${floorY} ${buildingZ0} clockwise_90`)
 
-  // Real playtest feedback batch, 2026-09-04 - furniture baked into this
-  // structure's own NBT, not scripted (same class of fix as the
-  // wet_sponge layer above). Decompiled the real NBT directly to find
-  // local coordinates rather than guessing - **real correction to the
-  // original spec while doing so**: the doc's own count of "8 chests/
-  // barrels" is wrong against the actual file. There are no chests at
-  // all, and only 5 barrels total (2x `chests/food` at [8,3,6]/[8,3,7],
-  // 1x `chests/trash` at [3,5,5], 2x `chests/cobwebs` at [3,6,5]/
-  // [3,7,5]) - removing all 5 real ones, not a guessed 8.
+  // The mod's file bakes 4 villagers (cartographer/toolsmith/mason/none,
+  // spawn-egg captures from the author's own world) and /place template
+  // places entities. no_passive_mobs.js deliberately spares villagers
+  // (TFTH's Flesh Villager needs real ones) and zombies target villagers
+  // (the village-spacing finding), so they're stripped at the source:
+  // data/the_lost_city/structures/cafe4.nbt in this pack is the mod's own
+  // file with `entities` emptied, the same technique as the 2026-09-04
+  // pack-wide pass (which never covered this file). Natural Lost City
+  // cafes lose those 4 traders too - accepted.
   //
-  // Crafting table -> Crafting Station Improved's real block
-  // (`craftingstation:crafting_station`, confirmed from the mod's own
-  // blockstate JSON - single-variant, no facing property needed).
-  //
-  // Real bug found + fixed 2026-09-08 (live report: "still spawning with
-  // a water block in it"). Decompiled CraftingStationBlock.class directly:
-  // it implements SimpleWaterloggedBlock with a real WATERLOGGED property
-  // whose getFluidState() returns water when true. This exact coordinate
-  // sits where the original structure's own NBT has a water source (a
-  // kitchen sink feature) - /setblock replacing a water source with a
-  // waterloggable block auto-inherits waterlogged=true, same as
-  // hand-placing into water would, which is what was rendering as "water
-  // inside the crafting table." Forcing it off explicitly.
-  //
-  // Moved one block right (x+5 -> x+6), direct ask 2026-09-11: "can you
-  // move the starting crafting table one block to the right." The vacated
-  // x+5 cell gets cleared to air below - nothing else in this file reads
-  // it, and leaving it alone would keep whatever the raw structure NBT had
-  // there (the water-source "kitchen sink" noted above), re-exposing the
-  // exact bug this section already fixed once. The new x+6 cell is one of
-  // the 4 stripped_spruce_log counter props the double-chest section below
-  // clears to air - that section's own air-clear for this exact cell is
-  // removed to match, so this placement is the one that sticks.
-  run(`setblock ${buildingX0 + 5} ${floorY + 1} ${buildingZ0 + 4} minecraft:air`)
-  run(`setblock ${buildingX0 + 6} ${floorY + 1} ${buildingZ0 + 4} craftingstation:crafting_station[waterlogged=false]`)
-  // Cauldron + tripwire hook - direct removal request.
-  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 5} minecraft:air`)
-  run(`setblock ${buildingX0 + 8} ${floorY + 2} ${buildingZ0 + 5} minecraft:air`)
-  // Starter loot chests/barrels - direct ask, remove all of them
-  // entirely, not just nerf their tables ("loot lives outside the
-  // border, not at home").
-  ;[[8, 3, 6], [8, 3, 7], [3, 5, 5], [3, 6, 5], [3, 7, 5]].forEach(([lx, ly, lz]) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
+  // Same spawner sweep as before (a structure-danger spawner must never
+  // end up inside the base) - cafe4 has none; kept for any future swap.
+  run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY + BUILDING_HEIGHT} ${buildingZ1 + 1} minecraft:air replace minecraft:spawner`)
+
+  // Post-placement fixups, generated from the NBT with the rotation
+  // applied: world offsets from (buildingX0, floorY, buildingZ0), block
+  // properties rotated with the structure (a fence that ran north-south
+  // in the file runs east-west in the world).
+  // - jigsaw (local 0,0,8) and the sunk pre-filled chest (1,0,6) in the
+  //   foundation -> reinforced stone bricks; the upstairs chest (6,5,7)
+  //   carried berezka_api:chests/berezkahousesmall_0 -> air ("loot lives
+  //   outside the border, not at home", 2026-09-04); campfire (3,5,5) ->
+  //   air; the 3 lime wall banners on the yard face -> air.
+  // - doorway: the two boarding fences at (7,1..2,4) -> a real dark oak
+  //   door (cafe0's own door block), dead centre of the yard face on the
+  //   pedestal's X - the inner chokepoint. Ground-floor boards elsewhere
+  //   stay: solid to mobs, no second entrance.
+  // - upstairs windows, direct pick "glass on the yard face only": the 14
+  //   boards on the yard face -> glass; the 26 intact panes on the back
+  //   and west-flank walls -> boards. Three boarded sides, one glass side
+  //   looking down the yard to the gate.
+  // - every board and pane -> its SecurityCraft reinforced twin, exact
+  //   connection state preserved (a blanket /fill would flatten them).
+  // The full-block shell (cyan terracotta, stone bricks, mossy stone
+  // bricks, moss, andesite roof slabs) is reinforced by the replace-fills
+  // right after - rotation-invariant blocks, no per-cell list needed.
+  // Checked against the SecurityCraft jar's 632 blockstates: 21 of the 24
+  // block types in this NBT have a real reinforced id; the 95
+  // smooth_stone_slab floor/roof cells don't and stay vanilla (a digger
+  // never reaches them). A more complete shell than the Brick House's 75%.
+  const CAFE4_FIXUPS = [
+    [0, 0, 0, 'securitycraft:reinforced_stone_bricks'],  // jigsaw
+    [2, 0, 1, 'securitycraft:reinforced_stone_bricks'],  // sunk pre-filled chest
+    [1, 5, 6, 'minecraft:air'],  // upstairs berezka loot chest
+    [3, 5, 3, 'minecraft:air'],  // campfire
+    [5, 4, 8, 'minecraft:air'],  // lime wall banner
+    [4, 4, 8, 'minecraft:air'],  // lime wall banner
+    [3, 4, 8, 'minecraft:air'],  // lime wall banner
+    [4, 1, 7, 'minecraft:dark_oak_door[facing=south,half=lower,hinge=left]'],  // doorway
+    [4, 2, 7, 'minecraft:dark_oak_door[facing=south,half=upper,hinge=left]'],  // doorway
+    [7, 2, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [6, 2, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [2, 2, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [1, 2, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [7, 3, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [6, 3, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [2, 3, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [1, 3, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [7, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [6, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [5, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [4, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [3, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [2, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [1, 6, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [7, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [6, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [5, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [4, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [3, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [2, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [1, 7, 0, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],  // back window boarded (was glass)
+    [8, 2, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 3, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 6, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 6, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 7, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 7, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 2, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [5, 2, 2, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=false,west=false]'],
+    [2, 2, 2, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=false,west=false]'],
+    [8, 3, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [6, 5, 2, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=true,west=false]'],
+    [8, 6, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 6, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 7, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 7, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [6, 5, 3, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 6, 3, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 6, 3, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 7, 3, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 7, 3, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [6, 5, 4, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 6, 4, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 6, 4, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 7, 4, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 7, 4, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 2, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 3, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [6, 5, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 6, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 6, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 7, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 7, 5, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [1, 1, 6, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=true,west=true]'],
+    [8, 2, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 3, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [6, 5, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [8, 6, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 6, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [8, 7, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
+    [0, 7, 6, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
+    [7, 2, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [6, 2, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [2, 2, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [1, 2, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [7, 3, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [6, 3, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [2, 3, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [1, 3, 7, 'securitycraft:reinforced_birch_fence[east=true,north=false,south=false,west=true]'],
+    [7, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [6, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [5, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [4, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [3, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [2, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [1, 6, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [7, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [6, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [5, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [4, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [3, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [2, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+    [1, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
+  ]
+  CAFE4_FIXUPS.forEach(([dx, dy, dz, block]) => {
+    run(`setblock ${buildingX0 + dx} ${floorY + dy} ${buildingZ0 + dz} ${block}`)
+  })
+  ;[
+    ['minecraft:cyan_terracotta', 'securitycraft:reinforced_cyan_terracotta'],
+    ['minecraft:stone_bricks', 'securitycraft:reinforced_stone_bricks'],
+    ['minecraft:mossy_stone_bricks', 'securitycraft:reinforced_mossy_stone_bricks'],
+    ['minecraft:moss_block', 'securitycraft:reinforced_moss_block'],
+    ['minecraft:andesite_slab[type=bottom]', 'securitycraft:reinforced_andesite_slab[type=bottom]'],
+    ['minecraft:andesite_slab[type=double]', 'securitycraft:reinforced_andesite_slab[type=double]'],
+  ].forEach(([from, to]) => {
+    run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY + BUILDING_HEIGHT - 1} ${buildingZ1} ${to} replace ${from}`)
   })
 
-  // Double chest, direct ask 2026-09-09: "can the house have a double chest
-  // already spawned instead of the log blocks that are there." Real
-  // structure NBT decompiled directly (this mod's own
-  // abandoned_brick_house.nbt) to find them rather than guessed - 4
-  // stripped_spruce_log props form an L-shaped counter beside the crafting
-  // table and furnace: (6,1,4)/(7,1,4)/(8,1,4) running along the counter,
-  // (8,1,6) at its far end near the furnace. All 4 cleared; two of the
-  // counter's own positions become a real double chest instead - the
-  // obvious spot for storage right next to where the player already
-  // crafts, backed against the solid brick wall at local z=3 behind it.
-  // Facing/type aren't guessed: ChestBlock's own real placement rule is
-  // `facing.getClockWise() == connectingDirection ? LEFT : RIGHT` (the
-  // direction from a given half toward its pair) - south's clockwise is
-  // west, so the lower-x (west) half is RIGHT and the higher-x (east)
-  // half is LEFT. Waterlogged forced off same as the crafting station
-  // fix just above - no known fluid source under these exact cells, but
-  // cheap insurance against the same "inherited from replaced water"
-  // class of bug.
-  //
-  // x+6's own air-clear removed 2026-09-11 - the moved crafting station
-  // above now occupies this cell instead (see that section's comment).
-  run(`setblock ${buildingX0 + 7} ${floorY + 1} ${buildingZ0 + 4} minecraft:chest[facing=south,type=right,waterlogged=false]`)
-  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 4} minecraft:chest[facing=south,type=left,waterlogged=false]`)
-  run(`setblock ${buildingX0 + 8} ${floorY + 1} ${buildingZ0 + 6} minecraft:air`)
-
-  // Green terracotta + snow patch - direct removal request 2026-09-05.
-  // Real structure NBT check first, not guessed: the building's roof
-  // uses plain minecraft:terracotta as a weathered-roofing motif at many
-  // points, but one 3x2 section at local y=5 ([6-8],5,[6-7]) is
-  // minecraft:green_terracotta instead, with 2 real snow layers stacked
-  // directly on top of it at local (8,6,6)/(8,6,7) - a "mossy patch with
-  // snow" roof accent. Removing the snow layers alone would leave green
-  // terracotta exposed underneath (still wrong per the ask); removing
-  // the green terracotta alone would leave the snow floating with
-  // nothing solid under it. Fixed both together: green_terracotta
-  // becomes plain terracotta (matching the roof's own established
-  // weathered color everywhere else in this same structure, not a new
-  // material), snow becomes air.
-  ;[[6, 5, 6], [6, 5, 7], [7, 5, 6], [7, 5, 7], [8, 5, 6], [8, 5, 7]].forEach(([lx, ly, lz]) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:terracotta`)
-  })
-  ;[[8, 6, 6], [8, 6, 7]].forEach(([lx, ly, lz]) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} minecraft:air`)
-  })
-
-  // "Bed-like blocks upstairs" - real, non-obvious finding while
-  // investigating, not a mod-furniture block as guessed: plain vanilla
-  // `minecraft:spruce_trapdoor` x4 in a row at local [3,5,4]-[6,5,4] (a
-  // classic trapdoor-bed decoration trick), one real floor up from the
-  // ground-floor crafting table/cauldron. Identified first, flagged for
-  // a real decision rather than guessed at - user's call 2026-09-04:
-  // clear it, not reskin.
-  ;[3, 4, 5, 6].forEach((lx) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + 5} ${buildingZ0 + 4} minecraft:air`)
-  })
-
-  // Starter power rig - direct ask 2026-09-11: the house comes with a
-  // working Culinary Generator + Flux Plug + Basic Flux Storage already
-  // placed, in the same upstairs room the trapdoor-bed clearing above
-  // opened up (real free floor space, not a new cutout). Bio generator +
-  // Flux Plug directly stacked (Plug reads the generator's Forge Energy
-  // capability off the shared face, no cabling - the whole "no cables
-  // needed" point of Flux Networks); Basic Flux Storage two tiles over,
-  // acting as an early-game buffer so short bursts (a Tesla Coil zap, a
-  // turret volley) don't have to draw the generator's raw 4096 Flux/t
-  // directly. Real Flux Networks numbers, decompiled from
-  // FluxConfig$Server (not guessed): Basic Flux Storage is 2,000,000 Flux
-  // capacity / 20,000 Flux/t transfer, crafted from 6 Flux Blocks + 2
-  // glass panes - the right early tier, nowhere near Herculean/
-  // Gargantuan's footprint. The 3 blocks aren't wired into a live network
-  // yet at this point (no player exists during world-build) - that
-  // happens in starter_flux_network.js's login handler, which needs
-  // these exact coordinates, hence persisting them below.
-  const bioGeneratorX = buildingX0 + 3
-  const bioGeneratorY = floorY + 5
-  const bioGeneratorZ = buildingZ0 + 4
-  const fluxPlugX = bioGeneratorX
-  const fluxPlugY = bioGeneratorY + 1
-  const fluxPlugZ = bioGeneratorZ
-  const fluxBatteryX = buildingX0 + 5
-  const fluxBatteryY = floorY + 5
-  const fluxBatteryZ = buildingZ0 + 4
+  // Interior, in NBT-local coordinates through cafeLocal():
+  // - crafting table (3,1,4) -> Crafting Station Improved's real block,
+  //   same swap as before (single-variant; waterlogged forced off - the
+  //   inherited-water bug class from the Brick House's sink).
+  // - power rig behind the bar counter, against the back wall: culinary
+  //   generator (1,1,4) with the flux plug stacked on it (1,2,4) and the
+  //   basic flux storage one tile over (1,1,5) - the same relative shape
+  //   starter_flux_network.js links (the Plug reads the generator's Forge
+  //   Energy capability off the shared face, no cabling), on the ground
+  //   floor now ("power gear inside, not bolted to the exterior"). Both
+  //   cells are open floor behind the counter in the decompile.
+  // - storage flanking the inside of the doorway: an empty double chest
+  //   at (6,1,2)+(6,1,3) and 4 empty barrels at (6,1..2,5..6). All eight
+  //   cells are air with air above in the NBT (a chest under a solid
+  //   block won't open). Chest halves face north (into the room; local
+  //   west). ChestBlock's own rule: `facing.getClockWise() ==
+  //   connectingDirection ? LEFT : RIGHT` - north's clockwise is east, so
+  //   the west half (pair to its east) is LEFT and the east half RIGHT;
+  //   local z=3 lands west of local z=2 after the rotation.
+  // - the smithing table, cartography table and stonecutter stay where
+  //   the occupant left them.
+  const craftingStationPos = cafeLocal(3, 1, 4)
+  run(`setblock ${craftingStationPos.x} ${craftingStationPos.y} ${craftingStationPos.z} craftingstation:crafting_station[waterlogged=false]`)
+  const bioGeneratorPos = cafeLocal(1, 1, 4)
+  const fluxPlugPos = cafeLocal(1, 2, 4)
+  const fluxBatteryPos = cafeLocal(1, 1, 5)
+  const bioGeneratorX = bioGeneratorPos.x
+  const bioGeneratorY = bioGeneratorPos.y
+  const bioGeneratorZ = bioGeneratorPos.z
+  const fluxPlugX = fluxPlugPos.x
+  const fluxPlugY = fluxPlugPos.y
+  const fluxPlugZ = fluxPlugPos.z
+  const fluxBatteryX = fluxBatteryPos.x
+  const fluxBatteryY = fluxBatteryPos.y
+  const fluxBatteryZ = fluxBatteryPos.z
   run(`setblock ${bioGeneratorX} ${bioGeneratorY} ${bioGeneratorZ} generatorgalore:culinary_generator`)
   run(`setblock ${fluxPlugX} ${fluxPlugY} ${fluxPlugZ} fluxnetworks:flux_plug`)
   run(`setblock ${fluxBatteryX} ${fluxBatteryY} ${fluxBatteryZ} fluxnetworks:basic_flux_storage`)
-  // Persisted to worldD once it's declared below (markerEntity's
-  // persistentData isn't available yet at this point in the function) -
-  // see the td_pedestalX/Y/Z block further down, same pattern.
+  const chestEastPos = cafeLocal(6, 1, 2)
+  const chestWestPos = cafeLocal(6, 1, 3)
+  run(`setblock ${chestWestPos.x} ${chestWestPos.y} ${chestWestPos.z} minecraft:chest[facing=north,type=left,waterlogged=false]`)
+  run(`setblock ${chestEastPos.x} ${chestEastPos.y} ${chestEastPos.z} minecraft:chest[facing=north,type=right,waterlogged=false]`)
+  ;[[6, 1, 5], [6, 1, 6], [6, 2, 5], [6, 2, 6]].forEach(([lx, ly, lz]) => {
+    var barrelPos = cafeLocal(lx, ly, lz)
+    run(`setblock ${barrelPos.x} ${barrelPos.y} ${barrelPos.z} minecraft:barrel[facing=north,open=false]`)
+  })
+
+  // Pre-placed Waystone (2026-09-05 ask: one real, findable Waystone from
+  // the start) - outside, beside the door on the yard face, replacing one
+  // of the hanging vines (local (8,1,2)/(8,2,2): the vine column is the
+  // only thing in that row). Two-block structure, both halves set
+  // explicitly (real bug fixed 2026-09-05: a bare /setblock only creates
+  // the default half=lower state and never touches the block above).
+  // Faces south so its front looks out over the yard. Two blocks east of
+  // the door - the quest book's "Waystone in the courtyard" still reads
+  // true.
+  const waystoneLowerPos = cafeLocal(8, 1, 2)
+  const waystoneUpperPos = cafeLocal(8, 2, 2)
+  run(`setblock ${waystoneLowerPos.x} ${waystoneLowerPos.y} ${waystoneLowerPos.z} waystones:waystone[facing=south,half=lower]`)
+  run(`setblock ${waystoneUpperPos.x} ${waystoneUpperPos.y} ${waystoneUpperPos.z} waystones:waystone[facing=south,half=upper]`)
+
+  // Wave Horn note block - a physical fixture in the base itself;
+  // wave_spawner.js's BlockEvents.rightClicked matches on this exact
+  // position (td_waveNoteBlockX/Y/Z, persisted below), same "specific
+  // placed block, not every block of this type" pattern the pedestal
+  // uses. Upstairs at the yard-face window, on the pedestal's X (local
+  // (6,5,4): open floor beside the glass), looking straight down the
+  // yard to the gate - the "horn with a view of the yard" line of the
+  // command-post brief. The kubejs:wave_horn item was removed 2026-09-13
+  // ("now that the wave horn is a block, no need for the item"), so this
+  // block is the only way to sound the horn.
+  const hornPos = cafeLocal(6, 5, 4)
+  const waveNoteBlockX = hornPos.x
+  const waveNoteBlockY = hornPos.y
+  const waveNoteBlockZ = hornPos.z
+  run(`setblock ${waveNoteBlockX} ${waveNoteBlockY} ${waveNoteBlockZ} minecraft:note_block`)
+
+  // Starter trap showcase - see placeStarterTraps()'s own header comment
+  // above for the full mechanism/gotcha writeup. The flank holes get the
+  // gate's wave-5 fence too (fort layout - td_layoutVersion 2 below).
+  const starterTraps = placeStarterTraps(run, x0, x1, z0, z1, doorX, wallY0, { x0: x0, x1: x1, centerZ: centerZ })
+
+  // Wall-top firing platforms (2026-09-22, docs/FEATURES.md's "Three-front
+  // fort") - the answer to "do I need stairs going to the walls with
+  // ramparts and platforms": three small platforms, not a rampart. The
+  // wall stays 1 thick and 3 tall everywhere. Each platform is the wall's
+  // own top course plus one row of planks bracketed onto the INSIDE face
+  // at the same height (standing surface wallY0+3, level with where the
+  // Sentry and Tesla Coil already stand), a knee-high slab lip on the
+  // wall top for cover (rubble, not a parapet), scaffolding props under
+  // some of the plank cells, and a real minecraft:ladder on the inside
+  // face. The real ladder block on purpose, not stairs or scaffolding:
+  // ladder_climb_assist.js only steers wave mobs up `minecraft:ladder`,
+  // which keeps a platform contestable instead of a permanent safe zone.
+  // Inside face only - an outside ladder hands every mob a route up.
+  //
+  // Gate platform: two halves flanking the 3-wide opening (doorX-6..-2
+  // and doorX+2..+6), deliberately NOT bridged over it - a bridge at
+  // wall-top height caps the opening at 2 tall, which the wide mutants
+  // can't fit through (every one of them would take the flank holes
+  // instead). Cover slabs skip the wall-top cells already taken: the
+  // Sentry (doorX-5), the coil's lever (doorX+4), the coil (doorX+5) and
+  // its flux point (doorX+6), and the starter-fence columns (doorX+-2)
+  // that turn to air at wave 5. Ladders at doorX-7 / doorX+7.
+  // Flank posts: the 3 columns just gate-ward of each fixed collapsed
+  // section (centerZ+2..+4), overlooking the hole and the gate approach,
+  // ladder at centerZ+5. The random breach picker keeps every column a
+  // platform or ladder needs solid (FLANK_RESERVED_*, GATE_PLATFORM_REACH
+  // above). The plank row sits one row inside the wall - inside
+  // KILL_ZONE_DEPTH for the gate platform, but hugging the wall face, not
+  // in the field of fire; its props are the one scripted thing in that
+  // zone.
+  const PLATFORM_FLOOR_BLOCKS = ['minecraft:spruce_planks', 'minecraft:spruce_planks', 'minecraft:oak_planks', 'minecraft:stripped_spruce_log[axis=y]']
+  const PLATFORM_COVER_BLOCKS = ['minecraft:cobblestone_slab[type=bottom]', 'minecraft:mossy_cobblestone_slab[type=bottom]', 'minecraft:stone_brick_slab[type=bottom]']
+  const PLATFORM_SUPPORT_CHANCE = 0.4
+  function platformPick(list) {
+    return list[Math.floor(Math.random() * list.length)]
+  }
+  // cells: [wallX, wallZ, plankX, plankZ, coverAllowed]; the ladder column
+  // at (ladderX, ladderZ) hangs on the wall's inside face, facing away
+  // from it. var throughout - this runs 4x per build (see the Rhino
+  // let/const-in-loop crash note on pickBreachRanges).
+  function placePlatform(cells, ladderX, ladderZ, ladderFacing) {
+    var i, ly, cell
+    for (i = 0; i < cells.length; i++) {
+      cell = cells[i]
+      run(`setblock ${cell[2]} ${wallY0 + 2} ${cell[3]} ${platformPick(PLATFORM_FLOOR_BLOCKS)}`)
+      if (Math.random() < PLATFORM_SUPPORT_CHANCE) {
+        run(`setblock ${cell[2]} ${wallY0} ${cell[3]} minecraft:scaffolding[bottom=false,distance=0,waterlogged=false]`)
+        run(`setblock ${cell[2]} ${wallY0 + 1} ${cell[3]} minecraft:scaffolding[bottom=false,distance=0,waterlogged=false]`)
+      }
+      if (cell[4]) run(`setblock ${cell[0]} ${wallY0 + 3} ${cell[1]} ${platformPick(PLATFORM_COVER_BLOCKS)}`)
+    }
+    for (ly = wallY0; ly <= wallY0 + 2; ly++) {
+      run(`setblock ${ladderX} ${ly} ${ladderZ} minecraft:ladder[facing=${ladderFacing}]`)
+    }
+  }
+  var gateWestCells = []
+  var gateEastCells = []
+  var flankWestCells = []
+  var flankEastCells = []
+  var pc
+  for (pc = doorX - 6; pc <= doorX - 2; pc++) gateWestCells.push([pc, z1, pc, z1 - 1, pc !== doorX - 5 && pc !== doorX - 2])
+  for (pc = doorX + 2; pc <= doorX + 6; pc++) gateEastCells.push([pc, z1, pc, z1 - 1, pc === doorX + 3])
+  for (pc = centerZ + 2; pc <= centerZ + 4; pc++) {
+    flankWestCells.push([x0, pc, x0 + 1, pc, true])
+    flankEastCells.push([x1, pc, x1 - 1, pc, true])
+  }
+  placePlatform(gateWestCells, doorX - 7, z1 - 1, 'north')
+  placePlatform(gateEastCells, doorX + 7, z1 - 1, 'north')
+  placePlatform(flankWestCells, x0 + 1, centerZ + 5, 'east')
+  placePlatform(flankEastCells, x1 - 1, centerZ + 5, 'west')
+
+
+
 
   // Real premise correction 2026-09-05 (docs/FEATURES.md, "Superseded"
   // note on the amulet objective fix): the pedestal is the permanent
@@ -1445,6 +1882,26 @@ function buildStarterBase(server, level, x, z) {
     worldD.putInt('td_compoundX1', x1)
     worldD.putInt('td_compoundZ0', z0)
     worldD.putInt('td_compoundZ1', z1)
+    // Wave Horn note block's own fixed position - see this function's
+    // earlier waveNoteBlockX/Y/Z placement for the full comment.
+    worldD.putInt('td_waveNoteBlockX', waveNoteBlockX)
+    worldD.putInt('td_waveNoteBlockY', waveNoteBlockY)
+    worldD.putInt('td_waveNoteBlockZ', waveNoteBlockZ)
+    // Layout generation (2026-09-22): 2 = three-front fort. Read by
+    // starterFenceFlanksFromData() - the flank-hole fences only exist on
+    // this layout, and an older save must never have the wave-5 removal
+    // set air into its solid flank walls.
+    worldD.putInt('td_layoutVersion', 2)
+    // Every one-shot old-save migration in the login handler is marked
+    // done at build. They all recompute "where the old layout put X" from
+    // td_pedestalX/Y/Z with fixed offsets (rig at pedZ-10, coil on the
+    // pedZ+7 wall) - right for the saves they were written for, wrong for
+    // this layout, and two of them (the power-rig and trap relocations)
+    // would otherwise fire on this world's very first login and move
+    // fixtures that are already where they belong.
+    worldD.putBoolean('td_starterPowerRigRelocated', true)
+    worldD.putBoolean('td_starterTrapsRelocated', true)
+    worldD.putBoolean('td_starterTeslaCoilUpright', true)
   }
 
   // Starter power rig coordinates (blocks already placed above) - read by
@@ -1461,6 +1918,26 @@ function buildStarterBase(server, level, x, z) {
     worldD.putInt('td_fluxBatteryX', fluxBatteryX)
     worldD.putInt('td_fluxBatteryY', fluxBatteryY)
     worldD.putInt('td_fluxBatteryZ', fluxBatteryZ)
+
+    // Starter trap showcase coordinates - read by wave_status.js's
+    // STARTER_TRAPS_REMOVAL_WAVE beat to clear them again, and by
+    // starter_flux_network.js's login handler to link the Tesla Coil's
+    // Flux Point into the same "House Grid" network as the power rig
+    // above (wireless - no proximity to the generator required).
+    worldD.putInt('td_starterTeslaCoilX', starterTraps.teslaCoilX)
+    worldD.putInt('td_starterTeslaCoilY', starterTraps.teslaCoilY)
+    worldD.putInt('td_starterTeslaCoilZ', starterTraps.teslaCoilZ)
+    worldD.putInt('td_starterTeslaCoilDummyX', starterTraps.teslaCoilDummyX)
+    worldD.putInt('td_starterTeslaCoilDummyY', starterTraps.teslaCoilDummyY)
+    worldD.putInt('td_starterTeslaCoilDummyZ', starterTraps.teslaCoilDummyZ)
+    worldD.putInt('td_starterTeslaFluxPointX', starterTraps.teslaFluxPointX)
+    worldD.putInt('td_starterTeslaFluxPointY', starterTraps.teslaFluxPointY)
+    worldD.putInt('td_starterTeslaFluxPointZ', starterTraps.teslaFluxPointZ)
+    // No td_starterFence* keys - starterFencePositions() derives the whole
+    // fence frame straight from td_pedestalX/Y/Z on demand (wave_status.js's
+    // removal beat, the owner-assignment block below), same "don't persist
+    // what's already a pure function of the pedestal" reasoning the power
+    // rig retrofit above already uses.
   }
 
   // Real deterministic HP pool (2026-09-06, see pedestal_health.js) -
@@ -1482,250 +1959,12 @@ function buildStarterBase(server, level, x, z) {
   // accepted cost of "the base is always genuinely at stake."
   run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
 
-  // House reinforcement (2026-09-04, real playtest feedback batch,
-  // direct ask: "reinforce the whole house... full uniform coverage"
-  // over a distance-falloff pattern like the courtyard walls, given the
-  // house is "kinda the permanent fixture throughout the game"). Real
-  // scope, not guessed: the building's true solid wall shell doesn't sit
-  // at the structure's own bounding-box edges (x=0/11, z=0/10 - checked
-  // first, found 0 real reinforceable blocks there) - the actual walls
-  // are 2 blocks further in (x=2/9, z=2/9), the outer ring being a real
-  // porch/eave overhang. Decompiled the structure's own NBT directly to
-  // find every real block on those 4 wall planes (283 total), matched
-  // each against SecurityCraft's own 495 real reinforced-block ids
-  // (checked directly, not assumed - e.g. confirmed there is NO plain
-  // "reinforced_terracotta", only the 16 dyed-color variants), and
-  // preserved each block's own exact orientation (facing/axis/type/wall
-  // -connection state) from its real NBT properties, not a blanket
-  // /fill (which would have flattened every stairs/slab/wall block to
-  // one uniform orientation). **Real, honest result: 212 of 283 wall
-  // blocks (75%) get a genuine reinforced equivalent** - bricks,
-  // granite, granite_wall, packed_mud, mud_bricks, spruce_planks,
-  // brick_slab, spruce_slab, grass_block, and the stone_bricks the
-  // wet_sponge fix above already swaps in. **Real gaps, not silently
-  // claimed as covered**: plain terracotta (36 blocks - no reinforced
-  // equivalent exists in this mod at all), oak_leaves (18) and vine (17)
-  // - both genuinely decorative, no reinforced material makes sense for
-  // either. This pass only covers the 4 real wall planes, not the roof
-  // (a separate, real scope limit - the roof's own sloped-slab structure
-  // wasn't mapped this pass).
-  const HOUSE_REINFORCE_BLOCKS = [
-    [0, 0, 2, 'securitycraft:reinforced_stone_bricks'],
-    [0, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [1, 0, 2, 'securitycraft:reinforced_stone_bricks'],
-    [1, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [2, 0, 0, 'securitycraft:reinforced_stone_bricks'],
-    [2, 0, 1, 'securitycraft:reinforced_stone_bricks'],
-    [2, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 3, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 4, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 5, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 6, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 7, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 8, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [2, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [2, 0, 10, 'securitycraft:reinforced_stone_bricks'],
-    [3, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [3, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [4, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [4, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [5, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [5, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [6, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [6, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [7, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [7, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [8, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [8, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [9, 0, 0, 'securitycraft:reinforced_stone_bricks'],
-    [9, 0, 1, 'securitycraft:reinforced_stone_bricks'],
-    [9, 0, 2, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 3, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 4, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 5, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 6, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 7, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 8, 'securitycraft:reinforced_grass_block[snowy=false]'],
-    [9, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [9, 0, 10, 'securitycraft:reinforced_stone_bricks'],
-    [10, 0, 2, 'securitycraft:reinforced_stone_bricks'],
-    [10, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [11, 0, 2, 'securitycraft:reinforced_stone_bricks'],
-    [11, 0, 9, 'securitycraft:reinforced_stone_bricks'],
-    [2, 1, 2, 'securitycraft:reinforced_packed_mud'],
-    [2, 1, 3, 'securitycraft:reinforced_mud_bricks'],
-    [2, 1, 4, 'securitycraft:reinforced_packed_mud'],
-    [2, 1, 5, 'securitycraft:reinforced_packed_mud'],
-    [2, 1, 6, 'securitycraft:reinforced_mud_bricks'],
-    [2, 1, 7, 'securitycraft:reinforced_mud_bricks'],
-    [2, 1, 8, 'securitycraft:reinforced_packed_mud'],
-    [3, 1, 2, 'securitycraft:reinforced_mud_bricks'],
-    [4, 1, 2, 'securitycraft:reinforced_mud_bricks'],
-    [5, 1, 2, 'securitycraft:reinforced_mud_bricks'],
-    [6, 1, 2, 'securitycraft:reinforced_packed_mud'],
-    [7, 1, 2, 'securitycraft:reinforced_packed_mud'],
-    [8, 1, 2, 'securitycraft:reinforced_mud_bricks'],
-    [9, 1, 2, 'securitycraft:reinforced_packed_mud'],
-    [9, 1, 3, 'securitycraft:reinforced_mud_bricks'],
-    [9, 1, 4, 'securitycraft:reinforced_packed_mud'],
-    [9, 1, 5, 'securitycraft:reinforced_packed_mud'],
-    [9, 1, 6, 'securitycraft:reinforced_packed_mud'],
-    [9, 1, 7, 'securitycraft:reinforced_mud_bricks'],
-    [9, 1, 8, 'securitycraft:reinforced_packed_mud'],
-    [2, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [2, 2, 3, 'securitycraft:reinforced_packed_mud'],
-    [2, 2, 4, 'securitycraft:reinforced_mud_bricks'],
-    [2, 2, 5, 'securitycraft:reinforced_mud_bricks'],
-    [2, 2, 6, 'securitycraft:reinforced_packed_mud'],
-    [2, 2, 7, 'securitycraft:reinforced_packed_mud'],
-    [2, 2, 8, 'securitycraft:reinforced_mud_bricks'],
-    [3, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [4, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [5, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [6, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [7, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [8, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [9, 2, 2, 'securitycraft:reinforced_mud_bricks'],
-    [9, 2, 3, 'securitycraft:reinforced_mud_bricks'],
-    [9, 2, 4, 'securitycraft:reinforced_mud_bricks'],
-    [9, 2, 5, 'securitycraft:reinforced_mud_bricks'],
-    [9, 2, 6, 'securitycraft:reinforced_mud_bricks'],
-    [9, 2, 7, 'securitycraft:reinforced_packed_mud'],
-    [9, 2, 8, 'securitycraft:reinforced_mud_bricks'],
-    [2, 3, 2, 'securitycraft:reinforced_packed_mud'],
-    [2, 3, 4, 'securitycraft:reinforced_mud_bricks'],
-    [2, 3, 5, 'securitycraft:reinforced_mud_bricks'],
-    [2, 3, 6, 'securitycraft:reinforced_packed_mud'],
-    [2, 3, 7, 'securitycraft:reinforced_bricks'],
-    [4, 3, 2, 'securitycraft:reinforced_packed_mud'],
-    [6, 3, 2, 'securitycraft:reinforced_mud_bricks'],
-    [7, 3, 2, 'securitycraft:reinforced_packed_mud'],
-    [9, 3, 2, 'securitycraft:reinforced_packed_mud'],
-    [9, 3, 3, 'securitycraft:reinforced_mud_bricks'],
-    [9, 3, 6, 'securitycraft:reinforced_packed_mud'],
-    [9, 3, 7, 'securitycraft:reinforced_mud_bricks'],
-    [9, 3, 8, 'securitycraft:reinforced_packed_mud'],
-    [2, 4, 2, 'securitycraft:reinforced_bricks'],
-    [2, 4, 3, 'securitycraft:reinforced_mud_bricks'],
-    [2, 4, 4, 'securitycraft:reinforced_bricks'],
-    [2, 4, 5, 'securitycraft:reinforced_packed_mud'],
-    [2, 4, 6, 'securitycraft:reinforced_bricks'],
-    [2, 4, 8, 'securitycraft:reinforced_mud_bricks'],
-    [3, 4, 2, 'securitycraft:reinforced_packed_mud'],
-    [4, 4, 2, 'securitycraft:reinforced_granite'],
-    [5, 4, 2, 'securitycraft:reinforced_mud_bricks'],
-    [6, 4, 2, 'securitycraft:reinforced_mud_bricks'],
-    [8, 4, 2, 'securitycraft:reinforced_packed_mud'],
-    [9, 4, 2, 'securitycraft:reinforced_granite'],
-    [9, 4, 3, 'securitycraft:reinforced_mud_bricks'],
-    [9, 4, 4, 'securitycraft:reinforced_packed_mud'],
-    [9, 4, 5, 'securitycraft:reinforced_bricks'],
-    [9, 4, 6, 'securitycraft:reinforced_granite'],
-    [9, 4, 7, 'securitycraft:reinforced_mud_bricks'],
-    [9, 4, 8, 'securitycraft:reinforced_packed_mud'],
-    [2, 5, 2, 'securitycraft:reinforced_granite'],
-    [2, 5, 3, 'securitycraft:reinforced_granite'],
-    [2, 5, 4, 'securitycraft:reinforced_bricks'],
-    [2, 5, 6, 'securitycraft:reinforced_packed_mud'],
-    [2, 5, 7, 'securitycraft:reinforced_granite'],
-    [2, 5, 8, 'securitycraft:reinforced_bricks'],
-    [4, 5, 2, 'securitycraft:reinforced_granite'],
-    [5, 5, 2, 'securitycraft:reinforced_granite'],
-    [7, 5, 2, 'securitycraft:reinforced_granite'],
-    [8, 5, 2, 'securitycraft:reinforced_granite'],
-    [9, 5, 4, 'securitycraft:reinforced_granite'],
-    [9, 5, 5, 'securitycraft:reinforced_packed_mud'],
-    [9, 5, 6, 'securitycraft:reinforced_mud_bricks'],
-    [9, 5, 8, 'securitycraft:reinforced_granite'],
-    [2, 6, 4, 'securitycraft:reinforced_granite'],
-    [2, 6, 6, 'securitycraft:reinforced_bricks'],
-    [3, 6, 2, 'securitycraft:reinforced_bricks'],
-    [4, 6, 2, 'securitycraft:reinforced_bricks'],
-    [6, 6, 2, 'securitycraft:reinforced_bricks'],
-    [7, 6, 2, 'securitycraft:reinforced_bricks'],
-    [9, 6, 2, 'securitycraft:reinforced_granite'],
-    [9, 6, 3, 'securitycraft:reinforced_granite'],
-    [9, 6, 5, 'securitycraft:reinforced_granite'],
-    [9, 6, 7, 'securitycraft:reinforced_bricks'],
-    [9, 6, 8, 'securitycraft:reinforced_bricks'],
-    [2, 7, 2, 'securitycraft:reinforced_bricks'],
-    [2, 7, 3, 'securitycraft:reinforced_bricks'],
-    [2, 7, 6, 'securitycraft:reinforced_bricks'],
-    [2, 7, 7, 'securitycraft:reinforced_granite'],
-    [2, 7, 8, 'securitycraft:reinforced_granite'],
-    [3, 7, 2, 'securitycraft:reinforced_granite'],
-    [5, 7, 2, 'securitycraft:reinforced_granite'],
-    [6, 7, 2, 'securitycraft:reinforced_granite'],
-    [8, 7, 2, 'securitycraft:reinforced_bricks'],
-    [9, 7, 2, 'securitycraft:reinforced_bricks'],
-    [9, 7, 4, 'securitycraft:reinforced_granite'],
-    [9, 7, 5, 'securitycraft:reinforced_granite'],
-    [9, 7, 6, 'securitycraft:reinforced_bricks'],
-    [2, 8, 3, 'securitycraft:reinforced_granite'],
-    [2, 8, 4, 'securitycraft:reinforced_granite'],
-    [2, 8, 5, 'securitycraft:reinforced_bricks'],
-    [2, 8, 6, 'securitycraft:reinforced_bricks'],
-    [2, 8, 7, 'securitycraft:reinforced_bricks'],
-    [2, 8, 8, 'securitycraft:reinforced_bricks'],
-    [4, 8, 2, 'securitycraft:reinforced_bricks'],
-    [5, 8, 2, 'securitycraft:reinforced_granite'],
-    [6, 8, 2, 'securitycraft:reinforced_bricks'],
-    [7, 8, 2, 'securitycraft:reinforced_bricks'],
-    [8, 8, 2, 'securitycraft:reinforced_bricks'],
-    [9, 8, 2, 'securitycraft:reinforced_bricks'],
-    [9, 8, 3, 'securitycraft:reinforced_bricks'],
-    [9, 8, 4, 'securitycraft:reinforced_bricks'],
-    [9, 8, 6, 'securitycraft:reinforced_bricks'],
-    [9, 8, 7, 'securitycraft:reinforced_bricks'],
-    [9, 8, 8, 'securitycraft:reinforced_bricks'],
-    [2, 9, 3, 'securitycraft:reinforced_granite'],
-    [2, 9, 4, 'securitycraft:reinforced_bricks'],
-    [2, 9, 5, 'securitycraft:reinforced_bricks'],
-    [2, 9, 6, 'securitycraft:reinforced_bricks'],
-    [3, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [4, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [5, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [6, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [7, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [8, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [9, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [9, 9, 3, 'securitycraft:reinforced_bricks'],
-    [9, 9, 4, 'securitycraft:reinforced_bricks'],
-    [9, 9, 5, 'securitycraft:reinforced_bricks'],
-    [9, 9, 6, 'securitycraft:reinforced_bricks'],
-    [10, 9, 2, 'securitycraft:reinforced_spruce_planks'],
-    [2, 10, 4, 'securitycraft:reinforced_spruce_planks'],
-    [2, 10, 5, 'securitycraft:reinforced_bricks'],
-    [2, 10, 6, 'securitycraft:reinforced_spruce_planks'],
-    [9, 10, 4, 'securitycraft:reinforced_spruce_planks'],
-    [9, 10, 5, 'securitycraft:reinforced_bricks'],
-    [9, 10, 6, 'securitycraft:reinforced_spruce_planks'],
-    [3, 4, 9, 'securitycraft:reinforced_brick_slab[type=top]'],
-    [4, 4, 9, 'securitycraft:reinforced_brick_slab[type=top]'],
-    [5, 4, 9, 'securitycraft:reinforced_brick_slab[type=top]'],
-    [6, 4, 9, 'securitycraft:reinforced_brick_slab[type=top]'],
-    [3, 5, 9, 'securitycraft:reinforced_granite_wall[east=low,south=none,north=low,west=none,up=true]'],
-    [4, 5, 9, 'securitycraft:reinforced_granite_wall[east=low,south=none,north=none,west=low,up=false]'],
-    [5, 5, 9, 'securitycraft:reinforced_granite_wall[east=low,south=none,north=none,west=low,up=false]'],
-    [6, 5, 9, 'securitycraft:reinforced_granite_wall[east=none,south=none,north=low,west=low,up=true]'],
-    [2, 9, 1, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [2, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [3, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [4, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [5, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [6, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [7, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [9, 9, 1, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [10, 9, 9, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [2, 10, 3, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [2, 10, 7, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [9, 10, 3, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [2, 11, 5, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-    [9, 11, 5, 'securitycraft:reinforced_spruce_slab[type=bottom]'],
-  ]
-  HOUSE_REINFORCE_BLOCKS.forEach(([lx, ly, lz, block]) => {
-    run(`setblock ${buildingX0 + lx} ${floorY + ly} ${buildingZ0 + lz} ${block}`)
-  })
+  // House reinforcement now lives in the command-post section above
+  // (2026-09-22): replace-fills for the full-block shell plus the
+  // per-cell CAFE4_FIXUPS list for boards and panes. The old
+  // HOUSE_REINFORCE_BLOCKS list (212 cells, 2026-09-04) was a per-cell
+  // map of the Abandoned Brick House's own NBT and went with that
+  // building.
 
   // Pre-placed Tier 1 kinetic rig - removed 2026-09-11 along with Create
   // and Create Addition entirely (direct feedback: Barbed Wire felt
@@ -1936,23 +2175,37 @@ PlayerEvents.loggedIn((event) => {
     // every later login see the key and skip straight past). Coordinates
     // reconstructed from td_pedestalX/Y/Z with the same fixed offsets
     // buildStarterBase itself derives them through (doorX/wallY0/z1 ->
-    // buildingX0/floorY/buildingZ0 -> the rig's own +3/+5/+4/-1/-11
+    // buildingX0/floorY/buildingZ0 -> the rig's own +8/+5/+4/+7/-11
     // offsets) since BUILDING_WIDTH/GATE_OFFSET/etc. aren't in scope
     // here - see that function's power-rig section for the real numbers.
+    // X offsets updated 2026-09-15 alongside the live "move the flux
+    // network into the corner" rework (buildStarterBase's own comment) -
+    // this retrofit only ever fires for a save that never got the rig at
+    // all, so it should place it straight at the new canonical spot, not
+    // the superseded one.
+    //
+    // Offsets updated again same day, alongside the near-the-balcony
+    // relocation (buildStarterBase's own comment has the full reasoning,
+    // including the same-day interior-vs-exterior correction) -
+    // pedX-6=buildingX0, pedY-1=floorY, pedZ-15=buildingZ0 (verified
+    // against this same retrofit's own pre-existing offsets before this
+    // edit: buildingX0+8=pedX+2 -> buildingX0=pedX-6, etc.), so the new
+    // buildingX0+7/floorY+5/buildingZ0+5 (generator) becomes pedX+1/
+    // pedY+4/pedZ-10 here.
     var worldD = existingMarker.persistentData
     if (!worldD.contains('td_bioGeneratorX')) {
       var pedX = worldD.getInt('td_pedestalX')
       var pedY = worldD.getInt('td_pedestalY')
       var pedZ = worldD.getInt('td_pedestalZ')
-      var rigBioGeneratorX = pedX - 3
+      var rigBioGeneratorX = pedX + 1
       var rigBioGeneratorY = pedY + 4
-      var rigBioGeneratorZ = pedZ - 11
+      var rigBioGeneratorZ = pedZ - 10
       var rigFluxPlugX = rigBioGeneratorX
       var rigFluxPlugY = rigBioGeneratorY + 1
       var rigFluxPlugZ = rigBioGeneratorZ
-      var rigFluxBatteryX = pedX - 1
+      var rigFluxBatteryX = pedX + 2
       var rigFluxBatteryY = pedY + 4
-      var rigFluxBatteryZ = pedZ - 11
+      var rigFluxBatteryZ = pedZ - 10
       server.runCommandSilent(`setblock ${rigBioGeneratorX} ${rigBioGeneratorY} ${rigBioGeneratorZ} generatorgalore:culinary_generator`)
       server.runCommandSilent(`setblock ${rigFluxPlugX} ${rigFluxPlugY} ${rigFluxPlugZ} fluxnetworks:flux_plug`)
       server.runCommandSilent(`setblock ${rigFluxBatteryX} ${rigFluxBatteryY} ${rigFluxBatteryZ} fluxnetworks:basic_flux_storage`)
@@ -1972,6 +2225,271 @@ PlayerEvents.loggedIn((event) => {
       // starter_flux_network.js's own header comment.
       player.give(Item.of('fluxnetworks:flux_configurator', 1))
       console.log(`playtest_starter_kit.js: retrofitted starter power rig onto a pre-existing world at (${rigBioGeneratorX}, ${rigBioGeneratorY}, ${rigBioGeneratorZ}) - starter_flux_network.js will link it on this same login`)
+    }
+
+    // Live relocation, 2026-09-15, same day as the near-the-balcony
+    // rework above - a save that already HAD the rig (built upstairs by
+    // an earlier version of this same file, this same session) needs its
+    // 3 physical blocks actually moved, not just new fresh-build code
+    // that a once-per-world gate will never re-run for it. Gated on a
+    // dedicated one-shot flag so it only ever attempts once; the inner
+    // check only proceeds if a rig genuinely exists yet at this point in
+    // THIS login (it does, only if it predates this fix - the retrofit
+    // right above, and buildStarterBase itself, both already place a
+    // fresh rig straight at the new position, and neither has run yet by
+    // this point if this save had no rig at all).
+    if (!worldD.getBoolean('td_starterPowerRigRelocated')) {
+      worldD.putBoolean('td_starterPowerRigRelocated', true)
+      if (worldD.contains('td_bioGeneratorX')) {
+        var oldGenX = worldD.getInt('td_bioGeneratorX')
+        var oldGenY = worldD.getInt('td_bioGeneratorY')
+        var oldGenZ = worldD.getInt('td_bioGeneratorZ')
+        var oldPlugX = worldD.getInt('td_fluxPlugX')
+        var oldPlugY = worldD.getInt('td_fluxPlugY')
+        var oldPlugZ = worldD.getInt('td_fluxPlugZ')
+        var oldBattX = worldD.getInt('td_fluxBatteryX')
+        var oldBattY = worldD.getInt('td_fluxBatteryY')
+        var oldBattZ = worldD.getInt('td_fluxBatteryZ')
+        // Old spot was open upstairs floor before the rig ever existed
+        // (buildStarterBase's own comment on the old x=7/8 corner) - air
+        // restores exactly that.
+        server.runCommandSilent(`setblock ${oldGenX} ${oldGenY} ${oldGenZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${oldPlugX} ${oldPlugY} ${oldPlugZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${oldBattX} ${oldBattY} ${oldBattZ} minecraft:air`)
+
+        var newGenX = worldD.getInt('td_pedestalX') + 1
+        var newGenY = worldD.getInt('td_pedestalY') + 4
+        var newGenZ = worldD.getInt('td_pedestalZ') - 10
+        var newPlugX = newGenX
+        var newPlugY = newGenY + 1
+        var newPlugZ = newGenZ
+        var newBattX = worldD.getInt('td_pedestalX') + 2
+        var newBattY = worldD.getInt('td_pedestalY') + 4
+        var newBattZ = worldD.getInt('td_pedestalZ') - 10
+        server.runCommandSilent(`setblock ${newGenX} ${newGenY} ${newGenZ} generatorgalore:culinary_generator`)
+        server.runCommandSilent(`setblock ${newPlugX} ${newPlugY} ${newPlugZ} fluxnetworks:flux_plug`)
+        server.runCommandSilent(`setblock ${newBattX} ${newBattY} ${newBattZ} fluxnetworks:basic_flux_storage`)
+        worldD.putInt('td_bioGeneratorX', newGenX)
+        worldD.putInt('td_bioGeneratorY', newGenY)
+        worldD.putInt('td_bioGeneratorZ', newGenZ)
+        worldD.putInt('td_fluxPlugX', newPlugX)
+        worldD.putInt('td_fluxPlugY', newPlugY)
+        worldD.putInt('td_fluxPlugZ', newPlugZ)
+        worldD.putInt('td_fluxBatteryX', newBattX)
+        worldD.putInt('td_fluxBatteryY', newBattY)
+        worldD.putInt('td_fluxBatteryZ', newBattZ)
+
+        // The old tile entities are gone the moment the blocks above were
+        // cleared, taking whatever network membership they had with them
+        // - re-linking fresh rather than trying to preserve the old
+        // network id. starter_flux_network.js's own linkStarterFluxNetwork
+        // (pulled out into a shared function for exactly this call, see
+        // its own header comment) creates a new "House Grid" network and
+        // connects the Plug/Battery at their now-current coordinates plus
+        // the starter Tesla Coil's own Flux Point - called directly
+        // rather than resetting td_starterFluxNetworkLinked and hoping a
+        // second, separately-registered PlayerEvents.loggedIn listener in
+        // another file fires after this one; relative ordering between
+        // two such listeners for the same event isn't something to rely on.
+        linkStarterFluxNetwork(player, level, worldD)
+        console.log(`playtest_starter_kit.js: relocated starter power rig from (${oldGenX}, ${oldGenY}, ${oldGenZ}) to (${newGenX}, ${newGenY}, ${newGenZ}) and re-linked its Flux Network`)
+      }
+    }
+
+    // Retroactive starter trap showcase, 2026-09-12 - same "old save
+    // never got a new base fixture" reasoning as the power rig retrofit
+    // just above, but simpler: any marker that already has
+    // td_bioGeneratorX also already carries td_compoundX0/X1/Z0/Z1
+    // (persisted since 2026-09-09, well before either feature) and
+    // td_pedestalX/Y/Z, which is everything placeStarterTraps() needs -
+    // no hand-rederived wall math required this time, just read the
+    // real numbers straight off the marker.
+    //
+    // Skipped once the world's already past GEAR_REMOVAL_WAVE
+    // (td_starterGearRemoved) - wave_status.js's own removal beat can
+    // only ever fire again AT wave 5, and waveNumber only goes up, so a
+    // save already further along than that would get starter traps that
+    // could never be cleared again. Placing nothing there is correct,
+    // not a gap: the narrative beat ("whoever held this before you") has
+    // already played out on that save.
+    if (worldD.contains('td_compoundX0') && !worldD.contains('td_starterTeslaCoilX') && !worldD.getBoolean('td_starterGearRemoved')) {
+      var retrofitTraps = placeStarterTraps(
+        function (cmd) { server.runCommandSilent(cmd) },
+        worldD.getInt('td_compoundX0'), worldD.getInt('td_compoundX1'),
+        worldD.getInt('td_compoundZ0'), worldD.getInt('td_compoundZ1'),
+        worldD.getInt('td_pedestalX'), worldD.getInt('td_pedestalY'),
+        // Pre-fort save (the only kind this retrofit can reach) - no flank holes to board.
+        null
+      )
+      worldD.putInt('td_starterTeslaCoilX', retrofitTraps.teslaCoilX)
+      worldD.putInt('td_starterTeslaCoilY', retrofitTraps.teslaCoilY)
+      worldD.putInt('td_starterTeslaCoilZ', retrofitTraps.teslaCoilZ)
+      worldD.putInt('td_starterTeslaCoilDummyX', retrofitTraps.teslaCoilDummyX)
+      worldD.putInt('td_starterTeslaCoilDummyY', retrofitTraps.teslaCoilDummyY)
+      worldD.putInt('td_starterTeslaCoilDummyZ', retrofitTraps.teslaCoilDummyZ)
+      worldD.putInt('td_starterTeslaFluxPointX', retrofitTraps.teslaFluxPointX)
+      worldD.putInt('td_starterTeslaFluxPointY', retrofitTraps.teslaFluxPointY)
+      worldD.putInt('td_starterTeslaFluxPointZ', retrofitTraps.teslaFluxPointZ)
+      // No td_starterFence* keys - see the fresh-build path's own comment above.
+      console.log('playtest_starter_kit.js: retrofitted starter trap showcase onto a pre-existing world - starter_flux_network.js will link the Tesla Coil\'s Flux Point on this same login')
+    }
+
+    // Live relocation, 2026-09-15 - same "old save already has the
+    // fixture, a once-per-world build gate will never re-run" problem as
+    // the power rig migration above, for the starter Tesla Coil (moved
+    // onto the wall, mirroring the Sentry) and the starter fence (now
+    // fully sealing the gate instead of just framing it - direct ask:
+    // "make the fence block the front hole in the wall... dont mind if
+    // it blocks me in as its just the start"). One shared flag/block for
+    // both, since they're the same "refresh the showcase to the new
+    // layout" beat. The inner check only proceeds if a coil genuinely
+    // exists yet at this point in THIS login - it can only be the OLD
+    // ground-level one, since the retrofit right above (and
+    // buildStarterBase itself) both already build the NEW wall-mounted
+    // layout from the start, and neither has run yet by this point if
+    // this save had no showcase at all. Skipped once the showcase is
+    // already gone (td_starterTrapsRemoved, same guard
+    // tesla_coil_auto_power.js itself uses) - nothing to relocate or
+    // seal on a save already past that beat.
+    if (!worldD.getBoolean('td_starterTrapsRelocated')) {
+      worldD.putBoolean('td_starterTrapsRelocated', true)
+      if (worldD.contains('td_starterTeslaCoilX') && !worldD.getBoolean('td_starterTrapsRemoved')) {
+        var oldCoilX = worldD.getInt('td_starterTeslaCoilX')
+        var oldCoilY = worldD.getInt('td_starterTeslaCoilY')
+        var oldCoilZ = worldD.getInt('td_starterTeslaCoilZ')
+        var oldDummyX = worldD.getInt('td_starterTeslaCoilDummyX')
+        var oldDummyY = worldD.getInt('td_starterTeslaCoilDummyY')
+        var oldDummyZ = worldD.getInt('td_starterTeslaCoilDummyZ')
+        var oldFluxX = worldD.getInt('td_starterTeslaFluxPointX')
+        var oldFluxY = worldD.getInt('td_starterTeslaFluxPointY')
+        var oldFluxZ = worldD.getInt('td_starterTeslaFluxPointZ')
+        // Old spot was open ground before the coil existed there. Also
+        // clears the old auto-power toggle position (one BELOW the old
+        // coil Y, tesla_coil_auto_power.js's pre-2026-09-15 direction) in
+        // case a wave mob happened to be in range the instant this
+        // migration runs and left a real redstone_block behind - that
+        // script reads td_starterTeslaCoilY fresh every tick, so it's
+        // already toggling the NEW (above) position by the time this code
+        // finishes, and would never clean up the old one itself.
+        server.runCommandSilent(`setblock ${oldCoilX} ${oldCoilY} ${oldCoilZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${oldDummyX} ${oldDummyY} ${oldDummyZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${oldFluxX} ${oldFluxY} ${oldFluxZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${oldCoilX} ${oldCoilY - 1} ${oldCoilZ} minecraft:air`)
+
+        var trapDoorX = worldD.getInt('td_pedestalX')
+        var trapWallY0 = worldD.getInt('td_pedestalY')
+        var trapZ1 = worldD.getInt('td_pedestalZ') + 7
+        var newCoilX = trapDoorX + 5
+        var newCoilY = trapWallY0 + 3
+        var newCoilZ = trapZ1
+        var newDummyX = newCoilX - 1
+        var newFluxX = newCoilX + 1
+        server.runCommandSilent(`setblock ${newCoilX} ${trapWallY0 + 2} ${newCoilZ} minecraft:stone_bricks`)
+        server.runCommandSilent(`setblock ${newCoilX} ${newCoilY} ${newCoilZ} immersiveengineering:tesla_coil[facing=west]`)
+        server.runCommandSilent(`setblock ${newDummyX} ${trapWallY0 + 2} ${newCoilZ} minecraft:stone_bricks`)
+        server.runCommandSilent(`setblock ${newDummyX} ${newCoilY} ${newCoilZ} immersiveengineering:tesla_coil[facing=west,multiblockslave=true]`)
+        server.runCommandSilent(`setblock ${newFluxX} ${trapWallY0 + 2} ${newCoilZ} minecraft:stone_bricks`)
+        server.runCommandSilent(`setblock ${newFluxX} ${newCoilY} ${newCoilZ} fluxnetworks:flux_point`)
+        worldD.putInt('td_starterTeslaCoilX', newCoilX)
+        worldD.putInt('td_starterTeslaCoilY', newCoilY)
+        worldD.putInt('td_starterTeslaCoilZ', newCoilZ)
+        worldD.putInt('td_starterTeslaCoilDummyX', newDummyX)
+        worldD.putInt('td_starterTeslaCoilDummyY', newCoilY)
+        worldD.putInt('td_starterTeslaCoilDummyZ', newCoilZ)
+        worldD.putInt('td_starterTeslaFluxPointX', newFluxX)
+        worldD.putInt('td_starterTeslaFluxPointY', newCoilY)
+        worldD.putInt('td_starterTeslaFluxPointZ', newCoilZ)
+        // The Flux Point's old tile is gone along with its old network
+        // membership - same reasoning as the power rig migration above,
+        // reusing the exact same shared re-link function (which also
+        // covers the Plug/Battery at whatever their own current
+        // coordinates are, old or already-relocated either way).
+        linkStarterFluxNetwork(player, level, worldD)
+
+        // Fence: starterFencePositions() itself now returns the fully-
+        // sealed footprint (see its own updated comment) - just
+        // re-running it over every returned position is enough. The 2 old
+        // corner posts get the same fence block set again (a harmless
+        // no-op); the 6 previously-open doorX-1..doorX+1 positions get
+        // real fence for the first time.
+        starterFencePositions(trapDoorX, trapWallY0, trapZ1).forEach(([fx, fy, fz]) => {
+          server.runCommandSilent(`setblock ${fx} ${fy} ${fz} securitycraft:electrified_iron_fence`)
+        })
+        console.log(`playtest_starter_kit.js: relocated starter Tesla Coil to (${newCoilX}, ${newCoilY}, ${newCoilZ}) and sealed the starter fence gate`)
+      }
+    }
+
+    // Live upright-fix migration, 2026-09-15 (second direct ask the same
+    // day as the relocation migration just above): "the tesla coil is
+    // lying on its side, it should be placed upright" + "instead of the
+    // redstone block on top of the tesla coil can you make it a lever on
+    // the side." Separate flag from td_starterTrapsRelocated - that one
+    // already fired (and reads true) on any save that went through the
+    // wall-mount move earlier, so reusing it here would never re-run.
+    // Real reasoning for what changes and why is in placeStarterTraps()'s
+    // own header comment (facing=up vs facing=west, lever vs
+    // redstone_block). Master X/Y/Z don't move, only its facing, the
+    // dummy's position (now above instead of beside), and the power
+    // toggle (now a lever west of the master instead of a redstone_block
+    // above it).
+    if (!worldD.getBoolean('td_starterTeslaCoilUpright')) {
+      worldD.putBoolean('td_starterTeslaCoilUpright', true)
+      if (worldD.contains('td_starterTeslaCoilX') && !worldD.getBoolean('td_starterTrapsRemoved')) {
+        var uprightCoilX = worldD.getInt('td_starterTeslaCoilX')
+        var uprightCoilY = worldD.getInt('td_starterTeslaCoilY')
+        var uprightCoilZ = worldD.getInt('td_starterTeslaCoilZ')
+        var uprightOldDummyX = worldD.getInt('td_starterTeslaCoilDummyX')
+        var uprightOldDummyY = worldD.getInt('td_starterTeslaCoilDummyY')
+        var uprightOldDummyZ = worldD.getInt('td_starterTeslaCoilDummyZ')
+        // Old sideways dummy (west of the master) and the old above-master
+        // redstone toggle spot both go to air first - the new dummy
+        // reuses the toggle's old spot (directly above the master) and
+        // the new lever reuses the old dummy's spot (west of the master).
+        server.runCommandSilent(`setblock ${uprightOldDummyX} ${uprightOldDummyY} ${uprightOldDummyZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${uprightCoilX} ${uprightCoilY + 1} ${uprightCoilZ} minecraft:air`)
+        server.runCommandSilent(`setblock ${uprightCoilX} ${uprightCoilY} ${uprightCoilZ} immersiveengineering:tesla_coil[facing=up]`)
+        server.runCommandSilent(`setblock ${uprightCoilX} ${uprightCoilY + 1} ${uprightCoilZ} immersiveengineering:tesla_coil[facing=up,multiblockslave=true]`)
+        server.runCommandSilent(`setblock ${uprightCoilX - 1} ${uprightCoilY} ${uprightCoilZ} minecraft:lever[face=wall,facing=west,powered=false]`)
+        worldD.putInt('td_starterTeslaCoilDummyX', uprightCoilX)
+        worldD.putInt('td_starterTeslaCoilDummyY', uprightCoilY + 1)
+        worldD.putInt('td_starterTeslaCoilDummyZ', uprightCoilZ)
+        console.log(`playtest_starter_kit.js: stood the starter Tesla Coil upright at (${uprightCoilX}, ${uprightCoilY}, ${uprightCoilZ}) and swapped its power toggle to a lever`)
+      }
+    }
+
+    // Starter trap showcase owner assignment - the Electrified Iron
+    // Fence gate frame placeStarterTraps() just placed (fresh build or
+    // retrofit, either path) is deliberately left unowned there, since
+    // no Player object exists yet at world-build/retrofit time. An
+    // unowned fence shocks EVERY player, owner included (decompiled
+    // ElectrifiedIronFenceBlock.hurtOrConvertEntity - see
+    // placeStarterTraps()'s own header comment), so it's claimed here,
+    // on whichever real player actually logs in first, using the same
+    // "call the real public method directly on the bound Java object"
+    // pattern starter_flux_network.js already proved for
+    // TileFluxDevice.connect(). Non-fatal by design, same reasoning as
+    // that file's own try/catch: if SecurityCraft's real setOwner
+    // signature ever changes, the fence frame stays placed and merely
+    // unowned, not broken.
+    // td_starterTeslaCoilX as the "have traps been placed yet" guard, not a
+    // fence-specific key - both are written by the exact same if-block in
+    // both the fresh-build and retrofit paths above, and the fence itself
+    // no longer has persisted coordinates (starterFencePositions() derives
+    // them from td_pedestalX/Y/Z instead, same as z1 = td_pedestalZ + 7
+    // below - see the retrofit code's own comment on that offset).
+    if (!worldD.getBoolean('td_starterTrapsOwnerSet') && worldD.contains('td_starterTeslaCoilX')) {
+      worldD.putBoolean('td_starterTrapsOwnerSet', true)
+      try {
+        var ownerUuid = `${player.getProfile().getId()}`
+        var ownerName = `${player.getProfile().getName()}`
+        var fencePositions = starterFencePositions(worldD.getInt('td_pedestalX'), worldD.getInt('td_pedestalY'), starterGateWallZ(worldD), starterFenceFlanksFromData(worldD))
+        fencePositions.forEach(function (pos) {
+          var fenceBE = level.getBlockEntity(pos)
+          if (fenceBE) fenceBE.setOwner(ownerUuid, ownerName)
+        })
+      } catch (e) {
+        console.error(`playtest_starter_kit.js: starter trap fence owner assignment failed (${e}) - the fence posts stay placed but unowned, and WILL shock the player on contact`)
+      }
     }
   }
 

@@ -31,10 +31,19 @@
 // power source - see campaign.snbt's "Wired Different". IE's Gun
 // Turret/Chemthrower Turret added alongside the Tesla Coil as Tier 3's
 // powered-trap roster (see tier3_turret_recipes.js).
+//
+// **Tier 4 added 2026-09-15** - Open Modular Turrets Reborn's Grenade
+// Turret and Rocket Turret, the pack's first real AoE-damage machines
+// (see tier4_turret_recipes.js's header for the full research trail).
+// The shared Turret Base itself stays uncolored - it has no combat role
+// on its own until a head is mounted on it, same reason the Culinary
+// Generator's own power-chain support blocks aren't individually listed
+// here either.
 const TIER_COLORS = {
   1: { code: '§a', label: 'Tier 1 - Starting Defense' }, // green
   2: { code: '§e', label: 'Tier 2 - Automated Defense' }, // yellow
   3: { code: '§c', label: 'Tier 3 - Energetic Defense' }, // red
+  4: { code: '§d', label: 'Tier 4 - Elite Defense' }, // light purple
 }
 
 const TIER_ITEMS = {
@@ -55,6 +64,8 @@ const TIER_ITEMS = {
   'refinedstorage:controller': 3,
   'sophisticatedstorage:barrel': 3,
   'fluxnetworks:flux_plug': 3,
+  'omtreborn:grenade_turret': 4,
+  'omtreborn:rocket_turret': 4,
 }
 
 ItemEvents.tooltip((event) => {

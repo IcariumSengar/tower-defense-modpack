@@ -115,8 +115,8 @@
 		{
 			dependencies: ["1FCDA02A8AF6F019"]
 			hide_until_deps_complete: true
-			description: ["Hold the &eWave Horn&r and right-click to call the next wave. Nothing comes until you do, with one catch: after each clear a timer starts, and when it runs out the wave comes on its own. About a minute and a half after wave 1, a little longer each wave, four minutes and up from wave 5. Use the gap to repair, restock and build. Then blow it."]
-			icon: "kubejs:wave_horn"
+			description: ["Right-click the note block upstairs to call the next wave. Nothing comes until you do, with one catch: after each clear a timer starts (10 minutes minimum), and when it runs out the wave comes on its own. Use the gap to repair, restock and build. Then sound it."]
+			icon: "minecraft:note_block"
 			id: "2965C45D5F6A0991"
 			rewards: [
 				{
@@ -127,10 +127,10 @@
 			]
 			shape: "rsquare"
 			size: 1.5d
-			subtitle: "Right-click the Wave Horn"
+			subtitle: "Right-click the note block upstairs"
 			tasks: [
 				{
-					icon: "kubejs:wave_horn"
+					icon: "minecraft:note_block"
 					id: "5A1C0E7B93D4F216"
 					type: "custom"
 				}
@@ -138,33 +138,6 @@
 			title: "Sound the Horn"
 			x: 6.0d
 			y: 0.0d
-		}
-		{
-			can_repeat: "true"
-			dependencies: ["2965C45D5F6A0991"]
-			hide_until_deps_complete: true
-			description: ["Right-click the checkmark for a spare Wave Horn. It doesn't run out; claim it again whenever you lose one."]
-			icon: "kubejs:wave_horn"
-			id: "37396865FD18B131"
-			optional: true
-			repeat_cooldown: 60
-			rewards: [
-				{
-					id: "084A9BC575EFFB50"
-					item: "kubejs:wave_horn"
-					type: "item"
-				}
-			]
-			size: 0.75d
-			tasks: [
-				{
-					id: "2C829246152E3F8D"
-					type: "checkmark"
-				}
-			]
-			title: "Lost the Horn?"
-			x: 6.0d
-			y: -1.5d
 		}
 		{
 			dependencies: ["2965C45D5F6A0991"]
@@ -429,7 +402,7 @@
 			dependencies: ["42EDC7E6DB5ABFAA"]
 			hide_until_deps_complete: true
 			description: ["Every tenth horde brings something with it that the rest make way for. Whoever kept this diary wrote its name and nothing else. You'll know it when it arrives; be ready before then."]
-			icon: "mutantszombies:mutant_brute_spawn_egg"
+			icon: "undeadnights:elite_zombie_spawn_egg"
 			id: "3E279D8E8116478F"
 			rewards: [
 				{
@@ -448,12 +421,12 @@
 			subtitle: "Completes when a boss dies"
 			tasks: [
 				{
-					icon: "mutantszombies:mutant_brute_spawn_egg"
+					icon: "undeadnights:elite_zombie_spawn_egg"
 					id: "2F6153C0E829476B"
 					type: "custom"
 				}
 			]
-			title: "The Behemoth"
+			title: "The Reaper"
 			x: 22.0d
 			y: 0.0d
 		}
@@ -1404,33 +1377,6 @@
 		{
 			dependencies: ["5C44D121F112749F"]
 			hide_until_deps_complete: true
-			description: ["Optional. Immersive Engineering has its own book: every multiblock's layout is in there with a ghost preview you can build against. Handy alongside the generator and traps below, but nothing here needs it in hand - build straight from JEI if you'd rather skip it."]
-			icon: "immersiveengineering:manual"
-			id: "3F1186E1CA1B9236"
-			rewards: [
-				{
-					id: "61AC756B4DBB0A7C"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "hexagon"
-			subtitle: "Book + lever (optional reference for the IE builds below)"
-			tasks: [
-				{
-					consume_items: false
-					id: "2D74F3DACD064D68"
-					item: "immersiveengineering:manual"
-					type: "item"
-				}
-			]
-			title: "The Engineer's Manual"
-			x: 20.0d
-			y: 7.5d
-		}
-		{
-			dependencies: ["5C44D121F112749F"]
-			hide_until_deps_complete: true
 			description: ["The &eCulinary Generator&r burns any food item for Flux - rotten flesh included, so every zombie you drop feeds it. Craft a Copper Generator, then upgrade it through Iron and Gold before the Culinary recipe unlocks: a Gold Generator plus Bread, 2 crops, 2 eggs and a redstone block. The eggs are a loot find - stores and farms out in the ruins carry them."]
 			icon: "generatorgalore:culinary_generator"
 			id: "4B07331734543EB4"
@@ -1448,7 +1394,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Copper -> Iron -> Gold -> Culinary Generator. Tuned to match the Diesel Generator it replaces - 4096 Flux/t, plenty for the Tesla Coil and both turrets running at once."
+			subtitle: "Copper -> Iron -> Gold -> Culinary Generator. 4096 Flux/t - plenty for the Tesla Coil and both turrets running at once."
 			tasks: [
 				{
 					consume_items: false
@@ -1624,6 +1570,72 @@
 			title: "Liquid Fire"
 			x: 24.0d
 			y: 10.5d
+		}
+		{
+			dependencies: ["54BAD02969997982", "63884A2BC335FF75"]
+			hide_until_deps_complete: true
+			description: ["Mount one on a &eTurret Base&r and it lobs real area-damage grenades at anything hostile in range - the first Tier 4 piece, one rung above the Gun/Chem Turret. Ammo is cheap and renewable: iron nuggets, redstone, gunpowder, no mining required. The Sensor/Chamber/Barrel themselves need &eFerronite&r, a new metal - smelt it from Raw Ferronite if you find the ore, or refine it straight from Steel and Redstone if you don't."]
+			icon: "omtreborn:grenade_turret"
+			id: "7BBD29C5816827E4"
+			rewards: [
+				{
+					id: "50B325791437DCE8"
+					type: "xp_levels"
+					xp_levels: 5
+				}
+				{
+					count: 4
+					id: "2E531BE87754EE97"
+					item: "immersiveengineering:ingot_steel"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Turret Base, Sensor/Chamber/Barrel Tier II, a Cauldron. Draws RF from the same Flux Network as everything else."
+			tasks: [
+				{
+					consume_items: false
+					id: "643BB977DEA826A1"
+					item: "omtreborn:grenade_turret"
+					type: "item"
+				}
+			]
+			title: "Fragmentation"
+			x: 26.0d
+			y: 11.5d
+		}
+		{
+			dependencies: ["7BBD29C5816827E4"]
+			hide_until_deps_complete: true
+			description: ["The elite pick: Tier III internals plus a Ferronite Frame, launching real explosive rockets with proper area damage - the most powerful base defense in the pack. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite), but nothing here needs the Nether or the End to build."]
+			icon: "omtreborn:rocket_turret"
+			id: "3BE0613054FB082E"
+			rewards: [
+				{
+					id: "3DE8A02125B16B79"
+					type: "xp_levels"
+					xp_levels: 6
+				}
+				{
+					count: 4
+					id: "685EDDAAD994C717"
+					item: "omtreborn:raw_ferronite"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Turret Base, Sensor/Chamber/Barrel Tier III, a Ferronite Frame, TNT, Cobbled Deepslate."
+			tasks: [
+				{
+					consume_items: false
+					id: "63127991677E3168"
+					item: "omtreborn:rocket_turret"
+					type: "item"
+				}
+			]
+			title: "Fire for Effect"
+			x: 28.0d
+			y: 11.5d
 		}
 	]
 	subtitle: ["Hold the pedestal. The waves don't stop."]

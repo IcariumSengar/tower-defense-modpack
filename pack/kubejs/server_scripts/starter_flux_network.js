@@ -66,15 +66,18 @@
 // starter kit (playtest_starter_kit.js's giveStarterKit) to link them by
 // hand in three right-clicks - the mod's own normal, always-working
 // path, not a special-cased fallback.
-PlayerEvents.loggedIn((event) => {
-  var player = event.player
-  var level = player.getLevel()
-  var data = worldData(level)
-  if (!data) return
-  if (data.getBoolean('td_starterFluxNetworkLinked')) return
-  if (!data.contains('td_bioGeneratorX')) return
-  data.putBoolean('td_starterFluxNetworkLinked', true)
-
+// Pulled out into its own function 2026-09-15 so the relocation migration
+// in playtest_starter_kit.js's login handler (starter power rig moved to
+// the exterior front wall, see that file's own header) can call this
+// exact same create-network-and-link-3-devices logic directly, right
+// after physically moving the blocks - a fresh `createNetwork()` call,
+// not a reused old id, since the devices' old network membership is lost
+// the moment their tile entities are destroyed by the move. Calling this
+// directly sidesteps any cross-file PlayerEvents.loggedIn ordering
+// question entirely (a second registered listener for the same login
+// event could fire before or after this file's own, undocumented either
+// way) - a plain synchronous function call has no such ambiguity.
+function linkStarterFluxNetwork(player, level, data) {
   try {
     var dataCls = resolveClass(player, 'sonar.fluxnetworks.common.connection.FluxNetworkData')
     var getInstance = findMethodByNameAndShape(dataCls, 'getInstance', 0, 'sonar.fluxnetworks.common.connection.FluxNetworkData', null)
@@ -93,7 +96,19 @@ PlayerEvents.loggedIn((event) => {
     var networkId = parseInt(`${getNetworkID.invoke(network, [])}`, 10)
 
     var linked = []
-    ;['td_fluxPlug', 'td_fluxBattery'].forEach((prefix) => {
+    // td_starterTeslaFluxPoint (2026-09-12) - the starter trap
+    // showcase's own Flux Point (playtest_starter_kit.js's
+    // placeStarterTraps()), linked into the exact same "House Grid"
+    // network as the power rig's Plug/Battery. Flux Networks is
+    // wireless between members - no proximity to the generator needed -
+    // so this works regardless of how far the Tesla Coil actually sits
+    // from the house. Missing on a save whose trap-showcase retrofit
+    // deliberately skipped (already past GEAR_REMOVAL_WAVE - see
+    // playtest_starter_kit.js's own retrofit comment) - getInt then
+    // returns 0 for each coordinate and the loop below's own `if (!tile)`
+    // guard logs and moves on rather than linking a bogus (0,0,0) tile,
+    // same graceful-failure path as any other real lookup miss here.
+    ;['td_fluxPlug', 'td_fluxBattery', 'td_starterTeslaFluxPoint'].forEach((prefix) => {
       var x = data.getInt(`${prefix}X`)
       var y = data.getInt(`${prefix}Y`)
       var z = data.getInt(`${prefix}Z`)
@@ -110,4 +125,15 @@ PlayerEvents.loggedIn((event) => {
   } catch (e) {
     console.error(`starter_flux_network.js: auto-link failed (${e}) - the 3 blocks are still placed and touching; the player's Flux Configurator (giveStarterKit) links them by hand instead`)
   }
+}
+
+PlayerEvents.loggedIn((event) => {
+  var player = event.player
+  var level = player.getLevel()
+  var data = worldData(level)
+  if (!data) return
+  if (data.getBoolean('td_starterFluxNetworkLinked')) return
+  if (!data.contains('td_bioGeneratorX')) return
+  data.putBoolean('td_starterFluxNetworkLinked', true)
+  linkStarterFluxNetwork(player, level, data)
 })

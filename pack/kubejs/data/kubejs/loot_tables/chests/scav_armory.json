@@ -125,11 +125,6 @@
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:assault_rifle",
-          "weight": 2
-        },
-        {
-          "type": "minecraft:item",
           "name": "simple_guns_reworked:dmr",
           "weight": 1
         },

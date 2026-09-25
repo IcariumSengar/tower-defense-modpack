@@ -1,0 +1,591 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "arsenal"
+	group: ""
+	icon: "simple_guns_reworked:pistol"
+	id: "648C387B65C81C68"
+	order_index: 3
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Holds 15 rounds of Pistol Ammo - right-click to fire, press R to reload from any in your inventory."]
+			icon: "simple_guns_reworked:pistol"
+			id: "3A480744F2122BA6"
+			rewards: [
+				{
+					id: "54E48E2313F552C6"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "68950A6CE6A95951"
+					item: "simple_guns_reworked:pistol"
+					type: "item"
+				}
+			]
+			title: "Pistol"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			description: ["A 6-round cylinder on the same Pistol Ammo as the Pistol - smaller magazine, same reload."]
+			icon: "simple_guns_reworked:revolver"
+			id: "7483FD92CA3E7272"
+			rewards: [
+				{
+					id: "103DA221EDF90D97"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "5029D7CAE01251EE"
+					item: "simple_guns_reworked:revolver"
+					type: "item"
+				}
+			]
+			title: "Revolver"
+			x: 1.5d
+			y: 0.0d
+		}
+		{
+			description: ["Full-auto off a 60-round Pistol Ammo drum. Press R to reload."]
+			icon: "simple_guns_reworked:submachine_gun"
+			id: "6ED544422010E463"
+			rewards: [
+				{
+					id: "2891C876AB753F8F"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "580B305C197C8C93"
+					item: "simple_guns_reworked:submachine_gun"
+					type: "item"
+				}
+			]
+			title: "Submachine Gun"
+			x: 3.0d
+			y: 0.0d
+		}
+		{
+			description: ["Same 60-round Pistol Ammo drum as the Submachine Gun, just a different look and sound."]
+			icon: "simple_guns_reworked:tommy_gun"
+			id: "4A3CD2A952A112EC"
+			rewards: [
+				{
+					id: "6D9AC8E16FC776B0"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "30E90EFC71BE0CC0"
+					item: "simple_guns_reworked:tommy_gun"
+					type: "item"
+				}
+			]
+			title: "Tommy Gun"
+			x: 4.5d
+			y: 0.0d
+		}
+		{
+			description: ["5 shells of Shotgun Ammo. Press R to reload."]
+			icon: "simple_guns_reworked:shotgun"
+			id: "4C4A221676AB34F8"
+			rewards: [
+				{
+					id: "467355D92F07899E"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "2046968D67485C56"
+					item: "simple_guns_reworked:shotgun"
+					type: "item"
+				}
+			]
+			title: "Shotgun"
+			x: 0.0d
+			y: 1.5d
+		}
+		{
+			description: ["Only 2 shells of Shotgun Ammo before it needs reloading - hits hard, empties fast."]
+			icon: "simple_guns_reworked:double_barrel_shotgun"
+			id: "692CD04A7A5E46FC"
+			rewards: [
+				{
+					id: "609CB54F44192E38"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "0061792A8E9D6383"
+					item: "simple_guns_reworked:double_barrel_shotgun"
+					type: "item"
+				}
+			]
+			title: "Double-Barrel Shotgun"
+			x: 1.5d
+			y: 1.5d
+		}
+		{
+			description: ["9 rounds of Shotgun Ammo, and every pull of the trigger sends 2 pellets out at once."]
+			icon: "simple_guns_reworked:automatic_shotgun"
+			id: "31A20EB54D3A561D"
+			rewards: [
+				{
+					id: "2211A60E5E9C3468"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "10E0405E57C42E02"
+					item: "simple_guns_reworked:automatic_shotgun"
+					type: "item"
+				}
+			]
+			title: "Automatic Shotgun"
+			x: 3.0d
+			y: 1.5d
+		}
+		{
+			description: ["8 rounds of Rifle Ammo. Press R to reload."]
+			icon: "simple_guns_reworked:dmr"
+			id: "5726CFC9AC81F0FF"
+			rewards: [
+				{
+					id: "41B47E3C2913E9AD"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "0E10E6E1E7F9B21A"
+					item: "simple_guns_reworked:dmr"
+					type: "item"
+				}
+			]
+			title: "DMR"
+			x: 0.0d
+			y: 3.0d
+		}
+		{
+			description: ["5 rounds - also Rifle Ammo, not Sniper Ammo, despite the name."]
+			icon: "simple_guns_reworked:sniper"
+			id: "5C1C3BF5530BA5AD"
+			rewards: [
+				{
+					id: "0F0B7DF48B579070"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "36AF90EE5C5FF357"
+					item: "simple_guns_reworked:sniper"
+					type: "item"
+				}
+			]
+			title: "Sniper"
+			x: 1.5d
+			y: 3.0d
+		}
+		{
+			description: ["5 rounds of real Sniper Ammo this time. Hits harder than the regular Sniper."]
+			icon: "simple_guns_reworked:heavy_sniper"
+			id: "2C198B117C767347"
+			rewards: [
+				{
+					id: "7C752C71956799A8"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "4D66B7FAD21727D0"
+					item: "simple_guns_reworked:heavy_sniper"
+					type: "item"
+				}
+			]
+			title: "Heavy Sniper"
+			x: 3.0d
+			y: 3.0d
+		}
+		{
+			description: ["Single-shot - one Charged Potato loaded per press of R."]
+			icon: "simple_guns_reworked:potato_cannon"
+			id: "2C543CA93035356F"
+			rewards: [
+				{
+					id: "2F92C45FE2B447E2"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "0752DE2A4C153972"
+					item: "simple_guns_reworked:potato_cannon"
+					type: "item"
+				}
+			]
+			title: "Potato Cannon"
+			x: 0.0d
+			y: 4.5d
+		}
+		{
+			description: ["Single-shot - one Rocket loaded per press of R."]
+			icon: "simple_guns_reworked:bazooka"
+			id: "3256332BEFDCB38A"
+			rewards: [
+				{
+					id: "2EC6A173AD4D75E7"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "0B64A9CB806B7C97"
+					item: "simple_guns_reworked:bazooka"
+					type: "item"
+				}
+			]
+			title: "Bazooka"
+			x: 1.5d
+			y: 4.5d
+		}
+		{
+			description: ["Doesn't hit directly - it sets whatever it touches on fire instead. Holds 30 charges from a Fuel Tank; reloading hands back the tank empty, ready to refill."]
+			icon: "simple_guns_reworked:flame_thrower"
+			id: "4AA00240AA7AE7B3"
+			rewards: [
+				{
+					id: "0AAC2B81FD539AC5"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "1B19CF8F73DA68A8"
+					item: "simple_guns_reworked:flame_thrower"
+					type: "item"
+				}
+			]
+			title: "Flame Thrower"
+			x: 3.0d
+			y: 4.5d
+		}
+		{
+			description: ["No magazine at all - burns one Energized Dust straight from your inventory per shot, no reload needed."]
+			icon: "simple_guns_reworked:laser_gun"
+			id: "7D2C2E4D1A781FE6"
+			rewards: [
+				{
+					id: "17F89553E8B6EF71"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "042536060B998E9D"
+					item: "simple_guns_reworked:laser_gun"
+					type: "item"
+				}
+			]
+			title: "Laser Gun"
+			x: 4.5d
+			y: 4.5d
+		}
+		{
+			description: ["No ammo item needed - just click for a quick burst. The simplest gun there is."]
+			icon: "simple_guns_reworked:minguguuggn"
+			id: "08BD3E34907DDE23"
+			rewards: [
+				{
+					id: "3A2451728D1F38FB"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "477E78461E626643"
+					item: "simple_guns_reworked:minguguuggn"
+					type: "item"
+				}
+			]
+			title: "Minigun"
+			x: 6.0d
+			y: 4.5d
+		}
+		{
+			description: ["Reloads the Pistol, Revolver, Submachine Gun and Tommy Gun - have some in your inventory and press R with one of those in hand."]
+			icon: "simple_guns_reworked:pistol_ammo"
+			id: "141453C0181A1605"
+			rewards: [
+				{
+					id: "4BE87D628F09D9BC"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "10F271A7C88281D6"
+					item: "simple_guns_reworked:pistol_ammo"
+					type: "item"
+				}
+			]
+			title: "Pistol Ammo"
+			x: 0.0d
+			y: 6.0d
+		}
+		{
+			description: ["Reloads the DMR and, oddly, the Sniper too - the Heavy Sniper wants Sniper Ammo instead."]
+			icon: "simple_guns_reworked:rifle_ammo"
+			id: "4437D7E4684579F8"
+			rewards: [
+				{
+					id: "1E775F1DC49892AC"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "637A76083780F5A0"
+					item: "simple_guns_reworked:rifle_ammo"
+					type: "item"
+				}
+			]
+			title: "Rifle Ammo"
+			x: 1.5d
+			y: 6.0d
+		}
+		{
+			description: ["Reloads the Shotgun, Double-Barrel Shotgun and Automatic Shotgun."]
+			icon: "simple_guns_reworked:shotgun_ammo"
+			id: "14F359094B6672C7"
+			rewards: [
+				{
+					id: "7BF83ADC3557F3E0"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "5052CE5493FC86B3"
+					item: "simple_guns_reworked:shotgun_ammo"
+					type: "item"
+				}
+			]
+			title: "Shotgun Ammo"
+			x: 3.0d
+			y: 6.0d
+		}
+		{
+			description: ["Reloads only the Heavy Sniper - the regular Sniper actually takes Rifle Ammo."]
+			icon: "simple_guns_reworked:sniper_ammo"
+			id: "402131BBA0FB3640"
+			rewards: [
+				{
+					id: "37ADF987A656C3CA"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "0E393514349307D4"
+					item: "simple_guns_reworked:sniper_ammo"
+					type: "item"
+				}
+			]
+			title: "Sniper Ammo"
+			x: 4.5d
+			y: 6.0d
+		}
+		{
+			description: ["The Potato Cannon's only ammo, one per reload."]
+			icon: "simple_guns_reworked:charged_potato"
+			id: "7B94CCF8C7C7D8C4"
+			rewards: [
+				{
+					id: "47FE8F1C1FCB7076"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "632036AC646EC22A"
+					item: "simple_guns_reworked:charged_potato"
+					type: "item"
+				}
+			]
+			title: "Charged Potato"
+			x: 0.0d
+			y: 7.5d
+		}
+		{
+			description: ["The Bazooka's ammo, one per reload."]
+			icon: "simple_guns_reworked:rocket"
+			id: "00A564E6563A4B1D"
+			rewards: [
+				{
+					id: "150C97D094A51C54"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "1ACC2E9BA138E138"
+					item: "simple_guns_reworked:rocket"
+					type: "item"
+				}
+			]
+			title: "Rocket"
+			x: 1.5d
+			y: 7.5d
+		}
+		{
+			description: ["Reloads the Flame Thrower for 30 charges. Comes back empty - refill it with 2 Blaze Powder, a Magma Cream and a Water Bucket."]
+			icon: "simple_guns_reworked:fuel_tank"
+			id: "00D9C888CB4CD297"
+			rewards: [
+				{
+					id: "3C746754E7857444"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "0ED85366D4F6B2A6"
+					item: "simple_guns_reworked:fuel_tank"
+					type: "item"
+				}
+			]
+			title: "Fuel Tank"
+			x: 3.0d
+			y: 7.5d
+		}
+		{
+			description: ["The Laser Gun's ammo, burned one at a time with no reload."]
+			icon: "simple_guns_reworked:energized_dust"
+			id: "7CB29CE4A8798C66"
+			rewards: [
+				{
+					id: "25590917FAAFBACC"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "4C92C827E8BF7A7E"
+					item: "simple_guns_reworked:energized_dust"
+					type: "item"
+				}
+			]
+			title: "Energized Dust"
+			x: 4.5d
+			y: 7.5d
+		}
+		{
+			description: ["Right-click to throw - it explodes on the first thing it hits, wall or mob, no fuse to wait out. Get clear fast."]
+			icon: "simple_guns_reworked:grenade"
+			id: "369E47BBAAAA193F"
+			rewards: [
+				{
+					id: "6E415F9388572904"
+					type: "xp_levels"
+					xp_levels: 1
+				}
+			]
+			shape: "circle"
+			tasks: [
+				{
+					consume_items: false
+					id: "1DB21AC84C2E27B3"
+					item: "simple_guns_reworked:grenade"
+					type: "item"
+				}
+			]
+			title: "Grenade"
+			x: 6.0d
+			y: 7.5d
+		}
+	]
+	subtitle: ["Simple Guns: reworked - what each piece does, and what it needs to fire"]
+	title: "The Arsenal"
+}

@@ -160,12 +160,8 @@ S3 = quest("Find the Pedestal", 4, 0, [t_obs("supplementaries:pedestal")],
      "It can be healed: right-click it holding a golden carrot for 10% back, or a nether star for a full heal. The item goes onto the stand and is used up."],
     deps=[S2["id"]], icon="supplementaries:pedestal", subtitle="Look at the pedestal in the courtyard", **SP)
 S4 = quest("Sound the Horn", 6, 0, [t_custom(M["horn"])], [r_lvl(2)],
-    ["Hold the &eWave Horn&r and right-click to call the next wave. Nothing comes until you do, with one catch: after each clear a timer starts, and when it runs out the wave comes on its own. About a minute and a half after wave 1, a little longer each wave, four minutes and up from wave 5. Use the gap to repair, restock and build. Then blow it."],
-    deps=[S3["id"]], icon="kubejs:wave_horn", subtitle="Right-click the Wave Horn", **SP)
-HORN2 = quest("Lost the Horn?", 6, -1.5, [t_check("2C829246152E3F8D")], [r_item("kubejs:wave_horn", 1, "B954E5DE3CCE5286")],
-    ["Right-click the checkmark for a spare Wave Horn. It doesn't run out; claim it again whenever you lose one."],
-    qid="B69DA4CE08B1C6A5", deps=[S4["id"]], icon="kubejs:wave_horn", size=0.75,
-    extra={"can_repeat": "true", "repeat_cooldown": 60, "optional": True})
+    ["Right-click the note block upstairs to call the next wave. Nothing comes until you do, with one catch: after each clear a timer starts (10 minutes minimum), and when it runs out the wave comes on its own. Use the gap to repair, restock and build. Then sound it."],
+    deps=[S3["id"]], icon="minecraft:note_block", subtitle="Right-click the note block upstairs", **SP)
 S5 = quest("Thin the Horde", 8, 0, [t_kill("minecraft:zombie", 5, "2FBB03E59B623145")],
     [r_lvl(3, "351F6384CED5BB12"), r_item("minecraft:iron_ingot", 3, "D962E29F0A8B927B")],
     ["Five plain zombies by your own hand; turret and trap kills don't count here (they do for the Bounties tab). Wave 1 is nine mobs: five zombies, three husks, one zombie villager. Enough to find out whether your gear holds."],
@@ -193,13 +189,13 @@ S11 = quest("The Last Written Wave", 20, 0, [t_custom(M["wave8"])],
     ["Wave 8 is the last one anyone planned: a Crawler on the walls, a Mutant Brute at the gate, a Demolition Zombie throwing TNT. After this the waves don't stop and don't repeat. Every one past 8 is an endless level, and each level adds 8% health, 5% damage and 2% speed on top of the last, with the heavy mobs weighted in more as it climbs.",
      "Every fifth wave a supply crate drops near the base with a map marker on it: a Legendary bag, netherite scrap, a diamond block."],
     deps=[S10["id"]], icon="minecraft:map", subtitle="Completes on its own when wave 8 is cleared", **SP)
-S12 = quest("The Behemoth", 22, 0, [t_custom(M["boss"])], [r_item("bountybags:legendary_loot_bag"), r_lvl(8)],
-    ["Every tenth wave brings a boss on top of the wave. &cThe Behemoth&r is a Mutant Brute with 600 health, 30 damage a hit and full netherite, and you'll hear it coming. It drops a &eTotem of Undying&r when it dies, and that's the one reliable source of one. The same wave drops a supply crate."],
-    deps=[S11["id"]], icon="mutantszombies:mutant_brute_spawn_egg", subtitle="Completes when a boss dies", **SP)
+S12 = quest("The Reaper", 22, 0, [t_custom(M["boss"])], [r_item("bountybags:legendary_loot_bag"), r_lvl(8)],
+    ["Every tenth horde brings something with it that the rest make way for. Whoever kept this diary wrote its name and nothing else. You'll know it when it arrives; be ready before then."],
+    deps=[S11["id"]], icon="undeadnights:elite_zombie_spawn_egg", subtitle="Completes when a boss dies", **SP)
 S13 = quest("No Ceiling", 24, 0, [t_custom(M["wave15"])], [r_item("bountybags:legendary_loot_bag")],
     ["Fifteen. Nobody's diary goes this far. There's no finale waiting and no ending to reach, just the next wave, bigger than the last. Whatever you've built by now is what you're taking into it."],
     deps=[S12["id"]], icon="minecraft:nether_star", subtitle="Completes on its own when wave 15 is cleared", **SP)
-Q += [S1, S2, S3, S4, HORN2, S5, S6, S7, S8, S9, S10, S11, S12, S13]
+Q += [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13]
 
 # ---- Beyond the Wall (pentagon, y=-3) ----
 PE = dict(shape="pentagon")

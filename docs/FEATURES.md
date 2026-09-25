@@ -1246,16 +1246,21 @@ starts immediately. Gives urgency without removing player agency.
 Implementation: display/auto-trigger in `wave_spawner.js`, started in
 `wave_status.js`.
 **Escalating, not flat, 2026-09-04 (real playtest feedback).** Used to
-be a flat 3 minutes every wave; now `countdownTicksForWave()` in
-`wave_status.js` ramps from 90s at wave 1 by +15s per wave cleared, up
-to the original 3-minute ceiling reached at wave 7 (one before the
-endless-phase handoff) - short and tense early, more breathing room
-later. A real title/chat announcement ("THE NIGHTS GROW LONGER") fires
-once at wave 5, alongside the existing gear-removal beat at the same
-wave (a real coincidence, not a dependency between the two) - so the
-pacing shift is a felt, announced moment, not a silently longer number.
-Verified: the curve's real output checked directly in a sandbox for
-waves 1-9 (1800, 2100, 2400, 2700, 3000, 3300, 3600, 3600, 3600 ticks).
+be a flat 3 minutes every wave; `countdownTicksForWave()` in
+`wave_status.js` originally ramped from 90s at wave 1, with a kink at
+wave 5 (real playtest feedback again, 2026-09-08) rebasing to a 4-minute
+floor and continuing to climb uncapped from there.
+**Floored to a flat 10 minutes, 2026-09-12** (direct ask: "the time
+between the waves should be a minimum 10 mins") - `MIN_WAVE_GAP_TICKS`
+now clamps the curve's output, and it turns out that floor swallows the
+entire ramp through wave 28 (the curve's own numbers never reach 12000
+ticks before then), so in practice every wave from 1 onward already
+waits the same flat 10 minutes. The wave-5 "THE NIGHTS GROW LONGER"
+announcement this ramp used to justify was **removed 2026-09-16** (direct
+feedback: "the after wave 5 you have more time message is redundant as
+we have fixed it to 10 mins between waves") - correct catch, since the
+floor means nothing actually changes at wave 5 for that message to
+describe.
 
 **Mob death effects — sent to build 2026-09-01.** Direct request: real
 death animations (limbs scatter, heads roll) instead of the vanilla
@@ -1502,6 +1507,245 @@ gameplay hook of its own.
   nearby.
 - **Clean deletion, exactly as pre-verified** — nothing else in the
   pack touched. Not yet confirmed by an actual playtest.
+
+**Three-front fort: recentred pedestal, purpose-built command post,
+wall-top firing platforms — planned (layout decided 2026-09-16,
+structure picked and spec written 2026-09-22).** Fresh worlds only,
+like every spawn-time change; existing saves keep the old compound.
+
+*Why.* Two direct asks: "does the base need stairs to the walls with
+ramparts and platforms" and, after a live observation, "the front gate
+is where the zombies gather (closest wall to the pedestal I guess)...
+fine for playtesting but I'm not sure if that's the full vision. I want
+a building to house my chests and flux network and horn block but
+maybe the pedestal should be central." Diagnosed from the real code,
+not the symptom: the spawn *angle* is uniform (`wave_spawner.js`
+`rawObjectiveRelativePosition`), but the band is clamped to the live
+border minus 6, so at border 50 mobs spawn 9-19 blocks from the
+pedestal (the 48-64 constants only apply past border ~140, never inside
+the 8-wave campaign, which ends at 110), and any candidate inside the
+compound padded by 4 is rerolled. With the pedestal 7 from the gate, 9
+from each flank and 17 from the back wall (the whole house in between),
+the padded compound reaches 21 blocks north of the pedestal — past the
+band's maximum — so due-north spawns are *zero* while the ring's south
+arc is the shortest; vanilla A* then finishes the funnelling toward the
+one guaranteed 3-wide opening sitting on the pedestal's own X. The
+2026-09-05 "heart of the base, the centre point to everything" ask was
+resolved as *courtyard* centre for visibility, and everything since
+(reinforcement falloff 0.85→0.08 from the gate, Sentry and Tesla Coil
+both on the front wall) silently assumed the funnel. Three layouts were
+put to the user — keep the funnel / true centre with four fronts /
+three-front fort — and the three-front fort was chosen: pedestal
+centred on the *open* ground, the house as the protected rear.
+
+*Layout (new constants in `buildStarterBase`).* Gate at `z1 = z+2`
+unchanged. **Pedestal at `z1-9`** (was `z1-7`), 8 open rows in front,
+4 behind. **Compound 19 wide**: `SIDE_MARGIN` 5 around a 9-wide
+building → `x0 = x-9`, `x1 = x+9`, so the pedestal is 9 from the gate
+and 9 from each flank by construction (today the flanks are 9 and 8).
+Building front face at `z1-14`, back face `z1-21`, `BACK_MARGIN` 2 →
+`z0 = z1-23` (compound 24 deep, same as today). Border fit checked: the
+north wall lands 4 blocks inside the 50 border's edge (`z-21` vs
+`z-25`), and the levelled field (`±29`) covers it. Spawn availability
+at border 50 is then equal south/east/west (padded compound edge 13
+from the pedestal on all three, band 9-19) and still zero north; by
+wave 8 the band (39-49) clears the compound in every direction and the
+equal 9/9/9 geometry takes over.
+
+- **One fixed collapsed section per flank wall**, 3 wide, level with
+  the pedestal (`wz = centerZ-1..centerZ+1` on both `x0` and `x1`),
+  full-height air with the same 50% rubble roll at the outer foot as
+  the random breaches — "plain like the existing breaches" was the
+  explicit pick over any ramp/sally-port dressing. Folded into the
+  flank breach lists after the random picker runs (with
+  `centerZ-2..centerZ+5` excluded from random picks so the flank post
+  below always sits on solid wall), so the wall loop, rubble scatter
+  and stake-wall skip all treat it as a breach with no new code paths.
+- **Open kill zone inside the gate**: `KILL_ZONE_DEPTH = 6` — rows
+  `z1-6..z1-1` across the full width stay empty of scripted
+  placements. That is where the Sentry's and Tesla Coil's arcs land.
+  The pedestal (`z1-9`), waystone and command post are all outside it
+  by construction; the constant is the rule future placements check
+  against. Inner barricade and work-alley fixtures were offered and
+  declined — the yard stays open ground.
+- **Starter fence seals the flank holes too until wave 5** (9 blocks
+  each, 27 total), matching the existing "the previous occupant boarded
+  every hole; the boards come down at wave 5" rule for the gate. Gated
+  on a new persisted `td_layoutVersion = 2` — `starterFencePositions()`
+  only returns the flank ranges when the key is ≥ 2, otherwise the
+  wave-5 removal in `wave_status.js` would set air into the *solid*
+  flank walls of an old save. Alternative if the early waves should
+  come from the flanks instead: leave the flank holes open from wave 1
+  (the gate-wall Sentry still reaches the pedestal at 9 blocks; the
+  coil's 6-block range would not).
+- **`WEAK_WALL` unchanged** at the back-west corner — purely narrative
+  now that the rear is the protected side.
+
+*Step 0 — the `td_pedestalZ + 7` derivations.* Five places recompute
+the gate wall as pedestal + 7 and three of them run on new worlds:
+`wave_status.js` ~238 (fence removal at wave 5) and ~264 (Sentry item
+cleanup), and `playtest_starter_kit.js` ~2606 (fence owner
+assignment). Rule: read `td_compoundZ1` (persisted at build since
+2026-09-09) and fall back to `td_pedestalZ + 7` only when the key is
+absent. The retrofits at ~2235 (zcraft cleanup) and ~2502 (Tesla
+relocation) are old-save-only and keep the literal offset. The rig
+retrofit/relocation pair (~2325/~2385, `pedZ - 10`) would fire on a
+fresh fort world's first login and move the rig into the wrong room:
+the build must write every one-shot migration flag the login handler
+checks (`td_starterPowerRigRelocated`, `td_zcraftCleanupDone`, the
+Tesla relocation flag — grep `getBoolean('td_` in the handler for the
+full set) as already done, so no old-save migration can ever run
+against the new layout.
+
+*Command post — `the_lost_city:cafe4`.* Chosen from a census of all
+658 structure NBTs in the live instance's jars (247 with a footprint
+≤ 12 and height ≥ 5; the other finalists were `house_with_car` — car
+fills half the ground floor, no roof — and the clean `cafe0`). cafe4 is
+the *occupied* twin: 9×10×9 NBT, real footprint 8×9, cyan terracotta
+over stone brick, 45 vines, boarded windows, and the last occupant's
+smithing table, cartography table, stonecutter and crafting table left
+inside. Every fact below was read from the NBT layer by layer (the
+census agent's "floors not connected" was wrong: a half-slab staircase
+climbs the local north wall from `(6,1,1)` to `(1,3,1)` and turns onto
+the upper floor at `(1,4,2)`, with a fence railing along the stair
+void at `y=5, z=2`).
+
+- **Placement**: `place template the_lost_city:cafe4 <x+4> <floorY>
+  <buildingZ0> clockwise_90`. Vanilla rotates about the placement pos
+  with a zero pivot, so local `(lx, lz)` → world `(pos.x - lz, pos.z +
+  lx)`: the footprint lands at `x-4..x+4` and `buildingZ0..buildingZ0+7`,
+  the local-x=8 vine column hangs on the **south (yard) face** at
+  `buildingZ0+8`, and the local east wall becomes the yard face. The
+  doorway (local `(7, 1..2, 4)`) therefore lands at world
+  `(x, wallY0..wallY0+1, buildingZ1)` — dead centre of the yard face,
+  on the pedestal's own X, 5 rows behind it. Placed at `floorY` like
+  the Brick House: local y=0 is a full stone-brick foundation pad,
+  so the walkable floor sits at `wallY0`. Verify the mapping in the
+  sandbox before trusting any post-placement coordinate.
+- **Cleanups, all verified from the NBT**: jigsaw `(0,0,8)` and the
+  sunk pre-filled chest `(1,0,6)` → `stone_bricks`; upstairs chest
+  `(6,5,7)` (`berezka_api:chests/berezkahousesmall_0`) → air, per the
+  2026-09-04 "loot lives outside the border, not at home" rule;
+  campfire `(3,5,5)` → air (no-campfire rule); the 3 lime wall banners
+  `(8,4,3..5)` on the yard face → air. **4 baked villagers**
+  (cartographer, toolsmith, mason, one unemployed; `forge:spawn_type
+  SPAWN_EGG` captures from a live world) — `/place template` places
+  entities, `no_passive_mobs.js` deliberately leaves villagers alone
+  (TFTH's Flesh Villager), and zombies target villagers (the
+  village-spacing finding), so they are stripped with a repo override
+  `pack/kubejs/data/the_lost_city/structures/cafe4.nbt` with
+  `entities` emptied, the same technique as the 2026-09-04 pass (which
+  never covered this file — no override exists today). Spawner sweep
+  kept, height 10; there is no wet_sponge in this template.
+- **Doorway**: the two boarding fences at local `(7, 1..2, 4)` become
+  a real `dark_oak_door` (cafe0's own door block) — the inner
+  chokepoint. Ground-floor boards on the other walls stay: solid to
+  mobs, no second entrance.
+- **Upstairs windows**: the yard face (local `x=7, y=6..7, z=1..7`,
+  14 fences) → `glass_pane`, so the horn floor sees the gate and the
+  pedestal. Sub-decision: the NBT's local-west (→ back) and local-south
+  (→ west flank) upper walls are already intact glass (26 panes);
+  "glass on the yard face only" as chosen means boarding those two,
+  or they can stay (three glass sides, one boarded).
+- **Interior (local coords, converted through the same rotation)**:
+  crafting table `(3,1,4)` → `craftingstation:crafting_station
+  [waterlogged=false]` (the same swap as today); smithing table,
+  cartography table and stonecutter kept as the occupant's tools;
+  **power rig behind the bar counter against the back wall** —
+  `generatorgalore:culinary_generator (1,1,4)`, `fluxnetworks:flux_plug
+  (1,2,4)` stacked on it, `basic_flux_storage (1,1,5)` — persisted to
+  the same `td_bioGenerator*/td_fluxPlug*/td_fluxBattery*` keys so
+  `starter_flux_network.js` links it unchanged; **storage flanking the
+  inside of the doorway** — an empty double chest at `(6,1,2)+(6,1,3)`
+  and 4 empty barrels at `(6,1..2,5..6)`, all confirmed free air with
+  free air above; **horn note block at `(6,5,4)`** — upstairs, at the
+  yard-face window, on the pedestal's X, looking straight down the
+  yard to the gate, persisted to `td_waveNoteBlock*` as today.
+- **Waystone** outside beside the door on the yard face, at world
+  `(x+2, wallY0, buildingZ1+1)` (replaces one vine). The quest lines
+  "pedestal in the courtyard", "note block upstairs" and "Waystone in
+  the courtyard" all still read true — no snbt edit.
+- **Reinforcement**: rerun the `HOUSE_REINFORCE_BLOCKS` derivation on
+  cafe4's palette. Checked against the SecurityCraft jar's 632
+  blockstates: 21 of 24 block types have a real reinforced id
+  (`reinforced_cyan_terracotta`, `_stone_bricks`, `_mossy_stone_bricks`,
+  `_glass_pane`, `_birch_fence`/`_fence_gate`/`_slab`/`_stairs`/
+  `_pressure_plate`, `_andesite_slab`, `_moss_block`, both carpets,
+  `_stone_brick_stairs`); the 95 `smooth_stone_slab` floor/roof cells
+  have none and stay vanilla (a digger never reaches them). Net: a more
+  complete shell than the Brick House's 75%.
+
+*Wall-top firing platforms* (the 2026-09-16 spec, re-sited for the
+fort; the back-corner posts are dropped). The perimeter wall is a
+single 1-thick, 3-tall course with nothing reachable above it — the
+Sentry and Tesla Coil already stand on top at `wallY0+3`, and
+`ladder_climb_assist.js` exists specifically to let a wave mob climb a
+`minecraft:ladder` to "a player sniping from on top of a wall" (its own
+header comment), so the pack already assumes elevated fighting and just
+never gave the player a way up.
+
+- **Gate platform**: two halves flanking the 3-wide opening
+  (`doorX-6..-2` and `doorX+2..+6`, planks one row inside the wall at
+  `wallY0+2`, standing surface `wallY0+3`), deliberately *not* bridged
+  over the gate — a bridge at wall-top height would cap the opening at
+  2 tall, which the wide mutants can't fit through, so every one of
+  them would take the flank holes instead. Ladders at `doorX∓7`. Cover
+  slabs skip the wall-top cells the Sentry, the coil, its lever and
+  flux point, and the wave-5 fence columns already own. The gate is
+  already "the visible fault line... heaviest reinforcement, most
+  damage, most repair".
+- **One flank post per side**: 3 wall columns immediately gate-ward of
+  the collapsed section (`wz = centerZ+2..centerZ+4`, ladder at
+  `centerZ+5`), so each post overlooks its own hole and the gate
+  approach. The random breach picker reserves `centerZ-2..centerZ+5`
+  on both flanks and `doorX±7` on the front wall so every platform and
+  ladder column is solid wall.
+- **Widening, not a walkway**: the wall stays 1 thick except under
+  the 3 platforms; each juts inward on a bracket of mismatched
+  supports (a scaffold block or two, debris/crate props, half-rotten
+  planks) — the same rubble vocabulary as the breaches, not a stone
+  corbel. **Low cover, not a parapet**: a waist-high rubble/
+  reinforced-patch line on the outward edge only.
+- **Access: `minecraft:ladder` on the interior face, one per
+  platform** — the real ladder block, chosen explicitly over stairs or
+  scaffolding so `ladder_climb_assist.js` keeps the platform
+  contestable rather than a permanent safe zone. Interior-only is
+  load-bearing: an exterior ladder hands every mob a route up.
+
+*Footprint.* One `/place` plus ~60 fixups for the command post, the
+wall/gate/trap build essentially as today plus the two fixed breaches
+and 18 flank fence blocks, ~80 setblocks for the three platforms, one
+override NBT. No new mod dependencies. Separable into two commits
+(layout + command post, then platforms) if the platforms want their own
+sandbox pass.
+
+**Built and sandbox-verified 2026-09-22.** `playtest_starter_kit.js`
+(layout constants; the fixed flank breaches pushed onto the breach
+lists after the random picker; `starterFencePositions()` grows flank
+ranges gated on a new persisted `td_layoutVersion = 2`;
+`starterGateWallZ()` / `starterFenceFlanksFromData()` helpers replace
+the three new-world `td_pedestalZ + 7` reads; the cafe4 placement with
+a 93-entry generated `CAFE4_FIXUPS` list plus replace-fills for the
+full-block shell; the three platforms; and the one-shot migration
+flags written at build so no old-save relocation can fire on a fort
+world), `wave_status.js` (its two `+7` reads), and a new
+`pack/kubejs/data/the_lost_city/structures/cafe4.nbt` override with
+`entities` emptied. Verified on a fresh-world sandbox boot
+(`D:\mc-servers\sandbox-fort`, a clone of the dedicated-server install
+on its own RCON port): 44/44 scripts, 0 errors, base built in 975ms;
+50 RCON block probes derived from the marker's own persisted
+coordinates all matched — pedestal 9 from the gate, both flank holes
+fenced, every platform plank/cover/ladder in place, door/glass/boards/
+reinforced shell/rig/chests/horn/waystone at their computed cells,
+kill zone empty, campfire/banners/loot chest gone, `@e[type=villager]`
+empty, Sentry present, `td_layoutVersion 2` and the three migration
+flags persisted. (One probe expectation was wrong — a stone-brick
+foundation cell checked for mossy — not the build.) **Not yet seen by
+a real player**: the rotation mapping and every block id are proven,
+but "does it read right" needs a client — the yard from the gate, the
+boarded-up cafe with its one glass wall, standing on a gate half and a
+flank post, and whether waves 1-4 now pile on three fences instead of
+one.
 
 **World type** — *live, user-confirmed working in-game (2026-09-01)*.
 `kubejs/data/minecraft/dimension/overworld.json` uses `type:
@@ -1946,64 +2190,19 @@ weapon-mod addon, a Survival Instinct addon) — both irrelevant here,
 skip both. **Not yet installed** — same spacing-retuning treatment
 every structure mod in this pack has needed will apply once it is.
 
-**Base expansion into rooms/corridors** — *planned, not built*. Goal:
-gather materials, activate something, and a new room/corridor gets
-built onto the starting structure automatically.
-
-**Mod choice reversed 2026-08-30**: the originally-planned "standalone
-Schematicannon" extraction turned out to be a mislabeled re-upload, not
-an independent mod. Decompiling its jar (CurseForge project 1375728,
-"Schematicannon standalone" by VinicciusX) showed a hardcoded
-`modId = "schematicannon"` / `authors = "bikerboys"` pointing at
-`github.com/michiel1106/Create-schematicannon` — the exact same mod as
-CurseForge's separate **"Schematicannon"** listing (project 1350154,
-also bikerboys), which the author's own page flags **"BROKEN, MIGHT FIX
-IN THE FUTURE. DONT USE."** It also jar-in-jars Flywheel/Ponder/
-Registrate/MixinExtras anyway, so the assumed footprint saving over
-full Create was smaller than it looked. Installed **full Create**
-(CurseForge project 328085, `simibubi`, 6.0.8 for 1.20.1 Forge) instead
-— actively maintained, same bundled-dependency footprint, at the cost
-of shipping Create's full machine/content roster alongside the one
-mechanic actually wanted. A real footprint tradeoff, accepted directly
-by the user rather than decided unilaterally. No separate Flywheel/
-Ponder/Registrate packwiz entries needed — Create bundles all four via
-jar-in-jar, confirmed from the jar's own `META-INF/jarjar/` contents.
-
-Survival-native (no creative-mode restriction, no colonist dependency,
-unlike the Structurize-based plan this superseded). Direction chosen:
-**curated schematics found while exploring**, not player-designed
-freeform — the pack author builds and finalizes each room design once,
-ships the finished schematic as a lootable item placed in structure
-loot tables (same LootJS mechanism already used for loot bags,
-targeting structure/chest loot tables instead of entity-kill drops —
-exact method name to confirm against LootJS's source before writing
-it). This directly ties into the exploration/structure-generation plan
-below: schematics become one of the things worth finding out there.
-
-**Material-check-then-place gate is native, not custom** — corrected
-2026-08-30, confirmed against Create's own official GitHub wiki
-(`Creators-of-Create/Create` wiki, "Printing a Schematic"), not the
-earlier-assumed gap. The Schematicannon draws materials from adjacent
-inventories and pauses with a "Missing Block" status until they're
-supplied (or skips, if "Skip Missing Blocks" is toggled) — no custom
-KubeJS glue needed for the gate itself.
-
-**Real, harder blocker found in its place**: a finished `create:schematic`
-item is not self-contained NBT — decompiling `SchematicItem.class`
-confirms its NBT (`File`, `Owner`, `Bounds`, `Deployed`) is a *pointer*
-to a `.nbt` structure file that must already exist in that specific
-world's `saves/<world>/schematics/uploaded/` folder (populated normally
-by a player running a local schematic file through the in-world
-Schematic Table). A lootable item alone can't carry the room design —
-the underlying `.nbt` file has to reach every world's save folder
-somehow, which needs either a real filesystem-copy hook (KubeJS/Java
-interop, unverified) at first login, or accepting that the loot-schematic
-plan needs a different delivery mechanism entirely. **Still needs,
-before any of this can be built**: at least one actual room, hand-built
-in-game and exported via Schematic and Quill + Schematic Table into a
-real `.nbt` file — inherently a real-client, real-playtest step, not
-something a coding session can produce headlessly. This is the genuine
-bottleneck now, not the mod choice.
+**Base expansion into rooms/corridors** — *planned, not built, now
+dead*. The plan was to gather materials, activate something, and have a
+new room/corridor built onto the starting structure automatically via
+Create's Schematicannon, using curated lootable schematics rather than
+player-designed freeform. It never got built — real, unresolved
+blocker: a finished `create:schematic` item is just a pointer to a
+`.nbt` file that must already sit in that specific world's own save
+folder, so a lootable item alone can't deliver the room design, and at
+least one room would have needed hand-building and exporting in a real
+client session first. Moot now regardless: Create + Create: Crafts &
+Additions were uninstalled entirely 2026-09-11 (see docs/MODS.md's
+Removed mods). Full mod-choice reasoning and decompile trail:
+`docs/archive/features-dead-systems-history.md`.
 
 **Structure generation / exploration content** — *live* (2026-08-30),
 **first real playtest 2026-08-31: desert biome confirmed working
@@ -4486,243 +4685,185 @@ custom code. Current build:
 **Barbed Wire replaces Spikes — requested 2026-09-04, built, deployed,
 and committed (8e1ed02; the rig's final outdoor position landed later
 in a9e6c1a as part of the pedestal rework — see end of this entry).**
-Direct feedback: "the spikes is kinda rubbish, can we replace this
-block with barbed wire trap from Create: Crafts & Additions." Verified
-directly, not assumed:
-- **Create: Crafts & Additions** (CurseForge, author MRHminer, 108M+
-  downloads, real Forge 1.20.1 build `createaddition-forge-
-  1.20.1-1.3.3`, released 2025-11-10). Dependencies confirmed from its
-  own relations page: **Create** (required — already installed, see
-  "Schematicannon → full Create") and **JEI** (optional — already
-  installed). Zero net new footprint beyond the one addon jar.
-- **Barbed Wire's real mechanic, confirmed not guessed**: mobs crossing
-  it take damage *and* are severely slowed — a genuinely stronger
-  effect than Spikes' plain contact damage, matching the "rubbish"
-  complaint's likely real cause (Spikes' damage alone apparently
-  doesn't read as a real deterrent).
-- **Real tier-philosophy tension, surfaced and resolved with the
-  user rather than decided unilaterally**: Iron Wire (Barbed Wire's
-  own ingredient) isn't a crafting-table recipe — it needs a **Rolling
-  Mill**, a real Create kinetic machine — which cuts against this
-  pack's own established Tier 1 rule ("no power, no fuel," the exact
-  reason Trapcraft's Igniter/Fan/Magnetic Chest are Tier 2, not Tier
-  1). **User's call: keep it in Tier 1 anyway.**
-- **Friction reduced, then fully shipped, 2026-09-04 — placement bug
-  found and fixed 2026-09-05.** Rather than making the player build a
-  Rolling Mill from scratch, **a finished Depot + Mechanical Press +
-  Rolling Mill rig is pre-placed** inside the starting structure.
-  **Real placement bug, direct playtest report**: the rig landed
-  outside the building, blocking the front door — the original
-  "clear space" spot-check only verified air/floor/ceiling, never
-  *what kind* of space it was, and local x=4-6,z=9 turned out to be the
-  open entrance yard, not a back room. Root-caused by parsing
-  `abandoned_brick_house.nbt` directly (not another spot-check) and
-  reproduced fresh against real terrain rather than trusting the
-  already-played live save (4 waves in by report time, could have been
-  altered by the player). **Corrected spot: local x=7, z=5-7** — a real
-  enclosed room confirmed from the NBT itself (solid andesite
-  foundation, 3 blocks of headroom, a real ceiling, walls/doors/
-  furniture boxing it in), right beside the structure's own pre-placed
-  furnace. The player's only remaining task is crafting one **Hand
-  Crank** and placing it in the reserved open cell past the Mill —
-  that step genuinely can't be pre-placed already running, it needs a
-  real player right-click. Press and Mill face the same direction and
-  conduct power directly to each other, no shaft
-  needed — confirmed live with a temporary creative motor (real nonzero
-  Speed on both blocks in a single 3-block kinetic network).
-- **Real crafting chain, decompiled and live-verified end to end, not
-  guessed from the wiki**: `iron_ingot` → Mechanical Press (items go
-  **over a Depot**, not on top of the Press itself — the mod's own
-  ponder text says so) → `iron_sheet` → Rolling Mill (items dropped
-  directly on top) → `iron_wire` ×2 → crafting table (a diamond shape
-  of 4 iron wires) → `barbed_wire` ×2.
-- **One real, honestly-unresolved item**: the Mechanical Press never
-  auto-fired in the scripted sandbox test — kinetic power and the
-  Depot's item-holding both confirmed correct, but Running/Ticks never
-  advanced even after 20+ seconds. Not chased further since the Rolling
-  Mill (the actual thing being pre-placed and relied on) is fully
-  verified working — but this needs a real player to confirm the Press
-  itself actually processes when used normally; if it doesn't, that's a
-  separate bug to open, not assumed fine.
-- **Scope of the swap, all shipped**: `trapcraft:spikes` replaced
-  everywhere it's referenced — the craftable Tier 1 item itself, the
-  "Sharpened Scrap" quest's task target and both quest/chapter icons,
-  and the decorative gate-line placement in `playtest_starter_kit.js`
-  (now `createaddition:barbed_wire[vertical=false,facing=south]`,
-  confirmed real blockstate properties from the mod's own JSON, not
-  guessed). The gate-dressing design note has actually called this spot
-  "a barbed-wire or Spikes line" since it was first written — barbed
-  wire was always one of the two considered options here, this just
-  resolves that either/or with the real block.
-- **Real save-compatibility risk caught before deploying, not after**:
-  the live instance's quest save already had "Sharpened Scrap"
-  completed under its own task/chapter IDs, which had diverged from the
-  repo's copy of that `.snbt` file at some earlier point (before this
-  session). Blindly overwriting live with the repo's copy would have
-  orphaned that real completed progress. Fixed by editing the live
-  file's item/icon/description in place — keeping its real IDs — then
-  syncing the repo copy back from that live file, so both now match
-  exactly and the completed quest stays completed.
-- **`packwiz refresh` run, all hashes clean. Deployed and committed**
-  (8e1ed02) — held for review first given the quest-ID divergence risk
-  above, then committed once the user gave the go-ahead.
+Real Tier 1 defense built on Create: Crafts & Additions' Barbed Wire
+block (damage + slow, stronger than Spikes' plain contact damage), fed
+by a pre-placed Depot + Mechanical Press + Rolling Mill rig at the
+starting base. Now dead: Create + Create: Crafts & Additions were
+uninstalled entirely 2026-09-11, direct feedback that Barbed Wire felt
+redundant next to the new SecurityCraft trap roster (see docs/MODS.md's
+Removed mods). Full build history, the real crafting chain, and the two
+placement/save-compatibility bugs found and fixed:
+`docs/archive/features-dead-systems-history.md`.
 
 **Trapcraft Spikes re-introduced as a weak Tier 1 interim trap, below
-Barbed Wire** — *live*, 2026-09-05. This was item 5 of an original
-5-item batch (docs/QUEUE.md), repeatedly bumped behind live bug reports
-until now; the mod block was never uninstalled, just left with no recipe
-or quest of its own once Barbed Wire took over as the "real" Tier 1
-defense above.
-- **Recipe retuned, not left stock**: Trapcraft's own shipped recipe
-  (`data/trapcraft/recipes/spikes.json`, confirmed by decompiling the
-  jar) is 5 iron ingots and nothing else — too steep for "weak/cheap
-  interim," especially sitting beside Bear Trap's 3 iron + 3 stone
-  pressure plates in the same chapter. New KubeJS override
-  (`tier1_recipes.js`, mirroring `tier2_recipes.js`'s
-  remove-then-`event.shaped` pattern): 4 sticks + 1 iron ingot — the
-  cheapest defense item in the pack, by design, since it's meant to be
-  available before Bear Trap or Barbed Wire's Create rig are built.
-- **"Damage AND slow" resolved by pairing, not a code change**:
-  `SpikesBlock.java`'s own decompiled logic only ever damages (2.0f
-  base + a velocity-based bonus on contact, or a flat 20.0f on a 5+
-  block fall) — no slow effect exists on the block itself. Rather than
-  bolt one on, the fix is pairing it with plain vanilla cobweb (its own
-  real movement-speed reduction already does the slowing half) — the
-  new quest's description spells this out directly to the player as the
-  intended combo, instead of leaving it as a silent, undiscoverable
-  expectation.
-- **New Tier 1 quest, "Better Than Nothing"** (`campaign.snbt`,
-  `id: "67A7BF98D2C077DE"`) — same dependency root and visual cluster
-  as "Sharpened Scrap"/"Something Crueler," slotted between them and
-  "Not Just Jewelry" (x=13, y=-0.5). Rewards 1 XP level + 2 iron ingots —
-  intentionally modest, and the iron reward nudges the player toward
-  affording Bear Trap or the Barbed Wire rig next.
-- Verified via a clean sandbox boot: KubeJS loaded all scripts with 0
-  errors, recipe processing reported "0 failed recipes," and FTB Quests
-  logged the expected 31-quest count (was 30) with no parse errors.
-  Deployed to the live instance's script/quest files (`packwiz refresh`
-  run, hashes clean) — **not yet confirmed by a real playtest.**
+Barbed Wire** — *live*, 2026-09-05. A cheap interim Tier 1 trap sitting
+below Barbed Wire, deliberately re-recipied to 4 sticks + 1 iron ingot
+and paired with vanilla cobweb for the slow effect the block itself
+lacks. Dead along with the rest of Trapcraft — dropped entirely
+2026-09-08, replaced by Simply Traps' Spike Trap (see docs/MODS.md's
+Removed mods). Full recipe and quest detail:
+`docs/archive/features-dead-systems-history.md`.
 
-**Machine progression, Tier 2** — *live* (2026-08-31). Semi-automated,
-redstone-powered, still fragile — the next rung up from Tier 1, and the
-first real use for the Uncommon (Fortified Cache) loot tier. All four
-items re-recipied via `ServerEvents.recipes`
-(`pack/kubejs/server_scripts/tier2_recipes.js`) to swap each stock
-recipe's Common-tier filler (cobblestone, loose redstone, iron ingot)
-for Uncommon-tier materials (`quartz`, `redstone_block`, `iron_block`)
-confirmed real from `loot_bag_open.js`'s `FORTIFIED_CACHE_POOL` — the
-actual gate the loot tier was missing.
-- **Fire Trap** = Trapcraft's **Igniter** (`trapcraft:igniter`) —
-  already installed for Tier 1, unused until now. Lights an area on
-  fire on a redstone signal. Re-recipe: netherrack ring, quartz
-  filler, redstone_block core (was cobblestone/redstone dust).
-- **Fan** (`trapcraft:fan`) — also Trapcraft. Pushes mobs (and items)
-  on a redstone signal — funnels mobs into other traps, or pushes them
-  back from the chokepoint. Re-recipe: quartz ring around an
-  iron_block hub (was cobblestone/iron ingot).
-- **Magnetic Chest** (`trapcraft:magnetic_chest`) — also Trapcraft.
-  Auto-collects loot from trap kills. Re-recipe: planks, redstone_block,
-  iron_block (was planks/redstone dust/iron ingot).
-- **Arrow Turret** = **Medieval Defense Turrets**'
-  `medievalturrets:bow_turret_item` (new install, Modrinth project
-  `9y40sONu`, v1.1.4, Forge 1.20.1, no dependencies, confirmed real via
-  the mod's own shipped recipe JSON before touching anything) — its
-  simplest turret, arrow ammo only, picked specifically over TurretCraft
-  and K-Turrets for being more "basic, fragile" like the rest of this
-  tier. Re-recipe: bow + planks + iron_block (was bow/planks/
-  cobblestone).
-- **Reinforced Spikes** (tougher Tier 1 spikes) — cut. No equivalent
-  found in Trapcraft; not blocking the rest of Tier 2.
-- Verified via a full-mod-set sandbox boot (not just `node --check`):
-  copied the live instance's entire relevant mod/config set into the
-  same throwaway dedicated server used for the endless-phase-scaling
-  verification, added the new turret mod, and confirmed a clean
-  `Done (...)!` boot with `tier2_recipes.js` loading with 0 errors and
-  FTB Quests logging "3 chapters, 17 quests" — the exact expected count
-  (11 Basics + 2 Tier 1 + 4 Tier 2).
+**Machine progression, Tier 2** — *live* (2026-08-31). Described the
+original semi-automated Tier 2: Trapcraft's Igniter/Fan/Magnetic Chest
+plus Medieval Defense Turrets' Arrow Turret, re-recipied onto
+Uncommon-tier loot materials. Fully dead now — Trapcraft was dropped
+entirely 2026-09-08 and Medieval Defense Turrets was removed
+2026-09-09, both ultimately replaced by SecurityCraft's Sentry/I.M.S./
+Cage Trap/Electrified Iron Fence/Bouncing Betty/Claymore roster (see
+docs/MODS.md's Removed mods and `securitycraft_traps.js`). Full
+original spec: `docs/archive/features-dead-systems-history.md`.
 
-**Trapcraft dropped entirely — decided 2026-09-08, spec ready, NOT YET
-BUILT, holding for explicit dispatch.** Direct feedback: doesn't like
-Trapcraft's traps, but wants to keep the Magnetic Chest's *mechanic*
-specifically — moved off Trapcraft onto a different mod, not kept as-is.
-Scope confirmed directly with the user as "everything Trapcraft," not
-just the traps — so this removes all 5 pieces currently wired in:
-`trapcraft:spikes`, `trapcraft:bear_trap` (Tier 1), `trapcraft:igniter`,
-`trapcraft:fan`, `trapcraft:magnetic_chest` (Tier 2).
+**Trapcraft dropped entirely — decided 2026-09-08, since built.** The
+original spec (below in the archive) called for removing Trapcraft's
+whole 5-piece roster (Spikes/Bear Trap/Igniter/Fan/Magnetic Chest) and
+was written as "spec ready, not yet built, holding for explicit
+dispatch" — that dispatch happened, and it shipped essentially as
+specced: Simply Traps and V01D's Bear Traps replaced the Tier 1 pieces
+(see docs/MODS.md's mod table); Igniter/Fan were cut with no
+replacement, and Magnetic Chest's role was never actually filled by the
+Smart Storage candidate named in the original spec, since Tier 2 was
+instead replaced wholesale by SecurityCraft's trap roster soon after.
+Full research trail and the mods ruled out: `docs/archive/features-dead-systems-history.md`.
 
-**Correction to the user's own pasted research before it went further**:
-that research named "Defensive Traps" (CurseForge, modid `defenses`) as
-a Tier 1 spike/bear-trap replacement. Checked directly, not taken on
-faith — **it has no Forge 1.20.1 build at all**, only NeoForge (1.21.1,
-1.20.6) files exist on its real CurseForge files list. Ruled out. Worth
-remembering the rest of that pasted research (Tier 2 turret mods, Tier 3
-Tesla/flamethrower mods, boss-wave/bossbar/music KubeJS templates) was
-read as background only, not verified or actioned — it also proposes
-new tiers/mechanics this pack already has covered (Medieval Defense
-Turrets already fills the Tier 2 automated-turret role) or that conflict
-with the current stabilize-before-new-tiers priority; not part of this
-entry.
+**Machine progression (Tier 3-4)** — Tier 3 has a real power system
+(see "Storage & power system" below). **Tier 4 — BUILT, 2026-09-15**,
+direct ask ("source some more mods/blocks/machines that can be powered
+and damage enemies... do a deep dive"), three parallel research agents,
+decision confirmed via AskUserQuestion, then a direct "build it" go-
+ahead. Full research trail and what was ruled out (Immersive
+Intelligence still 1.12.2-only, Mekanism's laser turret needs the whole
+Mekanism tech tree, no clean AoE/chain-lightning FE mod exists at all)
+in docs/IDEAS.md's "Tier 4 deep dive + decision" entry.
 
-**Real replacements verified (mod page/API checked directly per mod,
-not assumed from search summaries):**
-- **Tier 1 spikes** → **Simply Traps** (CurseForge, real
-  `simply_traps-1.7-forge-1.20.1.jar`, Sept 2025, no dependencies) — use
-  its Spike Trap/Stakes piece only. Its own barbed-wire item is
-  deliberately NOT used — would duplicate Create: Crafts & Additions'
-  barbed wire, already this pack's real Tier 1 wall-piercing defense.
-- **Tier 1 bear_trap** → **V01D's Bear Traps** (CurseForge, real Forge
-  1.20.1 beta build, June 2025, no dependencies) — genuinely holds a mob
-  in place on trigger, same role as the current one.
-- **Tier 2 igniter/fan** → **cut, not replaced**. No standalone mod
-  found that fits either role on a real Forge 1.20.1 build. Recommended
-  over continuing the search: both were only ever two simple item-task
-  quests ("Spark and Flame," "Herd Them In") with no deeper mechanic
-  built on top; Tier 2's real automated-defense identity is already
-  Medieval Defense Turrets; and this pack's own earlier fan/`AirCurrent`
-  investigation (2026-09-05 batch, item 23) already concluded mazes/
-  walls are the real mob-redirect mechanism here, not fans — cutting
-  these loses two thin quests, not real defensive capability.
-- **Magnetic Chest** → candidate: **Smart Storage**'s "Smart Label" —
-  attaches to any vanilla chest and gives it filtered magnetic pickup of
-  nearby dropped items, rather than being its own dedicated block. Real
-  Forge 1.20.1 build confirmed via Modrinth's version API (published
-  2026-07-28, no dependencies). Checked and ruled out first: Vacuum
-  Chest (real mod, but stale — last build is 1.19.2 from 2022), Magnetite
-  Block (Fabric-only, no Forge build), Vacuum Blocks (real Forge 1.20.1
-  build, but directional-into-a-hopper-only, a meaningfully weaker
-  mechanic than the omnidirectional pull being replaced). **Real caveat,
-  not glossed over**: Smart Storage is brand new and small (37 downloads
-  total at verification time), single author, and its own page states no
-  specific pickup range for the magnetic-collection feature — needs a
-  real hands-on sandbox check of actual range/behavior before trusting
-  it over what it's replacing, same rigor as every other mod pick in
-  this pack.
+**Open Modular Turrets Reborn** (project 1588314, file 8344785, v1.1.0,
+real 1.20.1 Forge build, zero dependencies, sha1-verified against
+packwiz's own metadata before decompiling) — chosen over K-Turrets
+(better-maintained but ammo-only, no FE integration) specifically
+because its Turret Base is a single FE-capable block, not a multiblock,
+so it plugs into the already-built Flux Networks grid with a plain
+Flux Plug — no recipe hack needed the way Tier 3's IE turrets needed a
+Flux Point spliced into their own multiblock recipe. Every component
+(base/sensor/barrel/chamber) is a single crafting-table recipe, real
+JSONs extracted from the installed jar directly — no workbench/
+blueprint/assembly step anywhere, the same bar that got Create and
+Advanced Tower Defense removed.
 
-**What building this actually touches** (for whoever picks it up):
-`tier1_recipes.js` and `tier2_recipes.js` (drop the Trapcraft
-re-recipes, add new ones only if the replacement mods' stock recipes
-don't already fit this pack's tiering), the `kubejs:tier1_machines`
-item tag, and 5 quest entries in `campaign.snbt` (spikes → Simply Traps
-item, bear_trap → V01D's item, magnetic_chest → Smart Storage's item,
-igniter/fan quests removed — check for orphaned dependents first, same
-as every other quest removal in this pack's history). **Real risk to
-check before touching `campaign.snbt`**: this exact chapter has already
-diverged between the live save and the repo copy once before (the
-Barbed Wire swap, 2026-09-04) — pull real current IDs from the live
-save's own quest-progress file, don't blindly overwrite from the repo.
-Also update `MODS.md`'s Trapcraft entry and this file's own "Tier 1
-defenses"/"Machine progression, Tier 2" entries above once built (mark
-Trapcraft-era text superseded, don't delete the history).
+Only 2 of the mod's 10 turret heads shipped, both confirmed via the
+mod's own lang file to deal genuine **area damage** — the capability
+Tier 3's Gun/Chem Turret don't have (both are single-target):
+- `omtreborn:grenade_turret` — Tier II internals, cheap, and its ammo
+  (`ammo_grenade`) is pure vanilla/loot materials (iron nugget +
+  redstone + gunpowder) with zero Ferronite, so it's fully renewable
+  without touching the ore chain at all.
+- `omtreborn:rocket_turret` — the flagship pick, Tier III internals
+  plus a Ferronite Frame, real explosive rockets. Steep on Ferronite
+  (~17 ingots for one turret) but deliberately so — the design notes'
+  own "Tier 3-4 need active power/fuel, a different maintenance
+  pressure" lever, now with an actual material-sink flavor unique to
+  Tier 4 instead of repeating Tier 3's shape.
 
-Nothing installed, uninstalled, or edited yet — spec only, holding for
-an explicit go-ahead before dispatch.
+Passed over, with reasons logged so they aren't re-researched later:
+Tier V's Laser/Rail Gun/Plasma Turret (single-target beams, not AoE,
+and need an End Crystal or Nether Star); Incendiary Turret (needs a
+magma block — already a diagnosed Tier 3 sourcing-gap blocker) and
+Relativistic Turret (glowstone — same problem); Teleporter Turret
+(needs a real Eye of Ender, and isn't offensive anyway).
 
-**Machine progression (Tier 3-4)** — see IDEAS.md for the still-unscoped
-elite/endgame tier list (AoE Devastator, Chain-Tesla Network). Tier 3
-itself now has a real power system to depend on — see "Storage & power
-system" below, designed 2026-09-01, parked in QUEUE.md rather than
-sent to build (deliberately queued behind the current playtest-feedback
-batch, not a design gap).
+**One real sourcing gap found and fixed, the same way Tier 3's was**:
+every component past Tier 1 needs `omtreborn:ferronite_ingot`, smelted
+from the mod's own `ferronite_ore` (a real Forge biome-modifier
+registration, y -24 to 56 trapezoid). Checked against this pack's own
+`kubejs:overworld_flat` noise settings (`min_y: -16`, sea level -63)
+before assuming it was the same dead end as Tier 3's IE ores — it
+isn't quite: Ferronite's placement range does overlap this world's
+actual thin stone slab, unlike aluminum/silver's ranges which mostly
+don't overlap it at all. But per this pack's own standing rule
+("recipes should make sense with what's in the loot tables" — the
+exact call that produced `tier3_loot_aligned_recipes.js`), mining alone
+isn't relied on regardless: `tier4_turret_recipes.js` adds one
+alternate recipe, refining Ferronite straight from Tier 3's own
+(already loot-reachable) Steel + Redstone, alongside the mod's own
+untouched mining/smelting chain — same "add a route alongside the
+existing one" pattern as Flux Dust/Flux Core/Casull in that file.
+
+**Quests**: two new entries in `campaign.snbt`, "Fragmentation"
+(Grenade Turret, gated behind both Tier 3 turret quests) and "Fire for
+Effect" (Rocket Turret, gated behind Fragmentation) — real new ids
+generated and grep-checked against the whole quest tree for collisions
+first, and cross-checked that both dependency ids actually exist in the
+live CurseForge instance's current `campaign.snbt` before writing
+dependents against them (this exact file diverged from the live save
+once before, during the Barbed Wire swap).
+
+**tooltip_tier_colors.js** updated: a new Tier 4 color (`§d`, light
+purple) for `omtreborn:grenade_turret`/`rocket_turret`; the shared
+Turret Base itself stays uncolored, same as the Culinary Generator's
+own support blocks — it has no combat role until a head is mounted.
+
+**Player/block safety, added 2026-09-16, direct ask** ("make sure the
+explosions from the grenade launcher and rocket launcher dont blow up
+blocks and dont harm the player... across the board... for all turrets
+or traps (bouncing betty etc)"). Decompiled `GrenadeProjectile`/
+`RocketProjectile`/`OMTConfig`/`OMTUtil` directly rather than guessing:
+- **Block damage** was already off by the mod's own shipped default
+  (`canGrenadesDestroyBlocks`/`canRocketsDestroyBlocks`/
+  `canRailgunDestroyBlocks` all default `false`) - pinned explicitly in
+  a new `pack/defaultconfigs/omtreborn-common.toml` anyway, so a future
+  mod update can't silently reopen it (same precedent as
+  `securitycraft-server.toml`'s pinned `sentry_bullet_damage`). Rocket
+  Turret's own `explode()` never calls a vanilla `Level#explode` at all
+  (particles/sound + a manual damage loop only) - it was never capable
+  of block damage in the first place.
+- **Player damage**: `OMTConfig.TURRETS.globalCanTargetPlayers` pinned
+  to `false` in the same file. `OMTUtil.canDamagePlayer()` short-
+  circuits on this flag before any per-base "Attacks Players" toggle or
+  owner/trust check runs, and every turret head this mod has (not just
+  Grenade/Rocket) routes through this exact same check - the literal
+  "across the board, for all turrets" half of the ask, covered by one
+  config flag for this mod's entire current and future turret roster.
+- **Real remaining gap, fixed in `omtreborn_grenade_safety.js`**: even
+  with block-destroy off, Grenade Turret's projectile still fires a
+  genuine vanilla `Explosion` (strength 0.1, `ExplosionInteraction.NONE`)
+  before its own manual damage loop runs - the same class of problem
+  `mine_player_safety.js` already solved for SecurityCraft's Claymore/
+  Bouncing Betty/I.M.S. (which stay covered, unchanged, by that existing
+  file + `securitycraft-common.toml`'s `mineExplosionsBreakBlocks =
+  false` - nothing new needed there). Used `LevelEvents.afterExplosion`
+  again, but a different match strategy than that file's spawn-position-
+  plus-radius idiom: a grenade is a lobbed projectile that can travel up
+  to ~20 blocks from its turret (`baseRange` 18 + a 2-block Range
+  upgrade) before detonating, so a radius wide enough to catch it would
+  also be wide enough to accidentally sanitize a real nearby Demolition
+  Zombie dynamite blast during the same wave fight. Instead, the live
+  `omtreborn:grenade_projectile` entity itself is tracked and its real
+  current position re-read at the moment of explosion - the blast always
+  originates from the grenade's own exact coordinates, so a 1-block match
+  radius is effectively exact rather than a fuzzy window. Rocket Turret
+  needs no equivalent entry - confirmed by decompile it never creates a
+  vanilla `Explosion` object, so `afterExplosion` never fires for it.
+
+**Deployed to the live instance and dedicated server, not yet
+confirmed in a real client session** — no graphical client available
+in this environment (same limitation as every other visual/gameplay
+check in this pack's history). The jar was downloaded directly (sha1
+`f9ec1ffedfede502c7a36a90df86cec46433f5b0`, matching packwiz's recorded
+hash exactly) and copied straight into both the live CurseForge
+instance's and dedicated server's `mods/` folders, since this mod uses
+packwiz's metadata-only mode (matching every other CurseForge mod in
+this pack — no raw jar committed to the repo) rather than the 3-jar
+hand-patched exception. A full sandbox reboot+RCON pass was
+deliberately skipped for this one: no worldgen, reflection, or NBT risk
+here, just KubeJS recipe JSON (the pack's most battle-tested, lowest-
+risk change type) plus a mod whose own recipes were extracted and read
+directly from the jar rather than guessed. Real open questions for the
+next actual playtest: does a Flux Plug placed against the Turret Base
+actually deliver FE the way its "provides energy" tooltip implies, do
+the two turret heads actually fire and land area damage on approaching
+mobs, is Ferronite ore genuinely findable in this world's thin
+slab (the raw-materials recipe is there as a fallback either way), and
+— for the player/block safety fix above — does a Grenade Turret kill
+actually leave the terrain and the player untouched in real play.
 
 **Storage & power system — BUILT, 2026-09-08 (Roadmap Phase 3).** The
 original 2026-09-01 spec below is kept as real design history (not
@@ -4919,6 +5060,17 @@ uses for sculk sensor vibration feedback — a real, already-registered
 `minecraft:entity.lightning_bolt.thunder` sound, both centered on the
 struck entity's position via `runCommandSilent`. Syntax-checked with
 `node --check`.
+**Made "cooler," then given a real bolt shape (2026-09-15/16, both
+direct asks).** The single spark burst above grew a vertical
+`electric_spark` column, a `crit` impact pop, and a `flash` camera-flash,
+plus a `lightning_bolt.impact` crack layered under the existing thunder
+sound (2026-09-15). Follow-up ask 2026-09-16 ("I want a cool electricity
+bolt") replaced the straight vertical column with a real jagged
+multi-segment bolt (`drawJaggedBolt`) falling from a fixed height above
+the struck entity, jittered sideways per segment and tapering to zero at
+the target - `event.getSource()` carries no reference back to the coil's
+own position (confirmed via the same IE decompile), so a strike from
+directly overhead reads as a real lightning bolt without needing it.
 
 **Performance tip investigated — real finding, not a code change.**
 The roadmap asked to "cap Embeddium's max particle count" given mass
@@ -7199,133 +7351,28 @@ before dispatch, not guessable:
 
 ### Advanced Tower Defense, added alongside Medieval Defense Turrets — planned, not built
 
-**STALE as of 2026-09-09 — built, and the "don't touch" call below is
-reversed by direct feedback.** Advanced Tower Defense was installed and
-Musket Sentry/Anvil Launcher shipped as a later/heavier *addition* (Track
-C, 2026-09-08 — see that entry further down this file and
-`tier2_recipes.js`'s own header comment for the real recipe chain). Left
-as history, not deleted. The "MDT's Arrow Turret stays untouched"
-decision itself is superseded — see the new entry immediately below.
-
-MDT's Arrow Turret stays exactly as-is (already live, quest-integrated,
-verified via sandbox boot — don't touch). Advanced Tower Defense's
-**Musket Sentry** and **Anvil Launcher** get added as a later/heavier
-slot — variety, not a replacement, per direct decision. Real work before
-dispatch:
-- Verify ATD's actual block/item IDs and default recipes from its own
-  shipped data — the pasted research's example recipes/IDs
-  (`advanced_tower_defense:iron_bolt`, etc.) were never confirmed to
-  exist and shouldn't be trusted.
-- Decide re-recipe/tier gating using the same `event.remove` +
-  `event.shaped` pattern already established in `tier1_recipes.js`/
-  `tier2_recipes.js`.
-- Needs a real quest slot — extend the existing turret quest chapter
-  rather than create a new one, per this pack's "one quest per distinct
-  item" convention.
+Planned to add Advanced Tower Defense's Musket Sentry/Anvil Launcher as
+a heavier Tier 2 option alongside (not replacing) Medieval Defense
+Turrets' Arrow Turret. Musket Sentry did ship (Track C, below), but
+both mods involved are now fully gone: Advanced Tower Defense was
+uninstalled entirely 2026-09-11 ("too convoluted" for this pack's pace,
+direct feedback) and Medieval Defense Turrets was removed 2026-09-09,
+both ultimately replaced by SecurityCraft's trap roster (see
+docs/MODS.md's Removed mods). Full spec:
+`docs/archive/features-dead-systems-history.md`.
 
 ### Tier 2 trap replacements: Vacuum Block → Item Collectors, Arrow Turret → Musket Sentry — spec ready, NOT BUILT, holding for explicit dispatch
 
-Direct feedback, 2026-09-09: "I hate the tier 2 traps... specifically the
-arrow turret and vacuum chest thing." Reviewed both against real
-decompiled/verified data before proposing replacements — not a taste-only
-swap.
-
-**Vacuum Block (`vacuum_cleaner:vacuum_block_tier_1`, the "vacuum chest
-thing") — real finding: it's not just fiddly, it's dead code.** Decompiled
-all 5 tiers (`VacuumBlockTier1Block` through `Tier5Block`, all
-`net.mcreator.vacuumcleaner.block`) directly via `javap`. Every tier's
-constructor chains exactly 4 `BlockBehaviour.Properties` builder calls
-(`of()` → `instrument()` → `sound()` → `strength(1.0F, 10.0F)`) straight
-into the `Block` superconstructor — **no tier calls `.randomTicks()`
-anywhere, and none overrides `isRandomlyTicking()`.** Every tier's actual
-item-pull logic (`VacuumprocedureProcedure`/`Vaccumtier2proProcedure`/.../
-`Vacuumtier5proProcedure`) is only ever invoked from the block's own
-`randomTick()` override — confirmed via a full-jar grep, nothing else in
-the mod calls it. Per vanilla's own block-ticking rules (confirmed via
-web search against Forge 1.20.1 docs), a block that never opts into
-random ticking never has `randomTick()` called at all. **The entire pull
-mechanic is unreachable in normal play, on every tier, not just tier 1** —
-this can't be patched via KubeJS (`isRandomlyTicking()` is a hardcoded
-Java method, not data-driven; same "no custom Java mod" boundary as
-Advanced Tower Defense's turret-head recipes above), so the fix has to be
-a different mod, not a config tweak.
-
-**Replacement: Item Collectors** (CurseForge, real Forge 1.20.1 build
-confirmed directly via CurseForge's own files list — file v1.1.7 exists
-for 1.20.1/Forge, not guessed from the mod's newest-version page; 53M+
-total downloads, created 6 years ago, still receiving releases into 2026
-— a well-established mod, not a fringe one). Real, verified mechanic
-(CurseForge's own description page, cross-checked, not taken on faith):
-places collected items into whatever block sits directly underneath the
-collector (a plain chest is enough — no hopper rig at all), pulls from a
-genuinely omnidirectional radius (Basic Item Collector: up to 5 blocks
-per axis; Advanced: up to 7 blocks + a whitelist/blacklist item filter),
-range configurable per-axis via the block's own GUI, no redstone/power
-requirement. Directly answers all three named complaints: no rig beyond
-"put a chest under it," no directional limitation, and it reads as a
-generic scavenging "collector" rather than a vacuum-cleaner reskin.
-**Scope call**: ship the Basic tier only as the Tier 2 replacement (keeps
-the existing single-slot design, matches Vacuum Block's own tier-1-only
-usage) — the Advanced tier (filtering) is a real future Tier 3 upgrade
-candidate, not built here.
-
-**Arrow Turret (`medievalturrets:bow_turret_item`) — direct feedback: too
-weak/boring, and a thematic mismatch.** Already-documented real quirks
-(from the earlier "Herd Them In" quest-text fix) explain part of why it
-reads as thin: unlimited free arrows with zero ammo mechanic (no
-maintenance loop at all), spawns facing a random direction until it
-acquires a target, and a stray `RandomStrollGoal` can walk it off its
-placed position when idle.
-
-**Replacement: promote Advanced Tower Defense's Musket Sentry into the
-actual Tier 2 gate, replacing Arrow Turret rather than sitting behind it.**
-Zero new mod install — Musket Sentry is already installed and its full
-recipe chain already works (Track C, 2026-09-08): Turret Workbench (Tier
-0) + Blueprint (Musket Turret) + `tech_tablet_mechanics`, both gated
-behind Shrapnel, then the mod's own hardcoded-Java assemble step (8x
-iron_ingot, 1x stone_barrel, 1x spring, 1x spyglass, 6x wooden_parts, 4x
-stone_parts — see `tier2_recipes.js`'s header for the full decompiled
-chain). Real ammo economy already confirmed working (musket
-shells/slugs, vanilla-material recipes, no dependency on anything gated).
-Thematically a mounted gun, not a bow-on-a-stick — matches "heavier
-sentry" framing already in its own quest text ("A heavier sentry than the
-Arrow Turret..."). **Real quest-chain work needed**: "Beyond the Bow"
-(Musket Sentry's quest, id `503260000FFBD462`) currently depends on
-"Wired for War" (Arrow Turret's quest, id `74779308DEED321D`) — that
-dependency needs flattening so Beyond the Bow becomes the Tier 2 gate
-quest itself, not a bonus branching off it. Its description text ("A
-heavier sentry than the Arrow Turret...") also needs a rewrite once Arrow
-Turret is gone, since it currently assumes Arrow Turret is a live sibling
-item.
-
-**Scope call on Arrow Turret itself: cut entirely** (recipe removed from
-`tier2_recipes.js`, "Wired for War" quest removed/repurposed), not
-demoted to a Tier 1 option — Tier 1 has no turret slot in its own design
-and nothing in the feedback asked to keep a cheaper version around.
-
-**Not yet built, not yet dispatched** — holding per this pack's own
-"write the spec, wait for explicit send it" practice. Real work for
-whoever builds this:
-- Verify Item Collectors' actual block/item IDs and default recipe from
-  its own shipped data (packwiz hash-verified jar) before writing any
-  glue — same rigor as every other mod addition in this pack, don't trust
-  the CurseForge description page's item names.
-- Re-recipe Item Collectors' basic tier via the established
-  `event.remove` + `event.shaped` pattern, matching the Tier 2 loot-pool
-  filler convention (`quartz`/`redstone_block`/`iron_block`) already used
-  for the rest of this file.
-- Remove `vacuum_cleaner:vacuum_block_tier_1`'s recipe entirely from
-  `tier2_recipes.js`; the mod itself can be uninstalled from packwiz once
-  nothing references it.
-- Rewrite the "Waste Not" quest text (currently describes the Vacuum
-  Block's — also fictional, given the dead-code finding above — pickup
-  behavior) to describe Item Collectors' real mechanic instead.
-- Flatten "Beyond the Bow"'s quest dependency as described above, remove
-  or repurpose "Wired for War," rewrite Beyond the Bow's description to
-  drop the Arrow Turret comparison.
-- Full-mod-set sandbox boot (uninstalling `vacuum_cleaner`, keeping
-  Advanced Tower Defense already-installed) before shipping — same bar as
-  every other recipe/quest change in this pack's history.
+Spec responding to direct feedback on "the arrow turret and vacuum
+chest thing": replace Vacuum Blocks (confirmed dead code by decompile —
+no tier ever opts into random ticking) with Item Collectors, and
+promote Advanced Tower Defense's Musket Sentry into the Tier 2 gate in
+place of Medieval Defense Turrets' Arrow Turret. The Item Collectors
+half shipped and is still live (see docs/MODS.md's mod table); the
+Musket Sentry half is now also dead, since Advanced Tower Defense
+itself was uninstalled entirely 2026-09-11 and Tier 2 became
+SecurityCraft's trap roster instead. Full decompiled verification and
+quest-chain notes: `docs/archive/features-dead-systems-history.md`.
 
 ### Shrapnel/scrap folded into loot bag tables — planned, not built
 
@@ -7424,17 +7471,12 @@ this batch; revisit only if there's real appetite for it later.
 
 ### Flamethrower Mechanics (Create Nozzles) — idea, not scoped
 
-Missed on the first pass, caught on re-audit. Distinct from the Tesla
-Coil entry above - routes lava (or a modded fuel) through Create's own
-Nozzle blocks (Create is already fully installed for this pack's power
-chain, see "Storage & power system") to create a high-pressure fire
-torrent across a chokepoint. Real appeal: no new mod needed at all,
-pure recipe/contraption work against a mod already in the pack. Not
-scoped - real open questions before this is buildable: does a Nozzle's
-vanilla fire-stream actually deal meaningful damage to mobs walking
-through it (needs a real in-game/decompile check, not assumed), and
-how it fits relative to the Tesla Coil as a second Tier 3 option
-(alternative choice vs. a required second machine) is undecided.
+Never-built idea to route lava/fuel through Create's Nozzle blocks for
+a chokepoint fire torrent, floated as a possible second Tier 3 option
+alongside the Tesla Coil. Dead on its own premise now — Create was
+uninstalled entirely 2026-09-11 (see docs/MODS.md's Removed mods), and
+Tier 3's power chain runs on Immersive Engineering instead. Full idea
+text: `docs/archive/features-dead-systems-history.md`.
 
 ### WWZ counter-mechanics — real open question tied to the frenetic pivot
 
@@ -7893,6 +7935,34 @@ for the crate block + Xaero waypoint on landing, so a 10-tick poll while
 a drop is in flight (`td_airdropWatch`) turns "crate seen, then gone"
 into a "Supply crate down - it's marked on your map" subtitle. The
 mod's own plane sound and coordinates chat line are untouched.
+**Same complaint recurred, 2026-09-16** ("didnt see the plane fly
+overhead") - the title above only holds for vanilla's own ~5s lifecycle,
+easy to miss mid-fight with nothing left on screen seconds later. Added
+a standing action-bar reminder ("Supply plane inbound - look up!") for
+the plane/crate's whole `td_airdropWatch` window instead of a one-shot
+popup - see `wave_airdrop.js`'s `airdropInboundActionbarText`, shared
+into `wave_spawner.js`'s countdown display and `wave_status.js`'s
+hostile counter the same way `pedestal_health.js`'s pedestal-alert text
+already is, rather than a second writer fighting either for the action
+bar line.
+
+**Rebuilt 2026-09-22** ("the airdrop location NEEDS to add a waypoint
+marker on the map. I could see [neither] the plane nor the drop. maybe
+it was too far away?"). Four findings, all from the installed jars: (1)
+the map waypoint had never worked - the mod's `addwaypointxaero` command
+(below) does not exist in Xaero's Minimap; what the mod supports from a
+server is its chat share protocol (`xaero-waypoint:...` system message ->
+"<sender> shared a waypoint: <name> [Add]", Add opens the prefilled
+waypoint screen) and nothing silent, so the landing now sends exactly
+that line; (2) a real `minecraft:beacon` goes on top of the landed crate
+- a beacon beams with no pyramid, the sky column above the crate is
+clear by construction - unbreakable while tracked, removed with the
+crate; (3) the landing spot is picked by the pack (50-70 blocks from the
+pedestal, inside a +/-75 degree eastern arc) and handed to
+`/setairdrop free`, so the plane's fixed 200-block westerly approach
+crosses the base before the drop; (4) plane altitude is now pedestal Y +
+40 (the argument is absolute, and 100 flat was treetop level on high
+ground). Full writeup in `wave_airdrop.js`'s 2026-09-22 header section.
 
 The spec's own "already-verified facts" (only two 1.20.1 files existed,
 both CurseForge Beta) turned out to be stale - re-checked directly
@@ -8190,7 +8260,8 @@ config file the mod actually generated, fixed to the real
 re-verified by rebooting once more and reading the corrected file back
 (`enable`/`enableenemies`/`forceload` all correctly `false`). Not yet
 confirmed by an actual live playtest of: a
-triggered airdrop crate (visual flyover, waypoint, loot-on-open),
+triggered airdrop crate (visual flyover, waypoint - which turned out to
+be broken, see the 2026-09-22 rebuild note above - loot-on-open),
 Enhanced Hordes' stacking effect against a real horde, the Stake Wall's
 damage tick against a climbing mob, or the tooltip rendering in a real
 client.

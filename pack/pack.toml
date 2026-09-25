@@ -1,12 +1,12 @@
 name = "Tower Defense Modpack"
 author = "mattf"
-version = "0.1.0"
+version = "0.2.0"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "007db9aaf7e818cc64ace2e702d26793aa7f090138fad13bfbecd4fb2b5fb0d8"
+hash = "36829c1de67cd4d2259183c8fffa20cdafef84d1855ad74d7f32f708efa34347"
 
 [versions]
 forge = "47.4.10"

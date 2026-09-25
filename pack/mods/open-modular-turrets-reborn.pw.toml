@@ -1,0 +1,13 @@
+name = "Open Modular Turrets Reborn"
+filename = "omtreborn-1.1.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "f9ec1ffedfede502c7a36a90df86cec46433f5b0"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 8344785
+project-id = 1588314

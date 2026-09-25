@@ -103,6 +103,40 @@
 //   weren't landing at all. Both changes together cut real time-to-kill
 //   by roughly 3-4x, not the ~1.7x either change would give alone.
 //
+// **Behemoth removed entirely, 2026-09-12** (third direct complaint, same
+// boss, after both fixes above already shipped: "just remove the
+// behemoth its too tanky. can you replace with another boss like a hard
+// zombie"). Two rounds of nerfing the SAME mutant_brute-based stat-stick
+// never actually fixed it - the real problem was the archetype itself,
+// not another number: mutant_brute natively carries 1.0 (full) knockback
+// resistance (wave_spawner.js's own BRUTE_SPEED_FIX_TYPES comment
+// documents this), which this boss's summon NBT never overrode alongside
+// max_health/attack_damage/movement_speed - so even at 350 HP/iron armor
+// it still felt like grinding through an immovable wall. Rather than a
+// third nerf pass on the same mob, this swaps the entity entirely to
+// `undeadnights:elite_zombie` - a genuine zombie (no innate knockback
+// immunity, no "brute/tank" identity anywhere else in this pack), reusing
+// this codebase's own existing "hits harder" framing for that exact mob
+// (see wave_spawner.js's WAVES header comment on the flesh_suffer
+// replacement). maxHealth dropped hard, 350 -> 200 (well below parity
+// with the Demolisher now, on purpose - this boss's danger is meant to
+// come from damage and speed, not a health bar), attackDamage raised
+// 30 -> 24 (still a real step up from a plain elite_zombie's own 6 base
+// attack damage, without repeating the one-shot-kill mistake this pack
+// already learned from - docs/QUEUE.md's 25-item batch #3's cobweb
+// writeup), movementSpeed raised 0.3 -> 0.36 (faster than every other
+// roster mob including Crawler's 0.3 and the fixed Brute speed's 0.28 -
+// genuinely cannot be outrun, forces real engagement instead of a
+// walk-away non-fight). Armor material stays iron (the 2026-09-11 lesson
+// above still holds - netherite's toughness term crushes exactly the
+// kind of low-per-hit anti-boss kit this pack has). Renamed "The Reaper"
+// since it's a completely different fight now, not a retuned Behemoth -
+// keeping the old name on a different mob/identity would misrepresent it
+// to a player who fought the original. The `behemoth` object key below
+// is left as-is (an internal identifier, not the display name) to avoid
+// churning bossConfigForWave/bossConfigForEntityType for a rename that
+// changes nothing functionally.
+//
 // **Real, considered non-fix**: the boss is a genuine
 // `mutantszombies:mutant_brute` entity, so it still has its own normal
 // ~2% per-kill Legendary-bag roll from loot_bag_drops.js's existing
@@ -138,24 +172,21 @@ var BOSS_BOSSBAR_RANGE_UNUSED = null // bossbar players set to @a below - a boss
 // wave-start cue already uses, proven working in this pack.
 var BOSS_TYPES = {
   behemoth: {
-    entityType: 'mutantszombies:mutant_brute',
-    name: 'The Behemoth',
+    // Swapped from mutantszombies:mutant_brute, 2026-09-12 - see the
+    // "Behemoth removed entirely" header paragraph above for the full
+    // reasoning. undeadnights:elite_zombie has no native knockback
+    // resistance and no tank identity anywhere else in this pack, unlike
+    // mutant_brute.
+    entityType: 'undeadnights:elite_zombie',
+    name: 'The Reaper',
     nameColor: 'dark_red',
-    maxHealth: 350,
-    attackDamage: 30,
+    maxHealth: 200,
+    attackDamage: 24,
     armorMaterial: 'iron',
-    // Real decompiled baseline for mutant_brute (net/petemc/mutantszombies/
-    // entity/MutantBruteEntity.class createAttributes(), 2026-09-10): 0.2
-    // movement speed, SLOWER than a vanilla zombie's 0.23 - a walking
-    // player can outdistance it forever. Direct feedback on the regular
-    // (non-boss) mob was "not hard, just annoying and tanky" - doubly true
-    // for a boss with a big health bar a player can just walk away from
-    // (600 at the time this was written, cut to 350 in the 2026-09-11 pass
-    // above - the walk-away math doesn't change either way). Same fix as
-    // wave_spawner.js's own BRUTE_MOVEMENT_SPEED, not matched to it exactly
-    // (0.3 here, slightly above) since a boss earns being the fastest thing
-    // in the fight.
-    movementSpeed: 0.3,
+    // Faster than every other roster mob (Crawler's 0.3, the fixed Brute
+    // speed's 0.28) - a boss that hits hard AND cannot be outrun, the real
+    // fix for "just tanky" per the header paragraph above.
+    movementSpeed: 0.36,
     music: 'minecraft:music_disc.pigstep',
     arrivalSound: 'minecraft:entity.wither.spawn',
     arrivalSubtitle: 'has arrived.',

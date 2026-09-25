@@ -6,32 +6,43 @@ setup getting in the way. Almost everything is automatic (via
 feature actually is, see [docs/FEATURES.md](FEATURES.md); this file is
 just the "what to check on a fresh world" list.
 
-**Rewritten 2026-09-01** — this file had grown into a full development
-history (eleven rounds of shader tuning, multiple reverted world-gen
-attempts, fog/darkness experiments all removed months ago) that
-belonged in [docs/MODS.md](MODS.md), not a testing checklist. Trimmed
-to what's actually live right now and worth checking.
+**Refreshed 2026-09-16** — the previous version (last rewritten
+2026-09-01) had gone stale again: it still described a Tier 1-only
+defense line and a right-click Wave Horn item, both wrong by this
+point, and had no mention of Tier 2/3/4 defenses at all despite them
+being built and live. Full old text (useful for a history of what was
+checked at each point) is archived at
+[docs/archive/playtesting-history-2026-09.md](archive/playtesting-history-2026-09.md).
 
 ## Automatic on first login to a new world
 
-- **Starting gear**: a Sharpness 100 netherite sword (one-shots nearly
-  everything, so testing focuses on systems, not combat skill) and full
-  iron armor, given to inventory. The amulet (see below) also starts in
-  inventory, unequipped.
-- **Wave Horn**: right-click to summon the next wave.
-- **Fixed spawn point** near world origin (`gamerule spawnRadius 0`, so
-  respawns land there too), with a small walled starter base
-  (SecurityCraft reinforced perimeter, one gate) wrapped around a
-  pre-placed building (Abandoned Brick House, `postapocalypse_structures`).
-- **Worldborder** starts at 150 (raised from 50 on 2026-09-09 so the
-  whole wave-mob spawn band fits inside it), grows on every wave clear
-  by an escalating amount (`5 + 5·floor((waveNumber-1)/3)`) — reaches
-  225 by wave 8.
-- **Flat field**: the ground is levelled to one plane out to 4 blocks
-  past the starting border edge (a 159×159 square) before the base is
-  built — no pits, rises, water or lava pockets anywhere inside it.
-  Check the field edge for a clean step down/up to natural terrain.
-- **Natural mob spawning disabled** — the Wave Horn is the only mob
+- **Starting gear**: a Sharpness 100 netherite sword and full iron
+  armor, given to inventory (not equipped). A Flux Configurator too, for
+  manually re-linking the starter power rig if the automatic link ever
+  fails. The amulet also starts in inventory, unequipped.
+- **No Wave Horn item any more** (removed 2026-09-13) — the horn is now
+  a real note block placed upstairs in the starter house's power-rig
+  room; right-click it to summon the next wave.
+- **Fixed spawn point**, chosen at world-load time on a desert/badlands
+  "anchor grid" point that every structure set excludes for ~9 chunks
+  around it, with a small walled compound (SecurityCraft reinforced
+  perimeter + Stake Walls, one gate) wrapped around a pre-placed
+  building (Abandoned Brick House).
+- **Starter trap showcase**, pre-built into the compound wall so a new
+  player sees working examples before crafting anything: a Tesla Coil
+  (wall-mounted, upright, lever-toggled — only auto-powers when a real
+  wave mob is nearby), a Sentry, and an Electrified Iron Fence sealing
+  the gate opening. All three are removed again at wave 5, same beat as
+  the starter gear, so from wave 5 on you're defending with what you
+  built, not what you inherited.
+- **Worldborder** starts at 50, grows on every wave clear by
+  `5 + 5·floor((waveNumber-1)/3)` blocks (5/5/5/10/10/10/15/15 across
+  waves 1-8, reaching 125 total by wave 8), and keeps escalating the
+  same way into the endless phase.
+- **Flat field**: the ground is levelled to one plane out to the
+  starting border edge (roughly 59×59) before the base is built — no
+  pits, rises, water or lava pockets anywhere inside it.
+- **Natural mob spawning disabled** worldwide — waves are the only mob
   source.
 
 Only fires on a genuinely new world — won't retroactively run on a
@@ -43,311 +54,305 @@ structures) only affect chunks not yet generated.
 Just **Allow Cheats: ON** — any World Type selection works, the pack
 forces the real generator via a datapack override regardless.
 
-## What to check
+## Core wave loop
 
-**Wave Horn / core loop**
-- The 8-wave designed campaign plays through as expected (vanilla mobs
-  + TFTH mobs from wave 2, ravager mini-boss at 5 and 8), gear removal
-  fires at wave 5 specifically (not tied to campaign length).
-- **Endless phase (waves 9+), built 2026-09-01, not yet played through**:
-  difficulty should keep escalating past wave 8 instead of repeating —
-  the on-screen wave number should no longer cap at 8 either. Watch
-  specifically for: does the horde-spawn distance (fixed at 240-256
-  blocks) feel right against the worldborder, or too far/close? Does
-  skeleton damage feel under-scaled relative to melee mobs (a known,
-  unaddressed gap — scaling doesn't touch arrow damage)?
-- Mobs spawn a fixed 48-64 blocks from the pedestal (inside the border,
-  never closer, since 2026-09-09) and walk in, staggered, with a sound
+- Right-click the upstairs note block (or wait out the countdown, which
+  has a 10-minute floor) to start the next wave. 8 hand-authored waves,
+  then an endless phase (waves 9+, labeled "Horde N" instead of
+  "Wave N") handed off to Undead Nights' own difficulty system —
+  nothing repeats, difficulty keeps climbing.
+- **Mob roster is zombie-family only** — no skeleton, spider, creeper,
+  wither_skeleton or vanilla ravager anywhere (stripped pack-wide in the
+  zombie-apocalypse pivot). Roster is vanilla zombie/husk/drowned/
+  zombie_villager/zombified_piglin, TFTH's infected "Flesh X" mobs,
+  Undead Nights' Horde/Elite/Demolition Zombie, and Mutants and Zombies'
+  8 mobs (Crawler, Spitter, Blister/Split Head/Mutant Zombie, Rotten
+  Mutant, Zombie Brute, Mutant Brute). Zombie/Mutant Brute are locked
+  out before wave 20 (both hand-authored and endless).
+- Gear removal (starter sword + armor) and the starter trap showcase's
+  removal both fire at wave 5.
+- **Boss waves every 10th wave** (10, 20, 30...): odd index is **The
+  Reaper** (a reskinned Elite Zombie — 200 HP, 24 attack, 0.36 speed,
+  iron armor, chosen for speed/damage over an unkillable tank), even
+  index is **The Demolisher** (Demolition Zombie — 350 HP, 15 attack,
+  netherite armor, throws live TNT and can breach undefended blocks).
+  A boss kill always drops a Sentry, 12 Shrapnel, and a guaranteed Totem
+  of Undying.
+- Mobs spawn from a safe band outside the compound (48-64 blocks once
+  the border has grown enough to fit it, clamped tighter early on so
+  nothing spawns past the border) and walk in, staggered, with a sound
   cue before each — nothing should ever appear inside or against the
   compound walls.
-- Boomer Zombies are out of every wave (pulled 2026-09-09 for balance)
-  and out of the quest book (2026-09-10) — seeing one anywhere is a bug.
-- **Enemies climb ladders — rebuilt 2026-09-10, first pass mostly
-  failed, re-fixed same day (retaliation now holds for 8s per hit in
-  `mob_aggro.js`).** Stand on the wall top and shoot a wave mob: for the
-  next 8 seconds it should chase you instead of the pedestal, walk to
-  the foot of the nearest ladder that reaches your height, press into it
-  and climb, then step off at the top. Stop hitting it and it should go
-  back to the pedestal after ~8s. Watch for: mobs still bouncing between
-  you and the pedestal, mobs bobbing at the top without stepping off.
-  **Known limit**: wide mobs (Mutant Brute, Mutant Zombie) can't fit
-  their feet into a ladder column against a wall and will never climb.
-- **Airdrop cues — 2026-09-10, not yet seen in play.** On a wave-5/10/15
-  clear the plane no longer launches in the same instant as the
-  wave-cleared popup: 12 seconds later a "LOOK UP" title + bell sound
-  fires as the plane spawns (the plane's own engine sound plays too),
-  and a "Supply crate down - it's marked on your map" subtitle fires the
-  moment the crate lands. Check the "LOOK UP" actually precedes the plane
-  passing overhead, and that the landing line fires once, not repeatedly.
-- **Pedestal under-attack alert is now action-bar text** (2026-09-10, the
-  second "smaller font" ask) — it replaces the hostiles-remaining counter
-  / next-wave countdown line for 4 seconds, with the same anvil sound and
-  gold chat line. Confirm it's readable and that the counter comes back.
+- **Ladder climbing**: hitting a mob makes it chase you instead of the
+  pedestal for 8 seconds per hit, climbing a ladder if that's the way to
+  reach you, then returning to the pedestal once the window lapses.
+  Mutant/Zombie Brute are too wide to fit a ladder column and never
+  climb — a known, accepted limit.
+- **Lure Block** (Target block + rotten flesh + redstone): pulls any
+  wave mob within 40 blocks off the pedestal for 60 seconds, then
+  self-destructs.
+- **Airdrops** land every 5th wave clear (5, 10, 15...): ~12 seconds
+  after the wave-cleared popup a "LOOK UP" title + bell plays as the
+  plane spawns 200 blocks west of the base and crosses it on a real
+  ~10-second flyover before the crate drops 50-70 blocks from the
+  pedestal, on the eastern side; a beacon beam on top of the crate marks
+  the landing spot until the crate is opened, the action bar shows the
+  crate's coordinates for 20 seconds, and chat gets a Xaero "Supply Drop
+  shared a waypoint" line - click Add, then confirm, to put it on your
+  map (Xaero's Minimap has no way for a server to add a waypoint
+  silently). The crate and its beacon despawn shortly after the crate is
+  emptied.
+- **Pedestal under-attack alert** is action-bar text (not chat) that
+  replaces the hostiles-remaining/countdown line for 4 seconds, with an
+  anvil sound and a gold chat line alongside it.
 
 **The amulet + pedestal**
-- Amulet starts unequipped in inventory (not auto-equipped — this was
-  deliberately changed after a duplication bug). Equipping it via
-  Curios should apply Regeneration + Fire Resistance.
-- Placing it on a crafted pedestal (`kubejs:amulet_pedestal`) should
-  redirect wave-mob targeting to the pedestal instead of the player, and
-  allow crossing the worldborder without being pushed back.
-- The floating-item visual on the pedestal: alignment/bob was fixed
-  2026-08-31 but the exact height is a reasoned estimate, not
-  pixel-verified — worth a visual check.
+- Amulet starts unequipped; equipping it via Curios (necklace slot)
+  should apply Regeneration + Fire Resistance.
+- Placing it on a crafted pedestal (`kubejs:amulet_pedestal`) redirects
+  wave-mob targeting to the pedestal and lets you cross the worldborder
+  without being pushed back — this is a permanent objective marker, not
+  amulet-gated, and exists from world creation regardless.
 
-**Tier 1 defenses**
-- Craft the Spike Trap (4 sticks + 1 iron ingot) and plain vanilla oak
-  fence. (Bear Trap and Slime Trap were removed 2026-09-10; the old Bear
-  Trap check below is history.) Bear Trap should hold a mob in
-  place on contact and be resettable; Spikes should damage on contact.
+**Multiplayer**: shared campaign state (wave number, pedestal HP, horn
+cooldown, etc.) lives on a permanent world-level marker entity, not a
+player, specifically so a second player joining an existing world
+doesn't desync the campaign or re-trigger the base build. Built
+2026-09-08, still not verified against an actual second live player.
 
-**Structure generation** (rebuilt twice — desert-only dropped, then a
-fantasy/floating-content swap, both since confirmed shipping)
-- World should show real biome variety (desert, badlands, savanna,
-  plains, sunflower_plains, meadow) rather than one biome everywhere.
-- Treasure2 structures, Apocalypse structures: Abandoned city buildings,
-  and Abandoned Urban should all generate within reasonable range of the
-  worldborder (spacing was retuned specifically for this).
-- **A Treasure2 "cardboard box" that won't open and doesn't look like a
-  chest is a real mimic monster, not a bug** — deliberately left
-  undocumented in-game, this is expected behavior.
-- World creation has crashed intermittently in the past from a real
-  vanilla/Forge structure-generation race condition — mitigated by
-  moderate structure spacing, not fully eliminated. If it recurs, check
-  the crash report's own Details/Feature section for which structure was
-  involved before assuming it's the newest thing added.
-- **Structure spawners, built 2026-09-10, not yet playtest-confirmed**:
-  6 structures now carry real mob spawners (`abandoned_brick_house`,
-  `abandoned_urban:gas_station`/`fire_tower`, `philipsruins:
-  desert_pyramid`, `watchtower_building:ab_watchtower_big_tower`,
-  `abandoned_structures:zapravka`), 1-3 each, tougher further from
-  spawn. This could only be verified up to the point of "the spawner
-  block/NBT is correct" in this environment (no connected player to
-  actually trigger one) — the real things to check in play: does a
-  spawner actually produce mobs when you're nearby, do those mobs stay
-  and guard the structure (attack you) rather than walking off toward
-  the base/pedestal, and does killing one drop a loot bag/count toward
-  a Bounty quest like a normal kill.
-- **Structure mobs stay put — fixed 2026-09-10 after the "attacked by a
-  tonne of mobs at spawn" playtest, needs a fresh world to confirm**:
-  the starter house no longer carries a spawner, and only real wave
-  mobs (tagged `td_wave_mob`) are ever pulled toward the pedestal —
-  husks baked into desert ruins/outposts and spawner guards keep their
-  own AI where they are. Check: nothing attacks you at spawn-in; ruins
-  and outposts still have husks/pillagers in them when you walk up;
-  waves 1-8 behave as before; and an endless wave (9+) still shows a
-  live "hostiles remaining" count that reaches 0 and clears — that
-  phase's mobs now get tagged right after the horde spawns, so a wave
-  that never clears or a count stuck above 0 would mean the tagging
-  missed some.
-- **Wasteland re-skin + one-tag structure gating, built 2026-09-10,
-  not yet seen in-game**: plains/sunflower_plains/meadow now use
-  badlands' dead-grass colours, no trees/flowers/tall grass, dead
-  bushes, and ~60% coarse-dirt patches through the surface; every
-  structure generates in every biome. Needs a **fresh world** (biome and
-  structure changes only affect new chunks). Things to judge that
-  couldn't be checked here: does the grass/foliage colour actually read
-  as dead wasteland rather than "sick green"? Is the coarse-dirt ratio
-  too barren (a one-band tweak if so)? Do Lost City towers/camps,
-  fire towers, and the desert ruins/outposts now show up within a few
-  hundred blocks? Does a `u_desert` oasis in dead plains look wrong
-  enough to pull back to desert-only?
+## Tier 1: Simply Traps
 
-**Game over / hardcore (2026-09-10 rework, needs a real death to confirm)**
-- Pedestal destroyed: one popup — "GAME OVER" with "The pedestal has
-  fallen" as its subtitle and a wither sting — then a "start a new world"
-  subtitle 5 seconds later. Not two separate popups any more.
-- `/hardcore enable`, then die: "GAME OVER / Hardcore: you have fallen"
-  on the death screen, then ~4 seconds later you are disconnected from
-  the world with the game-over text as the reason. **You should never get
-  a working Respawn** — clicking it inside those 4 seconds should
-  disconnect you immediately instead. Reopening the world drops you in
-  as a spectator with a GAME OVER reminder. Quest progress does NOT
-  carry into a new world (the carryover feature was dropped 2026-09-10).
+- **Spike Trap** (`simply_traps:spike_trap`) — 5 iron ingots (a diamond
+  shape), damage doubled over the mod's stock value via config. The
+  cheap, no-power option.
+- **Stake Walls** are already mounted on the compound's own perimeter
+  walls (wall-mounted, non-solid, continuous contact damage on anything
+  climbing past) — nothing to craft to see them, though the recipe
+  (4 logs → 4) exists if you want more elsewhere.
+- No Bear Trap, no Slime Trap, no Barbed Wire — all removed with no
+  replacement (Trapcraft dropped entirely 2026-09-08, Create/Create:
+  Crafts & Additions removed entirely 2026-09-11).
 
-**Second batch, 2026-09-10 (19 items) — what to look for**
-- Chat at a wave start is exactly one line, "Wave 3 has started." /
-  "Horde 9 has started." — no "Difficulty level set to", no "Trying to
-  spawn hordes", no "A horde has spawned!". The horde scream should still
-  play at an endless wave start.
-- Past wave 8 every label says Horde: "HORDE 9" / "The horde
-  approaches...", "HORDE 9 CLEARED", the hostiles bar, "Next horde in",
-  and "HORDE 10: BOSS".
-- Wave 10 brings The Behemoth (bossbar, pigstep, "[Boss]" line). It never
-  spawned before this batch.
-- Wave 8 has four Crawlers.
-- The supply plane is about three times slower (roughly 7 s in view);
-  the crate should still land 10-30 blocks from you. Once you've taken
-  everything out of the crate it puffs away on its own within a second.
-- The world-border line on the world map (M) is half as thick and light
-  blue instead of red.
-- No Boomers, Explosive/Cursed/Tank Zombies, Brutes or Spitters wandering
-  in at night outside the waves — they only arrive with a wave, a horde,
-  or from a structure spawner.
-- Legendary bags hand out a Totem of Undying far less often (~1 in 8 bags).
-- The Last Written Wave and The Behemoth quest texts are spoiler-free.
-- The quest book reveals itself as you go: on a fresh world only You're
-  On Your Own is visible; each quest appears when the one before it
-  completes (the tinted rib panels stay visible as empty placeholders).
-  Bounties show one tier at a time.
-- Tier 1 is Spike Trap and Barbed Wire only - no Slime Trap or Bear Trap
-  quests, no bear trap in JEI. The starter base still has its Stake Walls.
+## Tier 2: SecurityCraft traps
 
-**FTB Quests**
-- "Open It" should tick the moment you right-click any loot bag, and
-  "Wear It" the moment the amulet goes into the Curios slot (both were
-  silently broken until 2026-09-10 — a UUID-addressed command FTB Quests
-  rejects). On a world where you already tried them, each gets exactly
-  one retry: open another bag / re-equip the amulet.
-- Bounty tasks show a real item icon (rotten flesh, swords, legendary
-  bag) instead of FTB's rainbow "custom" placeholder, and a kill counter
-  that fills 1/25, 2/25... First Blood should complete at exactly 25
-  kills, Exterminator at 100 — NOT all five on the first kill (that was
-  the 2026-09-10 max-progress bug, fixed the same day).
-- "It's Up to You Now" is invisible until wave 5 clears, then appears
-  between Three Down and The Last Written Wave with its diary text. The
-  Tier 3 rib and The Last Written Wave now hang off Three Down, so they
-  should still be visible (locked) before wave 5.
-- Book auto-given on first login. "Basics" chapter (12 quests including
-  2 amulet side-quests) and "Tier 1" chapter (2 quests, both gated on
-  Basics quest 6) should both be present and gate correctly.
-- Clicking an item icon in a quest should jump to JEI showing its
-  recipe (FTB XMod Compat).
-- Quest 10's flavor text still describes wave 8 as a permanent dead end
-  ("the same night, over and over") — inaccurate now that endless phase
-  scaling exists, needs a rewrite, not yet done.
+All single crafting-table recipes on plain vanilla materials — no
+Universal Block Reinforcer needed anywhere (it's been stripped from the
+pack, along with Trophy System, which had nothing to shoot down in this
+mob roster).
+- **Sentry** — auto-fires at wave mobs, ~20 ingots' worth including its
+  Portable Radar prerequisite.
+- **Cage Trap** — non-lethally traps a mob/player in a block cage,
+  ~12 ingots' worth.
+- **I.M.S.** — refillable mine holding up to 4 Bouncing Betties,
+  ~16 ingots' worth.
+- **Electrified Iron Fence** — shocks anything but its owner on contact,
+  and (since 2026-09-22) shocks any wave mob standing in a block next to
+  it for 6 a second - the mod's own contact trigger never fired on mobs
+  because their path ends on the adjacent block, 0.2 short of touching.
+- **Bouncing Betty** and **Claymore** — stock recipes, unchanged.
+- Check: a Bouncing Betty or Claymore going off near your own build
+  should never damage you or break a block — only a mob standing in the
+  blast should take damage.
 
-**SecurityCraft walls**
-- A summoned zombie shouldn't be able to dig through a wall segment or
-  blast through it with a creeper. Pillaring over the top is a known,
-  accepted gap (wall height wasn't changed to prevent it).
+## Tier 3: Immersive Engineering + Flux Networks
+
+- **Culinary Generator** (Generator Galore) — reached via a short
+  Copper → Iron → Gold → Culinary crafting ladder, burns any food item
+  including rotten flesh. Output is boosted well past the mod's stock
+  value so one generator alone should power the Tesla Coil and both
+  turrets below running at once.
+- **Tesla Coil** — re-recipied onto lightning rod + LV coils + gold
+  block/steel + a Flux Point (no IE ore-processing chain needed). Zaps
+  one random living thing within 6 blocks and applies a lesser field to
+  everyone else within 9 (this is real, intended mod behavior, not a
+  bug) — it has no owner check, so it also has an auto-power cutoff that
+  goes idle whenever a player or Sentry is within its detection radius,
+  and player/Sentry hits are neutralized (no damage, no stun) as a
+  backstop.
+- **Gun Turret** and **Chemthrower Turret** (single-target, unlike Tier
+  4's turrets below) — each built with a Tier 2 SecurityCraft item
+  (Sentry / Electrified Iron Fence) plus a Flux Point spliced into the
+  recipe, so they arrive already wired for wireless power.
+- Sophisticated Storage barrels and a Refined Storage network round out
+  storage — both ship with their stock recipes, no re-tiering.
+
+## Tier 4: Open Modular Turrets Reborn
+
+- **Grenade Turret** — cheap, Tier II internals, ammo is fully
+  vanilla/loot materials (iron nugget + redstone + gunpowder).
+- **Rocket Turret** — the flagship, Tier III internals plus a Ferronite
+  Frame (~17 Ferronite ingots for one turret). Ferronite has an
+  alternate recipe (2 Steel + redstone) alongside the mod's own ore/
+  smelting chain, so it doesn't hard-depend on finding the ore.
+- Both are single crafting-table builds (no workbench/blueprint step)
+  and plug straight into a Flux Networks grid via a Flux Plug on the
+  Turret Base — no recipe hack needed the way Tier 3's turrets needed
+  one.
+- Both deal real area damage (unlike Tier 3's single-target turrets),
+  but are configured not to hurt blocks or players: block damage is off
+  by the mod's own default (pinned in `omtreborn-common.toml`), player
+  targeting is globally disabled the same way, and the Grenade Turret's
+  own small vanilla explosion is separately neutralized by script.
+- Check: a Flux Plug against a Turret Base actually delivers power, both
+  heads fire and land area damage on approaching mobs, and a Grenade
+  Turret kill leaves the terrain and you untouched.
+
+## Quest book
+
+Auto-given on first login. 4 chapters:
+- **Campaign** — the main story/tier-progression line (Basics → Tier 1
+  → Tier 2 → Tier 3 → Tier 4, plus the amulet side-quests and wave
+  milestones). Reveals itself as you go: only the first quest is visible
+  on a fresh world, each next one appears as its dependency completes.
+- **Bounties** — kill-count tasks per mob tier, shown one tier at a
+  time (e.g. First Blood at 25 kills, Exterminator at 100).
+- **Tips & Tricks** — standalone gameplay tips.
+- **Arsenal** — 24 flat, dependency-free item-possession quests, one
+  per Simple Guns gun/ammo type; completes on pickup or crafting, not
+  just crafting.
+
+Clicking an item icon in a quest should jump to JEI showing its recipe
+(FTB XMod Compat). Quest progress does not carry over into a new world.
+
+## Structure generation / loot
+
+- World should show real biome variety (desert, badlands, and a
+  deliberately barren re-skinned plains/sunflower_plains/meadow), not
+  one biome everywhere. Every structure set generates in every biome,
+  but never within ~9 chunks of the base's own anchor point.
+- Structures (Treasure2, Lost City / Abandoned Urban, Philip's Ruins,
+  Watchtowers, etc.) carry their own real mob spawners in several
+  templates — those mobs guard the structure and don't get pulled
+  toward the pedestal; only mobs tagged `td_wave_mob` (actual wave/horde
+  spawns) are ever steered there.
+- **Loot boxes**: a Lootr chest in a Lost City building should read like
+  a raided supermarket (food, resource stacks, sometimes ammo/guns/eggs/
+  milk/cake); Watchtower barrels give ammo + torches/planks, not coal
+  and sticks.
+- **Empty barrels** inside structures fill with a one-time "someone left
+  this here" haul on first open; a barrel **you** place and leave empty
+  out in the world must stay empty, including after breaking and
+  re-placing it.
+- **Distance premium**: chests further from the pedestal should show
+  better finds on top (diamonds, ender pearls, blaze powder, magma
+  blocks further out; resource blocks/gunpowder/clay at medium range).
+- A Treasure2 "cardboard box" that won't open and doesn't look like a
+  chest is a real mimic monster, not a bug.
+- Watch the loot volume — a Lost City block is hundreds of containers;
+  if a full haul feels like too much, that's a real, reportable
+  balance question.
+
+## Hardcore mode / game over
+
+- **Pedestal destroyed**: one popup — "GAME OVER" with "The pedestal
+  has fallen" as its subtitle and a wither sting — then a "start a new
+  world" subtitle a few seconds later.
+- **`/hardcore enable`, then die** (with every online player dead, not
+  just one in a multiplayer session): "GAME OVER / Hardcore: you have
+  fallen" on the death screen, then a ~4-second delay before every
+  player is disconnected with the game-over text as the reason. You
+  should never get a working Respawn — clicking it inside that window
+  disconnects you immediately instead. Reopening the world drops you in
+  as a spectator with a GAME OVER reminder. Quest progress does not
+  carry into a new world.
+
+## Not yet confirmed in real play
+
+Everything below is built and deployed, but only verified via
+decompiling the relevant mod, `node --check`, and/or a sandbox boot/RCON
+probe — not an actual playtest.
+
+- **Six-item playtest batch, 2026-09-22** (built, `node --check`ed,
+  sandbox-booted; nothing seen in a real session yet):
+  1. **Airdrop** - real beacon beam on top of the crate, a Xaero
+     "Supply Drop shared a waypoint" chat line (click Add, confirm),
+     the plane crosses the base from the west, the crate lands 50-70
+     blocks from the pedestal on the eastern side, the plane flies 40
+     above pedestal height. Confirm the plane is actually visible
+     crossing overhead, the beam is visible from the base, and the Add
+     click opens Xaero's prefilled waypoint screen.
+  2. **Countdown after wave 5** - the wave-5 clear was crashing inside
+     the starter-trap removal hook (Rhino `const` in a nested block),
+     which skipped starting the countdown. On the live save wave 5 is
+     already past; just confirm the timer shows after the next clear.
+  3. **Electrified fence** - a wave mob standing next to a fence should
+     visibly spark and lose health once a second.
+  4. **Tesla Coil never targets you or a Sentry** (patched IE jar) -
+     stand inside a powered coil's range with a zombie also in range:
+     every bolt should go to the zombie, none to you, and the coil's
+     energy should only drop for real hits.
+  5. **Mobs dig through player-built walls** - cobble/stone at roughly
+     2.5s per block. Block the gate and watch them come through instead
+     of standing outside.
+  6. **Quest book** - no Engineer's Manual quest, no Diesel Generator
+     wording. On the live save the removed quest simply disappears.
+- **Starter trap showcase** (several rounds of fixes on 2026-09-15):
+  confirm the Tesla Coil now stands upright with a working lever, the
+  Sentry leaves nothing behind when removed at wave 5, neither the coil
+  nor the fence damages/stuns you or the Sentry any more, the coil and
+  Flux rig sit where the last fix left them (front wall / interior
+  balcony wall), and the gate fence fully seals the opening.
+  **Reported still dealing damage 2026-09-16** ("do they need to be
+  hooked up somehow?") - to be clear, no: unlike the Tesla Coil, the
+  Electrified Iron Fence needs no power/redstone at all, it's always
+  live and only owner/allowlist-gated. Checked the live log from that
+  exact session - `electric_trap_player_safety.js` was loaded with 0
+  errors, so the safety net should have been active; still unconfirmed
+  whether the shock itself actually landed or this was just asking
+  whether the mechanic was supposed to be always-on. Watch for it
+  specifically next session. **Resolved 2026-09-22** ("the electric
+  fence still isnt hurting enemies"): the shock was never landing on
+  MOBS at all - decompiled, the fence only fires on hitbox overlap and
+  mobs stop on the adjacent block - `wave_mob_fence_shock.js` now
+  shocks wave mobs standing next to a fence (item 3 above).
+- **Airdrop flyover + landing beacon** (2026-09-15): confirm the plane's
+  flight genuinely takes ~10 seconds now, and a visible beam of light
+  marks the crate's landing spot until it's opened. **"Didn't see the
+  plane fly overhead" reported again 2026-09-16** despite the flight
+  actually running (confirmed in the live log - the plane did launch),
+  same complaint the 2026-09-10 title+bell fix was meant to solve.
+  Replaced the one-shot title with a standing action-bar reminder for
+  the whole time a drop is being watched - confirm it's now genuinely
+  hard to miss. **Rebuilt 2026-09-22** (item 1 above): the map waypoint
+  had never worked - the airdrop mod calls a Xaero command that does not
+  exist - and the drop is now closer, in front of the base, with a real
+  beacon beam.
+- **Sentry muzzle flash** (boosted 2026-09-16, "the animation on the
+  sentry when it fires is not showing well"): particle counts/spread
+  roughly doubled and a real firing sound added (there wasn't one
+  before) - confirm a shot is now clearly noticeable mid-fight.
+- **Tesla Coil zap bolt** (reshaped 2026-09-16, "I want a cool
+  electricity bolt"): the flat vertical spark column is now a jagged,
+  multi-segment bolt falling from above the struck target - confirm it
+  actually reads as a bolt rather than a straight column.
+- **Tier 2 iron costs** (trimmed 2026-09-11): confirm a Sentry/Cage
+  Trap/I.M.S. feels affordable at a normal wave-clearing pace, not still
+  too steep.
+- **Tier 3 power economy**: confirm one Culinary Generator (fed food/
+  rotten flesh) actually sustains the Tesla Coil and both turrets
+  running at once in a real fight — only checked via RCON math so far.
+- **Tier 4 turrets + their explosion-safety fix** (built 2026-09-15/16):
+  see the Tier 4 section above — nothing about them has been seen in a
+  real client session yet.
+- **Ladder-climb mob assist** (rebuilt 2026-09-10): confirm a wave mob
+  you've hit actually climbs a ladder to reach you rather than snapping
+  back to the pedestal mid-climb — the retarget-window fix was never
+  confirmed against a real climb attempt afterward.
 
 ## Known, accepted gaps (not bugs to report)
 
-- Skeleton's arrow damage isn't affected by the endless-phase toughness
-  scaling (only melee `attack_damage` is scaled).
-- Zombie pillaring over the chokepoint walls is possible — an accepted
-  difficulty factor, not something the reinforced material is meant to
-  stop.
-- The vanilla jigsaw structure-generation race condition (see above) is
-  mitigated, not guaranteed gone.
-
-## Structure loot (2026-09-11 pass)
-
-- **Loot boxes**: open a Lootr chest in any Lost City building. A `store`
-  should read like a raided supermarket (food, an iron/redstone/gunpowder
-  stack or two, often ammo or a gun, sometimes eggs/milk/cake). Watchtower
-  barrels should give ammo + torches/planks, not coal and sticks.
-- **Regular storage**: right-click an EMPTY barrel inside a Lost City house
-  or an Abandoned Urban building. It should fill with a mixed "someone left
-  this here" haul on first open (occasionally almost nothing). Second open:
-  normal barrel.
-- **Your own storage is safe**: place a vanilla barrel out in a ruin, leave it
-  empty, open it - it must stay empty. Break it and place it again - still
-  empty.
-- **Distance**: chests past ~270 blocks from the pedestal should show the
-  premium finds on top (diamonds, ender pearls, blaze powder, magma blocks);
-  210-270 shows resource blocks/gunpowder/clay.
-- **No cobweb walls**: a chest that is mostly cobwebs means a table was
-  missed - note which structure.
-
-## Useless-loot trim (2026-09-11, not yet confirmed live)
-
-- **Uncommon bounty bags** (the everyday wave-kill drop) should no longer
-  ever contain cobblestone, bone, netherrack or sugar cane - open several
-  and confirm none of those four show up.
-- **IMPORTANT - this one needs a live-instance step before it'll show up
-  at all**: BountyBags caches bag contents into `config/bountybags/
-  uncommon_bag.toml` on first boot and ignores the JSON after that. Delete
-  that file (or run `/bountybags edit uncommon` in-game and click Restore
-  Defaults) before this trim can be observed - otherwise the bag will still
-  hand out the old contents no matter how the repo JSON reads.
-- **Scavenged filler** (barrels/junk-drawer rolls via `scav_filler.json`):
-  cobweb, bone and bowl should no longer appear; paper, string, rotten
-  flesh and leather still can.
-
-## Tier 3 recipes (loot-aligned, 2026-09-11)
-
-- **JEI, press R on each**: Culinary Generator shows bread + 2 eggs + 2
-  crops + redstone block on a Gold Generator (no cake). Flux Core shows an
-  ender pearl in the middle (no Eye of Ender). Tesla Coil shows lightning
-  rod / LV coils + gold block / steel + Flux Point. Heavy Engineering shows
-  gold, not electrum.
-- **Steel**: drop an iron ingot in a vanilla Blast Furnace - it should come
-  out as an IE Steel Ingot.
-- **Flux Dust**: craft obsidian + 4 redstone, and separately try the mod's
-  own way (obsidian on bedrock at y=-16, throw redstone on it) - both
-  should give dust.
-- **Gun Turret ammo**: 4 empty casings + 2 gunpowder + 2 iron nuggets in a
-  plain crafting grid gives 4 Casull rounds.
-- **Refined Storage**: Processor Binding from string + rotten flesh;
-  Construction Core from a basic processor + lapis.
-
-## 2026-09-11 feedback fixes
-
-Direct feedback batch, four items - real root cause found and fixed for
-each, none yet confirmed in real play.
-
-- **"Not Just Jewelry" didn't tick on crafting the amulet.** Root cause,
-  confirmed by decompiling the installed `ftb-quests-forge-2001.4.22.jar`:
-  the task lacked `only_from_crafting`, so FTB Quests only ever checked
-  it against the player's main-inventory contents (a periodic scan that
-  never looks at Curios slots) - crafting the amulet and immediately
-  equipping it into the Curios necklace slot, the obvious next move,
-  removed it from the only inventory that scan reads before the check
-  could ever catch it. Now `only_from_crafting: true`, which drives
-  completion straight off the crafting event itself, independent of
-  where the item ends up next. Check: craft the amulet, quest should
-  tick immediately even if you equip it right away.
-- **The Engineer's Manual gated the whole IE tech tree.** It sat inline
-  between Room to Grow and Wired Different (Culinary Generator), so
-  crafting the book was mandatory before the generator, Flux Plug, Tesla
-  Coil or either turret would even unlock. Made it a sibling of Wired
-  Different instead (same dependency, moved off the main line) so it's
-  now a genuinely optional side-quest alongside the IE builds, not a
-  gate in front of them. Check: Wired Different should unlock as soon as
-  Room to Grow completes, with or without the manual.
-- **A wave mob spawned inside the house.** Two real causes, both fixed
-  in `wave_spawner.js`: (1) the scripted campaign spawner's own
-  reject-and-resample loop used to fall back to a possibly-inside-
-  compound point once it ran out of tries - now computes a point
-  projected outward from the compound rectangle's nearest edge instead,
-  which is geometrically guaranteed clear. (2) Undead Nights' own
-  `spawn_horde` command (the endless-phase horde spawner) never went
-  through that check at all - it's a fully opaque mod command with its
-  own distance-from-player band, walls or compound bounds included.
-  Added a safety net right where horde mobs are already tagged
-  `td_wave_mob`: any mob landing inside the compound's padded footprint
-  gets pushed out to just past its nearest wall. Check across several
-  waves, including into the endless phase, that nothing spawns inside
-  the compound perimeter.
-- **Wood Stakes/Spike Traps dropped an item when worn down.** The
-  destroy-on-0-HP path in `trap_durability.js` used `setblock ... air
-  destroy`, which is vanilla's own player-mining removal mode - real
-  item drop included. Switched to `setblock ... air replace` (no drop,
-  no automatic effects) plus an explicit break particle/sound so it
-  still reads as "the trap broke," just without leaving anything behind.
-  Check: let a mob wear down a Wooden Stake and a Spike Trap - both
-  should vanish with a break effect and nothing on the ground.
-
-## 5-item feedback batch (2026-09-11) - real checks needed
-
-- **Trophy System removed.** Should no longer appear in JEI/crafting at
-  all - not a bug if it's simply gone.
-- **Trap iron costs trimmed + loot bumped.** Craft a Sentry (should feel
-  like ~20 ingots' worth, not 36), a Cage Trap (~12, not 28), an I.M.S.
-  (~16, not 24). Open a few Uncommon bounty bags and see if iron feels
-  less scarce than before. Say honestly if it still feels too expensive
-  - the recipes can be trimmed further.
-- **Bouncing Betty/Claymore player and block safety.** Deliberately
-  trigger a Bouncing Betty and a Claymore near your own build (or near
-  yourself). Neither should damage you or break any block - only a mob
-  standing in the blast should take damage.
-- **Sentry firing feedback.** Place a Sentry where it can see a mob and
-  let it fire. You should see a muzzle-flash particle at the Sentry and
-  an impact particle where the bullet lands.
-- **Lag - not a code fix, a real-machine finding.** If the "constant"
-  lag is still there after closing other background apps (this Claude
-  Code session/VS Code, browser tabs, etc.) while playing, or after
-  lowering the CurseForge instance's allocated RAM below 10GB, say so -
-  that would mean the cause is something else and needs a fresh look.
+- Zombie/Mutant Brute pillaring or otherwise breaching the chokepoint
+  walls is an accepted difficulty factor, not something the reinforced
+  material is meant to stop (the walls themselves are unconditionally
+  explosion- and dig-proof).
+- Mutant Brute / Zombie Brute are too wide to climb a ladder column
+  against a wall — they'll never chase you up one.
+- The Tesla Coil's zap is a genuine random pick within its own 6-block
+  cube (not "nearest target"), and it goes idle whenever a player or the
+  Sentry is within its wider detection radius — a deliberate tradeoff
+  for making it safe, not a targeting bug.
+- The vanilla jigsaw structure-generation race condition is mitigated by
+  structure spacing, not guaranteed gone — if world creation ever
+  crashes, check the crash report's own Details/Feature section for
+  which structure was actually involved before assuming it's the newest
+  thing added.

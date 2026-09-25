@@ -43,16 +43,18 @@ log of current state.
 
 ## Current priority
 
-Playtesting the two most recent builds (endless-phase wave scaling,
-the structure-mod aesthetic swap) — both shipped 2026-09-01, neither
-confirmed by an actual playthrough yet. See QUEUE.md for exact status
-of everything in flight.
-
-Machine progression Tier 2 is fully specced and ready to build, held on
-a pacing request from early in this pack's development that's likely
-stale by now given how much has actually been played and iterated on
-since — worth revisiting rather than assuming it should stay held
-indefinitely.
+**Updated 2026-09-16** — the previous "current priority" text here dated
+to 2026-09-01 and was long stale (Tier 2/3/4 have all since been fully
+built — see MODS.md). Machine progression is now complete through Tier 4
+(Open Modular Turrets Reborn's Grenade/Rocket Turret, shipped
+2026-09-15/16, still needs a real playtest confirmation). The actual
+current priority is a real playtest pass: a real backlog of shipped-but-
+unconfirmed work has built up (today's Tier 4 turrets, yesterday's Tesla
+Coil/trap showcase polish, airdrop changes, Tier 2 cost trim, mine
+player-safety fix, Culinary Generator power economy, structure loot
+pass) — see QUEUE.md for the exact current list. Holding off on new
+builds until that backlog gets a real session and actual feedback,
+rather than continuing to build further ahead of what's been tested.
 
 ## Open questions
 

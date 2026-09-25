@@ -53,7 +53,21 @@
 	#Is the digging blacklist inverted? [default: false]
 	diggingBlacklistInverted = false
 	#Digging mobs require the proper tools to dig [default: true]
-	diggingRequiresTools = true
+	#false, 2026-09-22 - direct playtest report at wave 7: "they just stand
+	#around outside the perimeter wall (I've fully blocked it off)". Decompiled
+	#ESM_EntityAIDigging.canHarvest(): with this true, any block that
+	#requiresCorrectToolForDrops() (cobblestone, stone, bricks, every ore/
+	#metal block...) is only diggable by a mob actually HOLDING the right
+	#tool - and diggerItem below is handed out to 5% of diggers, so 95% of
+	#every wave could never dig through a stone/cobble wall at all; they
+	#reach the closest point their pathfinder can and stop there. Wood,
+	#dirt, sand etc. never needed a tool, which is why digging looked like
+	#it worked in early tests. With this false only hardness and solidity
+	#gate a dig: SecurityCraft reinforced blocks (hardness -1) stay
+	#undiggable, everything a player can build with is fair game. Dig SPEED
+	#is a separate knob - see wave_mob_dig_haste.js (ESM honors the Haste
+	#effect in AiUtils.getBreakSpeed, decompiled).
+	diggingRequiresTools = false
 	#How common demolition variants are [default: 0.1]
 	#Range: 0.0 ~ 1.0
 	demolitionChance = 0.1

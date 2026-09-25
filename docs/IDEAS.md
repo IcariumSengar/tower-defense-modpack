@@ -236,6 +236,58 @@ nothing built or installed from this:**
   the pedestal's own bossbar already covers "boss-style health UI."
   Not something to build from as a template.
 
+**Tier 4 deep dive + decision (2026-09-15)** — direct ask to source more
+powered/damage-dealing mods, three parallel research passes (turret
+mods, AoE/chain-lightning mods, IE-ecosystem addons), each verified
+against real CurseForge/Modrinth files lists, not descriptions:
+- **Decided: Open Modular Turrets Reborn** for Tier 4. Real, self-
+  contained 1.20.1 Forge build, zero dependencies, every component
+  (base/sensor/barrel/chamber) is a plain crafting-table recipe — clears
+  the same "no workbench/blueprint assembly step" bar that got Create
+  and Advanced Tower Defense removed. 5 tiers, low tier on furnace fuel,
+  higher tiers run on **RF/FE directly** — plugs straight into the
+  already-built Flux Networks grid, no parallel power system. Top tier
+  is a Rail Gun/Plasma turret. **Built 2026-09-15, direct go-ahead
+  ("build it")** — see docs/MODS.md's new row and docs/FEATURES.md's
+  "Machine progression (Tier 3-4)" entry for the shipped implementation
+  (only Grenade Turret + Rocket Turret adopted, not the full 10-turret/
+  5-tier catalog — see `tier4_turret_recipes.js`'s header for the
+  curated scope and why).
+- **K-Turrets** — re-considered per the 2026-08-30 note above suggesting
+  it for a later tier once passed over for Tier 2. Confirmed real, far
+  better-maintained (5M downloads) than OMT Reborn, but ammo-based
+  (bullets/gauss/fire charges) rather than FE — a separate resource loop
+  instead of a power draw, needs one small library dependency (Satako).
+  Its Fire Charge Turret is the one turret with real splash damage.
+  **Passed over in favor of OMT Reborn** (FE integration matches the
+  established Tier 3 pattern more closely) but stays logged here as a
+  real, viable alternative/supplement if ammo-based variety is wanted
+  later.
+- **True AoE/chain-lightning: confirmed no clean mod exists.**
+  **Immersive Intelligence** (IE's own warfare addon — HMG nests,
+  railgun turrets, mines; would've been the ideal aesthetic/mechanical
+  fit) is still 1.12.2-only, reconfirmed live against its real files
+  list — same dead end as 2026-09-08, not just assumed stale.
+  Mekanism has a laser-turret addon (`mekanism_turrets`) but it hard-
+  requires installing the entire Mekanism tech tree alongside the
+  already-installed Immersive Engineering — redundant parallel ore-
+  processing/power system, ruled out on footprint alone, not mechanics.
+  IE's own installed jar has nothing hidden beyond the Tesla Coil/Gun
+  Turret/Chemthrower Turret already in use (its Railgun is a handheld
+  item, not a turret). **The "AoE Devastator"/"Chain-Tesla Network"
+  placeholder names still have no mod to hang off of** — the real path,
+  if this gets picked up, is custom KubeJS on top of the existing Tesla
+  Coil (e.g. scripting multiple coils to arc to each other, or a
+  boosted-radius variant), same pattern as the custom Spike Trap when no
+  mod fit Tier 1's design. Not scoped further, not decided to pursue.
+- Also checked and ruled out: **Landmines** (real, lightweight, standalone
+  1.20.1 mod with genuine AoE explosive/potion/teleport mines) — unpowered,
+  and redundant with SecurityCraft's Claymore/Bouncing Betty already
+  covering the landmine niche in Tier 2. **Immersive Petroleum** and
+  **Immersive Machinery** — both real, current, IE-adjacent 1.20.1 mods,
+  but zero combat content (oil rigs, a submarine) — logged as ruled out
+  so they don't get re-researched later.
+
 ## Custom loot materials, beyond vanilla-only — rule retired 2026-09-05, this draft tier structure is now live design material, not deferred
 
 **Stale until 2026-09-06**: this section used to say the loot system was
