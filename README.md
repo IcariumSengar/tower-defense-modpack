@@ -43,10 +43,13 @@ CurseForge/Modrinth-installable pack:
 ```
 packwiz cf export --side both      # or: packwiz mr export
 ```
-**`--side both` is required** — `cf export` defaults to `--side client`
-and silently drops server-only mods (Radium, LootJS) from the zip with
-no warning. Since this pack only targets single-player (the integrated
-server needs every mod too), always export both sides.
+`cf export` defaults to `--side client` and silently drops any
+`side = "server"` mod from the zip with no warning. The 0.2.0 export hit
+this (LootJS missing → three loot scripts failed to load), so every
+`.pw.toml` is now `side = "both"` or `"client"` and a bare export is safe.
+Single-player runs an integrated server that needs every server mod, so
+**never mark a mod `side = "server"`** — `packwiz modrinth add` copies the
+side from Modrinth's metadata, so check the new `.pw.toml` after adding.
 
 ## Status
 

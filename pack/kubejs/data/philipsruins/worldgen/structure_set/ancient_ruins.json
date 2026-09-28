@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "philipsruins:ancient_ruins",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spread_type": "triangular",

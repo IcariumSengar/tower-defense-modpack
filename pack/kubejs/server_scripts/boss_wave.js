@@ -340,7 +340,8 @@ function spawnBoss(player, data, waveNumber) {
   server.runCommandSilent(`title @a title {"text":"${tdWaveLabel(waveNumber).toUpperCase()}: BOSS","color":"dark_red","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"${boss.name} ${boss.arrivalSubtitle}","color":"red"}`)
   server.runCommandSilent(`tellraw @a {"text":"[Boss] ${boss.name} is out there somewhere - find it and end it.","color":"red"}`)
-  server.runCommandSilent(`playsound ${boss.music} master @a ~ ~ ~ 1 1`)
+  // At each player (2026-09-27 audit): a bare `playsound ... @a ~ ~ ~` from the server plays at world spawn and is inaudible past ~16 blocks.
+  server.runCommandSilent(`execute as @a at @s run playsound ${boss.music} master @s ~ ~ ~ 1 1 1`)
   server.runCommandSilent(`particle minecraft:large_smoke ${x} ${y + 1} ${z} 1.5 1.5 1.5 0.02 80`)
   server.runCommandSilent(`playsound ${boss.arrivalSound} hostile @a ${x} ${y} ${z} 1 0.6`)
 }
@@ -453,7 +454,8 @@ EntityEvents.death((event) => {
 
   server.runCommandSilent(`title @a title {"text":"${boss.name} FALLS","color":"gold","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"The base breathes easier - for now.","color":"gray"}`)
-  server.runCommandSilent(`playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 1`)
+  // At each player (2026-09-27 audit): a bare `playsound ... @a ~ ~ ~` from the server plays at world spawn and is inaudible past ~16 blocks.
+  server.runCommandSilent(`execute as @a at @s run playsound minecraft:entity.wither.death master @s ~ ~ ~ 1 1 1`)
   server.runCommandSilent(`particle minecraft:totem_of_undying ${x} ${y + 1} ${z} 1.0 1.0 1.0 0.02 100`)
 
   server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"securitycraft:sentry",Count:1b}}`)

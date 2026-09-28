@@ -58,7 +58,7 @@ EntityEvents.spawned((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'securitycraft:bullet') return
   var level = event.level
-  if (level.isClientSide) return
+  if (level.isClientSide()) return // method call - see wave_mob_spike_slow.js's header
   var x = entity.getX()
   var y = entity.getY()
   var z = entity.getZ()
@@ -73,7 +73,7 @@ EntityEvents.hurt((event) => {
   if (source.getType() !== 'arrow') return
   var entity = event.getEntity()
   var level = entity.level
-  if (level.isClientSide) return
+  if (level.isClientSide()) return // method call - see wave_mob_spike_slow.js's header
   var x = entity.getX()
   var y = entity.getY() + entity.getBbHeight() / 2
   var z = entity.getZ()

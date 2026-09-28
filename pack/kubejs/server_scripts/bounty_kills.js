@@ -149,6 +149,9 @@ function bountyDamageTypeId(source) {
 EntityEvents.death((event) => {
   var entity = event.entity
   if (!BOUNTY_HOSTILE_TYPES.includes(`${entity.type}`)) return
+  // Structure guards don't count (2026-09-28, user's call): a guard spawner
+  // would otherwise farm the repeatable Zombie Masher's legendary bag.
+  if (entity.getTags().contains('td_structure_guard')) return
 
   var typeId = bountyDamageTypeId(event.source)
   if (typeId !== null && BOUNTY_EXCLUDED_DAMAGE_TYPES.includes(typeId)) return

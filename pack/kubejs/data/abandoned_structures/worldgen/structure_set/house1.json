@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "abandoned_structures:house1",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "berezka_api:berezkas_structure_placement",
     "spacing": 28,

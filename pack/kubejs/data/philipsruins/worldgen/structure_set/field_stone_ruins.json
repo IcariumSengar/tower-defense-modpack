@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "philipsruins:field_stone_ruins",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "salt": 558158731,

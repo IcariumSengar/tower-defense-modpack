@@ -1,1 +1,3 @@
+version:3465
 key_key.ftbquests.quests:key.keyboard.tab
+key_gui.xaero_new_waypoint:key.keyboard.k

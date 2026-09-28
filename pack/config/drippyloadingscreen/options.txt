@@ -1,0 +1,6 @@
+##[general]
+
+B:allow_universal_layouts = 'false';
+B:early_fade_out_elements = 'true';
+B:wait_for_textures_in_loading = 'true';
+B:fade_out_loading_screen = 'true';

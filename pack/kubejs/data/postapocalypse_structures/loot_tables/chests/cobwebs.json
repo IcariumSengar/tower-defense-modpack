@@ -12,21 +12,14 @@
       ]
     },
     {
-      "rolls": 1,
+      "rolls": {
+        "min": 0,
+        "max": 1
+      },
       "entries": [
         {
           "type": "minecraft:loot_table",
           "name": "kubejs:chests/scav_building",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_hardware",
           "weight": 1
         }
       ]
@@ -39,11 +32,10 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_treasure",
+          "name": "kubejs:chests/scav_hardware",
           "weight": 1
         }
       ]
     }
-  ],
-  "random_sequence": "postapocalypse_structures:chests/cobwebs"
+  ]
 }

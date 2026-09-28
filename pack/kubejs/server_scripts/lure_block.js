@@ -59,18 +59,40 @@ BlockEvents.placed('kubejs:lure_block', (event) => {
 // codebase - see mob_aggro.js's own header for why var/const don't work
 // the same way) - called from mob_aggro.js's per-mob targeting loop so
 // that file doesn't need its own copy of the lure-scanning logic.
+//
+// Performance pass 2026-09-26: mob_aggro.js calls this once PER WAVE MOB
+// every 10 ticks, and each call used to be its own full-level entity scan
+// (60 mobs = 60 scans per pass). The lure list is now collected once per
+// level per tick and reused by every later call in that same tick - lures
+// only change on placement/expiry, never mid-pass. Removed entries (a lure
+// that expired earlier this tick) are skipped.
+var tdLureCacheTick = -1
+var tdLureCacheLevel = null
+var tdLureCacheList = []
+
 function nearestActiveLure(level, x, z, radius) {
+  var now = Number(level.getTime())
+  if (tdLureCacheTick !== now || tdLureCacheLevel !== level) {
+    var lures = []
+    level.getEntities().forEach(function (e) {
+      if (e.getTags().contains('td_lure_target')) lures.push(e)
+    })
+    tdLureCacheTick = now
+    tdLureCacheLevel = level
+    tdLureCacheList = lures
+  }
   var best = null
   var bestDistSq = radius * radius
-  level.getEntities().forEach(function (e) {
-    if (!e.getTags().contains('td_lure_target')) return
+  for (var i = 0; i < tdLureCacheList.length; i++) {
+    var e = tdLureCacheList[i]
+    if (e.isRemoved()) continue
     var dx = e.getX() - x
     var dz = e.getZ() - z
     var distSq = dx * dx + dz * dz
-    if (distSq > bestDistSq) return
+    if (distSq > bestDistSq) continue
     best = e
     bestDistSq = distSq
-  })
+  }
   return best
 }
 

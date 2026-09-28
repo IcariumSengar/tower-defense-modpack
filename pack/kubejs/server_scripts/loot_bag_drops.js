@@ -230,11 +230,21 @@ const ALL_WAVE_MOBS = UNCOMMON_MOBS.concat(RARE_MOBS, EPIC_MOBS, LEGENDARY_MOBS)
 // - same confirmed-working pattern as the old system, just pointed at
 // bountybags:*_loot_bag instead of the custom kubejs:* items, and now
 // applied to every wave mob instead of a tier-specific subset.
+//
+// Structure guards (2026-09-28, user's call when guard spawners went in at
+// every Lootr stash): a td_structure_guard kill drops NO bag and never the
+// legendary jackpot - these modifiers match by type with no killer check, so
+// any guard spawner was an unlimited bag farm. The reward for the fight is
+// the stash. `entityPredicate` is LootJS 2.13.1's CustomParamPredicate on
+// THIS_ENTITY (the killed mob), checked before the chance roll.
 LootJS.modifiers((event) => {
+  var lbdNotGuard = function (entity) {
+    return !entity.getTags().contains('td_structure_guard')
+  }
   ALL_WAVE_MOBS.forEach((id) => {
-    event.addEntityLootModifier(id).randomChance(0.2).addLoot('bountybags:uncommon_loot_bag')
-    event.addEntityLootModifier(id).randomChance(0.035).addLoot('bountybags:rare_loot_bag')
-    event.addEntityLootModifier(id).randomChance(0.03).addLoot('bountybags:epic_loot_bag')
-    event.addEntityLootModifier(id).randomChance(0.02).addLoot('bountybags:legendary_loot_bag')
+    event.addEntityLootModifier(id).entityPredicate(lbdNotGuard).randomChance(0.2).addLoot('bountybags:uncommon_loot_bag')
+    event.addEntityLootModifier(id).entityPredicate(lbdNotGuard).randomChance(0.035).addLoot('bountybags:rare_loot_bag')
+    event.addEntityLootModifier(id).entityPredicate(lbdNotGuard).randomChance(0.03).addLoot('bountybags:epic_loot_bag')
+    event.addEntityLootModifier(id).entityPredicate(lbdNotGuard).randomChance(0.02).addLoot('bountybags:legendary_loot_bag')
   })
 })

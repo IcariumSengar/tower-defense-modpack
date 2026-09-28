@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "abandoned_urban:gas_station",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spacing": 6,

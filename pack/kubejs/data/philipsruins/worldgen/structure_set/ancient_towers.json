@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "philipsruins:ancient_towers",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "salt": 283426912,

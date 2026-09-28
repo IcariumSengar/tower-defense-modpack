@@ -9,12 +9,140 @@ file = "config/bountybags-common.toml"
 hash = "108c4151cb64cc39375bb6ff0d7108abe7645dfaf62bc2f696ab76f008c194c0"
 
 [[files]]
+file = "config/drippyloadingscreen/options.txt"
+hash = "f3e06ef9b582a6866f4b5d2a392d9603451524436b75e120fa975dbec16a0a3b"
+
+[[files]]
 file = "config/dyairdrop.toml"
 hash = "aa9670c78c29262bdac56d5971d8078cc390f832ef1adcea0de208276d0f2d4c"
 
 [[files]]
 file = "config/epicsiegemod-common.toml"
-hash = "1bcedfdfb505094283ec3910cd0b676c028c2a7e0fa62cb9f2ad85e4f9c00183"
+hash = "a629e9cdf374d460ae985e955ee57d16d614b5db2c73eca883a5760fb03e831b"
+
+[[files]]
+file = "config/fancymenu/assets/td/bar_background.png"
+hash = "a6de9a41530709ac758a8bc814520f14dc857401cd0846445e988645175cfbfc"
+
+[[files]]
+file = "config/fancymenu/assets/td/bar_progress.png"
+hash = "7c92d059a2bae9416c6ff26cea89eaf4af7cbfe2704cb60f4be1124ed313da6f"
+
+[[files]]
+file = "config/fancymenu/assets/td/bg_dusk.png"
+hash = "033435f69ad9e7d71ad5c909d718c46394698a8ec2709f5c75dd87a5d2cfcff1"
+
+[[files]]
+file = "config/fancymenu/assets/td/bg_dusk_dim.png"
+hash = "a0e03ca34dfc1da8024148168161465f15962f182446c1a906c399496ae0f6c2"
+
+[[files]]
+file = "config/fancymenu/assets/td/bg_night.png"
+hash = "402efd2ac2d8cb0a4c1d5f3c8c636fa5b42b0ebb59093b0175a6d92f473788c0"
+
+[[files]]
+file = "config/fancymenu/assets/td/bg_night_dim.png"
+hash = "6abf9c66c0eff7ce544be6ee72beb6a8beebfbee731cbdc1660950188885d1e7"
+
+[[files]]
+file = "config/fancymenu/assets/td/button_hover.png"
+hash = "96e8ed8f7303b92e38edf1ee852923ba0f95df76f1258f5ff81eb007895e33de"
+
+[[files]]
+file = "config/fancymenu/assets/td/button_inactive.png"
+hash = "01c88405a379165a881a1c369e1a5b0873be1fd26357c8d2e0ea02513e89051a"
+
+[[files]]
+file = "config/fancymenu/assets/td/button_normal.png"
+hash = "71667eff85636c0de0b65a7e97a8635b49d073023cb3694409e7515d6c402a3b"
+
+[[files]]
+file = "config/fancymenu/assets/td/column.png"
+hash = "1eff618702cd9c622e3078bad946c5247d5e591bfac22a88836fad9a9da9ae83"
+
+[[files]]
+file = "config/fancymenu/assets/td/embers.apng"
+hash = "29c4bb979075fc39e63dc7ec7f060bd5659585736bb88ee0459b4b4761f2d7ce"
+
+[[files]]
+file = "config/fancymenu/assets/td/icon16.png"
+hash = "70a316c9f5181664c07b89f854668994b0514ae3962267d299f4ce55e36c4c75"
+
+[[files]]
+file = "config/fancymenu/assets/td/icon32.png"
+hash = "16799d60814ed2b04332c7d1ed0ad067c3be2500d35873fd49cccf4354d338b2"
+
+[[files]]
+file = "config/fancymenu/assets/td/logo.png"
+hash = "0ee322802d62f0ef71195fcef716d2f690fa5771929151da40e0c0ea124556fc"
+
+[[files]]
+file = "config/fancymenu/assets/td/logo_small.png"
+hash = "f0ebeaf439b323278752c400822b7767b1e3d2e3cbd7552ddfca3328263f0f32"
+
+[[files]]
+file = "config/fancymenu/assets/td/rule.png"
+hash = "cab876c122269a3e75c5bfbb34f855480974941ed12146444870a9cdc475afab"
+
+[[files]]
+file = "config/fancymenu/assets/td/shade.png"
+hash = "5ad27927e043f63fe65b2d34436ed1a5de4f41a78f7c2fbdb95e4a74511dbf2e"
+
+[[files]]
+file = "config/fancymenu/assets/td/splashes.txt"
+hash = "32f94ba05c3fe2f58502fa630104785f8e473853e6c05631fe221a57360b755b"
+
+[[files]]
+file = "config/fancymenu/assets/td/tip_plate.png"
+hash = "dfe68f27c486a945bae6d90d32c394e41a238e3b8cc81a2490a33794c1d34980"
+
+[[files]]
+file = "config/fancymenu/assets/td/tip_plate_solid.png"
+hash = "6f752114b40669b2942f50a4e74d3046a01dce29a292d870d9e52501af020e95"
+
+[[files]]
+file = "config/fancymenu/assets/td/tips.txt"
+hash = "e4113d7425d6a842187da1c456130eba5d73cd3de9ce4e6da42cb867c9d3f5b4"
+
+[[files]]
+file = "config/fancymenu/customizablemenus.txt"
+hash = "ed806a67f77b3c783a2ea57970f4f35ea712dc03e1ca7504ddd4eedc23dfc26a"
+
+[[files]]
+file = "config/fancymenu/customization/td_connect_screen.txt"
+hash = "69bf8f1d9b2790ef649ce7e13b8c67c28ca0d95cc83b55e7030052522271ca1a"
+
+[[files]]
+file = "config/fancymenu/customization/td_generic_dirt_message_screen.txt"
+hash = "46d50b1fe5dbb5d870d78db1c0d2aa40224eeb8b486d27170cab793945f7f5d0"
+
+[[files]]
+file = "config/fancymenu/customization/td_level_loading_screen.txt"
+hash = "d1a135329c13f1af3c0d211150c16dbb6b4c6dc8d01df147a2bd5e3d54dfaadc"
+
+[[files]]
+file = "config/fancymenu/customization/td_loading_overlay.txt"
+hash = "c9d7aa8b653593ac388f8ebd3eec28b325c0445e0faf6149298708fe6182ce6c"
+
+[[files]]
+file = "config/fancymenu/customization/td_pause_screen.txt"
+hash = "22186aff3b791514165d0397782021fac3336443b5d05ad527cac0b12e99d450"
+
+[[files]]
+file = "config/fancymenu/customization/td_progress_screen.txt"
+hash = "944f87b7fecb38673ac3c09a3a51f1cf2ae1e90c36d402de7542addee0a3bbf6"
+
+[[files]]
+file = "config/fancymenu/customization/td_receiving_level_screen.txt"
+hash = "73c43de2727ac264fb561fc92bdb0dd2030fa694cfc5dd7e983d55c56b6d4248"
+
+[[files]]
+file = "config/fancymenu/customization/td_title_screen.txt"
+hash = "42a7455a5253545913dd3b5f384ceb118a587696120dbb3db55129a773742e28"
+
+[[files]]
+file = "config/fancymenu/options.txt"
+hash = "7caa1acf6750d5e78be16b92bacfcf6d9e815a6ca772b47efa92b040f623b51f"
 
 [[files]]
 file = "config/ftbquests/quests/chapter_groups.snbt"
@@ -26,11 +154,11 @@ hash = "83b1ba7b06bcee97c178900d71a80dcb721433d4895c41a57d4e0018766a406f"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/bounties.snbt"
-hash = "4ab63052b50d36b48a27731b89f8ee6df828e061d74d71d0be0b007f91f0e68a"
+hash = "33fce829364050e4b7efc18a6bb33435345e7ddf9672f760df4f498bec1c52a3"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "15784d1504a92a28cfba17b2b86654d5d5b3654ac264cff92be71a65a8adcf00"
+hash = "dbaa0f4401747bc69f862f8b2e8bf84941a83bcb84a11a30405b5eef70af0491"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -38,7 +166,7 @@ hash = "dc6bf510e41f75d22e6f3f1c69aa2ede8f5d050253389751f7a1f9471bba89b5"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
-hash = "ada02480bd90dae94378b9144a9b38365cbcfdd0657fd5d2e25772043b21509c"
+hash = "b84deaaaefda8d8a76b7bfb41aa664093dfebf30e270067f78232adaeb0752a9"
 
 [[files]]
 file = "config/generatorgalore/defaults.lock"
@@ -57,6 +185,14 @@ file = "config/lootbeams/light_config.toml"
 hash = "309abcabddf5c98d08b92a0191ed95e2d90c1837572e2f70f73684ba208c9354"
 
 [[files]]
+file = "config/lootr-common.toml"
+hash = "90bc75b313b7e2428920356dc23c172927b71ea321ce832bb71178c3e327d583"
+
+[[files]]
+file = "config/mobdismemberment-client.toml"
+hash = "c9344bb8c31707a32642ad5748ae0bb742233efa5b6ab23f68b196af5b49a2f2"
+
+[[files]]
 file = "config/modernfix-mixins.properties"
 hash = "767d335425881699b395fe287ebf23b099f103606be8df1e66461173c7ba0a40"
 
@@ -71,6 +207,14 @@ hash = "8dcbc970a11d4a1d7d514d4186a2f05dbb60efc45706d4f5fa1003c22a585e45"
 [[files]]
 file = "config/simplytraps.toml"
 hash = "d02bfd579ad95ed5caa45f9110d711f9c4aedd981fe8fc3494e1bef181f7fe0a"
+
+[[files]]
+file = "config/sodiumdynamiclights-client.toml"
+hash = "5a0648b99aacf1a50de05398e553123c55ca32c0b392e7ef9bd476769306bb29"
+
+[[files]]
+file = "config/sophisticatedbackpacks-common.toml"
+hash = "67c90bbdfca3c7488d9496df0af4d1be7483634a0c4d179281d1c7c91ef32e7b"
 
 [[files]]
 file = "config/supplementaries-client.toml"
@@ -98,7 +242,11 @@ hash = "3402a1e4a76ce476b66eb7d5e70b1ae2e814bc92aed14b53662f544fc0ac0abc"
 
 [[files]]
 file = "defaultconfigs/securitycraft-server.toml"
-hash = "0ef200903d0d9be57f7062b4a19c7fc7de6638d37370e214c4342a663aa634e0"
+hash = "c4b88b873be2715c3c39ba1d0533fcf53d9f61ad24cbb9139845d22ae9966d05"
+
+[[files]]
+file = "defaultconfigs/sophisticatedbackpacks-server.toml"
+hash = "e999e67732fc9d187bc86f989b5cf88d036e15da15a514370798fbe2c57be983"
 
 [[files]]
 file = "defaultconfigs/undeadnights-server.toml"
@@ -150,11 +298,11 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/client_scripts/tooltip_tier_colors.js"
-hash = "aa3bcdb1825f11f23d74c3e39a19013456eb0ec841b80b9e9ee77a502337d305"
+hash = "dba5d125427571a381f7778e9bb2233f690fb2c7e96b5b5c3f460de4bd9907f1"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/structures/zapravka.nbt"
-hash = "69a6ac70a31276e690eed11d7f9d19471aa4282d1d71210f1c83dbcf263248e5"
+hash = "a35a5fbc0356c40883843a4fac7b82e33fb81a935a85bc50f7db7e725255877c"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/worldgen/structure/gas_station.json"
@@ -174,31 +322,71 @@ hash = "e5d7bca1a412b4d76a2006bf2580ed7a9ef0034878bb2f2ba61303eedea3a6f3"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/worldgen/structure_set/gas_station.json"
-hash = "e9e8b66fd39689557fb2f48b7d800cf7df7816fe8926337f320b35eb31314190"
+hash = "99348d1e982739935a1d65766ec6f6149c1d0ae0cbe363106f81fd1a41d97aed"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/worldgen/structure_set/house1.json"
-hash = "14cb59c3694b4f620420b6c130f74ca4e8b2c6edf45939f73adfccd87213fba1"
+hash = "dbc4035d2fd5d6d1fb5acd9c0d547f8feb520f4ccc9d57545365c625244c912f"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/worldgen/structure_set/house2.json"
-hash = "45938b2ca8a9c8816686d89bf3e2ecbaa7715407a0c7a1426bde83bc82eecb49"
+hash = "b7a274118e2ebbe742a7d6d7e0cd73f92ee5571fdb99d2786b7f3092bc0cb70d"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/worldgen/structure_set/tower.json"
-hash = "0bcc6f460560d94429187535a3cc6931e5bf80f416545d8b310a073df4656294"
+hash = "2ae74596239468becdbc7153bdecb6e9695e717ea463b7ccddfd3c54cea8ce2d"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/apartments_three.nbt"
+hash = "30166dabdc0da2e8e77caae6982101cff141e7829dd2a14cf3be698253d66c72"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/structures/bigrig.nbt"
-hash = "c59ffdc5b376c624636ea7353463682742775ffb926768a48ca18bede55cf9c0"
+hash = "e7d9471e9eaf3e73319a74d0574e4cbff7cc9ece9b58835c48e9b760f621b57e"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/brick_apartment.nbt"
+hash = "1e8d9ccee0a01a7505be5f39cb829ee1fef196285fcaeebb1aa47d852d3923de"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/bus.nbt"
+hash = "473ccbed70455ccb48deeecf5e68f70e4e6fa5856a508af24dd3bd04e4c7e311"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/ff_restaurant.nbt"
+hash = "d140e21f92489d03b11538b0d65a815efb7400f9a6a3ea6cc46f872a8730da77"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/structures/fire_tower.nbt"
 hash = "2120a7d9e9f36a60db274da5a42c1021fdf5c29f1afb5888d1dc5f68bce2017b"
 
 [[files]]
-file = "kubejs/data/abandoned_urban/structures/gas_station.nbt"
-hash = "6d06f0db378c3bc80c3a39d8a7a6eff795bdd88070ffb7f3c59a2e45c5e55412"
+file = "kubejs/data/abandoned_urban/structures/gas_station_loot.nbt"
+hash = "3f7c637426289784bb04a47d71d14df7fca7faa20ec3d4f1eb521d7b0ea53725"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/jungle_apartment.nbt"
+hash = "f3674d41cee4bace53af2bf40e4e55e762a6333f9ef3fcc52c64d5beb0c41aa2"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/military.nbt"
+hash = "56b1ed20ca47126c5267e63e0400fc5d016b607b177735979e396b301089b2f7"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/motel.nbt"
+hash = "5c944cf684f9079d01a1e3dfb773be465bfe8f2613f5d042970372a909b2876b"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/observatory.nbt"
+hash = "35229a0db1734d2dd5a022ebbe425e60f1d8065d0888f5c5565b4b595b9f1119"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/plane_crash.nbt"
+hash = "9070b8f6124cac93ffc0929172df027dd64d008f9671f0c1011141558d210d5a"
+
+[[files]]
+file = "kubejs/data/abandoned_urban/structures/train.nbt"
+hash = "b47135639812dd80e50f971c271e7791c0c2d0e8fce1d4032aed22bb5ea1dea3"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure/city.json"
@@ -230,31 +418,31 @@ hash = "2adac01932a269b416596e108bfedad4140f7a3e688ab4f13c8bc570391416da"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/city.json"
-hash = "30d80f72f21d63e4c073211dfdfc1cbb238b72684371dcaac17e5c54837441b7"
+hash = "f68a0199e401b382c7291fd2ce085fb0b4058b545a0e58fc70f6e958b25362f7"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/fire_tower.json"
-hash = "b1913933a12b552582ca5f1d357cd23ade1f6c222604090b7ead42d17fa0a358"
+hash = "946c519303aac24452b325f88737990b8db2078ace0f640dca94571bd3861888"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/gas_station.json"
-hash = "04a8a11c8ee527d5298e18387e9aae930bec21b170ea241370a11095da564540"
+hash = "92b5d9ef47c899226d31d0b018db59b46df1d0af044424b8dda8da3dced51b6c"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/motel.json"
-hash = "1443e42757085f0a67d464e0586dc7d126fbb625d2d842edff3da21d90631b70"
+hash = "8146b6ff7773a01fe4879b23ea574d6f4c1eb606c5ed029aa5e6dc678e97fa6f"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/observatory.json"
-hash = "5da4b782f216c6d5d25719863a4b74fa99b4230c93bbadca67ca72bb471bbd2c"
+hash = "1a80fa4d7041d263bfe2d15e534c6fa37ab1c197347b9fb3ef79924e91276a93"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/plane_crash.json"
-hash = "4271b88a8ef8618e50b1b86d93cb4498f37de23028b6bb23b39ea31df3be7641"
+hash = "2b45b181d869dac8dac496870ee1f2b6a4c440574b3b2612c08038b7f59c3943"
 
 [[files]]
 file = "kubejs/data/abandoned_urban/worldgen/structure_set/train.json"
-hash = "ced678936745c1485bd7fcf7a85dd3db3678cf4b37b7460dea1fd175e65abca5"
+hash = "fbd0d1f34d775261f910a06a4111a2a3cffc9a190b5c9c04ec4b330394c88776"
 
 [[files]]
 file = "kubejs/data/berezka_api/loot_tables/chests/berezkahousesmall_0.json"
@@ -290,7 +478,7 @@ hash = "f551a4e602e3cfacee4ee36430ba150e8e816569b9fdf943d484b4ac0d539b6c"
 
 [[files]]
 file = "kubejs/data/berezka_api/loot_tables/chests/store.json"
-hash = "1f0b4d1e44e5dea2628f67fd12eb9284c138de0b460b989cd0968a62b9cdde49"
+hash = "00e007dda0b1a14592b9b4ed76c611ec2723d154fc9755a1d3b82172e525bca9"
 
 [[files]]
 file = "kubejs/data/berezka_api/loot_tables/chests/tower_chest.json"
@@ -325,6 +513,10 @@ file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 
 [[files]]
+file = "kubejs/data/kubejs/loot_tables/chests/scav_ammo.json"
+hash = "fae67b8e0b8af139f927b809d7b9225ecf2ba5e25a24ed1655e8115eeffa584b"
+
+[[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scav_armory.json"
 hash = "1068e4877f1e576a6c61e67ac8499074e2d37546302f340fd6d7c3bcd70843dd"
 
@@ -342,19 +534,15 @@ hash = "9fb301cbfe542ff8831e35b969ef7aa94eed60048a043cfab97bc41d4287d5c9"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scav_food.json"
-hash = "39f43d8a9acf7f17a789dc075c6e54878400c6faaec88eabea618b4ec7898a6f"
+hash = "5978f4bf095cb508d41e8198218a679520e23d3e2edde9a6745ca33ec5ecb734"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scav_hardware.json"
-hash = "d5ca545e1f92171f11052efae297f8a87689f4df1560047137af62efeb8b3364"
-
-[[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/scav_treasure.json"
-hash = "582f959f0cfa1381981237e278ca4008be26cb113209e2e1fe430954cb979cc1"
+hash = "efa12f017dcfc78f9a93f90701d814941bc6e36c3d6562df818f33835661f9f9"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scavenge_storage.json"
-hash = "5639530455065db7e179620caf5835041f3792accc48e76b9d8aa41b450f32a2"
+hash = "f464af10b8908b2201aab918dd0208f552fcef3e936ab8087b486453b32ad01c"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json"
@@ -381,6 +569,14 @@ file = "kubejs/data/kubejs/worldgen/structure_set/base_anchor.json"
 hash = "741922d1f21c12ac82034a68663e4ef5c82b0a3e89fddbe3deb9c0d664588da4"
 
 [[files]]
+file = "kubejs/data/kubejs/worldgen/structure_set/ruins_pool.json"
+hash = "bf6b25a8219a6dffbee7765936ce67c5be335d7d5fa0915de6598ed66bc2b0b1"
+
+[[files]]
+file = "kubejs/data/kubejs/worldgen/structure_set/towns.json"
+hash = "67c86227d8418b933b29d663db795f3edbb8050eaf897ca0300b59d2001e6f92"
+
+[[files]]
 file = "kubejs/data/minecraft/dimension/overworld.json"
 hash = "902cd6d4af2c70d27067bcd5ffd2c6156b03b04b79f593d609df9d83e0caec9e"
 
@@ -405,12 +601,20 @@ file = "kubejs/data/minecraft/worldgen/structure_set/desert_pyramids.json"
 hash = "85362ff6748144718aded9c222a88d8f13b9d401b9a4205d062e121a0ad0a421"
 
 [[files]]
+file = "kubejs/data/minecraft/worldgen/structure_set/mineshafts.json"
+hash = "8fada600edfcd83de1f5ce846378d89d27e9a9620ddfccf428646a69e3fffb43"
+
+[[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/pillager_outposts.json"
 hash = "4c21f30e79352d5e82c9a096e114b79229e2013e4ddd0650266c388bc134fb95"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/ruined_portals.json"
 hash = "64098916ddf77b1bca75a67508ef2910ca74b30144eefa5e260409306ba50a85"
+
+[[files]]
+file = "kubejs/data/minecraft/worldgen/structure_set/strongholds.json"
+hash = "4d39149c3da8b6a0bcee2a1a9ef17a2edc6087b29d803df7c5407f8055ee498a"
 
 [[files]]
 file = "kubejs/data/minecraft/worldgen/structure_set/villages.json"
@@ -449,8 +653,60 @@ file = "kubejs/data/mutantszombies/forge/biome_modifier/zombie_brute_biome_modif
 hash = "a75d5d611e58e3c80bbf0244f82a8a8351c4e8c4aa0f3a1c56da5343aa6d5ae5"
 
 [[files]]
+file = "kubejs/data/philipsruins/structures/ancient_pyramid1.nbt"
+hash = "dc63fd1a2c8f316d22621ed3d829fe75cd7f2df5f9aab59af15ab7a043ced7ca"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/ancient_pyramid2.nbt"
+hash = "c9afe1093b688c32c332d3e8efcb31d79dccf7898f8108958d9501af22bbd9c2"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/badlands_ruin1.nbt"
+hash = "805bfba3ffe217367fb6679f69fe8658fbb4ef3f80ff2688a419842523dfae0d"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/data_pack/level_ruin_three11.nbt"
+hash = "c73996d5e4e08242a795de02ee2f151aac189137e048fc8d382fa4ba73294286"
+
+[[files]]
 file = "kubejs/data/philipsruins/structures/desert_pyramid.nbt"
-hash = "d76413112fe39394e7e0cecfc81d5a06a2a68a019f1a612a81f4a4cf1225a183"
+hash = "ec4db7a68fec972df46cf72b16f0caced68fb21ce2b3549020afeb35ab4e6c35"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/desert_ruin1.nbt"
+hash = "e611deb7e5a9ddbe3aedb8d717888e8fc2a07c221437afd1a0d1b17e63ca5ae8"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/desert_ruin3.nbt"
+hash = "a9dcd6d42c785b66b655cee6d7024a40be8dc2d6894bc61eec810fe1e72f3991"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/level_three_ruins1.nbt"
+hash = "9c6e5820418c0107184bd6e9a2766922ca4586cb60898bca5f3584732b453922"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/level_three_ruins4.nbt"
+hash = "8731b4fbafd93861dd4fdee49908eae32efb8e1ab36bb942b8f2217ebfa2eba0"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/mod_structures/desert_ruin4.nbt"
+hash = "bf380a1a6a13af41150750b5584d0b4016f1eb85aab5b374c9bf47e2d6f12b6e"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/mod_structures/desert_ruin5.nbt"
+hash = "fab60ca3bb0a7682926433ee0e089b5ecec8ca11306a764fa75871e18a995473"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/mod_structures/desert_ruin6.nbt"
+hash = "beda91fb570610c40acc246ef16af3c7553e865afffda1ac32d4ecc34184ceb4"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/mod_structures/desert_ruin7.nbt"
+hash = "ccc7275f476752eea80a677a7c77de069e07b10a1d19b20900a4b6a200bdfde9"
+
+[[files]]
+file = "kubejs/data/philipsruins/structures/mod_structures/desert_ruin8.nbt"
+hash = "7e467b6bbdce5930b4f3969644a77bfe65cba720b4055aa4dff8c49ace591e7e"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure/ancient_crypt.json"
@@ -510,71 +766,71 @@ hash = "1c02e28edcaefb4066676e6ef4530c6d18a79f2df4e0e9f05cee8fe78ca7523f"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_crypt.json"
-hash = "e377649bf8df4172f0bf21b65e5499d96848b95828c70865a060489bc22adc46"
+hash = "aed87db63ecc2cb32a5c7ba3cacbc946e6baf180a8fb9f2ab4ca858fa670b79c"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_dungeon.json"
-hash = "b084df2b7b37f032e9e859c76bfca9b3421246f2c1a74a1c6e5e9ebdd54e98ae"
+hash = "9e697add920946f60e3e08ac424c3c55715f0a12a3299837677cdad05b6400c8"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_ruins.json"
-hash = "3897059ca633e06d7e7c4679124ebfc8d843a6aa302562c63d9c0b2a6c428eff"
+hash = "bbc2bb92dbd3fc3f3d6b62d67934ce2616760f6e45ca3b230ec9beb36ea93cfe"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/ancient_towers.json"
-hash = "86fb31d3697db2aca75d0a0238daa9b3d6efeafec23afbc91a593e2b415ca1ff"
+hash = "b388d5a37b7653c8a3c62ae7d98a4eb42e65c861cd47692ae132b5f3fa09e775"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/antiquus_crypta.json"
-hash = "ef9156e21d4ce96c885981494beaea3377df32899222495a01776ed67d470955"
+hash = "e4e7442e535d6a5c6710ee4d8a313aa1174d2c38d39ebf269a3c5461c0f2c77d"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/desert_structures.json"
-hash = "9669afeb78f0ddb487881b2d01b260225dd815dd7f143b51a30377cda32c9629"
+hash = "6f61b9240a88a152e9128311748ee0aa908b9e495c3a1ca93dc7d2dd62031b90"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/field_stone_ruins.json"
-hash = "c60f09ac74701a36aa76bc9642df17518ba3fd09ecc6a97ae088962a5120ac19"
+hash = "17425c68f85c87f284f87fa36636bc63f65c9e0d04dc67dc2e6e7216f5266f1b"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/field_stone_ruins_rocks.json"
-hash = "aea2462f88c02d155cd38e26df744c04785b84277cf10a4aa0ccd328ef825c82"
+hash = "fd9283f3f4010ddedb8736f3ee2d8c5193e5f0e16997a8712c0f9fdde0de8471"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/level_one_ruins.json"
-hash = "e31c64c5cb868c378ef756c433287efc0c75ca164a88c081ae6b2b55d853c017"
+hash = "42dfec027b46997b3eda010f2bbf1b087d98ce5e49902c4e8fc93bee36ddfca4"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/level_three_ruins.json"
-hash = "0ae8fca44fa29c33b9c7c00d44835eda406c1c4518cfb64ae61ef43a2188734b"
+hash = "08d184b902fffd098ae1c050ed294797b59011718a12318b2585388ea21494db"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/level_two_ruins.json"
-hash = "f9f8937e4dc4d643b1591534c51dab8e59af8bd57158bcdf00bd0fcf67255515"
+hash = "c5e26aa24345f5e9755df2460c7fe3c3f5ab615b779fa1a5a2de46bd21275009"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/lost_soul_city.json"
-hash = "ce54edd78d4d3c560c7376cf3c9d9a3ef22c12bf06114a14d3abe749660a9940"
+hash = "a2e0bf8bbbfd7ae68528947b74c9bd25732a689185da8e78dd4f020e3a0517d0"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/nether_ruins.json"
-hash = "4e9369c6385ab9d4d74dbcd6cdbd4f40b99d7e678337998ee1869d7e8797f5ae"
+hash = "72cbd5923cdd921318ba621c1d65242944fff521fdbd35779a9af0e0b63b2c97"
 
 [[files]]
 file = "kubejs/data/philipsruins/worldgen/structure_set/underground_structures.json"
-hash = "224505b2dc8c534edb4a99c78e3e1ab725920bce4274437f16fe7b0ab8e2ad07"
+hash = "aa249e39f1b1a0d0e656074eb3541361759cd7fafdf4fb348b87a114deb13816"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/cobwebs.json"
-hash = "f54ec92f87822c371b975c3e32e069d87a4651203f175c08c7aa7b1e447c029a"
+hash = "aae4f53ff3353d6d01584b37a04695bc9b47d3c27633dbdca3978907765f8118"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/food.json"
-hash = "a03643f524be7d0f6f7b8ae18c3ee93af36a9b001b3c0d123a58a6bddb7a13ac"
+hash = "ff6ee3a12e0562afd280817a59aef1e721627db442c1a36f9763f12523c3fc42"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/loot_tables/chests/trash.json"
-hash = "a8d25fdb5b660e398c96280a6537034c89d317314abd1aaee018116d6cd54672"
+hash = "9791c3b3ec5bfdf6b66d70e50e61a24b56cfb60524b1f5933ccbcd998501901a"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/structures/abandoned_brick_house.nbt"
@@ -598,27 +854,35 @@ hash = "bc1cdefa6c942785a632a6eac40364f334a2ce47891e95f0ee2a5fcc5ba23429"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/abandoned_brick_house.json"
-hash = "6d57c263de927c44451bfe620d8944fc522b4c3526ce202c4bb14c508a8f1396"
+hash = "6789f9f37e51d93c0e73c7ba88e0dc08c11d7d7c6fc310830019ca027deba271"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/red_mansion.json"
-hash = "91e559575c9367f9760fcb110f1ff0995e8d11d3e47b35679f38f2b8f4badde5"
+hash = "3dc02ea2cee53dd3f1e4c60ace27127d1fa09ebeadc606e421d93e1f57accb4d"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/redhouse.json"
-hash = "4cb6450368666a3555e4635ce67681449bfe0af4ecd405b6712f54b969287221"
+hash = "ea90dac733eeb0c83fb501ac026d9c57983ad37addaa385c8f9d417ff8094a7b"
 
 [[files]]
 file = "kubejs/data/postapocalypse_structures/worldgen/structure_set/yellowhouse.json"
-hash = "d7bb802f27ffe5536fd05142cab643689e7913e463b3ff99c757cf2ff9694ee1"
+hash = "d4da92015c70ce55274b0fa9cc98ab6093a2ebc7350e59d58dc6cc41db803701"
 
 [[files]]
 file = "kubejs/data/supplementaries/worldgen/structure_set/way_signs.json"
 hash = "844ba59b216ba4bffb22e1742c4d14c12f6eecd74f497a31c64f26a44df049e8"
 
 [[files]]
+file = "kubejs/data/the_lost_city/structures/cafe3.nbt"
+hash = "be0ffe6684888cdb8bd6d08aacdf31145e628f1c079c3241282ab63fb11f7d95"
+
+[[files]]
 file = "kubejs/data/the_lost_city/structures/cafe4.nbt"
 hash = "18a5512534292ed5a5304828c4498b5fcd84f5ab4f56fb8b5557f0b19dca7054"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/factory_overrun.nbt"
+hash = "462ccd345307bf09fd4dd5f1b765f95fbf3619610934b4209cc6eacf6b5baca3"
 
 [[files]]
 file = "kubejs/data/the_lost_city/structures/farm1.nbt"
@@ -633,6 +897,30 @@ file = "kubejs/data/the_lost_city/structures/farm3.nbt"
 hash = "ab8e0d98c155c765b6bf80dfbf2c0a764f7ea620a6706d052c5fd8a51c416550"
 
 [[files]]
+file = "kubejs/data/the_lost_city/structures/house_with_car.nbt"
+hash = "c201a0cc34bd56e7e9ac8d7e88a0db07be07a5f9b4de5bb5b153b09a30331004"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/skyscraper_standalone.nbt"
+hash = "29a4cd0878c5083c576034fc0188b766b87707a3d74eac8092b1f0795440516e"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/skyscraper_standalone2.nbt"
+hash = "5870ba5b5c7a727193d68d0af822a7c7dae99100526f5142ce2225e7643e43f3"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/skyscraper_standalone3.nbt"
+hash = "cecc58a96371a1c2e3240c2d7287b1f613cfebae96f26e823475c3e6f6d969da"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/skyscraper_standalone4.nbt"
+hash = "b49ce03b5f4a21d8787833b7cb53f56bf3f4869e1cb05c7caf7189550c984e9b"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/spawner_pillager.nbt"
+hash = "0d292c94045bd643ad6f99bc3e2a2a9644c2c2daa1f94cc6225bd196a8dff78d"
+
+[[files]]
 file = "kubejs/data/the_lost_city/structures/t_big_house.nbt"
 hash = "714033c5ebaef245761f04ca6538dc0854231a14a7b66d049d206107f6a0c344"
 
@@ -641,12 +929,20 @@ file = "kubejs/data/the_lost_city/structures/t_big_house_template.nbt"
 hash = "192226fcab7b4936c6d863c9921e3fa86a39c79c14714dfe85efb35c60298e15"
 
 [[files]]
+file = "kubejs/data/the_lost_city/structures/tower0.nbt"
+hash = "14e350a70b4b9a76df4e2c0404f5472278a2c4086fa5ebe398be4680fac8a096"
+
+[[files]]
 file = "kubejs/data/the_lost_city/structures/villages_city_main_tile1.nbt"
 hash = "fe6da57d89de4e6fca41cd422845b9788d7b4481e87011d23ffcc88325ccc955"
 
 [[files]]
 file = "kubejs/data/the_lost_city/structures/villages_city_main_tile2.nbt"
 hash = "caa6a2b59d6d5df6360699933063545777bf7a205c4ebc1c8e1e275b3cda87aa"
+
+[[files]]
+file = "kubejs/data/the_lost_city/structures/white-tall-office_b_2_0.nbt"
+hash = "99a24d14024895835826d2d32009f109a4014816def1764d8a1ae4e87d50acd6"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure/big_city_structure.json"
@@ -694,51 +990,79 @@ hash = "36fa23d682c2698902a9154d01889fdf2807604891e6b539cab1ed6efff80133"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/big_city_structure.json"
-hash = "1bd7d175b92c4dcaf6b5c8ef3b904f3dc4db7d8c082d38963e9479f013e95e4d"
+hash = "6283b1ef2949a2c0516bd4ff63dd0987f922af9318b52b8aa925e93c9d23291b"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/camp.json"
-hash = "bf1664923d640e6b0461dd08d9fcf87abff0988b0c9759f318a894da0e355886"
+hash = "954bf4cd34d306e83919dafefb9a06cc3246835e472c1f8c60ec4941a342e052"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/city.json"
-hash = "011698a1a479b7e26aec722d37e7aa116e95d9f75b89bf19c386eef550f7843c"
+hash = "dafb46baf43514aa61ad38483e289732bcb1dc512ef4ccc30c907045174923e5"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/factory.json"
-hash = "2c7f139a00a1e4120a580cb3618c529bf49bdf1a16227def6ef0b99ee7c7f276"
+hash = "fd035951fa5b24a432b6b64d80f53406f12388b0f3c4661e06a4303eadc8959b"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/lighthouse.json"
-hash = "f613c5e40819f121f14af2c6b491bb947132ea7086cb82d5970e632ceebb54cc"
+hash = "21943cadc431ecb6d05518584c196546151c094b8ad87bd84807e484a1506170"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/post.json"
-hash = "af01f149b0659b446f52b251d91f9ae8805a040068fd5adce0d93cf5ab9c9dc2"
+hash = "6d0074e37e4375211976d71cad72fd0c3f27008f5a4e6f8136f5f06a599b3fe9"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/rails.json"
-hash = "2281815fe8ec65690757ef33fb17225b08ec4094d93e24e007538ba1d4a88673"
+hash = "760221de217cf8c90ef5d5a43ee529c690b34eb15221bbc2f06647a36982c633"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/roads.json"
-hash = "d97dd564b4727d33519ced69199bfde964508df019a7389a798e00283f7e8f9f"
+hash = "99d9e129de5cc9d48c72c2421028bfad5c435233b93ff2c2a444bedf2df9cb12"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/survivorscamp.json"
-hash = "1f2e700c8de2db764c47845dcf0c4e18a311743063eb496b84daa11c3e3c0dbb"
+hash = "08df7a3baeaeec197a59f6a1e0bb8bea9689fe5b52aac9d3ea2b7972740d3d7c"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/tower.json"
-hash = "fa1cd6d17b7e8bd7047ed2d17329418d90efed4bda80d8c10d1d3b588ea11ab4"
+hash = "7f6e4cc69a8de68123452b216ddc9777d16b917c1e83ad6893389c27b9003604"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/train.json"
-hash = "1dee60322e117be8d9ccfc30dc49820857cc1a530a309f437280cbbfa2bab75d"
+hash = "cddc3a882e1ce2d67818ae4315abfef45d564347ac25d988d1521932ad700756"
 
 [[files]]
 file = "kubejs/data/the_lost_city/worldgen/structure_set/villages_city.json"
-hash = "048742e127cc9a72fd5204a66a3ebc5bd546415b9cdec7ac68d4faabaf32a0aa"
+hash = "e44c97c197e90a681ebf4f2273182592966b51e924d8692f4747b7b4d6af2836"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/_mob_/pillager.nbt"
+hash = "66d55b2e3f48fb95f5daae21febe52318eb292dd70e85ad8658581c807893c80"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/_mob_/vindicator.nbt"
+hash = "66d55b2e3f48fb95f5daae21febe52318eb292dd70e85ad8658581c807893c80"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/desert_ruin/ring/v1.nbt"
+hash = "1853df61999a1bfffd9deba38eee93cb157d4e610e3ae4942fe22c28a832270d"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/desert_ruin/ring/v2.nbt"
+hash = "3f0c6ae905b34ce86a68181f218b5601cd567c0c1d9240bb577491c42a40de5a"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/desert_ruin/ring/v3.nbt"
+hash = "2799460ec023507aebab401f2646d25144c0c92d4e96dc34f6d7115c73cfa33c"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/pillager_outpost/abandoned.nbt"
+hash = "5dc6702a67c46bb0b7decbc0584a1e3ae6be6d27cce0c2010c4ddb2c470c82db"
+
+[[files]]
+file = "kubejs/data/u_desert/structures/pillager_outpost/standard.nbt"
+hash = "34620316da54882ad39683895fd10bac1f2d94a8b543320fb6e751f3b4ec5c09"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure/desert_ruin/house.json"
@@ -782,23 +1106,23 @@ hash = "f717cc0c6510734fa5c76c0908952df0ef30dd44fbe8626a2052cb77eee5d5bd"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure_set/desert_ruin.json"
-hash = "025450b7e8d8080ac5ac5de702c876608acce40d4aaf1df07cf2c958fe657594"
+hash = "e8b8380f1bb6ac9ecd85140cf72af7ed064af461299b5a6c29e3e5c89cf81702"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure_set/geyser.json"
-hash = "2f6cece349ed5f6d3eb78daab0bda78289d93e8598a2b7d08b868dd548737c89"
+hash = "e12412923152d12f97936ea85572391ab08c881416c259eaa33e1b16f3b306a7"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure_set/oasis.json"
-hash = "8584e4bb9d57eb1a505cd0e90c515010498145751fd4c5427e5ed7cedc052df0"
+hash = "d6c7d1def1c1754d991f77f7f5420961d46a8eabdc985d0f000d51a2aa226d8c"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure_set/pillager_outpost.json"
-hash = "b2ed4732ed673a9ebd4c8e69c055cc529d2926d1c8462a122021500b7092a367"
+hash = "7016c3d53dc5e65d9481ae867be4d6c89bee28242a106fda04d2254ac9779e4c"
 
 [[files]]
 file = "kubejs/data/u_desert/worldgen/structure_set/skeleton.json"
-hash = "bfbd2514c00ee17b26b6d731110e0ecf9fed7c57cee066a33527023a3944eefe"
+hash = "3bc85c700264e6f3890acda56fed9db2ffb96a799c8e9b28650e38978569872d"
 
 [[files]]
 file = "kubejs/data/watchtower_building/loot_tables/chests/fresh_towerloot.json"
@@ -809,8 +1133,60 @@ file = "kubejs/data/watchtower_building/loot_tables/chests/towerloot.json"
 hash = "84382d0aae4abbd2e0f389550a236cd1724608667bff2a345dff55b0d4faf821"
 
 [[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r1.nbt"
+hash = "ca3eba69209072243d261f6be98924955ee0c7e36118012ac607d6cee9cb8e34"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r2.nbt"
+hash = "52e70749cdb4aa1c886f392ee07b9f793900f5399c239be217ee9123aa0f154f"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r3_4p.nbt"
+hash = "ace823ffff38e47826a22bcdce57f99c94811aa52b10a004503968db13b1f448"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r4_va.nbt"
+hash = "1a8a179ef662e8ce3da54c8ac5f831d30115aaf8f1eebb295b1d8fad2aa34e25"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r5.nbt"
+hash = "02891e6603ea36a89908ccba110a2d6f8af3f0eb1c3aa390a9a69c25a7d79d17"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r6_ruban.nbt"
+hash = "4f31458adaba1db5d71041e1d8eb8bba237ca81a73242fa1c2f6b35e300ac534"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/a_wt_r7.nbt"
+hash = "37341a30a10b97bdb819788945228ad4ab33ed4bc93bcb8a1a57eb6f6c2a2a68"
+
+[[files]]
 file = "kubejs/data/watchtower_building/structures/ab_watchtower_big_tower.nbt"
-hash = "3e69a81a88fdf0ef0ed9c710de609dd4be1d4f67dbd181a7805ffeff991ffaec"
+hash = "b40e94f12112070749b96d544c2063c1288ffa666dc14cdde74c4c49b3fe3b6c"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/f_wt_r1.nbt"
+hash = "01aedff4d5da26d55afddbfa04f2cd6fab7839b3741e49b3dfe15ceaf22fa259"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/f_wt_r2.nbt"
+hash = "503bf00aa1759b5db61d4fc5c1016b0d55306b44cb8b24e4f20db1d01d79b430"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/f_wt_r3_4p.nbt"
+hash = "341615171ddba57011742489f9eb92a332d14a49ab9a922f0fd89508bfa6935a"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/f_wt_r4.nbt"
+hash = "37a740a2fe01836a43a12ff36fa0dcea8813aee5e5420972cb5e4b9ba6997b1d"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/f_wt_r5.nbt"
+hash = "c4e5f7217f3917394940f833cdc6216f7ee0e3853e813feabdcdb43651a7abb1"
+
+[[files]]
+file = "kubejs/data/watchtower_building/structures/f_wt_r6_ruban.nbt"
+hash = "65535cb7dec64d7d96b405c06cb6a19d5baa4570a88c45379fcff7a5a51c7156"
 
 [[files]]
 file = "kubejs/data/watchtower_building/worldgen/structure/abandoned_watchtower.json"
@@ -822,11 +1198,11 @@ hash = "ec43995fad76facde015d420a10acbfc5520456a4da5c2629e862890eaa58e57"
 
 [[files]]
 file = "kubejs/data/watchtower_building/worldgen/structure_set/abandoned_watchtower.json"
-hash = "0b2936ca4225ee729da2303830894219930ffe33dc17d44bb60ba50c7fd29a0b"
+hash = "3db0481f41caf35cf131f9b6572ded23df0cae25415e29387ce1790fac1ccb56"
 
 [[files]]
 file = "kubejs/data/watchtower_building/worldgen/structure_set/fresh_watchtower.json"
-hash = "7fa6aa153080a25ea4a8c8b8ac2c60ad9ac15091da28a533a110e196eef1b5e8"
+hash = "7a3b1d731df56582c3aa4cc1d3df7d2db77d14a1e6cb221cd235477d2913103d"
 
 [[files]]
 file = "kubejs/data/zombiesmore/forge/biome_modifier/boomer_zombie_biome_modifier.json"
@@ -854,7 +1230,7 @@ hash = "3343c3962f4ff43c8fcccc785c15abf4bc9337c37680e2f8e37fbff991cd941a"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "083c8a9bdef813316167a4bfaa5f8ab5d4af69db004db0ecad6e6dc7e8c29987"
+hash = "f00b4d9812f9677f5374719d2b0d6a3609dd260e73b1db66de8a7420355772eb"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
@@ -866,11 +1242,11 @@ hash = "766f3292653f65b3e24795db6138c40f8c799b9d544282d0d4f09dccb91edb3c"
 
 [[files]]
 file = "kubejs/server_scripts/boss_wave.js"
-hash = "7da89e07398a07fab2419b0b475f1823699bd710574790663efda236c6c805b8"
+hash = "190f7027947da9435470a270cda246f78b167e584334a2c22b903cc454ad0708"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
-hash = "410e438474c345f50e05a347237105c116c8e698ff0f519633532cf8ce2a347c"
+hash = "3e27c850a05e56b60e4c0157e39b3d3f0f01b61d7fea017e9012c72a2b368d1c"
 
 [[files]]
 file = "kubejs/server_scripts/electric_trap_player_safety.js"
@@ -885,8 +1261,12 @@ file = "kubejs/server_scripts/flesh_death_sound.js"
 hash = "a7ee3fb59234b15a74981ccc997260a5330437ce41e8e55f02b5284249b2b471"
 
 [[files]]
+file = "kubejs/server_scripts/gun_damage_bump.js"
+hash = "516c7a3c35c2cefa7d739a8f19ba55cc1ccfd5d1a45f3b02678b9ad2ccb8f195"
+
+[[files]]
 file = "kubejs/server_scripts/hardcore_death.js"
-hash = "0a748625b8ee257a18ac3f33e1531b3b5df724234ba2ceb2865d50996b692a97"
+hash = "f7b1964973b4ed0057c68c71171360d5c0501951edd54a86806293750b5c8ae5"
 
 [[files]]
 file = "kubejs/server_scripts/hardcore_toggle.js"
@@ -898,11 +1278,11 @@ hash = "59476a7c637439e9e3ddc6f6e346cd6c8aa1f97f74e76dea06f82747efced081"
 
 [[files]]
 file = "kubejs/server_scripts/ladder_climb_assist.js"
-hash = "fa561199ccb8ec81077c97daae6b5611b4ef79b6182bd091aedc65581b49b9c3"
+hash = "a7979d7dc03e0ecd5a89a7651dad9821721211ff3f0dd64a78f22cc51db89791"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_drops.js"
-hash = "43787d595cf6145d5f64b78d0485de1c68d3f6b55a742446cb1db3eebb421bb1"
+hash = "548747d4b7804eda35d8a89a6efbac0482365c91cd51a45ed00265c297708a95"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
@@ -914,15 +1294,15 @@ hash = "99715326d3fc31180b27440c608743297dd867821c4de8828fc17805192f90bc"
 
 [[files]]
 file = "kubejs/server_scripts/lure_block.js"
-hash = "d834f434dd1b9c05438ba893dcb43aaec5b69675bc8837b00c36947a12baa69d"
+hash = "f68d222a5f4276dcf0290baf1e25a33c4373189ada5543add9771132d926b1aa"
 
 [[files]]
 file = "kubejs/server_scripts/mine_player_safety.js"
-hash = "91cff0ee7f0f44e97f137b9182e2c75896d5f4568499d5f47092a5746e24ee5a"
+hash = "48b9d169e5775041bc98172e5708cc8fd0420913e05eed85581730b7ac43edfe"
 
 [[files]]
 file = "kubejs/server_scripts/mob_aggro.js"
-hash = "ac8620c2f685a9a07f08ec2b4ae1c3f7286c3a3d5e837e11849ca741c91fd732"
+hash = "7bf7efbf574063bd3aa9f10ab24326a1874bb51c48bc01ce366a2353e120cc6a"
 
 [[files]]
 file = "kubejs/server_scripts/no_passive_mobs.js"
@@ -930,19 +1310,23 @@ hash = "ac7aa51d845a25853c7ea5ffb893bffa537d9f689eb83a699d3aa85dbca827c0"
 
 [[files]]
 file = "kubejs/server_scripts/omtreborn_grenade_safety.js"
-hash = "67505aee33d1b8d493ecaf059ce7c2ad40cf6a3f792770071db914a7ab1056ae"
+hash = "7ee0406bb9795b7f789600fde24e26236258a00af990a790d0337b4a96439e32"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_destruction.js"
-hash = "db212fc7c9b6ea77ba4783cea4af89639d5b3bb27891940f1a236b794f099838"
+hash = "8a2cb93aabf2ca1929b43ce749c0a72bd08a202e61bd1c4729f2ef658ee817c6"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_health.js"
-hash = "07ad466349641292b988da13136d1d460e469980b888f45b78a2831c08c14920"
+hash = "88d37cb78d3170e0c43c37afd6e65b98ac67e30ec261ef881d15c101c4da4adf"
+
+[[files]]
+file = "kubejs/server_scripts/pedestal_upgrades.js"
+hash = "40021da93fba73015920351ce8859256a903425deaffd81b08cd930363e23edf"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "e7096c157257527f8a2d8af87725fbd1862586ee61714e108a4bf03c1993d207"
+hash = "51793c0354516f4d4ad9ec63323764d1aa56f9b556645ac20a2addca4e869795"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
@@ -954,7 +1338,7 @@ hash = "dfd885decc9f309cd864739a22df85da0306ed3e49f668b3285f59c875676fff"
 
 [[files]]
 file = "kubejs/server_scripts/sentry_combat_feedback.js"
-hash = "5f285bbcaff7523afdd1c8ffdd4d3ff9e129d875aa9ff9083f1d0fd515133ca2"
+hash = "85b96e147863c2d2c27988fb4422477d0bd7021447531fe249d2d5cb4d65f0ce"
 
 [[files]]
 file = "kubejs/server_scripts/sentry_default_mode.js"
@@ -966,15 +1350,19 @@ hash = "0063fcd567f68ef1f8f44133917e584d100363cd8be0c907d30ddc1f7dd8cbb5"
 
 [[files]]
 file = "kubejs/server_scripts/structure_chest_loot_fix.js"
-hash = "e0fd16e75af2853765275d965dbc5f3c7d1f1eb21b91b443349433421fa1a82f"
+hash = "db115ad155b938f5a9cdd5eda0cec6d06916fb5d21ae7ccef2ed78f00b928ab6"
+
+[[files]]
+file = "kubejs/server_scripts/structure_guard_tiers.js"
+hash = "16c8be36a54804ccf9bec0305d026ec1ba722ec60933e052aba49dc92a6669a6"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
-hash = "b05338069fb4c0b4a76bdccd3baac7763f0ad9db9e896728eae95b810f4932bf"
+hash = "ee4eb6912b12539784ead760127412315e8086b137dcaeab43dc4db371ab495b"
 
 [[files]]
 file = "kubejs/server_scripts/stuck_mob_nudge.js"
-hash = "9b1b8203575dde1dfd1d03dccc3943809be7b85a3793af8659c0eb8c75dc1a0f"
+hash = "dd5be3f2f3decd5dc3019b2417f8691ab6ad5bd0a57873781373da4eec51c55b"
 
 [[files]]
 file = "kubejs/server_scripts/tesla_coil_auto_power.js"
@@ -982,7 +1370,7 @@ hash = "8404bf15d668095429908a308bf50ba794ae5905726f5f0a7d81187ff574105b"
 
 [[files]]
 file = "kubejs/server_scripts/tesla_coil_cinematics.js"
-hash = "d69e74201a504b14b78f3383745c253e137de286a6e87d53881048b4dfcbccef"
+hash = "8e31a953eca93e1d6c1a515f036f93d916966d0e8db508928f7b16db71c57193"
 
 [[files]]
 file = "kubejs/server_scripts/tier1_recipes.js"
@@ -994,11 +1382,15 @@ hash = "ba429e99aa8c35d68a06b62aea522f2603887d5af68d2a99de6d0c20587f2508"
 
 [[files]]
 file = "kubejs/server_scripts/tier3_loot_aligned_recipes.js"
-hash = "8a318f23349d3140c9c69663567b8771f628292bfa2eb5ae8c67e5a36a475978"
+hash = "67eb5cd440ffa55c96e371967bc3cc05085e4adff39d04c5eb88fe9821c3b511"
 
 [[files]]
 file = "kubejs/server_scripts/tier3_turret_recipes.js"
 hash = "3e77a2f436b593a55aa5e1a8c5f7628172287843dbcc1526b0e8362636733f22"
+
+[[files]]
+file = "kubejs/server_scripts/tier4_turret_fx.js"
+hash = "82b5941a75a45dc0491e98a0af4df26e85de552081ae611cc254836a08f21549"
 
 [[files]]
 file = "kubejs/server_scripts/tier4_turret_recipes.js"
@@ -1021,16 +1413,20 @@ file = "kubejs/server_scripts/wave_mob_fence_shock.js"
 hash = "6522346b25c421286a21d8a9c3a34de7a9ec75ce0aa56c386cd382e22e80df6f"
 
 [[files]]
+file = "kubejs/server_scripts/wave_mob_spike_slow.js"
+hash = "d1eaa38abaa9acfcff26b63bcf296331f6f901eecb0fe5088d747e2d23d82a2a"
+
+[[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "9831e387249a2f043f934af06a4bc40fd01802cb0546784a18a5a91c601df121"
+hash = "61160322ef3846b4c03a3af7c8a0e6814dda731b08374de58f65a2606c77c12e"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "ccffca64010fc23b8098314f703c394f26f5cc39926a062025501977c035495a"
+hash = "303e50586fa666c3b9fe0233b3a397a93220d08ed3e3e8d4b6d3294e49410823"
 
 [[files]]
 file = "kubejs/server_scripts/world_state.js"
-hash = "f12a10b8604d78fa2d4487570564586ea3e79bf33e0698119d6b941cb4931118"
+hash = "07082534ed5481044293a819851bac576d767703a4b61d2aa0aabe3ef8465996"
 
 [[files]]
 file = "kubejs/startup_scripts/.gitkeep"
@@ -1151,6 +1547,11 @@ hash = "b7dd0ce1cb24804bea5f68f24e0a5555ea5d2895ece34968426bef1b239bdfb5"
 metafile = true
 
 [[files]]
+file = "mods/drippy-loading-screen.pw.toml"
+hash = "73cce6c80201e42a69bd4f61da972a72c7b9632e15f5c3e5960655890b8415bc"
+metafile = true
+
+[[files]]
 file = "mods/dyairdrop-1.1.0-1.20.1-beta-tdslowplane.jar"
 hash = "92cf2e0bf996350f77e7ea2ea0f0d11e4e85baffd41e79899862fabbd8485a71"
 
@@ -1177,6 +1578,11 @@ metafile = true
 [[files]]
 file = "mods/epic-siege-mod.pw.toml"
 hash = "6a2dbbc2f810da20244a0d5edcc0690a682a665fc1e2ae85d6b48d620c08ade1"
+metafile = true
+
+[[files]]
+file = "mods/fancymenu.pw.toml"
+hash = "69522ac66f116c0f945ec1b7495dc90aeb909715dbe4246d97cb7c08f76ef196"
 metafile = true
 
 [[files]]
@@ -1227,6 +1633,11 @@ metafile = true
 [[files]]
 file = "mods/hide-experimental-warning.pw.toml"
 hash = "2275a10df12349855b3c88ec95ccf944aace5a879e6dc3fd755fd8cfa7b842e2"
+metafile = true
+
+[[files]]
+file = "mods/immediatelyfast.pw.toml"
+hash = "1a9564ded8e9cd1f843f9de7fc87ffbf73033aab51494205458b0e58cc0ab194"
 metafile = true
 
 [[files]]
@@ -1281,12 +1692,17 @@ metafile = true
 
 [[files]]
 file = "mods/lootjs.pw.toml"
-hash = "713685d5c4c72d8bd46e314ea164b9f9a6a368dedf71398b2246142e2ed66c1f"
+hash = "3e33e0b6b8e3344678161758972264b069d8dbed72ae2ac3791843aa661bde5b"
 metafile = true
 
 [[files]]
 file = "mods/lootr.pw.toml"
 hash = "e8b4876d403b4f4daab64bad9704a5b271a33031d1ff8d19d23ebd1e3b8dd39a"
+metafile = true
+
+[[files]]
+file = "mods/melody.pw.toml"
+hash = "bd52722f1417e24a4acee3bf4fc59c5bf074627f7aaaaf8fd33056c7ef170bc3"
 metafile = true
 
 [[files]]
@@ -1336,7 +1752,7 @@ metafile = true
 
 [[files]]
 file = "mods/radium.pw.toml"
-hash = "ae4d739bbdb025651a884093de72addac0865525b39e603fb575031a59987763"
+hash = "bbdd40b650286973d44b1931d4b8c4bcc02b02f2c5583545709347503bd13057"
 metafile = true
 
 [[files]]
@@ -1382,6 +1798,11 @@ metafile = true
 [[files]]
 file = "mods/sodium-options-api.pw.toml"
 hash = "5240c62752415b5d66d4beffec4fe98c253eba8ebcbb2a5c1097fc3ad3de0b00"
+metafile = true
+
+[[files]]
+file = "mods/sophisticated-backpacks.pw.toml"
+hash = "cfb0764ead0cc94a7d4e23aaf061f4c4a497fc09c85fa54a51d5d4e05940d87e"
 metafile = true
 
 [[files]]
@@ -1455,4 +1876,4 @@ metafile = true
 
 [[files]]
 file = "options.txt"
-hash = "81eba44461dc132032edbd23dc5361a403727d13a9a3026d1f1178867266f5de"
+hash = "40604b795518e8529a88ce60fea10ef9320431f15767d8e3ab01533b690d9e91"

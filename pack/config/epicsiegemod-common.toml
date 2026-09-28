@@ -47,7 +47,13 @@
 	#applied to buildingMobs/jumpingMobs/targetingMobs below.
 	diggerMobs = ["minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager", "mutantszombies:mutant_zombie", "mutantszombies:blister_zombie", "mutantszombies:split_head_zombie", "undeadnights:elite_zombie", "undeadnights:horde_zombie", "undeadnights:demolition_zombie", "mutantszombies:zombie_brute", "mutantszombies:mutant_brute", "mutantszombies:rotten_mutant", "mutantszombies:crawler"]
 	#List of blocks that digger mobs are forbidden from digging (Format: 'minecraft:wool' prefix with # if mentioning a block tag)
-	diggingBlacklist = []
+	#2026-09-28, structure guard spawners (structure_guard_tiers.js): a stuck
+	#guard digging a Lootr stash destroys it for every player (canHarvest only
+	#needs isSolid + hardness>=0 with diggingRequiresTools false, and the dig
+	#ends in destroyBlock(pos,false) - decompiled), and digging out its own
+	#spawner would switch it off. lootr:* and spawner blocks only exist in
+	#structures, so nothing a player builds at the base is affected.
+	diggingBlacklist = ["lootr:lootr_chest", "lootr:lootr_trapped_chest", "lootr:lootr_barrel", "lootr:lootr_shulker", "lootr:lootr_inventory", "minecraft:spawner"]
 	#The item given to a digger 5% of the time [default: minecraft:iron_pickaxe]
 	diggerItem = "minecraft:iron_pickaxe"
 	#Is the digging blacklist inverted? [default: false]

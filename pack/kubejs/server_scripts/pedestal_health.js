@@ -97,12 +97,55 @@ var PEDESTAL_BOSSBAR_RANGE = 64
 // starting HP up").
 var PEDESTAL_MAX_HEALTH = 300
 
+// Pedestal upgrades (2026-09-27). This is the "upgrade points for
+// health/armor/thorns" idea from docs/IDEAS.md, built on direct ask: paid
+// in XP levels, 3 tiers per stat. Tiers live on the shared marker
+// (td_pedestalUpg_hp/_armor/_thorns, 0-3). Buying them is
+// pedestal_upgrades.js (/pedestal). The getters live here, next to the
+// numbers they scale, because every consumer in this file needs them and
+// top-level functions are the cross-file-safe idiom (see the header).
+// PEDESTAL_MAX_HEALTH above stays the tier-0 base.
+var PEDESTAL_HP_PER_TIER = 100 // 300 -> 400/500/600
+var PEDESTAL_ARMOR_PER_TIER = 0.15 // 15/30/45% less damage taken
+var PEDESTAL_THORNS_PER_TIER = 1 // 1/2/3 damage a second to each attacker
+var PEDESTAL_UPGRADE_MAX_TIER = 3
+
+function pedestalUpgradeTier(data, stat) {
+  var tier = data.getInt(`td_pedestalUpg_${stat}`)
+  return Math.max(0, Math.min(PEDESTAL_UPGRADE_MAX_TIER, tier))
+}
+
+function pedestalUpgradeMaxTier() {
+  return PEDESTAL_UPGRADE_MAX_TIER
+}
+
+function pedestalMaxHealthForTier(tier) {
+  return PEDESTAL_MAX_HEALTH + PEDESTAL_HP_PER_TIER * tier
+}
+
+function pedestalArmorForTier(tier) {
+  return PEDESTAL_ARMOR_PER_TIER * tier
+}
+
+function pedestalThornsForTier(tier) {
+  return PEDESTAL_THORNS_PER_TIER * tier
+}
+
+function pedestalMaxHealth(data) {
+  return pedestalMaxHealthForTier(pedestalUpgradeTier(data, 'hp'))
+}
+
 function ensurePedestalBossbar(server, data) {
   if (data.getBoolean('td_pedestalBossbarAdded')) return
   data.putBoolean('td_pedestalBossbarAdded', true)
   server.runCommandSilent(`bossbar add ${PEDESTAL_BOSSBAR_ID} "Pedestal"`)
   server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} color red`)
-  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max ${PEDESTAL_MAX_HEALTH}`)
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max ${pedestalMaxHealth(data)}`)
+}
+
+// A Max HP upgrade raises the bar's ceiling after it already exists.
+function refreshPedestalBossbarMax(server, data) {
+  server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max ${pedestalMaxHealth(data)}`)
 }
 
 function updatePedestalBossbar(server, health, x, z) {
@@ -229,9 +272,10 @@ function healPedestalBy(player, data, amount) {
   if (!data.contains('td_pedestalHealth')) return false
   var current = data.getInt('td_pedestalHealth')
   if (current <= 0) return false
-  var newHealth = Math.min(PEDESTAL_MAX_HEALTH, current + amount)
+  var maxHealth = pedestalMaxHealth(data)
+  var newHealth = Math.min(maxHealth, current + amount)
   data.putInt('td_pedestalHealth', newHealth)
-  var newTier = pedestalAlertTierForHealth(newHealth, PEDESTAL_MAX_HEALTH)
+  var newTier = pedestalAlertTierForHealth(newHealth, maxHealth)
   if (newTier < data.getInt('td_pedestalAlertTier')) {
     data.putInt('td_pedestalAlertTier', newTier)
   }
@@ -251,7 +295,7 @@ function healPedestalBy(player, data, amount) {
 // sandbox test behind that distinction). Keeps the actual max-HP number
 // defined in exactly one place.
 function healPedestalByPercent(player, data, percent) {
-  return healPedestalBy(player, data, Math.round(PEDESTAL_MAX_HEALTH * percent))
+  return healPedestalBy(player, data, Math.round(pedestalMaxHealth(data) * percent))
 }
 
 // Golden carrot = 10% heal, nether star = full (100%) heal - the rare/
@@ -388,7 +432,16 @@ PlayerEvents.tick((event) => {
   if (data.getBoolean('td_pedestalDestroyed')) return
   if (!data.contains('td_pedestalHealth')) return
 
-  if (level.getTime() % 20 !== 0) return
+  var now = level.getTime()
+  if (now % 20 !== 0) return
+  // Once per game tick, not once per player (2026-09-27). PlayerEvents.tick
+  // fires for every online player, and each one passes the `% 20` check on
+  // the same tick. So before this guard, a 3-player game took every mob's
+  // damage 3 times a second. Stamped on the shared marker, so the first
+  // player's tick handles it and the rest skip. Number() on both sides,
+  // since getLong/getTime are Java longs.
+  if (data.contains('td_pedestalDamageTick') && Number(data.getLong('td_pedestalDamageTick')) === Number(now)) return
+  data.putLong('td_pedestalDamageTick', now)
 
   var x = data.getInt('td_pedestalX') + 0.5
   var y = data.getInt('td_pedestalY') + 0.5
@@ -397,6 +450,7 @@ PlayerEvents.tick((event) => {
   ensurePedestalBossbar(player.getServer(), data)
 
   var damage = 0
+  var attackers = []
   level.getEntities().forEach((e) => {
     if (!PEDESTAL_WAVE_MOB_TYPES.includes(`${e.type}`)) return
     var dx = e.getX() - x
@@ -404,17 +458,30 @@ PlayerEvents.tick((event) => {
     var dz = e.getZ() - z
     if (dx * dx + dy * dy + dz * dz > PEDESTAL_MELEE_RANGE_SQ) return
     damage += pedestalAttackDamage(e)
+    attackers.push(e)
   })
   if (damage <= 0) {
     updatePedestalBossbar(player.getServer(), data.getInt('td_pedestalHealth'), data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
     return
   }
 
+  // Armor upgrade: a flat cut to each second's total, never below 1 so an
+  // attacking horde always chips it. Thorns upgrade: every mob in range
+  // takes the tier's damage back once a second, as vanilla thorns damage.
+  damage = Math.max(1, Math.round(damage * (1 - pedestalArmorForTier(pedestalUpgradeTier(data, 'armor')))))
+  var thorns = pedestalThornsForTier(pedestalUpgradeTier(data, 'thorns'))
+  if (thorns > 0) {
+    attackers.forEach((e) => {
+      player.getServer().runCommandSilent(`damage ${e.uuid} ${thorns} minecraft:thorns`)
+      player.getServer().runCommandSilent(`particle minecraft:enchanted_hit ${e.getX()} ${e.getY() + e.getBbHeight() / 2} ${e.getZ()} 0.2 0.3 0.2 0.1 6`)
+    })
+  }
+
   var health = data.getInt('td_pedestalHealth') - damage
   if (health > 0) {
     data.putInt('td_pedestalHealth', health)
     updatePedestalBossbar(player.getServer(), health, data.getInt('td_pedestalX'), data.getInt('td_pedestalZ'))
-    var newAlertTier = pedestalAlertTierForHealth(health, PEDESTAL_MAX_HEALTH)
+    var newAlertTier = pedestalAlertTierForHealth(health, pedestalMaxHealth(data))
     if (newAlertTier > data.getInt('td_pedestalAlertTier')) {
       data.putInt('td_pedestalAlertTier', newAlertTier)
       firePedestalAlert(player.getServer(), data, newAlertTier, level.getTime())

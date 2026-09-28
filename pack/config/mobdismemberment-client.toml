@@ -1,0 +1,24 @@
+#Client-side configuration for Mob Dismemberment
+#
+#Performance pass 2026-09-26: bloodCount 100 -> 25. Decompiled
+#ParticleBlood gives every blood particle a 200-400 tick lifetime (10-20 s)
+#with block collision, so at 100 per kill a wave dying at 2-3 kills/s kept
+#thousands of particles alive, each re-lit every frame on the render thread.
+#Gibs (the limbs/heads the mod was added for) are untouched - they already
+#despawn ~6 s after landing (gibGroundTime + 20).
+[client]
+	#How long gibs last (in ticks). Default: 1000
+	#Range: > 0
+	gibTime = 1000
+	#How long gibs last on the ground before fading (in ticks). Default: 100
+	#Range: > 0
+	gibGroundTime = 100
+	#Enable blood particles. Default: true
+	blood = true
+	#Number of blood particles to spawn. Default: 100
+	#Range: 1 ~ 1000
+	bloodCount = 25
+	#Use green blood instead of red. Default: false
+	greenBlood = false
+	#Allow gibs to push entities. Default: true
+	gibPushing = true

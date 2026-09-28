@@ -1,7 +1,9 @@
 // **Rebuilt 2026-09-09 - world-load-time base placement.** The base site
 // is now chosen in LevelEvents.loaded (before vanilla prepares its spawn
 // area) from a fixed grid of "anchor" chunks that every structure_set in
-// the pack is excluded from by a real `exclusion_zone`, and the compound
+// the pack is excluded from by a real `exclusion_zone` (except
+// kubejs:towns, which since 2026-09-27 puts a town ON about half of them -
+// the base only takes a town-free one), and the compound
 // is built in ServerEvents.loaded before any player exists. See the
 // "Base-site selection" section below for the three live root causes
 // (slow load, base never finishing, structures on top of the base) this
@@ -285,13 +287,17 @@ function boxBool(anyObj, b) {
 // chunk is pinned to exactly chunk (64i, 64j) for every region - no
 // randomness left in the offset) and an `exclusion_zone` against it on
 // every structure_set that can generate in this world's biomes. That
-// carves a guaranteed structure-free box of (2*12+1)=25 chunks around
-// every anchor chunk, 1024 blocks apart. The base is then simply placed
-// ON the nearest anchor chunk that sits in desert/badlands - the
-// search only has to test grid points, using the exact same
-// `hasStructureChunkInRange` call the exclusion zone itself uses (no
-// chunk generation, microseconds per set) as a self-check that nothing
-// slipped through the JSON pass.
+// carves a guaranteed structure-free box around every anchor chunk,
+// 1024 blocks apart: (2*9+1)=19 chunks for the vanilla sets and way
+// signs, 23 for
+// kubejs:ruins_pool (11), 27 for mineshafts (13) - see
+// STRUCTURE_CLEAR_CHUNKS below; it was 12 when this was first built.
+// Since 2026-09-27 about half the anchors hold a town (TOWN_SET_ID
+// below), so the base is placed ON the nearest town-free anchor chunk
+// that sits in desert/badlands - the search only has to test grid
+// points, using the exact same `hasStructureChunkInRange` call the
+// exclusion zone itself uses (no chunk generation, microseconds per
+// set) as a self-check that nothing slipped through the JSON pass.
 //
 // Timing moved too: `LevelEvents.loaded` fires from
 // `MinecraftServer#createLevels` BEFORE vanilla's `setInitialSpawn`
@@ -313,9 +319,20 @@ function boxBool(anyObj, b) {
 var BASE_ANCHOR_SET_ID = 'kubejs:base_anchor'
 var BASE_ANCHOR_SPACING_CHUNKS = 64
 // Must match the smallest exclusion_zone chunk_count used across the
-// structure_set overrides (9; the sprawling Lost City / Abandoned Urban
-// city sets use 13). 9 chunks past the anchor chunk = the nearest
-// allowed placement chunk starts ~150 blocks from the base centre.
+// structure_set overrides (9: villages, pillager outposts, ruined
+// portals, way signs). The old 13-chunk city sets are disabled (empty
+// `structures`) since the towns moved onto the anchor lattice - see
+// TOWN_SET_ID below. 9 chunks past the anchor chunk = the nearest chunk
+// those sets may start in is ~150 blocks from the base centre. Every
+// ruin, house and prop now comes from ONE set, 2026-09-27:
+// data/kubejs/worldgen/structure_set/ruins_pool.json, random_spread 4/2
+// (a 4-chunk grid, each start jittered 0-1 chunk) excluding base_anchor
+// at 11. Its first row is therefore 12 chunks (~192 blocks) from the
+// anchor, and since a building's footprint reaches back toward the base
+// from its start chunk, structures now start around 160 blocks out
+// (simulated over 726 anchors: nearest edge median ~167, p10 ~153;
+// the median was ~127 under the old per-mod sets at 9).
+// Mineshafts exclude at 13 but are in STRUCTURE_CHECK_SKIP_SETS below.
 // **12 -> 9, 2026-09-09, direct playtest feedback on the first live
 // world built this way** ("the structures are slightly too far
 // away... but only slightly" - nearest was 254 blocks in the sandbox,
@@ -323,8 +340,17 @@ var BASE_ANCHOR_SPACING_CHUNKS = 64
 // border half-width (~67), so nothing can ever generate inside the
 // campaign's playable area.
 var STRUCTURE_CLEAR_CHUNKS = 9
-// Grid rings searched around world origin: 10 rings = 21x21 anchor
-// points, 10240 blocks each way. Sized from real data, not a guess:
+// Grid rings searched around world origin: 20 rings = 41x41 anchor
+// points, 20480 blocks each way. **10 -> 20, 2026-09-27, with the town
+// lattice**: half the anchors now hold a town and are never a base
+// site. Measured over 200 seeds with a port of this search (biome
+// lookup validated quart-for-quart against both real saves, and it
+// reproduces both real base picks): at 10 rings the perfect-score
+// (all-wasteland) pick fell from 165/200 to 117/200 and the no-wasteland
+// fallback rose from 5/200 to 26/200; at 20 rings it is 194/200 perfect,
+// 0/200 fallback. Worst case is ~1,700 pure biome lookups (<1s, once per
+// world); the search still stops at the first perfect score. Older note:
+// 10 rings = 21x21 anchor points. Sized from real data, not a guess:
 // the first two sandbox seeds of this code each had exactly ONE
 // desert/badlands anchor point inside 6 rings (169 points), 6-7km out -
 // the 2026-09-08 "cut desert back to 2 of 7" biome blend made wasteland
@@ -334,21 +360,56 @@ var STRUCTURE_CLEAR_CHUNKS = 9
 // surroundings are wasteland too, not just its centre column. Distance
 // from origin has no gameplay cost - nothing in the pack is
 // origin-relative any more.
-var BASE_SEARCH_MAX_RINGS = 10
+var BASE_SEARCH_MAX_RINGS = 20
 // Extra biome samples this far out in each cardinal direction so the
 // whole visible area around the base reads as wasteland, not just the
 // one column the base sits on (the old single-point check landed bases
 // on the edge of a desert with plains in view).
 var BASE_BIOME_SAMPLE_OFFSET = 96
-// Underground sets - irrelevant to a surface base, and strongholds'
+// Mineshafts are NOT irrelevant to a surface base: the ground is only
+// ~18 blocks deep, and before 2026-09-27 their pieces reached 0-27
+// blocks from the pedestal in both real saves. Since then
+// data/minecraft/worldgen/structure_set/mineshafts.json excludes
+// base_anchor at 13 chunks (nearest piece ~118+ blocks out), wider than
+// this 9-chunk check, so they are skipped here. Strongholds'
 // concentric-ring placement is the one placement type whose
-// isStructureChunk is not cheap grid math.
+// isStructureChunk is not cheap grid math (and the vanilla set has no
+// base exclusion at all).
 var STRUCTURE_CHECK_SKIP_SETS = [BASE_ANCHOR_SET_ID, 'minecraft:mineshafts', 'minecraft:strongholds']
+// Towns live ON the anchor lattice, 2026-09-27. data/kubejs/worldgen/
+// structure_set/towns.json is random_spread 64/63 (same pinning as
+// base_anchor: its only possible start chunk is the anchor chunk
+// (64i, 64j)) with frequency 0.5 via `legacy_type_2`. Every other set
+// excludes base_anchor, so each anchor already has a structure-free
+// hole - on half of them a town now fills it, protected from every
+// other set by that same hole. The one set whose worst-case reach
+// (vanilla villages, 88 blocks) can still cross into a town from 10
+// chunks out is handled from the town side: towns.json's own
+// exclusion_zone against minecraft:villages drops that town (13 chunks
+// for the full-size Lost City, ~4% of town anchors) instead of
+// widening the villages set. townAt() below
+// asks isStructureChunk, which includes that exclusion. The base must
+// never share an anchor with a town, so this is a hard disqualifier in
+// findBaseSite(), not a score. `legacy_type_2`, not `default`: the
+// `default` reducer seeds with (salt, x) as the region coords and z as
+// the salt, so neighbouring anchors along z get nearly identical rolls
+// (measured: P(next anchor along z is a town | this one is) = 0.95 at
+// f=0.5) - whole north-south stripes of towns. `legacy_type_3` shares
+// its first RNG draw with vanilla's weighted pick of WHICH town, so with
+// equal weights only the first two towns in the list could ever appear.
+// Not in STRUCTURE_CHECK_SKIP_SETS: the clearance check pulls it out of
+// the generic blocker list and asks about it separately (townAt).
+var TOWN_SET_ID = 'kubejs:towns'
 
-// Builds a closure: (chunkX, chunkZ) -> array of structure_set ids that
-// still have a placement chunk within STRUCTURE_CLEAR_CHUNKS of that
-// chunk. Expected to be empty at every anchor chunk - a non-empty
-// result names a set the exclusion_zone pass missed. Uses
+// Builds { blockersAt, townAt }. blockersAt: (chunkX, chunkZ) -> array
+// of structure_set ids that still have a placement chunk within
+// STRUCTURE_CLEAR_CHUNKS of that chunk. Expected to be empty at every
+// anchor chunk - a non-empty result names a set the exclusion_zone pass
+// missed. townAt: (chunkX, chunkZ) -> true when TOWN_SET_ID's own
+// isStructureChunk passes at exactly that chunk (a radius-0 box), i.e.
+// vanilla's createStructures will start a town there. If the town set
+// is not in possibleStructureSets (no member can spawn in this world's
+// biomes) no town can generate anywhere and townAt is always false. Uses
 // `ChunkGeneratorStructureState#possibleStructureSets` (m_255252_), the
 // exact list vanilla itself iterates in createStructures (already
 // filtered to sets whose structures have at least one biome in this
@@ -385,23 +446,35 @@ function buildStructureClearanceCheck(level) {
     var listGet = findMethodByNameAndShape(listCls, 'get', 1, 'java.lang.Object', ['int'])
     var setCount = parseInt(`${listSize.invoke(sets, [])}`, 10)
     var checked = []
+    var townHolder = null
     for (var i = 0; i < setCount; i++) {
       var holder = listGet.invoke(sets, [boxInt(level, i)])
       var id = `${locationMethod.invoke(keyMethod.invoke(holder, []), [])}`
+      if (id === TOWN_SET_ID) {
+        townHolder = holder
+        continue
+      }
       if (STRUCTURE_CHECK_SKIP_SETS.includes(id)) continue
       checked.push({ id: id, holder: holder })
     }
     var radius = boxInt(level, STRUCTURE_CLEAR_CHUNKS)
-    console.log(`playtest_starter_kit.js: structure clearance check ready - ${checked.length} structure sets can generate in this world's biomes`)
+    var sameChunk = boxInt(level, 0)
+    console.log(`playtest_starter_kit.js: structure clearance check ready - ${checked.length} structure sets can generate in this world's biomes, town lattice ${townHolder ? 'active' : 'absent (no town can generate)'}`)
 
-    return function (chunkX, chunkZ) {
-      var cx = boxInt(level, chunkX)
-      var cz = boxInt(level, chunkZ)
-      var blockers = []
-      for (var i = 0; i < checked.length; i++) {
-        if (`${hasInRange.invoke(state, [checked[i].holder, cx, cz, radius])}` === 'true') blockers.push(checked[i].id)
+    return {
+      blockersAt: function (chunkX, chunkZ) {
+        var cx = boxInt(level, chunkX)
+        var cz = boxInt(level, chunkZ)
+        var blockers = []
+        for (var i = 0; i < checked.length; i++) {
+          if (`${hasInRange.invoke(state, [checked[i].holder, cx, cz, radius])}` === 'true') blockers.push(checked[i].id)
+        }
+        return blockers
+      },
+      townAt: function (chunkX, chunkZ) {
+        if (!townHolder) return false
+        return `${hasInRange.invoke(state, [townHolder, boxInt(level, chunkX), boxInt(level, chunkZ), sameChunk])}` === 'true'
       }
-      return blockers
     }
   } catch (e) {
     console.log(`playtest_starter_kit.js: structure clearance check unavailable (${e}) - site search will trust the JSON exclusion floor alone`)
@@ -415,16 +488,23 @@ function isWastelandAt(level, x, z) {
 
 // Picks the anchor chunk the base goes on. Candidates are ONLY anchor
 // grid points (chunk (64i, 64j), block centre (1024i+8, 1024j+8)),
-// nearest-to-origin first. Scoring: centre column in desert/badlands
-// (required), the four BASE_BIOME_SAMPLE_OFFSET samples also wasteland
-// (+10), no structure set reporting a placement chunk inside the
-// clearance box (+5). The first perfect score wins immediately;
-// otherwise the best-scoring candidate seen. Only biome-passing points
-// pay for the structure check, so the whole search is a few hundred
-// pure biome lookups (~0.3ms each) plus a handful of grid-math passes.
+// nearest-to-origin first. An anchor holding a town (TOWN_SET_ID) is
+// never a candidate - skipped outright, including in the fallback.
+// Scoring: centre column in desert/badlands (required), the four
+// BASE_BIOME_SAMPLE_OFFSET samples also wasteland (+10), no structure
+// set reporting a placement chunk inside the clearance box (+5). The
+// first perfect score wins immediately; otherwise the best-scoring
+// candidate seen. Only biome-passing points pay for the town and
+// structure checks, so the whole search is pure biome lookups (~0.3ms
+// each) plus a handful of grid-math passes.
 function findBaseSite(level) {
   var startedAt = Date.now()
-  var structureBlockersAt = buildStructureClearanceCheck(level)
+  var clearance = buildStructureClearanceCheck(level)
+  var structureBlockersAt = clearance ? clearance.blockersAt : null
+  var townAt = clearance ? clearance.townAt : null
+  if (!townAt) {
+    console.error(`playtest_starter_kit.js: town lattice check unavailable - the base could land on a ${TOWN_SET_ID} anchor this world`)
+  }
   var points = []
   for (var i = -BASE_SEARCH_MAX_RINGS; i <= BASE_SEARCH_MAX_RINGS; i++) {
     for (var j = -BASE_SEARCH_MAX_RINGS; j <= BASE_SEARCH_MAX_RINGS; j++) points.push([i, j])
@@ -433,12 +513,17 @@ function findBaseSite(level) {
 
   var best = null
   var biomeHits = 0
+  var townSkips = 0
   for (var p = 0; p < points.length; p++) {
     var chunkX = points[p][0] * BASE_ANCHOR_SPACING_CHUNKS
     var chunkZ = points[p][1] * BASE_ANCHOR_SPACING_CHUNKS
     var x = chunkX * 16 + 8
     var z = chunkZ * 16 + 8
     if (!isWastelandAt(level, x, z)) continue
+    if (townAt && townAt(chunkX, chunkZ)) {
+      townSkips++
+      continue
+    }
     biomeHits++
     var o = BASE_BIOME_SAMPLE_OFFSET
     var surroundingsOk = isWastelandAt(level, x + o, z) && isWastelandAt(level, x - o, z) && isWastelandAt(level, x, z + o) && isWastelandAt(level, x, z - o)
@@ -451,14 +536,28 @@ function findBaseSite(level) {
 
   var elapsed = Date.now() - startedAt
   if (!best) {
-    // No desert/badlands anchor point in a 12km square. Never seen on a
-    // real seed; surfaced loudly rather than silently picking a
-    // non-anchor point (which would forfeit the structure-free hole).
-    // The origin anchor still has the hole, it just won't be wasteland.
-    console.error(`playtest_starter_kit.js: no desert/badlands anchor point within ${BASE_SEARCH_MAX_RINGS} rings of origin (${points.length} points, ${elapsed}ms) - falling back to the origin anchor, biome will be off-theme this world`)
-    return { x: 8, z: 8, chunkX: 0, chunkZ: 0, score: 0, surroundingsOk: false, blockers: structureBlockersAt ? structureBlockersAt(0, 0) : [], biome: biomeIdAt(level, 8, 8) }
+    // No town-free desert/badlands anchor point in the searched square.
+    // Rare (0 of 200 simulated seeds at 20 rings; 5 of 200 had no
+    // wasteland anchor at all at the old 10 rings); surfaced loudly
+    // rather than silently picking a non-anchor point (which would
+    // forfeit the structure-free hole). Falls back to the anchor
+    // nearest origin that holds no town - it still has the hole, it just
+    // won't be wasteland. The old fallback was always the origin anchor,
+    // which can now hold a town.
+    var fallbackX = 0
+    var fallbackZ = 0
+    for (var q = 0; q < points.length; q++) {
+      var fx = points[q][0] * BASE_ANCHOR_SPACING_CHUNKS
+      var fz = points[q][1] * BASE_ANCHOR_SPACING_CHUNKS
+      if (townAt && townAt(fx, fz)) continue
+      fallbackX = fx
+      fallbackZ = fz
+      break
+    }
+    console.error(`playtest_starter_kit.js: no town-free desert/badlands anchor point within ${BASE_SEARCH_MAX_RINGS} rings of origin (${points.length} points, ${townSkips} wasteland anchors skipped for holding a town, ${elapsed}ms) - falling back to the nearest town-free anchor [chunk ${fallbackX},${fallbackZ}], biome will be off-theme this world`)
+    return { x: fallbackX * 16 + 8, z: fallbackZ * 16 + 8, chunkX: fallbackX, chunkZ: fallbackZ, score: 0, surroundingsOk: false, blockers: structureBlockersAt ? structureBlockersAt(fallbackX, fallbackZ) : [], biome: biomeIdAt(level, fallbackX * 16 + 8, fallbackZ * 16 + 8) }
   }
-  console.log(`playtest_starter_kit.js: base site chosen at (${best.x}, ${best.z}) [anchor chunk ${best.chunkX},${best.chunkZ}] biome=${best.biome} surroundings=${best.surroundingsOk ? 'wasteland' : 'MIXED'} score=${best.score} (${biomeHits} wasteland anchor points seen, ${elapsed}ms)`)
+  console.log(`playtest_starter_kit.js: base site chosen at (${best.x}, ${best.z}) [anchor chunk ${best.chunkX},${best.chunkZ}] biome=${best.biome} surroundings=${best.surroundingsOk ? 'wasteland' : 'MIXED'} score=${best.score} (${biomeHits} wasteland anchor points seen, ${townSkips} skipped for holding a town, ${elapsed}ms)`)
   if (best.blockers.length) {
     console.error(`playtest_starter_kit.js: structure sets still reporting a placement chunk within ${STRUCTURE_CLEAR_CHUNKS} chunks of the chosen anchor - these are missing the base_anchor exclusion_zone: ${best.blockers.join(', ')}`)
   }

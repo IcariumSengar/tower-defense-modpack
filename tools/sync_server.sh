@@ -17,6 +17,15 @@ CLIENT_ONLY=(
   "embeddium-0.3.31+mc1.20.1.jar"
   "entityculling-forge-1.10.5-mc1.20.1.jar"
   "justzoom_forge_2.1.1_MC_1.20.1.jar"
+  # Menu reskin (FancyMenu + Drippy + Melody). FancyMenu will load on a server,
+  # but its server mixins add a packet per spawn/death and a structure lookup
+  # per player tick for nothing a menu needs.
+  "fancymenu_forge_3.9.12_MC_1.20.1.jar"
+  "drippyloadingscreen_forge_3.1.5_MC_1.20.1.jar"
+  "melody_forge_1.0.3_MC_1.20.1-1.20.4.jar"
+  # Performance pass 2026-09-26 - render-only (batches HUD/text drawing),
+  # mods.toml declares its deps side=CLIENT.
+  "ImmediatelyFast-Forge-1.5.5+1.20.4.jar"
 )
 
 is_client_only() {

@@ -685,6 +685,10 @@ function nearbyWaveMobCount(origin, level, radius) {
 // wave mob regardless of how far it's wandered from the pedestal.
 var MAX_CONCURRENT_WAVE_MOBS = 60
 
+// See the pending-spawn tick handler's alive-count comment (2026-09-26).
+var TD_CAP_RECHECK_TICKS = 10
+var tdCapHoldUntilTick = 0
+
 function countAliveWaveMobs(level) {
   return level.getEntities().filter(function (e) {
     return WAVE_MOB_TYPES.includes(`${e.type}`) && e.getTags().contains('td_wave_mob') && e.getHealth() > 0
@@ -1262,7 +1266,8 @@ function useWaveHorn(player) {
     // at the exact wave-start moment, vanilla bell for now, explicitly
     // swappable for something scarier later. Wired here too, not just
     // the hand-authored path below - every wave start, not just 1-8.
-    server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
+    // At each player (2026-09-27 audit): a bare `playsound ... @a ~ ~ ~` from the server plays at world spawn and is inaudible past ~16 blocks.
+    server.runCommandSilent(`execute as @a at @s run playsound minecraft:block.bell.use master @s ~ ~ ~ 1 1 1`)
     return
   }
 
@@ -1334,7 +1339,8 @@ function useWaveHorn(player) {
   // Real placeholder sound, 2026-09-05 - direct ask: play something when
   // a wave starts, vanilla bell for now, explicitly a placeholder the
   // user may swap for something scarier later.
-  server.runCommandSilent(`playsound minecraft:block.bell.use master @a ~ ~ ~ 1 1`)
+  // At each player (2026-09-27 audit): a bare `playsound ... @a ~ ~ ~` from the server plays at world spawn and is inaudible past ~16 blocks.
+  server.runCommandSilent(`execute as @a at @s run playsound minecraft:block.bell.use master @s ~ ~ ~ 1 1 1`)
 }
 
 // Wave Horn note block (2026-09-12, direct ask: "wave horn a note block
@@ -1440,7 +1446,29 @@ PlayerEvents.tick(function (event) {
   // locally and incremented per actual summon below rather than
   // rescanning every entry, so a whole tick's worth of ready spawns is
   // gated off one real world query instead of one per mob.
-  var aliveWaveMobCount = countAliveWaveMobs(level)
+  //
+  // Performance pass 2026-09-26: that "one scan per tick" still ran on
+  // every tick of a wave - spawns are staggered 4-16 ticks apart, and once
+  // the cap is hit every queued spawn stays due, so it was 20 full-level
+  // scans/second for most of a wave. Now it only counts when some spawn is
+  // actually due this tick, and a count that came back at the cap is
+  // trusted for TD_CAP_RECHECK_TICKS before rescanning (a freed slot is
+  // refilled up to half a second later - the spawn stagger is already
+  // coarser than that).
+  var anySpawnDue = false
+  for (var d = 0; d < pendingSpawns.length; d++) {
+    if (currentTick >= pendingSpawns[d].spawnTick) { anySpawnDue = true; break }
+  }
+  var aliveWaveMobCount = 0
+  if (anySpawnDue) {
+    var capHeld = tdCapHoldUntilTick > currentTick && tdCapHoldUntilTick - currentTick <= TD_CAP_RECHECK_TICKS
+    if (capHeld) {
+      aliveWaveMobCount = MAX_CONCURRENT_WAVE_MOBS
+    } else {
+      aliveWaveMobCount = countAliveWaveMobs(level)
+      tdCapHoldUntilTick = aliveWaveMobCount >= MAX_CONCURRENT_WAVE_MOBS ? currentTick + TD_CAP_RECHECK_TICKS : 0
+    }
+  }
 
   pendingSpawns.forEach(function (spawn) {
     if (!spawn.soundPlayed && currentTick >= spawn.soundTick) {

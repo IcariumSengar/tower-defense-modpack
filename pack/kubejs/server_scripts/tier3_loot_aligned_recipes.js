@@ -17,8 +17,8 @@
 //   (kubejs:chests/scav_dairy, rolled by Lost City stores/farms/dining
 //   rooms and postapocalypse food chests); the cake becomes bread.
 // - Flux Core (every Plug/Point needs one): an EYE OF ENDER -> blaze
-//   powder -> the Nether. Swapped for an ender pearl (treasure sub-table,
-//   high distance pool, Rare/Epic bags). Flux Dust itself is made in-world
+//   powder -> the Nether. Swapped for an ender pearl (the Lootr bonus
+//   pools in structure_loot_progression.js, Rare/Epic bags). Flux Dust itself is made in-world
 //   (drop redstone onto obsidian that sits on bedrock - enableFluxRecipe
 //   is on, bedrock is 18 blocks down at y=-16) but nothing in the pack
 //   explains that, so a plain crafting route is added alongside it.

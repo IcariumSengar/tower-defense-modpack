@@ -200,6 +200,20 @@ BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
   var data = worldData(level)
   if (!data) return
 
+  // Two guards added 2026-09-27 (script audit):
+  // - Main hand only. KubeJS's right-click event has no hand filter, and
+  //   this plain block doesn't consume the click, so the client also sends
+  //   an off-hand click. That second event undid every place/take straight
+  //   away.
+  // - Only the real pedestal position. On a new world the real pedestal is
+  //   Supplementaries' block, so a crafted legacy block placed anywhere
+  //   else would take the amulet, and the tick poll above would then clear
+  //   td_amuletOnPedestal, losing it. Old saves whose stored pedestal IS
+  //   this block still match.
+  if (`${event.getHand()}` !== 'MAIN_HAND') return
+  var clicked = event.getBlock()
+  if (clicked.getX() !== data.getInt('td_pedestalX') || clicked.getY() !== data.getInt('td_pedestalY') || clicked.getZ() !== data.getInt('td_pedestalZ')) return
+
   if (data.getBoolean('td_amuletOnPedestal')) {
     player.give(Item.of('kubejs:amulet', 1))
     toggleAmuletOnPedestal(player, data, level, false)

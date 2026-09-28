@@ -61,6 +61,7 @@ var LADDER_CLIMB_NUDGE_VELOCITY = 0.25 // applied only when a mob inside a colum
 var LADDER_RISE_THRESHOLD = 0.05 // vertical blocks gained since the last check, below which the nudge kicks in
 
 var ladderAssistState = {} // uuid -> { x, y, z, ladder, nextScanTick }
+var ladderAssistLastTick = -1
 
 function ladderFacingOffset(facing) {
   var f = `${facing}`
@@ -184,14 +185,22 @@ function ladderPressIntoWall(mob, column, mobY, nudge) {
 
 PlayerEvents.tick((event) => {
   var level = event.entity.getLevel()
-  var now = level.getTime()
+  var now = Number(level.getTime())
   if (now % LADDER_ASSIST_INTERVAL_TICKS !== 0) return
+  // Once per game tick, not once per online player (2026-09-27 audit):
+  // PlayerEvents.tick fires for every player, so with 2+ online the second
+  // pass in the same tick saw zero movement for every mob. File-scoped var,
+  // Number() because getTime() is a Java long.
+  if (now === ladderAssistLastTick) return
+  ladderAssistLastTick = now
 
+  var seen = {}
   level.getEntities().forEach((e) => {
     var tags = e.getTags()
     if (!tags.contains('td_wave_mob') || tags.contains('td_structure_guard')) return
 
     var uuid = `${e.uuid}`
+    seen[uuid] = true
     var x = e.getX()
     var y = e.getY()
     var z = e.getZ()
@@ -253,4 +262,8 @@ PlayerEvents.tick((event) => {
     }
     ladderWalkTo(e, cx, column.foot, cz)
   })
+  // Forget mobs that are gone (dead/unloaded) so the map doesn't grow all session.
+  for (var k in ladderAssistState) {
+    if (!seen[k]) delete ladderAssistState[k]
+  }
 })

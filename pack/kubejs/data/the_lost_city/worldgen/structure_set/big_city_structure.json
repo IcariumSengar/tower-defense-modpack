@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "the_lost_city:big_city_structure",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spacing": 24,

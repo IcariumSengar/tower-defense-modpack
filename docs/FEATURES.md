@@ -926,6 +926,147 @@ player sees constantly rather than rare structure finds:
   rare cobweb and `scav_hardware.json`/`scav_treasure.json` etc. were left
   alone - those are either active building material for player-built
   defenses or already 100% real-sink items with no filler in them.
+- **Partly superseded 2026-09-27** by "Structure loot tiering" below: the
+  distance premium is now Lootr-only, `scav_treasure` is retired, and the
+  household/post-apoc tables no longer become Lootr containers.
+
+**Structure loot tiering: plain containers basic, Lootr lucrative, ~85% fewer
+Lootr (2026-09-27).** Direct ask: "do a pass at the loot tables for the storage
+chest/barrels in structures as well as the lootr chests... regular barrels etc
+should have basic loot in them, but the lootr chests should feel more
+lucrative. I also think there are too many lootr chests/barrels in general."
+Decided through one question round (all four recommended options picked):
+special stashes only stay Lootr, Lost City store shelves go plain, "strong"
+Lootr payout, structure spacing left alone in this pass.
+
+Measured before changing anything (research workflow: decompiled Lootr
+0.7.35.94 + LootJS 2.13.1, a read-only NBT census of the Manna save and the
+dedicated server world, a template census of every structure jar, an
+expected-value model of every table):
+- **~76% of the storage a player met was Lootr** (Manna: 3,591 Lootr vs ~1,300
+  plain; server: 1,844). Two thirds came from the four post-apoc houses' own
+  `cobwebs`/`trash`/`food` tables - a red_house is 30 loot barrels, and the
+  pack's structure_set overrides spawn the houses every 6 chunks, often 2-5
+  stacked on one spot. The Lost City's Berezka tables were only 5-9% of the
+  live count, despite dominating the template census.
+- **No tier gap.** Every pack table drew from the same `scav_*` sub-tables, the
+  "trash"/"cobwebs" barrels had the same 50% treasure roll as a Lost City
+  store, and `structure_loot_progression.js` put its distance premium on EVERY
+  chest-context roll - past 270 blocks it was 58-87% of every container's
+  value, and every container (empty-barrel fills included) carried a diamond/
+  Nether-tier item. Lootr averaged only 1.1-1.5x a plain barrel. The empty-
+  barrel fill beat 7 of the 16 pack tables that became Lootr.
+- **Lootr facts that shaped the design** (all from the decompiled jar):
+  config is COMMON, `config/lootr-common.toml` (NOT `defaultconfigs/` - Lootr
+  creates the file itself before Forge's default-copy runs, and
+  `sync_instance.sh` wipes `config/`, so it has to ship in `pack/config/`);
+  `loot_table_blacklist` / `loot_modid_blacklist` leave a container as a
+  plain vanilla one with its LootTable intact (one shared roll); there is no
+  per-structure or random-percentage option; conversion runs on every full
+  chunk load once the surrounding 5x5 chunks are loaded, and never reverses,
+  so the count change only reaches fresh worlds/unexplored chunks. Lootr
+  rolls with the same CHEST context + ORIGIN as vanilla, once per player,
+  resolving the table at open time - so table edits DO reach unopened Lootr
+  containers in existing worlds.
+
+**Built:**
+- **`pack/config/lootr-common.toml`** (new; full default key set, only the
+  two blacklists changed): `loot_modid_blacklist = ["postapocalypse_
+  structures"]`, and a `loot_table_blacklist` of household/filler tables -
+  Berezka `store`/`simple_chest`/`simple_chest2`/`empty_chest`/
+  `berezkahousesmall_0`/`farm`/`diningroom`, `minecraft:chests/houseloot`,
+  village butcher/fisher/tannery/shepherd/mason/cartographer, igloo, Philip's
+  Ruins' six byte-identical junk tables + `badlands_dungeon_loot_low` +
+  `nether_ruins_low`, u_desert `desert_ruin/junk` + `pillager_outpost/supply`,
+  and `kubejs:chests/scavenge_storage` (so an empty barrel that got tagged but
+  not opened can't turn into a Lootr barrel on a later chunk load). Lootr
+  stays on dungeons, stronghold rooms, shipwreck/buried treasure, mansions,
+  weaponsmiths, jungle temples, watchtower armouries, outposts, Philip's
+  pyramid/dungeon tables and the Lost City's cars/towers/gas station. On the
+  Manna census that is 4,944 -> ~940 would-be Lootr (-81%) plus the store
+  shelves (-85% total).
+- **Plain tables rebased to basic scavenging**: `scav_hardware` lost gold
+  ingots/quartz/obsidian/TNT (iron/redstone/gunpowder/copper/coal stay, at
+  smaller counts); `scav_food` lost its golden apple (golden carrot 6->4);
+  new `scav_ammo` (pistol/rifle/shotgun ammo + arrows, no guns);
+  `scavenge_storage` is hardware 0-1 / building 0-2 / food 0-1 / 15% ammo /
+  filler 0-1; the Lost City `store` is food 1-2 / 50% dairy / hardware 0-1 /
+  filler 0-1 (eggs still come from stores and farms, as the Culinary
+  Generator quest says); post-apoc `cobwebs`/`trash`/`food` lost their treasure
+  roll. `scav_treasure` is deleted (nothing references it).
+- **`structure_loot_progression.js` is Lootr-only**: it checks the block at
+  the roll's ORIGIN (`level.getBlock(x,y,z).getId()` starts with `lootr:`) -
+  the context type can't tell Lootr from vanilla, the block can - so it holds
+  for vanilla/Philip's/u_desert tables the pack doesn't override, and leaves
+  the airdrop crate and every plain barrel alone. Every Lootr open gets one
+  tier roll - new NEAR pool under 210 blocks (iron/gold/redstone/gunpowder/
+  copper/clay/quartz/obsidian), MID 210-270 (+40% second roll), HIGH past 270
+  (+50% second roll) - plus a 50% PRIZE roll (diamond, ender pearl, golden
+  apple, XP bottles, golden carrots, emerald, a common-to-mid gun, grenades).
+  MID/HIGH weight moved off emerald, lapis blocks, blaze powder and magma
+  (sinks dried up after the Tier 3 re-recipes; all still present, rarer) onto
+  obsidian and ender pearls (Flux Cores). The smithing template stays a HIGH
+  find (weight 4), now Lootr-only. Lootr minecarts get no bonus (ORIGIN is the
+  cart; the block there is a rail).
+- **Quest text**: the "chest loot scales with distance" quest
+  (`4F1477C0746CED34`) now says ordinary barrels are scavenging and the
+  gold-trimmed containers (grey once you've looted yours - checked against the
+  jar's textures) are the stashes with the distance-scaled bonus.
+- **Review follow-up, same day** (adversarial review + sandbox findings):
+  - The mod/vanilla tables on the blacklist still carried premium items
+    into what are now plain containers - the igloo chest guarantees a golden
+    apple and sits in every Abandoned Urban fire tower (30/30 sandbox rolls),
+    Philip's `nether_ruins_low` rolls golden apples and diamonds,
+    `badlands_dungeon_loot_low` ender pearls, the village and Philip's junk
+    tables emeralds. `structure_loot_progression.js` now carries
+    `PLAIN_TIER_TABLES`/`PLAIN_TIER_NAMESPACES` (a mirror of the TOML
+    blacklist - KEEP THEM IN SYNC, Lootr's config can't be read from a
+    script) and, for any roll of those tables, strips diamond/emerald/ender
+    pearl/golden apple/enchanted golden apple and skips the bonus. Scoped by
+    table id, not "block isn't Lootr", because the airdrop crate is a
+    non-Lootr block carrying diamond blocks, netherite and guns.
+  - Skipping the bonus by table id also covers older worlds: Lootr never
+    converts back, so an old post-apoc house full of Lootr barrels would
+    otherwise have started paying NEAR rolls and guns.
+  - Obsidian and quartz went into the HIGH pool (weights 6/5): once they
+    left `scav_hardware`, nothing past 270 blocks dropped them, and obsidian
+    can't be made here (no water) yet gates every Flux Core.
+  - Forge's config correction rewrites `lootr-common.toml` on first launch
+    (reorders keys, drops the pack's added comments); all values survive
+    (sandbox: 41 keys value-identical, both lists intact). The repo copy is
+    the documented one.
+
+**Result, modelled on the real Manna container list** (value units from the
+EV model: metals 3, treasure 15, exclusives 20 per item, guns 25):
+plain ~9-10 at every distance (was 18.6 / 48.4 / 85.3 near/mid/far); Lootr
+72 / 81 / 114 (was 31 / 58 / 95) - ~7x a barrel near the base, ~12x past 270,
+well above the "~3-4x" estimated in the question round; the user chose to
+keep it and playtest. Total value in a fully-looted world drops to ~27% of
+before; a player opening the same number of containers as before brings back
+roughly half, concentrated in the gold-trimmed finds. Knobs if outings feel
+thin: plain `scavenge_storage`/`store` roll counts first, then
+`PRIZE_CHANCE`/second-roll chances. The model lives in the session scratchpad
+(`ev/ev_model.py` + `ev/ev2.py`), not the repo.
+
+**Sandbox-verified 2026-09-27** (`D:/mc-servers/sandbox-loot`, a copy of the
+dedicated server with only these files overlaid, fresh world, RCON probes):
+50/50 scripts, 0 errors. Conversion: 33/33 test containers at three distances
+did the right thing (every blacklisted table stayed `minecraft:*` with its
+LootTable, every kept table became `lootr:*`), plus a natural worldgen check -
+a red house and a yellow house stayed all-plain (77 containers), watchtower
+armouries became Lootr barrels (22), 0 wrong across the world's 1,727
+blacklisted-table containers. Bonus (via `execute positioned <container> run
+loot insert <R> loot <table>`, whose ORIGIN is the command position - the
+stand-in for a real open): 0 bonus items at plain barrels in 3,000+ rolls;
+Lootr bonus means matched the script's pools (band totals z within +/-0.5,
+4,000-roll far run every item |z| < 1.7); legacy `lootr:lootr_barrel` with a
+post-apoc table got 0 bonus in 300 rolls; igloo chest 0/100 golden apples;
+airdrop untouched (20/20 bag, scrap, diamond blocks, gun). Not verifiable
+without a client: a real player's right-click on a Lootr container (the
+decompiled roll path uses the same CHEST context + ORIGIN as the probe). Probe
+gotcha for next time: a regex over `data get block ... Items` that expects
+`id:..., Count:...` adjacency silently skips stacks with NBT (`tag:{Damage:0}`
+sits between them) - guns went uncounted until the parser split on `{Slot:`.
 
 **Open Tier 3 sourcing gaps - surfaced, not decided here.** Loot now
 supplies eggs/milk/cake (dairy), blaze powder and magma blocks (high pool)
@@ -2012,6 +2153,11 @@ purpose; if more variety is wanted, retune this pack's own multi_noise
 parameter points instead (same approach that already produced this
 7-biome set).
 
+*Structure placement history from here down: every spacing value, the
+near/mid/far spacing tiers and the per-set `exclusion_zone` numbers in these
+entries were replaced on 2026-09-27. See "2026-09-27 structure-gen rework"
+at the end of this section.*
+
 **Structure mod picks, 2026-08-31 — added for variety, not desert-
 specific. User-confirmed 2026-09-01: generation now reads as the
 intended abandoned aesthetic.** Researched with the same rigor as the
@@ -2130,6 +2276,12 @@ disqualifying:
   spacing without addressing the overlap risk directly. The other 3
   structure mods (Treasure2, Apocalypse structures, Abandoned Urban)
   still cover in-border reachability, so this isn't a net loss there.
+  *Superseded 2026-09-27:* the 2026-09-09 anchor grid had already swapped
+  those city exclusions for `base_anchor`, and the small sets then got the
+  cities deleted. The Lost City's town sets are now disabled, and its towns
+  sit on the anchor lattice (`kubejs:towns`). Its camp/tower/survivorscamp/
+  factory are in `kubejs:ruins_pool`, and post/roads/rails/train/lighthouse
+  are cut. See "2026-09-27 structure-gen rework".
 - **Floor depth**: left at 65 blocks as recommended — Treasure2's own
   underground diggers still benefit, no cost to keeping it raised even
   though WDA (the mod that originally drove the number) is gone.
@@ -2187,8 +2339,8 @@ anywhere among ~12 similarly-named per-mod addons; here, the correct
 listing is named directly and unambiguously on the mod's own page, no
 guessing required. Two optional dependencies also listed (a TaCZ
 weapon-mod addon, a Survival Instinct addon) — both irrelevant here,
-skip both. **Not yet installed** — same spacing-retuning treatment
-every structure mod in this pack has needed will apply once it is.
+skip both. **Installed since** (see docs/MODS.md). This line said "not
+yet installed" until the 2026-09-26 backlog sweep.
 
 **Base expansion into rooms/corridors** — *planned, not built, now
 dead*. The plan was to gather materials, activate something, and have a
@@ -2432,7 +2584,10 @@ guarantee no longer needs cramming everything near spawn.
   distances from a fresh spawn: red_mansion 732 blocks, city 537,
   wishing_well 170. Deployed and committed (6d8c50e), same commit as the
   growth-curve retune above.
-- **Loot-tier-by-progression — on hold, not built.** Treasure2's own
+- **Loot-tier-by-progression — built 2026-09-03** as
+  `structure_loot_progression.js` (a distance-gated bonus pool on every
+  chest roll). The rest of this bullet is the 2026-09-02 "on hold"
+  reasoning, kept for history. Treasure2's own
   rarity system was decompiled and confirmed real: `data/treasure2/
   rarity_associations/block/chest/*.json` maps a fixed rarity to each
   specific chest block variant, with no distance/progression-aware hook
@@ -2931,6 +3086,24 @@ directly rather than designing a new roster split:
   Exact piece selection needs the same direct-decompile identification
   the horse-strip fix used, not guessed from filenames.
 
+*Superseded 2026-09-27 (tiers only):* the near/mid/far spacing tiers no
+longer exist. Every surface ruin now comes from the one `kubejs:ruins_pool`
+set at the same density everywhere, and the tiers never set distance anyway.
+"Near/mid/far" now only labels which `ENDLESS_OTHER_TIERS` roster a guard
+spawner uses. Guards that still generate:
+- gas station (near): it only started working 2026-09-27, via
+  `gas_station_loot.nbt`; the earlier spawner sat in the dead
+  `gas_station.nbt`.
+- Philip's desert_pyramid (mid).
+- the watchtower big tower and `zapravka` (far).
+
+The brick house and fire tower spawners are gone with their cut sets. See
+"2026-09-27 structure-gen rework" at the end of this section.
+
+*Superseded 2026-09-28:* see "Stash guard spawners" below - 6 of those
+guards had never spawned, and every guard spawner is now a placeholder
+that tiers itself by distance at runtime.
+
 **Verification bar, matching this pack's own standing practice for
 anything touching structure NBT**: full 73-mod sandbox boot, clean;
 `/locate` + fly to a real placed instance of at least one edited piece
@@ -3149,6 +3322,132 @@ tagging) — no connected player in this environment, same standing
 caveat. Existing worlds keep their already-dragged husks; this is a
 fresh-world fix.
 
+**Stash guard spawners (2026-09-28) — supersedes the 6-spawner build above.**
+Direct ask: "can you add more spawners to structures. it needs to be more
+difficult when looting." Decided in two question rounds (all recommended
+options): guard spawners at every gold-trimmed Lootr stash in the modded
+ruins and towns (not vanilla structures); the guard type scales with
+distance from the base; spawners work day or night and stay breakable;
+guard kills give no loot bags, no legendary jackpot and no bounty credit;
+far guards get baked stats.
+
+**What the research found first** (decompiled 47.4.10 / KubeJS 2001.6.5 /
+LootJS 2.13.1 / the mob mods, a stash map of all 249 reachable pieces,
+cross-checked against a fresh sandbox world):
+- **6 of the 9 existing guard spawners had never spawned in any world.**
+  The zapravka and big-tower guards rolled Undead Nights elite/horde
+  zombies, whose spawn placement needs Undead Nights' "natural spawning
+  OK" flag, which this pack never sets (no horde nights). The gas-station
+  and pyramid guards had no `custom_spawn_rules`, so vanilla's monster
+  darkness rules applied: dark rooms or night only.
+- **`custom_spawn_rules:{}` fixes both**: with it, BaseSpawner skips
+  SpawnPlacements entirely (only the light ranges, collision and Forge's
+  checkSpawnObstruction remain), and both limits default to [0,15]. A
+  MALFORMED rules entry is silently dropped by the lenient optional codec -
+  the spawner then quietly goes back to dark-only.
+- **Spawner stall**: a spawner only re-rolls its next mob after a
+  successful spawn. A mob that can never be placed (too tall for the room,
+  drowned on dry land) makes it retry every tick forever.
+- **MaxNearbyEntities counts the spawn entity's CLASS**, so swapping each
+  spawned mob for another type would uncap the spawner.
+- **Extra keys in the spawn entity (Tags, gear) skip finalizeSpawn**, so
+  mod mobs lose their own spawn setup (elite/horde arrive as bare 20 HP
+  zombies).
+- **Guard kills were an unlimited bag farm**: `loot_bag_drops.js` matched
+  by type with no killer or tag check, and `bounty_kills.js` credited them
+  (the repeatable Zombie Masher pays a legendary bag every 1,500 kills).
+- **ESM digging**: a stuck guard could dig out a Lootr stash
+  (`canHarvest` only needs isSolid + hardness with `diggingRequiresTools`
+  false; the dig ends in `destroyBlock(pos,false)`), destroying it for every
+  player.
+
+**Built:**
+- **54 structure `.nbt` overrides** (49 new, 5 existing edited; repo
+  overrides were edited from the repo copy, everything else from the exact
+  jar bytes): 55 new guard spawners placed at stash clusters (best-ranked
+  floor spot in the stash's room with >=3 blocks of headroom, not over a
+  container; a second one when a cluster spans two rooms; skipped when a
+  guard already sits within 8 blocks), 44 converted (the 9 old guards + 35
+  spawners of off-roster mobs - cave spider, skeleton, stray, witch,
+  vindicator, pillager, silverfish - since the pack is zombie-only), 13
+  baked off-roster mobs stripped. Every guard spawner carries the same
+  placeholder (a husk tagged `td_structure_guard`, `custom_spawn_rules:{}`).
+  Native zombie/husk spawners are untouched. Every file was diffed to prove
+  nothing else changed and loaded through Forge's own NbtIo + the structure
+  data fixer. Not guarded: the 5 Lost City car templates (no valid spot)
+  and vanilla structures (villages, outposts, portals, monster rooms,
+  mineshafts - the last two still carry some skeleton/spider/cave-spider/
+  zombiesmore spawners, out of scope).
+- **`structure_guard_tiers.js`** (new): the first placeholder husk a guard
+  spawner makes is cancelled and queued; next tick the spawner is rewritten
+  to its distance tier - one mob type per spawner (so the cap stays exact),
+  Tags `[td_structure_guard, td_guard_tiered]`, `custom_spawn_rules:{}`,
+  Delay 20. Near (<=210): husk / zombie villager (unbreakable leather
+  helmet - a normal one is gone in ~5.5 s of sun and then it burns). Mid:
+  mutant / blister / split-head zombie. Far (>270): elite (40 HP, iron
+  chest + helmet) / horde (30 HP, iron helmet) / rotten mutant / crawler;
+  gear never drops. Wherever no spawn cell has 3 clear blocks (converted
+  spawners in 2-high crawlspaces), the tall mobs are left out of the roll so
+  the spawner can't stall.
+- **`loot_bag_drops.js`**: every bag modifier gets `entityPredicate` that
+  skips `td_structure_guard`. **`bounty_kills.js`**: guards don't count.
+  **`epicsiegemod-common.toml`**: `diggingBlacklist` = the lootr:* blocks +
+  `minecraft:spawner` (none of those exist at the base).
+- **Quest text**: "Past the Line" says the stashes in the ruins and towns
+  are guarded, day or night, nastier further out, breakable with a pickaxe,
+  no loot bags from guards. The bounty text says guards don't count.
+
+**Verified in a server sandbox (fresh world):** 51/51 scripts, 0 errors.
+All 54 templates placed with `/place template`, 99/99 guard spawners exact.
+Natural worldgen: 136/136 expected guard spawners present after rotation
+(rigid and terrain-matching), 0 off-roster spawners or mobs left in any
+generated modded structure, 227 stashes within 8 blocks of a guard, 5 at
+8-16, none further. Tiering 60/60 correct across the three bands
+(negative tests: untagged husks, already-tiered husks and non-guard
+spawners untouched). Bags: 0 from 200 tagged guards vs 55 from 200 untagged
+controls; bounty counter unchanged by guard kills.
+
+**Real-player tests (client sandbox, quick-play world + a sandbox-only probe
+script, creative player at noon) - what they caught:**
+- **The first synced version was broken.** A post-review edit read
+  `'' + level.dimension()`, which throws "not a function" in this KubeJS
+  build before the placeholder is cancelled, so no guard spawner ever
+  tiered - they all just made husks. The server sandbox had verified the
+  pre-edit file. Fixed to `` `${level.dimension}` `` (the form
+  `playtest_starter_kit.js` uses) and re-synced; lesson recorded - re-verify
+  the final file, not an earlier one.
+- **The first fit filter was too generous.** "Some cell has 3 clear blocks"
+  counted an air cell just outside a pyramid wall that a 0.9-wide mob can
+  never reach; a forced rotten mutant stalled there. The roll now replays
+  vanilla's spawn spread (`(rand-rand)*4+0.5` sideways, -1..+1 up) against
+  each mob's registered width/height on a 9x5x9 air map and keeps a mob only
+  if >=3 of 256 simulated attempts fit. Re-test: the 3 converted crawlspace
+  spawners never offered a tall mob (120 server trials) and all 9 real
+  crawlspace runs kept producing guards.
+- **Guards piled up.** MaxNearbyEntities only counts inside the spawner's
+  own +-4 box and guards wander out: 79 around the observatory in ~105 s.
+  Added a guard cap (a new tiered guard is cancelled when 6 near / 8 mid /
+  10 far guards already stand in a +-24 box; a cancelled spawn still counts
+  as success, so the spawner just waits out its delay). A first +-8
+  vertical window leaked on the observatory's upper floor (17 -> 30 in two
+  minutes) and was widened to +-24 on every axis. Final real-player run
+  (observatory, 11 far-tier spawners): ground floor 11 -> 13 by 45 s then
+  flat to 135 s; roof 6 -> 11 -> 13 by 90 s then flat. Server test: a guard
+  15 blocks up is counted, one 30 blocks down is not.
+- Confirmed in real play: tiering on real spawns (38/38), the distance
+  rosters, elites at 40 HP / armour 13, guards keeping their own AI
+  (0 forced toward the pedestal), no guard on fire at noon, the
+  zombie villager's unbreakable helmet intact after 30 s of sun, and a
+  creative player activating spawners. Worst server tick in a 30-placeholder
+  burst: 11.5 ms.
+
+**Known edges, accepted or open:** `factory_overrun` (Lost City factory,
+weight 3 of 265) and the observatory each hold 11 guard spawners - the
+factory's were illager spawners before; guard XP still counts toward
+pedestal upgrades (not decided); native zombie/husk spawners (40 in
+reachable pieces) still pay bags and bounties, as before; `.nbt` changes
+only reach pieces generated after this ships, so this needs a fresh world.
+
 **Wasteland re-skin + one-tag structure gating — spec 2026-09-10, ready
 to build, not sent.** Direct ask: "review the biome decision for the
 world gen... structure generation and variation is subject to which
@@ -3310,6 +3609,13 @@ level_two_ruins_pool, lost_soul_city, start_nether_ruin), u_desert
   sandbox boot + crash-log check as every structure change. Expect the
   Berezka self-heal overlap event more often; that's the mod's own
   handler, not a crash.
+  *Measured 2026-09-27:* this multiplied three 6/3 sets that had been
+  effectively dead: fire_tower (0 -> 113 starts in the Manna save),
+  desert_structures (5-7x) and u_desert outposts (9-13x). They were ~60% of
+  the added starts, and the Berezka "self-heal" was deleting whole towns.
+  The gating (the `#kubejs:ruins_biomes` biome overrides) stays. The density
+  it fed was replaced by the 2026-09-27 structure-gen rework (end of this
+  section).
 
 **C. Follow-on decision, deliberately not made here**: once plains reads
 as wasteland, `BARE_WASTELAND_BIOMES` could admit plains/meadow — the
@@ -3433,6 +3739,219 @@ Curios sandbox, brand-new world on the pack's own dimension override:
   water colours (client-side rendering) and the `u_desert:oasis` —
   an oasis in dead plains is thematically odd; user chose "everything,
   one tag," easy to pull back to desert-only if it grates.
+
+**2026-09-27 structure-gen rework — live in the repo, fresh worlds only,
+sandbox-verified, not yet seen in real play.** Replaces every spacing
+value, the near/mid/far spacing tiers and the per-set `exclusion_zone`
+numbers in the entries above (kept as history). Built from a measured
+review: both real saves, decompiled jars, and a placement simulator that
+matched all 2,609 real starts.
+
+**Measured problem** (Manna 2026-09-25 save and the dedicated server):
+- ~1,150-1,250 structure starts per km², one per ~28x28 blocks. Every
+  nominal placement attempt was succeeding.
+- 57-59% of structures within 420 blocks of the base had lost 20+ of their
+  own blocks to another structure. 93% of starts overlapped another start's
+  bounding box, and half shared their exact start chunk.
+- Towns deleted by Berezka: Manna lost 3/3 Lost City cities, 3/8 big cities
+  and 3/5 villages_city (server: 3/4, 1/5, 2/2).
+
+**Root causes:**
+- **Corner-stacking trap.** `random_spread` picks a start's offset only from
+  0 to spacing-separation-1 inside its cell, and every set with the same
+  spacing shares one cell grid, whatever its salt. With separation = half
+  the spacing, all eight 6/3 sets landed in the same 3x3-chunk corner of
+  every 6x6-chunk cell (7-8 starts per 48x48-block corner). The 14/7 and
+  28/14 families did the same.
+- **Stale tiers.** The near/mid/far tiers (6/3, 14/7, 28/14) were sized for
+  60/120-block loot radii and a wave-8 border. Loot radii are now 210/270,
+  the anchor hole keeps every start ~150+ blocks out, and players reach
+  structures by placing the amulet (+10,000,000 border), not by border
+  growth. A spacing tier sets frequency, not distance (`random_spread` is
+  spatially uniform).
+- **Gating multiplier.** The 2026-09-10 one-tag biome gating revived three
+  6/3 sets that had been effectively dead: fire_tower (0 -> 113 starts in
+  Manna), Philip's desert_structures (5-7x) and u_desert outposts (9-13x).
+  They were ~60% of the added starts.
+- **No cross-mod overlap guard.** Since 2026-09-09 every set's single
+  `exclusion_zone` slot points at `kubejs:base_anchor`. Nothing arbitrates
+  between different mods' jigsaw structures.
+- **Berezka deletions.** Berezka's overlap handler (decompiled) deletes
+  whichever Berezka structure generates second in a shared chunk. With the
+  Lost City's own "stay out of cities" exclusions gone, small post/roads/
+  tower/camp starts deleted the towns.
+
+**User's decisions:** one merged pool for every building, landmark and prop
+at about one structure per 64 blocks (the ask was ~60), jittered rather than
+an exact grid, props kept rare; towns moved onto the anchor lattice with the
+Lost City at full size and vanilla villages untouched; low-value structures
+cut (sets disabled, templates kept); skyscrapers trimmed to ~60 barrels; the
+gas-station guard without drowned; mineshafts excluded at 13 chunks.
+
+**What shipped** (data under `pack/kubejs/data/`, scripts under
+`pack/kubejs/server_scripts/`):
+- **Towns lattice**, `kubejs/worldgen/structure_set/towns.json`:
+  - random_spread 64/63, salt 20260927. Like `base_anchor`, its only
+    possible start is the anchor chunk (64i, 64j).
+  - Members: LC city 3, AU city 3, villages_city 2, big_city_structure 2.
+  - Every other set already excludes the anchor (strongholds are now
+    disabled, see below), so a
+    town sits in a hole nothing else can start in: no clipping and no
+    Berezka neighbour.
+  - Frequency 0.5 with `legacy_type_2`, not `default`. At anchor spacing
+    the default reducer rolls almost identically along z, so P(next anchor
+    north/south is a town | this one is) = 0.95, giving whole stripes of
+    towns. `legacy_type_3` shares its first draw with the weighted pick, so
+    only the first two towns could ever appear.
+  - `exclusion_zone {minecraft:villages, 13}` drops a town (~4% of town
+    anchors) where a village could reach into a full-size LC city, instead
+    of changing vanilla villages.
+  - The 4 old town sets are disabled. `the_lost_city/worldgen/structure/
+    city.json` is unchanged, so the city stays full size.
+  - About 45% of anchors hold a town. The nearest is ~1 km from the base.
+- **Base picker** (`playtest_starter_kit.js`): `townAt()` asks the town
+  set's own isStructureChunk, and a town anchor is a hard disqualifier,
+  fallback included. `BASE_SEARCH_MAX_RINGS` 10 -> 20: a 200-seed port of
+  the search gives an all-wasteland pick on 194/200 seeds at 20 rings (117
+  at 10) and the no-wasteland fallback on 0/200 (26 at 10).
+- **`kubejs:ruins_pool`**, `kubejs/worldgen/structure_set/ruins_pool.json`:
+  - random_spread spacing 4 / separation 2 (a 4-chunk grid, each start
+    jittered 0-1 chunk), salt 613015116, `exclusion_zone
+    {kubejs:base_anchor, 11}`. One set means one start per cell, so
+    nothing can stack.
+  - 35 members: 23 buildings and 5 landmarks at weights 3-15 (landmarks
+    and the train at 3), 7 props rare (rocks/oasis/geyser 2, skeletons and
+    pillar 1).
+  - Exclusion 11 keeps every pool start at least 12 chunks from every
+    anchor, which the full-size LC city needs. The first row is 12 chunks
+    (~192 blocks) out, and footprints reach back to ~160.
+  - Simulated on the final files (6 seeds, 726 anchors): ~38 structures in
+    the 150-300-block ring (was ~231), 215 pool starts/km², 7.0% of
+    buildings overlapping another pool building (9.2% counting vanilla
+    villages/outposts/portals; was 93.7%), 0 pool footprints in a town area.
+- **Disabled sets:** 44 structure_sets plus the 4 town sets, as
+  `"structures": []` with the placement kept (the `desert_pyramids.json`
+  pattern). Deleting an override does NOT disable a set: it falls back to
+  the jar's spacing (fire_tower 150/115, ancient_dungeon 10/3) with no base
+  exclusion.
+  - **Pooled:** redhouse/yellowhouse/red_mansion, Abandoned Urban
+    gas_station/motel/observatory/plane_crash/train, all 4 Abandoned
+    Structures, both watchtowers, Philip's ancient_towers/level_three_ruins/
+    desert_structures (with its badlands pieces)/field_stone_ruins_rocks/
+    start_nether_ruin, all 5 u_desert sets, and Lost City camp/tower/
+    survivorscamp/factory.
+  - **Cut (20 structures):** abandoned_urban:fire_tower; postapocalypse
+    abandoned_brick_house; Philip's ancient_crypt, ancient_dungeon,
+    ancient_ruins, antiquus_crypta, field_stone_ruins, level_one_ruins,
+    level_two_ruins (+ its pool), lost_soul_city and the underground set
+    (lost_soul_dungeon, bone_dungeon, underground_structures,
+    sculk_dungeon); Lost City post/roads/rails/train/lighthouse.
+  - Every cut structure's `worldgen/structure` JSON and `.nbt` override
+    stays, so `/place` still works. `#kubejs:ruins` lists them
+    `required: false`. Philip's `end_ruins`/`nether_structures` are
+    untouched (they generate in the End and the Nether).
+- **Skyscraper trim**: 4 overrides in `the_lost_city/structures/`
+  (`skyscraper_standalone`, `2`, `3`, `4`, the big_city_structure towers).
+  255-536 barrels each -> 56-71. Each office storey keeps 4 barrels, one per
+  floor quadrant. The other 1,080 became spruce planks with no block entity,
+  and everything else is byte-identical. The only other user of these
+  templates is `infinity_city` (Lost City dimension only).
+- **Re-roll fix** (`structure_chest_loot_fix.js`):
+  - Once a player emptied a plain container, vanilla left it as "no
+    LootTable, `Items: []`", so the next click tagged it again. That was
+    unlimited loot from one barrel, and every looted household chest.
+  - Now the first time a world-gen container passes the gates it gets a
+    `td_scavengeSeen` marker in the block entity's `ForgeData`, whatever it
+    held, and never rolls again. Forge 47.4.10's patched BlockEntity loads
+    and saves `ForgeData` (decompiled).
+  - Both halves of a double chest are marked, using vanilla's
+    getConnectedDirection offsets.
+  - A world-level position list was rejected: an NBT string over 65,535
+    bytes saves as "".
+- **Gas-station guard**:
+  - The pool places `gas_station_loot.nbt` (all 225 real starts in both
+    saves). The 2026-09-10 spawner went into the dead `gas_station.nbt`, so
+    the gas station never had a guard.
+  - New `abandoned_urban/structures/gas_station_loot.nbt` = the jar
+    template plus one `td_structure_guard` spawner at (19,1,7) behind the
+    counter, husk + zombie_villager.
+  - No drowned: their spawn rules need water below even from a spawner,
+    and a spawner only re-rolls after a successful spawn, so a drowned roll
+    stalls it for good.
+  - The dead `gas_station.nbt` is deleted.
+- **Mineshafts**: `minecraft/worldgen/structure_set/mineshafts.json` =
+  vanilla + `exclusion_zone {kubejs:base_anchor, 13}`.
+  - With ~18 blocks of ground, mineshaft pieces had reached 0 and 27 blocks
+    from the pedestal, inside the forceloaded box.
+  - At 13 the nearest piece is 118+ blocks out in theory (simulated
+    closest 125-132). At 9, ~45% of anchors still got one in the
+    forceloaded box.
+  - `STRUCTURE_CLEAR_CHUNKS` stays 9 (villages/outposts/portals/way signs),
+    and mineshafts stay in the self-check skip list.
+
+**Sandbox evidence**:
+- **Setup:** `D:\mc-servers\sandbox-structgen`, a fresh world on the Manna
+  seed, 4,782 chunks pregenerated in 72 s. A second agent re-derived the
+  results with its own NBT/Anvil parser and a placement port that matches
+  `java.util.Random`.
+- **Load:** 0 registry/codec/template errors, 0 KubeJS errors, no new
+  jigsaw warnings.
+- **Base:** placed on a town-free badlands anchor at (11272, -12280), since
+  the old Manna base anchor is now a town anchor. The log shows 7 anchors
+  skipped for holding a town, and the base built in ~1 s.
+- **Starts:**
+  - 904/904 real starts were predicted exactly by the new sets. The 905th
+    is the vanilla stronghold, which the sim doesn't model.
+  - No start from a disabled or cut set anywhere.
+  - All 842 pool starts sit on the 4/2 grid, 12+ chunks from every anchor.
+- **Within 420 blocks of the base:**
+  - 2% of starts damaged (2/101; Manna baseline 59%), 4.95% overlapping
+    (was 90%).
+  - Counting the 2 pool buildings Berezka deleted: 3.9% damaged or
+    deleted, and 8.7% overlapping before removal.
+- **Density:** 36 starts in the 150-300 ring (was 246), none under 150, and
+  the nearest start chunk centre is 192 blocks away. 214 starts/km² (was
+  ~1,150).
+- **Towns:** all 4 towns in the pregen area generated whole, none deleted,
+  nothing intruding. The LC city is full size (193x111x233).
+- **Visual checks:** a trimmed skyscraper had 71 barrels, and the
+  gas-station spawner holds husk/zombie_villager only.
+- **Re-roll probe (RCON):** 26/27 before a restart (the one FAIL was a probe
+  setup flaw), 11/11 after. The double-chest partner check works.
+
+**Known limits:**
+- **Towns are ~1 km out.** The nearest possible one is the next anchor,
+  1,024 blocks away, so they're expedition landmarks. Players have looted
+  147-241 blocks from base so far; whether they'll go that far is a
+  playtest question.
+- **Fresh worlds only.** Placement is fixed at chunk generation, so explored
+  chunks keep the old crowding. Never change `towns.json`'s frequency or
+  reducer in a world in progress: a later base re-site could land on an
+  anchor that already holds a town.
+- **Bases move on the same seed.** Both real bases (Manna, server) sit on
+  what are now town anchors, so a new world on either seed builds its base
+  elsewhere (Manna seed: 11272, -12280, ~16.7 km from origin).
+- **Berezka order dependence.** Its handler still deletes the later of two
+  Berezka structures sharing a chunk. Towns are safe by geometry, but
+  pool-vs-pool pairs still happen (~1.8/km² simulated; 4 deletions in the
+  sandbox, 2 within 420 blocks). A deleted building is simply missing.
+- **1.74 MB of NBT overrides:** the four skyscrapers (1,737,269 bytes), more
+  than double the rest of `pack/kubejs/data`.
+- **Strongholds disabled, 2026-09-28** (user: "stop strongholds"):
+  - Why: this world's ground is ~17 blocks deep, so vanilla strongholds
+    surface. In the first sandbox run, one cut through 1,114 of 3,940
+    blocks of a red_mansion 441 blocks from the base, and its masonry
+    topped 1,446 columns.
+  - The fix: `minecraft/worldgen/structure_set/strongholds.json`, with the
+    vanilla placement verbatim and `structures: []`.
+  - Nothing in the pack needs them: no quest, script or recipe uses eyes of
+    ender or the End. An eye of ender now finds nothing and doesn't fly.
+  - Sandbox re-run (same Manna seed and area): 904/904 starts predicted,
+    0 stronghold starts (was 1), 0 registry/KubeJS errors.
+- **Pre-existing, unchanged:**
+  - Mineshafts shave up to 14 blocks off pool buildings.
+  - If the town-lattice reflection ever fails, `findBaseSite` logs an error
+    and the base could land on a town anchor.
 
 ---
 
@@ -4233,6 +4752,30 @@ above.
    fields, `ESM_EntityTargetBlock` and every real attack/movement goal
    still present untouched, zero exceptions thrown.
 
+**Pedestal upgrades — *live*, 2026-09-27** (`pedestal_upgrades.js` +
+`pedestal_health.js`). This is the IDEAS.md "upgrade points for health/armor/thorns"
+idea, built with the user's picks: paid in **XP levels**, **3 tiers per stat**.
+- **Max HP:** 300 -> 400 / 500 / 600. The new 100 HP is also added to
+  current HP right away.
+- **Armor:** 15 / 30 / 45% off each second's total damage, never below 1.
+- **Thorns:** 1 / 2 / 3 damage a second back to every mob in melee range,
+  as vanilla `thorns` damage.
+- **Cost:** tiers cost 5 / 10 / 15 levels.
+- **Shared:** tiers are world state on the marker
+  (`td_pedestalUpg_hp/_armor/_thorns`), so anyone can pay. Buying needs
+  you within 32 blocks of the pedestal.
+- **How you buy:** `/pedestal` opens a clickable chat menu. At every wave
+  clear, anyone who can afford a tier gets a one-line clickable
+  "[Upgrades]" prompt. The quest "Shore It Up" (after "Wave One, Cleared")
+  teaches it.
+- **Why not sneak-right-click the pedestal:** Supplementaries' pedestal
+  gives its displayed item to any empty-hand click. Decompiled: Moonlight
+  `ItemDisplayTile.interact`, no shift check. So that would fight over the
+  amulet, the same race behind the 2026-09-08 phantom-item bug.
+- **Also fixed in the same pass:** the pedestal damage check ran once per
+  online player (PlayerEvents.tick), so multiplayer multiplied mob damage
+  by the player count. It's now stamped once per game tick on the marker.
+
 **Pedestal destruction = game over — requested 2026-09-04, built and
 deployed 2026-09-04 (commit ce75d1f).** Direct request, explicitly narrower than the parked Hardcore
 mode spec above: "start build on the 'if the pedestal is destroyed you
@@ -4307,7 +4850,8 @@ from wave 2 for variety, endless-phase elite pool drawing from the same
 set. Recorded as a validated design decision. Extended the same day
 with a real new roster addition — see below.
 
-**More zombie-family variety — planned, parked, not built.**
+**More zombie-family variety — shipped** via the roster pivot below
+(Mutants and Zombies is installed).
 Researched candidates for more zombie-esque mobs with distinct
 abilities, same "mutated enemies" framing, not a departure from it:
 - **Mutant Monsters** (the well-known, 46.8M-download option) —
@@ -4349,7 +4893,9 @@ abilities, same "mutated enemies" framing, not a departure from it:
   way TFTH mobs did. Purely a "the mod is real and verified" spec so
   far, not a wave-composition design.
 
-**Defense-breaching enemies — planned, parked, not built.** Direct
+**Defense-breaching enemies — live**: the Demolition Zombie is in
+`wave_spawner.js`'s roster (see "Demolition Zombie + Mutants and Zombies
+- already shipped" further down). Direct
 request: as waves escalate, mobs should be able to genuinely threaten
 base defenses (blocks), not just the player — trap/machine placement
 should be real strategy, not just decoration.
@@ -4420,14 +4966,15 @@ at your trap line), not something to patch around.
   weight/frequency, and whether it needs its own horde entry or joins
   an existing elite-pool horde.
 
-**Deliberately parked, not sent to build** — same reasoning as
+**Deliberately parked, not sent to build** (2026-09-01 status, since
+shipped) — same reasoning as
 everything else parked today: real, ready design, sequenced behind the
 current playtest-feedback batch rather than adding another parallel
 project.
 
 **Full zombie-apocalypse roster pivot — specced 2026-09-06, supersedes
 "More zombie-family variety" above and resolves its open questions,
-held, not sent to build.** Direct request: "I want to strip out the
+held at the time, since built.** Direct request: "I want to strip out the
 other mob types [and] speck out all the zombie type mobs we have
 available... maybe there are other cool zombie mobs in other mods...
 I want the waves to feel like you are being attacked by larger and
@@ -4664,7 +5211,11 @@ original ESM pass covered the whole roster in the first place.
 pieces (Wooden Palisade, Snare Trap, Spike Trap with a degrade-and-break
 mechanic) — replaced entirely 2026-08-29 after real playtest feedback
 ("rubbish... they sucked"), per an explicit preference for mods over
-custom code. Current build:
+custom code. **Superseded; current Tier 1 as of 2026-09-27**: Simply
+Traps' Spike Trap plus the pre-placed Stake Walls (see docs/PLAYTESTING.md's
+Tier 1 section). The Spike Trap now also gives wave mobs Slowness II while
+they're in it (`wave_mob_spike_slow.js`), filling the slowing role Barbed
+Wire left when Create was removed. The 2026-08-29 build was:
 - **Spikes** and **Bear Trap** from **Trapcraft** (Forge 1.20.1) —
   both use materials already in the Common-tier loot pool natively (5x
   iron_ingot; iron_ingot + stone_pressure_plate), no re-recipe needed.
@@ -6931,7 +7482,10 @@ user.
   exist, not new game content, so it fits within the current "polish,
   don't add tiers" priority rather than fighting it.
 
-### Systemic bugs, still open
+### Systemic bugs (both closed)
+
+**Status 2026-09-26 (backlog review)**: the iron-rolling item died with Create (uninstalled
+2026-09-11), and passive mobs are handled by `no_passive_mobs.js`.
 
 - **Iron rolling regressed — "not seeing iron being rolled often."**
   Needs a real live diagnosis against the current kinetic rig (Press →
@@ -6977,7 +7531,13 @@ user.
   playtest. No new spec needed here; just flagging it's still live and
   should stay prioritized until the peer's diagnosis lands.
 
-### Elegant game-restart flow
+### Elegant game-restart flow — partly superseded
+
+**Status 2026-09-26 (backlog review)**: the game-over side shipped as the GAME OVER framing
+plus hardcore kick-on-death. The quest-progress carryover this spec
+hinged on was built, then dropped 2026-09-10 (19-item batch, item 1/8).
+No separate "total fresh start" trigger was built; a new world is the
+fresh start.
 
 Direct ask, explicitly called out as needing real nuance: two distinct
 restart flows, not one —
@@ -7069,6 +7629,8 @@ check the real listing" discipline).
   Just Zoom, already trusted in this pack. Reskins the main menu and
   loading-screen tips — real opportunity to theme both to the
   post-apocalyptic aesthetic rather than leave them vanilla.
+  **Built 2026-09-25** — see "Menu makeover: FancyMenu + Drippy Loading
+  Screen" at the end of this file.
 - **[EMF] Entity Model Features + [ETF] Entity Texture Features** — real
   infrastructure pick, not decorative on its own. Both Fresh Animations
   and Tissou's Zombie Pack (below) need Optifine's Custom Entity Models
@@ -7292,6 +7854,10 @@ build session without an explicit go-ahead; today's whole 10-item
 feedback batch + Trapcraft removal is also still unplaytested, and nothing
 here should jump ahead of that confirmation pass.
 
+**Status 2026-09-26 (backlog review)**: most of this batch has since been built, retired
+or binned. Each sub-heading below now carries its current status in its
+title.
+
 **Real verification pass (2026-09-08)**, all 7 mod names in the
 research checked against real platform data, not the research's own
 claims:
@@ -7329,7 +7895,7 @@ teardown of [[project_chokepoint_walls]]. What changes is that walls
 stop being treated as a full stop against every threat; Enhanced Hordes
 (below) means some mobs go over rather than being funneled through.
 
-### Enhanced Hordes install — planned, not built
+### Enhanced Hordes install — live (built 2026-09-08, see "Phase 0/1 build" below)
 
 Adds real zombie-stacking climb physics per its own mod description.
 **Scoped unconditionally, not late-wave-gated** — direct instruction
@@ -7349,7 +7915,7 @@ before dispatch, not guessable:
   shipping, given this pack's [[feedback_performance_scrutiny]] stance —
   a clean boot isn't proof this performs.
 
-### Advanced Tower Defense, added alongside Medieval Defense Turrets — planned, not built
+### Advanced Tower Defense, added alongside Medieval Defense Turrets — retired (both mods uninstalled)
 
 Planned to add Advanced Tower Defense's Musket Sentry/Anvil Launcher as
 a heavier Tier 2 option alongside (not replacing) Medieval Defense
@@ -7361,7 +7927,7 @@ both ultimately replaced by SecurityCraft's trap roster (see
 docs/MODS.md's Removed mods). Full spec:
 `docs/archive/features-dead-systems-history.md`.
 
-### Tier 2 trap replacements: Vacuum Block → Item Collectors, Arrow Turret → Musket Sentry — spec ready, NOT BUILT, holding for explicit dispatch
+### Tier 2 trap replacements: Vacuum Block → Item Collectors, Arrow Turret → Musket Sentry — Item Collectors live, Musket Sentry retired with ATD
 
 Spec responding to direct feedback on "the arrow turret and vacuum
 chest thing": replace Vacuum Blocks (confirmed dead code by decompile —
@@ -7374,7 +7940,7 @@ itself was uninstalled entirely 2026-09-11 and Tier 2 became
 SecurityCraft's trap roster instead. Full decompiled verification and
 quest-chain notes: `docs/archive/features-dead-systems-history.md`.
 
-### Shrapnel/scrap folded into loot bag tables — planned, not built
+### Shrapnel/scrap folded into loot bag tables — live (`kubejs:shrapnel`: loot bags, boss drop, SecurityCraft trap recipes)
 
 Direct instruction: no second currency — fold the idea into the
 existing loot bag economy instead of the research's standalone LootJS
@@ -7389,7 +7955,7 @@ recipes, matching the research's original intent) or pure flavor loot?
 If it's meant to feed ammo recipes, that needs deciding alongside the
 Advanced Tower Defense ammo-recipe design above, not independently.
 
-### Boss-wave spectacle system — planned, partial (real Forge gap)
+### Boss-wave spectacle system — live (`boss_wave.js`, every 10th wave; screenshake still has no Forge path)
 
 Ties directly into an existing open fork already sitting in IDEAS.md
 under "Wave-clear reward: a building/machine places itself in the
@@ -7421,7 +7987,7 @@ reskinned/stat-buffed vanilla mob (the research's zero-new-content
 approach) or one of this pack's already-installed named mobs — needs an
 explicit decision, not guessable.
 
-### SecurityCraft modules as turret-recipe components — idea, not scoped in detail
+### SecurityCraft modules as turret-recipe components — binned 2026-09-26
 
 Genuinely new angle, not part of the already-parked Tier 3 power plan.
 Since SecurityCraft is already installed and load-bearing for walls, its
@@ -7432,7 +7998,7 @@ this pack — giving SecurityCraft a second identity beyond walls instead
 of pure flavor. Not scoped in detail — real recipe design needs the
 turret IDs confirmed first (see Advanced Tower Defense entry above).
 
-### Tier 1 trap decay/degradation — idea, flagged not committed
+### Tier 1 trap decay/degradation — superseded by per-trap durability (`trap_durability.js`, 2026-09-10)
 
 The research's per-kill % break-chance mechanic, applied to the
 just-installed Simply Traps Spike Trap / V01D Bear Trap (replaced
@@ -7443,13 +8009,29 @@ this pack. **Real open question, not decided**: does this fit the
 system that was just simplified today? Flagging for a future decision,
 not building without confirmation.
 
-### Perimeter siren — not a build item
+### Perimeter siren — not a build item (binned 2026-09-26)
 
 SecurityCraft (already installed) already ships Laser Blocks + Alarm
 blocks natively — placeable in-world today with zero scripting. Noting
 this so it doesn't get mistaken for missing functionality later.
 
-### Bullet tracer particles for turrets — deferred
+### Bullet tracer particles for turrets — live 2026-09-27 (`tier4_turret_fx.js`)
+
+**Built 2026-09-27** for the Grenade and Rocket Turrets:
+- **Launch:** a flash, a smoke puff and a sound at the turret for both.
+- **In flight:** a smoke trail on grenades; a flame exhaust on rockets, over their own smoke.
+- **Impact:** a flash and embers for both. Grenades also get an explosion and smoke burst,
+  since the mod only draws the tiniest vanilla puff for them.
+Entity ids come from `omtreborn.init.ModEntities`. What the mod already draws was
+decompiled, with SRG names resolved against the server's 1.20.1 mappings.
+The impact is detected by polling `isRemoved()`, so no mod hook is needed.
+
+**Status 2026-09-26 (backlog review)**: kept. The turrets this was written for (ATD) are gone.
+The live targets are Open Modular Turrets Reborn's Grenade and Rocket
+Turrets (Tier 4), which have no combat FX yet. The SecurityCraft Sentry
+already has muzzle + impact (`sentry_combat_feedback.js`) and the Tesla
+Coil has hit cinematics (`tesla_coil_cinematics.js`). Still needs OMT's
+real projectile entity types decompiled before it's buildable.
 
 Cheap addition once real turret IDs exist (see Advanced Tower Defense
 entry above) — needs the actual projectile entity type decompiled from
@@ -7462,14 +8044,14 @@ The research proposed a whole new FTB Quests chapter (`defensive_mechanics.snbt`
 
 **What this means for new items from this batch**: Advanced Tower Defense's Musket Sentry/Anvil Launcher, and anything else that ships from this research, get **new quests added into the existing `campaign.snbt` tree** (extending the current turret section, one quest per item per this pack's own "[[feedback_check_ideas_before_implementing]]" quest convention), not a new chapter file. Live-save quest-progress ID safety applies here the same as every other `campaign.snbt` edit in this pack's history - pull real current IDs from the live save before touching the file, per [[feedback_ftbquests_live_save_ids]].
 
-### Bounty shop (FTB Quests spend economy) — exploratory only, not scoped
+### Bounty shop (FTB Quests spend economy) — binned 2026-09-26
 
 No committed design. FTB Quests has no native "deposit currency, buy
 item" mechanic — would need custom scripting to detect item deposits
 and grant rewards, a genuinely new technique for this pack. Not part of
 this batch; revisit only if there's real appetite for it later.
 
-### Flamethrower Mechanics (Create Nozzles) — idea, not scoped
+### Flamethrower Mechanics (Create Nozzles) — dead (Create uninstalled)
 
 Never-built idea to route lava/fuel through Create's Nozzle blocks for
 a chokepoint fire torrent, floated as a possible second Tier 3 option
@@ -7478,7 +8060,7 @@ uninstalled entirely 2026-09-11 (see docs/MODS.md's Removed mods), and
 Tier 3's power chain runs on Immersive Engineering instead. Full idea
 text: `docs/archive/features-dead-systems-history.md`.
 
-### WWZ counter-mechanics — real open question tied to the frenetic pivot
+### WWZ counter-mechanics — resolved: Stake Walls built, lip + moat binned 2026-09-26
 
 Missed on the first pass. The research's own answer to "how do players
 fight back once mobs can climb walls" (once Enhanced Hordes ships) -
@@ -7504,7 +8086,7 @@ Three ideas, none scoped or decided:
 flagging so the frenetic pivot doesn't quietly become "walls do
 nothing" by default by omission.
 
-### Tiered tooltip color-coding — idea, cheap, not scoped
+### Tiered tooltip color-coding — live (`tooltip_tier_colors.js`)
 
 Missed on the first pass. Client-side `ItemEvents.tooltip` additions
 marking Tier 1/2/3 defense items green/yellow/red with a one-line
@@ -7514,7 +8096,7 @@ reasonably ship alongside whichever turret item IDs get confirmed
 first (see Advanced Tower Defense entry above), not independently
 useful before that.
 
-### Turret combat-feedback effects (muzzle flash, ballistic impact, Tesla hit cinematics) — idea, not scoped
+### Turret combat-feedback effects (muzzle flash, ballistic impact, Tesla hit cinematics) — Sentry + Tesla live; Tier 4 turrets kept (see tracer entry above)
 
 Missed on the first pass - folded too generically into the "bullet
 tracer particles" entry above, which only covers the mid-flight trail.
@@ -7548,6 +8130,11 @@ needs restating at boss-wave build time.
 
 ### Minor items, low priority, noted so nothing's silently dropped
 
+**Status 2026-09-26 (backlog review)**: the ammo recipes died with ATD, and the Slime Trap
+was built, then removed 2026-09-10. Both prerequisites of the particle-cap
+note (Tesla Coil, Enhanced Hordes) have shipped. Revisit it only if
+Tesla-heavy fights actually stutter.
+
 - **Ammo-economy recipes** - the research's specific example (iron_bolt
   from flint/barbed_wire/iron; bonus arrows from iron_spikes/feather/
   stick) was only referenced as "an open fork," never spelled out. Real
@@ -7566,7 +8153,8 @@ needs restating at boss-wave build time.
 
 ### Explicitly not carried forward — already better-covered elsewhere
 
-- **Tier 3 Tesla/power chain** — stays exactly as already parked (see
+- **Tier 3 Tesla/power chain** (since built on Immersive Engineering +
+  Flux Networks) — stays exactly as already parked (see
   "Storage & power system" above): Create's own Tesla Coil + Immersive
   Engineering + Flux Networks. The research's alternative (Immersive
   Intelligence) is a dead end per the verification pass above — nothing
@@ -7727,7 +8315,7 @@ their gear" flag — while the world-build gate became a separate check
 now-redundant `td_pedestalX`/`Y`/`Z` mirror is harmless leftover NBT by
 design (see above), not cleaned up and not worth cleaning up.
 
-### Player-count-scaled difficulty — direction chosen, not built
+### Player-count-scaled difficulty — binned 2026-09-26
 
 **Real decisions made 2026-09-08**: scale by adding more mobs per wave
 (not just tougher individual mobs), plus real party-wide perks so more
@@ -8684,6 +9272,17 @@ the mods' own jar defaults; the old `ocean_monuments.json` override is
 gone (no oceans exist, and repointing everything to `city` was reverted
 with it). Philip's `pumpkin_ruins`/`rare_ruin` are forest/jungle-gated
 and left alone; `infinity_city` is Lost-City-dimension only.
+*Superseded in part 2026-09-27:*
+- The anchor mechanism stands. The per-set numbers above don't: vanilla
+  sets and way signs exclude at 9, `kubejs:ruins_pool` at 11, and
+  mineshafts (new) at 13.
+  The 13-chunk city sets are disabled, and towns now sit ON other anchors
+  (`kubejs:towns`).
+- "Berezka ... so the mods' own safeguard still applies" was wrong.
+  Berezka's handler covers only Berezka structures and deletes whichever
+  generates second, so it deleted most towns. The jigsaw mods had no guard
+  at all (93% of starts overlapped).
+- See "2026-09-27 structure-gen rework" at the end of Base & structures.
 
 **The base is then simply placed ON an anchor chunk.** `findBaseSite()`
 in `playtest_starter_kit.js` walks the anchor grid nearest-origin-first
@@ -8735,6 +9334,10 @@ an unloaded chunk). Second boot, clean:
   reporting a placement chunk inside the box.
 - "Preparing spawn area" 13.4s (was 23.5–25.0s live), and ONLY the four
   region files around the base exist — no origin generation at all.
+  *Not true of the real saves (2026-09-27 review):* Manna (created
+  2026-09-25) has a 575-chunk patch at origin, mostly at structure_starts
+  status, generated at ticks 10-18. The server save has a 529-chunk patch
+  from ~50k ticks. The cause is not determined.
 - Base built in 597ms at server start, before any player: pedestal,
   waystone, crafting station, rolling mill, press, courtyard floor and
   the open gate all confirmed by `execute if block`; exactly one
@@ -8955,3 +9558,138 @@ understood, each verified against the installed artifact:
   proposed fix (held) is Inventory Profiles Next, which has real Forge
   1.20.1 builds and draws explicit sort buttons.
 - **Round-2 verification**: second sandbox boot after the quest/trap edits - FTB Quests "Loaded 1 chapter groups, 3 chapters, 71 quests" (was 73), 33/33 scripts (32 + a sandbox probe), bounty max progress applied on tick 1 again, no errors; deployed live afterwards.
+
+---
+
+## Menu makeover: FancyMenu + Drippy Loading Screen (built 2026-09-25)
+
+The 2026-09-04 polish-pass pick ("FancyMenu + Drippy Loading Screen,
+theme the main menu and loading tips to the post-apocalyptic look"),
+paused then and built now. User picks (AskUserQuestion): **painted dusk
+scene** for the title background, **all four screen groups** (title,
+loading screens + tips, pause menu, world/server lists), wordmark
+**TOWER DEFENSE** with a small "modpack - vX" line.
+
+**Mods** (all `side = "client"`, CurseForge-sourced so the export zip
+stays ~22 MB; Modrinth sourcing would bundle FancyMenu's 26 MB jar):
+FancyMenu 3.9.12, Drippy Loading Screen 3.1.5 (needs FancyMenu
+`[3.9.9,)` - move them together), Melody 1.0.3. Konkrete 1.8.0 was
+already in (Just Zoom). `tools/sync_server.sh` excludes the three jars:
+FancyMenu *can* run on a dedicated server, but its server mixins send a
+packet per entity spawn/death and do a structure lookup per player tick
+for nothing a menu needs. Singleplayer/LAN hosts still run them in the
+integrated server (cost unmeasured; DeceasedCraft, a zombie pack, ships
+the same).
+
+**What each screen gets** (all generated - edit the generators, not the
+files):
+- Title: dusk scene (ruined skyline, the Watchpost lit on its rise, the
+  Horde cresting the ridge against its own dust, airdrop beacon on the
+  horizon) + looping ember APNG, a dark column on the left, the
+  wordmark, a rotating bouncing splash from `splashes.txt`, and the
+  vanilla buttons restacked into the column on riveted charcoal plates
+  (ember-lit on hover). Realms button/icons, the vanilla logo/splash and
+  Forge's 5-line bottom-left branding are hidden (at the ~250 GUI px
+  auto height the branding landed on the Options/Quit rows; the Mods
+  button carries the same info). The Mojang copyright stays (it cannot
+  be hidden).
+- Startup loading overlay (Drippy): night version of the scene, wordmark,
+  ember loading bar, rotating "FIELD NOTE" tip.
+- World loading ("Preparing spawn area"): dimmed night scene, wordmark,
+  the same bar driven by world load progress, tip; chunk map + % hidden.
+- Saving / connecting / downloading terrain / progress screens: dimmed
+  night scene, small wordmark above the vanilla status text, tip.
+- Pause menu: dusk-tinted shade replacing vanilla's dim, small wordmark
+  top-left (top-centre collided with the Pedestal/wave boss bars),
+  "Game Menu" title hidden, every button plated via a FancyMenu button
+  *template* (catches the Mods button another mod adds to the pause
+  grid, which has no stable widget id), tip strip on a solid plate with
+  no "FIELD NOTE" label (the extra Mods row pushes Save and Quit onto
+  it, and the HUD showed through a translucent plate).
+- World/server lists, create world, options and every other out-of-world
+  menu: `global_menu_background_texture` = dimmed dusk scene instead of
+  dirt (cover-scaled). FancyMenu always draws a ~44% black band over
+  list rows (hard-coded), which keeps them readable. Buttons there stay
+  vanilla (see "global buttons" below).
+- Window title "Tower Defense Modpack" + a watchtower window icon.
+
+**Files**: `tools/menu_art/` - `scene.py` (dusk/night scene layers),
+`logo.py` (wordmark, full + small), `embers.py` (seamless APNG loop),
+`ui.py` (button plates, column, shade, bar, tip plate, window icon),
+`generate.py` (writes `pack/config/fancymenu/assets/td/*`),
+`layouts.py` (writes the 8 layouts, `customizablemenus.txt`, both
+`options.txt`). Tips: `pack/config/fancymenu/assets/td/tips.txt` (59
+lines, each verified against a script line or quest id when written -
+edit freely, one tip per line, <= ~90 chars). Splashes: `splashes.txt`
+(<= 30 chars; the splash renders at 1.8x with bounce).
+
+**Hard-won format facts (FancyMenu 3.9.12, read from decompiled source,
+cross-checked against editor-written 3.9.9 layouts)** - the reason the
+generator encodes rules instead of trusting hand edits:
+- A screen only takes a layout if its **class name** is listed in
+  `customizablemenus.txt` (universal ids are rejected there). Nothing is
+  customizable by default; Drippy's overlay adds itself.
+- UTF-8 **without BOM** everywhere (a BOM hides the `type =` / `##[`
+  line: the layout or the whole first options category silently
+  vanishes). Values keep trailing whitespace, so a trailing space after
+  `identifier =` makes the layout never match.
+- `vanilla_button` x/y/width/height are ignored unless `anchor_point` is
+  a real anchor. Widget ids: title `mc_titlescreen_*_button`,
+  `forge_titlescreen_mods_button`, `minecraft_logo_widget`,
+  `minecraft_splash_widget`; pause `pause_*_button` (the older
+  `mc_pausescreen_*` ids never match in 3.9.12); the pause "Game Menu"
+  title is long id `40`; level loading `chunks` / `percentage`; Drippy
+  `mojang_logo` / `progress_bar`.
+- `instance_identifier` must be unique across **all** layouts (element
+  memory is global).
+- text_v2 has no alignment key: a line that is exactly `^^^` opens and
+  closes a centred markdown block. Tip lines are parsed as markdown, so
+  avoid `* _ ~` and lines starting `# `, `- `, `> `.
+- `randomtext` re-rolls every `interval` seconds, shared across screens;
+  interval 0 freezes one tip for the whole session.
+- Image backgrounds only cover-scale with the legacy
+  `customization { action = backgroundoptions keepaspectratio = true }`
+  block; without it they stretch.
+- Textures are GL_NEAREST (plain DynamicTexture), so the 640x360 pixel
+  art stays crisp; exact 3x/4x/6x at 1080p/1440p/4K. Default GUI scale
+  at 1080p is 4 (480x270 GUI units) - the title block is laid out for
+  240-270 GUI px tall.
+- APNG must use the `.apng` extension; without WaterMedia it decodes
+  every frame to its own texture (the ember loop is 40 frames of 320x224,
+  ~11 MB).
+- `modpack_mode = true` hides FancyMenu's menu bar, debug overlay, the
+  Ctrl+Alt hotkeys and the welcome window from players. To edit layouts
+  in-game, set it false in a scratch client only. FancyMenu rewrites
+  `options.txt` on every launch (normalised order), so the instance copy
+  never byte-matches the repo.
+- Drippy's `early_loading_*` options do nothing on Forge 1.20.1 (NeoForge
+  only); Forge's own early window has no texture hooks.
+
+**Deliberately not done**: FancyMenu's `global_button_background_*`
+options would plate every vanilla button in every screen, including
+in-game mod GUIs (SecurityCraft, Waystones, Xaero) and would recolour
+disabled-button labels. Kept to the customized menus instead; flip it
+on in `layouts.py`'s options block if a pack-wide reskin is wanted.
+
+**Verification**: every layout, `customizablemenus.txt` and both options
+files parsed with FancyMenu's real `PropertiesParser` and Konkrete's
+`Config` reader (all 8 identifiers, 44 unique elements, every widget id
+and option key read with the right type). **Live render check,
+2026-09-25**: throwaway client sandbox on `D:\mc-client-sandbox`
+(Forge 47.4.10, the pack's 81 mods + the 3 menu mods, 1920x1080 and a
+maximised 4K window; `launch.ps1` / `shot.ps1` there reuse the
+CurseForge install read-only). FancyMenu/Drippy/Melody load client-side
+with no errors of their own (FancyMenu logs harmless "Failed to
+enumerate client resources in namespace ..." lines while indexing other
+mods' assets for its editor). Screenshotted and confirmed: Drippy
+startup overlay (bar filling, tips rotating), title screen, world
+loading, "Loading terrain...", pause menu, "Saving world", the
+create-world screen on the global background, custom window title and
+icon. Three problems found and fixed from those shots (branding on the
+buttons, pause Mods button unplated, pause wordmark/label collisions),
+then re-verified in a second and third boot. Screen-by-screen visual
+sign-off in real play is still the user's.
+
+**Fresh-install note**: a brand-new game directory still shows vanilla's
+one-time accessibility onboarding screen before the title screen (the
+sandbox did). That is vanilla behaviour, not the reskin.

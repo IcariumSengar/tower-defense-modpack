@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "abandoned_urban:motel",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spacing": 14,

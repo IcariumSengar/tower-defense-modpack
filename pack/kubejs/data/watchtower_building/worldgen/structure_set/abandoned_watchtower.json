@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "watchtower_building:abandoned_watchtower",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spacing": 28,

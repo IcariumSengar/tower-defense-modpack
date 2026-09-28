@@ -86,7 +86,8 @@ function triggerPedestalDestroyed(player) {
   // sound like one, not just appear in text.
   server.runCommandSilent('title @a title {"text":"GAME OVER","color":"red","bold":true}')
   server.runCommandSilent('title @a subtitle {"text":"The pedestal has fallen. Everything it was holding back is loose.","color":"red"}')
-  server.runCommandSilent('playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 0.6')
+  // At each player (2026-09-27 audit): a bare `playsound ... @a ~ ~ ~` from the server plays at world spawn and is inaudible past ~16 blocks.
+  server.runCommandSilent('execute as @a at @s run playsound minecraft:entity.wither.death master @s ~ ~ ~ 1 0.6 1')
   player.tell('§c§lGame over - the pedestal has fallen.')
   player.tell('§7Whatever it was keeping in check has nothing left to answer to.')
 

@@ -23,11 +23,12 @@ checked at each point) is archived at
 - **No Wave Horn item any more** (removed 2026-09-13) — the horn is now
   a real note block placed upstairs in the starter house's power-rig
   room; right-click it to summon the next wave.
-- **Fixed spawn point**, chosen at world-load time on a desert/badlands
-  "anchor grid" point that every structure set excludes for ~9 chunks
-  around it, with a small walled compound (SecurityCraft reinforced
-  perimeter + Stake Walls, one gate) wrapped around a pre-placed
-  building (Abandoned Brick House).
+- **Fixed spawn point**, chosen at world-load time on a town-free
+  desert/badlands "anchor grid" point that every structure set keeps
+  clear (nothing within ~150 blocks), with a small walled compound
+  (SecurityCraft reinforced perimeter + Stake Walls, one gate) wrapped
+  around a pre-placed building (the Lost City cafe, `the_lost_city:cafe4`,
+  since 2026-09-22).
 - **Starter trap showcase**, pre-built into the compound wall so a new
   player sees working examples before crafting anything: a Tesla Coil
   (wall-mounted, upright, lever-toggled — only auto-powers when a real
@@ -124,7 +125,9 @@ doesn't desync the campaign or re-trigger the base build. Built
 
 - **Spike Trap** (`simply_traps:spike_trap`) — 5 iron ingots (a diamond
   shape), damage doubled over the mod's stock value via config. The
-  cheap, no-power option.
+  cheap, no-power option. Since 2026-09-27 it also gives wave mobs
+  Slowness II while they're in it, lingering 1.5-2s after they step off
+  (`wave_mob_spike_slow.js`; wave mobs only, not structure mobs or you).
 - **Stake Walls** are already mounted on the compound's own perimeter
   walls (wall-mounted, non-solid, continuous contact damage on anything
   climbing past) — nothing to craft to see them, though the recipe
@@ -218,29 +221,79 @@ Clicking an item icon in a quest should jump to JEI showing its recipe
 
 - World should show real biome variety (desert, badlands, and a
   deliberately barren re-skinned plains/sunflower_plains/meadow), not
-  one biome everywhere. Every structure set generates in every biome,
-  but never within ~9 chunks of the base's own anchor point.
-- Structures (Treasure2, Lost City / Abandoned Urban, Philip's Ruins,
-  Watchtowers, etc.) carry their own real mob spawners in several
-  templates — those mobs guard the structure and don't get pulled
-  toward the pedestal; only mobs tagged `td_wave_mob` (actual wave/horde
-  spawns) are ever steered there.
-- **Loot boxes**: a Lootr chest in a Lost City building should read like
-  a raided supermarket (food, resource stacks, sometimes ammo/guns/eggs/
-  milk/cake); Watchtower barrels give ammo + torches/planks, not coal
-  and sticks.
+  one biome everywhere. Every ruin, house and town can generate in every
+  biome.
+- **Spacing (2026-09-27 rework, fresh worlds only)**:
+  - About one structure per 64 blocks, on a loose, jittered grid. There
+    should be no piles of 3-5 buildings on one spot any more.
+  - Nothing within ~150 blocks of the base. The first structures start
+    around 160 blocks out.
+  - Houses, ruins, watchtowers, gas stations, motels, outposts, desert
+    ruins and the Lost City camps/towers/factory all share that one grid.
+  - Props (rocks, bones, oasis, geyser) are rare.
+- **Towns are ~1 km out**: the Lost City city, the big city (a skyscraper),
+  villages_city and the Abandoned Urban city now sit only on the other
+  points of the base's anchor grid, 1,024 blocks apart. About half of those
+  points hold one, so the nearest is at least 1,024 blocks from the base.
+  Each should be whole, with no ruin jammed into it and no half-deleted
+  city. Worth reporting: whether a town trip feels worth the walk.
+- **No clipping**: no building should have another building punched
+  through it or sitting on its roof. Known rare exceptions:
+  - Mineshaft tunnels can nick a few blocks.
+  - Berezka can delete one of two neighbouring Lost City / Abandoned
+    Structures buildings outright. The deleted one just isn't there.
+- **Skyscrapers have ~60 barrels** (was 255-536), about 4 per office floor.
+  The removed barrels are spruce planks now.
+- **Gone on purpose**: Lost City roads/rails/train/post boxes/lighthouse,
+  the Abandoned Urban fire tower, the Abandoned Brick House as a world
+  structure, and Philip's crypts, flat rubble and underground ruins. Report
+  one if it turns up in a fresh world.
+- Several structures carry their own mob spawners (including one behind
+  the gas-station counter: husks and zombie villagers). Those mobs guard
+  the structure and don't get pulled toward the pedestal. Only mobs tagged
+  `td_wave_mob` (actual wave/horde spawns) are ever steered there.
+- **Plain vs gold-trimmed (2026-09-27 tiering)**: most barrels and chests
+  out there are plain vanilla containers with basic scavenging (food,
+  planks/logs, a few iron/redstone/gunpowder, sometimes ammo) - never
+  diamonds, guns, netherite or the smithing template. That includes Lost
+  City store shelves and every post-apoc house. The **gold-trimmed** Lootr
+  chests/barrels (dungeons, strongholds, shipwreck/buried treasure,
+  mansions, watchtower armouries, outposts, Lost City cars/towers) are the
+  stashes: each should feel clearly better than a barrel, and turns grey
+  once you've looted your copy. Worth reporting: whether gold-trimmed
+  finds feel rare-but-worth-it or too rare, and whether an outing still
+  feels like a haul. Needs a **fresh world** - an older world keeps the
+  Lootr containers it already converted.
 - **Empty barrels** inside structures fill with a one-time "someone left
-  this here" haul on first open; a barrel **you** place and leave empty
-  out in the world must stay empty, including after breaking and
-  re-placing it.
-- **Distance premium**: chests further from the pedestal should show
-  better finds on top (diamonds, ender pearls, blaze powder, magma
-  blocks further out; resource blocks/gunpowder/clay at medium range).
-- A Treasure2 "cardboard box" that won't open and doesn't look like a
-  chest is a real mimic monster, not a bug.
-- Watch the loot volume — a Lost City block is hundreds of containers;
-  if a full haul feels like too much, that's a real, reportable
-  balance question.
+  this here" haul on first open. **Once emptied they stay empty**:
+  clicking one again must not re-roll it (a loop fixed 2026-09-27). The
+  same goes for any looted structure chest. A barrel **you** place and
+  leave empty out in the world must stay empty, including after breaking
+  and re-placing it.
+- **Distance bonus (Lootr only)**: a gold-trimmed container further from
+  the pedestal should show better finds on top (iron/gold/redstone near
+  the base; resource blocks/gunpowder/clay at medium range; diamonds,
+  ender pearls, blaze powder, netherite scrap further out), and about half
+  of them carry an extra treasure-or-gun find. Plain barrels don't get
+  better with distance.
+- **Multiplayer**: each player gets their own roll from a gold-trimmed
+  container; a plain barrel is first-come, first-served.
+- **Stash guards (2026-09-28)**: every gold-trimmed stash in the ruins and
+  towns has a guard spawner nearby that fires day or night once you're
+  within ~14-16 blocks. The first wave from a fresh spawner comes ~1 s
+  after you arrive. Near the base expect husks and helmeted zombie
+  villagers (who shouldn't burn in the sun), mid-range mutant/blister/
+  split-head zombies, far out armoured elite/horde zombies, rotten mutants
+  and crawlers. Guards stay and fight at their structure; they don't walk
+  to the pedestal. Break the spawner with a pickaxe to shut it off. Guards
+  drop no loot bags and don't count for bounties. Worth reporting: too
+  hard or too easy per distance, any spawner that never fires, anything
+  on fire in daylight, and lag in the big multi-spawner buildings (the
+  observatory and the Lost City factory have 11 each). Needs a **fresh
+  world** - structures already generated keep their old contents.
+- Watch the loot volume — a town is still ~150-250 barrels (a lone
+  skyscraper ~60); if a full haul feels like too much, that's a real,
+  reportable balance question.
 
 ## Hardcore mode / game over
 
@@ -261,6 +314,77 @@ Clicking an item icon in a quest should jump to JEI showing its recipe
 Everything below is built and deployed, but only verified via
 decompiling the relevant mod, `node --check`, and/or a sandbox boot/RCON
 probe — not an actual playtest.
+
+- **Structure-gen rework, 2026-09-27** (sandbox-pregenerated and checked
+  block by block; needs a **fresh world**, and on an old seed the base
+  lands somewhere new):
+  1. **Spacing** - walk out ~300 blocks. Structures should read as spread
+     out, roughly one per 64 blocks, with none stacked or clipped into
+     each other. Is it still too many, or too few?
+  2. **A town** - fly or walk ~1 km to a neighbouring grid point (1,024
+     blocks along x or z from the base centre). Is a whole city there, and
+     does it feel worth the trip?
+  3. **A skyscraper** - about 4 barrels per floor, ~60 in all. Does it
+     still feel worth climbing?
+  4. **An emptied barrel** - loot one fully, close it, open it again. It
+     must stay empty.
+  5. **Gas station** - husks/zombie villagers should come from behind the
+     counter.
+  6. **Base area** - no mineshaft openings in or near the compound.
+
+- **Guns + backpacks, 2026-09-27**:
+  1. **Guns hit 50% harder** - any Simple Guns weapon. Direct hits are
+     bumped; bazooka/grenade blasts are not.
+  2. **Backpack** - craft one (4 leather, 4 string, chest), press B to
+     open, wear it on your back, then upgrade with a copper ring.
+  3. **Xaero new waypoint** is on K now.
+  4. **No backpack-wearing zombies** should turn up in waves.
+
+- **Pedestal upgrades + Tier 4 turret FX, 2026-09-27** (verified with
+  a real player in the client sandbox, but not in a real game yet):
+  1. **Upgrade menu** - type `/pedestal` in the base. Check the menu
+     reads clearly, the green [Upgrade] buttons work when clicked, and
+     your levels drop by 5/10/15.
+  2. **Wave-clear prompt** - clear a wave with 5+ levels. One
+     "[Pedestal] You have N levels to spend. [Upgrades]" line should
+     appear.
+  3. **Armor/Thorns in a real wave** - does 45% armor make the pedestal
+     feel much safer? Do attackers visibly take thorns hits (sparkles)?
+  4. **Grenade/Rocket Turret** - a flash and "thunk" at the turret when
+     it fires, smoke behind grenades, flame behind rockets, and a bigger
+     burst where grenades land.
+  5. **Multiplayer** - with 2-3 players, the pedestal should now lose HP
+     at the same rate as solo, not 2-3x faster.
+  6. **Tooltips** - hover a Sentry, Tesla Coil or Grenade Turret. The line
+     should read Tier 2/3/4 in yellow/red. Before this fix every item said
+     green "Tier 1".
+  7. **Sounds from anywhere** - the wave bell, boss music and game-over
+     sound should be heard even when you're far from the base.
+  8. **Multiplayer mob assists** - with 2+ players, mobs at a ladder
+     shouldn't all get shoved upward constantly, and stuck mobs shouldn't
+     be nudged every second.
+
+- **Spike slow + four scripts that had never run, 2026-09-27**
+  (sandbox-tested over RCON; not yet seen in real play):
+  1. **Spikes slow wave mobs** - watch for the grey effect swirl on
+     mobs crossing a spike strip, and whether Slowness II is noticeable
+     enough.
+  2. **Sentry muzzle flash + hit sparks** - these have never actually
+     shown before now. Every shot should crack, flash and throw crit
+     particles, and every hit should spark.
+  3. **Tesla Coil hit cinematics** - also never shown before now. Zapped
+     mobs should get the jagged spark bolt plus a thunder crack.
+  4. **Bouncing Betty/Claymore player safety** - never ran before now.
+     Stand near your own mine when it goes off; you shouldn't take
+     damage. The Betty half was confirmed matching in the sandbox; a
+     no-player sandbox couldn't set off a Claymore.
+  5. **Grenade Turret player safety** - never ran before now. Stand
+     near a grenade impact; you shouldn't take damage. The sandbox
+     couldn't fire a real turret grenade, only prove the hook now runs.
+
+  Cause of 2-5: a Rhino quirk. `level.isClientSide` without `()` is
+  always truthy, so each script's "skip on client" guard skipped on the
+  server too. Details are in `wave_mob_spike_slow.js`'s header.
 
 - **Six-item playtest batch, 2026-09-22** (built, `node --check`ed,
   sandbox-booted; nothing seen in a real session yet):

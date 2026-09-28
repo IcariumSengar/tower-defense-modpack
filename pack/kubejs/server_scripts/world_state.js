@@ -39,15 +39,27 @@
 // narrows to just "has THIS player personally received their starter
 // kit" - a genuinely per-player concern, unlike the base build).
 //
-// Not cached - a plain level.getEntities() scan per call, same uncached-
-// scan cost every other throttled tick handler in this pack already pays
-// for its own entity checks (wave_status.js's hostile counter,
-// pedestal_health.js's mob-damage scan). If this turns out to be a real
-// measured cost, worth revisiting then - not guessed at here.
+// Cached since 2026-09-26 (performance pass). The old uncached version did
+// a full level.getEntities() copy + JS callback per entity on EVERY call,
+// and worldData() has ~35 call sites - six of them every tick before their
+// own throttle - which added up to ~160 full-level scans/second between
+// waves and far more during one, all garbage the client's shared heap
+// (single-player) has to collect. The cache is only trusted while the
+// entity is still live (not removed/unloaded) and in the level being
+// asked about; anything else falls through to a real scan, and a miss is
+// never cached, so "no marker yet" still re-checks on every call exactly
+// like before. Top-level var with a distinctive name - shared scope
+// across server_scripts files (see mob_aggro.js's header).
+var tdWorldStateEntityCache = null
+
 function findWorldStateEntity(level) {
-  return level.getEntities().find(function (e) {
+  var cached = tdWorldStateEntityCache
+  if (cached && !cached.isRemoved() && cached.getLevel() === level) return cached
+  var found = level.getEntities().find(function (e) {
     return e.getTags().contains('td_pedestal_target')
   })
+  if (found) tdWorldStateEntityCache = found
+  return found
 }
 
 // Returns null only before the very first login's base-build has

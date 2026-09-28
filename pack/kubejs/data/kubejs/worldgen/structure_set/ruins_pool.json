@@ -1,0 +1,154 @@
+{
+  "structures": [
+    {
+      "structure": "postapocalypse_structures:red_mansion",
+      "weight": 12
+    },
+    {
+      "structure": "postapocalypse_structures:redhouse",
+      "weight": 15
+    },
+    {
+      "structure": "postapocalypse_structures:yellowhouse",
+      "weight": 12
+    },
+    {
+      "structure": "abandoned_urban:gas_station",
+      "weight": 9
+    },
+    {
+      "structure": "abandoned_urban:motel",
+      "weight": 6
+    },
+    {
+      "structure": "abandoned_urban:train",
+      "weight": 3
+    },
+    {
+      "structure": "abandoned_structures:gas_station",
+      "weight": 9
+    },
+    {
+      "structure": "abandoned_structures:house1",
+      "weight": 12
+    },
+    {
+      "structure": "abandoned_structures:house2",
+      "weight": 15
+    },
+    {
+      "structure": "abandoned_structures:tower",
+      "weight": 9
+    },
+    {
+      "structure": "watchtower_building:abandoned_watchtower",
+      "weight": 15
+    },
+    {
+      "structure": "watchtower_building:fresh_watchtower",
+      "weight": 15
+    },
+    {
+      "structure": "philipsruins:ancient_towers",
+      "weight": 12
+    },
+    {
+      "structure": "philipsruins:level_three_ruins",
+      "weight": 12
+    },
+    {
+      "structure": "philipsruins:badlands_start_dungeon",
+      "weight": 9
+    },
+    {
+      "structure": "philipsruins:badlands_structures",
+      "weight": 9
+    },
+    {
+      "structure": "philipsruins:desert_structures",
+      "weight": 12
+    },
+    {
+      "structure": "u_desert:pillager_outpost/standard",
+      "weight": 12
+    },
+    {
+      "structure": "u_desert:pillager_outpost/abandoned",
+      "weight": 6
+    },
+    {
+      "structure": "u_desert:desert_ruin/house",
+      "weight": 9
+    },
+    {
+      "structure": "u_desert:desert_ruin/ring",
+      "weight": 9
+    },
+    {
+      "structure": "the_lost_city:camp",
+      "weight": 6
+    },
+    {
+      "structure": "the_lost_city:tower",
+      "weight": 12
+    },
+    {
+      "structure": "abandoned_urban:observatory",
+      "weight": 3
+    },
+    {
+      "structure": "abandoned_urban:plane_crash",
+      "weight": 3
+    },
+    {
+      "structure": "the_lost_city:survivorscamp",
+      "weight": 3
+    },
+    {
+      "structure": "the_lost_city:factory",
+      "weight": 3
+    },
+    {
+      "structure": "philipsruins:start_nether_ruin",
+      "weight": 3
+    },
+    {
+      "structure": "philipsruins:field_stone_ruins_rocks",
+      "weight": 2
+    },
+    {
+      "structure": "u_desert:oasis",
+      "weight": 2
+    },
+    {
+      "structure": "u_desert:geyser",
+      "weight": 2
+    },
+    {
+      "structure": "u_desert:skeleton/head",
+      "weight": 1
+    },
+    {
+      "structure": "u_desert:skeleton/croc",
+      "weight": 1
+    },
+    {
+      "structure": "u_desert:skeleton/rib",
+      "weight": 1
+    },
+    {
+      "structure": "u_desert:desert_ruin/pillar",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 4,
+    "separation": 2,
+    "salt": 613015116,
+    "exclusion_zone": {
+      "other_set": "kubejs:base_anchor",
+      "chunk_count": 11
+    }
+  }
+}

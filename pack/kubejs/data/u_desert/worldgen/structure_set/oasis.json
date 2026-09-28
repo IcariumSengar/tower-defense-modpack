@@ -1,4 +1,5 @@
 {
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "frequency": 1,
@@ -9,11 +10,5 @@
       "other_set": "kubejs:base_anchor",
       "chunk_count": 9
     }
-  },
-  "structures": [
-    {
-      "structure": "u_desert:oasis",
-      "weight": 1
-    }
-  ]
+  }
 }

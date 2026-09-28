@@ -3,55 +3,13 @@
   "pools": [
     {
       "rolls": {
-        "min": 2,
-        "max": 3
-      },
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_food",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "rolls": {
         "min": 1,
         "max": 2
       },
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_hardware",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_armory",
-          "weight": 1
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:random_chance",
-          "chance": 0.6
-        }
-      ]
-    },
-    {
-      "rolls": {
-        "min": 0,
-        "max": 1
-      },
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "kubejs:chests/scav_treasure",
+          "name": "kubejs:chests/scav_food",
           "weight": 1
         }
       ]
@@ -69,6 +27,19 @@
         {
           "condition": "minecraft:random_chance",
           "chance": 0.5
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 0,
+        "max": 1
+      },
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "kubejs:chests/scav_hardware",
+          "weight": 1
         }
       ]
     },

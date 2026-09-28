@@ -1,0 +1,32 @@
+{
+  "structures": [
+    {
+      "structure": "the_lost_city:city",
+      "weight": 3
+    },
+    {
+      "structure": "abandoned_urban:city",
+      "weight": 3
+    },
+    {
+      "structure": "the_lost_city:villages_city",
+      "weight": 2
+    },
+    {
+      "structure": "the_lost_city:big_city_structure",
+      "weight": 2
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 64,
+    "separation": 63,
+    "salt": 20260927,
+    "frequency": 0.5,
+    "frequency_reduction_method": "legacy_type_2",
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 13
+    }
+  }
+}

@@ -87,7 +87,7 @@ PlayerEvents.tick((event) => {
 
 LevelEvents.afterExplosion((event) => {
   var level = event.getLevel()
-  if (level.isClientSide) return
+  if (level.isClientSide()) return // method call - see wave_mob_spike_slow.js's header
 
   var ex = event.getX()
   var ey = event.getY()

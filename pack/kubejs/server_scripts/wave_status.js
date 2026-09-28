@@ -499,6 +499,18 @@ PlayerEvents.tick((event) => {
     // PEDESTAL_MAX_HEALTH directly from this file.
     healPedestalByPercent(player, data, 0.05)
 
+    // Pedestal upgrades (2026-09-27, pedestal_upgrades.js): a clickable
+    // chat prompt for anyone with enough XP levels for a tier.
+    // try/catch: this block runs once per clear, right after td_inWave
+    // flips false. An error here would skip the airdrop, day reset, wave
+    // events and countdown below for good (the wave-5 countdown loss
+    // pattern), so an optional prompt must never be able to throw.
+    try {
+      offerPedestalUpgrades(player.getServer(), data)
+    } catch (err) {
+      console.error('[wave_status] pedestal upgrade prompt failed: ' + err)
+    }
+
     // Every-5th-wave airdrop (rebuilt 2026-09-08, replaces the old wave-8+
     // speed-clear bonus entirely) - see wave_airdrop.js for the full
     // mechanism. No-ops unless waveNumber % 5 === 0.

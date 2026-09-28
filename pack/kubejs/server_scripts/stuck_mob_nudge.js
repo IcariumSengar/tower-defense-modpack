@@ -48,6 +48,7 @@ var STUCK_MIN_TARGET_DISTANCE = 0.5 // don't nudge a mob that's already essentia
 // numbers; unbounded only across a single world's entire lifetime of
 // wave mobs, not a per-tick cost).
 var stuckMobState = {} // uuid -> { x, z, streak }
+var stuckMobLastTick = -1
 
 // Real vanilla BlockState methods, surfaced directly through KubeJS's
 // BlockContainerJS#getBlockState() the same way this codebase already
@@ -68,14 +69,23 @@ function isPassable(level, x, y, z) {
 
 PlayerEvents.tick((event) => {
   var level = event.player.getLevel()
-  if (level.getTime() % STUCK_CHECK_INTERVAL_TICKS !== 0) return
+  var now = Number(level.getTime())
+  if (now % STUCK_CHECK_INTERVAL_TICKS !== 0) return
+  // Once per game tick, not once per online player (2026-09-27 audit):
+  // PlayerEvents.tick fires for every player, so with 2+ online the second
+  // pass in the same tick saw zero movement for every mob. File-scoped var,
+  // Number() because getTime() is a Java long.
+  if (now === stuckMobLastTick) return
+  stuckMobLastTick = now
 
+  var seen = {}
   level.getEntities().forEach((e) => {
     var tags = e.getTags()
     if (!tags.contains('td_wave_mob') || tags.contains('td_structure_guard')) return
     if (e.getHealth() <= 0) return
 
     var uuid = `${e.uuid}`
+    seen[uuid] = true
     var x = e.getX()
     var y = e.getY()
     var z = e.getZ()
@@ -125,4 +135,8 @@ PlayerEvents.tick((event) => {
       // Worst case this mob just stays stuck until the next check.
     }
   })
+  // Forget mobs that are gone (dead/unloaded) so the map doesn't grow all session.
+  for (var k in stuckMobState) {
+    if (!seen[k]) delete stuckMobState[k]
+  }
 })

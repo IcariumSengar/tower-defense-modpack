@@ -1,0 +1,29 @@
+##[customization]
+
+B:modpack_mode = 'true';
+B:show_customization_overlay = 'false';
+B:advanced_customization_mode = 'false';
+
+
+##[tutorial]
+
+B:show_welcome_screen = 'false';
+
+
+##[debug_overlay]
+
+B:show_debug_overlay = 'false';
+
+
+##[window]
+
+B:show_custom_window_icon = 'true';
+S:custom_window_icon_16 = '/config/fancymenu/assets/td/icon16.png';
+S:custom_window_icon_32 = '/config/fancymenu/assets/td/icon32.png';
+S:custom_window_icon_macos = '';
+S:custom_window_title = 'Tower Defense Modpack';
+
+
+##[global_customizations]
+
+S:global_menu_background_texture = '[source:local]config/fancymenu/assets/td/bg_dusk_dim.png';

@@ -132,7 +132,8 @@ function triggerHardcoreGameOver(player, level) {
   // feedback there: the reason "should be part of the game over message").
   server.runCommandSilent('title @a title {"text":"GAME OVER","color":"dark_red","bold":true}')
   server.runCommandSilent('title @a subtitle {"text":"Hardcore: you have fallen, and nothing caught you.","color":"red"}')
-  server.runCommandSilent('playsound minecraft:entity.wither.death master @a ~ ~ ~ 1 0.6')
+  // At each player (2026-09-27 audit): a bare `playsound ... @a ~ ~ ~` from the server plays at world spawn and is inaudible past ~16 blocks.
+  server.runCommandSilent('execute as @a at @s run playsound minecraft:entity.wither.death master @s ~ ~ ~ 1 0.6 1')
   player.tell('§4§lGame over - the run ends here.')
   player.tell('§7Hardcore was on, and nothing was left to catch you this time.')
 

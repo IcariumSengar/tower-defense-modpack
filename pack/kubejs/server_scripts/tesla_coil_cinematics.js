@@ -59,7 +59,9 @@
 // client-side) - a real vanilla thunder boom + vanilla electric_spark
 // particle burst centered ON THE HIT ENTITY, so the zap reads at the
 // point of impact too, not just at the block. Real KubeJS API used,
-// not guessed: `EntityEvents.hurt` is backed by Forge's `LivingHurtEvent`
+// not guessed: `EntityEvents.hurt` is backed by Forge's `LivingAttackEvent`
+// (corrected 2026-09-27 from a live stack trace - see wave_mob_spike_slow.js;
+// this line originally said LivingHurtEvent)
 // (confirmed by decompiling KubeJS's own `EntityEvents`/
 // `LivingEntityHurtEventJS` classes directly), and `event.getSource().
 // getType()` (KubeJS's clean-name remap of `DamageSource.getMsgId()`,
@@ -131,7 +133,7 @@ EntityEvents.hurt((event) => {
   if (source.getType() !== 'ieTesla') return
   var entity = event.getEntity()
   var level = entity.level
-  if (level.isClientSide) return
+  if (level.isClientSide()) return // method call - see wave_mob_spike_slow.js's header
   var x = entity.getX()
   var y = entity.getY() + entity.getBbHeight() / 2
   var z = entity.getZ()

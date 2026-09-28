@@ -29,6 +29,15 @@ archived verbatim at
 [docs/archive/queue-history-2026-09.md](archive/queue-history-2026-09.md).
 Trimmed here to only what's genuinely still open.
 
+**Backlog review 2026-09-26**: every unbuilt idea across IDEAS.md and
+FEATURES.md went through a keep/bin round with the user. Only two
+survived: pedestal upgrades (HP/armor/thorns; IDEAS.md, raw) and Tier 4
+turret tracer/impact FX (FEATURES.md, needs OMT's projectile ids
+decompiled first). Neither is specced enough to queue here yet. Two
+superseded entries were also dropped from the confirmation list below:
+the 2026-09-15 airdrop flyover, and the Tesla cutoff-radius
+sub-decision.
+
 ---
 
 ## Awaiting real-play confirmation
@@ -36,6 +45,150 @@ Trimmed here to only what's genuinely still open.
 Built and (unless noted) already deployed to the live instance/dedicated
 server — nobody has actually confirmed these work in a real session yet.
 
+- **Structure-gen rework** (2026-09-27). **Fresh worlds only.** Synced to
+  the instance and the dedicated server 2026-09-28 (hash-checked; the sync
+  also carried the peer loot-tiering pass). A review measured ~1,150 structure starts/km², 57-59% of
+  structures near the base clipped, and Lost City towns deleted by Berezka.
+  - **Towns:** all four towns moved onto the anchor lattice
+    (`kubejs:towns`, ~45% of anchors, never the base's). The nearest is
+    ~1 km out.
+  - **Ruins pool:** every other building, landmark and prop is in ONE set,
+    `kubejs:ruins_pool` (4/2 jittered grid, one start per 64x64-block
+    cell, first structures ~160 blocks out).
+  - **Cuts and trims:** 20 low-value structures cut (sets disabled,
+    templates kept). The skyscrapers are trimmed to ~60 barrels.
+  - **Fixes:** the empty-barrel re-roll loop, the gas station that never had
+    its guard spawner, and mineshafts reaching the base.
+  - **Strongholds disabled** (2026-09-28, user request): they surfaced
+    through the shallow ground and cut buildings. Sandbox re-run: 0
+    strongholds, 904/904 starts, 0 errors. Eyes of ender now find nothing.
+  - **Sandbox (Manna seed, 4,782 chunks):** 904/904 starts predicted, 2%
+    damaged near the base (was 59%), all 4 towns whole, 0 errors.
+  - **Base moves:** on the Manna and server seeds the old base anchor is now
+    a town anchor, so a new world builds its base elsewhere.
+  - **Still to confirm in real play:** see PLAYTESTING.md "Not yet
+    confirmed in real play" (spacing, clipping, a town trip, a skyscraper,
+    an emptied barrel). Spec and evidence: FEATURES.md "2026-09-27
+    structure-gen rework" under Base & structures.
+- **Guns +50% + Sophisticated Backpacks** (2026-09-27). Friend zip is
+  now 0.2.2 (friends need Backpacks to join the server).
+  - **Guns:** every Simple Guns projectile's base damage x1.5 on spawn
+    (`gun_damage_bump.js`). Sandbox: a gun bullet read 3.0 vs a vanilla
+    arrow's 2.0. Blasts are unchanged.
+  - **Backpacks:** pinned to 3.26.3.2157, because the newest build
+    crashes against our Sophisticated Core (see MODS.md).
+  - **Backpack settings:** mob backpack spawns and chest-loot injection
+    are both off.
+  - **Keys:** backpack opens with B; Xaero new-waypoint moved to K.
+  - **Quest:** "Pack Mule" added.
+  - **Sandbox:** clean full-mod-set boot, 50/50 scripts, 96 quests.
+  - **Still to confirm in real play:** guns feel stronger, crafting and
+    opening a backpack works, and the Curios back slot works.
+- **Pedestal upgrades + Tier 4 turret FX + multiplayer pedestal-damage
+  fix** (2026-09-27). Both items kept in the 2026-09-26 backlog review are
+  now built.
+  - **`/pedestal` upgrades:** Max HP 400/500/600, Armor 15/30/45%, Thorns
+    1/2/3 dmg/s, costing 5/10/15 XP levels per tier. There's a clickable
+    prompt at wave clear, and the new "Shore It Up" quest teaches it.
+  - **Turret FX (`tier4_turret_fx.js`):** a launch cue, a grenade smoke
+    trail and rocket flame exhaust, and an impact burst.
+  - **Multiplayer fix:** pedestal damage used to run once per online
+    player, so 3 players meant 3x damage.
+  - **Also fixed:** the shipped `options.txt` had no `version:` line (it
+    failed to load, so friends never got the Tab-for-quests bind), and the
+    quest book icon pointed at removed Barbed Wire.
+  - **Verified in the client sandbox:** a real player bought all 9 tiers
+    through the real command, with XP, max HP and heals all correct;
+    armor measured exactly 17/s from 30/s; thorns hit the attackers;
+    out-of-range and maxed buys were refused; the menu rendered; the FX
+    pipeline ran launch -> trail -> impact.
+  - **Not verified:** a real turret firing (a /summon'ed OMT shell
+    discards itself without a turret base), the wave-clear prompt with
+    enough XP, and 2+ players. On the dedicated server,
+    `tellraw <uuid>` fails for players (vanilla rejects UUIDs for
+    players-only arguments), so the menu targets names.
+- **Script audit fixes + friend zip 0.2.1** (2026-09-27). A read-only
+  audit of every script (Rhino behaviour checked in a harness against the
+  pack's own jar) found:
+  - **Tooltips:** every Tier 2-4 item said "Tier 1". A `const` inside a
+    loop keeps its first value in this Rhino; changed to `var`.
+  - **Ladder-climb assist and stuck-mob nudge:** they ran once per
+    online player per tick, so with 2+ players the second pass saw zero
+    movement and nudged or re-pathed every mob. Now once per game tick,
+    and the position maps drop dead mobs.
+  - **Legacy `kubejs:amulet_pedestal` right-click:** it fired for both
+    hands, so every place was undone, and a crafted one on a new world
+    could eat the amulet. Now main hand only, at the stored pedestal
+    position only.
+  - **Server-sourced sounds** (wave bell, boss music, boss kill, both
+    game-overs) played at world spawn, so they were inaudible past ~16
+    blocks. Now `execute as @a at @s ... minVolume 1`.
+  - **The wave-clear upgrade prompt** is wrapped in try/catch so it can
+    never kill the countdown.
+  - **Verification:** server sandbox loads 49/49 scripts with 0 errors
+    and 95 quests.
+  - **Friend zip:** re-exported as 0.2.1 (`packwiz refresh` first; the
+    menu mods and assets were never in the 0.2.0 index). It has 85 mods
+    (62 CurseForge + 23 bundled) with LootJS and Radium present, and it
+    sits in Downloads.
+  - **Noted, not fixed:**
+    - Player-directed messages (base expansion, amulet, wave-5 text,
+      horn) reach only whichever player ticked first.
+    - With nobody online, pedestal damage pauses but traps keep firing,
+      and a countdown that expired offline starts the wave on the next
+      login.
+    - Sentry hit FX also fire on player bow hits.
+    - Worldgen noise in the mods' own data. **Corrected 2026-09-27; neither
+      is a bug to fix.**
+      - `abandoned_urban:city_building` is each building's own road-side
+        back-connector. It targets the name `minecraft:roads`, which
+        nothing carries, so it can never attach, and fixing the spelling
+        wouldn't change that. Each of the 501 warnings marks a building
+        that WAS placed; all 6 building types appear in real cities. The
+        real gap is that `road_corner` never places (likely too big for
+        `max_distance_from_center` 48).
+      - Lost City's `city_under*` pools are emptied at runtime by its
+        `terrain_matching` projection, so vanilla skips those jigsaws.
+        That's expected.
+- **Spike slow + four dead scripts revived** (2026-09-27): wave mobs in
+  a Spike Trap get Slowness II, lingering 1.5-2s
+  (`wave_mob_spike_slow.js`; quest text updated). While building it,
+  I found `if (level.isClientSide) return` is always truthy in this
+  Rhino, so it returned on the server too. The Sentry muzzle/impact FX,
+  Tesla hit cinematics, Bouncing Betty/Claymore player safety and
+  Grenade Turret player safety have never actually run. All five sites
+  now call `isClientSide()`. Sandbox-verified over RCON: slow applied
+  only to wave mobs in spikes and wears off; every revived hook passes
+  its guard; a Bouncing Betty explosion was matched with no errors.
+  Not verifiable headless: Claymore and turret-grenade detonations, and
+  anything involving a player. Checklist: PLAYTESTING.md "Not yet
+  confirmed in real play". Synced to the instance and the dedicated
+  server (restart needed).
+- **Performance pass** (2026-09-26) — blood particles 100 -> 25 per kill,
+  Dynamic Lights REALTIME -> FAST, ImmediatelyFast added, and four
+  KubeJS entity-scan hot spots cached (marker lookup, per-mob lure lookup,
+  per-tick wave-mob recount). Sandbox benchmark at peak kill load: 138 ->
+  188 avg FPS at 1080p, visible-hitch seconds 77% -> 24%. Deployed to the
+  instance (ImmediatelyFast jar copied in by hand - it's a packwiz mod, so
+  re-exported as 0.2.1 on 2026-09-27) and the dedicated server (IF excluded,
+  client-only). Needs a real wave to confirm it *feels* smoother, that
+  blood still reads well at 25, and that lures still pull hordes. See
+  MODS.md "Performance pass (2026-09-26)".
+- **Lure Block quest** (2026-09-26) — the Lure Block (built 2026-09-12)
+  was never in the quest book, so nobody would find it outside JEI.
+  Added "Dinner Bell" to campaign.snbt's trap branch, hanging off the
+  Spike Trap quest ("Better Than Nothing"): craft one, 1 level + 2
+  redstone. Still open from 2026-09-12: whether the 40-block pull and
+  60-second timer feel right mid-wave.
+
+- **Menu makeover** (2026-09-25) — FancyMenu + Drippy reskin of the
+  title, startup loading, world loading/saving/connecting, pause and
+  list screens (painted dusk/night scene, TOWER DEFENSE wordmark,
+  plated buttons, rotating field-note tips). Deployed to the instance
+  (client-only mods; the dedicated server excludes them). Every screen
+  was screenshotted in a sandbox client, but the look is the user's
+  call. The friend zip was re-exported as 0.2.1 on 2026-09-27 with it
+  included. See FEATURES.md "Menu makeover".
 - **Six-item playtest batch** (2026-09-22) — (1) airdrop: beacon beam
   on the crate, Xaero share line (click Add), plane crosses the base
   from the west, crate 50-70 from the pedestal; (2) the wave-5 clear no
@@ -69,18 +222,7 @@ server — nobody has actually confirmed these work in a real session yet.
   damaging), cooler zap/muzzle-flash cinematics, the coil moved onto the
   front wall next to the Sentry, the starter flux rig moved to the
   house's exterior wall near the balcony, and the starter fence now
-  fully seals the gate gap. Not yet seen in a real restart. Open
-  sub-decision: if the coil's 9-block player/Sentry power-cutoff radius
-  feels idle too often mid-fight, narrow it back toward its actual
-  6-block kill range. **Moot 2026-09-22**: that cutoff is gone - the
-  patched IE jar excludes players/Sentries at the source and the script
-  is back to enemy-only power on a 20-tick poll.
-- **Airdrop flyover + landing beacon** (2026-09-15) — flyover lengthened
-  to ~10s (patched the plane mod's own self-destruct cap), plus a
-  landing light-column/particle beacon and periodic re-draw so a landed
-  crate is easy to find from a distance. Not yet sandbox-booted or seen
-  in a real wave-5/10/15 drop. **Superseded 2026-09-22** by the airdrop
-  rebuild in the six-item batch above.
+  fully seals the gate gap. Not yet seen in a real restart.
 - **Tier 4: Open Modular Turrets Reborn** (2026-09-15/16) — Grenade
   Turret + Rocket Turret added as Tier 4, plus a player/block
   explosion-safety fix for the Grenade Turret. Not yet confirmed in a
@@ -101,9 +243,24 @@ server — nobody has actually confirmed these work in a real session yet.
   a real-play judgment call, not something a sandbox boot can answer.
 - **Structure loot pass** (2026-09-11) — scavenge sub-tables,
   empty-barrel fix, and loot-table trim all shipped. Needs a real client
-  pass: open a Lost City store chest through Lootr, open an empty
-  barrel, confirm a barrel *you* place far from base doesn't self-fill,
-  and check JEI shows the new Tier 3 recipes.
+  pass: open an empty barrel, confirm a barrel *you* place far from base
+  doesn't self-fill, and check JEI shows the new Tier 3 recipes. (Lost
+  City stores are plain containers since the 2026-09-27 tiering below.)
+- **Stash guard spawners** (2026-09-28) — guard spawners at every
+  gold-trimmed stash in the ruins/towns (55 new, 44 converted, day or night,
+  distance-tiered at runtime by `structure_guard_tiers.js`), no bags or
+  bounty credit from guards. Sandbox-verified; needs a fresh world and a
+  real outing: difficulty per distance, spawners that never fire, lag in
+  the 11-spawner buildings. Open: guard XP still feeds pedestal upgrades.
+  See FEATURES.md "Stash guard spawners".
+- **Structure loot tiering** (2026-09-27) — plain containers basic, Lootr
+  lucrative, ~85% fewer Lootr via `pack/config/lootr-common.toml`;
+  distance bonus now Lootr-only. Needs a fresh world and a real outing:
+  do gold-trimmed finds feel worth it, and does a trip still feel like a
+  haul? Modelled at ~7x a barrel near base / ~12x past 270 (above the
+  ~3-4x first estimated; user chose to keep it). If trips feel thin, the
+  first knobs are the plain `scavenge_storage`/`store` roll counts. See
+  FEATURES.md "Structure loot tiering".
 - **Ladder-climb mob assist** (rebuilt 2026-09-10) — `mob_aggro.js` now
   lets a wave mob keep a player-assigned target for 8s after being hit,
   instead of the pedestal-marker re-assert silently defeating the climb
@@ -114,26 +271,13 @@ server — nobody has actually confirmed these work in a real session yet.
 
 ## Small decisions needed (not build-blocked, just undecided)
 
-- **Crafting Station's inventory panel blocks JEI bookmarks** — no
-  drop-in fix exists on Forge 1.20.1 (checked every Tinkers-style
-  crafting-station spinoff; the one no-panel mod, Nearby Crafting, has
-  no Forge 1.20.1 build). Options on the table: Sophisticated Storage's
-  own `crafting_upgrade` (already installed, zero extra footprint),
-  Tom's Simple Storage's crafting terminal (one new jar), or just a
-  lower GUI scale. Your call.
-- **Inventory Sorter's middle-click sort is unreliable in some
-  containers** — real cause found: it only sorts the section you
-  clicked in (never the hotbar), and inside a Sophisticated Storage
-  container its sort competes with Sophisticated Core's own
-  middle-click sort instead. Proposed fix: install Inventory Profiles
-  Next (explicit on-screen Sort buttons, nothing to aim) and remove
-  Inventory Sorter. Not installed — say the word if you want it swapped.
-- **Anchor-site biome preference — admit plains too?** — the base-site
-  search (`BARE_WASTELAND_BIOMES` in `playtest_starter_kit.js`) only
-  accepts desert/badlands anchor points. Left open on purpose during the
-  2026-09-10 wasteland re-skin: now that badlands itself was reskinned
-  to a dead-grass wasteland look, should the search also accept plains,
-  or is desert/badlands-only worth keeping as the pickier default?
+None open. The three that sat here were all closed as "leave as-is" in
+the 2026-09-26 backlog review:
+- Crafting Station Improved's panel overlapping JEI bookmarks: no swap.
+- Inventory Sorter's middle-click sort: no Inventory Profiles Next swap.
+- The base-site search stays desert/badlands only, with no plains.
+
+Full list of what that review binned: IDEAS.md "Binned".
 
 ## Waiting on you, not on a build
 
@@ -144,3 +288,7 @@ server — nobody has actually confirmed these work in a real session yet.
   heavy apps (this session/VS Code, ~2.3GB) while playing, and/or lower
   the CurseForge instance's allocated RAM below 10GB in its settings.
   Report back whether either actually helps.
+  **Update 2026-09-26**: the launcher profile now passes `-Xmx4096m`
+  (already lowered). The performance-pass GC log (sandbox, 4K, peak kill
+  load) shows that's plenty: live heap 575-700 MB after each young GC,
+  ~8 ms pauses, no full GCs. Leave it at 4 GB.

@@ -1,0 +1,59 @@
+The horde wants the pedestal, not you. Every wave mob walks straight for it.
+Hit one and it chases you for about eight seconds, then turns back to the pedestal.
+The pedestal holds 300. Its bar shows whenever you're within 64 blocks of it.
+Any zombie within 3 blocks of the pedestal hits it for its full attack, once a second.
+An anvil clang means the pedestal is taking hits. Get back.
+A golden carrot on the pedestal mends a tenth of it. A nether star mends the lot.
+Every wave you clear patches the pedestal by five percent.
+If the pedestal falls, the run is over. Start a new world to try again.
+Don't mine the pedestal. Broken is broken, whoever swung the pick.
+Right-click the note block upstairs to sound the horn and call the next wave.
+Leave the horn alone and the next wave comes anyway, ten minutes or more after a clear.
+Ready early? Sound the horn. Nobody makes you sit out the timer.
+Night falls when the horn sounds and holds until the last of them is down.
+Waves 1 to 8 are written down. After that it's Horde 9, Horde 10, and no end.
+A cave groan comes just before one of them rises. Learn to hear where.
+From wave 2, some start buried under the base and dig their way up.
+They dig through anything you place. Only the base's reinforced stone holds.
+A bare-handed zombie gets through cobblestone in about two and a half seconds.
+Stuck under a wall, they stack cobblestone and climb.
+Zombies, husks and drowned climb each other's backs. A pile is a ladder.
+They use your ladders too. A ladder up a tower is a ladder for them.
+Crawlers go straight up sheer walls. Wave 8 sends four.
+Demolition Zombies throw dynamite. Put them down before they're in range.
+Brutes shrug off knockback. Don't plan on pushing one back.
+Every tenth wave brings a boss. The Reaper and The Demolisher take turns.
+A boss drops a Sentry, twelve Shrapnel and a Totem of Undying.
+Any zombie can drop a Bounty Bag. Tougher ones don't drop better bags.
+Bag odds, every kill: 20% Uncommon, 3.5% Rare, 3% Epic, 2% Legendary.
+Every bag tier can carry Shrapnel. Sentries are built from it.
+A Legendary bag can hold a nether star. That's a whole pedestal back.
+Bounties pay out at 25, 100, 300 and 750 kills, then every 1500 after.
+Trap and turret kills count toward Bounties. Fire and falls don't.
+Every fifth wave cleared, a supply plane comes in from the west. Look up.
+The supply crate lands east of the base. Follow the beacon beam.
+Click Add on the supply-drop line in chat to pin the crate to your map.
+Every supply crate carries a Legendary bag, a gun and ammo.
+The border grows every wave you clear: 5 blocks at first, more every third wave.
+Eight gold ingots in a ring make the Amulet. It goes in the Curios necklace slot.
+Wear the Amulet for Regeneration and Resistance.
+Until the Amulet sits on the pedestal, the border shoves you back.
+No ruin stands within nine chunks of the base. The good stuff is a walk away.
+Chests over 210 blocks from the pedestal get a bonus roll. Past 270, a better one.
+Open the barrels out in the ruins. Empty-looking ones still get rolled.
+Big abandoned watchtowers keep spawners full of brutes, elites and crawlers.
+The dead man's sword and armour rust away once wave 5 is cleared.
+After wave 5 the boarded gaps open, and the starter coil and Sentry go dark.
+The generator upstairs burns any food. Rotten flesh counts.
+There's a Waystone by the base door. Craft another and jump between them.
+A Wooden Stake takes 20 damage from the horde before it breaks. A Spike Trap, 60.
+Bouncing Betties and Claymores won't hurt you or break your walls.
+The Electrified Fence shocks any wave mob standing beside it for 6, every second.
+Fences and Tesla Coils are wired to spare you. The horde gets no such courtesy.
+The Tesla Coil zaps one random target within 6 blocks. Put it where they bunch.
+Grenade and rocket turrets won't touch you or blow holes in your walls.
+A Lure Block pulls hordes within 40 blocks onto itself for a minute, then it's gone.
+Tab opens the quest book. Read it before you touch the horn.
+/hardcore enable turns on permadeath for this world. It stays off unless you ask.
+In hardcore, only a Totem of Undying stands between you and the end.
+Die and your gear waits in a corpse where you fell. Go back for it.

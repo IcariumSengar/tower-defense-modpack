@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "postapocalypse_structures:red_mansion",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spacing": 6,

@@ -1,10 +1,5 @@
 {
-  "structures": [
-    {
-      "structure": "abandoned_urban:fire_tower",
-      "weight": 1
-    }
-  ],
+  "structures": [],
   "placement": {
     "type": "minecraft:random_spread",
     "spacing": 6,

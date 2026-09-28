@@ -69,9 +69,12 @@ const TIER_ITEMS = {
 }
 
 ItemEvents.tooltip((event) => {
-  for (const itemId in TIER_ITEMS) {
-    const tier = TIER_ITEMS[itemId]
-    const color = TIER_COLORS[tier]
+  // var, not const (2026-09-27): in this Rhino a `const` inside a loop keeps
+  // its FIRST value on every later pass, so every item got Tier 1's label.
+  // Proven in a harness against the pack's own rhino jar.
+  for (var itemId in TIER_ITEMS) {
+    var tier = TIER_ITEMS[itemId]
+    var color = TIER_COLORS[tier]
     event.add(itemId, `${color.code}${color.label}`)
   }
 })

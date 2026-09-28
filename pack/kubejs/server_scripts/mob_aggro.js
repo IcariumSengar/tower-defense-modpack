@@ -386,10 +386,9 @@ function ensurePedestalMarker(player, level) {
   var data = player.persistentData
   if (!data.contains('td_pedestalX')) return
 
-  var existing = level.getEntities().find(function (e) {
-    return e.getTags().contains('td_pedestal_target')
-  })
-  if (existing) return
+  // world_state.js's shared lookup (cached while the marker is live, real
+  // scan otherwise) - same "does a td_pedestal_target entity exist" test.
+  if (findWorldStateEntity(level)) return
 
   var x = data.getInt('td_pedestalX')
   var y = data.getInt('td_pedestalY')
@@ -478,9 +477,7 @@ PlayerEvents.tick(function (event) {
 
   if (level.getTime() % 10 !== 0) return
 
-  var aggroTarget = level.getEntities().find(function (e) {
-    return e.getTags().contains('td_pedestal_target')
-  })
+  var aggroTarget = findWorldStateEntity(level)
   if (!aggroTarget) return
 
   var checkStrayThisTick = level.getTime() % STRAY_CHECK_INTERVAL === 0
