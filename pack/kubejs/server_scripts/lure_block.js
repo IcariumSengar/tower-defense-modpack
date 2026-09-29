@@ -1,11 +1,7 @@
-// The Lure Block's actual behavior - see startup_scripts/lure_block.js
-// for the block registration/model, and mob_aggro.js's own targeting
-// loop (edited alongside this file) for how wave mobs actually respond
-// to one.
-//
-// Recipe: a real vanilla Target block (the "draws attention" motif this
-// block's own texture already borrows) + rotten flesh (real zombie bait)
-// + redstone (the timer) - cheap, thematically obvious, no new mod.
+// Lure Block behaviour: recipe, placement, countdown and expiry. The block is
+// registered in startup_scripts/lure_block.js, and mob_aggro.js calls
+// nearestActiveLure() to send nearby wave mobs to a live lure instead of the
+// pedestal.
 ServerEvents.recipes((event) => {
   event.shaped('kubejs:lure_block', [
     'FRF',
@@ -18,33 +14,13 @@ ServerEvents.recipes((event) => {
   })
 })
 
-// Real vanilla Mob#setTarget() needs a LivingEntity, not a BlockPos - same
-// problem mob_aggro.js's own td_pedestal_target marker solves for the
-// pedestal. An invisible, no-gravity marker armor stand spawns at the
-// lure block's own position the moment it's placed, tagged
-// td_lure_target, carrying its own expiry tick and the block's position
-// in its own persistentData (self-contained - no shared worldData key
-// needed, since a lure is a short-lived, player-placed object, not
-// permanent campaign state like the pedestal).
-var LURE_DURATION_TICKS = 1200 // 60 real seconds - a real tactical window, not a permanent decoy
-var LURE_ATTRACT_RADIUS = 40 // meaningfully smaller than STRAY_DISTANCE (mob_aggro.js, 90) - a redirect, not a global magnet
-var LURE_WARNING_TICKS = 100 // last 5s - one particle cue before it goes, same "give some warning" idiom as pedestal_health.js's own alert tiers
+var LURE_DURATION_TICKS = 1200 // 60 s
+// Blocks, horizontal; read by mob_aggro.js. The Lure Block quest in
+// campaign.snbt quotes 40.
+var LURE_ATTRACT_RADIUS = 40
+var LURE_WARNING_TICKS = 100 // last 5 s: red nameplate and one smoke puff
 
-// **Visible timer, 2026-09-29** (live report: "the lure block didnt seem to
-// work. i.e didnt lure enemies towards it. couldnt see it timing out
-// either"). The save showed both lures had expired on time and been
-// cleaned up; the only cues were a smoke puff 5s before and a poof at the
-// end. The luring itself had nothing to pull that night: the last mobs of
-// each wave were buried ambushers that couldn't path anywhere (fixed in
-// wave_spawner.js the same day), and any Tesla Coil within 6 blocks was
-// zapping the invisible marker (fixed in the patched IE jar). Now:
-// - the marker sits on TOP of the block and carries a visible nameplate
-//   counting down the seconds ("Lure 45s"), refreshed by the once-a-second
-//   loop below. mob_aggro.js only reads its x/z, and a mob paths to the
-//   block top the same as to the pedestal's marker;
-// - a pulse of particles every second and a bell every LURE_BELL_EVERY_SECONDS
-//   (the quest is "Dinner Bell") while it's live, so it reads as active.
-var LURE_BELL_EVERY_SECONDS = 5
+var LURE_BELL_EVERY_SECONDS = 5 // bell interval, in seconds of countdown
 
 function lureNameplate(remainingTicks) {
   var seconds = Math.max(0, Math.ceil(remainingTicks / 20))
@@ -52,6 +28,10 @@ function lureNameplate(remainingTicks) {
   return `{"text":"Lure ${seconds}s","color":"${color}","bold":true}`
 }
 
+// Mob#setTarget() needs a LivingEntity, so each placed lure spawns an
+// invisible marker armor stand on top of the block, tagged td_lure_target and
+// showing a countdown nameplate. Its persistentData holds the expiry tick and
+// the block position, so lures need no shared world state.
 BlockEvents.placed('kubejs:lure_block', (event) => {
   var level = event.getLevel()
   var block = event.getBlock()
@@ -72,22 +52,14 @@ BlockEvents.placed('kubejs:lure_block', (event) => {
     var placer = event.getEntity()
     if (placer) placer.tell('§6[Lure] §fPlaced - nearby hordes will turn on it for the next minute.')
   } catch (e) {
-    // Not critical - the block itself is the real feedback.
+    // The chat message is optional.
   }
 })
 
-// Nearest live lure marker within `radius` blocks of (x,z), or null.
-// Shared top-level FUNCTION (the proven cross-file idiom in this
-// codebase - see mob_aggro.js's own header for why var/const don't work
-// the same way) - called from mob_aggro.js's per-mob targeting loop so
-// that file doesn't need its own copy of the lure-scanning logic.
-//
-// Performance pass 2026-09-26: mob_aggro.js calls this once PER WAVE MOB
-// every 10 ticks, and each call used to be its own full-level entity scan
-// (60 mobs = 60 scans per pass). The lure list is now collected once per
-// level per tick and reused by every later call in that same tick - lures
-// only change on placement/expiry, never mid-pass. Removed entries (a lure
-// that expired earlier this tick) are skipped.
+// Nearest live lure marker within `radius` blocks of (x, z), or null.
+// mob_aggro.js calls this by name for each wave mob it steers, so it must stay
+// a top-level function. The marker list is built once per level per tick and
+// reused; markers discarded earlier in the tick are skipped.
 var tdLureCacheTick = -1
 var tdLureCacheLevel = null
 var tdLureCacheList = []
@@ -118,10 +90,10 @@ function nearestActiveLure(level, x, z, radius) {
   return best
 }
 
-// Expiry - throttled once/second (a timer, not a twitch mechanic). Breaks
-// the block if it's still there (a player could have mined it early,
-// which just leaves a now-pointless marker to clean up) and always
-// discards the marker on expiry either way.
+// Once a second, for each live lure: refresh the countdown nameplate, particles
+// and bell. At expiry, remove the block if it is still there and discard the
+// marker. Mining the block early doesn't end the lure; the marker keeps drawing
+// mobs until it expires.
 PlayerEvents.tick((event) => {
   var level = event.player.getLevel()
   var now = level.getTime()

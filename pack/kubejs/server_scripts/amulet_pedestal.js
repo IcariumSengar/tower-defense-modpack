@@ -1,92 +1,24 @@
-// The amulet pedestal — retrofitted 2026-09-05 onto Supplementaries'
-// real Pedestal block (`supplementaries:pedestal`), replacing the
-// custom `kubejs:amulet_pedestal` block and its hand-built floating-item
-// marker/bob visual entirely. Direct request: "can we leverage a mod
-// that renders cool pedestals with floating items whilst keeping the
-// entire mechanic of the pedestal." Retires the exact code the real
-// Math.PI bug (2026-09-02) lived in - one whole bug class removed, not
-// just patched.
+// The amulet on the pedestal. While the amulet sits on the pedestal the world
+// border is pushed out so players can walk past it, and lifting the amulet
+// closes it again. td_amuletOnPedestal (worldData() in world_state.js) records
+// which it is; amulet_border.js, pedestal_upgrades.js and quest_milestones.js
+// read it. The amulet's worn buffs are in amulet_worn.js.
 //
-// Real API, decompiled from the mod's own class files, not guessed:
-// `PedestalBlockTile extends ItemDisplayTile` (Moonlight Library),
-// which is a real single-slot Container. `getDisplayedItem()` is a
-// public method, directly callable from KubeJS on the object
-// `level.getBlockEntity([x,y,z])` returns - confirmed live in a sandbox
-// test (real id/count/isEmpty() round-trip). `canPlaceItem` just checks
-// the slot is empty - confirmed from ItemDisplayTile's own bytecode
-// there's no item TYPE filter at all, so this script has to check
-// specifically for `kubejs:amulet`, not assume anything placed there is
-// it. A pedestal placed in open space (this shrine's case) always gets
-// a real BlockEntity - the mod's own "tileless" fast path only applies
-// to a status the code calls NONE, which needs something actively
-// blocking the space above it; confirmed by reading a fresh pedestal's
-// own block data right after placement (`Items: []` present, not a
-// missing tile).
-//
-// Detection is a tick-poll against the pedestal's own stored item, not
-// a right-click hook - Supplementaries' Pedestal already handles the
-// actual pick-up/place interaction itself (real ponder-documented
-// behavior: right-click with an item in hand to place it, right-click
-// empty-handed to take it back), so this script doesn't drive that
-// exchange at all anymore. Same "poll world/persistentData state from a
-// tick handler" pattern already dominant in this codebase.
-//
-// Real UX difference from before, not chased further since it wasn't
-// the actual ask: Supplementaries' own interact() only reads the
-// player's HAND (`getItemInHand`), not the Curios necklace slot - the
-// old script used to accept the amulet straight off the player's worn
-// slot too. A player wanting to place a currently-worn amulet now has
-// to unequip it via their Curios tab first (which already correctly
-// flips td_amuletWorn off via amulet.js's own onEquip/onUnequip hooks,
-// unrelated to any code in this file) before right-clicking the
-// pedestal. Standard "take it off first" flow, not treated as a bug.
-//
-// **Real premise correction 2026-09-05** (docs/FEATURES.md, the
-// "Superseded" note on the 2026-08-30/2026-09-01 objective work): the
-// pedestal used to be the mob-targeting/spawn objective ONLY while the
-// amulet sat on it - direct user correction: "regardless of whether the
-// amulet is on the pedestal or not, this is the focus point for the
-// enemies... if im not in the base to defend it then i lose the game."
-// That targeting/spawn/forceload logic is now unconditional and
-// permanent, set up once in playtest_starter_kit.js (the marker tagged
-// `td_pedestal_target`, summoned there and never killed; forceload
-// added there and never removed). This file's whole remaining job is
-// just the amulet's own two effects: personal buffs while worn
-// (amulet_worn.js reads td_amuletWorn, set by amulet.js's Curios
-// onEquip/onUnequip hooks, untouched by any of this) and unlocking
-// border-crossing while placed - fully decoupled from whether the base
-// itself is being defended.
+// The pedestal is a Supplementaries pedestal block at td_pedestalX/Y/Z.
+// Supplementaries itself places the amulet on it (right-click with the amulet
+// in hand), and pedestal_upgrades.js's pedestal screen takes it back off, so
+// this file only polls what the pedestal holds. Older saves have the legacy
+// kubejs:amulet_pedestal block there instead. It has no inventory, so its
+// right-click handler at the bottom does the placing and taking.
 
-// Real border-crossing fix (2026-08-31 playtest bug): vanilla's own
-// worldborder physically blocks player movement on its own, completely
-// independent of any KubeJS script - see wave_spawner.js's spawn-
-// position comments for the same fact used elsewhere. Expand by a fixed
-// delta when the amulet goes on the pedestal, shrink by the same delta
-// when it comes back off, rather than snapshot-and-restore an absolute
-// size - stays correct even if base_expansion.js grows the border for
-// an unrelated wave-clear while the amulet happens to be away.
+// Vanilla's border blocks movement by itself, so letting players past means
+// moving it. This many blocks are added to its width when the amulet goes on
+// and taken off again when it is lifted. A relative change, rather than
+// restoring a saved size, keeps whatever base_expansion.js added in between.
 var BORDER_EXPAND_DELTA = 10000000
 
-// No recipes here any more (2026-09-28). The amulet is a quest reward now
-// (user decision 2026-09-25, confirmed 09-28): hand 8 gold in to "Not Just
-// Jewelry", one amulet per player, not craftable. Its old 8-gold-ring
-// shaped recipe went, and so did the legacy kubejs:amulet_pedestal recipe:
-// every world since 2026-09-05 builds Supplementaries' pedestal, so on a
-// new world that craft was a dead end that only ate gold. The legacy block
-// stays registered (startup_scripts/amulet.js) so old saves keep theirs.
-
-// Shared by both the new tick-poll (real supplementaries:pedestal) and
-// the legacy right-click handler (any already-in-progress save still
-// running the original custom block) - the actual border-crossing
-// effect doesn't depend on which real block is involved, only on
-// whether the amulet just went on or came off.
-//
-// `data` is the shared world-state object (see world_state.js) as of
-// 2026-09-08's multiplayer fix, not a player's own persistentData -
-// whether the amulet sits on the one shared pedestal is a real single
-// fact, not something each player should track their own copy of
-// (amulet_border.js's own border-crossing check reads it the same
-// shared way now).
+// Records the new state and moves the border. `player` gets the chat line; from
+// the tick poll that is whichever player's tick noticed the change.
 function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
   data.putBoolean('td_amuletOnPedestal', hasAmulet)
 
@@ -97,12 +29,9 @@ function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
     server.runCommandSilent(`worldborder set ${currentBorderSize + BORDER_EXPAND_DELTA} 0`)
     player.tell('§d[Amulet] §fThe pendant settles onto the stand. The line at the border loosens - you can walk past it without being pushed back.')
   } else {
-    // Sanity-clamped rather than applied blindly - a save where the
-    // amulet was placed before this delta existed never had its border
-    // expanded, so shrinking that real un-expanded size by the full
-    // delta would produce a nonsense deeply-negative border. A real
-    // border only ever starts at 50 and grows - skip the command
-    // entirely if the shrink would drop below that floor.
+    // The border starts at BORDER_START (50, playtest_starter_kit.js) and
+    // only grows, so a result below 50 means the matching expansion never
+    // happened. Leave the border alone then.
     var shrunkBorderSize = currentBorderSize - BORDER_EXPAND_DELTA
     if (shrunkBorderSize >= 50) {
       server.runCommandSilent(`worldborder set ${shrunkBorderSize} 0`)
@@ -111,30 +40,21 @@ function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
   }
 }
 
-// Throttled to every 10 ticks (2x/second) - matches mob_aggro.js's own
-// poll rate, no need to check faster than that for a state that only
-// changes on a deliberate player action.
 PlayerEvents.tick((event) => {
   var player = event.entity
   var level = player.getLevel()
 
-  // Real multiplayer fix, 2026-09-08 (see world_state.js). Also doubles
-  // as the "hasn't finished building yet this login" guard the old
-  // per-player td_pedestalX check used to provide - null here means the
-  // same thing (nothing to poll yet).
   var data = worldData(level)
   if (!data || !data.contains('td_pedestalX')) return
 
-  if (level.getTime() % 10 !== 0) return
+  if (level.getTime() % 10 !== 0) return // twice a second
 
   var x = data.getInt('td_pedestalX')
   var y = data.getInt('td_pedestalY')
   var z = data.getInt('td_pedestalZ')
 
-  // Only the real supplementaries:pedestal has a Container to poll - an
-  // already-in-progress save's old kubejs:amulet_pedestal block is
-  // handled entirely by the legacy right-click handler below instead,
-  // since it never had a block entity of its own to read.
+  // Only Supplementaries' pedestal has an inventory to poll; the legacy
+  // block is handled by the right-click handler below.
   var block = level.getBlock(x, y, z)
   if (`${block.id}` !== 'supplementaries:pedestal') return
 
@@ -148,64 +68,10 @@ PlayerEvents.tick((event) => {
     return
   }
 
+  // The pedestal takes any item, so check that it holds the amulet.
   var hasAmulet = displayed && !displayed.isEmpty() && `${displayed.id}` === 'kubejs:amulet'
   var wasOnPedestal = data.getBoolean('td_amuletOnPedestal')
   if (hasAmulet === wasOnPedestal) return
 
   toggleAmuletOnPedestal(player, data, level, hasAmulet)
-})
-
-// Legacy interaction for the OLD custom block only - real backward-
-// compat requirement, not dead code: any save already in progress when
-// this retrofit shipped has an actual placed kubejs:amulet_pedestal
-// block (its registration was deliberately kept, see
-// startup_scripts/amulet.js), and that block never had a Container of
-// its own for the new tick-poll above to read. This is the same
-// right-click logic the pedestal used before the Supplementaries
-// retrofit - accepts the amulet from wherever the player actually has
-// it (worn or in inventory/hand), not just held in hand the way
-// Supplementaries' own interaction requires.
-BlockEvents.rightClicked('kubejs:amulet_pedestal', (event) => {
-  var player = event.player
-  var level = player.getLevel()
-  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared, not
-  // player.persistentData. Silently no-ops if the base hasn't finished
-  // building yet (shouldn't be reachable - this block can't exist before
-  // then - but matches this pack's established defensive style).
-  var data = worldData(level)
-  if (!data) return
-
-  // Two guards added 2026-09-27 (script audit):
-  // - Main hand only. KubeJS's right-click event has no hand filter, and
-  //   this plain block doesn't consume the click, so the client also sends
-  //   an off-hand click. That second event undid every place/take straight
-  //   away.
-  // - Only the real pedestal position. On a new world the real pedestal is
-  //   Supplementaries' block, so a crafted legacy block placed anywhere
-  //   else would take the amulet, and the tick poll above would then clear
-  //   td_amuletOnPedestal, losing it. Old saves whose stored pedestal IS
-  //   this block still match.
-  if (`${event.getHand()}` !== 'MAIN_HAND') return
-  var clicked = event.getBlock()
-  if (clicked.getX() !== data.getInt('td_pedestalX') || clicked.getY() !== data.getInt('td_pedestalY') || clicked.getZ() !== data.getInt('td_pedestalZ')) return
-
-  if (data.getBoolean('td_amuletOnPedestal')) {
-    player.give(Item.of('kubejs:amulet', 1))
-    toggleAmuletOnPedestal(player, data, level, false)
-    return
-  }
-
-  var equippedAmulet = player.findFirstCurio((stack) => stack.id === 'kubejs:amulet')
-  if (equippedAmulet.isPresent()) {
-    player.setEquippedCurio('necklace', 0, Item.of('minecraft:air'))
-  } else {
-    var slot = player.inventory.find('kubejs:amulet')
-    if (slot === -1) {
-      player.tell('§7[Amulet] §fThere\'s nothing to place here - the amulet isn\'t on you.')
-      return
-    }
-    player.inventory.extractItem(slot, 1, false)
-  }
-
-  toggleAmuletOnPedestal(player, data, level, true)
 })

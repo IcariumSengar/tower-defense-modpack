@@ -1,113 +1,34 @@
-// Deterministic pedestal HP (2026-09-06, direct ask: "is there a way to
-// give it health like a player and this is how the mobs destroy it").
-// Replaces reliance on Epic Siege Mod's own `blockTargets` config for
-// actually damaging the pedestal - that stayed inconclusive even after
-// the mob-pathing fix (mob_aggro.js, see its own writeup) was meant to
-// give ESM_EntityTargetBlock a fair shot at firing once mobs reliably
-// camp at a fixed point instead of re-chasing the player. Real playtest
-// confirmed it's still not damaging the pedestal. Same "poll world/
-// persistentData state from a throttled tick handler" pattern as
-// pedestal_destruction.js/wave_status.js/mob_aggro.js, not another
-// mod's opaque AI a second time. ESM's blockTargets config is left in
-// place regardless (harmless, already shipped) - this is additive.
+// Pedestal hit points. Once a second, every mob on the wave roster within
+// PEDESTAL_MELEE_RANGE of the pedestal deals its generic.attack_damage to a
+// shared HP pool. mob_aggro.js points every wave mob at the pedestal, so a
+// mob in range is treated as attacking it; no attack event is hooked. At 0 HP
+// the block breaks and triggerPedestalDestroyed() (pedestal_destruction.js)
+// ends the run.
 //
-// Every wave mob already targets the pedestal marker unconditionally
-// (mob_aggro.js) - being within real melee range is a sufficient proxy
-// for "hitting it," no need to hook a real attack/swing event.
-//
-// Damage per hit is read from the attacking mob's own real
-// generic.attack_damage attribute via mob.getAttribute(id).getValue() -
-// confirmed working in this exact KubeJS build via a sandbox probe
-// (returns a real AttributeInstance, .getValue() read a live zombie's
-// base 3 correctly) before relying on it here, same "verify the clean
-// name actually resolves" bar as mob_aggro.js's own reflection work.
-// Tougher mobs (Mutants and Zombies' Brutes, TFTH's elites) chip through
-// faster this way, matching the escalating-horde theme, instead of a
-// flat number that treats every mob the same.
-//
-// At 0 HP, calls triggerPedestalDestroyed() - the same shared function
-// pedestal_destruction.js's own block-gone detection uses, factored out
-// there for exactly this reuse (see that file's header). Top-level
-// function declarations share scope across server_scripts files in this
-// exact KubeJS/Rhino build - confirmed directly in a sandbox (a
-// zzprobe.js in a different file read `typeof triggerPedestalDestroyed`
-// as `'function'`) before relying on it here, not assumed from this
-// pack's own older "server_scripts don't reliably share top-level
-// scope" belief (see feedback_rhino_java_reflection_quirks.md - that
-// belief covered function-sharing specifically, which this now
-// contradicts with a real, tested exception).
-//
-// First-pass numbers, not tuned by a real playtest yet (same "needs
-// real tuning" allowance as every other numeric first-pass in this
-// pack). 200 total HP, checked once/second (throttled like
-// pedestal_destruction.js), one "hit" per mob in range per check -
-// roughly one real attack per second per mob, close enough to vanilla
-// melee cadence for a first pass without tracking each mob's own
-// individual attack cooldown. A lone vanilla zombie (3 dmg/hit) needs
-// ~67 checks (~67 seconds) to solo it; a 10-mob mixed horde averaging
-// ~5 dmg each clears it in ~4 seconds - matches "if im not in the base
-// to defend it then i lose the game" without being one-shot-able by a
-// single trash mob.
-var PEDESTAL_MELEE_RANGE = 3.0
+// This file also owns the HP bossbar, the under-attack alerts, healing
+// (right-click with a golden carrot or nether star; healPedestalByPercent()
+// for wave_status.js's wave-clear heal) and the stat numbers behind the
+// upgrades that pedestal_upgrades.js sells. All pedestal state lives in
+// worldData() (world_state.js); other files call the top-level functions here.
+var PEDESTAL_MELEE_RANGE = 3.0 // blocks, pedestal centre to the mob's feet
 var PEDESTAL_MELEE_RANGE_SQ = PEDESTAL_MELEE_RANGE * PEDESTAL_MELEE_RANGE
 
-// Same roster as mob_aggro.js's WAVE_MOB_TYPES / wave_status.js's
-// HOSTILE_TYPES / wave_spawner.js's own copy - duplicated per-file per
-// this codebase's established convention (keep all four in sync if the
-// roster changes again), not relying on the cross-file sharing this
-// file's own triggerPedestalDestroyed() call above already leans on for
-// something more targeted and safer to depend on.
-// TFTH removed entirely 2026-09-04 (real playtest feedback) - see
-// wave_spawner.js's WAVES header comment for the full replacement
-// mapping/rationale.
-var PEDESTAL_WAVE_MOB_TYPES = [
-  'minecraft:zombie',
-  'minecraft:husk',
-  'minecraft:drowned',
-  'minecraft:zombie_villager',
-  'mutantszombies:mutant_zombie',
-  'mutantszombies:blister_zombie',
-  'mutantszombies:split_head_zombie',
-  'undeadnights:elite_zombie',
-  'undeadnights:horde_zombie',
-  'undeadnights:demolition_zombie',
-  'mutantszombies:zombie_brute',
-  'mutantszombies:mutant_brute',
-  'mutantszombies:rotten_mutant',
-  'mutantszombies:crawler',
-]
-
-// Always-visible-in-range HP bossbar (2026-09-04, real playtest
-// feedback batch: "always-visible-in-range" chosen over "only when
-// looking at it" - Jade can't do a custom HP readout for a KubeJS
-// block's own persistent-data value without real Java code, so this
-// reuses the same "tick-poll + real vanilla command" pattern as
-// everything else in this file instead of a new client-rendering
-// surface). Real vanilla `/bossbar` - `players <selector>` each check
-// naturally shows/hides it per-player based on live distance, no manual
-// per-player tracking needed; safe to call redundantly (idempotent, no
-// different from `forceload add` elsewhere in this pack).
+// HP bossbar for players within PEDESTAL_BOSSBAR_RANGE blocks of the
+// pedestal. Its player list is reset on every update, so the bar follows
+// players in and out of range.
 var PEDESTAL_BOSSBAR_ID = 'kubejs:pedestal_health'
 var PEDESTAL_BOSSBAR_RANGE = 64
 
-// Named constant, 2026-09-05 (was a bare 200 literal duplicated in 3
-// places - here, the bossbar max just below, and
-// playtest_starter_kit.js's own starting td_pedestalHealth set, which
-// must match this). Bumped 200 -> 300 same day (direct ask: "pedestal
-// starting HP up").
+// Max HP with no upgrades. playtest_starter_kit.js starts td_pedestalHealth
+// at a literal 300; keep the two equal.
 var PEDESTAL_MAX_HEALTH = 300
 
-// Pedestal upgrades (2026-09-27). This is the "upgrade points for
-// health/armor/thorns" idea from docs/IDEAS.md, built on direct ask: paid
-// in XP levels, 3 tiers per stat. Tiers live on the shared marker
-// (td_pedestalUpg_hp/_armor/_thorns, 0-3). Buying them is
-// pedestal_upgrades.js (/pedestal). The getters live here, next to the
-// numbers they scale, because every consumer in this file needs them and
-// top-level functions are the cross-file-safe idiom (see the header).
-// PEDESTAL_MAX_HEALTH above stays the tier-0 base.
-var PEDESTAL_HP_PER_TIER = 100 // 300 -> 400/500/600
-var PEDESTAL_ARMOR_PER_TIER = 0.15 // 15/30/45% less damage taken
-var PEDESTAL_THORNS_PER_TIER = 1 // 1/2/3 damage a second to each attacker
+// Upgrade tiers, 0 to PEDESTAL_UPGRADE_MAX_TIER, are stored in worldData() as
+// td_pedestalUpg_hp, td_pedestalUpg_armor and td_pedestalUpg_thorns.
+// pedestal_upgrades.js sells them and uses these getters for its menu text.
+var PEDESTAL_HP_PER_TIER = 100 // max HP 400/500/600 at tiers 1-3
+var PEDESTAL_ARMOR_PER_TIER = 0.15 // damage taken cut by 15/30/45%
+var PEDESTAL_THORNS_PER_TIER = 1 // damage a second to each attacker, per tier
 var PEDESTAL_UPGRADE_MAX_TIER = 3
 
 function pedestalUpgradeTier(data, stat) {
@@ -143,7 +64,8 @@ function ensurePedestalBossbar(server, data) {
   server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max ${pedestalMaxHealth(data)}`)
 }
 
-// A Max HP upgrade raises the bar's ceiling after it already exists.
+// Called after a Max HP upgrade; ensurePedestalBossbar() only sets the max
+// when it creates the bar.
 function refreshPedestalBossbarMax(server, data) {
   server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} max ${pedestalMaxHealth(data)}`)
 }
@@ -153,27 +75,12 @@ function updatePedestalBossbar(server, health, x, z) {
   server.runCommandSilent(`bossbar set ${PEDESTAL_BOSSBAR_ID} players @a[x=${x},z=${z},distance=..${PEDESTAL_BOSSBAR_RANGE}]`)
 }
 
-// Distance-independent under-attack alert (2026-09-05, direct ask - a
-// real lost run: a crawler slipped in and destroyed the pedestal while
-// the player was off fighting a horde elsewhere, with zero warning -
-// "all of it silent and unknown to me"). The bossbar above is
-// deliberately distance-limited (only shows within
-// PEDESTAL_BOSSBAR_RANGE) - fine for ambient status, useless as an
-// alert for a player who isn't nearby, which is exactly the scenario
-// that needs one most. This broadcasts to every player (`@a`,
-// title/subtitle + a sound run via `execute as @a at @s` so it plays at
-// each player's own position with no distance falloff, not the
-// pedestal's - the whole point is it must be heard from anywhere).
-//
-// Tier-based, not per-hit - a sustained horde attack deals damage every
-// single check (once/second), so alerting on every hit would spam
-// during exactly the moments that matter most. Alerts fire only when
-// HEALTH DROPS INTO a new, more severe tier than the last one already
-// alerted (first damage taken at all, then 50%/25%/10% of max) -
-// checked via strict `newTier > lastAlertTier`, so this naturally goes
-// quiet again if a future heal (item #11, not yet built - that code
-// should update td_pedestalAlertTier down to match, so a later re-attack
-// can re-alert from the lower baseline) pushes health back up.
+// Under-attack alert for every player, wherever they are; the bossbar only
+// reaches players near the pedestal. It fires only when health drops into a
+// worse tier than td_pedestalAlertTier (1 below full, 2 at half, 3 at a
+// quarter, 4 at a tenth of max), so a sustained attack doesn't repeat it
+// every second. healPedestalBy() lowers the stored tier, so a later attack
+// can alert again.
 var PEDESTAL_ALERT_SOUND = 'minecraft:block.anvil.land'
 
 function pedestalAlertTierForHealth(health, maxHealth) {
@@ -184,6 +91,7 @@ function pedestalAlertTierForHealth(health, maxHealth) {
   return 0
 }
 
+// Alert tier -> [action-bar headline, chat line].
 var PEDESTAL_ALERT_MESSAGES = {
   1: ['THE PEDESTAL IS UNDER ATTACK', 'Something has found it - get back now.'],
   2: ['THE PEDESTAL IS HALFWAY GONE', "It won't hold much longer."],
@@ -191,30 +99,13 @@ var PEDESTAL_ALERT_MESSAGES = {
   4: ['THE PEDESTAL IS ABOUT TO FALL', 'This is it - move!'],
 }
 
-// Subtitle-only, not title+subtitle (2026-09-08, direct ask: "way too
-// large, reduce a lot"). Dropping the big bold title line entirely rather
-// than just shrinking the pair - the empty title still triggers the
-// display window (subtitle only ever shows alongside an active title
-// lifecycle), the flavor line (msg[1]) moves to a real tellraw chat
-// message instead of being dropped, since chat is a separate channel that
-// won't get overwritten by wave_status.js's own actionbar-based hostile
-// counter the way a second title/subtitle call would.
-//
-// **Action bar, not subtitle, 2026-09-10** (direct ask, second time:
-// "reduce the font size of the pedestal is being attacked message"). The
-// subtitle line is the smallest thing the /title system can draw (2x HUD
-// scale); the only smaller on-screen text slot is the action bar (1x -
-// half the subtitle's size), which is where this lives now. The action
-// bar is shared with wave_status.js's hostile counter and wave_spawner.js's
-// next-wave countdown, both of which rewrite it every few ticks and would
-// wipe this instantly - so the alert is also stored on the shared world
-// state (td_pedestalAlertText/td_pedestalAlertUntilTick) and both of those
-// writers show it INSTEAD of their own line while the window is open (via
-// pedestalAlertActionbarText below - a top-level function, the reliably
-// shared cross-file idiom in this build). Outside a wave/countdown nothing
-// else touches the bar, so the one direct `title ... actionbar` here is
-// enough on its own. Chat flavor line + anvil sound unchanged.
-var PEDESTAL_ALERT_ACTIONBAR_TICKS = 80
+// The headline goes to the action bar, the smallest on-screen text, and the
+// second line goes to chat. The sound plays at each player's own position so
+// distance can't mute it. wave_status.js's hostile counter and
+// wave_spawner.js's countdown keep rewriting the action bar, so the headline
+// is also stored until td_pedestalAlertUntilTick, and both show it in place
+// of their own text (pedestalAlertActionbarText below).
+var PEDESTAL_ALERT_ACTIONBAR_TICKS = 80 // 4 seconds
 
 function firePedestalAlert(server, data, tier, now) {
   var msg = PEDESTAL_ALERT_MESSAGES[tier]
@@ -226,47 +117,24 @@ function firePedestalAlert(server, data, tier, now) {
   server.runCommandSilent(`execute as @a at @s run playsound ${PEDESTAL_ALERT_SOUND} hostile @s ~ ~ ~ 1 1`)
 }
 
-// Shared with wave_status.js/wave_spawner.js (see above): the alert text to
-// show in the action bar right now, or null once the window has closed.
+// The alert headline to show in the action bar now, or null once its window
+// has closed. Called by wave_status.js and wave_spawner.js.
 function pedestalAlertActionbarText(data, now) {
   if (!data.contains('td_pedestalAlertUntilTick')) return null
   if (now >= data.getInt('td_pedestalAlertUntilTick')) return null
   return data.getString('td_pedestalAlertText')
 }
 
-// Real heal mechanics, 2026-09-05 (quick-fix scope only, per direct
-// instruction - the bigger "upgrade points for health/armor/thorns"
-// idea stays parked in IDEAS.md, not built here). Shared by both the
-// golden carrot/nether star right-click handler below and wave_status.js's
-// own +20%-per-wave-clear heal (a top-level function, reachable
-// cross-file - same confirmed-shared-scope exception this file's own
-// triggerPedestalDestroyed() call already relies on, see this file's
-// header comment for the real sandbox test that established it).
-// Resets td_pedestalAlertTier DOWN when a heal actually raises health
-// past a previously-alerted tier boundary, so a later re-attack can
-// alert again from the new, lower baseline instead of staying silent
-// because a higher tier was already "used up" - the alert system's own
-// comment promised this when it was built.
-// Visible/audible heal cue (2026-09-08, direct feedback: consuming a
-// golden carrot/nether star was only confirmed by the chat message - "not
-// till I tried to take it off that it was obvious that the item had been
-// consumed"). Fires at the pedestal's own position for any heal, additive
-// to the existing chat message - not a replacement. Shared by both the
-// right-click heal below and wave_status.js's own per-wave-clear heal,
-// since both go through healPedestalBy().
+// Particles and a sound at the pedestal for every heal.
 function firePedestalHealEffect(server, x, y, z) {
   server.runCommandSilent(`particle minecraft:totem_of_undying ${x} ${y + 1} ${z} 0.4 0.5 0.4 0.02 30`)
   server.runCommandSilent(`playsound minecraft:block.beacon.power_select block @a ${x} ${y} ${z} 1 1`)
 }
 
-// `data` is the shared world-state object (see world_state.js) in every
-// real call path since 2026-09-08's multiplayer fix - wave_status.js's
-// own per-wave-clear heal already passes its own (now shared) `data`
-// through, and the right-click heal handler below sources it the same
-// way. HP, the destroyed flag, and the alert tier are all real shared
-// pedestal state - two players healing/damaging their own separate
-// copies would desync exactly like the wave/pedestal state this same
-// fix pass corrected elsewhere.
+// Adds `amount` HP, capped at the current max, and returns whether it did.
+// Does nothing for a destroyed pedestal or one not built yet. Lowers
+// td_pedestalAlertTier to match the new health, so a later attack can alert
+// again. pedestal_upgrades.js calls this directly when Max HP goes up.
 function healPedestalBy(player, data, amount) {
   if (data.getBoolean('td_pedestalDestroyed')) return false
   if (!data.contains('td_pedestalHealth')) return false
@@ -287,57 +155,32 @@ function healPedestalBy(player, data, amount) {
   return true
 }
 
-// Percent-of-max wrapper, used by callers (wave_status.js's own
-// +20%-per-wave-clear heal) that can't safely reference
-// PEDESTAL_MAX_HEALTH directly - top-level var/const does NOT reliably
-// share scope across server_scripts in this build, only top-level
-// FUNCTION declarations do (see this file's header comment for the real
-// sandbox test behind that distinction). Keeps the actual max-HP number
-// defined in exactly one place.
+// Heals `percent` (a fraction, 0.1 = 10%) of the current max HP, upgrades
+// included. wave_status.js calls it on every wave clear.
 function healPedestalByPercent(player, data, percent) {
   return healPedestalBy(player, data, Math.round(pedestalMaxHealth(data) * percent))
 }
 
-// Golden carrot = 10% heal, nether star = full (100%) heal - the rare/
-// premium option, direct ask.
+// Right-click heal items; `percent` is a fraction of max HP. The upgrade
+// screen's lore (fillPedestalGui in pedestal_upgrades.js) describes these,
+// so keep the two in step.
 var PEDESTAL_HEAL_ITEMS = {
   'minecraft:golden_carrot': { percent: 0.1, message: "§d[Pedestal] §fThe carrot's glow seeps into the stone. It holds a little steadier." },
   'minecraft:nether_star': { percent: 1.0, message: '§d[Pedestal] §fSomething ancient answers. The pedestal is whole again.' },
 }
 
-// Right-click-to-heal, for everyone and whether or not the amulet is on
-// the stand (2026-09-28, direct ask: right-click the pedestal with a
-// golden carrot or nether star and it heals on the spot, the item is used
-// up, and it is never placed on the stand). This replaces two earlier
-// halves:
-// - a tick poll (2026-09-08) that let Supplementaries put the item on the
-//   stand, then healed and deleted it up to half a second later. Removed:
-//   the stand now never holds a heal item, so there's nothing left for it
-//   to find, and dropping it also removes a double-heal path.
-// - this handler gated on td_amuletOnPedestal (2026-09-09), the only case
-//   where cancelling the click was known to be safe (a full slot means
-//   Supplementaries never tries to place anything).
+// Right-clicking the pedestal with a heal item heals it on the spot, with or
+// without the amulet on it, and the item never goes on the stand. The
+// pedestal's own interaction (Moonlight's ItemDisplayTile.interact) also runs
+// on the client, so the clicking client has already put the item on the
+// stand when the server cancels the click; pedestalHealClickResync() corrects
+// that client, so at worst the item shows on the stand for one round trip.
 //
-// Why it's safe to cancel on an empty stand now. The 09-08 "phantom item"
-// bug came from client prediction: ItemDisplayTile.interact (Moonlight,
-// decompiled) does its setItem + shrink on the CLIENT too, so the clicking
-// player's client puts the item on the stand before the server's answer
-// arrives. The server never places it (the cancel stops PedestalBlock.use
-// there), so this handler pushes the real state back to that client right
-// away: setChanged() on the server tile re-sends its empty contents
-// (ItemDisplayTile.setChanged -> level.sendBlockUpdated, needsToUpdate-
-// ClientWhenChanged() is true for the pedestal), and a full inventory
-// resync puts back an item the client took from its own hand when nothing
-// was consumed. At worst the item shows on the stand for one round trip.
-//
-// Main hand only: Supplementaries only places from the main hand, and an
-// off-hand event for the same click must never heal a second time.
-// Checked against the real stored pedestal position, since Supplementaries'
-// pedestal is a normal craftable block a player can put down anywhere.
-//
-// event.cancel() throws in this KubeJS build (EventJS.cancel -> EventExit,
-// decompiled), so everything happens before it. The 09-09 handler called
-// player.notify() after cancel(), so its heal toast never showed.
+// Main hand only: Supplementaries only places from the main hand, and the
+// off-hand event for the same click must not heal again. The block must be
+// the stored pedestal, since other Supplementaries pedestals can be placed
+// anywhere. event.cancel() throws in this KubeJS build, ending the handler,
+// so it comes last.
 BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   if (`${event.getHand()}` !== 'MAIN_HAND') return
   var heal = PEDESTAL_HEAL_ITEMS[`${event.item.id}`]
@@ -350,9 +193,9 @@ BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   var block = event.getBlock()
   if (block.getX() !== data.getInt('td_pedestalX') || block.getY() !== data.getInt('td_pedestalY') || block.getZ() !== data.getInt('td_pedestalZ')) return
 
-  // The real pedestal and a heal item: from here on the item never goes
-  // on the stand, healed or not. Nothing is used up at full health or on
-  // a fallen pedestal.
+  // The stored pedestal and a heal item: from here the item never goes on the
+  // stand, healed or not. Nothing is used up at full health or on a fallen
+  // pedestal.
   var health = data.getInt('td_pedestalHealth')
   if (data.getBoolean('td_pedestalDestroyed') || (data.contains('td_pedestalHealth') && health <= 0)) {
     player.notify('§d[Pedestal] §fThere is nothing left here to mend.')
@@ -360,17 +203,17 @@ BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
     player.notify('§d[Pedestal] §fThe pedestal is already whole.')
   } else if (healPedestalByPercent(player, data, heal.percent)) {
     if (!player.isCreative()) event.item.shrink(1)
-    // Toast, not chat (2026-09-09, real playtest ask: "less noise from
-    // the chat window").
     player.notify(heal.message)
   }
   pedestalHealClickResync(player, block)
   event.cancel()
 })
 
-// Undoes the clicking client's predicted placement (see above). Each half
-// is guarded on its own, so a failure here can never stop the cancel that
-// follows it.
+// Puts the clicking client back in step with the server after a cancelled
+// click on the stand: setChanged() makes Moonlight's ItemDisplayTile send a
+// block update with the stand's contents, and sendAllDataToRemote() resyncs
+// the player's inventory. Also used by pedestal_upgrades.js. Each step has
+// its own try, so a failure can't skip the caller's event.cancel().
 function pedestalHealClickResync(player, block) {
   try {
     var tile = block.getEntity()
@@ -385,40 +228,37 @@ function pedestalHealClickResync(player, block) {
   }
 }
 
+// The mob's generic.attack_damage, so tougher mobs chip faster.
 function pedestalAttackDamage(mob) {
   try {
     var attr = mob.getAttribute('minecraft:generic.attack_damage')
     if (attr) return attr.getValue()
   } catch (e) {
-    // Never let one mob's attribute lookup failing break the whole
-    // tick handler - worst case this specific mob deals no damage this
-    // check instead of a hard crash for every player online.
+    // An unreadable attribute counts as 0 damage instead of failing the check.
   }
   return 0
 }
 
+// Once a second, while any player is in the pedestal's dimension: total the
+// damage from roster mobs in range, apply the armor and thorns upgrades, then
+// update HP, the bossbar and the alerts.
 PlayerEvents.tick((event) => {
   var player = event.entity
   var level = player.getLevel()
-  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared
-  // pedestal state, not player.persistentData.
   var data = worldData(level)
   if (!data) return
 
-  // Already destroyed, or the base hasn't finished building yet this
-  // login (td_pedestalHealth is only set once playtest_starter_kit.js's
-  // build finishes) - either way, nothing to check.
+  // Nothing to do once destroyed, or before playtest_starter_kit.js has built
+  // the base and set td_pedestalHealth.
   if (data.getBoolean('td_pedestalDestroyed')) return
   if (!data.contains('td_pedestalHealth')) return
 
   var now = level.getTime()
   if (now % 20 !== 0) return
-  // Once per game tick, not once per player (2026-09-27). PlayerEvents.tick
-  // fires for every online player, and each one passes the `% 20` check on
-  // the same tick. So before this guard, a 3-player game took every mob's
-  // damage 3 times a second. Stamped on the shared marker, so the first
-  // player's tick handles it and the rest skip. Number() on both sides,
-  // since getLong/getTime are Java longs.
+  // PlayerEvents.tick fires for every online player, and all of them pass the
+  // % 20 check on the same tick. Stamping the tick in the shared state applies
+  // damage once a second rather than once per player. getLong() and getTime()
+  // return Java longs, hence Number() on both sides.
   if (data.contains('td_pedestalDamageTick') && Number(data.getLong('td_pedestalDamageTick')) === Number(now)) return
   data.putLong('td_pedestalDamageTick', now)
 
@@ -431,7 +271,9 @@ PlayerEvents.tick((event) => {
   var damage = 0
   var attackers = []
   level.getEntities().forEach((e) => {
-    if (!PEDESTAL_WAVE_MOB_TYPES.includes(`${e.type}`)) return
+    // By type, not by the td_wave_mob tag: any roster mob at the pedestal
+    // damages it, wave-spawned or not.
+    if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
     var dx = e.getX() - x
     var dy = e.getY() - y
     var dz = e.getZ() - z
@@ -444,9 +286,9 @@ PlayerEvents.tick((event) => {
     return
   }
 
-  // Armor upgrade: a flat cut to each second's total, never below 1 so an
-  // attacking horde always chips it. Thorns upgrade: every mob in range
-  // takes the tier's damage back once a second, as vanilla thorns damage.
+  // Armor cuts each second's total by its fraction, never below 1, so an
+  // attacking horde always chips it. Thorns hits every mob in range with its
+  // tier's damage once a second, as the minecraft:thorns damage type.
   damage = Math.max(1, Math.round(damage * (1 - pedestalArmorForTier(pedestalUpgradeTier(data, 'armor')))))
   var thorns = pedestalThornsForTier(pedestalUpgradeTier(data, 'thorns'))
   if (thorns > 0) {
@@ -468,19 +310,18 @@ PlayerEvents.tick((event) => {
     return
   }
 
+  // Out of HP: the final alert fires whatever td_pedestalAlertTier says, then
+  // the run ends.
   firePedestalAlert(player.getServer(), data, 4, level.getTime())
   data.putInt('td_pedestalHealth', 0)
 
-  // Visually match "the pedestal has fallen" - break the actual block
-  // instead of leaving it standing while the world already treats it as
-  // destroyed. Same block-id pair pedestal_destruction.js's own check
-  // accepts (supplementaries:pedestal on every new world, the old
-  // kubejs:amulet_pedestal kept registered for pre-2026-09-05 saves).
+  // Break the block itself (setblock's destroy mode, as if mined) so the world
+  // matches the fallen state.
   var bx = data.getInt('td_pedestalX')
   var by = data.getInt('td_pedestalY')
   var bz = data.getInt('td_pedestalZ')
   player.getServer().runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air destroy`)
   player.getServer().runCommandSilent(`bossbar remove ${PEDESTAL_BOSSBAR_ID}`)
 
-  triggerPedestalDestroyed(player)
+  triggerPedestalDestroyed(player) // pedestal_destruction.js
 })

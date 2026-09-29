@@ -1,417 +1,77 @@
-// Every-5th-wave airdrop (rebuilt 2026-09-08, direct instruction - replaces
-// the old wave-8+ speed-clear-bonus mechanic entirely, not layered
-// alongside it). New trigger: `waveNumber % 5 === 0` on wave clear, no time
-// window, no skill check - a flat cadence reward. **Explicitly
-// provisional** - "I may come back to this mechanic to see if there is a
-// better gameplay feel that lends itself to the airdrop," so don't treat
-// this cadence as locked/final.
+// Supply airdrop after every 5th wave, using the Realistic Airdrop mod
+// (dyairdrop). State lives in worldData() from world_state.js.
 //
-// Mod swap: Paojiao134's Airdrop -> Realistic Airdrop (`dyairdrop`,
-// CurseForge author naughty_keller85), 1.1.0-1.20.1-beta build (CurseForge
-// file 7689163, project 1116182). Real freshness check done before picking
-// this build, not assumed from the prompt's own prior research: CurseForge
-// actually has a whole non-beta 1.0.0.x release line (1.0.0 -> hotfix ->
-// hotfix3.0, Mar-Sep 2025) between the old 0.9.5 beta and this 1.1.0 beta -
-// the "only two 1.20.1 files, both Beta" premise was stale. Picked 1.1.0-beta
-// anyway over the newer-but-still-"release"-tagged hotfix3.0 after diffing
-// both jars' decompiled bytecode directly: the beta is a genuine refactor
-// (readable variables, not MCreator's `_levelxx` soup) that adds one real,
-// useful feature relevant here - a trailing `map` boolean that, when true,
-// calls Xaero's Minimap's own `addwaypointxaero` command on the landed
-// crate's real position (confirmed via decompile: `MobairdropticksProcedure`
-// in the beta build issues `addwaypointxaero @a <x> <y> <z> ...` right after
-// the block-placement setblock). Xaero's Minimap is already installed in
-// this pack, so this is a real, free "find your crate" upgrade over the old
-// mod's own landing behavior - worth the Beta label, matching this pack's
-// existing "Beta is often just a CurseForge convention, not a real
-// instability signal" stance. No crash/instability found in a real
-// full-mod-set sandbox boot (see docs/QUEUE.md for the verification note).
-//
-// Real command chain, confirmed by decompiling SetairdropCommand /
-// Flycode3neoProcedure / MobairdropticksProcedure directly (not guessed
-// from the mod's own listed examples):
-// `/setairdrop random <player> <height> <length> <driftmin> <driftmax>
-// <blockid> <loot_table> <pin> <map>`
-// - `<player>` is a plain vanilla single-EntityArgument selector - `@r`
-//   really does mean "a random online player" here (standard vanilla
-//   selector semantics, nothing dyairdrop-specific), confirmed from the
-//   decompiled command builder (`EntityArgument.entity()`). The crate then
-//   free-drifts a random `driftmin`-`driftmax` block distance from THAT
-//   player's live position in a random direction - there's no world-border
-//   integration in this mod at all (a real behavior difference from the
-//   old Paojiao134's Airdrop, which auto-confined itself to the current
-//   border via its own BorderIntegrationHandler) - drift is kept modest
-//   below specifically so this can't realistically launch the crate
-//   outside the live worldborder even at wave 5 (the earliest trigger,
-//   smallest border). [Superseded: `random` was replaced by `free` with a
-//   target chosen here on 2026-09-22, and crates now land 90-110 blocks
-//   out, usually past the border - see the 2026-09-28 note by the
-//   distance constants below.]
-// - `<blockid>` = `dyairdrop:airdroplarge`, a real registered block
-//   (confirmed in `DyairdropModBlocks`) - the mod's own biggest crate,
-//   matching this slot's existing "big reward" framing. Its tile entity
-//   (`AirdroplargeTileEntity`) genuinely `extends
-//   RandomizableContainerBlockEntity` - real vanilla loot-table-on-first-
-//   open mechanics, the same mechanism `structure_chest_loot_fix.js`
-//   already relies on elsewhere in this pack, not a custom inventory
-//   system.
-// - `<loot_table>` is passed through completely unvalidated all the way
-//   down into a real `setblock ... {LootTable:"<value>"}` command
-//   (confirmed in `MobairdropticksProcedure` - it never touches a
-//   vanilla-only allowlist), so a custom pack-registered loot table id
-//   resolves exactly like any vanilla one - real confirmation of the
-//   "still needs verification" item from the original spec. Points at
-//   `kubejs:chests/wave_airdrop` (data/kubejs/loot_tables/chests/
-//   wave_airdrop.json), the same reward composition the old hand-authored
-//   `config/airdrop/wave8_bonus.json` JSON pool used (legendary loot bag +
-//   netherite scrap + diamond block), just as a real vanilla-format loot
-//   table instead of the old mod's bespoke pool format.
-// - `<pin>` = false - no password lock, this is an unconditional reward,
-//   not a puzzle.
-// - `<map>` = true - drops the Xaero waypoint described above.
-//
-// **Weapon/ammo/grenade pools added 2026-09-11**, direct feedback: airdrops
-// always gave the exact same 3 items (legendary bag + netherite scrap +
-// diamond block, kept unchanged below) - flat, no variety. No firearm mod
-// was installed in this pack; **Simple Guns: reworked** added (CurseForge
-// project 437035, file 7924023, `simple_guns_reworked-1.9.9-forge-1.20.1.jar`,
-// zero dependencies, real Forge 1.20.1 build - confirmed fresh, uploaded
-// Apr 2026, not a stale pick) - single small MCreator mod (same shape as
-// dyairdrop/TFTH/Advanced Tower Defense already in this pack) that covers
-// guns, ammo AND a grenade in one zero-footprint jar, so no second mod was
-// needed. Real item/registry ids below confirmed by decompiling the exact
-// installed jar's `SimpleGunsReworkedModItems.class` constant pool directly,
-// not guessed from the mod's lang file alone (which also carries stale
-// `item.simple_guns.*` keys from before the "reworked" rename - those are
-// NOT real registry ids, only `simple_guns_reworked:*` ones are). 16 guns,
-// 7 ammo/consumable types (pistol_ammo/rifle_ammo/shotgun_ammo/sniper_ammo
-// cover the 4 core gun families; rocket/fuel_tank/charged_potato are the
-// bazooka/flame_thrower/potato_cannon's own specialty ammo) plus
-// `simple_guns_reworked:grenade` - all real, all player-craftable via the
-// mod's own stock vanilla-material recipes too (e.g. grenade = 4x
-// iron_nugget + gunpowder, confirmed from `data/simple_guns_reworked/
-// recipes/rgrneade.json`) - putting them in loot here is a deliberate
-// choice, same call as retiring the vanilla-only loot rule for "kills should
-// feel like progressing your tech" (see `docs/IDEAS.md`), not an oversight
-// of the "no loot shortcuts for a home machine's own output" principle.
-// 3 new pools in `wave_airdrop.json`, additive only - the original 3 pools
-// are untouched: one weighted pick across all 16 guns (commoner/weaker guns
-// weighted higher - first-pass numbers, not playtested), 2 weighted ammo
-// rolls, and a guaranteed 2-4 grenades. No re-recipe layer added, matching
-// this pack's existing "don't re-recipe stock mod content" convention (see
-// FEATURES.md's Storage & power system entry for the precedent).
-// [2026-09-28: the gun and ammo rolls were independent, so only ~34% of
-// crates held ammo the gun could fire. The gun pick is now a weighted pick
-// of per-gun bundles (data/kubejs/loot_tables/chests/airdrop/*.json: the
-// gun plus the ammo its ReloadProcedure really consumes), same weights.
-// 15 guns - the Assault Rifle is broken and stays out.]
-// Real config judgment calls (pack/config/dyairdrop.toml, header comment
-// there has the full reasoning): `enable=false` (this pack's own trigger
-// replaces the mod's autonomous global-event airdrop entirely, not
-// alongside it), `enableenemies=false` (the mod's own default hostile-mob-
-// near-crate mechanic would reintroduce a non-zombie-family mob
-// (pillager) and a second, untracked spawn system on top of this pack's
-// own wave/horde spawning), `forceload=false` (avoids a real risk the mod
-// author's own comment flags: its forceload path runs `forceload add ~280
-// ~ ~-280 ~` and later `forceload remove all` (decompiled
-// Flycode2forceloadProcedure), which would also drop the base's own
-// permanent forceload. The "every drop lands near a loaded player" reason
-// first given here stopped being true - this file force-loads just the
-// plane's own flight path now, see the 2026-09-28 note below).
-//
-// **"Airdrop incoming" cues, 2026-09-10** - direct playtest feedback: "it
-// dropped but i missed the plane coming over and stuff, i want to know
-// when to look up." Two real reasons the old single "SUPPLIES INBOUND"
-// title was missable, both fixed here:
-//  1. It fired in the same tick as the wave-clear popup - and at wave 5
-//     (the first airdrop wave) in the same tick as the gear-removal title
-//     too. Vanilla `/title` resets on every call, so it was overwritten
-//     before it could be read - the exact collision wave_status.js's
-//     delayed-title queue exists for. The drop is now DELAYED: the wave
-//     clear only schedules it (td_airdropDueTick, WAVE_AIRDROP_DELAY_TICKS
-//     later - past the wave-clear popup and the wave-5 follow-up titles),
-//     and the plane is launched from the tick handler below with its own
-//     clear title ("LOOK UP") and an attention sound at every player, on a
-//     screen that's otherwise quiet.
-//  2. Nothing marked the actual landing. The falling crate is a real
-//     entity (`dyairdrop:airdrop` for the large crate - decompiled
-//     `PlaneticksneoProcedure`: the plane summons it at tick 105 of its
-//     flight, small crates use `dyairdrop:smallairdrop`) that the mod
-//     replaces with the crate block + Xaero waypoint the moment it lands
-//     (`MobairdropticksProcedure` discards the entity right after its
-//     setblock). So "crate entity seen, then gone" == landed, polled every
-//     10 ticks only while a drop is in flight (td_airdropWatch), never
-//     otherwise. That moment gets its own subtitle pointing at the map
-//     marker.
-// The mod's own plane sound (`dyairdrop:planesound`, volume 25, played by
-// `Flycode2neoProcedure` at the plane's spawn) and its own chat line ("A
-// random airdrop is being deployed! Expected coordinates: ...") are left
-// as they were - both still fire, they just weren't enough on their own.
-//
-// **Plane flight duration + landing beacon, 2026-09-15** - direct
-// feedback: "the airdrop plane animations should last longer" and "can
-// there be a large beam of light or something indicating where it is, a
-// marker on the map would be good too" (the map marker half already
-// exists - `<map>=true` above already drops a real Xaero waypoint on
-// landing - only the flight duration and a physical beam needed
-// building).
-//
-// Flight duration, decompiled directly (`javap -c` against the actual
-// installed jar, not guessed): `Flycode3neoProcedure` computes the drop
-// TARGET x/z once (the drift-around-the-player calc already described
-// above) and forwards it untouched into `/setairdrop free`;
-// `Flycode2neoProcedure` (the `free` handler) then spawns the plane
-// entity at `x - length` (real bytecode: `getDouble("x")` minus
-// `getDouble("length")`, rounded) - i.e. `length` is how far back the
-// plane spawns from the FIXED target, not a scale on the target itself,
-// so raising it lengthens the flyover without moving the landing spot.
-// `PlaneticksProcedure` (the plane's own tick - already carrying this
-// pack's earlier 3.0 -> 1.0 blocks/tick speed patch, see MODS.md's
-// constant-patch entry) tracks `dpassed = abs(currentX - startX)` every
-// tick and drops the real crate entity once `dpassed` is within 1 block
-// of `length` (`flytime` records the tick that happened on), then keeps
-// flying until `timer >= flytime*2` OR a hardcoded `timer >= 205`
-// absolute cap, whichever comes first - so `length` can't be pushed past
-// ~200 ticks of flight or the plane self-destructs before ever reaching
-// its drop distance and no crate spawns at all. First pass: 60 -> 120
-// (~3s -> ~6s pre-drop at the patched speed).
-//
-// **Bumped again same day, direct follow-up: "can you make the plane
-// take 10 secs. its cool to see it fly over."** 10s = 200 ticks, which
-// only leaves 5 ticks of slack under that hardcoded 205 absolute cap -
-// real risk of the plane self-destructing before it ever reaches its
-// drop distance (no crate, no loot, nothing logged) on a run where the
-// every-5-tick velocity reassert or the `round(...) <= 1` trigger
-// tolerance eats into that margin. No way around this by tuning
-// `length`/speed alone - the 205 is a hardcoded tick count, independent
-// of how a 200-tick flight is reached. So the SAME `tools/
-// patch_class_constants.py` technique this jar's speed constant already
-// used got pointed at this cap too: `net/mcreator/dyairdrop/procedures/
-// PlaneticksProcedure.class`, `Double 205.0 -> 250.0` (confirmed a
-// single, unambiguous constant-pool hit via `javap -c` before and after,
-// same jar entry count before/after - see MODS.md's constant-patch
-// entry). `WAVE_AIRDROP_LENGTH` 120 -> 200 for the real 10s pre-drop
-// flyover this asked for, now with a genuine ~50-tick (~2.5s) margin
-// under the raised cap instead of 5, and `flytime*2`=400 still exceeds
-// the new 250 cap, so the post-drop tail is governed by it the same way
-// as before (~2.5s flyaway before despawn). [Cap raised again 250 -> 400
-// on 2026-09-22 (MODS.md constant-patch entry): the plane really nets
-// 0.84 blocks/tick with drag, so the drop lands at tick ~238, only 12
-// under 250. The installed jar's PlaneticksProcedure reads `timer >=
-// 400` (re-checked 2026-09-28); the plane now flies ~8s and ~136 blocks
-// past the drop before despawning.]
-//
-// Landing beacon: neither the mod nor this file previously tracked the
-// crate's landing spot proactively - `td_airdropCrateX/Y/Z` was only ever
-// populated reactively, by `BlockEvents.rightClicked` once a player
-// physically found and opened it. Fixed by watching the falling crate
-// entity's own position on the existing 10-tick poll while it's still
-// airborne (`td_airdropFlightX/Y/Z`, overwritten every cycle - it falls
-// straight down once dropped, no horizontal drift, so X/Z stay accurate;
-// only Y goes stale between polls) and, the moment it's gone (landed),
-// scanning a bounded column down from that last-seen Y for the real
-// placed `dyairdrop:airdroplarge` block (`findLandedCrateY` below) -
-// exact, and immune to nearby foliage throwing off a heightmap guess.
-// That seeds the SAME `td_airdropCrateWatch` state `pollAirdropCrateCleanup`
-// already maintains (normally only ever started by the player's first
-// right-click), so the beam and the existing auto-cleanup share one
-// position/lifetime instead of a second parallel tracker - a plain
-// vanilla `particle minecraft:end_rod ... force` column at that spot,
-// redrawn on the same 10-tick cadence `pollAirdropCrateCleanup` already
-// runs on, plus one bigger one-off burst the instant landing is
-// detected. `force` is deliberate: the crate can land 90-110 blocks from
-// the pedestal (`WAVE_AIRDROP_DISTANCE_MIN`/`MAX`), well past vanilla's normal
-// particle-visibility range - the whole point is a real long-range
-// landmark, not a close-up effect. Stops the moment
-// `pollAirdropCrateCleanup`'s own loot-check clears the watch (looted or
-// broken/replaced), same as the existing auto-cleanup - no separate
-// timer needed.
+// wave_status.js calls maybeTriggerWaveAirdrop() on each wave clear. That picks
+// a landing spot and force-loads the plane's flight path; 12 s later the tick
+// handler launches the plane with /setairdrop free. The mod drops a falling
+// crate entity and swaps it for the crate block on landing, so "crate entity
+// seen, then gone" means it has landed. The handler then marks the crate with
+// a beacon and a Xaero's Minimap waypoint, and removes it once it is emptied.
+// The mod's own random airdrops, enemies at crates and force-loading are off
+// in pack/config/dyairdrop.toml.
 
-// **2026-09-22 - "the airdrop location NEEDS to add a waypoint marker on
-// the map. I could see [neither] the plane nor the drop. maybe it was too
-// far away?"** Four real findings, four changes:
-//  1. The map waypoint NEVER worked. The `<map>=true` mechanism described
-//     above is real in the airdrop mod (it does issue `addwaypointxaero @a
-//     x y z ...` on landing) - but that command does not exist: the
-//     installed xaerominimap-forge-1.20.1-26.4.2.jar contains no such
-//     string anywhere (full jar scan), so it has silently failed on every
-//     drop since 2026-09-08. What Xaero's Minimap actually supports from a
-//     server is its chat-sharing protocol (decompiled ClientEvents.
-//     handleClientSystemChatReceivedEvent -> WaypointSharingHandler.
-//     onWaypointReceived): a system message containing
-//     `xaero-waypoint:<name>:<initials>:<x>:<y>:<z>:<color>:<rotate>:<yaw>`
-//     is swallowed client-side and re-rendered as "<sender> shared a
-//     waypoint: <name> [Add]", where Add opens the mod's own prefilled
-//     Add-Waypoint screen (RUN_COMMAND "/xaero_waypoint_add:..." which the
-//     mod intercepts in its client-send handler). The mod's only
-//     fully-automatic prefix (`xaero_waypoint_add:`) is intercepted from
-//     chat the PLAYER sends, not from server messages, so a genuinely
-//     silent server-side add is not possible - click Add, confirm, done.
-//     sendAirdropWaypoint() below sends exactly that message on landing.
-//  2. A REAL in-world marker: a vanilla `minecraft:beacon` placed on top of
-//     the landed crate. A beacon renders its full-height beam with no
-//     pyramid at all (BeaconBlockEntity.tick computes the beam column
-//     independently of the base; the base only gates effects/sound), and
-//     the crate fell through that exact air column, so the sky above is
-//     guaranteed clear. Visible from render distance (BeaconRenderer's own
-//     256-block view distance), far more than the end_rod particle column
-//     it replaces (the periodic redraw is gone; the one-off landing burst
-//     stays). Unbreakable while tracked (BlockEvents.broken cancel on that
-//     one position - a free beacon per drop would be a real loot exploit),
-//     removed together with the crate by pollAirdropCrateCleanup's own
-//     exits (looted / broken by hand / 30-min timeout), and only ever one
-//     tracked at a time (a new landing removes the previous drop's).
-//  3. [The distance/arc half of this was reverted 2026-09-28 - see the
-//     note by the distance constants below. The `free` command half
-//     stands.] Closer and in view: the landing spot is now chosen HERE, 50-70
-//     blocks from the pedestal (was 90-110 from a random player), and
-//     handed to `/setairdrop free <x> <z> ...` (explicit target; decompiled
-//     SetairdropCommand - 7 args: x z height length blockid loot_table
-//     pin, no map bool on this variant) instead of `/setairdrop random`.
-//     The plane always spawns WAVE_AIRDROP_LENGTH blocks WEST of its
-//     target and flies east (Flycode2neoProcedure, decompiled), so keeping
-//     the target inside a +/-75 degree eastern arc of the pedestal means
-//     the 10-second flyover crosses the base itself before the drop
-//     instead of passing 100 blocks off to one random side. "Random
-//     direction" is now "random within the eastern arc" - a deliberate
-//     trade for a flyover people can actually see; the plane's own
-//     64-chunk tracking range (DyairdropModEntities, decompiled) means the
-//     client sees it from spawn at any normal render distance.
-//  4. Altitude: `<height>` is the plane's ABSOLUTE spawn Y (Flycode2neo
-//     summons it at (x - length, height, z)), and it was a flat 100 - on a
-//     base built at Y 90 that is a plane at treetop level. Now pedestalY +
-//     WAVE_AIRDROP_HEIGHT_ABOVE_PEDESTAL at launch time.
-// Plus the standing action-bar line now says which way to look ("coming
-// in from the west") and, for 20s after touchdown, gives the crate's real
-// coordinates (airdropInboundActionbarText grew a `now` parameter for
-// that; both callers updated).
+// The constants below rely on how Realistic Airdrop behaves:
+// - /setairdrop free <x> <z> <height> <length> <block> <loot table> <pin>
+//   summons the plane 60 ticks later, `length` blocks west of (x, z), at
+//   absolute Y `height`. <pin> password-locks the crate.
+// - The plane flies due east and drops a crate entity once it has flown
+//   `length` blocks. The crate falls straight down from a whole-block x/z, and
+//   the mod replaces it with the crate block when it lands.
+// - The jar is patched (docs/MODS.md, "Patched jars"): the plane covers about
+//   0.84 blocks/tick and despawns at flight tick 400.
 var WAVE_AIRDROP_INTERVAL = 5
 var WAVE_AIRDROP_BLOCK_ID = 'dyairdrop:airdroplarge'
 var WAVE_AIRDROP_LOOT_TABLE = 'kubejs:chests/wave_airdrop'
-// Absolute Y 100 -> pedestal-relative, 2026-09-22 (see header item 4).
 var WAVE_AIRDROP_HEIGHT_ABOVE_PEDESTAL = 40
-// 60 -> 120 -> 200, 2026-09-15 (see header) - a real 10s pre-drop flyover
-// at the patched 1.0 blocks/tick plane speed (0.84 measured, with drag).
-// The mod's own despawn ceiling is constant-patched 205 -> 250 -> 400, so
-// the drop at tick ~238 has real margin. Only ever shortened by
-// airdropFlightLength() below, for a flight the border would block.
+// The plane's approach in blocks (`length` above). At 0.84 blocks/tick it
+// reaches the drop point at flight tick ~240 (12 s), which must stay under the
+// 400-tick despawn.
 var WAVE_AIRDROP_LENGTH = 200
-// **Landing spot, 2026-09-28: 90-110 blocks from the pedestal, uniformly
-// random direction (0-360).** History: 10-30 drift from a random player
-// (original) -> 90-110 drift (2026-09-12, direct ask: "the airdrop should
-// land randomally 100 blocks away in any direction") -> 50-70 from the
-// pedestal inside a +/-75 degree eastern arc (2026-09-22, header item 3,
-// so the flyover crossed the base) -> back to ~100 in any direction: the
-// user rejected the arc trade and restated the original ask. The plane
-// still spawns WAVE_AIRDROP_LENGTH blocks west of the target and flies
-// east (jar behaviour), so it crosses the base only when the crate lands
-// east of it - accepted.
-//
-// The world border, corrected 2026-09-28 (the old note here said the
-// border only clips non-player entities - wrong: vanilla clips EVERY
-// entity that is inside it and near its edge, players included,
-// Entity#collideBoundingBox -> WorldBorder#isInsideCloseToBorder,
-// checked in this build's bytecode). Its half-width is ~42 at wave 5 and
-// ~80 at wave 10, and only passes 110 around wave 13 (base_expansion.js),
-// so early crates usually land outside it:
-//  - the crate (/setblock) and its beacon don't care;
-//  - a player can't walk out, and can't open or break a block out there
-//    (ServerLevel#mayInteract checks the border), until the amulet goes
-//    on the pedestal - amulet_pedestal.js pushes the border out by 10M.
-//    That's the intended "go and get it" loop;
-//  - the PLANE could be pinned: vanilla walls an entity within about its
-//    own width of any edge, from inside or out, and the mod discards a
-//    plane whose x-velocity hits 0. That killed the live wave-5 drop on
-//    2026-09-28. Since 2026-09-29 the plane spawns with noPhysics (see the
-//    EntityEvents.spawned hook by findAirdropCrate), so neither the border
-//    nor terrain can stop it, and every flight is full length.
+// Landing distance from the pedestal, in blocks, in any direction. The plane
+// always comes from the west, so it only crosses the base when the crate lands
+// to the east. Early crates often land outside the world border. Players can't
+// cross it or use blocks beyond it (ServerLevel#mayInteract checks the border)
+// until the amulet on the pedestal pushes it out (amulet_pedestal.js); the
+// crate is meant to be something to go and get.
 var WAVE_AIRDROP_DISTANCE_MIN = 90
 var WAVE_AIRDROP_DISTANCE_MAX = 110
-// **Flight-path forceload, 2026-09-28.** Entities only tick inside a
-// player's simulation distance or a forced chunk (DistanceManager:
-// entity-ticking = within simulationDistance chunks of a player, checked
-// in this build's bytecode). A west-side target puts the plane's spawn
-// point 290-310 blocks west of the pedestal - past any player's
-// simulation distance (12 on the client, 10 on the dedicated server, 8 in
-// MODS.md's lean profile) and past the base's own +/-96 forceload - so
-// the plane would hang there frozen and no crate would ever drop. Likely
-// already seen: the live save's wave-5 drop on 2026-09-28 (plane spawn
-// 167 blocks west, 10 chunks out, under the old eastern arc) never landed
-// - no crate, no plane left in the save, no obstruction on its path; the
-// wave-10 one, same geometry mirrored, landed fine. So
-// the chunk row the plane flies along is force-loaded from the moment
-// the drop is scheduled (wave clear, 12s before launch - time to load or
-// generate them before the mod summons the plane 60 ticks after
-// /setairdrop) until the plane is gone and the crate is down. Chunks
-// inside the base's permanent forceload square are never added or
-// removed here: `forceload remove` isn't reference-counted and would
-// strip the base's own.
-var WAVE_AIRDROP_BASE_FORCELOAD_RADIUS = 96 // KEEP IN SYNC with the pedestal +/-96 forceload in mob_aggro.js (ensurePedestalMarker) and playtest_starter_kit.js
-// The plane flies on after the drop until the 400-tick cap. 144 was cut too
-// fine: the 2026-09-29 sandbox run measured the plane's last position at
-// target +152 (one block past the strip, where it froze in the sky), so
-// two chunks of margin now.
+// Entities freeze outside every player's simulation distance unless their chunk
+// is force-loaded. A target west of the base puts the plane's spawn point up to
+// 310 blocks out, where it would hang frozen and never drop, so the chunk row
+// it flies along is force-loaded from the wave clear until the plane is gone
+// and the crate has landed. Chunks inside the base's permanent forceload square
+// are left alone: `forceload remove` isn't reference-counted and would strip
+// the base's own. The radius below must match that square in
+// playtest_starter_kit.js.
+var WAVE_AIRDROP_BASE_FORCELOAD_RADIUS = 96
+// Blocks past the target that the flight strip covers; the plane gets about 150
+// blocks past it before despawning.
 var WAVE_AIRDROP_TAIL_BLOCKS = 176
-var WAVE_AIRDROP_FORCE_HOLD_TICKS = 480 // after launch: the mod's 60-tick summon delay + the plane's 400-tick life + margin
-var WAVE_AIRDROP_LANDED_NOTE_TICKS = 20 * 20 // action-bar "crate landed to the <direction>" line after touchdown
+// Minimum ticks after launch that the flight strip stays force-loaded: the
+// 60-tick summon delay, the 400-tick flight and a margin.
+var WAVE_AIRDROP_FORCE_HOLD_TICKS = 480
+var WAVE_AIRDROP_LANDED_NOTE_TICKS = 20 * 20 // action-bar "crate landed" line
 var WAVE_AIRDROP_BEACON_BLOCK = 'minecraft:beacon'
 
-// 12s after the wave clears - the wave-clear subtitle (100-tick title
-// lifecycle) is off-screen by then. Used to also wait out the wave-5
-// "THE NIGHTS GROW LONGER" follow-up title too - removed 2026-09-16 (see
-// wave_status.js's FIXED_WAVE_EVENTS) - but 240 is kept as-is, the
-// wave-clear subtitle alone already justifies it.
+// The launch comes 12 s after the wave clear, so the LOOK UP title doesn't
+// overwrite the wave-clear titles and the flight strip has time to load. The
+// landing watch gives up 60 s after launch.
 var WAVE_AIRDROP_DELAY_TICKS = 240
-var WAVE_AIRDROP_WATCH_TIMEOUT_TICKS = 1200 // give up watching for a crate after 60s (command failed, chunk issue, etc.)
+var WAVE_AIRDROP_WATCH_TIMEOUT_TICKS = 1200
 var WAVE_AIRDROP_POLL_TICKS = 10
 var WAVE_AIRDROP_CRATE_ENTITIES = ['dyairdrop:airdrop', 'dyairdrop:smallairdrop', 'dyairdrop:weaponairdrop', 'dyairdrop:medicalairdrop']
 
-// **Looted crate cleanup, 2026-09-10** (direct ask: "is there a way for the
-// drop loot crate to go away after its been looted. right now i have to
-// break it with a pickaxe"). The mod has no such behaviour of its own -
-// decompiled AirdroplargeBlock: its randomTick runs AirdroplargeticksProcedure,
-// a slow self-timer (thresholds of 80/3000/20000 on a random-tick-driven
-// counter) that has nothing to do with the contents. So this file watches
-// the crate the player actually opened: `BlockEvents.rightClicked` on the
-// crate block records its position on the shared world state, and the
-// 10-tick poll below reads the block entity's saved NBT - a
-// RandomizableContainerBlockEntity keeps a `LootTable` key until the first
-// open unpacks it, then saves an `Items` list - and removes the block the
-// first time that list is empty AFTER the loot was unpacked. Reading saved
-// NBT (block.getEntityData) rather than the item-handler capability is
-// deliberate: touching the capability would call getItem() and unpack the
-// loot table early, with no player. One crate is watched at a time (the
-// last one opened); a crate never opened is never touched. The Xaero
-// waypoint the mod added on landing is client-side and stays - delete it
-// from the map if it bothers you.
-var WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS = 20 * 60 * 30 // stop watching an opened-but-unfinished crate after 30 min
+// Looted-crate cleanup: the mod doesn't remove a crate when it is emptied. One
+// crate is watched at a time, the one that last landed or was last opened, and
+// removed once it has been looted. Watching stops after 30 minutes and the
+// crate stays.
+var WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS = 20 * 60 * 30
 
-// **Persistent "look up" reminder, 2026-09-16** - direct follow-up feedback:
-// "didnt see the plane fly overhead," the exact same complaint the LOOK UP
-// title + note block bell (2026-09-10, see this file's own header above)
-// were built to fix. That title only shows for vanilla's own ~5s (100-tick)
-// fade-in/stay/fade-out lifecycle - a single flash a player mid-fight or
-// looking at their inventory the instant it fires can easily miss, with
-// nothing left on screen a few seconds later to say a plane is still out
-// there. Real fix: a standing action-bar line for the whole time a drop is
-// actually being watched (td_airdropWatch - covers both the plane's flight
-// and the crate's fall, the same window this file already tracks for its
-// own timeout logic), not a one-shot popup.
-//
-// Deliberately NOT just a raw `player.setStatusMessage(...)` call from this
-// file's own tick handler below - the action bar is a single shared line,
-// and two different scripts refreshing it on two different poll cadences
-// (this file's 10-tick airdrop poll vs. wave_spawner.js's 20-tick countdown
-// display / wave_status.js's 4-tick hostile counter) would just flicker
-// between them. Same problem pedestal_health.js's own
-// pedestalAlertActionbarText already solved for the pedestal-under-attack
-// alert - this follows that exact shared-function convention (top-level
-// FUNCTIONS reliably share scope across server_scripts in this build, see
-// that function's own header) instead of a second competing writer:
-// wave_spawner.js's countdown line and wave_status.js's hostile-count line
-// both check this alongside their own pedestalAlert now, in the same
-// pedestalAlert-wins-first order, so whichever is actually relevant at a
-// given moment shows without the two fighting over the line.
+// Action-bar line from launch until the crate lands, then for
+// WAVE_AIRDROP_LANDED_NOTE_TICKS after; null otherwise. The action bar is one
+// shared line, so this file never writes it: wave_spawner.js's countdown and
+// wave_status.js's hostile counter show this text in place of their own, with
+// pedestalAlertActionbarText taking precedence.
 function airdropInboundActionbarText(data, now) {
   if (data.getBoolean('td_airdropWatch')) return '§b✈ §fSupply plane coming in from the west - look up!'
   if (data.contains('td_airdropLandedUntilTick') && now < data.getInt('td_airdropLandedUntilTick')) {
@@ -420,29 +80,21 @@ function airdropInboundActionbarText(data, now) {
   return null
 }
 
-// Called from wave_status.js's own wave-clear branch, right alongside the
-// pedestal heal - matches that file's own established cross-file call
-// pattern into pedestal_health.js's healPedestalByPercent (shared top-
-// level FUNCTIONS are the proven-reliable cross-file idiom in this
-// codebase; shared top-level var/const are not, see bounty_kills.js's own
-// real HOSTILE_TYPES collision writeup for why that distinction matters).
-// Only schedules now - see the header for why the launch itself is
-// deferred to the tick handler below.
+// Called from wave_status.js on each wave clear. It only schedules the drop;
+// the tick handler below launches it.
 function maybeTriggerWaveAirdrop(player, data, waveNumber) {
   if (waveNumber % WAVE_AIRDROP_INTERVAL !== 0) return
   var now = player.getLevel().getTime()
   data.putInt('td_airdropDueTick', now + WAVE_AIRDROP_DELAY_TICKS)
   data.putBoolean('td_airdropPending', true)
-  // Landing spot picked and its flight path force-loaded now, 12s ahead of
-  // the launch (see the 2026-09-28 forceload note up top).
+  // Planned now so the flight strip is loaded by launch time.
   airdropPlanFlight(player.getServer(), data, now)
 }
 
-// Picks the landing spot (90-110 blocks, any direction - see the distance
-// constants) and force-loads the chunk row the plane will fly along: from
-// WAVE_AIRDROP_LENGTH (+1 chunk) west of the target to the end of its
-// post-drop tail east of it. Math.PI is undefined in this Rhino build
-// (mob_aggro.js's confirmed finding), hence the literal 2*pi.
+// Picks a landing spot and force-loads the chunk row the plane will fly along,
+// from a chunk west of its spawn point to WAVE_AIRDROP_TAIL_BLOCKS past the
+// target, after releasing any strip still held from the previous drop.
+// 6.283185307179586 is 2*pi: Math.PI is undefined in this Rhino.
 function airdropPlanFlight(server, data, now) {
   if (data.getBoolean('td_airdropForceActive')) airdropReleaseForceload(server, data)
   var px = data.getInt('td_pedestalX')
@@ -458,15 +110,14 @@ function airdropPlanFlight(server, data, now) {
   data.putInt('td_airdropForceCX1', (tx + WAVE_AIRDROP_TAIL_BLOCKS) >> 4)
   data.putInt('td_airdropForceCZ', tz >> 4)
   data.putBoolean('td_airdropForceActive', true)
-  // Provisional - launchWaveAirdrop() restarts the hold from the launch tick.
+  // launchWaveAirdrop() restarts this hold from the launch tick.
   data.putInt('td_airdropForceUntilTick', now + WAVE_AIRDROP_DELAY_TICKS + WAVE_AIRDROP_FORCE_HOLD_TICKS)
   airdropForceStrip(server, data, 'add')
 }
 
-// Runs `forceload <verb>` over the stored flight strip, skipping any chunk
-// column inside the base's permanent forceload square (never touched here -
-// see the forceload note up top). The strip is one chunk row: the plane
-// flies due east at a fixed z, and an entity ticks by its own chunk.
+// Runs `forceload <verb>` over the stored strip, skipping chunk columns inside
+// the base's permanent forceload square. One chunk row is enough: the plane
+// flies due east at a fixed z, and an entity ticks with its own chunk.
 function airdropForceStrip(server, data, verb) {
   var cx0 = data.getInt('td_airdropForceCX0')
   var cx1 = data.getInt('td_airdropForceCX1')
@@ -491,70 +142,38 @@ function airdropReleaseForceload(server, data) {
   airdropForceStrip(server, data, 'remove')
 }
 
-// Flight length for this target: WAVE_AIRDROP_LENGTH, unless the border
-// would pin the plane (see the border note by the distance constants) -
-// flight line inside the bordered square's z-span, target past its east
-// edge, spawn point short of that edge. Then the plane spawns just east of
-// the edge instead, a shorter flyover rather than no crate. A length of 1
-// still drops (the jar drops once distance flown is within 1 of it), and a
-// plane already overlapping the edge isn't blocked by it.
-//
-// Superseded 2026-09-29: the plane is noPhysics now (see the spawn hook by
-// findAirdropCrate), so the border can't pin it and the shortening only cut
-// flyovers short. A tick simulation of this version's 6-block clearance also
-// showed it missed cases (the real margin is ~11 blocks, and the west edge
-// pins rows that graze the z-edge band). Kept as a function so the call site
-// and the probe don't change.
-function airdropFlightLength(level, tx, tz) {
-  return WAVE_AIRDROP_LENGTH
-}
-
 function launchWaveAirdrop(server, level, data, now) {
-  // A drop scheduled before flights were planned at schedule time
-  // (2026-09-28) has no stored target - plan it here instead; the 60-tick
-  // summon delay still gives the strip a moment to load.
+  // A drop scheduled without a stored target (an older save) is planned here;
+  // the 60-tick summon delay still gives the strip a moment to load.
   if (!data.getBoolean('td_airdropTargetSet')) airdropPlanFlight(server, data, now)
   data.putBoolean('td_airdropTargetSet', false)
   var tx = data.getInt('td_airdropTargetX')
   var tz = data.getInt('td_airdropTargetZ')
   var height = data.getInt('td_pedestalY') + WAVE_AIRDROP_HEIGHT_ABOVE_PEDESTAL
-  var length = airdropFlightLength(level, tx, tz)
+  // Always the full length: with noPhysics (see the spawn hook below) neither
+  // the world border nor terrain can stop the plane.
+  var length = WAVE_AIRDROP_LENGTH
   data.putInt('td_airdropForceUntilTick', now + WAVE_AIRDROP_FORCE_HOLD_TICKS)
-  // Logged so a "never saw the drop" report can be checked against where it
-  // actually went (the mod's own coordinates chat line was on the `random`
-  // path only).
+  // The mod prints no coordinates for a `free` drop, so log where it is headed.
   console.log(`wave_airdrop.js: supply plane launched toward (${tx}, ${tz}) at Y ${height}, spawning ${length} blocks west of it`)
   server.runCommandSilent(
     `setairdrop free ${tx} ${tz} ${height} ${length} "${WAVE_AIRDROP_BLOCK_ID}" "${WAVE_AIRDROP_LOOT_TABLE}" false`
   )
   server.runCommandSilent(`title @a title {"text":"LOOK UP","color":"gold","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"Supply plane coming in from the west - watch the sky.","color":"yellow"}`)
-  // Played at each player's own position (no distance falloff) - the
-  // plane's own engine sound plays at the plane, which may start well
-  // outside earshot depending on where it spawns.
+  // At each player's own position, so everyone hears it at full volume.
   server.runCommandSilent('execute as @a at @s run playsound minecraft:block.note_block.bell master @s ~ ~ ~ 1 1.2')
   data.putBoolean('td_airdropWatch', true)
   data.putBoolean('td_airdropCrateSeen', false)
   data.putInt('td_airdropWatchUntilTick', now + WAVE_AIRDROP_WATCH_TIMEOUT_TICKS)
 }
 
-// **Plane can't be walled, 2026-09-29.** The 2026-09-28 live wave-5 drop
-// that "didn't last very long in the air" was the border, not a freeze:
-// decompiled PlaneticksProcedure discards the plane (with a small
-// explosion) the moment its x-velocity is 0 or isInWall() is true, and
-// vanilla's Entity#collide adds the world border as a wall for any entity
-// within ~its own width of an edge. At wave 5 the border was 85 wide and the
-// flight row ran 9 blocks outside its south edge, so the plane was stopped
-// 120 blocks into a 200-block flight: no crate. (BORDER_START is 50 in
-// base_expansion.js; an 85-wide border is ~42 each side, not the ~75 once
-// assumed.) A tick simulation of the 90-110 any-direction targets still
-// failed ~24% of wave-10 drops even with airdropFlightLength's shortening.
-// Fix: noPhysics on the plane. Entity#move then skips collision entirely
-// (border and blocks), and isInWall() returns false, so the plane always
-// flies its full length and drops. It also stops the post-drop crash into
-// the border's far edge. The flag isn't saved to NBT; a plane reloaded
-// mid-flight (a restart during the 20 s flyover) loses it, which is the old
-// behaviour, not a new failure.
+// Gives every plane noPhysics. The mod discards a plane, with an explosion, as
+// soon as its x-velocity is 0 or isInWall() is true, and vanilla collision
+// treats the world border as a wall near its edge, so a flight that grazes the
+// border or clips terrain would end early, often before the drop. With
+// noPhysics, Entity#move skips collision and isInWall() returns false. The flag
+// isn't saved, but this event also fires for entities loaded from disk.
 var WAVE_AIRDROP_PLANE_TYPES = ['dyairdrop:plane', 'dyairdrop:transportplane']
 EntityEvents.spawned((event) => {
   var entity = event.entity
@@ -570,9 +189,9 @@ function findAirdropCrate(level) {
   return level.getEntities().find((e) => WAVE_AIRDROP_CRATE_ENTITIES.includes(`${e.type}`))
 }
 
-// Scans a bounded column (see header) for the real landed crate block,
-// starting a little above the falling entity's last-seen Y since that
-// poll sample is always slightly before touchdown, not after.
+// Y of the crate block in column (x, z), searched downwards from just above
+// the falling crate's last sampled Y (taken up to one poll before touchdown).
+// null if there is none.
 function findLandedCrateY(level, x, z, fromY) {
   for (var y = fromY + 4; y >= fromY - 40; y--) {
     if (`${level.getBlock(x, y, z).getId()}` === WAVE_AIRDROP_BLOCK_ID) return y
@@ -580,19 +199,11 @@ function findLandedCrateY(level, x, z, fromY) {
   return null
 }
 
-// Real beacon beam + Xaero share line, 2026-09-22 - header items 1 and 2.
-// Beacon removal is keyed to the crate it stands on (crate coords given)
-// so a switch of pollAirdropCrateCleanup's single watch to some OTHER,
-// older crate (the player right-clicking it) cannot strip the fresh drop's
-// beam; called without crate coords (a new landing) it clears whatever
-// beacon is tracked.
-//
-// 2026-09-28: crates now land 90-110 blocks out, past the base's permanent
-// forceload, and a command aimed at an unloaded position silently does
-// nothing - that would untrack a beacon that's still standing (breakable,
-// a free beacon). Reading the block first loads its chunk (Level#getChunk,
-// FULL, load=true - the same path playtest_starter_kit.js relies on), so
-// the setblock right after always lands.
+// Removes the tracked beacon. Given crate coordinates, it only does so if the
+// beacon sits on that crate, so ending the watch on an older crate can't take
+// down the newest drop's beam. The block read loads the chunk first: a setblock
+// into an unloaded chunk fails silently and would leave an untracked, breakable
+// beacon.
 function removeAirdropBeacon(server, level, data, crateX, crateY, crateZ) {
   if (!data.getBoolean('td_airdropBeaconActive')) return
   var bx = data.getInt('td_airdropBeaconX')
@@ -604,9 +215,8 @@ function removeAirdropBeacon(server, level, data, crateX, crateY, crateZ) {
   server.runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air`)
 }
 
-// Whether the chunk holding x/z is loaded, WITHOUT loading it
-// (LevelAccessor#hasChunk). If this build's Rhino can't reach the method,
-// fall back to the old behaviour (always poll).
+// Whether the chunk holding (x, z) is loaded, without loading it. If Rhino
+// can't reach LevelAccessor#hasChunk, assume it is.
 function airdropChunkLoaded(level, x, z) {
   try {
     return level.hasChunk(x >> 4, z >> 4)
@@ -615,6 +225,9 @@ function airdropChunkLoaded(level, x, z) {
   }
 }
 
+// A beacon on the landed crate marks it from far away. A beacon draws its beam
+// without a pyramid, and the crate fell through this column, so the sky above
+// it is clear. One beacon is tracked at a time.
 function placeAirdropBeacon(server, level, data, x, y, z) {
   removeAirdropBeacon(server, level, data)
   if (!level.getBlock(x, y + 1, z).getBlockState().isAir()) return
@@ -625,13 +238,9 @@ function placeAirdropBeacon(server, level, data, x, y, z) {
   data.putBoolean('td_airdropBeaconActive', true)
 }
 
-// Compass direction from the pedestal to (x, z), 8 points ("north",
-// "north-east", ...). Chat and titles say this instead of coordinates,
-// 2026-09-29 (direct ask: "the coordinates message pop-up when the supply
-// crate drops is unnecessary. just tell which compass direction it landed
-// in"). The Xaero [Add] line below stays: it pins the crate without printing
-// any numbers. North is -z. Math.atan2 is fine in this Rhino (only Math.PI
-// is missing, see airdropPlanFlight).
+// Eight-point compass direction ("north", "north-east", ...) from the pedestal
+// to (x, z). Titles and chat give this rather than coordinates; the waypoint
+// line carries the exact spot. North is -z; 6.283185307179586 is 2*pi.
 var AIRDROP_COMPASS_POINTS = ['east', 'south-east', 'south', 'south-west', 'west', 'north-west', 'north', 'north-east']
 function airdropCompassDirection(data, x, z) {
   var dx = x - data.getInt('td_pedestalX')
@@ -640,12 +249,16 @@ function airdropCompassDirection(data, x, z) {
   return AIRDROP_COMPASS_POINTS[((eighths % 8) + 8) % 8]
 }
 
-// Xaero's Minimap share protocol (header item 1): `<sender>` is what the
-// client shows as who shared it, colour 6 = gold, no rotation, yaw 0.
+// Xaero's Minimap has no server-side waypoint command, but it turns a chat line
+// of the form "<sender> xaero-waypoint:<name>:<initials>:<x>:<y>:<z>:<colour>:
+// <rotate>:<yaw>" into "<sender> shared a waypoint" with an [Add] button.
+// Colour 6 is gold.
 function sendAirdropWaypoint(server, x, y, z) {
   server.runCommandSilent(`tellraw @a {"text":"<Supply Drop> xaero-waypoint:Supply Crate:S:${x}:${y}:${z}:6:false:0"}`)
 }
 
+// The tracked beacon can't be broken, or every drop would hand out a free
+// beacon. pollAirdropCrateCleanup removes it.
 BlockEvents.broken(WAVE_AIRDROP_BEACON_BLOCK, (event) => {
   var block = event.block
   var data = worldData(block.getLevel())
@@ -654,6 +267,8 @@ BlockEvents.broken(WAVE_AIRDROP_BEACON_BLOCK, (event) => {
   event.cancel()
 })
 
+// One-off burst at landing. `force` shows it to players up to 512 blocks away
+// instead of 32.
 function fireAirdropLandingBurst(server, x, y, z) {
   server.runCommandSilent(
     `particle minecraft:end_rod ${x + 0.5} ${y + 1} ${z + 0.5} 0.25 20 0.25 0.02 120 force`
@@ -661,6 +276,7 @@ function fireAirdropLandingBurst(server, x, y, z) {
   server.runCommandSilent(`particle minecraft:flash ${x + 0.5} ${y + 1} ${z + 0.5} 0 0 0 0 1 force`)
 }
 
+// Right-clicking a crate makes it the one pollAirdropCrateCleanup watches.
 BlockEvents.rightClicked(WAVE_AIRDROP_BLOCK_ID, (event) => {
   var block = event.block
   var level = event.entity.getLevel()
@@ -673,9 +289,11 @@ BlockEvents.rightClicked(WAVE_AIRDROP_BLOCK_ID, (event) => {
   data.putBoolean('td_airdropCrateWatch', true)
 })
 
-// true only once the loot has been unpacked (no LootTable key left) AND
-// every slot is empty. Any read failure counts as "not looted" - the crate
-// stays, exactly as it does today.
+// True once the crate's loot has been unpacked and every slot is empty. The
+// crate is a vanilla RandomizableContainerBlockEntity, which saves a LootTable
+// key until first opened and an Items list after. This reads the saved NBT
+// because the item handler would call getItem() and unpack the loot early,
+// with no player. A read error counts as not looted.
 function airdropCrateLooted(block) {
   try {
     var nbt = block.getEntityData()
@@ -689,16 +307,16 @@ function airdropCrateLooted(block) {
   }
 }
 
+// Removes the watched crate, and its beacon, once it has been looted. The
+// beacon also goes if the crate is broken or the watch times out.
 function pollAirdropCrateCleanup(server, level, data, now) {
   if (!data.getBoolean('td_airdropCrateWatch')) return
   var x = data.getInt('td_airdropCrateX')
   var y = data.getInt('td_airdropCrateY')
   var z = data.getInt('td_airdropCrateZ')
-  // 2026-09-28: the crate lands 90-110 blocks out now, past the base's
-  // permanent forceload. With nobody near it, level.getBlock() below would
-  // synchronously load its chunk every 10 ticks for up to 30 min - skip
-  // the cycle instead. Nothing can loot it while it's unloaded; the
-  // timeout and removal simply wait until it's loaded again.
+  // Skipped while the crate's chunk is unloaded: getBlock() would load it
+  // synchronously on every poll. Nobody can loot it meanwhile, and the timeout
+  // waits until it is loaded again.
   if (!airdropChunkLoaded(level, x, z)) return
   if (now >= data.getInt('td_airdropCrateWatchUntilTick')) {
     data.putBoolean('td_airdropCrateWatch', false)
@@ -707,7 +325,7 @@ function pollAirdropCrateCleanup(server, level, data, now) {
   }
   var block = level.getBlock(x, y, z)
   if (`${block.getId()}` !== WAVE_AIRDROP_BLOCK_ID) {
-    data.putBoolean('td_airdropCrateWatch', false) // already gone (broken by hand, or replaced)
+    data.putBoolean('td_airdropCrateWatch', false) // crate broken or replaced
     removeAirdropBeacon(server, level, data, x, y, z)
     return
   }
@@ -719,6 +337,9 @@ function pollAirdropCrateCleanup(server, level, data, now) {
   server.runCommandSilent(`playsound minecraft:block.wool.break block @a ${x} ${y} ${z} 1 0.8`)
 }
 
+// Airdrop state machine, polled every WAVE_AIRDROP_POLL_TICKS. It runs once
+// per player, but only in the overworld (worldData() is null elsewhere). Each
+// step is safe to repeat within a tick, so extra players online do no harm.
 PlayerEvents.tick((event) => {
   var player = event.player
   var level = player.getLevel()
@@ -727,12 +348,10 @@ PlayerEvents.tick((event) => {
   var data = worldData(level)
   if (!data) return
 
-  // Independent of the launch/landing state machine below - an opened crate
-  // can be sitting there while the next drop is already in flight.
+  // Independent of the drop below: an old crate can outlast the next launch.
   pollAirdropCrateCleanup(player.getServer(), level, data, now)
 
-  // Flight strip released once the plane is gone (hold elapsed) and the
-  // crate is down or the watch gave up - see the forceload note up top.
+  // Release the flight strip once the hold is over and the landing watch ended.
   if (
     data.getBoolean('td_airdropForceActive') &&
     !data.getBoolean('td_airdropPending') &&
@@ -758,8 +377,7 @@ PlayerEvents.tick((event) => {
   var crate = findAirdropCrate(level)
   if (crate) {
     if (!data.getBoolean('td_airdropCrateSeen')) data.putBoolean('td_airdropCrateSeen', true)
-    // Last-known in-flight position - see this file's header. Only
-    // needed to locate the block the instant landing is detected below.
+    // It falls straight down, so this x/z is where the block will land.
     data.putInt('td_airdropFlightX', Math.round(crate.getX()))
     data.putInt('td_airdropFlightY', Math.round(crate.getY()))
     data.putInt('td_airdropFlightZ', Math.round(crate.getZ()))
@@ -767,19 +385,14 @@ PlayerEvents.tick((event) => {
   }
   if (!data.getBoolean('td_airdropCrateSeen')) return // plane still on its way in
 
-  // Crate entity seen earlier and gone now: it landed and the mod has
-  // already swapped it for the crate block (its own map waypoint never
-  // worked - header item 1; the share line below is the real one).
+  // Crate entity seen and now gone: the mod has placed the crate block.
   data.putBoolean('td_airdropWatch', false)
   var server = player.getServer()
   server.runCommandSilent('execute as @a at @s run playsound minecraft:entity.player.levelup master @s ~ ~ ~ 0.6 1.4')
 
-  // Seed the crate watch + beacon - see this file's header for why this
-  // reuses pollAirdropCrateCleanup's own td_airdropCrateWatch state instead
-  // of a second tracker. If the block can't be found in the scanned column
-  // there's no beacon and no early auto-cleanup watch (the player's own
-  // right-click still seeds that as a fallback), but the waypoint line and
-  // the coordinates still go out - the plane's drop point is exact in x/z.
+  // If the block isn't found, only the waypoint (at the last sampled Y) and the
+  // messages go out, and the watch starts when a player opens the crate.
+  // Otherwise the landed crate becomes the watched crate and gets a beacon.
   var lx = data.getInt('td_airdropFlightX')
   var lz = data.getInt('td_airdropFlightZ')
   var ly = findLandedCrateY(level, lx, lz, data.getInt('td_airdropFlightY'))
@@ -803,8 +416,3 @@ PlayerEvents.tick((event) => {
   server.runCommandSilent(`title @a subtitle {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)} - follow the light beam.","color":"gold","bold":true}`)
   server.runCommandSilent(`tellraw @a {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)}. Click Add on the line above to pin it on your map.","color":"gold"}`)
 })
-
-// Old wave-8+ speed-clear countdown display removed entirely (2026-09-08) -
-// dead code once there's no time window to count down. The new trigger is
-// an unconditional cadence check at wave-clear time, nothing to display
-// while a wave is still being fought.

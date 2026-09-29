@@ -1,67 +1,29 @@
-// Sentry default targeting mode (2026-09-11, direct playtest ask: "can the
-// sentry default to aggressive: mobs only by default when i put it down").
-//
-// SecurityCraft's own Sentry.class hardcodes the mode at placement time -
-// decompiled `SentryItem.useOn()` calls `setUpSentry(player)`, which
-// explicitly writes `SentryMode.CAMOUFLAGE_HP` (camouflaged, targets
-// players AND mobs) into the entity's synced MODE data right before
-// spawning it. No config option exists for this (checked
-// securitycraft-common.toml directly, no matching key) - it's baked into
-// the mod's own Java, not datapack-controlled.
-//
-// Real public API found by decompiling Sentry.class:
-// `toggleMode(Player, int, boolean)` sets the mode to an explicit ordinal
-// (not just "cycle to next") - callable directly on the entity like any
-// other public method, no reflection needed. SentryMode's declared enum
-// order (CAMOUFLAGE_HP, CAMOUFLAGE_H, CAMOUFLAGE_P, AGGRESSIVE_HP,
-// AGGRESSIVE_H, AGGRESSIVE_P, IDLE) puts AGGRESSIVE_H - aggressive
-// stance, mobs-only targeting, exactly what was asked for - at ordinal 4.
-// `sendMessage` is passed false: SentryItem's own placement message is a
-// separate hardcoded call that always prints the Camouflage-HP text
-// regardless of real mode, fires before this event, and can't be
-// suppressed from script - a second, correct message right after it would
-// just read as a contradiction rather than a fix.
-//
-// **Real limitation, not missed**: `EntityEvents.spawned` fires for every
-// entity add, including a sentry reloading from disk on chunk load, not
-// just a fresh placement - confirmed from KubeJS's own doc comment on the
-// event ("This event also fires for existing entities when they are
-// loaded from a save") and from decompiling the handler chain
-// (`KubeJSEntityEventHandler.entitySpawned`, backed by Architectury's
-// `EntityEvent.ADD`) - that callback's signature is just `(Entity,
-// Level)`, so even Forge's real `loadedFromDisk` flag on the underlying
-// `EntityJoinLevelEvent` never reaches KubeJS at all. No clean "was this
-// just placed" check exists at this hook. Guarding on `getMode().name()
-// === 'CAMOUFLAGE_HP'` is what makes this safe anyway: `setUpSentry`
-// always writes exactly that value right before a fresh placement, and a
-// sentry's real mode is saved/restored across reloads (`SentryMode` NBT
-// tag, read in `Sentry`'s load method) - so once this fix (or the player)
-// moves a sentry off the factory default, every future reload keeps that
-// choice instead of getting stomped back to aggressive. The one real gap:
-// a player who deliberately dials a sentry BACK to Camouflage - Hostiles
-// and Players will see it flip to Aggressive - Mobs Only on its next
-// reload - accepted, since that's the one mode this fix makes obsolete as
-// a deliberate choice anyway.
-var SENTRY_DEFAULT_MODE = 4 // Sentry.SentryMode.AGGRESSIVE_H (aggressive stance, mobs only)
+// Starts SecurityCraft's Sentry and I.M.S. in mobs-only targeting; the mod
+// places both in a mode that also targets players.
+var SENTRY_DEFAULT_MODE = 4 // SentryMode.AGGRESSIVE_H ordinal, hostiles only
 
+// SentryItem places a Sentry in CAMOUFLAGE_HP (hostiles and players) and no
+// config option changes that. EntityEvents.spawned also fires when a Sentry
+// loads from disk, and the KubeJS event can't tell the two apart, so only
+// CAMOUFLAGE_HP is switched: other modes survive a reload, but a Sentry
+// deliberately set to CAMOUFLAGE_HP flips to mobs-only on its next load.
 EntityEvents.spawned((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'securitycraft:sentry') return
   if (`${entity.getMode().name()}` !== 'CAMOUFLAGE_HP') return
+  // toggleMode(player, mode, sendMessage) sets an explicit mode. No message:
+  // SentryItem's placement message, which always names CAMOUFLAGE_HP, can't be
+  // suppressed, and a second one would contradict it.
   entity.toggleMode(null, SENTRY_DEFAULT_MODE, false)
 })
 
-// I.M.S. defaults to mobs only too (2026-09-28, same ask applied to the
-// other SecurityCraft turret). Decompiled IMSBlockEntity: its mode is a
-// private `targetingMode` Option (default PLAYERS_AND_MOBS), reachable
-// through the public customOptions() array. TargetingMode's order is
-// PLAYERS, PLAYERS_AND_MOBS, MOBS and EnumOption.toggle() steps to the
-// next ordinal, so one toggle from the default lands on MOBS. The three
-// calls after it copy SecurityCraft's own ToggleOption packet handler:
-// toggle, onOptionChanged (marks the block entity dirty so it saves),
-// sendBlockUpdated (syncs the customize screen). BlockEvents.placed only
-// fires for a real placement, unlike the Sentry's spawned event, so a
-// player who later picks "Players and Mobs" keeps it.
+// The I.M.S. mode is a private targetingMode option (default
+// PLAYERS_AND_MOBS) reached through the public customOptions().
+// TargetingMode's order is PLAYERS, PLAYERS_AND_MOBS, MOBS, and toggle()
+// steps to the next, so one toggle gives MOBS. onOptionChanged and
+// sendBlockUpdated follow SecurityCraft's own option handler: mark the block
+// entity for saving, then sync the client. BlockEvents.placed fires only on
+// placement, so a mode the player picks later sticks.
 BlockEvents.placed(['securitycraft:ims'], (event) => {
   try {
     var be = event.getBlock().getEntity()

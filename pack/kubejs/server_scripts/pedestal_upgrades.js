@@ -1,31 +1,18 @@
-// Pedestal upgrades: Max HP, Armor, Thorns bought with XP levels
-// (2026-09-27; docs/IDEAS.md's "Pedestal upgrades" idea, built on direct
-// ask). Chosen with the user: XP levels as the currency, 3 tiers per stat.
-// The stat numbers and what each tier does live in pedestal_health.js,
-// next to the damage/heal code that uses them
-// (pedestalUpgradeTier/pedestalMaxHealthForTier/...). This file is only
-// the buying side.
-//
-// **Why a command menu, not "sneak-right-click the pedestal"**:
-// Supplementaries' pedestal hands its displayed item to ANY empty-hand
-// click, sneaking or not (decompiled Moonlight ItemDisplayTile.interact:
-// empty hand -> removeItem, no shift check). With the amulet sitting on
-// it, a sneak-click trigger would fight Supplementaries over the amulet -
-// the same client/server race that caused the 2026-09-08 phantom-item
-// bug (see pedestal_health.js's heal-poll header). So `/pedestal` opens a
-// clickable chat menu, and at every wave clear anyone who can afford a
-// tier gets a one-line clickable prompt, so nobody has to remember the
-// command. The quest book teaches it too.
-//
-// Rules: tiers are shared world state (one pedestal, whoever pays). You
-// must be within PEDESTAL_UPGRADE_RANGE of the pedestal to buy, since
-// upgrading is something you do at home. A Max HP upgrade also adds the
-// new 100 HP to current HP straight away, via healPedestalBy (so it plays
-// the heal effect and resets alert tiers). Costs are levels, not points,
-// so a tier costs more raw XP the higher your level is - vanilla's own
-// enchanting-table trade-off.
-var PEDESTAL_UPGRADE_COSTS = [5, 10, 15] // levels for tier I, II, III
-var PEDESTAL_UPGRADE_RANGE = 32
+// Pedestal upgrades: Max HP, Armor and Thorns, three tiers each, bought with
+// XP levels. Tiers are shared world state (td_pedestalUpg_*), so anyone can
+// pay and everyone benefits. What each tier does is defined in
+// pedestal_health.js (pedestalUpgradeTier, pedestalMaxHealthForTier, ...),
+// next to the code that applies it. This file is the buying side:
+// - An empty-hand right-click on the pedestal, or /pedestal, opens a
+//   chest-style upgrade screen, with a clickable chat menu as the fallback.
+// - /pedestal upgrade <hp|armor|thorns> buys one tier; the chat menu's
+//   buttons run it.
+// - On each wave clear, offerPedestalUpgrades() (called by wave_status.js)
+//   prompts every player who can afford a tier.
+// Buying needs the player within PEDESTAL_UPGRADE_RANGE of the pedestal. A
+// Max HP tier also heals the HP it adds, through healPedestalBy().
+var PEDESTAL_UPGRADE_COSTS = [5, 10, 15] // XP levels, not points, for tiers I, II, III
+var PEDESTAL_UPGRADE_RANGE = 32 // blocks from the pedestal, horizontally
 var PEDESTAL_UPGRADE_ROMAN = ['0', 'I', 'II', 'III']
 var PEDESTAL_UPGRADE_STAT_ORDER = ['hp', 'armor', 'thorns']
 var PEDESTAL_UPGRADE_LABELS = { hp: 'Max HP', armor: 'Armor', thorns: 'Thorns' }
@@ -36,20 +23,16 @@ function pedestalUpgradeEffectText(stat, tier) {
   return `${pedestalThornsForTier(tier)} dmg/s back`
 }
 
-// Targets the player by NAME, not UUID. Proven in the client sandbox,
-// 2026-09-27: `tellraw <uuid> ...` returns 0 even though `${player.uuid}`
-// renders a valid UUID. tellraw's target is a players-only argument, and
-// vanilla treats a raw UUID as a selector that may include non-players, so
-// it refuses it. That's the same reason ftbquests change_progress needs
-// `execute as <uuid> ... @s` (quest_milestones.js, which is fine: `execute
-// as` takes any entity). Player names are [A-Za-z0-9_], so they're safe
-// as a command target.
+// Targets the player by name: tellraw's target is players-only, and vanilla
+// refuses a raw UUID there because a UUID may name a non-player. (`execute
+// as <uuid>`, which quest_milestones.js uses, accepts any entity.) Player
+// names are [A-Za-z0-9_], so they are safe in a command.
 function pedestalUpgradeTell(server, player, components) {
   server.runCommandSilent(`tellraw ${player.getName().getString()} ${JSON.stringify(components)}`)
 }
 
-// The cheapest next tier across all three stats, or -1 if everything is
-// maxed. Used for the wave-clear prompt.
+// The cheapest next tier across all three stats, or -1 if all are maxed.
+// Used for the wave-clear prompt.
 function pedestalCheapestUpgradeCost(data) {
   var cheapest = -1
   PEDESTAL_UPGRADE_STAT_ORDER.forEach((stat) => {
@@ -61,6 +44,8 @@ function pedestalCheapestUpgradeCost(data) {
   return cheapest
 }
 
+// The chat menu: one line per stat, with a clickable [Upgrade] button when
+// the player can afford the next tier. Returns a command result.
 function showPedestalUpgradeMenu(player) {
   var server = player.getServer()
   var data = worldData(player.getLevel())
@@ -104,8 +89,9 @@ function showPedestalUpgradeMenu(player) {
   return 1
 }
 
-// `fromGui` (2026-09-29): the upgrade screen refreshes itself after a buy,
-// so it skips the chat menu below.
+// Buys the next tier of `stat` and returns a command result (1 bought, 0
+// refused, with the reason told to the player). `fromGui` skips the chat
+// menu afterwards, since the screen refreshes itself.
 function buyPedestalUpgrade(player, stat, fromGui) {
   var server = player.getServer()
   var data = worldData(player.getLevel())
@@ -157,32 +143,23 @@ function buyPedestalUpgrade(player, stat, fromGui) {
   return 1
 }
 
-// **Upgrade screen, 2026-09-29** (direct ask: "Can i add a gui to the
-// pedestal, so that i right click on it with an empty hand I can apply the
-// upgrades rather than using chat?"; user chose "always open GUI", with a
-// Take-the-amulet button when it's on the stand). A 3-row chest screen from
-// KubeJS's own server-side chest GUI (ServerPlayerKJS.openChestGUI ->
-// ChestMenuData/CustomChestMenu in kubejs-forge-2001.6.5, checked in the
-// jar) - vanilla's chest screen on the client, so no client mod is needed.
+// Upgrade screen: a 3-row chest GUI from KubeJS's server-side openChestGUI,
+// drawn by vanilla's chest screen, so clients need no extra mod. Layout (x
+// 0-8 across, y 0-2 down): pedestal status at (4,0); Max HP, Armor and
+// Thorns at (2,1), (4,1) and (6,1); Take the amulet at (4,2) while it is on
+// the stand. There is no Close button: Esc closes it like any chest, and
+// this Rhino can't reach ServerPlayer.closeContainer (doCloseContainer
+// closes only the server side and leaves the client's screen open).
 //
-// Layout (x across 0-8, y down 0-2): the pedestal's status at (4,0); Max HP,
-// Armor and Thorns at (2,1), (4,1), (6,1); Take the amulet at (4,2) while
-// it's on the stand. No Close button: Esc/E close it like any chest, and
-// ServerPlayer.closeContainer isn't reachable from this Rhino (only
-// doCloseContainer, which closes server-side and leaves the client's
-// screen up - client sandbox, 2026-09-29).
+// Clicks go through the single anyClicked callback, not per-slot handlers:
+// ChestMenuData.handleClick iterates a slot's handler list while calling
+// them, so a buy that refilled its own slot with a new handler would throw a
+// ConcurrentModificationException. The refresh only swaps items.
 //
-// Clicks go through the one `anyClicked` callback, not per-slot handlers:
-// ChestMenuData.handleClick iterates a slot's clickHandlers list while
-// calling them, so a buy that re-filled its own slot with a fresh handler
-// would modify that list mid-iteration (ConcurrentModificationException).
-// The refresh only swaps items.
-//
-// The empty-hand click used to lift the amulet off the stand
-// (Supplementaries' ItemDisplayTile.interact). It now always opens this
-// screen and is cancelled, and the button does the lift instead: it empties
-// the stand and hands the exact stack back, and amulet_pedestal.js's tick
-// poll sees the empty stand and runs the usual border shrink + message.
+// The empty-hand click that would make Supplementaries hand over the stand's
+// item opens this screen instead, so Take the amulet does the lift: it
+// empties the stand and gives back the exact stack, and amulet_pedestal.js's
+// tick poll sees the empty stand and shrinks the border.
 var PEDESTAL_GUI_STAT_X = { hp: 2, armor: 4, thorns: 6 }
 var PEDESTAL_GUI_ICONS = { hp: 'minecraft:golden_apple', armor: 'minecraft:iron_chestplate', thorns: 'minecraft:cactus' }
 
@@ -191,13 +168,15 @@ function pedestalGuiText(text, color) {
   return JSON.stringify({ text: text, color: color, italic: false }).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
-// A named display item. HideFlags hides vanilla's own attribute lines
-// (the chestplate's "+6 Armor" would read as the upgrade's number).
+// A named display item. HideFlags:127 hides vanilla's tooltip extras, such
+// as the chestplate's "+6 Armor", which would read as the upgrade's number.
 function pedestalGuiItem(id, name, nameColor, lore) {
   var loreNbt = lore.map((line) => `'${pedestalGuiText(line[0], line[1])}'`).join(',')
   return Item.of(id, 1, `{HideFlags:127,display:{Name:'${pedestalGuiText(name, nameColor)}',Lore:[${loreNbt}]}}`)
 }
 
+// The pedestal's block entity if td_amuletOnPedestal is set and the stand
+// holds the amulet, else null.
 function pedestalGuiAmuletTile(level, data) {
   if (!data.getBoolean('td_amuletOnPedestal')) return null
   var tile = level.getBlockEntity([data.getInt('td_pedestalX'), data.getInt('td_pedestalY'), data.getInt('td_pedestalZ')])
@@ -207,6 +186,7 @@ function pedestalGuiAmuletTile(level, data) {
   return tile
 }
 
+// Fills every slot from the current state; runs on open and after each click.
 function fillPedestalGui(gui, player) {
   var level = player.getLevel()
   var data = worldData(level)
@@ -276,6 +256,7 @@ function openPedestalUpgradeGui(player) {
     fillPedestalGui(gui, player)
     gui.anyClicked = (e) => {
       var type = `${e.type}`
+      // Left/right clicks and shift-clicks only.
       if (type !== 'PICKUP' && type !== 'QUICK_MOVE') return
       var x = e.slot.x
       var y = e.slot.y
@@ -294,12 +275,11 @@ function openPedestalUpgradeGui(player) {
   })
 }
 
-// Empty main hand on the real pedestal -> the screen. Same guards as the
-// heal handler in pedestal_health.js (main hand, stored position). The
-// clicking client has already predicted Supplementaries' take (see that
-// file's pedestalHealClickResync), so the stand and inventory are resynced
-// before the screen opens. event.cancel() throws in this KubeJS build, so
-// it comes last.
+// Empty main hand on the stored pedestal opens the screen; same guards as the
+// heal handler in pedestal_health.js. If the stand holds an item, the
+// clicking client has already predicted taking it, so
+// pedestalHealClickResync() puts the stand and inventory right before the
+// screen opens. event.cancel() throws in this KubeJS build, so it comes last.
 BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   if (`${event.getHand()}` !== 'MAIN_HAND') return
   if (!event.item.isEmpty()) return
@@ -318,9 +298,9 @@ BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   event.cancel()
 })
 
-// Called from wave_status.js's wave-clear block (once per clear - that
-// block is guarded by the shared td_inWave flag). Only players who can
-// afford at least one tier get a line, and it's one line each.
+// Called from wave_status.js's wave-clear branch, once per clear (it is
+// guarded by the shared td_inWave flag). Only players who can afford at
+// least one tier get the one-line prompt.
 function offerPedestalUpgrades(server, data) {
   var cheapest = pedestalCheapestUpgradeCost(data)
   if (cheapest === -1) return
@@ -345,9 +325,9 @@ function offerPedestalUpgrades(server, data) {
 
 ServerEvents.commandRegistry((event) => {
   var Commands = event.commands
-  // `/pedestal` (and the wave-clear [Upgrades] link that runs it) opens the
-  // same screen as an empty-hand click since 2026-09-29; buying still needs
-  // you within PEDESTAL_UPGRADE_RANGE. The chat menu is the fallback.
+  // /pedestal (also run by the wave-clear [Upgrades] link) opens the same
+  // screen as an empty-hand click, from any distance; buying still needs the
+  // player within PEDESTAL_UPGRADE_RANGE. The chat menu is the fallback.
   event.register(
     Commands.literal('pedestal')
       .executes((context) => {

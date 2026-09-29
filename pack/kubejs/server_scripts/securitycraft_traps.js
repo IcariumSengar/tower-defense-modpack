@@ -1,46 +1,12 @@
-// SecurityCraft ranged/proximity traps, 2026-09-11 - the "wood/iron
-// spikes -> simple ranged traps" pivot away from Advanced Tower
-// Defense's Turret Workbench chain (see tier2_recipes.js's own header
-// for that system's real complexity - Blueprint + 6-slot hardcoded
-// assemble step + a separate Research-gated tech unlock). Every item
-// below is a single crafting-table recipe, no workbench GUI, no
-// multi-step assembly.
-//
-// Real finding that shaped this file: SecurityCraft's stock recipes for
-// Sentry/I.M.S./Trophy System/Cage Trap/Electrified Iron Fence all pull
-// in a "Reinforced" component (Reinforced Iron Block, Reinforced
-// Dispenser, Reinforced Iron Bars, a Reinforced Fence) - none of those
-// are directly craftable, they only come from using a Universal Block
-// Reinforcer tool on a placed vanilla block. Direct ask: drop the
-// Reinforcer altogether. Every recipe below swaps each Reinforced
-// ingredient for its plain vanilla equivalent - confirmed real stock
-// recipes extracted directly from the installed jar
-// ([1.20.1] SecurityCraft v1.10.2.1.jar, sha1
-// 6184ca6af68a0a4e8ca4dd28a542b5d1a6c2e3ab, matching
-// pack/mods/securitycraft.pw.toml) before writing any of this, not
-// guessed. Portable Radar (Sentry/I.M.S.'s other shared component) is
-// left exactly as shipped - it's already all-vanilla materials (iron
-// ingots + redstone dust + redstone torch), a real small prerequisite
-// craft, not a Reinforcer dependency.
+// SecurityCraft trap recipes. The stock Sentry, I.M.S. and Electrified Iron
+// Fence recipes need Reinforced parts from the Universal Block Reinforcer,
+// which is uncraftable here, so they use plain vanilla parts instead. The
+// Trophy System and Cage Trap are cut from the pack. Quest subtitles in
+// campaign.snbt list these ingredients; keep them in step.
 ServerEvents.recipes((event) => {
-  // Sentry - the flagship: place on top of a block, auto-shoots
-  // arrows at anything matching its target mode (toggle by
-  // right-click), infinite ammo unless a passcode-protected chest/
-  // barrel of other projectiles sits underneath it. One Shrapnel in
-  // the recipe (swapped in for one of the two redstone dust) keeps
-  // Shrapnel's own "kill mobs to fund your tech" design intent alive
-  // (see shrapnel.js's header) now that its original gate -
-  // tech_tablet_mechanics - no longer exists.
-  //
-  // Iron cost trimmed 2026-09-11 (direct feedback: "a lot of trap
-  // recipes require iron, I don't have enough to craft what I want").
-  // The original 3x iron_block bottom row wasn't the "small step up
-  // from vanilla" it looked like - iron_block is 9 ingots each, so
-  // that row alone was 27 ingots, for 36 total with Portable Radar's
-  // own 7-ingot prereq folded in. Center block kept (still a real,
-  // meaningful material cost past just ingots) but the two outer
-  // corners drop to plain ingots: new total 4 ingot + 1 block (9) + 7
-  // (radar) = 20, down from 36.
+  // Sentry: plain parts for the Reinforced ones, an ingot at each end of the
+  // bottom row, and one Shrapnel for a redstone dust, so it costs loot from
+  // kills. Iron total 20, counting the Portable Radar's seven ingots.
   event.remove({ output: 'securitycraft:sentry' })
   event.shaped('securitycraft:sentry', [
     'SDR',
@@ -55,18 +21,9 @@ ServerEvents.recipes((event) => {
     B: 'minecraft:iron_block',
   })
 
-  // I.M.S. (Intelligent Munitions System) - refillable mine holding up
-  // to 4 Bouncing Betties, auto-launches them to track down and
-  // detonate on anything entering its radius.
-  //
-  // Iron cost trimmed 2026-09-11, same feedback as Sentry above: the
-  // center iron_block (9 ingots) was dropped to a plain ingot.
-  //
-  // 2026-09-28: that trim was announced as 24 -> 16 iron but the math
-  // was wrong - a Bouncing Betty is 4 iron, not 2 (2 ingots plus a
-  // heavy weighted pressure plate, itself 2 ingots), so 4 Betties + 1
-  // ingot + Portable Radar (7) was still 24. Now 2 Betties (8) + 1
-  // ingot + radar (7) = 16, the stock shape minus its bottom row.
+  // I.M.S. (fires up to four bombs, reloads with Bouncing Betties): the stock
+  // shape minus its bottom row of two Betties, with an ingot for the Reinforced
+  // Iron Block. Iron total 16, counting the radar's seven and four per Betty.
   event.remove({ output: 'securitycraft:ims' })
   event.shaped('securitycraft:ims', [
     'BPB',
@@ -77,32 +34,11 @@ ServerEvents.recipes((event) => {
     I: 'minecraft:iron_ingot',
   })
 
-  // Trophy System removed entirely, 2026-09-11 (direct feedback: "serves
-  // no purpose as there are no air based enemies attacks"). Checked
-  // before cutting it, not just taken on faith: this pack's roster has no
-  // bow-wielding mobs and no dispenser-arrow traps (skeletons were
-  // stripped in the zombie-apocalypse pivot - see the old
-  // turret_combat_feedback.js's own scope-caveat comment, git history),
-  // and Demolition Zombie (zombiesmore's Explosive Zombie) attacks by
-  // throwing a `zombiesmore:dynamite_projectile` that detonates a real
-  // TNT-type explosion (decompiled `DynamiteProjectileProjectileHits*`
-  // procedures directly) - not an arrow or fireball, the only two
-  // projectile types the Trophy System's own counter-battery AI shoots
-  // down. No hostile in this pack's actual roster gives it anything to
-  // intercept. No re-recipe added back - just the stock recipe removal
-  // below, same treatment as the Universal Block Reinforcer got. Quest
-  // node removed from campaign.snbt, tier color entry removed from
-  // tooltip_tier_colors.js.
   event.remove({ output: 'securitycraft:trophy_system' })
 
-  // Cage Trap binned, 2026-09-29 (direct ask: "can we bin the cage trap and
-  // its quest. dont like it"). Recipe removed with no replacement, same
-  // treatment as the Trophy System above; its quest node and tier tooltip
-  // entry are gone too, and "No Turning Back" no longer needs it.
   event.remove({ output: 'securitycraft:cage_trap' })
 
-  // Electrified Iron Fence - unbreakable fence, shocks anyone but the
-  // owner on contact.
+  // Electrified Iron Fence: a plain oak fence in place of the Reinforced one.
   event.remove({ output: 'securitycraft:electrified_iron_fence' })
   event.shaped('securitycraft:electrified_iron_fence', [
     ' I ',
@@ -113,21 +49,10 @@ ServerEvents.recipes((event) => {
     F: 'minecraft:oak_fence',
   })
 
-  // Claymore and Bouncing Betty need no re-recipe - their real stock
-  // recipes (checked in the same jar) never touched a Reinforced
-  // ingredient to begin with:
-  // - Bouncing Betty: minecraft:heavy_weighted_pressure_plate +
-  //   2x forge:ingots/iron + 1x forge:gunpowder.
-  // - Claymore: 2x minecraft:tripwire_hook + 3x forge:string +
-  //   a Bouncing Betty + 2x forge:dusts/redstone + forge:gunpowder.
-  // (Counts re-read from the jar's recipe JSON 2026-09-28.)
+  // Claymore and Bouncing Betty keep their stock recipes: no Reinforced parts.
 
-  // Universal Block Reinforcer (all 3 tiers) - dropped entirely per
-  // direct ask, now that nothing above depends on it. Recipes stripped
-  // so it's not a craftable dead end in JEI; the mod still registers
-  // every "Reinforced X" block regardless (they're baked into the base
-  // structure's own placed palette in playtest_starter_kit.js,
-  // unaffected by this).
+  // Universal Block Reinforcer, all three levels: no recipe. Reinforced blocks
+  // still exist; the starter base uses them (playtest_starter_kit.js).
   event.remove({ output: 'securitycraft:universal_block_reinforcer_lvl1' })
   event.remove({ output: 'securitycraft:universal_block_reinforcer_lvl2' })
   event.remove({ output: 'securitycraft:universal_block_reinforcer_lvl3' })

@@ -1,50 +1,19 @@
-// Electrified Iron Fence proximity shock for wave mobs (2026-09-22, third
-// report in a row: "the electric fence still isnt hurting enemies").
+// Electrified-fence reach for wave mobs.
 //
-// Real cause, decompiled from the installed SecurityCraft jar
-// ([1.20.1] SecurityCraft v1.10.2.1, ElectrifiedIronFenceBlock.
-// hurtOrConvertEntity), not guessed: the fence only ever reacts inside
-// vanilla's Block#entityInside, which the game calls ONLY for blocks whose
-// cell overlaps the entity's own hitbox - and then SecurityCraft further
-// requires the fence's collision shape (inflated by just 0.01) to intersect
-// that hitbox, once per second. So a mob is hurt only while physically
-// pressed INTO the fence. Vanilla pathfinding never does that: fences are
-// PathType.FENCE, an impassable node, so a mob's path ends on the block
-// NEXT to the fence and it stands at that block's centre, 0.2 blocks short
-// of ever touching it. Every zombie ever seen "ignoring" a fence was
-// standing exactly where the mod's own trigger can't reach. (For mobs the
-// mod's damage is a fake lightning strike - Entity#thunderHit, 5 damage -
-// so when contact does happen it works; contact is what never happens.)
-//
-// Fix: this script gives the fence a real reach against wave mobs. Once a
-// second (the same cadence SecurityCraft itself uses), every td_wave_mob is
-// checked for an electrified fence anywhere within FENCE_SHOCK_REACH of its
-// own hitbox - i.e. standing in a cell adjacent to a fence counts, two
-// cells away does not - and takes the fence's own damage type/amount
-// (`securitycraft:electricity`, data/securitycraft/damage_type/
-// electricity.json; 6.0, the literal in hurtOrConvertEntity) via the
-// vanilla /damage command, so anything that keys off that damage type
-// (electric_trap_player_safety.js, death messages) sees exactly what a real
-// fence shock looks like. Vanilla's 10-tick invulnerability window can't
-// eat a hit at this cadence. Only td_wave_mob, never by entity type (this
-// pack's rule for every base-defense interaction - structure mobs must
-// never be touched by base defenses), and td_structure_guard is excluded
-// the same way stuck_mob_nudge.js does it.
-//
-// Cost: up to 3x3x2 block reads per wave mob per second (a fence's
-// collision shape is 1.5 tall, so feet level and one above cover it) -
-// ~20 reads/s/mob, a rounding error next to the pack's existing 10-tick
-// entity scans. getBbWidth()/getBbHeight() are the same proven vanilla
-// calls tesla_coil_cinematics.js already uses; getBlock(x,y,z).getId() is
-// the pack-wide block-read idiom (wave_airdrop.js, stuck_mob_nudge.js).
-// ServerEvents.tick (not PlayerEvents.tick) so it also runs with nobody
-// online, matching tesla_coil_auto_power.js.
+// SecurityCraft's electrified fence only shocks an entity whose hitbox touches
+// the fence's collision box, but pathfinding treats fences as impassable, so a
+// zombie stops at the centre of the next block, 0.2 blocks short, and is never
+// hurt. Once a second (the fence's own cadence) this shocks every td_wave_mob
+// standing next to an electrified fence with SecurityCraft's electricity
+// damage. Structure guards are skipped.
 var FENCE_SHOCK_INTERVAL_TICKS = 20
-var FENCE_SHOCK_DAMAGE = 6
-var FENCE_SHOCK_REACH = 0.5 // blocks past the mob's own hitbox, horizontally
+var FENCE_SHOCK_DAMAGE = 6 // the fence's shock to players (it hits mobs with lightning)
+var FENCE_SHOCK_REACH = 0.5 // blocks beyond the mob's hitbox, horizontally
 var FENCE_SHOCK_BLOCKS = ['securitycraft:electrified_iron_fence']
 var FENCE_SHOCK_DAMAGE_TYPE = 'securitycraft:electricity'
 
+// The fence's collision box is 1.5 blocks tall, so the mob's feet level and
+// the block above cover it.
 function isNearElectrifiedFence(level, e) {
   var half = e.getBbWidth() / 2 + FENCE_SHOCK_REACH
   var x0 = Math.floor(e.getX() - half)
@@ -62,6 +31,8 @@ function isNearElectrifiedFence(level, e) {
   return false
 }
 
+// ServerEvents.tick rather than PlayerEvents.tick, so it also runs with
+// nobody online.
 ServerEvents.tick((event) => {
   var level = event.server.getLevel('minecraft:overworld')
   if (!level) return

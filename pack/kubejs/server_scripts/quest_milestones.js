@@ -1,45 +1,16 @@
-// Quest-book milestone bridge (2026-09-09, quest book redesign v3 - see
-// docs/FEATURES.md "Quest book redesign v3"). Campaign quests with a
-// `custom` task and no button, so the player can't self-tick them; this
-// script completes each one the moment the world state it describes
-// actually happens: horn first used, waves 1/3/8/15 cleared, the boss
-// dying, the amulet worn, the amulet set on the pedestal.
+// Completes the campaign's milestone quests. Each is an FTB Quests custom task
+// the player can't tick off by hand; this script completes it when its event
+// happens: the horn first sounded, waves 1, 3, 8 and 15 cleared, the boss
+// killed, the amulet worn or set on the pedestal, and a loot bag opened.
 //
-// The wave-5 gear-removal milestone ("It's Up to You Now", task
-// 0D4F31AEC6072549) was dropped 2026-09-28 along with that quest (user
-// request). Its td_q_gear flag may linger on older markers; nothing reads
-// it. td_starterGearRemoved itself is still live (wave_status.js sets it,
-// playtest_starter_kit.js's login handler reads it).
+// Completion runs /ftbquests change_progress. Shared milestones keep a one-shot
+// flag (td_q_<key>) on the world-state marker (worldData() from
+// world_state.js), so each world completes them once and a restart doesn't
+// repeat them. Per-player ones keep theirs (td_qp_<key>) in the player's
+// persistentData.
 //
-// The amulet milestones don't care where the amulet came from (a crafting
-// recipe before 2026-09-28, the "Not Just Jewelry" quest reward since):
-// td_amuletWorn is set by the Curios onEquip hook in
-// startup_scripts/amulet.js, td_amuletOnPedestal by amulet_pedestal.js's
-// poll of the pedestal slot.
-//
-// Completion goes through FTB Quests' own `/ftbquests change_progress
-// <players> complete <id>` - the exact idiom bounty_kills.js already runs
-// live for the Bounties tiers. Boolean milestones have no progress bar to
-// fill, so none of bounty_kills.js's TeamData.setProgress reflection is
-// needed here.
-//
-// Task ids are the fixed constants also baked into the generated
-// campaign.snbt (MILESTONE_TASK_IDS in the generator) - if the book is ever
-// re-idded, this table changes with it, nothing else.
-//
-// State reads follow this codebase's dominant pattern: a throttled
-// PlayerEvents.tick polling the marker entity's persistentData via the
-// shared top-level worldData() from world_state.js (top-level FUNCTIONS are
-// shared across server_scripts in this Rhino build, top-level vars are not
-// - everything here is qm-prefixed for that reason). Wave clears are
-// detected as a td_inWave true->false transition tracked on the marker
-// itself (td_q_prevInWave / td_q_lastClearedWave), the same edge-trigger
-// shape base_expansion.js uses, rather than trusting "td_waveNumber >= N
-// && !td_inWave" - that reads true in the gap between the horn being blown
-// (td_waveNumber already bumped) and the first mob being detected.
-//
-// One-shot guards (td_q_<key>) live on the marker per world, so a fresh
-// world starts clean and a restart doesn't re-issue commands.
+// QM_TASKS must match the custom task ids in
+// config/ftbquests/quests/chapters/campaign.snbt.
 var QM_TASKS = {
   horn: '5A1C0E7B93D4F216',
   wave1: '6B2D1F8CA4E50327',
@@ -52,16 +23,7 @@ var QM_TASKS = {
   openIt: '4B770968EBD48DB3',
 }
 
-// "Open It" (2026-09-09, direct playtest feedback: it was a self-click
-// checkmark, completable with zero bags ever opened - now real, completes
-// the moment a player actually opens one). Same detection idiom as
-// loot_bag_notification.js's own bag-open hook (ItemEvents.rightClicked
-// against the bag's own item id) - BountyBags' LootBagItem#use() was
-// already decompiled there and confirmed synchronous, no separate check
-// needed here since this only cares THAT a bag was opened, not what came
-// out of it. Own copy of the id list, not shared - this file already
-// redeclares its own state per this codebase's established per-file
-// convention.
+// "Open It" is per player and completes on the first right-click of any bag.
 var QM_LOOT_BAG_IDS = [
   'bountybags:uncommon_loot_bag',
   'bountybags:rare_loot_bag',
@@ -73,11 +35,9 @@ ItemEvents.rightClicked((event) => {
   if (!QM_LOOT_BAG_IDS.includes(`${event.item.id}`)) return
   qmCompleteForPlayer(event.entity, 'openIt')
 })
-var QM_POLL_INTERVAL = 20
+var QM_POLL_INTERVAL = 20 // ticks
 
-// Shared milestone: flag on the marker, completes for every online player
-// (their team data, in FTB Teams terms). `target` is a player selector or
-// uuid, both accepted by change_progress's EntityArgument.
+// Once per world, for every player online at that moment.
 function qmCompleteShared(server, data, key) {
   var flag = 'td_q_' + key
   if (data.getBoolean(flag)) return
@@ -85,27 +45,9 @@ function qmCompleteShared(server, data, key) {
   server.runCommandSilent('ftbquests change_progress @a complete ' + QM_TASKS[key])
 }
 
-// Per-player milestone: flag on the player's own persistentData.
-//
-// **Real bug fixed 2026-09-10** (direct playtest reports, both at once:
-// "the open it quest isnt triggering on opening a loot bag" and "wear it
-// quest isnt triggering on amulet equip" - the only two milestones that
-// go through THIS function; every shared one via `@a` above worked). This
-// used to run `ftbquests change_progress <uuid> complete <id>`. Decompiled
-// FTB Quests 2001.4.22's FTBQuestsCommands directly: the `<players>` slot
-// is built with `EntityArgument.players()` (SRG m_91470_ = new
-// EntityArgument(single=false, playersOnly=true), confirmed against the
-// real client jar). Vanilla's EntitySelectorParser marks any raw-UUID
-// selector as `includesEntities`, and a players-only argument rejects
-// that with "Only players may be affected by this command, but the
-// provided selector includes entities" - the same reason `/give <uuid>`
-// fails in vanilla. runCommandSilent swallowed the error, the flag below
-// was already set, so it silently never retried. Routed through `execute
-// as <uuid> run ... @s` instead: `execute as` takes entities() (a UUID is
-// fine there) and `@s` is a self-selector, which players() explicitly
-// allows - the exact shape bounty_kills.js already runs live for the
-// Bounties tiers. The flag key changed (td_qp_) so worlds where the old
-// command already failed once get exactly one real retry.
+// Once per player. change_progress's players-only argument rejects a raw UUID
+// (vanilla treats it as a selector that may match non-players), so the command
+// runs as the player and targets @s.
 function qmCompleteForPlayer(player, key) {
   var flag = 'td_qp_' + key
   var pdata = player.persistentData
@@ -122,8 +64,10 @@ PlayerEvents.tick(function (event) {
   if (!data) return
   var server = player.getServer()
 
-  // Wave-clear edge detection. A pedestal loss or a hardcore game over also
-  // flips td_inWave false (both end the wave), and neither is a clear.
+  // A wave is cleared when td_inWave goes from true to false. td_waveNumber
+  // alone can't tell: it rises when the horn sounds, before wave_status.js sees
+  // the first mob and sets td_inWave. A pedestal loss or a hardcore game over
+  // also clears td_inWave, and neither counts as a clear.
   var wasInWave = data.getBoolean('td_q_prevInWave')
   var inWave = data.getBoolean('td_inWave')
   data.putBoolean('td_q_prevInWave', inWave)
@@ -139,12 +83,11 @@ PlayerEvents.tick(function (event) {
   if (cleared >= 15) qmCompleteShared(server, data, 'wave15')
   if (data.getBoolean('td_amuletOnPedestal')) qmCompleteShared(server, data, 'amuletOnPedestal')
 
-  // amulet_worn.js keeps td_amuletWorn on the player, not the marker.
+  // td_amuletWorn lives on the player (set by startup_scripts/amulet.js).
   if (player.persistentData.getBoolean('td_amuletWorn')) qmCompleteForPlayer(player, 'amuletWorn')
 })
 
-// Boss kill: boss_wave.js tags its summoned boss `td_boss`; its own death
-// handler in that file drops the Totem. This one only marks the quest.
+// Boss kill: boss_wave.js tags its boss td_boss and handles its drops.
 EntityEvents.death(function (event) {
   var entity = event.entity
   if (!entity || !entity.getTags().contains('td_boss')) return

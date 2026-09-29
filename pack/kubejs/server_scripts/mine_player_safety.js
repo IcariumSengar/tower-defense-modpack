@@ -1,93 +1,21 @@
-// Bouncing Betty/Claymore player-safety, 2026-09-11 - replaces the same-day
-// bouncing_betty_safety.js, which shipped a real bug and never covered
-// Claymore at all. Direct playtest report that caught it: "either the
-// bouncing bettie or the claymore exploded and destroyed my own blocks...
-// only harm enemies not players."
+// Keeps players and blocks out of Claymore and Bouncing Betty blasts. It is a
+// second layer: explosion_player_safety.js already strips every blast not
+// caused by a mob, these included. Blasts are matched positively, so anything
+// unmatched, such as an enemy's TNT, is left alone. The I.M.S. launches
+// securitycraft:imsbomb entities rather than Betties, so only
+// explosion_player_safety.js covers it.
 //
-// **2026-09-28 corrections.** (1) This file never covered the I.M.S.: the
-// I.M.S. launches `securitycraft:imsbomb` entities (decompiled
-// IMSBlockEntity.launchMine), never a `bouncingbetty`, so the Betty
-// window below could not match its blasts. (2) The "null exploder" worry
-// below mixed up two mobs: the dynamite is Zombies More's Explosive
-// Zombie (not in the roster); the roster's Demolition Zombie (Undead
-// Nights) throws a PrimedTnt it owns. explosion_player_safety.js now
-// sanitizes every blast not traced to an enemy mob, the I.M.S. included;
-// this file's matches stay as a redundant second layer.
-//
-// **Bug #1, why the previous fix never fired**: bouncing_betty_safety.js
-// matched spawned entities against `securitycraft:bouncing_betty` (with an
-// underscore) - that's the real id of the BLOCK/item (confirmed working
-// elsewhere in this pack, e.g. tooltip_tier_colors.js's own
-// `'securitycraft:bouncing_betty': 2` entry). The live ENTITY the block
-// spawns registers under a different string entirely - decompiled
-// `SCContent.class` directly: `ENTITY_TYPES.register("bouncingbetty", ...)`,
-// no underscore. `EntityEvents.spawned` was checking a string that could
-// never match, so `pendingBouncingBettys` stayed empty forever and the
-// player-hurt cancellation never ran. One-character-class typo, real
-// consequence: the entire fix was dead code.
-//
-// **Bug #2, why Claymore was never touched**: decompiled
-// `ClaymoreBlock.explode(Level, BlockPos)` directly - it removes its own
-// block, then calls a plain vanilla `Level#explode(null, x, y, z, power,
-// shouldSpawnFire, BlockUtils.getExplosionInteraction())` straight from the
-// block, no entity ever spawned. There was nothing for the old
-// `EntityEvents.spawned` hook to catch - Claymore needed a wholly different
-// detection path, not a typo fix.
-//
-// **Why "null exploder = safe to sanitize" is NOT the right rule**: both
-// traps pass `null` as the exploding entity, which looks like a clean
-// discriminator against real hostile explosions - it isn't. Decompiled
-// zombiesmore's own `DynamiteProjectileProjectileHitsBlockProcedure`/
-// `...HitsLivingEntityProcedure` (Demolition Zombie's thrown-dynamite
-// attack, this pack's one remaining hostile explosion source after the
-// boomer/creeper strips): it ALSO calls `Level#explode` with a null source.
-// A blanket null-exploder check would have silently defanged the one real
-// enemy explosive attack left in the pack too - wrong, the ask is only
-// about the two friendly traps.
-//
-// **Real fix - positive-match against two live registries, not exclusion**:
-// - Claymore: tracked by its own placed block position, persisted on the
-//   shared world-state marker's persistentData (`td_claymoreRegistry`,
-//   same `x,y,z;x,y,z` string idiom trap_durability.js already uses for
-//   `td_trapRegistry` - proven working NBT approach in this codebase).
-//   Claymore's explosion center is always exactly its own BlockPos
-//   (bytecode-confirmed: `pos.getX()/getY()/getZ()` fed straight into
-//   `Level#explode`), so an exact integer-position match is precise, no
-//   radius needed.
-// - Bouncing Betty: same entity-spawn-position + detonation-tick-
-//   window idea the old script used (real fuse is 16 ticks after spawn,
-//   not the block's own hardcoded `setFuse(15)` - `Bullet`/`BouncingBetty`
-//   entity ticks with a post-decrement check), just matched against the
-//   EXPLOSION's own real position this time instead of a victim's position
-//   at hurt-time - tighter and no longer dependent on where a victim
-//   happened to be standing.
-// Only an explosion that matches one of these two registries gets
-// sanitized. Everything else - Demolition Zombie's dynamite included - is
-// left completely alone.
-//
-// **The mechanism itself - `LevelEvents.afterExplosion`**, decompiled
-// directly from this pack's exact installed KubeJS build
-// (kubejs-forge-2001.6.5-build.26.jar): wraps Forge's own
-// `ExplosionEvent.Detonate` as `ExplosionEventJS.After`, firing after the
-// affected-entity/affected-block lists are computed but BEFORE vanilla
-// applies any damage or destroys any block. `getAffectedEntities()`
-// returns a fresh copy each call, but `removeAffectedEntity()` mutates the
-// real backing list vanilla's own `hurtEntities()` reads from right after -
-// confirmed by decompile, not assumed - so removing a player here
-// genuinely prevents that hit, it doesn't just look like it did.
-// `removeAllAffectedBlocks()` clears the same live list vanilla's own
-// block-destroy loop consumes. Block-breaking for both traps is already
-// correctly OFF pack-wide via `mineExplosionsBreakBlocks = false` in
-// securitycraft-common.toml (verified present in both the repo and the
-// live instance's copy, and confirmed by decompile that both
-// `ClaymoreBlock.explode`/`BouncingBetty.explode` read this exact config
-// through the same `BlockUtils.getExplosionInteraction()` call) -
-// `removeAllAffectedBlocks()` is added below anyway as a free, config-
-// independent guarantee for the two matched cases specifically.
-var BOUNCING_BETTY_ENTITY_TYPE = 'securitycraft:bouncingbetty' // real registered entity id - see header
-var BOUNCING_BETTY_DETONATION_TICK = 16 // real fuse (15) + 1 - post-decrement tick check in the entity's own tick()
-var BOUNCING_BETTY_WINDOW_TICKS = 3 // tolerance either side of the real tick
-var BOUNCING_BETTY_MATCH_RADIUS = 10 // blast radius (6, or 3 halved) + margin; the I.M.S. never matched here (see header)
+// - Claymore: explodes at its own block position with no entity involved.
+//   Placed Claymores are kept in worldData() as td_claymoreRegistry
+//   ("x,y,z;x,y,z") and matched by block.
+// - Bouncing Betty: the block spawns a securitycraft:bouncingbetty entity (no
+//   underscore, unlike the block) that hops up and explodes on its 16th tick,
+//   since its fuse of 15 is tested before each decrement. Each spawn opens a
+//   tick window, matched by distance from the spawn point.
+var BOUNCING_BETTY_ENTITY_TYPE = 'securitycraft:bouncingbetty'
+var BOUNCING_BETTY_DETONATION_TICK = 16 // ticks from spawn to blast
+var BOUNCING_BETTY_WINDOW_TICKS = 3 // tolerance, in ticks either side
+var BOUNCING_BETTY_MATCH_RADIUS = 10 // blocks from the spawn point
 
 var pendingBouncingBettys = [] // {x, y, z, validFromTick, validUntilTick}
 
@@ -112,8 +40,7 @@ BlockEvents.placed(['securitycraft:claymore'], (event) => {
   setClaymoreRegistry(data, list)
 })
 
-// Player mined it up before it ever triggered - stop tracking that
-// position, same hygiene trap_durability.js's own broken handler does.
+// A player broke the Claymore: stop tracking it.
 BlockEvents.broken(['securitycraft:claymore'], (event) => {
   var data = worldData(event.getLevel())
   if (!data) return
@@ -139,9 +66,7 @@ EntityEvents.spawned((event) => {
   })
 })
 
-// Prunes independently of whether any explosion is ever matched to it
-// (despawn, wire-cutter defuse, etc), same reasoning the old script's own
-// tick-based prune used.
+// Drop Betty windows that closed without a matching blast.
 PlayerEvents.tick((event) => {
   if (pendingBouncingBettys.length === 0) return
   var currentTick = event.entity.getLevel().getTime()
@@ -150,7 +75,6 @@ PlayerEvents.tick((event) => {
 
 LevelEvents.afterExplosion((event) => {
   var level = event.getLevel()
-  if (level.isClientSide()) return // method call - see wave_mob_spike_slow.js's header
 
   var ex = event.getX()
   var ey = event.getY()
@@ -183,10 +107,12 @@ LevelEvents.afterExplosion((event) => {
     })
   }
 
-  if (!matchedClaymore && bettyIdx === -1) return // not one of ours - e.g. Demolition Zombie's dynamite, leave it alone
+  if (!matchedClaymore && bettyIdx === -1) return // not a tracked mine blast
 
   if (bettyIdx !== -1) pendingBouncingBettys.splice(bettyIdx, 1)
 
+  // Spare players and clear the block list. (Mines break no blocks anyway:
+  // mineExplosionsBreakBlocks = false in securitycraft-common.toml.)
   event.getAffectedEntities().forEach((e) => {
     if (`${e.type}` === 'minecraft:player') event.removeAffectedEntity(e)
   })

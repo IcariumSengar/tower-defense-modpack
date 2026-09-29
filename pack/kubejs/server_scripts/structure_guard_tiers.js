@@ -1,116 +1,63 @@
-// Structure guard tiers (2026-09-28). Direct ask: "can you add more
-// spawners to structures. it needs to be more difficult when looting" -
-// decided in two question rounds: guard spawners at every gold-trimmed
-// Lootr stash, the guard type scaling with distance from the base, day or
-// night, breakable, and guards never paying out loot bags or bounties.
+// Distance-tiered guards for structure spawners.
 //
-// Every guard spawner in the structure .nbt overrides is baked with the same
-// PLACEHOLDER: SpawnData {entity:{id:"minecraft:husk", Tags:
-// ["td_structure_guard"]}, custom_spawn_rules:{}}. The first time one fires
-// near a player, this script rewrites THAT spawner to its distance tier
-// (one mob type, the tier's numbers, Tags [td_structure_guard,
-// td_guard_tiered]) and cancels the placeholder husk. After that the
-// spawner is an ordinary vanilla spawner, apart from the guard cap below.
+// Guard spawners in the structure .nbt overrides (data/*/structures) spawn a
+// placeholder husk tagged td_structure_guard. The first time an untiered guard
+// spawns, it is dropped and its spawner is rewritten to one mob from its
+// distance tier (near/mid/far), with that tier's spawn settings and the
+// td_guard_tiered tag. From then on it is an ordinary vanilla spawner, apart
+// from the guard cap. Rewriting the spawner, rather than swapping each spawned
+// mob, keeps MaxNearbyEntities working: it only counts mobs of the spawned
+// class.
 //
-// Why rewrite the spawner instead of swapping each spawned mob: vanilla's
-// MaxNearbyEntities counts `getEntitiesOfClass(<spawn entity's class>)`
-// around the spawner, so a spawner that makes husks but whose husks get
-// replaced by mutants would never see its cap and spawn without limit.
-// One type per spawner keeps that cap exact (verified in the 47.4.10
-// BaseSpawner, research 2026-09-28).
-//
-// Verified mechanics this relies on (decompiled from the running jars):
-//   - custom_spawn_rules present -> SpawnPlacements (darkness, and Undead
-//     Nights' "natural spawning OK" gate that kept the old elite/horde guards
-//     from ever spawning) is skipped; only the light ranges, collision and
-//     Forge's checkSpawnObstruction remain. `custom_spawn_rules:{}` is the
-//     safe literal - both limits default to [0,15]. A MALFORMED rules
-//     entry is silently dropped (lenient optional codec) and the spawner
-//     falls back to dark-only, so don't hand-edit these into anything else.
-//   - A spawner only re-rolls its next mob after a successful spawn; a mob
-//     that can never be placed stalls it forever (retrying every tick). So
-//     the tier roll only offers mobs that can actually be placed around THIS
-//     spawner - stgFitRates() replays vanilla's own spawn-position spread
-//     against each mob's real width/height. (A first version only asked "is
-//     there a 3-high air cell"; the live client test found one just outside
-//     a pyramid wall that no 0.9-wide mob can ever reach, and a forced rotten
-//     mutant stalled there.)
-//   - Extra keys in the entity compound (Tags, gear) skip finalizeSpawn, so
-//     mod mobs lose their own spawn setup - Undead Nights' elite/horde
-//     zombies would arrive as bare 20 HP zombies. Their health/armour is
-//     baked here instead (user's call). zombie_villager burns in daylight
-//     (Undead Nights' vanillaZombiesBurnInTheSun) - its helmet is
-//     Unbreakable, because a normal one takes durability every sunlit tick
-//     and is gone in ~5.5 s (Zombie.aiStep).
-//   - EntityEvents.spawned fires for spawner spawns and cancel() is honoured;
-//     BaseSpawner still counts the attempt as a success and calls delay()
-//     right after, overwriting any Delay written synchronously - hence the
-//     queue, drained on the next server tick. EventJS.cancel() THROWS
-//     (EventExit), so everything else must happen before it.
-//   - setEntityData on a spawner BE runs BaseSpawner.load(), which reads
-//     MinSpawnDelay/MaxSpawnDelay/SpawnCount only when MinSpawnDelay is
-//     present and MaxNearbyEntities/RequiredPlayerRange only when
-//     MaxNearbyEntities is present - the rewrite always writes every key.
-//
-// GUARD CAP: MaxNearbyEntities only counts inside the spawner's own
-// +-SpawnRange (4) box, and guards wander out of it - the live client test
-// had 79 guards around the 11-spawner observatory after ~105 s. So a new
-// tiered guard is cancelled when STG_CAP[tier] guards already stand within
-// STG_CAP_RADIUS of it; the spawner then simply waits out its normal delay.
-//
-// Guards keep native (ESM) AI: mob_aggro.js skips td_structure_guard, the
-// wave counters ignore them, loot_bag_drops.js and bounty_kills.js exclude
-// them (no farmable bags or bounty credit), and ESM's diggingBlacklist
-// (epicsiegemod-common.toml) keeps them from digging out a Lootr stash or
-// their own spawner. Spawners stay breakable with a pickaxe.
-//
-// Rhino: top-level `var` names can collide across server_scripts (the
-// bounty_kills.js HOSTILE_TYPES redeclaration crash), so everything here is
-// prefixed stg/STG, and no const anywhere. `level.dimension` is read as a
-// property (`${level.dimension}`, as playtest_starter_kit.js does) - calling
-// it throws "not a function" in this build, which broke the first synced
-// version of this file before the live test caught it.
+// Guards are not wave mobs: mob_aggro.js leaves their AI alone,
+// loot_bag_drops.js and bounty_kills.js pay nothing for them, and ESM's
+// diggingBlacklist (epicsiegemod-common.toml) stops them digging out Lootr
+// containers or spawners.
 
 var STG_GUARD_TAG = 'td_structure_guard'
 var STG_TIERED_TAG = 'td_guard_tiered'
-// Same bands as structure_loot_progression.js's MID/HIGH radii - kept as
-// separate names on purpose (see the Rhino note above).
+// Blocks from the pedestal. Same bands as MID_TIER_RADIUS and HIGH_TIER_RADIUS
+// in structure_loot_progression.js, so guards and loot scale together.
 var STG_MID_RADIUS = 210
 var STG_FAR_RADIUS = 270
-// A spawner places mobs at x/z +-SpawnRange (4) and y -1..+1 around itself,
-// so a placeholder husk pins its spawner to exactly this box.
+// A spawner places mobs within +-SpawnRange (4) blocks of itself on x/z and
+// -1..+1 on y, so this box around a placeholder contains its spawner.
 var STG_SCAN_H = 4
 var STG_SCAN_V = 1
 var STG_MAX_JOBS_PER_TICK = 3
-// Placeholders from one spawner cycle land within a few blocks of each
-// other - one job covers them.
+// Skip queuing a placeholder this close (blocks, per axis) to a queued job.
 var STG_DEDUPE_RADIUS = 2
 var STG_QUEUE = []
 var STG_AIR_IDS = ['minecraft:air', 'minecraft:cave_air', 'minecraft:void_air']
-// Fit check: this many simulated spawn positions per mob; a mob stays in the
-// roll only if at least STG_FIT_MIN_HITS of them fit (~1% - with 2-3
-// attempts per tick while it keeps failing, that still spawns within seconds).
+// Fit check: a mob stays in the tier roll when at least STG_FIT_MIN_HITS of
+// STG_FIT_SAMPLES simulated spawn positions fit it (about 1%). A spawner tries
+// 2-3 positions a tick until one works, so even that spawns within seconds.
 var STG_FIT_SAMPLES = 256
 var STG_FIT_MIN_HITS = 3
-// Guard cap per tier (guards within a +-STG_CAP_RADIUS box of a new one -
-// the same reach up and down as sideways: with +-8 vertically the live test
-// had guards from the observatory's upper-floor spawner drop to the ground
-// floor, leave its window and let it keep refilling, 17 -> 30 in two
-// minutes. A box this tall treats a multi-floor building as one area).
+// Guard cap per tier: a new tiered guard is dropped while this many guards
+// stand within +-STG_CAP_RADIUS blocks of it, vertically too, so a multi-floor
+// building counts as one area; the spawner then waits out its normal delay.
+// MaxNearbyEntities alone can't do this: it only counts inside the spawner's
+// +-SpawnRange box, and guards wander out of it.
 var STG_CAP = { near: 6, mid: 8, far: 10 }
 var STG_CAP_RADIUS = 24
 
 var STG_NO_GEAR_DROPS = 'ArmorDropChances:[0.0f,0.0f,0.0f,0.0f],HandDropChances:[0.0f,0.0f],'
 
-// params: SpawnCount / MaxNearbyEntities / RequiredPlayerRange / SpawnRange /
-// Min-MaxSpawnDelay. Near and mid reuse the two old working guards' values
-// (gas_station_loot, desert_pyramid); far is the step up. w/h are the
-// entity types' registered width/height (ModEntities of each mod, decompiled).
+// Per tier: spawner settings (delays in ticks, ranges in blocks) and a weighted
+// roster. w/h are each mob's registered hitbox width and height, for the fit
+// check. extra is an SNBT fragment, ending in a comma, spliced into the entity
+// compound. A spawner runs finalizeSpawn only for a bare {id:...} compound, and
+// this one always carries Tags, so mod mobs miss their own spawn setup; the
+// Undead Nights zombies get their health and armour here instead.
 var STG_TIERS = {
   near: {
     params: 'SpawnCount:2s,MaxNearbyEntities:4s,RequiredPlayerRange:14s,SpawnRange:4s,MinSpawnDelay:300s,MaxSpawnDelay:600s',
     roster: [
       { weight: 3, id: 'minecraft:husk', w: 0.6, h: 1.95, extra: '' },
+      // Zombie villagers burn in daylight (Undead Nights'
+      // vanillaZombiesBurnInTheSun). A helmet stops that but loses durability
+      // every sunlit tick, so this one is Unbreakable.
       { weight: 1, id: 'minecraft:zombie_villager', w: 0.6, h: 1.95, extra: 'ArmorItems:[{},{},{},{id:"minecraft:leather_helmet",Count:1b,tag:{Unbreakable:1b}}],' + STG_NO_GEAR_DROPS },
     ],
   },
@@ -132,7 +79,8 @@ var STG_TIERS = {
     ],
   },
 }
-// Every distinct guard mob id, for the typed spawn handlers below.
+// The placeholder husk plus every mob in STG_TIERS, for the typed spawn
+// handlers below. A tiered type missing here escapes the guard cap.
 var STG_GUARD_IDS = ['minecraft:husk', 'minecraft:zombie_villager', 'mutantszombies:mutant_zombie', 'mutantszombies:blister_zombie', 'mutantszombies:split_head_zombie', 'undeadnights:elite_zombie', 'undeadnights:horde_zombie', 'mutantszombies:rotten_mutant', 'mutantszombies:crawler']
 
 function stgPickWeighted(roster) {
@@ -146,6 +94,7 @@ function stgPickWeighted(roster) {
   return roster[roster.length - 1]
 }
 
+// Tier by horizontal distance from the pedestal; 'near' until the base exists.
 function stgTierAt(level, x, z) {
   var base = worldData(level)
   if (!base || !base.contains('td_pedestalX')) return 'near'
@@ -157,10 +106,10 @@ function stgTierAt(level, x, z) {
   return 'near'
 }
 
-// Air map of every block a spawn attempt of this spawner can touch: x/z
-// -4..+4 (spawn centre within +-4.5 plus half a 0.95-wide mob), y -1..+3
-// (feet at -1..+1 plus a 2.7-tall mob). Anything that isn't air - slab,
-// cobweb, torch - counts as blocking, which only ever makes the check stricter.
+// Air map of every block a spawn attempt can touch, relative to the spawner:
+// x/z -4..+4 (spawn centre -3.5..+4.5, plus half a 0.95-wide mob) and y
+// -1..+3 (feet at -1..+1, plus a 2.7-tall mob). Anything that isn't air, even
+// a torch or a cobweb, counts as blocking, which only makes the check stricter.
 function stgAirMap(level, sx, sy, sz) {
   var map = {}
   for (var dx = -4; dx <= 4; dx++) {
@@ -173,9 +122,10 @@ function stgAirMap(level, sx, sy, sz) {
   return map
 }
 
-// Replays BaseSpawner's placement for one mob size: centre x/z = spawner +
-// (rand - rand) * SpawnRange + 0.5, feet y = spawner + {-1,0,1}; the mob
-// fits when every block its AABB overlaps is air.
+// Samples spawn positions the way BaseSpawner picks them: centre x/z =
+// spawner + (rand - rand) * SpawnRange + 0.5, feet y = spawner + {-1, 0, 1}.
+// A sample fits when every block the mob's box overlaps is air. SpawnRange is
+// hard-coded as 4 here and in stgAirMap; every tier's params use 4.
 function stgFits(map, w, h) {
   var hits = 0
   var half = w / 2
@@ -200,6 +150,8 @@ function stgFits(map, w, h) {
   return false
 }
 
+// A spawner whose mob can never be placed retries every tick and never spawns
+// anything, so the roll only offers mobs that fit around this spawner.
 function stgRosterThatFits(level, tier, sx, sy, sz) {
   var roster = STG_TIERS[tier].roster
   var map = stgAirMap(level, sx, sy, sz)
@@ -208,23 +160,32 @@ function stgRosterThatFits(level, tier, sx, sy, sz) {
     if (stgFits(map, roster[i].w, roster[i].h)) fits.push(roster[i])
   }
   if (fits.length > 0) return fits
-  // Nothing passed the sample (a very cramped spot). The placeholder husk
-  // just spawned here, so the husk-sized entries are placeable at least
-  // sometimes - offer those rather than anything bigger.
+  // Nothing passed (a cramped spot). The placeholder husk just spawned here,
+  // so husk-sized entries fit at least sometimes; offer those rather than
+  // anything bigger.
   for (var j = 0; j < roster.length; j++) {
     if (roster[j].w <= 0.6 && roster[j].h <= 1.95) fits.push(roster[j])
   }
   return fits.length > 0 ? fits : roster
 }
 
+// One mob per spawner: SpawnData plus a one-entry SpawnPotentials. With
+// custom_spawn_rules present the spawner skips the mob's own spawn rules
+// (darkness, and Undead Nights' natural-spawn gate); only the light limits,
+// which default to 0-15, and the collision checks remain. A malformed rules
+// entry is dropped silently and the mob's own rules apply again, so keep the
+// literal {}. Delay:20s brings the first tiered spawn a second after the
+// rewrite. BaseSpawner.load reads the delay and SpawnCount keys only when
+// MinSpawnDelay is present, and the range keys only when MaxNearbyEntities is,
+// so every tier's params must spell out all of them.
 function stgSpawnerSnbt(tier, mob) {
   var entity = '{id:"' + mob.id + '",' + mob.extra + 'Tags:["' + STG_GUARD_TAG + '","' + STG_TIERED_TAG + '"]}'
   var data = '{entity:' + entity + ',custom_spawn_rules:{}}'
   return '{Delay:20s,' + STG_TIERS[tier].params + ',SpawnData:' + data + ',SpawnPotentials:[{weight:1,data:' + data + '}]}'
 }
 
-// Rewrites every untiered guard spawner around a cancelled placeholder.
-// Idempotent: the second placeholder of the same cycle finds it tiered.
+// Rewrites every untiered guard spawner in the scan box around (cx, cy, cz).
+// Idempotent: a later job for the same spawner finds it already tiered.
 function stgRetierAround(level, cx, cy, cz) {
   for (var dx = -STG_SCAN_H; dx <= STG_SCAN_H; dx++) {
     for (var dz = -STG_SCAN_H; dz <= STG_SCAN_H; dz++) {
@@ -245,7 +206,7 @@ function stgRetierAround(level, cx, cy, cz) {
         }
         block.mergeEntityData(tag)
         var be = block.getEntity()
-        if (be) be.setChanged()
+        if (be) be.setChanged() // mergeEntityData doesn't mark it for saving
         var check = '' + block.getEntityData().get('SpawnData')
         if (check.indexOf(STG_TIERED_TAG) === -1) {
           console.warn(`[structure_guard_tiers] rewrite did not stick at ${cx + dx} ${cy + dy} ${cz + dz}`)
@@ -273,9 +234,9 @@ function stgGuardsNear(level, x, y, z) {
   return count
 }
 
-// One handler for every guard mob type (typed registrations, so wave mobs of
-// other types never reach it; wave mobs of these types return on the first
-// tag check).
+// Registered for each guard mob type; wave mobs of those types return at the
+// tag check. EntityEvents.spawned also fires for entities loading from disk,
+// so saved guards go through the same checks when their chunk reloads.
 function stgOnGuardSpawn(event) {
   var entity = event.getEntity()
   var tags = entity.getTags()
@@ -286,11 +247,13 @@ function stgOnGuardSpawn(event) {
   var z = Math.floor(entity.getZ())
 
   if (!tags.contains(STG_TIERED_TAG)) {
-    // A placeholder (or an older world's untiered guard): queue its spawner
-    // for the rewrite and drop this mob.
-    var dim = `${level.dimension}`
+    // Untiered guard: drop it and queue its spawner for a rewrite on the next
+    // tick. Rewriting inside this event would lose the new Delay, because the
+    // spawner counts a cancelled spawn as a success and calls delay() after it.
+    var dim = `${level.dimension}` // a property here; dimension() throws
     if (!stgAlreadyQueued(dim, x, y, z)) STG_QUEUE.push({ level: level, dim: dim, x: x, y: y, z: z })
-    // cancel() throws EventExit - everything above must already be done.
+    // cancel() throws to end the handler, so it comes last, and the cap check
+    // below never runs for a placeholder.
     event.cancel()
   }
 
@@ -301,10 +264,9 @@ STG_GUARD_IDS.forEach((id) => {
   EntityEvents.spawned(id, stgOnGuardSpawn)
 })
 
-// A job is queued by a placeholder that spawned next to a player the tick
-// before, so its chunks are loaded; a job that still throws (player gone,
-// world closing) is dropped, and the spawner's next placeholder cycle simply
-// queues it again.
+// Drains queued rewrites. Jobs come from spawners that just fired near a
+// player, so their chunks are loaded; a job that throws anyway is dropped, and
+// the spawner's next placeholder queues it again.
 ServerEvents.tick((event) => {
   if (STG_QUEUE.length === 0) return
   var done = 0

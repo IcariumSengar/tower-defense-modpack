@@ -1,85 +1,15 @@
-// Real fix, not `doMobSpawning` (2026-09-06, direct request: "passive
-// mobs are spawning. I dont want passive mobs in the game at all.").
-// `doMobSpawning false` (already set, `playtest_starter_kit.js`) only
-// blocks vanilla's ongoing per-tick spawn cycle - it does NOT block the
-// separate, one-time animal-population pass that runs the first time
-// any chunk generates, which keeps happening in every newly-explored
-// chunk regardless of the gamerule. That's very likely what's actually
-// being seen.
+// Cancels passive animals as they join the level, whether freshly spawned or
+// loaded from a saved chunk. doMobSpawning is off (playtest_starter_kit.js),
+// but chunk generation and structures still place animals.
 //
-// Real fix: `EntityEvents.spawned` + `event.cancel()`, event-driven so
-// it's free when nothing spawns, matching this pack's own standing
-// performance-scrutiny principle - not a recurring tick scan.
+// EntityEvents.spawned is Forge's EntityJoinLevelEvent, so cancel() stops the
+// entity before it is added; discard() after it joins can leave an unkillable
+// ghost on clients. EntityEvents.checkSpawn doesn't fire for chunk-generation
+// spawns in this build.
 //
-// **`event.cancel()`, not `entity.discard()` - real ghost-entity bug
-// found and fixed 2026-09-06 (live report: rabbits visible but
-// unkillable and motionless).** Decompiled the real call chain 3 layers
-// deep: KubeJS's `EntityEvents.spawned` is backed by Architectury's
-// `EntityEvent.ADD`, which Architectury's own `EventHandlerImplCommon`
-// subscribes to Forge's real `EntityJoinLevelEvent` at
-// `EventPriority.HIGH` - a JS handler result of `false` (from
-// `event.cancel()`) makes Architectury call the real
-// `event.setCanceled(true)` on that Forge event, which vanilla honors
-// by never adding the entity to the level at all: no tracking, no
-// network sync, no client ever learns it existed. `entity.discard()`,
-// by contrast, lets the entity actually get ADDED first (tracked,
-// broadcast to nearby clients) and only removes it a moment later -
-// exactly the add-then-immediately-remove race that produces an
-// unkillable, motionless client-side ghost when the removal doesn't
-// beat the network sync. `event.cancel()` is a true pre-addition deny,
-// not a post-hoc cleanup.
-//
-// **Real finding, not assumed - the "ideal" pre-spawn cancel approach
-// genuinely doesn't work for this exact spawn path in this build.**
-// KubeJS also exposes `EntityEvents.checkSpawn` (backed by
-// `CheckLivingEntitySpawnEventJS`, real `.hasResult()`/`event.cancel()`
-// support confirmed by decompiling the class) - the theoretically
-// better hook, since it would deny the spawn before the entity ever
-// exists. Tried it first, verified live in a sandbox with a diagnostic
-// logger: forced fresh chunk generation in open plains multiple times
-// and confirmed real cows/sheep spawned every time while the
-// `checkSpawn` handler's own log line NEVER fired once - it simply
-// isn't invoked for vanilla's natural chunk-population spawn pathway
-// in this exact Forge/KubeJS build (`/summon`-triggered spawns don't
-// reach it either - checked that too - it may only cover mob-spawner-
-// block spawns, not tested further since it doesn't matter here).
-// `EntityEvents.spawned` + `entity.discard()`, by contrast, was
-// confirmed firing reliably for real natural spawns in the same test
-// (`discard()` itself also confirmed real and working - a genuinely
-// removed entity, not just hidden). Switched to the approach that's
-// actually verified to work over the one that only looked cleaner on
-// paper.
-//
-// Explicit id list, not a `MobCategory` filter - checked whether
-// `MobCategory.CREATURE` also covers villagers/wandering traders/iron
-// golems before picking an approach. Confirming the exact category
-// boundary via decompilation wasn't a clean lookup in this exact build
-// (`EntityType`'s own static registrations are fully SRG-obfuscated
-// field names with no easy id->category mapping to read back). An
-// explicit list sidesteps the question entirely instead of resolving
-// it - villagers/iron golems/wandering traders are simply never in
-// this list, so there's no overlap risk regardless of what category
-// they're actually registered under. TFTH's own Flesh Villager
-// mechanic needs real villagers to exist - this can't afford to guess
-// wrong here. Slower to write than a category check, zero risk, the
-// right tradeoff for this one.
-//
-// Deliberately genuinely-passive only, not every non-hostile mob -
-// wolf, dolphin, polar_bear, and bee are left out on purpose since
-// they're neutral/conditionally-aggressive in vanilla, not purely
-// passive - can be added if the user flags those too, but "passive
-// mobs" as asked doesn't obviously cover a mob that can still attack
-// you back.
-//
-// Checked against the full 1.20.1 vanilla mob list 2026-09-28 (camel was
-// a live report - desert villages bake one in). Added: camel (1.20), fox
-// (listed above as neutral, but a vanilla fox never attacks a player - it
-// only hunts chickens/rabbits/fish, so it is passive in vanilla's own
-// classification), skeleton_horse and zombie_horse (passive; the skeleton
-// trap is doMobSpawning-gated and zombie horses never spawn naturally, so
-// these only matter for a structure that bakes one in). Still out on
-// purpose: villager, wandering_trader, iron_golem, snow_golem (see the
-// explicit-list note above), and the neutrals named just above.
+// Villagers, wandering traders, golems and the neutral wolves, dolphins,
+// polar bears and bees are left off on purpose. Foxes never attack players,
+// so they are on the list.
 var PASSIVE_MOB_TYPES = [
   'minecraft:cow', 'minecraft:mooshroom', 'minecraft:pig', 'minecraft:sheep',
   'minecraft:chicken', 'minecraft:rabbit', 'minecraft:horse', 'minecraft:donkey',

@@ -1,54 +1,23 @@
-// Lootr bonus layer for structure containers (2026-09-03, rebuilt
-// 2026-09-27). Layers bonus rolls on top of whatever a container's own loot
-// table rolls - additive, not replacing - but ONLY for Lootr containers.
+// Structure loot tiers, applied to every chest-type loot roll.
 //
-// **2026-09-27 tiering pass** (direct ask: "regular barrels etc should
-// have basic loot in them, but the lootr chests should feel more
-// lucrative. I also think there are too many lootr chests/barrels in
-// general"). Measured first, from the two real saves (Manna, the dedicated
-// server world) and the running jars:
-//   - ~76% of the storage a player met was Lootr (Manna: 3,591 Lootr vs
-//     ~1,300 plain). Two thirds of that came from the four post-apoc houses
-//     (a red_house is 30 loot barrels, the houses spawn every 6 chunks).
-//   - This layer used to fire on EVERY chest roll, so past 270 blocks it
-//     was 58-87% of every container's value and every container - empty-
-//     barrel fills included - carried a diamond/Nether-tier item. Lootr
-//     beat a plain barrel by only 1.1-1.5x.
-// The count is now cut by pack/config/lootr-common.toml (household/filler
-// tables and the post-apoc houses stay plain vanilla containers, ~85%
-// fewer Lootr), the plain tables were rebased to basic scavenging (no
-// treasure, no guns), and this layer only pays out when the block at the
-// roll's position is a Lootr block. Full entry: docs/FEATURES.md
-// "Structure loot tiering".
+// Rolls from a plain-tier table (PLAIN_TIER_TABLES and PLAIN_TIER_NAMESPACES
+// below) lose their premium items and may gain cobblestone. Any other roll
+// made at a Lootr block keeps its own loot and adds a chance of cobblestone,
+// rolls from the pool for its distance band (NEAR, MID, HIGH) and a
+// PRIZE_CHANCE roll from PRIZE_POOL. Lootr rolls once per player, so each
+// player's first open gets its own bonus. Distance is measured from the
+// pedestal (worldData() in world_state.js), in the same bands as
+// structure_guard_tiers.js.
 //
-// Why a block check and not the loot table id: Lootr rolls with the same
-// CHEST context as a vanilla container (ORIGIN = the container's centre,
-// verified in LootrChestBlockEntity/LootrBarrelBlockEntity.unpackLootTable),
-// so the context type can't tell them apart - but the block at ORIGIN can
-// (lootr:lootr_chest / lootr_barrel / lootr_trapped_chest / lootr_shulker /
-// lootr_inventory). Checking the block keeps "Lootr = lucrative" true for
-// every table, including the vanilla/Philip's Ruins/u_desert ones the pack
-// doesn't override. It also leaves the airdrop crate (dyairdrop block) and
-// every plain barrel alone. Lootr rolls once PER PLAYER, so each player's
-// first open gets its own bonus. Not covered: Lootr chest minecarts
-// (ORIGIN is the cart, the block there is a rail) - mineshafts are rare
-// here.
-//
-// Distance is measured from the REAL base, read live from the permanent
-// td_pedestal_target marker's persistentData (world_state.js's worldData())
-// - **bug fixed 2026-09-09**: this file once carried a hardcoded spawn
-// coordinate that went stale when the base became a runtime search.
-// Radii are +150 on the original 60/120 because the anchor-grid base
-// placement keeps every structure set ~150 blocks from the base.
-var MID_TIER_RADIUS = 210
-var HIGH_TIER_RADIUS = 270
+// Lootr rolls with the same chest context as a vanilla container, so the block
+// at the roll's origin is what tells them apart; plain containers and airdrop
+// crates never get the bonus. Nor do Lootr chest minecarts: their origin is
+// the cart, above a rail.
+var MID_TIER_RADIUS = 210 // blocks from the pedestal; MID beyond this
+var HIGH_TIER_RADIUS = 270 // HIGH beyond this
 
-// NEAR (2026-09-27): Lootr containers inside 210 blocks used to get nothing
-// extra, which is part of why a near Lootr chest read the same as a barrel.
-// A lighter take on MID - stacks of the materials the tech tree eats
-// (iron, gold, redstone, gunpowder, copper, quartz, obsidian, clay). Gold
-// ingots, quartz and obsidian left the pack's basic scav_hardware table in
-// the same pass, so Lootr containers and Rare bags are their main source.
+// Gold ingots, quartz and obsidian aren't in the basic scav_hardware table,
+// so Lootr containers and Rare loot bags are their main source.
 var NEAR_TIER_POOL = [
   { item: 'minecraft:iron_ingot', weight: 25, min: 3, max: 6 },
   { item: 'minecraft:gold_ingot', weight: 15, min: 2, max: 4 },
@@ -60,15 +29,6 @@ var NEAR_TIER_POOL = [
   { item: 'minecraft:obsidian', weight: 6, min: 2, max: 4 },
 ]
 
-// MID/HIGH were retuned 2026-09-11 against the live recipe chains (Tier 2
-// SecurityCraft traps, Simple Guns ammo, Generator Galore, Flux Networks,
-// Sophisticated stack upgrades, IE). 2026-09-27: weight moved off the items
-// whose sinks dried up since - emerald (only the Emerald Generator and
-// villagers), lapis blocks (only the Construction Core), blaze powder and
-// magma blocks (the Tier 3 re-recipes took them off the quest path; they
-// still feed omtreborn's fire-rate upgrade / incendiary turret and IE's
-// blast bricks, so they stay, rarer) - onto obsidian and ender pearls
-// (every Flux Plug/Point needs a Flux Core).
 var MID_TIER_POOL = [
   { item: 'minecraft:iron_ingot', weight: 25, min: 3, max: 6 },
   { item: 'minecraft:gold_ingot', weight: 18, min: 2, max: 4 },
@@ -83,10 +43,8 @@ var MID_TIER_POOL = [
   { item: 'minecraft:lapis_block', weight: 3, min: 1, max: 2 },
 ]
 
-// Obsidian and quartz are here too (review follow-up, same day): once they
-// left the basic scav_hardware table, nothing past 270 blocks dropped them,
-// and obsidian can't be made in this world (no water) yet gates every Flux
-// Core.
+// Obsidian and quartz are in HIGH too: the NEAR and MID pools don't apply past
+// HIGH_TIER_RADIUS, and scav_hardware doesn't carry them.
 var HIGH_TIER_POOL = [
   { item: 'minecraft:diamond', weight: 20, min: 1, max: 2 },
   { item: 'minecraft:ender_pearl', weight: 14, min: 2, max: 4 },
@@ -98,18 +56,12 @@ var HIGH_TIER_POOL = [
   { item: 'minecraft:netherite_scrap', weight: 8, min: 1, max: 1 },
   { item: 'minecraft:magma_block', weight: 5, min: 2, max: 4 },
   { item: 'minecraft:diamond_block', weight: 5, min: 1, max: 1 },
-  // 2026-09-08, direct ask: a rare structure-chest find, not a bag
-  // reward - "you'll find it if you are lucky in a structure." Now a
-  // Lootr-only find, deliberately rarer than diamond_block.
+  // Rarer than diamond_block; no loot bag carries it.
   { item: 'minecraft:netherite_upgrade_smithing_template', weight: 4, min: 1, max: 1 },
 ]
 
-// PRIZE (2026-09-27): a separate PRIZE_CHANCE roll on every Lootr open, any
-// distance - the "found something good" moment. Treasure or a gun. Guns and
-// golden apples left the plain tables in this pass (scav_armory now only
-// feeds the Lootr-kept military tables, scav_food lost its golden apple,
-// scav_treasure was retired), so this and the airdrop are where they come
-// from outside bags. Golden carrots heal the pedestal 10%.
+// PRIZE: one PRIZE_CHANCE roll per Lootr open at any distance, for a gun or a
+// treasure item. Golden carrots heal the pedestal (pedestal_health.js).
 var PRIZE_POOL = [
   { item: 'minecraft:diamond', weight: 14, min: 1, max: 2 },
   { item: 'minecraft:ender_pearl', weight: 12, min: 1, max: 3 },
@@ -127,9 +79,7 @@ var PRIZE_POOL = [
   { item: 'simple_guns_reworked:grenade', weight: 6, min: 2, max: 4 },
 ]
 
-// One guaranteed tier roll plus a chance of a second (the MID/HIGH chances
-// are the 2026-09-11 values, unchanged - this pass removes the bonus from
-// ~85% of containers rather than shrinking it per container).
+// Each Lootr open gets one tier roll plus this chance of a second.
 var SECOND_ROLL_CHANCE_NEAR = 0
 var SECOND_ROLL_CHANCE_MID = 0.4
 var SECOND_ROLL_CHANCE_HIGH = 0.5
@@ -150,23 +100,17 @@ function randomCount(entry) {
   return entry.min + Math.floor(Math.random() * (entry.max - entry.min + 1))
 }
 
-// PLAIN TIER (review follow-up, same day). KEEP IN SYNC with
-// pack/config/lootr-common.toml's loot_table_blacklist / loot_modid_blacklist
-// - Lootr's config can't be read from here. Two jobs:
-//   1. The mod/vanilla tables on that list that the pack doesn't override
-//      still carried premium items into what are now plain, shared
-//      containers - the igloo chest guarantees a golden apple and sits in
-//      every Abandoned Urban fire tower; Philip's nether_ruins_low rolls
-//      golden apples and diamonds, badlands_dungeon_loot_low ender pearls,
-//      the village and Philip's junk tables emeralds (sandbox: 30/30 igloo
-//      rolls had the apple). PLAIN_TIER_STRIP removes those from any roll of
-//      a plain-tier table. The pack's own plain tables never roll them.
-//   2. An older world keeps the Lootr blocks it converted before the
-//      blacklist existed (Lootr never converts back). A plain-tier table
-//      never earns the bonus, even from a legacy Lootr block - otherwise an
-//      old post-apoc house would start paying NEAR rolls and guns.
-// Table-id scoped on purpose, not "block isn't Lootr": the airdrop crate is
-// a non-Lootr block too and carries diamond blocks, netherite and guns.
+// Plain-tier tables. Keep in sync with loot_table_blacklist and
+// loot_modid_blacklist in pack/config/lootr-common.toml, which stop Lootr
+// converting these containers; Lootr's config can't be read from here. A roll
+// from one of these tables:
+//   - loses PLAIN_TIER_STRIP. Some of these tables aren't overridden by the
+//     pack and still roll premium items (the igloo chest always holds a
+//     golden apple).
+//   - never gets the Lootr bonus, even at a Lootr block. Lootr never converts
+//     a block back, so older saves can have Lootr blocks with these tables.
+// Matched by table id rather than "block isn't Lootr" because airdrop crates
+// aren't Lootr blocks either, and their premium loot has to stay.
 var PLAIN_TIER_TABLES = [
   'berezka_api:chests/store',
   'berezka_api:chests/simple_chest',
@@ -194,9 +138,9 @@ var PLAIN_TIER_TABLES = [
   'u_desert:desert_ruin/junk',
   'u_desert:pillager_outpost/supply',
   'kubejs:chests/scavenge_storage',
-  // Nolando StructureZ (added 2026-09-29): common/uncommon chests are plain,
-  // rare_loot stays Lootr. All three tables are overridden to roll
-  // kubejs:chests/scavenge_storage (data/nolandostructurez/loot_tables).
+  // Nolando StructureZ: common and uncommon chests are plain, rare_loot stays
+  // Lootr. All three roll kubejs:chests/scavenge_storage
+  // (data/nolandostructurez/loot_tables).
   'nolandostructurez:chests/common_loot',
   'nolandostructurez:chests/uncommon_loot',
 ]
@@ -214,20 +158,16 @@ function slpIsPlainTierTable(tableId) {
   return PLAIN_TIER_NAMESPACES.indexOf(tableId.split(':')[0]) !== -1
 }
 
-// Same block-id idiom as lure_block.js (int overload + string coercion, so
-// Rhino neither picks the wrong getBlock overload nor compares a Java
-// string).
+// Int getBlock overload and a template-string id: Rhino can pick the wrong
+// getBlock overload otherwise, and the id must be a JS string, not a Java one.
 function slpIsLootrContainer(level, pos) {
   var block = level.getBlock(pos.getX(), pos.getY(), pos.getZ())
   if (!block) return false
   return `${block.getId()}`.indexOf('lootr:') === 0
 }
 
-// Extra cobblestone, 2026-09-29 (direct ask: "I think the loot table needs
-// to add a little extra cobblestone. maybe more in the regular barrels and
-// chests in the structures"). Walls and pillars eat it, and until now it only
-// came from scav_building's cobblestone entry (14 of 119 weight). Plain
-// containers get the bigger, likelier roll; Lootr ones a smaller one.
+// Extra cobblestone for walls: plain-tier rolls get the bigger, likelier roll,
+// Lootr bonus rolls a smaller one.
 var PLAIN_COBBLE_CHANCE = 0.6
 var PLAIN_COBBLE_COUNT = { min: 8, max: 20 }
 var LOOTR_COBBLE_CHANCE = 0.3

@@ -1,71 +1,18 @@
-// "Bounties" quest chapter (bounties.snbt) - persistent hostile-kill
-// counter, real trap/turret kills included on purpose (2026-09-05).
+// Bounties chapter (config/ftbquests/quests/chapters/bounties.snbt).
 //
-// Real design constraint, not guessed: decompiled every trap currently in
-// this pack (Trapcraft's SpikesBlock/BearTrapTileEntity, Create Addition's
-// BarbedWireBlock) and NONE of them attach a killer entity to their damage
-// source - Spikes uses `damageSources().cactus()`, Bear Trap uses
-// `damageSources().mobAttack(null)`, Barbed Wire uses its own custom
-// "createaddition:barbed_wire" type. All three are anonymous/no-attacker by
-// design. That rules out "does this death have a known killer entity" as
-// the inclusion test - it would silently exclude every trap kill that
-// exists in this pack today, which is exactly the outcome this chapter is
-// supposed to reward.
+// Each wave-roster (WAVE_MOB_TYPES) death adds a kill to every online player's
+// td_hostile_kills score and to the world total in worldData()
+// (world_state.js). Structure guards never count, and neither do
+// environmental deaths or /kill (BOUNTY_EXCLUDED_DAMAGE_TYPES), except fire
+// and lava deaths of wave mobs. Deaths are classified by damage type rather
+// than by killer because trap damage often has no attacking entity (the
+// fence shock in wave_mob_fence_shock.js has none).
 //
-// Real fix: classify by the damage TYPE's registry id instead of by
-// attacker, and default to counting - only exclude a small, genuinely-no-
-// cause blocklist (fire, drowning, falling, starving, freezing, void,
-// cramming, suffocation, and /kill-style generic_kill). Any current trap/
-// turret's own damage type, and any future one a new mod adds, counts
-// automatically with zero code change needed when the trap/turret roster
-// changes - the same property the mob-side roster below still can't have.
-//
-// Confirmed live in a sandbox (not assumed): `event.source.typeHolder().
-// unwrapKey().get().location()` reliably returns the real registry id
-// ("minecraft:generic_kill", "minecraft:in_wall", etc.) even though
-// `getMsgId()`/`getEntity()`/`getDirectEntity()` all fail from Rhino in
-// this build - a different slice of the same curated-dispatch gap already
-// documented elsewhere in this codebase. MobCategory has the identical gap
-// on the entity side (`entity.type.category`/`.getCategory()` both fail
-// live, matching no_passive_mobs.js's own finding for the passive-mob
-// case), so HOSTILE_TYPES below stays a real hand-maintained id list, same
-// as every other copy of it in this codebase - that part of the ask isn't
-// achievable in this exact build, flagged rather than silently skipped.
+// A tier completes through /ftbquests change_progress when a player's score
+// reaches its threshold; bqSyncPlayerProgress() fills the bars in between.
 
-// Same list as wave_status.js's HOSTILE_TYPES/wave_spawner.js/
-// pedestal_health.js/loot_bag_drops.js/flesh_death_sound.js/mob_aggro.js/
-// epicsiegemod-common.toml - keep in sync if the roster changes again.
-// Named uniquely (not "HOSTILE_TYPES") - confirmed live this session that
-// top-level var/const DOES share scope across server_scripts in this
-// build (despite the older belief otherwise), and reusing that exact name
-// crashed wave_status.js on boot with "redeclaration of var HOSTILE_TYPES"
-// the first time this file was tested. Every other file's own roster copy
-// already uses a distinct name for the same reason (WAVE_MOB_TYPES,
-// PEDESTAL_WAVE_MOB_TYPES, EPIC_MOBS, HIGH_TIER_DEATH_SOUND_TYPES) - this
-// one just hadn't been caught yet since nothing had collided with the
-// literal name "HOSTILE_TYPES" itself until now.
-var BOUNTY_HOSTILE_TYPES = [
-  'minecraft:zombie',
-  'minecraft:husk',
-  'minecraft:drowned',
-  'minecraft:zombie_villager',
-  'mutantszombies:mutant_zombie',
-  'mutantszombies:blister_zombie',
-  'mutantszombies:split_head_zombie',
-  'undeadnights:elite_zombie',
-  'undeadnights:horde_zombie',
-  'undeadnights:demolition_zombie',
-  'mutantszombies:zombie_brute',
-  'mutantszombies:mutant_brute',
-  'mutantszombies:rotten_mutant',
-  'mutantszombies:crawler',
-]
-
-// Real vanilla damage_type registry ids with no player/defense involvement
-// at all - checked directly against the actual 1.20.1 data/minecraft/
-// damage_type registry, not guessed. generic_kill is what /kill and
-// /tdforceclear-style commands produce - deliberately excluded so admin/
-// debug kills don't inflate the tally.
+// Damage type ids that don't count: environmental deaths, plus generic_kill
+// from /kill and /tdforceclear.
 var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:in_fire',
   'minecraft:on_fire',
@@ -80,52 +27,19 @@ var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:generic_kill',
 ]
 
-// Fire deaths DO count for real wave mobs (2026-09-28): the IE Chem
-// Turret and the Simple Guns flamethrower kill by setting mobs alight,
-// so the killing blow is on_fire/in_fire (lava moats: lava) and those
-// kills were silently lost. Still excluded for anything not tagged
-// td_wave_mob, so an untagged zombie burning at dawn stays uncounted.
+// Fire and lava still count when the victim is a td_wave_mob: the Chemthrower
+// Turret and the Simple Guns flamethrower kill by burning, and lava moats by
+// lava. An untagged zombie burning at dawn still doesn't count.
 var BOUNTY_WAVE_MOB_FIRE_TYPES = ['minecraft:in_fire', 'minecraft:on_fire', 'minecraft:lava']
 
-// **max_progress is NOT read from bounties.snbt - real root cause of "all
-// five bounties completed at once", 2026-09-10.** Decompiled the installed
-// ftb-quests-forge-2001.4.22.jar's CustomTask directly: it has a
-// `maxProgress` field (default 1), a public `setMaxProgress(long)`, and
-// writes/reads it over the NETWORK (writeNetData/readNetData) - but has
-// NO readData/writeData override at all, so the `max_progress: 25L` lines
-// in bounties.snbt are silently ignored and every bounty task loads with
-// max 1. The progress-display sync below (bqSyncPlayerProgress) then did
-// exactly what it was told: setProgress(task, min(killCount, 25)) = 1 on
-// the very first kill, and TeamData.setProgress treats progress >= max as
-// completion - so all five tiers (Zombie Masher included, 1 % 1500 = 1)
-// completed in the same millisecond, confirmed in the live save's
-// ftbquests/<uuid>.snbt (identical timestamps on all five). The fix is
-// bqApplyMaxProgress below: set the real max on each task object via its
-// own public setter, at ServerEvents.loaded (KubeJS posts that at
-// SERVER_STARTING; FTB Quests loads the file at SERVER_BEFORE_START, and
-// the client receives maxProgress in the login sync AFTER both - so the
-// bar reads x/25, not x/1). The snbt `max_progress` values are left in
-// place as documentation of intent; they do nothing on their own.
-//
-// bounties.snbt's tasks are `type: "custom"`, not "checkmark" (2026-09-08
-// fix, real ask: bounties should complete on the kill event, not be
-// clickable). Decompiled dev/ftb/mods/ftbquests/quest/task/CheckmarkTask
-// directly: its canSubmit() is hardcoded `return true` - any player could
-// click a checkmark bounty complete for free, no kills required. CustomTask
-// defaults enableButton=false (no player click possible) and check=null
-// (no periodic auto-check either) - completely inert until something
-// external drives it, exactly this file's `ftbquests change_progress
-// ... complete` below, which calls Task's own type-agnostic
-// forceProgress() and doesn't care what task type it's hitting.
 var BOUNTY_OBJECTIVE = 'td_hostile_kills'
 var BOUNTY_MOD_OBJECTIVE = 'td_bountyMod1500'
 var BOUNTY_REPEATABLE_INTERVAL = 1500
 var BOUNTY_REPEATABLE_TASK_ID = '1355429CD45AF725'
 
-// Fixed one-time tiers - bounties.snbt's own quest ids. `title` is only
-// used by the completion notice below (matches each tier's own quest
-// title in bounties.snbt) - the actual completion still goes entirely
-// through `change_progress complete`, this is display-only.
+// One-time tiers. taskId is the tier's task in bounties.snbt; those tasks are
+// type custom, so players can't tick them off by hand. title only feeds the
+// chat notice.
 var BOUNTY_FIXED_TIERS = [
   { threshold: 25, taskId: '42F2080CC88FFF1F', title: 'First Blood' },
   { threshold: 100, taskId: '23C4C36D29BF9EDF', title: 'Exterminator' },
@@ -137,14 +51,15 @@ var BOUNTY_REPEATABLE_TITLE = 'Zombie Masher'
 ServerEvents.loaded((event) => {
   var server = event.server
   server.runCommandSilent(`scoreboard objectives add ${BOUNTY_OBJECTIVE} dummy {"text":"Hostile Kills"}`)
-  // Scratch objective for the repeatable tier's modulo check below - never
-  // displayed, holds a working copy of the kill count plus a fake-player
-  // literal-value holder (#const) for the vanilla scoreboard-math idiom
-  // (`operation ... %=` needs a real score on both sides, not a literal).
+  // Scratch objective for the repeatable tier's modulo. The fake player #const
+  // holds the divisor: scoreboard operation %= needs a score on both sides.
   server.runCommandSilent(`scoreboard objectives add ${BOUNTY_MOD_OBJECTIVE} dummy`)
   server.runCommandSilent(`scoreboard players set #const ${BOUNTY_MOD_OBJECTIVE} ${BOUNTY_REPEATABLE_INTERVAL}`)
 })
 
+// The damage type's registry id (e.g. minecraft:on_fire), or null if it
+// can't be read. A null type counts. Read through typeHolder() because
+// getMsgId(), getEntity() and getDirectEntity() fail from Rhino in this build.
 function bountyDamageTypeId(source) {
   try {
     return `${source.typeHolder().unwrapKey().get().location()}`
@@ -155,9 +70,9 @@ function bountyDamageTypeId(source) {
 
 EntityEvents.death((event) => {
   var entity = event.entity
-  if (!BOUNTY_HOSTILE_TYPES.includes(`${entity.type}`)) return
-  // Structure guards don't count (2026-09-28, user's call): a guard spawner
-  // would otherwise farm the repeatable Zombie Masher's legendary bag.
+  if (!WAVE_MOB_TYPES.includes(`${entity.type}`)) return
+  // Structure guards never count, or a guard spawner could farm the
+  // repeatable Zombie Masher.
   if (entity.getTags().contains('td_structure_guard')) return
 
   var typeId = bountyDamageTypeId(event.source)
@@ -169,34 +84,13 @@ EntityEvents.death((event) => {
   var server = event.level.getServer()
   server.runCommandSilent(`scoreboard players add @a ${BOUNTY_OBJECTIVE} 1`)
 
-  // JS-readable copy of the same running total, world-scoped like every
-  // other piece of wave state in this pack (worldData/findWorldStateEntity,
-  // shared from world_state.js) - kept purely so the progress-display tick
-  // handler below has a real number to work with. KubeJS has no binding to
-  // read a vanilla scoreboard score back into a script (checked - nothing
-  // on EntityKJS/PlayerKJS exposes one), so the scoreboard objective above
-  // and this int can't just be the same storage; they're driven by the
-  // same kill events so they can't drift apart either.
+  // World copy for bqSyncPlayerProgress(); KubeJS has no scoreboard reader.
+  // It counts every kill; the scoreboard only credits players who are online.
   var bqData = worldData(event.level)
   if (bqData) bqData.putInt('td_bountyKillCount', bqData.getInt('td_bountyKillCount') + 1)
 
-  // Exact-score match, not a range - kills only ever increment by 1, so
-  // the score passes through each threshold exactly once. Avoids re-
-  // issuing `change_progress complete` on every kill for the rest of the
-  // game once a tier is already past.
-  //
-  // Completion notice added 2026-09-09 (direct playtest feedback: "i
-  // killed a few enemies and it completed all of them in one go" - the
-  // completion logic itself checks out, exact-score-match can't double-
-  // fire or skip a tier, but there was genuinely zero player-facing
-  // feedback when one completed, unlike every other beat in this pack
-  // (wave clear, gear removal, pedestal alerts all get a title/toast).
-  // A player who racks up kills without the quest book open would only
-  // ever discover several silent completions at once, reading exactly
-  // like "it completed all of them in one go" even though each one fired
-  // on its own real kill). Same selector as the real completion command
-  // right above it, so this can never announce a tier that didn't
-  // actually complete.
+  // Exact score match: kills only rise by one, so each threshold is hit once
+  // and a finished tier isn't re-completed on every later kill.
   BOUNTY_FIXED_TIERS.forEach((tier) => {
     server.runCommandSilent(
       `execute as @a[scores={${BOUNTY_OBJECTIVE}=${tier.threshold}}] run ftbquests change_progress @s complete ${tier.taskId}`
@@ -206,10 +100,8 @@ EntityEvents.death((event) => {
     )
   })
 
-  // Repeatable tier - pure vanilla scoreboard math (copy kill count into a
-  // scratch objective, mod by the interval, check for an exact 0) rather
-  // than a script-side claims counter, so this can't drift out of sync
-  // with the real running kill total.
+  // Repeatable tier: kill count mod BOUNTY_REPEATABLE_INTERVAL in the scratch
+  // objective, completing on exactly 0.
   server.runCommandSilent(`execute as @a run scoreboard players operation @s ${BOUNTY_MOD_OBJECTIVE} = @s ${BOUNTY_OBJECTIVE}`)
   server.runCommandSilent(`execute as @a run scoreboard players operation @s ${BOUNTY_MOD_OBJECTIVE} %= #const ${BOUNTY_MOD_OBJECTIVE}`)
   server.runCommandSilent(
@@ -220,25 +112,12 @@ EntityEvents.death((event) => {
   )
 })
 
-// Live progress display (2026-09-09, real playtest ask: "can the bounty
-// quests have a counter on them like 1/25 killed, at the moment its just
-// a colourful circle with the word custom on it"). Decompiled FTB Quests
-// 2001.4.22 directly - the only script-facing command is `/ftbquests
-// change_progress <players> complete|reset <id>`, no "set progress to N"
-// subcommand exists in this version, which is why the `complete` calls
-// above only ever flip a task from 0 to fully done with nothing showing
-// in between. CustomTask does support a real max progress + progress bar -
-// but NOT via the snbt file (see the max_progress note near the top of
-// this file); bqApplyMaxProgress sets it through the task's own setter.
+// Progress bars. change_progress can only complete or reset a task, so the
+// count in between is written with FTB Quests' TeamData.setProgress through
+// reflection. FTB Quests isn't obfuscated, so its members resolve by name.
 //
-// Fix: reach `TeamData.setProgress(Task, long)` directly via reflection,
-// the same Class.forName bootstrap this codebase already uses elsewhere
-// (mob_aggro.js's own resolveClass / loot_bag_notification.js's
-// punResolveClass) since java.*/Packages.* is disabled in this Rhino
-// build. Named with a bq prefix, not shared with those other files' own
-// copies - top-level var/const don't share scope across server_scripts
-// in this exact build (confirmed elsewhere in this codebase already),
-// only top-level FUNCTIONS do.
+// Looks up a class through Class.forName(String), found by signature
+// because java.* is disabled in this Rhino build.
 function bqResolveClass(anyObj, className) {
   var classOfClass = anyObj.getClass().getClass()
   var methods = classOfClass.getMethods()
@@ -252,6 +131,7 @@ function bqResolveClass(anyObj, className) {
   return null
 }
 
+// Reflection state and handles, set by bqInitProgressReflection().
 var bqProgressAvailable = true
 var bqProgressInitDone = false
 var bqServerQuestFileInstance = null
@@ -260,38 +140,20 @@ var bqIsCompletedMethod = null
 var bqSetProgressMethod = null
 var bqLongValueOfMethod = null
 var bqSetMaxProgressMethod = null
-// {task: <CustomTask>, threshold: <number>} per fixed tier, plus the
-// repeatable task on its own - resolved once at init via ServerQuestFile's
-// own getBase(long), not re-looked-up on every kill. threshold itself
-// stays a plain JS number (max 1500, nowhere near the 2^53 safe-integer
-// ceiling that ruled out parseInt for the ids themselves) - it only ever
-// gets boxed via bqBoxLong() right before crossing into a reflective call.
+// Task objects: {task, threshold} per fixed tier, plus the repeatable task.
 var bqFixedTierTasks = []
 var bqRepeatableTask = null
 
-// A raw Method#invoke(Object, Object[]) call is genuine Java reflection,
-// not Rhino's own normal dot-call dispatch - Rhino can't inspect the
-// target parameter's declared type through it (same real gap this
-// codebase already hit and documented for functional-interface
-// coercion, mob_aggro.js's own header comment), so a plain JS number
-// gets boxed as java.lang.Double for the call's Object[] args, and
-// setProgress's own `long` parameter would reject that with a real
-// IllegalArgumentException at runtime - a Double, unlike a Long, isn't
-// auto-unboxed to `long`. Routed through Long.valueOf(String) instead
-// (unambiguous - String isn't a primitive type reflection could get
-// wrong), same rigor as parseHexId above for the ids themselves.
+// Method#invoke passes a JS number as a Double, which a long parameter
+// rejects; Long.valueOf(String) returns a java.lang.Long instead.
 function bqBoxLong(n) {
   return bqLongValueOfMethod.invoke(null, [`${n}`])
 }
 
-// Returns true once the task objects are resolved. Sets bqProgressInitDone
-// only on success or on a genuine reflection failure - NOT when FTB Quests'
-// ServerQuestFile simply isn't there yet, so the caller can retry.
-// **Timing, found in the sandbox 2026-09-10:** at KubeJS ServerEvents.loaded
-// FTB Quests has no ServerQuestFile.INSTANCE yet (Method#invoke on a null
-// target -> "Cannot invoke Object.getClass() because obj is null"), so the
-// first real chance is the first server tick after "Done", which still
-// precedes any client's login sync - see the ServerEvents.tick handler.
+// Resolves the reflection handles and task objects, then applies the
+// maximums. Returns false, leaving init open for a retry, until the quest
+// file and its bounty tasks are loaded; an exception turns the progress
+// bars off until restart.
 function bqInitProgressReflection(anyObj) {
   if (bqProgressInitDone) return bqProgressAvailable
   try {
@@ -307,65 +169,25 @@ function bqInitProgressReflection(anyObj) {
     var intPrimitiveCls = intCls.getField('TYPE').get(null)
 
     bqServerQuestFileInstance = serverQuestFileCls.getField('INSTANCE').get(null)
-    if (!bqServerQuestFileInstance) return false // not loaded yet - retry later
+    if (!bqServerQuestFileInstance) return false // not loaded yet; retry
     var getBaseMethod = serverQuestFileCls.getMethod('getBase', [longPrimitiveCls])
     bqGetOrCreateTeamDataMethod = serverQuestFileCls.getMethod('getOrCreateTeamData', [entityCls])
     bqIsCompletedMethod = teamDataCls.getMethod('isCompleted', [questObjectCls])
     bqSetProgressMethod = teamDataCls.getMethod('setProgress', [taskCls, longPrimitiveCls])
     bqLongValueOfMethod = longCls.getMethod('valueOf', [stringCls])
 
-    // Real live bug, found 2026-09-09 by reading the live instance's
-    // actual logs directly (not assumed) - every single boot that day (5
-    // separate sessions' logs, all identical) hit "[bounty_kills]
-    // progress-display reflection unavailable: JavaException:
-    // java.util.NoSuchElementException: No value present" from THIS
-    // function, meaning the whole progress-display sync below has never
-    // once actually run - bounty tasks kept showing FTB Quests' own
-    // default "custom" icon with no fill, never the intended bar/counter.
-    // Previously resolved each task id via FTB Quests' own
-    // QuestObjectBase.parseHexId(String) (returns Optional<Long>) then
-    // called Optional#get() on the result - empirically checked with a
-    // real jshell run against these exact 5 task-id strings first
-    // (42F2080CC88FFF1F etc.): Long.parseLong(id, 16) itself succeeds for
-    // every one of them (none overflow signed 64-bit - all 5 leading
-    // nibbles are 0-7, see reference_ftbquests_ids_must_be_positive.md),
-    // so the Optional coming back empty specifically through this
-    // REFLECTED call (not a real direct call) points at some Rhino/
-    // raw-invoke interop gap in how the returned Optional<Long> crosses
-    // back - not something worth chasing further given a simpler, already
-    // proven-reliable path exists. Routed through java.lang.Long's own
-    // parseLong(String, int) instead - the same plain JDK static-method
-    // pattern this file's own bqBoxLong/playtest_starter_kit.js's boxInt/
-    // boxBool already use successfully, sidestepping FTB Quests'
-    // Optional-wrapping helper entirely. The radix argument (16) has to
-    // be boxed as a real java.lang.Integer for the same reason bqBoxLong
-    // exists (raw Method#invoke doesn't get Rhino's normal argument
-    // coercion) - reflection's own return-value autoboxing (primitive
-    // long -> Long) is a different, unambiguous case already trusted
-    // elsewhere in this file (mob_aggro.js's pedestalAttackDamage/
-    // getValue() writeup), so idLong below needs no extra boxing step.
+    // Task ids are 64-bit hex, beyond JS number precision, so Long.parseLong
+    // parses them; its radix is boxed for the same reason as bqBoxLong().
+    // FTB's own parseHexId returns an Optional that comes back empty through
+    // invoke().
     var longParseLongMethod = longCls.getMethod('parseLong', [stringCls, intPrimitiveCls])
     var intValueOfMethod = intCls.getMethod('valueOf', [stringCls])
-    // Same nested-declaration hoisting bug as bqTaskForId just below
-    // (live log 2026-09-10: "bqBoxInt is not a function, it is undefined"
-    // on every boot, silently disabling the whole progress display) -
-    // same fix, a plain `var` assignment.
+    // Function expressions, not declarations: a function declared inside a
+    // try block doesn't hoist in this Rhino build.
     var bqBoxInt = function (n) {
       return intValueOfMethod.invoke(null, [`${n}`])
     }
 
-    // Real live bug, 2026-09-09: shipped as a `function bqTaskForId(...)`
-    // declaration nested inside this try block - threw "bqTaskForId is
-    // not a function, it is undefined" on every real server boot
-    // (confirmed in the live instance's logs/latest.log), even though
-    // its own call sites sit textually below it in this exact same
-    // block. This Rhino build doesn't reliably hoist a function
-    // DECLARATION nested inside a block the way normal JS engines do -
-    // same general "curated dispatch, not standard JS semantics" family
-    // of gap this codebase has already hit elsewhere (mob_aggro.js's
-    // functional-interface coercion, this file's own MobCategory note
-    // above). Fixed by making it a plain top-to-bottom `var` assignment
-    // instead, which carries no hoisting ambiguity in any engine.
     var bqTaskForId = function (hexId) {
       var idLong = longParseLongMethod.invoke(null, [hexId, bqBoxInt(16)])
       return getBaseMethod.invoke(bqServerQuestFileInstance, [idLong])
@@ -376,12 +198,11 @@ function bqInitProgressReflection(anyObj) {
       resolved.push({ task: bqTaskForId(tier.taskId), threshold: tier.threshold })
     })
     var repeatable = bqTaskForId(BOUNTY_REPEATABLE_TASK_ID)
-    if (repeatable === null || resolved.some((entry) => entry.task === null)) return false // file exists but isn't populated yet
+    // Retry while any bounty task is missing from the loaded file.
+    if (repeatable === null || resolved.some((entry) => entry.task === null)) return false
     bqFixedTierTasks = resolved
     bqRepeatableTask = repeatable
 
-    // CustomTask#setMaxProgress(long) - public, clean name (FTB Quests is
-    // not SRG-obfuscated), resolved off the task's own runtime class.
     var customTaskCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.task.CustomTask')
     bqSetMaxProgressMethod = customTaskCls.getMethod('setMaxProgress', [longPrimitiveCls])
     bqProgressInitDone = true
@@ -395,11 +216,11 @@ function bqInitProgressReflection(anyObj) {
   }
 }
 
-// First server ticks after "Done": retries bqInitProgressReflection until
-// FTB Quests' file is populated (normally the very first tick), then stops
-// polling. Bounded so a genuinely missing quest file can't keep this alive.
+// Init runs on the first server ticks: ServerQuestFile.INSTANCE is still null
+// at ServerEvents.loaded, and the maximums must be in place before a client's
+// login sync, which carries them. This loop gives up after BQ_INIT_MAX_TICKS.
 var bqInitTicksTried = 0
-var BQ_INIT_MAX_TICKS = 1200
+var BQ_INIT_MAX_TICKS = 1200 // ticks (one minute)
 ServerEvents.tick((event) => {
   if (bqProgressInitDone || bqInitTicksTried >= BQ_INIT_MAX_TICKS) return
   bqInitTicksTried++
@@ -407,8 +228,10 @@ ServerEvents.tick((event) => {
   else if (bqInitTicksTried === BQ_INIT_MAX_TICKS) console.log('[bounty_kills] gave up waiting for ServerQuestFile - bounty max progress NOT applied')
 })
 
-// See the max_progress note above BOUNTY_OBJECTIVE. Idempotent - safe to
-// call from ServerEvents.loaded and again from the first player tick.
+// FTB Quests ignores the max_progress values in bounties.snbt (CustomTask
+// keeps its maximum only in network data), so every bounty task loads with
+// max 1 and would complete on its first setProgress. This sets each maximum
+// to its kill threshold; it runs once, when init succeeds.
 function bqApplyMaxProgress() {
   if (!bqSetMaxProgressMethod) return
   var applied = []
@@ -421,39 +244,25 @@ function bqApplyMaxProgress() {
   console.log(`[bounty_kills] bounty task max progress applied: ${applied.join('/')}`)
 }
 
+// Mirrors the world kill total onto the bars of the player's quest team.
 function bqSyncPlayerProgress(player, killCount) {
   bqInitProgressReflection(player)
   if (!bqProgressAvailable) return
   try {
     var teamData = bqGetOrCreateTeamDataMethod.invoke(bqServerQuestFileInstance, [player])
 
-    // isCompleted's real return type is a primitive `boolean` - Java
-    // autoboxes it to a Boolean crossing back through invoke()'s own
-    // Object return type, but this codebase doesn't trust raw truthiness
-    // on a value that came back through a generic-Object reflective call
-    // (a non-null wrapper object is always JS-truthy regardless of the
-    // boolean it actually holds, if Rhino doesn't unwrap it here the same
-    // way it does for a normal dot-call). Stringified and compared
-    // instead, the same defensive idiom this codebase already uses
-    // everywhere else for values crossing an uncertain Java/JS boundary
-    // (`` `${entity.type}` ``, `` `${source.typeHolder()...}` ``) -
-    // correct either way, since Boolean#toString() is exactly "true"/
-    // "false" regardless of how Rhino wrapped it.
+    // isCompleted's boolean comes back from invoke() as a Boolean object, which
+    // may be truthy even when false, so its string form is compared.
     bqFixedTierTasks.forEach((entry) => {
-      // Skip once already completed - the `complete` calls in
-      // EntityEvents.death above are still what actually finishes a
-      // tier and grants its rewards; this only ever fills the bar in
-      // between, and must never fight a completed task back toward a
-      // recomputed value (killCount keeps climbing past every earlier
-      // tier's own threshold for the rest of the game).
+      // Completed tiers are left alone. setProgress at the maximum completes a
+      // task, so a tier can also finish here, not only via change_progress.
       if (`${bqIsCompletedMethod.invoke(teamData, [entry.task])}` === 'true') return
       bqSetProgressMethod.invoke(teamData, [entry.task, bqBoxLong(Math.min(killCount, entry.threshold))])
     })
 
-    // Repeatable tier - same modulo the scoreboard math already uses, so
-    // this can't drift from the real running total either. A completed-
-    // but-not-yet-reset repeatable task is left alone for the same reason
-    // as the fixed tiers above.
+    // Repeatable tier: kills mod the interval. A completed task is left alone
+    // until its reward is claimed and FTB Quests resets it; writing 0 (the
+    // value right after completion) would clear the completion.
     if (`${bqIsCompletedMethod.invoke(teamData, [bqRepeatableTask])}` !== 'true') {
       bqSetProgressMethod.invoke(teamData, [bqRepeatableTask, bqBoxLong(killCount % BOUNTY_REPEATABLE_INTERVAL)])
     }
@@ -462,11 +271,7 @@ function bqSyncPlayerProgress(player, killCount) {
   }
 }
 
-// Throttled to every 10 ticks (matches pedestal_health.js's own polling
-// cadence) rather than every tick - this is a display-only sync, not
-// something that needs to be frame-perfect, and the actual tier-complete
-// calls in EntityEvents.death above already fire immediately on the real
-// kill event regardless of this handler's own cadence.
+// Every 10 ticks, sync this player's bars with the world total.
 PlayerEvents.tick((event) => {
   if (event.player.getLevel().getTime() % 10 !== 0) return
   var data = worldData(event.player.getLevel())

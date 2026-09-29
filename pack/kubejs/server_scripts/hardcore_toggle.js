@@ -1,17 +1,6 @@
-// Hardcore mode toggle - first piece of the still-partial Hardcore mode
-// spec (docs/FEATURES.md's "Hardcore mode" section, corrected 2026-09-09).
-// Player-run command, no permission gate - matches the spec's own "no
-// GUI, defaults off, player flips it on themselves" decision, same as
-// the Wave Horn being a plain item rather than an OP-only command.
-//
-// Just the switch itself. Both Totem-of-Undying sources
-// (boss_wave.js's boss-kill drop, hardcore_totem_recipe.js's crafting
-// recipe), the pedestal-destruction game-over path
-// (pedestal_destruction.js), and the actual permadeath consequence
-// (hardcore_death.js's death-event hook - real player death, no totem
-// saved it, forces permanent spectator + freezes further wave-
-// triggering) all react to td_hardcoreEnabled independently of this
-// file - this one just flips the flag.
+// /hardcore enable and /hardcore disable set td_hardcoreEnabled in worldData()
+// (world_state.js). Any player can run them; there is no permission check. The
+// flag defaults to off, and only hardcore_death.js reads it.
 ServerEvents.commandRegistry((event) => {
   var Commands = event.commands
   event.register(

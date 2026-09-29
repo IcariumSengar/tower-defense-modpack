@@ -1,106 +1,17 @@
-// Empty world-gen container fix (2026-09-08/09, rewritten 2026-09-11,
-// re-roll loop fixed 2026-09-27).
+// Fills empty world-gen containers with kubejs:chests/scavenge_storage.
 //
-// The problem, re-measured 2026-09-11 by parsing every container block
-// entity in every structure mod's NBT files (a real census this time,
-// not the earlier "no LootTable string anywhere" grep):
-//   - The Lost City: 2,916 containers - 1,352 EMPTY (46%, almost all
-//     barrels), 1,487 tagged with berezka_api tables, 77 with baked items.
-//   - Abandoned Urban: 207 containers - 97 EMPTY (92 barrels).
-//   - Abandoned Watchtowers: 262 containers - 98 EMPTY.
-//   - Philip's Ruins: 564 containers - 10 empty (the rest are tagged).
-//   - postapocalypse_structures: 147 containers - 3 empty.
-// The "regular storage" a player walks past in a ruined city is, nearly
-// half the time, a barrel with nothing in it.
+// Structure mods leave many containers empty; almost half of The Lost City's
+// are. On a player's first right-click, sclfMaybeAssign gives the storage
+// table to a plain vanilla container that is empty, far from the base, not
+// placed by a player and not seen before. Asking "is this inside a structure"
+// doesn't work: The Lost City builds through Berezka API, whose structures
+// have no pieces to take a bounding box from.
 //
-// The 2026-09-09 version answered "is this container inside a structure?"
-// with ~200 lines of reflection (findNearestMapStructure -> getStructureAt
-// -> bounding box) and only ever worked for Abandoned Watchtowers: its own
-// header recorded that The Lost City throws "Unable to calculate
-// boundingbox without pieces" (Berezka API places those structures through
-// its own system, see the "[Berezka API] applying offset" log lines), and
-// Abandoned Urban was never in its target list at all - so the two mods
-// holding 1,449 of the ~1,560 empty containers were never fixed.
-//
-// **Rewrite**: no structure lookup at all. A container is treated as
-// world-gen storage when ALL of these hold at first right-click:
-//   1. it is a plain vanilla chest/trapped chest/barrel/dispenser/dropper
-//      (Sophisticated Storage, Lootr and airdrop crates are other blocks),
-//   2. it has no LootTable tag and no items,
-//   3. it is more than BASE_EXCLUSION_RADIUS blocks from the pedestal -
-//      the anchor-grid base placement (playtest_starter_kit.js) keeps every
-//      structure set at least 9 chunks (~144 blocks) from the base, so
-//      nothing inside that radius can be a structure container, and the
-//      base's own script-placed double chest / pre-built barrels are safe,
-//   4. it was not placed by a player - BlockEvents.placed records every
-//      player-placed target container's position in the shared world
-//      state (td_playerContainers, same string-registry idiom as
-//      trap_durability.js's td_trapRegistry) and BlockEvents.broken
-//      forgets it again. Script/command-placed blocks never fire placed,
-//      which is exactly right: nothing but world-gen puts a container out
-//      there without a player.
-// Then it gets `kubejs:chests/scavenge_storage` (data/kubejs/loot_tables/
-// chests/scavenge_storage.json - a "what someone left in this barrel"
-// table: hardware, building materials, food, sometimes ammo, sometimes
-// nearly nothing) merged as {LootTable, LootTableSeed} - the same
-// vanilla lazy-unpack shape the old version verified live (Items key
-// disappears, right-click rolls it, tag clears). No distance premium
-// (2026-09-27 loot tiering pass): scavenge_storage is a plain-tier table.
-// structure_loot_progression.js pays its distance bonus only when the
-// rolling block is a lootr:* block, and it skips every table in its
-// PLAIN_TIER_TABLES list, which includes this one; lootr-common.toml also
-// blacklists this table, so a tagged-but-unopened barrel is never
-// converted to a Lootr block on a later chunk load. A far city's empty
-// barrels stay basic scavenging, the same as a near one's.
-//
-// **One roll per container, ever (bug fixed 2026-09-27).** Rule 2 above
-// was only ever checked against the container's CURRENT contents, and
-// vanilla wipes the evidence: the open that rolls the table clears the
-// LootTable tag, and once the player takes everything the block entity
-// saves `Items: []` (ContainerHelper.saveAllItems always writes the list,
-// empty or not). The next right-click saw "no LootTable, no items" and
-// tagged it again - unlimited free loot from one barrel. It hit every
-// looted plain chest too, not just the ones this script had filled: a
-// household chest emptied of its own table read as an empty world-gen
-// container on the next click. The fix is a marker on the container
-// itself: the first time a world-gen container passes rules 1, 3 and 4,
-// whatever it holds then (its own LootTable, baked items, or the storage
-// roll assigned here) is its only loot, and `td_scavengeSeen` is written
-// into the block entity's Forge persistent data. That is the `ForgeData`
-// compound Forge 47.4.10's patched BlockEntity reads in load() and writes
-// in saveAdditional(); every target block entity (chest, trapped chest,
-// barrel, dispenser, dropper) chains to both through super, so the marker
-// saves with the chunk, survives restarts, and disappears with the block.
-// Checked by decompiling the installed forge-1.20.1-47.4.10 client and
-// server jars and the srg vanilla jar. KubeJS's getEntityData() is
-// saveWithFullMetadata(), so the marker is visible in the snapshot read
-// below. A double chest is two block entities that open as one, so both
-// halves are marked together. A world-level position registry was the
-// other option; it was rejected because it grows with every container
-// opened, and an NBT string longer than 65,535 bytes is saved as "" by
-// StringTag.write, which would silently wipe it.
-//
-// Real Radium interaction, kept from the old header because it still
-// applies: Radium short-circuits the lazy unpack for NON-PLAYER container
-// access (a hopper pulling from a tagged-but-unopened container does
-// nothing). This fix only ever triggers on BlockEvents.rightClicked, never
-// a hopper/comparator, so it isn't exposed to that - but don't assume a
-// hopper test proves anything about the player path in this modset.
-//
-// Known, accepted edges: a container placed by a player before the
-// registry existed isn't in it, so if it's empty and far from the base it
-// rolls storage loot once on its next open (really once now - the marker
-// stops the second roll; before 2026-09-27 this note claimed the cleared
-// tag did that, which was backwards). Containers already emptied in a
-// world from before the fix have no marker, so each gets one more storage
-// roll and is then marked. A container destroyed by an explosion keeps a
-// stale registry key (harmless, nothing else can ever appear at that exact
-// position without a placed event).
-//
-// Per this pack's Rhino rule (top-level FUNCTIONS share across
-// server_scripts, var/const don't, and same-named functions silently
-// collide - see mob_aggro.js's header), every helper is prefixed sclf*.
+// scavenge_storage is a plain-tier table: structure_loot_progression.js never
+// adds the Lootr bonus to it, and lootr-common.toml blacklists it so Lootr
+// never converts a container that holds it.
 
+// Vanilla only: Lootr containers and airdrop crates are other blocks.
 var TARGET_BLOCK_IDS = [
   'minecraft:chest',
   'minecraft:trapped_chest',
@@ -110,15 +21,22 @@ var TARGET_BLOCK_IDS = [
 ]
 
 var STORAGE_TABLE = 'kubejs:chests/scavenge_storage'
+// Blocks from the pedestal. Structures start about 150 blocks out
+// (playtest_starter_kit.js); anything closer is the base's or a player's.
 var BASE_EXCLUSION_RADIUS = 100
-// Boolean in the block entity's Forge persistent data (NBT: ForgeData).
+// One roll per container, ever. The open that rolls a table clears LootTable,
+// and a looted container saves an empty Items list, so "no table, no items"
+// alone would refill it on every click. Instead, the first check of a
+// world-gen container sets this flag in its block entity's Forge persistent
+// data (NBT key ForgeData), which saves with the chunk and goes with the block.
 var SCLF_SEEN_KEY = 'td_scavengeSeen'
-// The other half of a double chest, as [dx, dz] by the clicked half's
-// facing - vanilla ChestBlock.getConnectedDirection: a LEFT half's partner
-// is facing.getClockWise(), a RIGHT half's is facing.getCounterClockWise().
+// The other half of a double chest, as [dx, dz] by the clicked half's facing.
+// Vanilla ChestBlock.getConnectedDirection: a left half's partner is clockwise
+// of its facing, a right half's counter-clockwise.
 var SCLF_PARTNER_OF_LEFT = { north: [1, 0], east: [0, 1], south: [-1, 0], west: [0, -1] }
 var SCLF_PARTNER_OF_RIGHT = { north: [-1, 0], east: [0, -1], south: [1, 0], west: [0, 1] }
 
+// getEntityData() is the full saved snapshot, so it includes ForgeData.
 function sclfIsSeen(entityData) {
   return entityData.contains('ForgeData') && entityData.getCompound('ForgeData').getBoolean(SCLF_SEEN_KEY)
 }
@@ -130,6 +48,8 @@ function sclfMarkOne(block) {
   blockEntity.setChanged()
 }
 
+// A double chest is two block entities that open as one inventory, so both
+// halves are marked.
 function sclfMarkSeen(block) {
   sclfMarkOne(block)
   var id = `${block.getId()}`
@@ -141,16 +61,19 @@ function sclfMarkSeen(block) {
   if (!step) return
   var partner = block.offset(step[0], 0, step[1])
   if (`${partner.getId()}` !== id) return
-  // Only a real double chest. Vanilla DoubleBlockCombiner.combineWithNeigbour
-  // joins the halves only when the neighbour is the same block, its type is
-  // the opposite non-single one, and its facing matches; any other
-  // same-id neighbour is a separate container with its own first roll.
+  // Only a joined double chest: vanilla joins two halves only when they are the
+  // same block with the same facing and opposite types. Any other neighbour is
+  // a separate container with its own first roll.
   var partnerProps = partner.getProperties()
   if (`${partnerProps.get('facing')}` !== facing) return
   if (`${partnerProps.get('type')}` !== (type === 'left' ? 'right' : 'left')) return
   sclfMarkOne(partner)
 }
 
+// Player-placed containers, as ';'-joined 'x,y,z' keys in td_playerContainers
+// in worldData(), which is null outside the overworld. Only a player break
+// removes a key; one left by an explosion or a digging mob is harmless, since
+// world-gen never puts a container there again.
 function sclfPosKey(x, y, z) {
   return x + ',' + y + ',' + z
 }
@@ -172,9 +95,8 @@ function sclfSetPlayerPlaced(level, x, y, z, placed) {
   data.putString('td_playerContainers', entries.join(';'))
 }
 
-// Returns a short status string (logged by the sandbox probe; the live
-// right-click handler ignores it). Only 'assigned' adds loot;
-// 'already-tagged', 'has-items' and 'assigned' also write the marker.
+// Returns a status string naming the check that decided (the right-click
+// handler ignores it); only 'assigned' adds loot.
 function sclfMaybeAssign(block) {
   if (!block) return 'no-block'
   if (TARGET_BLOCK_IDS.indexOf(`${block.getId()}`) === -1) return 'not-target'
@@ -191,8 +113,8 @@ function sclfMaybeAssign(block) {
   if (Math.sqrt(dx * dx + dz * dz) <= BASE_EXCLUSION_RADIUS) return 'near-base'
   if (sclfIsPlayerPlaced(base, x, y, z)) return 'player-placed'
 
-  // First look at a world-gen container: what it holds now is its only
-  // loot. Mark it either way (see the header).
+  // First check of a world-gen container: whatever it holds at this point is
+  // its only loot, so every branch below marks it.
   if (entityData.contains('LootTable')) {
     sclfMarkSeen(block)
     return 'already-tagged'
@@ -203,11 +125,10 @@ function sclfMaybeAssign(block) {
   }
 
   entityData.putString('LootTable', STORAGE_TABLE)
-  entityData.putLong('LootTableSeed', 0)
+  entityData.putLong('LootTableSeed', 0) // 0: a fresh random roll
   block.setEntityData(entityData)
-  // Mark only after setEntityData: its load() swaps in the snapshot's
-  // ForgeData whenever the snapshot has one, which would drop a marker
-  // written earlier.
+  // Mark only after setEntityData: its load() swaps in the snapshot's ForgeData
+  // whenever the snapshot has one, which would drop a flag written earlier.
   sclfMarkSeen(block)
   return 'assigned'
 }
@@ -224,6 +145,9 @@ BlockEvents.broken(TARGET_BLOCK_IDS, (event) => {
   sclfSetPlayerPlaced(event.getLevel(), block.getX(), block.getY(), block.getZ(), false)
 })
 
+// Fires before the container opens, so a table assigned here is rolled by the
+// same click. With Radium, non-player access such as a hopper doesn't unpack a
+// loot table, so a tagged container stays unrolled until a player opens it.
 BlockEvents.rightClicked((event) => {
   var block = event.getBlock()
   if (!block) return
