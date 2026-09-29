@@ -313,7 +313,7 @@
 			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
 			description: [
-				"Wave 8 is the last one anyone planned. Past it nobody bothered counting: every one after is a horde, bigger than the last, and none of them repeat. How much bigger, and what walks in with them, isn't written down anywhere. You'll feel it before anyone could tell you."
+				"That was the last page of the diary. Whoever kept it wrote down eight waves, then stopped writing. From here on they're Hordes: each one bigger than the last, with things in them you haven't met yet. There's no final wave coming, so build like you're staying."
 			]
 			icon: "minecraft:map"
 			id: "42EDC7E6DB5ABFAA"
@@ -478,7 +478,7 @@
 		{
 			dependencies: ["46EBB02979D3B684"]
 			hide_until_deps_complete: true
-			description: ["Right-click the pedestal holding the amulet to set it down. You lose the buffs and the border opens: you can walk out. Right-click the pedestal again to take it back. The horde targets the pedestal either way; what changes is whether you're inside the wall with it."]
+			description: ["Right-click the pedestal holding the amulet to set it down. You lose the buffs and the border opens: you can walk out. To take it back, right-click the pedestal with an empty hand and press &eTake the amulet&r. The horde targets the pedestal either way; what changes is whether you're inside the wall with it."]
 			icon: "supplementaries:pedestal"
 			id: "4B8F2D6A93E7C051"
 			rewards: [
@@ -996,7 +996,7 @@
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
-			description: ["Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."]
+			description: ["Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike, and horde mobs are slowed a little while they're on it. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."]
 			icon: "simply_traps:stake"
 			id: "159356F3DD573B5A"
 			rewards: [
@@ -1029,7 +1029,7 @@
 		{
 			dependencies: ["159356F3DD573B5A"]
 			hide_until_deps_complete: true
-			description: ["Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed, and it lingers for a couple of seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."]
+			description: ["Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."]
 			icon: "simply_traps:spike_trap"
 			id: "67A7BF98D2C077DE"
 			rewards: [
@@ -1062,7 +1062,7 @@
 		{
 			dependencies: ["67A7BF98D2C077DE"]
 			hide_until_deps_complete: true
-			description: ["Place a &eLure Block&r and every wave mob within 40 blocks turns off the pedestal and heads for it instead. It lasts 60 seconds, puffs smoke just before the end, then breaks itself. Set it past your spikes so the horde has to walk the line to reach it. A mob you just hit, or one you're standing in front of, still comes for you first."]
+			description: ["Place a &eLure Block&r and every wave mob within 40 blocks turns off the pedestal and heads for it instead. It lasts 60 seconds, with the time left floating above it and a bell ringing every few seconds while it works, then breaks itself. Set it past your spikes so the horde has to walk the line to reach it. A mob you just hit, or one you're standing in front of, still comes for you first."]
 			icon: "kubejs:lure_block"
 			id: "45F3123A81BC11C5"
 			rewards: [
@@ -1095,7 +1095,7 @@
 		{
 			dependencies: ["0CBAE9737A4869E9"]
 			hide_until_deps_complete: true
-			description: ["The pedestal can be made tougher, and you pay in &eXP levels&r. Type &e/pedestal&r while you're in the base, or click &a[Upgrades]&r on the line that shows up after a wave clears once you can afford something. Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 5, 10 and 15 levels. Upgrades belong to the pedestal, so anyone can chip in."]
+			description: ["The pedestal can be made tougher, and you pay in &eXP levels&r. Right-click the pedestal with an empty hand to open its upgrade screen (&e/pedestal&r, or &a[Upgrades]&r in chat after a wave clears, opens it too). Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 5, 10 and 15 levels. Upgrades belong to the pedestal, so anyone can chip in."]
 			icon: "minecraft:experience_bottle"
 			id: "2E93FD4CE7F6AE87"
 			rewards: [
@@ -1105,7 +1105,7 @@
 					xp_levels: 2
 				}
 			]
-			subtitle: "Spend XP levels on the pedestal"
+			subtitle: "Right-click the pedestal with an empty hand"
 			tasks: [
 				{
 					id: "1F6B4412FE03E2CD"
@@ -1145,7 +1145,7 @@
 		{
 			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
-			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. All three materials come out of Rare bags, so this is your first Tier 2 build."]
+			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. The quartz and redstone come out of Rare bags; ender pearls turn up in Rare and Epic bags and in gold-trimmed chests out in the ruins."]
 			icon: "itemcollectors:basic_collector"
 			id: "573EEB3757B78B97"
 			rewards: [
@@ -1162,7 +1162,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "1 quartz + 1 redstone block + 3 iron blocks"
+			subtitle: "1 quartz + 1 redstone block + 3 ender pearls"
 			tasks: [
 				{
 					consume_items: false
@@ -1259,33 +1259,6 @@
 		{
 			dependencies: ["1F577A9343223A6D"]
 			hide_until_deps_complete: true
-			description: ["Non-lethal: anything but you that touches it gets sealed in a block cage instead of hurt. Good for catching something alive, or just buying time."]
-			icon: "securitycraft:cage_trap"
-			id: "72711938503E2603"
-			rewards: [
-				{
-					id: "38D93BE9AC163E6E"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "hexagon"
-			subtitle: "3 iron bars, 2 gold, redstone, 2 iron, an iron block"
-			tasks: [
-				{
-					consume_items: false
-					id: "62AD1744DCAE5AFB"
-					item: "securitycraft:cage_trap"
-					type: "item"
-				}
-			]
-			title: "Cage Trap"
-			x: 24.0d
-			y: 6.0d
-		}
-		{
-			dependencies: ["1F577A9343223A6D"]
-			hide_until_deps_complete: true
 			description: ["Looks like a normal fence, but it's unbreakable and shocks anyone but you who touches it. Line a chokepoint with it and mobs pay for every step."]
 			icon: "securitycraft:electrified_iron_fence"
 			id: "659544B22656B3CD"
@@ -1338,9 +1311,9 @@
 			y: 7.5d
 		}
 		{
-			dependencies: ["5034B45EB70EE642", "72711938503E2603", "659544B22656B3CD", "17860922A24C885A"]
+			dependencies: ["5034B45EB70EE642", "659544B22656B3CD", "17860922A24C885A"]
 			hide_until_deps_complete: true
-			description: ["Every trap on this branch is built: Bouncing Betty, Claymore, Sentry, Cage Trap, Electrified Fence and the I.M.S. That's the whole Tier 2 kit, and from here it's about where you put it. Keep the totem on you for the night the line breaks anyway."]
+			description: ["Every trap on this branch is built: Bouncing Betty, Claymore, Sentry, Electrified Fence and the I.M.S. That's the whole Tier 2 kit, and from here it's about where you put it. Keep the totem on you for the night the line breaks anyway."]
 			icon: "minecraft:totem_of_undying"
 			id: "55E57DB98E2E5206"
 			rewards: [
@@ -1444,7 +1417,46 @@
 		{
 			dependencies: ["5C44D121F112749F"]
 			hide_until_deps_complete: true
-			description: ["The &eCulinary Generator&r burns any food item for Flux - rotten flesh included, so every zombie you drop feeds it. Craft a Copper Generator, then upgrade it through Iron and Gold before the Culinary recipe unlocks: a Gold Generator plus Bread, 4 crops, 2 eggs and a redstone block. The eggs are a loot find - stores and farms out in the ruins carry them."]
+			description: [
+				"A &eBasic to Iron Tier Upgrade&r turns a barrel or chest you've already placed into its Iron version: 54 slots instead of 27, and a second upgrade slot. Everything inside stays put."
+				"Hold it and right-click the placed barrel or chest - no crafting grid, no emptying it first. Gold, Diamond and Netherite tiers work the same way once you can afford them."
+			]
+			icon: "sophisticatedstorage:basic_to_iron_tier_upgrade"
+			id: "6D18BCDF3F5E9D9D"
+			rewards: [
+				{
+					id: "44D158692CD43A97"
+					type: "xp_levels"
+					xp_levels: 2
+				}
+				{
+					count: 4
+					id: "6C3108DE0DBEB520"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "8 iron ingots around a lever"
+			tasks: [
+				{
+					consume_items: false
+					id: "6F0C71F204D247C8"
+					item: "sophisticatedstorage:basic_to_iron_tier_upgrade"
+					type: "item"
+				}
+			]
+			title: "Iron Sides"
+			x: 14.0d
+			y: 10.5d
+		}
+		{
+			dependencies: ["5C44D121F112749F"]
+			hide_until_deps_complete: true
+			description: [
+				"The &eCulinary Generator&r against the back wall downstairs burns any food for Flux - rotten flesh included, so every zombie you drop feeds it. Look at it to finish this. It already powers the house grid through the Flux Plug on top, and any Flux Point you join to that network draws from it."
+				"Want another? Craft a Copper Generator and upgrade it through Iron and Gold; a Gold Generator plus Bread, 4 crops, 2 eggs and a redstone block makes the Culinary one. The eggs are a loot find - stores and farms out in the ruins carry them."
+			]
 			icon: "generatorgalore:culinary_generator"
 			id: "4B07331734543EB4"
 			rewards: [
@@ -1461,13 +1473,14 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Copper -> Iron -> Gold -> Culinary Generator. 4096 Flux/t - plenty for the Tesla Coil and both turrets running at once."
+			subtitle: "Look at the generator downstairs. 4096 Flux/t - plenty for the Tesla Coil and both turrets running at once."
 			tasks: [
 				{
-					consume_items: false
-					id: "08AB30CBF8B142A1"
-					item: "generatorgalore:culinary_generator"
-					type: "item"
+					id: "3B8C298992DE7AFF"
+					observe_type: 0
+					timer: 0L
+					to_observe: "generatorgalore:culinary_generator"
+					type: "observation"
 				}
 			]
 			title: "Wired Different"
@@ -1510,7 +1523,10 @@
 		{
 			dependencies: ["4F7597CFC2BED87F"]
 			hide_until_deps_complete: true
-			description: ["Powered, the &eTesla Coil&r picks one target within 6 blocks about every second and a half, hits it for 6 and stuns it. Put it where the horde bunches up."]
+			description: [
+				"The &eTesla Coil&r needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Then it picks one target within 6 blocks about every second and a half, hits it for 6 and stuns it, and stays quiet while nothing's in range. Put it where the horde bunches up."
+				"The netherite ingot is 4 netherite scrap and 4 gold ingots. Scrap turns up in supply crates and Epic bags."
+			]
 			icon: "immersiveengineering:tesla_coil"
 			id: "04DC756B047A09D4"
 			rewards: [
@@ -1526,7 +1542,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "A lightning rod, 2 LV coils, a gold block, 2 steel, a Flux Point"
+			subtitle: "A lightning rod, 2 diamond blocks, a gold block, 2 steel, a netherite ingot"
 			tasks: [
 				{
 					consume_items: false

@@ -102,7 +102,7 @@ hash = "6f752114b40669b2942f50a4e74d3046a01dce29a292d870d9e52501af020e95"
 
 [[files]]
 file = "config/fancymenu/assets/td/tips.txt"
-hash = "e4113d7425d6a842187da1c456130eba5d73cd3de9ce4e6da42cb867c9d3f5b4"
+hash = "7dc336f6ba67fe215bb6dd388eb7ea6881662f26566bec57c5b2765cad2b1701"
 
 [[files]]
 file = "config/fancymenu/customizablemenus.txt"
@@ -158,7 +158,7 @@ hash = "88d6e75fa8e03b3ff40291e5917617af7784ec703b4064ec3143bb6f4d14ad1e"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "b2207fd3096d8e8b177ad29e668fb1c2f3ccb01f4a8849dec0e0b48c65f7cf5e"
+hash = "db27486858d10ba27d10ad3e3acedd02bd2fe7c0b6792f7acd5a4e93d91e8877"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -186,7 +186,7 @@ hash = "eaea602e1184e028baedb5d53e106d2e49f10379fbe2c99b563a02dbf5d64bcf"
 
 [[files]]
 file = "config/lootr-common.toml"
-hash = "90bc75b313b7e2428920356dc23c172927b71ea321ce832bb71178c3e327d583"
+hash = "91aeb2a164dfde0fb8fb44485cd8adc101efdb70319f6389fe5216b881fb7525"
 
 [[files]]
 file = "config/mobdismemberment-client.toml"
@@ -242,7 +242,7 @@ hash = "3402a1e4a76ce476b66eb7d5e70b1ae2e814bc92aed14b53662f544fc0ac0abc"
 
 [[files]]
 file = "defaultconfigs/securitycraft-server.toml"
-hash = "c4b88b873be2715c3c39ba1d0533fcf53d9f61ad24cbb9139845d22ae9966d05"
+hash = "43448b3a0b85423835ae3670afab3e1dee55beb1275cc147a419be896aacbe37"
 
 [[files]]
 file = "defaultconfigs/sophisticatedbackpacks-server.toml"
@@ -298,7 +298,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "kubejs/client_scripts/tooltip_tier_colors.js"
-hash = "dba5d125427571a381f7778e9bb2233f690fb2c7e96b5b5c3f460de4bd9907f1"
+hash = "7846cffcc238da5c1dd181402d3521f26a28e586e64cdce2c654672624ba9a37"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/structures/zapravka.nbt"
@@ -618,7 +618,7 @@ hash = "3f2e1330d669bb83820ed1f91ddcb9dd3cfd37561eebb1520a829b842bc6b000"
 
 [[files]]
 file = "kubejs/data/kubejs/tags/worldgen/structure/ruins.json"
-hash = "adc56b9694d57c2da85e83f8552842e133340cb759109d5e04a2cd3154b9a605"
+hash = "658480489d79be2021856a6a7febeb3e2df1c50706dca4501512c6dde893c90a"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/noise_settings/overworld_flat.json"
@@ -630,7 +630,7 @@ hash = "741922d1f21c12ac82034a68663e4ef5c82b0a3e89fddbe3deb9c0d664588da4"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/structure_set/ruins_pool.json"
-hash = "bf6b25a8219a6dffbee7765936ce67c5be335d7d5fa0915de6598ed66bc2b0b1"
+hash = "f8b467c0c9da5dbd0425ddf7a399271a43db130608ec7f409a9dc22cd740c5d4"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/structure_set/towns.json"
@@ -711,6 +711,74 @@ hash = "a75d5d611e58e3c80bbf0244f82a8a8351c4e8c4aa0f3a1c56da5343aa6d5ae5"
 [[files]]
 file = "kubejs/data/mutantszombies/forge/biome_modifier/zombie_brute_biome_modifier.json"
 hash = "a75d5d611e58e3c80bbf0244f82a8a8351c4e8c4aa0f3a1c56da5343aa6d5ae5"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/loot_tables/chests/common_loot.json"
+hash = "196e3922bdf5c591d02e46308d8121bbbd3988cbc34814cf8bdb5519eb5c84a8"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/loot_tables/chests/rare_loot.json"
+hash = "196e3922bdf5c591d02e46308d8121bbbd3988cbc34814cf8bdb5519eb5c84a8"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/loot_tables/chests/uncommon_loot.json"
+hash = "196e3922bdf5c591d02e46308d8121bbbd3988cbc34814cf8bdb5519eb5c84a8"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/structures/abandoned_bank/bank/abandoned_bank.nbt"
+hash = "de746ae910e56d64401071f801a36c12be3ab2ecce54b70394e9f68b6de3ea46"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/structures/abandoned_hotel/hotel/abandoned_hotel.nbt"
+hash = "580cc1fbfdd36829533a1c014ae004ef0f682333ca921ea96e66307206808b4d"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure/abandoned_bank.json"
+hash = "89d9be2dd95143ea02cf30454b6a93fdf5ce0b9b434ef224add3cbcc0413640e"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure/abandoned_hotel.json"
+hash = "995633ff661d1e9c2136d63bfd23ad1598044c46c0a4643561d9fe85a59d7b5e"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure/abandoned_suburban.json"
+hash = "482da1b901787ef6ce69ae6e3f473e2b2c9de7183c4ae45b4f85259c6af624ed"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure/overgrown_suburban.json"
+hash = "c39cdd64129907c7c0685e16ebc1b48001e12c8aec2a0fd4d9262586ffe544a1"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure_set/abandoned_bank.json"
+hash = "89def955506b18d3c94790de8312b94f93ee823a07ecd6f8c4a0a3554b360bf3"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure_set/abandoned_hotel.json"
+hash = "195b7322e327230b78f5b0cc8e7057687d4bcfac21f314a7047423b786bca0ef"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure_set/abandoned_suburban.json"
+hash = "2173638ada66286befbfec77325fb2ed7e8b4a8d329f0f3a12a81470c23e3724"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/structure_set/overgrown_suburban.json"
+hash = "30e74acf251b89542a310fd753fef872ab4b6891eea370e1dfd564a1eb140a30"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/template_pool/abandoned_bank/zombie_ceo.json"
+hash = "b6d60082587dd46bf6bc2c8f13d4b3da155dd3bc87faf6c92cd9005b19ca7b60"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/template_pool/abandoned_hotel/zombie_bartender.json"
+hash = "6f4944bd18774b76d417dd7cf58bd53583ae825d56f5764c24e84622871a563f"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/template_pool/abandoned_hotel/zombie_guest.json"
+hash = "d28c653e6ff5bc2112c3448730cea2d628683afb2eb8714f1c32b17cabbe841d"
+
+[[files]]
+file = "kubejs/data/nolandostructurez/worldgen/template_pool/overgrown_suburban/zombie_resident.json"
+hash = "67c73318edb85ee45149d2997130d68708cd4dc73a7bd118297b30efdc797a3b"
 
 [[files]]
 file = "kubejs/data/philipsruins/structures/ancient_pyramid1.nbt"
@@ -1282,7 +1350,7 @@ hash = "62dc2630e696ad5ac5eb4a938de0f030fd7fe1becf3d34e788407c7c2027ac53"
 
 [[files]]
 file = "kubejs/server_scripts/boss_wave.js"
-hash = "2221bb8b3f4d09e4324ffb55982f185f9a6ac2013cb8aa3c0148722d2f7196fd"
+hash = "5283d6e9ddd557833ae1b44e83cc40045a3a5c703b3649d4f555833c1321439c"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
@@ -1338,7 +1406,7 @@ hash = "99715326d3fc31180b27440c608743297dd867821c4de8828fc17805192f90bc"
 
 [[files]]
 file = "kubejs/server_scripts/lure_block.js"
-hash = "f68d222a5f4276dcf0290baf1e25a33c4373189ada5543add9771132d926b1aa"
+hash = "d16ce304df36c859e3d444c7f335ed36d9e961ce71f41cb5a9fffa10d8aaf29d"
 
 [[files]]
 file = "kubejs/server_scripts/mine_player_safety.js"
@@ -1366,11 +1434,11 @@ hash = "6374b66965c0f27021418131cddc60f73ea82b6c83b973362a5889165a6052c4"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_upgrades.js"
-hash = "40021da93fba73015920351ce8859256a903425deaffd81b08cd930363e23edf"
+hash = "8be26edd83ca9cbf30e4ca835e0f7ab42e25e229d2fb0b6c29db0ca822873be7"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "9c343125b4e350b0754bc1ce324c5cf4c6a9fa436ff364af60300d750b0cd38f"
+hash = "d6e1618243dc2dfe745415b213acb576514707f1074cbe2f08b593da4ee547df"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
@@ -1378,11 +1446,11 @@ hash = "0d93e31806e2adb2c6f521591fb1eea3a89653488500b4568bc541800d44eee1"
 
 [[files]]
 file = "kubejs/server_scripts/securitycraft_traps.js"
-hash = "281ebf962a496a40ea95b0ee3783fce316dd4b83c0371da4b1d4462bce44fdc5"
+hash = "0d6521783fd5ef99c2dc9fc55535458dbb8157348100ee277af821c5061b08f0"
 
 [[files]]
 file = "kubejs/server_scripts/sentry_combat_feedback.js"
-hash = "c1b1b0819a35f19e753de2bb177571629d48d2f461de3762fca984ce211b094d"
+hash = "1ab41e84593d9b565ccce40b0c5f24d519e9edaf7e183194e328ffab40a3bfd1"
 
 [[files]]
 file = "kubejs/server_scripts/sentry_default_mode.js"
@@ -1390,7 +1458,7 @@ hash = "ea9861125a1c14fa43e1861818754ad41f9adf593faecc8fbfe4de35c4e124f0"
 
 [[files]]
 file = "kubejs/server_scripts/starter_flux_network.js"
-hash = "0063fcd567f68ef1f8f44133917e584d100363cd8be0c907d30ddc1f7dd8cbb5"
+hash = "803e2fcef65b5b37bb35448eaf9038aa48461ef76678a9129e87a4210e8a4b1f"
 
 [[files]]
 file = "kubejs/server_scripts/structure_chest_loot_fix.js"
@@ -1402,7 +1470,7 @@ hash = "16c8be36a54804ccf9bec0305d026ec1ba722ec60933e052aba49dc92a6669a6"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
-hash = "ee4eb6912b12539784ead760127412315e8086b137dcaeab43dc4db371ab495b"
+hash = "e8cf0e3510d12bfca4dd76d8cc7e1e947a19d5204c4a3df4bbb65cc467481259"
 
 [[files]]
 file = "kubejs/server_scripts/stuck_mob_nudge.js"
@@ -1422,11 +1490,11 @@ hash = "a6885db1a692fa24fca11a43407087dce7ccf6e0abbe095088458ffcfaf4ed67"
 
 [[files]]
 file = "kubejs/server_scripts/tier2_recipes.js"
-hash = "ba429e99aa8c35d68a06b62aea522f2603887d5af68d2a99de6d0c20587f2508"
+hash = "588f1d662a0cbc9277e6a348ceff48191eaba00283980f6f5fb37e1a48124fc5"
 
 [[files]]
 file = "kubejs/server_scripts/tier3_loot_aligned_recipes.js"
-hash = "8edbeeb82b6d8427658c3ec9eb40e69f56033d464007ab6a434710e64c782eaf"
+hash = "3181c8292c3728ee0f4eea01d4a79c2ddc0c9b8b996dcd4b73a6e8502f9b6d4e"
 
 [[files]]
 file = "kubejs/server_scripts/tier3_turret_recipes.js"
@@ -1446,7 +1514,7 @@ hash = "bb5b807b1024c6bbb3919e443e9eb89186321ec81d580d9314bb273e1e2bb427"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
-hash = "fdd015eb0cec0bea84ba5d47ba624115a704b54d22e9307b0a12b0ecd0e4e16a"
+hash = "437a49da6c36952cd74f48ea9c56e39df3e7fe1237a6866a0152343e828aa36f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_mob_dig_haste.js"
@@ -1458,11 +1526,11 @@ hash = "6522346b25c421286a21d8a9c3a34de7a9ec75ce0aa56c386cd382e22e80df6f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_mob_spike_slow.js"
-hash = "d1eaa38abaa9acfcff26b63bcf296331f6f901eecb0fe5088d747e2d23d82a2a"
+hash = "0ff9e7a88a0f898bcf8a8bea5d36b87a4d6d7c96edce686bcb7ec36e8bf21f0f"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "8e80634d14b3b4651ad08d47ac9626dbaa4d4049770c19a0b6c840a974050026"
+hash = "9b5ad335d45796932a958826855ff47fe950fcf2b213efdad31c5cc8828f47cc"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
@@ -1494,7 +1562,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "mods/ImmersiveEngineering-1.20.1-10.2.0-183-tdcoilfilter.jar"
-hash = "99643a09f99f71c04b5119c58c9df7a6fd7f069919366b1b367aa83d9c6b0277"
+hash = "b8e9ebe21d2b45ba01c8a1ba3446f0e55e8c1ece90b94f8fed7ffd6d3dc57b82"
 
 [[files]]
 file = "mods/MobDismemberment-1.20.1-8.0.1.jar"
@@ -1767,6 +1835,11 @@ metafile = true
 [[files]]
 file = "mods/nirvana-library.pw.toml"
 hash = "4bcd6d46a7e00dfcd8b49f9cf95d4e3051ab605a94ed35e6b3d12c24ada7521d"
+metafile = true
+
+[[files]]
+file = "mods/nolando-structurez.pw.toml"
+hash = "26770fd82c75f0064505a2a63d0f699c4f8278467ee2bbec43f539b4cac5d0d1"
 metafile = true
 
 [[files]]

@@ -861,94 +861,62 @@ function tdWaveSpawnsOutstanding(level) {
   return pendingSpawns.length > 0 || level.getTime() <= tdHordeTagUntil
 }
 
-// Underground ambush placement (2026-09-28, real playtest bug: an ambusher
-// picked a column inside the command post, and "highest block minus 6"
-// there is the building's upstairs floor, so it spawned wedged in it).
-// Three changes, all here:
-// - Never a column inside the command post (the_lost_city:cafe4,
-//   playtest_starter_kit.js). Its footprint isn't persisted, so it's
-//   derived from the same layout constants that file places it with: the
-//   building's side walls sit SIDE_MARGIN in from td_compoundX0/X1 (5 on
-//   the td_layoutVersion 2 fort, 3 on the older Brick House layout) and its
-//   yard face is 5 rows north of the pedestal on both layouts (the fort's
-//   vine column hangs one row further south). Padded one block, and run
-//   back to the compound's back wall - an ambusher behind the building
-//   would tunnel through it toward the pedestal.
-// - Depth is measured from the yard floor (td_pedestalY, the walking level
-//   the whole compound is levelled to), not the highest block in the
-//   column, so nothing standing on a column (a roof, a wall, a player's
-//   turret) can lift the spawn out of the ground. On an open yard column
-//   this is the same Y as before (MOTION_BLOCKING there is td_pedestalY).
-// - The mob starts in a carved 1x2 pocket (feet + head), never inside a
-//   solid block: summoned into stone it suffocates, and ESM's digging goal
-//   (ESM_EntityAIDigging.canUse, decompiled) only starts once the mob has
-//   stood on the same block for 20 checks with its navigation done - a
-//   sealed pocket is exactly that. Only ever carved out of natural ground
-//   or air (TD_AMBUSH_CARVABLE), so a column under anything a player built
-//   down there is skipped instead of hollowed out. The pocket is re-checked
-//   and carved at the spawn tick itself (the spawn handler below), not at
-//   queue time - the ground can change in between.
-var TD_UNDERGROUND_DIG_DEPTH = 6
+// Ambush placement, reworked 2026-09-29 (direct ask: "Ive noticed some
+// zombies spawing under my base, trapped in caves or something ... can we
+// make sure that no zombies spawn in the base or get stuck in a hole"; user
+// chose "surface outside walls"). The 2026-09-10 design summoned these
+// buried under the compound to dig up to the pedestal, and the 2026-09-28
+// pocket fix gave them a carved 1x2 cell to start from. In real play on
+// 2026-09-28 they still got stuck: the user ran /tdforceclear on 10 of 16
+// waves to kill the last 1-2 of them. Now an ambusher never starts
+// underground or inside the compound at all. It bursts out of the ground
+// TD_AMBUSH_WALL_GAP_MIN-MAX blocks outside a random compound wall (a spray
+// of the ground's own block particles and a digging sound, after the
+// existing cave-groan lead-in), then walks in like any wave mob.
+//
+// The gap is measured from the persisted compound footprint (the walls
+// themselves). Its minimum is 4 because the spawn tick snaps the mob to the
+// surface with spreadplayers maxRange 1, and a column that lands on a wall
+// would put it on top of the wall. A point the border clamp pushes back
+// against the compound is re-rolled on another side. After
+// TD_AMBUSH_MAX_ATTEMPTS the normal spawn band is used, which is always
+// outside the padded compound (tdSpawnBandPoint).
+var TD_AMBUSH_WALL_GAP_MIN = 4
+var TD_AMBUSH_WALL_GAP_MAX = 7
 var TD_AMBUSH_MAX_ATTEMPTS = 16
-var TD_AMBUSH_CARVABLE = [
-  'minecraft:air', 'minecraft:cave_air',
-  'minecraft:dirt', 'minecraft:coarse_dirt', 'minecraft:rooted_dirt', 'minecraft:grass_block',
-  'minecraft:podzol', 'minecraft:mycelium', 'minecraft:mud', 'minecraft:clay',
-  'minecraft:sand', 'minecraft:red_sand', 'minecraft:gravel',
-  'minecraft:sandstone', 'minecraft:red_sandstone', 'minecraft:terracotta',
-  'minecraft:stone', 'minecraft:granite', 'minecraft:diorite', 'minecraft:andesite',
-  'minecraft:tuff', 'minecraft:calcite', 'minecraft:deepslate', 'minecraft:dripstone_block',
-]
 
-function tdAmbushBlockCarvable(id) {
-  if (TD_AMBUSH_CARVABLE.indexOf(id) !== -1) return true
-  // Badlands' coloured terracotta bands and ores are natural ground too;
-  // glazed terracotta never generates in the ground.
-  if (id.indexOf('minecraft:') === 0 && /_terracotta$/.test(id) && id.indexOf('glazed') === -1) return true
-  return /_ore$/.test(id)
-}
-
-function tdAmbushPocketOk(level, x, y, z) {
-  return tdAmbushBlockCarvable(`${level.getBlock(x, y, z).getId()}`) &&
-    tdAmbushBlockCarvable(`${level.getBlock(x, y + 1, z).getId()}`)
-}
-
-// Padded command-post footprint, extended back to the compound's back wall.
-// null when the save never persisted the compound.
-function tdCommandPostExclusion(data) {
-  if (!data.contains('td_compoundX0') || !data.contains('td_pedestalZ')) return null
-  var sideMargin = data.getInt('td_layoutVersion') >= 2 ? 5 : 3
-  return {
-    x0: data.getInt('td_compoundX0') + sideMargin - 1,
-    x1: data.getInt('td_compoundX1') - sideMargin + 1,
-    z0: data.getInt('td_compoundZ0'),
-    z1: data.getInt('td_pedestalZ') - 3,
-  }
-}
-
-// {x, y, z} of the pocket's floor block, or null when no valid column
-// turned up (the caller drops that one ambusher rather than force it).
-function tdPickUndergroundAmbushPos(level, data, objective) {
-  var y = Math.floor(objective.y) - TD_UNDERGROUND_DIG_DEPTH
-  var hasCompound = data.contains('td_compoundX0')
-  var exclusion = tdCommandPostExclusion(data)
-  for (var attempt = 0; attempt < TD_AMBUSH_MAX_ATTEMPTS; attempt++) {
-    var px, pz
-    if (hasCompound) {
-      px = data.getInt('td_compoundX0') + Math.floor(Math.random() * (data.getInt('td_compoundX1') - data.getInt('td_compoundX0') + 1))
-      pz = data.getInt('td_compoundZ0') + Math.floor(Math.random() * (data.getInt('td_compoundZ1') - data.getInt('td_compoundZ0') + 1))
-      if (exclusion && px >= exclusion.x0 && px <= exclusion.x1 && pz >= exclusion.z0 && pz <= exclusion.z1) continue
-    } else {
-      // No persisted compound bounds (old save) - fall back tight to the
-      // objective itself, the best available stand-in for "under the base."
-      px = Math.floor(objective.x) + Math.floor(Math.random() * 7) - 3
-      pz = Math.floor(objective.z) + Math.floor(Math.random() * 7) - 3
+// {x, y, z} on the surface outside the walls. y is the yard floor's walking
+// level (td_pedestalY via the objective); the spawn tick snaps it anyway.
+function tdPickAmbushPos(level, data, objective) {
+  var y = Math.floor(objective.y)
+  var band = tdWaveSpawnBand(level)
+  var rect = tdCompoundSpawnRect(data)
+  if (data.contains('td_compoundX0')) {
+    var x0 = data.getInt('td_compoundX0')
+    var x1 = data.getInt('td_compoundX1')
+    var z0 = data.getInt('td_compoundZ0')
+    var z1 = data.getInt('td_compoundZ1')
+    for (var attempt = 0; attempt < TD_AMBUSH_MAX_ATTEMPTS; attempt++) {
+      var gap = TD_AMBUSH_WALL_GAP_MIN + Math.floor(Math.random() * (TD_AMBUSH_WALL_GAP_MAX - TD_AMBUSH_WALL_GAP_MIN + 1))
+      var side = Math.floor(Math.random() * 4) // 0=N(-Z) 1=S(+Z) 2=W(-X) 3=E(+X)
+      var px, pz
+      if (side === 0 || side === 1) {
+        px = x0 + Math.floor(Math.random() * (x1 - x0 + 1))
+        pz = side === 0 ? z0 - gap : z1 + gap
+      } else {
+        pz = z0 + Math.floor(Math.random() * (z1 - z0 + 1))
+        px = side === 2 ? x0 - gap : x1 + gap
+      }
+      px = Math.min(Math.max(px, band.minX), band.maxX)
+      pz = Math.min(Math.max(pz, band.minZ), band.maxZ)
+      // Clamped back against the walls - try another side.
+      if (px > x0 - TD_AMBUSH_WALL_GAP_MIN && px < x1 + TD_AMBUSH_WALL_GAP_MIN &&
+          pz > z0 - TD_AMBUSH_WALL_GAP_MIN && pz < z1 + TD_AMBUSH_WALL_GAP_MIN) continue
+      return { x: px, y: y, z: pz }
     }
-    // getBlock also loads the chunk (reference_kubejs_loadtime_gotchas);
-    // the compound is forceloaded anyway.
-    if (tdAmbushPocketOk(level, px, y, pz)) return { x: px, y: y, z: pz }
   }
-  return null
+  var fallback = tdSpawnBandPoint(band, rect, objective.x, objective.z)
+  return { x: fallback.x, y: y, z: fallback.z }
 }
 
 function useWaveHorn(player) {
@@ -1189,11 +1157,13 @@ function useWaveHorn(player) {
   // connected in a headless sandbox means mob_aggro.js's targeting loop
   // never runs). Needs a real playtest to confirm it reads as "coming up
   // from underground," not just that the mob stops idling.
-  // Column/depth/pocket rules moved to tdPickUndergroundAmbushPos above
-  // (2026-09-28 command-post fix - see its comment). Can return null; the
-  // queue loops below skip that ambusher.
+  // SUPERSEDED 2026-09-29: ambushers no longer start buried - they burst
+  // out of the ground outside the compound walls (tdPickAmbushPos above,
+  // user's choice after they kept getting stuck). The paragraph above is
+  // the original design, kept as history. tdPickAmbushPos never returns
+  // null; the `if (!uPos)` guards below are just defensive.
   function undergroundAmbushPos() {
-    return tdPickUndergroundAmbushPos(level, data, objective)
+    return tdPickAmbushPos(level, data, objective)
   }
 
   // Wave 3+ only - the compound/walls exist from wave 1
@@ -1338,7 +1308,7 @@ function useWaveHorn(player) {
     var undergroundAmbushCount = undergroundAmbushCountForWave(waveNumber)
     for (var ui = 0; ui < undergroundAmbushCount; ui++) {
       var uPos = undergroundAmbushPos()
-      if (!uPos) continue // no valid column this wave - see tdPickUndergroundAmbushPos
+      if (!uPos) continue // defensive - tdPickAmbushPos always returns a point
       var uSpawnTick = currentTick + baselineIndex * baselineStaggerGap
       pendingSpawns.push({
         mobType: 'minecraft:zombie',
@@ -1407,7 +1377,7 @@ function useWaveHorn(player) {
   var undergroundAmbushCount = undergroundAmbushCountForWave(waveNumber)
   for (var ui = 0; ui < undergroundAmbushCount; ui++) {
     var uPos = undergroundAmbushPos()
-    if (!uPos) continue // no valid column - skipped, and not counted in "N mobs incoming"
+    if (!uPos) continue // defensive - tdPickAmbushPos always returns a point
     var uSpawnTick = currentTick + mobIndex * staggerGap
     pendingSpawns.push({
       mobType: 'minecraft:zombie',
@@ -1617,30 +1587,11 @@ PlayerEvents.tick(function (event) {
       // it. Applies to every wave mob now, not just the amulet case -
       // no real downside outside it either, since td_wave_mob-tagged
       // mobs are meant to be fought, not left to quietly disappear.
-      // td_undergroundAmbush (2026-09-10) marks the buried-under-the-base
-      // spawns queued by undergroundAmbushPos() above - tagged separately
-      // from plain td_wave_mob purely so a stuck/idle report is easy to
-      // grep for later, no other consumer reads it.
-      //
-      // Pocket re-checked and carved here, at the spawn tick (2026-09-28,
-      // see tdPickUndergroundAmbushPos): the queued column was valid when
-      // the horn blew, but a capped spawn can wait a long time and the
-      // player may have dug there since. A column that no longer qualifies
-      // gets one fresh pick; if none turns up this ambusher is dropped.
-      if (spawn.underground) {
-        if (!tdAmbushPocketOk(level, spawn.x, spawn.y, spawn.z)) {
-          var ambushData = worldData(level)
-          var ambushRepick = ambushData ? tdPickUndergroundAmbushPos(level, ambushData, waveObjective(player, ambushData)) : null
-          if (!ambushRepick) {
-            console.log(`wave_spawner.js: dropped an underground ambusher - no carvable pocket under the compound`)
-            return
-          }
-          spawn.x = ambushRepick.x
-          spawn.y = ambushRepick.y
-          spawn.z = ambushRepick.z
-        }
-        server.runCommandSilent(`fill ${spawn.x} ${spawn.y} ${spawn.z} ${spawn.x} ${spawn.y + 1} ${spawn.z} minecraft:air`)
-      }
+      // td_undergroundAmbush (2026-09-10) marks the ambush spawns queued by
+      // undergroundAmbushPos() above - tagged separately from plain
+      // td_wave_mob purely so a stuck/idle report is easy to grep for
+      // later, no other consumer reads it. (They surface outside the walls
+      // since 2026-09-29, see tdPickAmbushPos; the tag name is historical.)
       var summonTags = spawn.underground ? '["td_justSpawned","td_wave_mob","td_undergroundAmbush"]' : '["td_justSpawned","td_wave_mob"]'
       // See BRUTE_SPEED_FIX_TYPES/BRUTE_MOVEMENT_SPEED's own comment above
       // for why this is here - real decompiled brute speed is slower than
@@ -1663,12 +1614,21 @@ PlayerEvents.tick(function (event) {
       server.runCommandSilent(
         `summon ${spawn.mobType} ${spawn.x} ${spawn.y} ${spawn.z} ${summonNbt}`
       )
-      // Underground ambush spawns skip this entirely - spreadplayers is a
-      // heightmap-aware "snap to the real surface" correction, which would
-      // just undo the whole point of summoning this one buried underground.
-      if (!spawn.underground) {
+      // Ambushers (2026-09-29 rework, see tdPickAmbushPos) snap with
+      // maxRange 1 instead of 4, so the snap can't carry them onto a wall,
+      // then burst out of the ground: the surface block's own particles and
+      // a digging sound, right where the cave groan played.
+      server.runCommandSilent(
+        `spreadplayers ${spawn.x} ${spawn.z} 0 ${spawn.underground ? 1 : 4} false @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest]`
+      )
+      if (spawn.underground) {
+        var groundId = `${level.getBlock(spawn.x, spawn.y - 1, spawn.z).getId()}`
+        if (groundId === 'minecraft:air' || groundId === 'minecraft:cave_air') groundId = 'minecraft:dirt'
         server.runCommandSilent(
-          `spreadplayers ${spawn.x} ${spawn.z} 0 4 false @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest]`
+          `execute at @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest] run particle minecraft:block ${groundId} ~ ~0.3 ~ 0.45 0.35 0.45 0.15 70`
+        )
+        server.runCommandSilent(
+          `execute at @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest] run playsound minecraft:block.rooted_dirt.break hostile @a ~ ~ ~ 1.2 0.6`
         )
       }
       server.runCommandSilent(

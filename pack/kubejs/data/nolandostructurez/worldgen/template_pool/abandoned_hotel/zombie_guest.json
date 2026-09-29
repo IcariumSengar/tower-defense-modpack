@@ -1,0 +1,12 @@
+{
+  "name": "nolandostructurez:abandoned_hotel/zombie_guest",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:empty_pool_element"
+      }
+    }
+  ]
+}

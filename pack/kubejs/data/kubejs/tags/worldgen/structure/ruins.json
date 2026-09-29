@@ -236,6 +236,22 @@
     {
       "id": "watchtower_building:fresh_watchtower",
       "required": false
+    },
+    {
+      "id": "nolandostructurez:abandoned_bank",
+      "required": false
+    },
+    {
+      "id": "nolandostructurez:abandoned_hotel",
+      "required": false
+    },
+    {
+      "id": "nolandostructurez:abandoned_suburban",
+      "required": false
+    },
+    {
+      "id": "nolandostructurez:overgrown_suburban",
+      "required": false
     }
   ]
 }

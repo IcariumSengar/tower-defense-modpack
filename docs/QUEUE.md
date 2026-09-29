@@ -45,6 +45,47 @@ sub-decision.
 Built and (unless noted) already deployed to the live instance/dedicated
 server — nobody has actually confirmed these work in a real session yet.
 
+- **Playtest batch, 2026-09-29** (25 items from the user's first play
+  on the 09-28 build; the ask-audit batch below had not reached the
+  instance yet, so its amulet change covered item 1). Decided in three
+  question rounds. Checklist in the user's numbering: PLAYTESTING.md
+  "Playtest batch, 2026-09-29". Spec: FEATURES.md "2026-09-29 playtest
+  batch".
+  - **Bugs, diagnosed from the live save and log:**
+    - Wave-5 plane: pinned by the world border (85 wide then) and
+      discarded by the mod. The plane now spawns `noPhysics`, so every
+      flight is full length. The ask-audit flight shortening is gone.
+    - Stuck zombies: the buried ambushers (10 of 16 waves force-cleared).
+      They now burst out of the ground 4-7 blocks outside the walls.
+    - Ceiling gap and loot on the floor: a gap in cafe4.nbt itself, a loot
+      chest spilling its table when removed, and 135 dead-bush sticks from
+      the field levelling. All three fixed.
+    - Lure: it worked, but its only cues were a smoke puff and a poof. It
+      now has a countdown nameplate, a note pulse and a bell every 5 s.
+    - Tesla Coil idle arcs: IE's own random discharge, now patched out of
+      the IE jar together with an armor-stand target filter.
+  - **Changes:** pedestal upgrade screen (empty-hand right-click or
+    /pedestal); power rig cleared; Cage Trap binned; Reaper armour 20 ->
+    12; Sentry 8 damage + tracer; spike/stake slows; trap damage tooltips;
+    compass-direction crate message; extra cobblestone; recipes (collector,
+    shotgun shells, Tesla Coil, flux dust and cores); no Flux Configurator
+    in the kit; quest text (Last Written Wave, Wired Different, new Iron
+    Sides, plus the lines these changes touched); menu tips.
+  - **Structures:** a ring of 6 ruins /place'd 100-130 blocks around each
+    new base, and **Nolando StructureZ** (4 buildings) added to the ruins
+    pool. A denser pool (one per 48 blocks) was built, measured in the
+    sandbox at 12 of 30 ruins overlapping another, and reverted to one per
+    64 on the user's call.
+  - **Verified** in the server sandbox (fresh worlds, RCON probes) and with
+    a real sandbox client: 53/53 scripts, recipes read back from the live
+    recipe list, command post cells, a border-geometry plane landing, the
+    coil ignoring an armor stand, the GUI's buys and amulet button, the
+    lure pulling a wave mob, the direction chat line. Not verifiable there:
+    the actual in-world right-click, trap tooltips on hover, and the
+    visuals (tracers, dirt burst, no idle arcs).
+  - **Fresh worlds only:** base changes, the ruin ring, StructureZ spawns.
+    The dedicated server's world dates from 09-12.
+
 - **Ask-audit batch** (2026-09-28). The user asked "have we built
   everything I asked for?". Every typed message (746) and every
   question-round answer (213) across all transcripts was extracted, turned
@@ -66,9 +107,9 @@ server — nobody has actually confirmed these work in a real session yet.
     - A newly placed I.M.S. starts on "mobs only".
   - **Diverged, now as asked:**
     - Airdrop lands 90-110 blocks from the pedestal in any direction. The
-      plane's flight row is force-loaded, since the old far drops froze
-      out of simulation distance. Flights blocked by the border are
-      shortened.
+      plane's flight row is force-loaded. (The border shortening was
+      replaced 2026-09-29: the plane is noPhysics and flies full length.
+      The 09-28 wave-5 failure was the border, not a freeze.)
     - Each crate holds a gun plus its own ammo (per-gun sub-tables), and
       about 20% hold a nether star.
     - The Legendary bag gives one standout item and has an orange beam.
@@ -88,7 +129,7 @@ server — nobody has actually confirmed these work in a real session yet.
       by first appearance.
     - "Thin the Horde" asks for 3 zombies.
     - Underground ambushers stay out of the command post and get an air
-      pocket.
+      pocket. (Superseded 2026-09-29: they surface outside the walls.)
     - After a game over there is no wave-clear, border growth, milestone
       or boss.
     - Rotten Mutant kills now drop bags.

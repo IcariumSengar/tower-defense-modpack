@@ -182,7 +182,16 @@ var BOSS_TYPES = {
     nameColor: 'dark_red',
     maxHealth: 200,
     attackDamage: 24,
-    armorMaterial: 'iron',
+    // Iron -> black-dyed leather, 2026-09-29 (direct ask: "the reaper had
+    // way too much armour. health was fine maybe but cut the armour").
+    // Checked from the real jars: elite_zombie has 5 base armour of its own
+    // and Undead Nights never scales a /summon'ed mob (SummonCommand skips
+    // finalizeSpawn when NBT is given), so the Reaper had 5 + 15 (iron) =
+    // 20 armour, stopping 68% of a 6-damage hit. Leather is 7, so 12 total:
+    // 36% of a 6-damage hit. Armour-ignoring traps (spikes, fence, Tesla)
+    // were never affected.
+    armorMaterial: 'leather',
+    armorDyeColor: 1908001, // vanilla black dye (0x1D1D21)
     // Faster than every other roster mob (Crawler's 0.3, the fixed Brute
     // speed's 0.28) - a boss that hits hard AND cannot be outrun, the real
     // fix for "just tanky" per the header paragraph above.
@@ -308,7 +317,9 @@ function spawnBoss(player, data, waveNumber) {
   // Armor material is per-boss now (see the "Behemoth HP/armor cut" header
   // paragraph above) - was a hardcoded netherite set shared by both bosses.
   var armorMaterial = boss.armorMaterial || 'netherite'
-  var armorItems = `[{id:"minecraft:${armorMaterial}_boots",Count:1b},{id:"minecraft:${armorMaterial}_leggings",Count:1b},{id:"minecraft:${armorMaterial}_chestplate",Count:1b},{id:"minecraft:${armorMaterial}_helmet",Count:1b}]`
+  // Optional dye for a leather set (vanilla display.color, an RGB int).
+  var armorTag = boss.armorDyeColor !== undefined ? `,tag:{display:{color:${boss.armorDyeColor}}}` : ''
+  var armorItems = `[{id:"minecraft:${armorMaterial}_boots",Count:1b${armorTag}},{id:"minecraft:${armorMaterial}_leggings",Count:1b${armorTag}},{id:"minecraft:${armorMaterial}_chestplate",Count:1b${armorTag}},{id:"minecraft:${armorMaterial}_helmet",Count:1b${armorTag}}]`
   var summonNbt = `{CustomName:'${nameJson}',CustomNameVisible:1b,PersistenceRequired:1b,DeathLootTable:"minecraft:empty",Tags:["td_boss","td_bossJustSpawned","td_wave_mob"],Attributes:[{Name:"generic.max_health",Base:${boss.maxHealth}},{Name:"generic.attack_damage",Base:${boss.attackDamage}},{Name:"generic.follow_range",Base:128}${speedAttribute}],Health:${boss.maxHealth}.0f,ArmorItems:${armorItems},ArmorDropChances:[0.0f,0.0f,0.0f,0.0f]}`
 
   server.runCommandSilent(`summon ${boss.entityType} ${x} ${y} ${z} ${summonNbt}`)

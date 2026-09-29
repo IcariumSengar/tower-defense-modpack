@@ -8518,8 +8518,10 @@ to here for.
 > **Current state (2026-09-28):** the crate lands 90-110 blocks from the
 > pedestal in a uniformly random direction (the 09-22 "50-70 east so the
 > plane crosses the base" trade was reverted at the user's request). The
-> plane's flight row is force-loaded until touchdown. Each crate carries
-> a gun plus that gun's own ammo, and ~20% carry a nether star. See
+> plane's flight row is force-loaded until touchdown, and since 2026-09-29
+> the plane spawns `noPhysics`, so the world border can't stop it. Each
+> crate carries a gun plus that gun's own ammo, and ~20% carry a nether
+> star. See
 > "2026-09-28 ask-audit batch" at the end of this file.
 
 **"Airdrop incoming" cues, 2026-09-10** (playtest: "it dropped but i
@@ -9752,6 +9754,8 @@ PLAYTESTING.md "Ask-audit batch".
   - The flight row is force-loaded, but never inside the base's permanent
     ±96 square (`WAVE_AIRDROP_BASE_FORCELOAD_RADIUS` must mirror it).
   - Flights whose line the border would block are shortened.
+    (Replaced 2026-09-29: the plane spawns `noPhysics` and always flies
+    full length - see "2026-09-29 playtest batch".)
   - Contents: 15 per-gun sub-tables under
     `kubejs:chests/airdrop/`, each gun with its own ammo. The Laser Gun's
     energized dust comes only from here.
@@ -9780,7 +9784,8 @@ PLAYTESTING.md "Ask-audit batch".
   milestone or boss.
 - **Smaller fixes.**
   - Underground ambushers avoid the command post (and behind it) and get
-    a carved air pocket at `pedestalY-6`.
+    a carved air pocket at `pedestalY-6`. (Superseded 2026-09-29: they
+    surface outside the walls instead.)
   - Strays return to the real spawn band.
   - Rotten Mutant drops bags.
   - Camel, fox, skeleton horse and zombie horse are blocked.
@@ -9801,3 +9806,93 @@ PLAYTESTING.md "Ask-audit batch".
   - IE `crafting/generator` and `crafting/radiator` (the Diesel Generator
     and, as a side effect, the unused Excavator).
 
+## 2026-09-29 playtest batch
+
+*live, sandbox-verified, not yet seen in real play.* The user's 25-item
+list after playing the 09-28 build (the ask-audit batch had not reached
+their instance yet). Their numbering had 13, 16 and 17 twice; those are
+13a/b, 16a/b, 17a/b here and in PLAYTESTING.md. Bugs were diagnosed from
+the live instance's `latest.log` and a copy of the save before any change.
+Decisions came from three question rounds.
+
+**Bugs**
+- **#6 wave-5 plane.** `PlaneticksProcedure` discards the plane (with a
+  small explosion) when its x-velocity is 0 or it's in a wall. Vanilla's
+  `Entity#collide` treats the world border as a wall for any entity within
+  about its own width of an edge. At wave 5 the border was 85 wide
+  (BORDER_START 50) and the row ran 9 blocks outside its south edge, so the
+  plane stopped 120 blocks into its 200. A tick simulation of the ask-audit
+  version still failed ~24% of wave-10 drops. Fix: `noPhysics` on
+  `dyairdrop:plane` at `EntityEvents.spawned` (`wave_airdrop.js`); the
+  shortening is gone, the strip's tail is 176 blocks (the plane reached
+  target +152). Sandbox: the exact failing geometry flew through and landed.
+- **#5 stuck zombies.** The buried ambushers: the user force-cleared 10 of
+  16 waves. `tdPickAmbushPos` (`wave_spawner.js`) now picks a surface point
+  4-7 blocks outside a random compound wall (border-clamped, re-rolled if
+  the clamp pushes it back, spawn band as fallback); the spawn tick snaps
+  it with spreadplayers range 1 and fires the ground block's particles and
+  a digging sound. The carving/pocket code is gone. Sandbox: 0 of 40 picks
+  closer than 4 blocks to a wall.
+- **#3 ceiling + loot.** cafe4.nbt has air at local (5,4,6) -> a top slab
+  fixup. The upstairs berezka chest spilled its loot table when set to air
+  (`Clearable.tryClear` keeps the LootTable; `dropContents` unpacks it) ->
+  `data merge ... {LootTable:"minecraft:empty"}` first. And levelling the
+  field pops dead bushes into sticks (135 stacks in a badlands sandbox) ->
+  `ensureBaseBuilt` kills item entities within 194 blocks after the build
+  and the ring. Sandbox: slab present, 0 items.
+- **#17a lure.** It had worked (both expired on time in the save); the last
+  mobs were buried ambushers and a coil can zap its marker. The marker sits
+  on the block top with a counting nameplate; a note pulse every second and
+  a bell every 5 s (`lure_block.js`). Client sandbox: a wave husk walked 34
+  blocks to it; "Lure 16s" rendered.
+- **#2 Tesla idle arcs.** IE's own no-target branch
+  (`sendFreePacket`, every 6.4 s). Patched out of the IE jar with the
+  armor-stand filter; see MODS.md "Patched jars".
+
+**Features and changes**
+- **#7 pedestal screen** (`pedestal_upgrades.js`): KubeJS's
+  `openChestGUI`, 3 rows; status (4,0), HP/Armor/Thorns (2,1)/(4,1)/(6,1),
+  Take the amulet (4,2) while it's on the stand. One `anyClicked` callback
+  (per-slot handlers would mutate their own list mid-iteration). Opened by
+  an empty-hand main-hand click on the stored pedestal (cancelled after
+  `pedestalHealClickResync`) and by `/pedestal`; the chat menu is the
+  fallback. No Close button: `closeContainer` isn't reachable from Rhino.
+  Client sandbox: purchases, relabels and the amulet button all worked.
+- **#4 power rig**: the L-shaped bar counter, its 8-slab canopy, the two
+  posts and the fence gate are fixup'd to air; the generator is placed
+  `facing=south`; the crafting station moved from (3,1,4) to (3,1,6).
+- **#17b structures**: a ring of 6 ruins /place'd 100-130 blocks around a
+  fresh base (`placeStarterRuinRing`, 12 medium pool members, chunks touched
+  first because /place needs them loaded), and **Nolando StructureZ** in the
+  ruins pool (MODS.md). A 3/1 pool was built and measured at 12 of 30
+  starts overlapping another (4 badly); reverted to 4/2 on the user's call.
+- **#12 Reaper**: black-dyed leather; armour 5 (elite_zombie base) + 7 =
+  12, down from 20 (36% vs 68% off a 6-damage hit). `/summon` with NBT
+  skips `finalizeSpawn`, so Undead Nights never scaled it.
+- **#20 Sentry**: `sentry_bullet_damage` 8 (defaultconfigs + the dedicated
+  server world); muzzle flash reduced, `flash` removed; an end_rod tracer
+  along each bullet from a spawn-collected list (no entity scans).
+- **#14 slows** (`wave_mob_spike_slow.js`): spikes Slowness III/60 ticks,
+  stakes and stake walls Slowness I/30; the strongest trap under a mob wins.
+- **#15 tooltips**: a grey damage line per trap/turret from the real
+  numbers (`tooltip_tier_colors.js` header lists the sources).
+- **#16a Cage Trap**: recipe removed, quest removed, dropped from "No
+  Turning Back" and the tooltips.
+- **Recipes**: collector quartz + redstone block + 3 ender pearls (#13b);
+  shotgun shells take Shrapnel (#19, `replaceInput` on `r_3`); Tesla Coil
+  lightning rod, 2 diamond blocks, gold block, 2 steel, netherite ingot
+  (#21); flux dust lapis block, flux cores gold blocks (#22).
+- **#18 cobblestone** (`structure_loot_progression.js`): plain containers
+  60% for 8-20, Lootr 30% for 4-12.
+- **#13a crate message**: "Supply crate landed to the <8-point compass
+  direction>" in the subtitle, chat and action bar; the Xaero [Add] line
+  stays.
+- **#11** no Flux Configurator in the starting kit.
+- **Quests**: The Last Written Wave rewritten (#9); new "Iron Sides"
+  (Basic to Iron Tier Upgrade, #10); Wired Different is an observation task
+  on the generator (#16b); Waste Not, Sparks in the Dark, Cheap and
+  Cheerful, Better Than Nothing, Dinner Bell, Shore It Up and Leave It
+  Behind updated to match.
+- **#8 tips**: the two wave-5 rust/defences tips removed (a surprise); the
+  amulet, crate-direction, ambusher and generator tips corrected; a
+  pedestal-screen tip added.

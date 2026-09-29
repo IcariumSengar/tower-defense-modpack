@@ -62,10 +62,11 @@
 // Failure is non-fatal by design: wrapped in try/catch, logs and returns
 // rather than throwing. If this ever breaks (a future Flux Networks
 // update renaming something), the 3 blocks stay physically placed and
-// touching, and the player already has a real Flux Configurator in their
-// starter kit (playtest_starter_kit.js's giveStarterKit) to link them by
-// hand in three right-clicks - the mod's own normal, always-working
-// path, not a special-cased fallback.
+// touching, and the player can link them by hand from each block's own
+// screen (right-click the plug and battery, pick the network) - the mod's
+// own normal, always-working path, not a special-cased fallback. (Until
+// 2026-09-29 the starter kit also carried a Flux Configurator for this;
+// it was removed on request.)
 // Pulled out into its own function 2026-09-15 so the relocation migration
 // in playtest_starter_kit.js's login handler (starter power rig moved to
 // the exterior front wall, see that file's own header) can call this
@@ -123,7 +124,7 @@ function linkStarterFluxNetwork(player, level, data) {
 
     console.log(`starter_flux_network.js: created network "House Grid" (id ${networkId}), connected: ${linked.join(', ')}`)
   } catch (e) {
-    console.error(`starter_flux_network.js: auto-link failed (${e}) - the 3 blocks are still placed and touching; the player's Flux Configurator (giveStarterKit) links them by hand instead`)
+    console.error(`starter_flux_network.js: auto-link failed (${e}) - the 3 blocks are still placed and touching; the player links them by hand from each block's own screen instead`)
   }
 }
 

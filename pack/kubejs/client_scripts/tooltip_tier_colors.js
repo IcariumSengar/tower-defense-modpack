@@ -54,7 +54,6 @@ const TIER_ITEMS = {
   'securitycraft:bouncing_betty': 2,
   'securitycraft:claymore': 2,
   'securitycraft:sentry': 2,
-  'securitycraft:cage_trap': 2,
   'securitycraft:electrified_iron_fence': 2,
   'securitycraft:ims': 2,
   'generatorgalore:culinary_generator': 3,
@@ -68,6 +67,33 @@ const TIER_ITEMS = {
   'omtreborn:rocket_turret': 4,
 }
 
+// Damage line under the tier line, 2026-09-29 (direct ask: "can the traps
+// in the tooltip - where it says tier 1 etc - detail its damage output").
+// Every number was read from this pack's real configs, scripts and mod
+// bytecode, not the mods' own descriptions: simplytraps.toml multipliers,
+// securitycraft-server.toml (Sentry bullet damage 8), explosion power ->
+// vanilla's max 14P+1 damage and 2P reach, wave_mob_fence_shock.js,
+// wave_mob_spike_slow.js, IE's [machines.teslacoil]/[tools.bullet_damage],
+// OMT's ConfigTurrets defaults. A mob can only take a hit every half second
+// (vanilla invulnerability frames), which is where the "/s" figures come
+// from. Non-weapons (collector, generator, storage, plug) get no line.
+// KEEP IN SYNC when any of those sources change.
+const TIER_DAMAGE = {
+  'simply_traps:stake': 'Damage: 1 a step (~2/s), ignores armour. Slows a little.',
+  'simply_traps:spike_trap': 'Damage: 4 a step (~8/s), ignores armour. Slows hard.',
+  'simply_traps:stake_wall': 'Damage: 1 a step (~2/s), ignores armour. Slows a little.',
+  'securitycraft:bouncing_betty': 'Damage: blast up to 85, reaching 12 blocks.',
+  'securitycraft:claymore': 'Damage: blast up to 50, reaching 7 blocks.',
+  'securitycraft:sentry': 'Damage: 8 a shot, 2 shots/s, 20-block range.',
+  'securitycraft:electrified_iron_fence': 'Damage: 6/s to mobs beside it, ignores armour.',
+  'securitycraft:ims': 'Damage: 4 bombs, blast up to 99 each, one every 4s.',
+  'immersiveengineering:tesla_coil': 'Damage: 6 + stun every 1.6s, 6-block reach, ignores armour.',
+  'immersiveengineering:turret_gun': 'Damage: 10 a Casull round, 2 shots/s, 16-block range.',
+  'immersiveengineering:turret_chem': 'Damage: ~12/s + fire with creosote, 8-block range.',
+  'omtreborn:grenade_turret': 'Damage: 5 to all within 3 blocks, every 2s, 18-block range.',
+  'omtreborn:rocket_turret': 'Damage: 8 to all within 5 blocks, every 2s, 30-block range.',
+}
+
 ItemEvents.tooltip((event) => {
   // var, not const (2026-09-27): in this Rhino a `const` inside a loop keeps
   // its FIRST value on every later pass, so every item got Tier 1's label.
@@ -75,6 +101,7 @@ ItemEvents.tooltip((event) => {
   for (var itemId in TIER_ITEMS) {
     var tier = TIER_ITEMS[itemId]
     var color = TIER_COLORS[tier]
-    event.add(itemId, `${color.code}${color.label}`)
+    var damage = TIER_DAMAGE[itemId]
+    event.add(itemId, damage ? [`${color.code}${color.label}`, `§7${damage}`] : `${color.code}${color.label}`)
   }
 })

@@ -139,6 +139,22 @@
     {
       "structure": "u_desert:desert_ruin/pillar",
       "weight": 1
+    },
+    {
+      "structure": "nolandostructurez:abandoned_bank",
+      "weight": 9
+    },
+    {
+      "structure": "nolandostructurez:abandoned_hotel",
+      "weight": 6
+    },
+    {
+      "structure": "nolandostructurez:abandoned_suburban",
+      "weight": 9
+    },
+    {
+      "structure": "nolandostructurez:overgrown_suburban",
+      "weight": 9
     }
   ],
   "placement": {

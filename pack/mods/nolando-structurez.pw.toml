@@ -1,0 +1,13 @@
+name = "Nolando StructureZ"
+filename = "nolandostructurez-0.0.1-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "cc56ca4ce8322c05a72d65f5868d5e43400edfed"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6476141
+project-id = 1254619

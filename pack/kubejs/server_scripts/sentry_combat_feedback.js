@@ -51,6 +51,21 @@
 // `item.crossbow.shoot` (a real vanilla mechanical "thwip" id, fitting for
 // a bolt-firing turret) at every shot - sound reliably cuts through visual
 // clutter in a way a particle alone can't.
+//
+// **Muzzle toned down, bullet made visible, 2026-09-29** (direct ask: "the
+// animation be less of a flare on the machine but you can see the
+// projectile better"). The `flash` pop is gone and the muzzle burst is a
+// small spark + smoke puff again. Instead, each Sentry bullet now draws an
+// end_rod tracer along its path. This is the per-tick trail the header
+// above ruled out, but done cheaply: bullets are collected at spawn, so the
+// tick handler only walks that short list (a few live bullets per Sentry,
+// each ~10 ticks old at most), never the level's entity list. A bullet is
+// dropped from the list when it's removed, stops moving (stuck in a block)
+// or ages out.
+var SENTRY_TRACER_MAX_TICKS = 40
+var SENTRY_TRACER_POINTS_PER_TICK = 3 // points per tick of flight, so the streak reads as a line
+var sentryTracers = []
+
 EntityEvents.spawned((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'securitycraft:bullet') return
@@ -59,10 +74,38 @@ EntityEvents.spawned((event) => {
   var x = entity.getX()
   var y = entity.getY()
   var z = entity.getZ()
-  level.getServer().runCommandSilent(`particle minecraft:crit ${x} ${y} ${z} 0.25 0.25 0.25 0.05 22`)
-  level.getServer().runCommandSilent(`particle minecraft:smoke ${x} ${y} ${z} 0.2 0.2 0.2 0.03 12`)
-  level.getServer().runCommandSilent(`particle minecraft:flash ${x} ${y} ${z} 0 0 0 0 1`)
+  level.getServer().runCommandSilent(`particle minecraft:crit ${x} ${y} ${z} 0.1 0.1 0.1 0.02 6`)
+  level.getServer().runCommandSilent(`particle minecraft:smoke ${x} ${y} ${z} 0.1 0.1 0.1 0.01 4`)
   level.getServer().runCommandSilent(`playsound minecraft:item.crossbow.shoot neutral @a ${x} ${y} ${z} 0.5 1.6`)
+  sentryTracers.push({ entity: entity, x: x, y: y, z: z, age: 0 })
+})
+
+ServerEvents.tick((event) => {
+  if (sentryTracers.length === 0) return
+  var server = event.server
+  var live = []
+  for (var i = 0; i < sentryTracers.length; i++) {
+    var t = sentryTracers[i]
+    var e = t.entity
+    t.age++
+    if (e.isRemoved() || t.age > SENTRY_TRACER_MAX_TICKS) continue
+    var nx = e.getX()
+    var ny = e.getY()
+    var nz = e.getZ()
+    var dx = nx - t.x
+    var dy = ny - t.y
+    var dz = nz - t.z
+    if (dx * dx + dy * dy + dz * dz < 0.0001) continue // stuck in a block
+    for (var s = 1; s <= SENTRY_TRACER_POINTS_PER_TICK; s++) {
+      var f = s / SENTRY_TRACER_POINTS_PER_TICK
+      server.runCommandSilent(`particle minecraft:end_rod ${t.x + dx * f} ${t.y + dy * f} ${t.z + dz * f} 0 0 0 0 1`)
+    }
+    t.x = nx
+    t.y = ny
+    t.z = nz
+    live.push(t)
+  }
+  sentryTracers = live
 })
 
 // Impact FX restricted to real Sentry shots, 2026-09-28. The old

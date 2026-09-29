@@ -30,6 +30,28 @@ var LURE_DURATION_TICKS = 1200 // 60 real seconds - a real tactical window, not 
 var LURE_ATTRACT_RADIUS = 40 // meaningfully smaller than STRAY_DISTANCE (mob_aggro.js, 90) - a redirect, not a global magnet
 var LURE_WARNING_TICKS = 100 // last 5s - one particle cue before it goes, same "give some warning" idiom as pedestal_health.js's own alert tiers
 
+// **Visible timer, 2026-09-29** (live report: "the lure block didnt seem to
+// work. i.e didnt lure enemies towards it. couldnt see it timing out
+// either"). The save showed both lures had expired on time and been
+// cleaned up; the only cues were a smoke puff 5s before and a poof at the
+// end. The luring itself had nothing to pull that night: the last mobs of
+// each wave were buried ambushers that couldn't path anywhere (fixed in
+// wave_spawner.js the same day), and any Tesla Coil within 6 blocks was
+// zapping the invisible marker (fixed in the patched IE jar). Now:
+// - the marker sits on TOP of the block and carries a visible nameplate
+//   counting down the seconds ("Lure 45s"), refreshed by the once-a-second
+//   loop below. mob_aggro.js only reads its x/z, and a mob paths to the
+//   block top the same as to the pedestal's marker;
+// - a pulse of particles every second and a bell every LURE_BELL_EVERY_SECONDS
+//   (the quest is "Dinner Bell") while it's live, so it reads as active.
+var LURE_BELL_EVERY_SECONDS = 5
+
+function lureNameplate(remainingTicks) {
+  var seconds = Math.max(0, Math.ceil(remainingTicks / 20))
+  var color = remainingTicks <= LURE_WARNING_TICKS ? 'red' : 'gold'
+  return `{"text":"Lure ${seconds}s","color":"${color}","bold":true}`
+}
+
 BlockEvents.placed('kubejs:lure_block', (event) => {
   var level = event.getLevel()
   var block = event.getBlock()
@@ -38,8 +60,8 @@ BlockEvents.placed('kubejs:lure_block', (event) => {
   var z = block.getZ()
 
   var marker = level.createEntity('minecraft:armor_stand')
-  marker.setPosition(x + 0.5, y, z + 0.5)
-  marker.mergeNbt({ Invisible: true, NoGravity: true, Marker: true, PersistenceRequired: true, Tags: ['td_lure_target'] })
+  marker.setPosition(x + 0.5, y + 1, z + 0.5)
+  marker.mergeNbt({ Invisible: true, NoGravity: true, Marker: true, PersistenceRequired: true, Tags: ['td_lure_target'], CustomNameVisible: true, CustomName: lureNameplate(LURE_DURATION_TICKS) })
   marker.spawn()
   marker.persistentData.putInt('td_lureExpireTick', level.getTime() + LURE_DURATION_TICKS)
   marker.persistentData.putInt('td_lureBlockX', x)
@@ -112,8 +134,14 @@ PlayerEvents.tick((event) => {
     var remaining = data.getInt('td_lureExpireTick') - now
 
     if (remaining > 0) {
+      e.mergeNbt({ CustomName: lureNameplate(remaining) })
+      server.runCommandSilent(`particle minecraft:note ${e.getX()} ${e.getY() + 0.3} ${e.getZ()} 0.35 0.2 0.35 1 3`)
+      var secondsLeft = Math.ceil(remaining / 20)
+      if (secondsLeft % LURE_BELL_EVERY_SECONDS === 0) {
+        server.runCommandSilent(`playsound minecraft:block.bell.use block @a ${e.getX()} ${e.getY()} ${e.getZ()} 0.8 1.2`)
+      }
       if (remaining <= LURE_WARNING_TICKS && remaining > LURE_WARNING_TICKS - 20) {
-        server.runCommandSilent(`particle minecraft:smoke ${e.getX()} ${e.getY() + 0.5} ${e.getZ()} 0.3 0.3 0.3 0.02 15`)
+        server.runCommandSilent(`particle minecraft:smoke ${e.getX()} ${e.getY()} ${e.getZ()} 0.3 0.3 0.3 0.02 15`)
       }
       return
     }

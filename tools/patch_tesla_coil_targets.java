@@ -17,6 +17,17 @@ import java.util.zip.*;
  *    frames to maintain) to also require !td$blocked(e);
  *  - in tickServer's residual-field loop, jumps to the existing "skip this entity" label when
  *    td$blocked(e) - reuses javac's own frame at that label, so no new frames there either.
+ *
+ * Added 2026-09-29 (direct ask: "Can we get the tesla coil to only fire when enemies are nearby
+ * it?"), same tool so one run from the original jar still produces the whole patch:
+ *  - td$blocked also matches net.minecraft.world.entity.decoration.ArmorStand. The pack's
+ *    invisible marker stands (td_pedestal_target, td_lure_target) are LivingEntities, so a coil
+ *    within 6 blocks of the pedestal or a Lure Block zapped thin air every 1.6 s at 512 FE a shot;
+ *  - sendFreePacket(DDD)V's body becomes a bare RETURN. With no target, tickServer rolls
+ *    `getGameTime() % 128 == (x^z) & 127` and sends a "free" arc to a random nearby block, with
+ *    IE's tesla sound, every 6.4 s - the "fires with no enemies" report. The packet is the only
+ *    effect of that branch (the idle energy drain is separate and unchanged), and tickServer is
+ *    the method's only caller in the jar. No config option disables it.
  * The original jar is signed: the two signature files are dropped and the manifest is cut to its
  * main section, otherwise the modified entry would fail digest verification at load.
  *
@@ -33,6 +44,7 @@ public class PatchTeslaCoil implements Opcodes {
   static final String PLAYER = "net/minecraft/world/entity/player/Player";
   static final String AABB = "net/minecraft/world/phys/AABB";
   static final String SENTRY = "net.geforcemods.securitycraft.entity.sentry.Sentry";
+  static final String ARMOR_STAND = "net/minecraft/world/entity/decoration/ArmorStand";
 
   /** next real instruction, skipping labels / line numbers / frames */
   static AbstractInsnNode nextReal(AbstractInsnNode n) {
@@ -54,7 +66,7 @@ public class PatchTeslaCoil implements Opcodes {
     ClassNode cn = new ClassNode();
     new ClassReader(orig).accept(cn, ClassReader.EXPAND_FRAMES);
 
-    // 1) new helper: private static boolean td$blocked(Entity e) { return e instanceof Player | e.getClass().getName().equals(SENTRY); }
+    // 1) new helper: private static boolean td$blocked(Entity e) { return e instanceof Player | e.getClass().getName().equals(SENTRY) | e instanceof ArmorStand; }
     MethodNode blocked = new MethodNode(ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC, "td$blocked", "(L" + ENTITY + ";)Z", null, null);
     InsnList b = blocked.instructions;
     b.add(new VarInsnNode(ALOAD, 0));
@@ -64,6 +76,9 @@ public class PatchTeslaCoil implements Opcodes {
     b.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Class", "getName", "()Ljava/lang/String;", false));
     b.add(new LdcInsnNode(SENTRY));
     b.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z", false));
+    b.add(new InsnNode(IOR));
+    b.add(new VarInsnNode(ALOAD, 0));
+    b.add(new TypeInsnNode(INSTANCEOF, ARMOR_STAND));
     b.add(new InsnNode(IOR));
     b.add(new InsnNode(IRETURN));
     cn.methods.add(blocked);
@@ -111,6 +126,16 @@ public class PatchTeslaCoil implements Opcodes {
       patched++;
     }
     if (patched != 1) throw new IllegalStateException("expected exactly one residual-loop site, found " + patched);
+
+    // 3b) no idle arcs: sendFreePacket(DDD)V -> bare RETURN. Guarded on tickServer calling it exactly once.
+    int freeCalls = 0;
+    for (AbstractInsnNode n : ts.instructions) {
+      if (n instanceof MethodInsnNode m && m.owner.equals(CLS) && m.name.equals("sendFreePacket") && m.desc.equals("(DDD)V")) freeCalls++;
+    }
+    if (freeCalls != 1) throw new IllegalStateException("expected exactly one sendFreePacket call in tickServer, found " + freeCalls);
+    MethodNode free = find(cn, "sendFreePacket", "(DDD)V");
+    free.instructions.clear(); free.tryCatchBlocks.clear(); free.localVariables = null;
+    free.instructions.add(new InsnNode(RETURN));
 
     ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
     cn.accept(cw);

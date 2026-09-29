@@ -86,7 +86,8 @@ function starterGearNbt(extra) {
 //
 // `withGear` false (2026-09-28, multiplayer fix): a player whose first
 // login comes after the wave-5 removal (td_starterGearRemoved on the
-// marker) gets only the untagged tools. Before, every late joiner got the
+// marker) gets nothing from here (the untagged Flux Configurator it used
+// to still give was dropped 2026-09-29). Before, every late joiner got the
 // full sword and armour and kept them, since the only removal is
 // wave_status.js's one-shot `/clear @a` at wave 5.
 function giveStarterKit(player, withGear) {
@@ -101,14 +102,12 @@ function giveStarterKit(player, withGear) {
     player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
     player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
   }
-  // Manual fallback for the starter power rig (see starter_flux_network.js)
-  // - if the reflection-based auto-link ever fails on a given world, this
-  // is the mod's own real tool for linking the pre-placed generator/plug/
-  // battery upstairs by hand (right-click each once), no different from
-  // wiring any future turret to the network later. Given regardless of
-  // whether auto-link succeeds, since it's the normal way to add MORE
-  // devices to the network later anyway, not just a failure fallback.
-  player.give(Item.of('fluxnetworks:flux_configurator', 1))
+  // The Flux Configurator that used to be handed out here is gone,
+  // 2026-09-29 (direct ask: "can we remove the flux configurator from the
+  // starting inventory"). It was only ever a convenience: any Flux Plug or
+  // Point joins a network from its own screen (right-click it, pick the
+  // network), which is also the manual fallback if starter_flux_network.js's
+  // auto-link ever fails.
 }
 
 // Login-side half of the wave-5 gear removal (2026-09-28, multiplayer
@@ -1681,16 +1680,41 @@ function buildStarterBase(server, level, x, z) {
   // works its shape out again in any fill order. Every other NBT property
   // is the default (waterlogged/powered false).
   // Still vanilla, on purpose: the dark oak door (no reinforced door
-  // twin), the vines and workstations, and the birch fence gate behind the
-  // bar. SecurityCraft's reinforced gate only opens for its owner or an
-  // allowlist (ReinforcedFenceGateBlock.use, decompiled), and a /fill-
-  // placed one has no owner, so it would seal off the Culinary Generator
-  // at local (1,1,4) for good. That gate is the only way to reach it.
+  // twin), the vines and workstations. (The birch fence gate behind the
+  // bar was kept vanilla for the same reason - a /fill-placed reinforced
+  // gate has no owner and never opens - until 2026-09-29, when the bar,
+  // its canopy and the gate were removed to open up the power rig.)
   const CAFE4_FIXUPS = [
     [0, 0, 0, 'securitycraft:reinforced_stone_bricks'],  // jigsaw
     [2, 0, 1, 'securitycraft:reinforced_stone_bricks'],  // sunk pre-filled chest
     [1, 5, 6, 'minecraft:air'],  // upstairs berezka loot chest
     [3, 5, 3, 'minecraft:air'],  // campfire
+    // Ceiling gap, 2026-09-29 (live report: "a block is broken in the
+    // ceiling"). cafe4.nbt itself has air at local (5,4,6), one cell of the
+    // ground floor's ceiling (the jar copy and this pack's override agree).
+    // Filled with the ceiling's own top slab, before the replace-fills below
+    // reinforce it.
+    [2, 4, 5, 'minecraft:smooth_stone_slab[type=top]'],
+    // Power rig clear-out, 2026-09-29 (direct ask: "in the bottom floor of
+    // the house can you clear the area around the power stuff and the
+    // generator so a player can actually see it"). The rig sat in a 2-cell
+    // nook behind an L-shaped bar counter of top-half birch stairs, under an
+    // 8-slab canopy on two fence posts (the posts are the two air entries
+    // above), reached only through the birch fence gate. All of it goes:
+    [2, 1, 1, 'minecraft:air'],  // bar counter, local (1,1,6)
+    [2, 1, 2, 'minecraft:air'],  // bar counter, local (2,1,6)
+    [3, 1, 2, 'minecraft:air'],  // bar counter, local (2,1,5) - in front of the battery
+    [4, 1, 2, 'minecraft:air'],  // bar counter, local (2,1,4) - in front of the generator
+    [5, 1, 2, 'minecraft:air'],  // bar counter, local (2,1,3)
+    [5, 1, 1, 'minecraft:air'],  // birch fence gate, local (1,1,3)
+    [2, 3, 1, 'minecraft:air'],  // canopy slab
+    [3, 3, 1, 'minecraft:air'],  // canopy slab, over the battery
+    [4, 3, 1, 'minecraft:air'],  // canopy slab, over the plug
+    [5, 3, 1, 'minecraft:air'],  // canopy slab
+    [2, 3, 2, 'minecraft:air'],  // canopy slab
+    [3, 3, 2, 'minecraft:air'],  // canopy slab
+    [4, 3, 2, 'minecraft:air'],  // canopy slab
+    [5, 3, 2, 'minecraft:air'],  // canopy slab
     [5, 4, 8, 'minecraft:air'],  // lime wall banner
     [4, 4, 8, 'minecraft:air'],  // lime wall banner
     [3, 4, 8, 'minecraft:air'],  // lime wall banner
@@ -1725,8 +1749,8 @@ function buildStarterBase(server, level, x, z) {
     [8, 7, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
     [0, 7, 1, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],  // west-flank window boarded (was glass)
     [8, 2, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
-    [5, 2, 2, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=false,west=false]'],
-    [2, 2, 2, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=false,west=false]'],
+    [5, 2, 2, 'minecraft:air'],  // bar canopy post (2026-09-29 rig clear-out)
+    [2, 2, 2, 'minecraft:air'],  // bar canopy post (2026-09-29 rig clear-out)
     [8, 3, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
     [6, 5, 2, 'securitycraft:reinforced_birch_fence[east=false,north=false,south=true,west=false]'],
     [8, 6, 2, 'securitycraft:reinforced_birch_fence[east=false,north=true,south=true,west=false]'],
@@ -1781,6 +1805,15 @@ function buildStarterBase(server, level, x, z) {
     [2, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
     [1, 7, 7, 'securitycraft:reinforced_glass_pane[east=true,north=false,south=false,west=true]'],  // yard-face window (was board)
   ]
+  // Loot spill fix, 2026-09-29 (live report: "random loot is on the floor"
+  // on a new world). Setting the upstairs berezka chest (fixup [1, 5, 6])
+  // to air made it roll its loot table and drop the lot: /setblock's
+  // Clearable.tryClear only empties the item list, the LootTable key stays,
+  // and ChestBlock.onRemove -> Containers.dropContents -> getItem unpacks
+  // it (1.20.1 + Forge 47.4.10, decompiled). An empty loot table first
+  // leaves nothing to unpack. (`data remove` wouldn't do: ChestBlockEntity
+  // .load only overwrites the loot field when the tag carries one.)
+  run(`data merge block ${buildingX0 + 1} ${floorY + 5} ${buildingZ0 + 6} {LootTable:"minecraft:empty"}`)
   CAFE4_FIXUPS.forEach(([dx, dy, dz, block]) => {
     run(`setblock ${buildingX0 + dx} ${floorY + dy} ${buildingZ0 + dz} ${block}`)
   })
@@ -1813,7 +1846,8 @@ function buildStarterBase(server, level, x, z) {
   // - crafting table (3,1,4) -> Crafting Station Improved's real block,
   //   same swap as before (single-variant; waterlogged forced off - the
   //   inherited-water bug class from the Brick House's sink).
-  // - power rig behind the bar counter, against the back wall: culinary
+  // - power rig against the back wall, in the open since 2026-09-29 (bar
+  //   counter and canopy removed, see CAFE4_FIXUPS): culinary
   //   generator (1,1,4) with the flux plug stacked on it (1,2,4) and the
   //   basic flux storage one tile over (1,1,5) - the same relative shape
   //   starter_flux_network.js links (the Plug reads the generator's Forge
@@ -1830,7 +1864,11 @@ function buildStarterBase(server, level, x, z) {
   //   local z=3 lands west of local z=2 after the rotation.
   // - the smithing table, cartography table and stonecutter stay where
   //   the occupant left them.
-  const craftingStationPos = cafeLocal(3, 1, 4)
+  // Moved from the template's crafting table spot (3,1,4) to (3,1,6),
+  // 2026-09-29: (3,1,4) sits dead between the door and the generator.
+  const oldCraftingTablePos = cafeLocal(3, 1, 4)
+  run(`setblock ${oldCraftingTablePos.x} ${oldCraftingTablePos.y} ${oldCraftingTablePos.z} minecraft:air`)
+  const craftingStationPos = cafeLocal(3, 1, 6)
   run(`setblock ${craftingStationPos.x} ${craftingStationPos.y} ${craftingStationPos.z} craftingstation:crafting_station[waterlogged=false]`)
   const bioGeneratorPos = cafeLocal(1, 1, 4)
   const fluxPlugPos = cafeLocal(1, 2, 4)
@@ -1844,7 +1882,9 @@ function buildStarterBase(server, level, x, z) {
   const fluxBatteryX = fluxBatteryPos.x
   const fluxBatteryY = fluxBatteryPos.y
   const fluxBatteryZ = fluxBatteryPos.z
-  run(`setblock ${bioGeneratorX} ${bioGeneratorY} ${bioGeneratorZ} generatorgalore:culinary_generator`)
+  // facing=south (2026-09-29): a bare setblock left the default north,
+  // i.e. the generator's front against the back wall.
+  run(`setblock ${bioGeneratorX} ${bioGeneratorY} ${bioGeneratorZ} generatorgalore:culinary_generator[facing=south]`)
   run(`setblock ${fluxPlugX} ${fluxPlugY} ${fluxPlugZ} fluxnetworks:flux_plug`)
   run(`setblock ${fluxBatteryX} ${fluxBatteryY} ${fluxBatteryZ} fluxnetworks:basic_flux_storage`)
   const chestEastPos = cafeLocal(6, 1, 2)
@@ -2228,7 +2268,77 @@ function ensureBaseBuilt(server, level, reason) {
   var startedAt = Date.now()
   var result = buildStarterBase(server, level, site.x, site.z)
   console.log(`playtest_starter_kit.js: starter base built at (${site.x}, ${result.spawnY}, ${site.z}) in ${Date.now() - startedAt}ms (${reason})`)
+  try {
+    placeStarterRuinRing(server, level, site.x, site.z)
+  } catch (e) {
+    console.error(`playtest_starter_kit.js: ruin ring failed (${e}) - the base is unaffected`)
+  }
+  // Item litter, 2026-09-29 (live report: "random loot is on the floor" on a
+  // new world; the 2026-09-29 sandbox build showed 135 stick stacks across
+  // the whole field). Levelling the field pops the dead bushes growing on
+  // it as sticks, and the ring's /place can do the same. Nothing is meant to
+  // be lying around at world start, so every dropped item within the ring's
+  // reach is cleared.
+  server.runCommandSilent(`kill @e[type=minecraft:item,x=${site.x},y=${result.spawnY},z=${site.z},distance=..${RUIN_RING_MAX_DIST + 64}]`)
   return result
+}
+
+// **Ruin ring, 2026-09-29** (direct ask: "i think the structures around the
+// base feel a bit sparse"; user chose a ring near the base plus a denser
+// pool). Worldgen can't do this part: kubejs:ruins_pool's one exclusion
+// slot keeps every pool start 12+ chunks from EVERY anchor, and town anchors
+// need that gap, so the nearest natural ruins start ~160-190 blocks out. So
+// RUIN_RING_COUNT buildings are /place'd around a fresh base instead, evenly
+// spread by angle with some jitter, RUIN_RING_MIN-MAX_DIST blocks out -
+// past the levelled field (BASE_FIELD_HALF 29) and the 48-64 spawn band,
+// inside the first pool row. Picked from pool members without repeats,
+// medium-sized ones only.
+//
+// /place structure refuses unless every chunk the structure touches is
+// loaded (PlaceCommand.checkLoaded), so the chunks within 3 of the target
+// are touched first (getBlock loads them; most already exist from vanilla's
+// 441-chunk spawn-area pass around this site). Jigsaw starts snap to the
+// target's chunk and project onto the heightmap themselves. Their chests,
+// guard spawners and Lootr conversion work exactly as in a natural start.
+var RUIN_RING_COUNT = 6
+var RUIN_RING_MIN_DIST = 100
+var RUIN_RING_MAX_DIST = 130
+var RUIN_RING_STRUCTURES = [
+  'postapocalypse_structures:redhouse',
+  'postapocalypse_structures:yellowhouse',
+  'abandoned_urban:gas_station',
+  'abandoned_urban:motel',
+  'watchtower_building:abandoned_watchtower',
+  'philipsruins:desert_structures',
+  'u_desert:desert_ruin/house',
+  'nolandostructurez:abandoned_suburban',
+  'nolandostructurez:overgrown_suburban',
+  'nolandostructurez:abandoned_bank',
+  'abandoned_structures:house1',
+  'abandoned_structures:gas_station',
+]
+
+function placeStarterRuinRing(server, level, cx, cz) {
+  var TWO_PI = 6.283185307179586 // Math.PI is undefined in this Rhino
+  var choices = RUIN_RING_STRUCTURES.slice()
+  var offset = Math.random() * TWO_PI
+  var report = []
+  for (var i = 0; i < RUIN_RING_COUNT && choices.length > 0; i++) {
+    var angle = offset + (i * TWO_PI) / RUIN_RING_COUNT + (Math.random() - 0.5) * 0.4
+    var dist = RUIN_RING_MIN_DIST + Math.random() * (RUIN_RING_MAX_DIST - RUIN_RING_MIN_DIST)
+    var x = Math.floor(cx + Math.cos(angle) * dist)
+    var z = Math.floor(cz + Math.sin(angle) * dist)
+    var id = choices.splice(Math.floor(Math.random() * choices.length), 1)[0]
+    for (var dx = -3; dx <= 3; dx++) {
+      for (var dz = -3; dz <= 3; dz++) {
+        level.getBlock(x + dx * 16, 64, z + dz * 16)
+      }
+    }
+    var y = surfaceHeightAt(level, x, z)
+    var placed = server.runCommandSilent(`place structure ${id} ${x} ${y} ${z}`)
+    report.push(`${id} (${x}, ${z})${placed ? '' : ' FAILED'}`)
+  }
+  console.log(`playtest_starter_kit.js: ruin ring placed: ${report.join(', ')}`)
 }
 
 ServerEvents.loaded((event) => {

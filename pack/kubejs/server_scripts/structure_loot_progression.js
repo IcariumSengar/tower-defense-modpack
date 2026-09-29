@@ -194,6 +194,11 @@ var PLAIN_TIER_TABLES = [
   'u_desert:desert_ruin/junk',
   'u_desert:pillager_outpost/supply',
   'kubejs:chests/scavenge_storage',
+  // Nolando StructureZ (added 2026-09-29): common/uncommon chests are plain,
+  // rare_loot stays Lootr. All three tables are overridden to roll
+  // kubejs:chests/scavenge_storage (data/nolandostructurez/loot_tables).
+  'nolandostructurez:chests/common_loot',
+  'nolandostructurez:chests/uncommon_loot',
 ]
 var PLAIN_TIER_NAMESPACES = ['postapocalypse_structures']
 var PLAIN_TIER_STRIP = [
@@ -218,16 +223,28 @@ function slpIsLootrContainer(level, pos) {
   return `${block.getId()}`.indexOf('lootr:') === 0
 }
 
+// Extra cobblestone, 2026-09-29 (direct ask: "I think the loot table needs
+// to add a little extra cobblestone. maybe more in the regular barrels and
+// chests in the structures"). Walls and pillars eat it, and until now it only
+// came from scav_building's cobblestone entry (14 of 119 weight). Plain
+// containers get the bigger, likelier roll; Lootr ones a smaller one.
+var PLAIN_COBBLE_CHANCE = 0.6
+var PLAIN_COBBLE_COUNT = { min: 8, max: 20 }
+var LOOTR_COBBLE_CHANCE = 0.3
+var LOOTR_COBBLE_COUNT = { min: 4, max: 12 }
+
 LootJS.modifiers((event) => {
   event.addLootTypeModifier('chest').apply((context) => {
     if (slpIsPlainTierTable(`${context.getLootTableId()}`)) {
       context.removeLoot(PLAIN_TIER_STRIP)
+      if (Math.random() < PLAIN_COBBLE_CHANCE) context.addLoot(Item.of('minecraft:cobblestone', randomCount(PLAIN_COBBLE_COUNT)))
       return
     }
     var pos = context.getBlockPos()
     if (!pos) return
     var level = context.getLevel()
     if (!level || !slpIsLootrContainer(level, pos)) return
+    if (Math.random() < LOOTR_COBBLE_CHANCE) context.addLoot(Item.of('minecraft:cobblestone', randomCount(LOOTR_COBBLE_COUNT)))
 
     var pool = NEAR_TIER_POOL
     var secondRollChance = SECOND_ROLL_CHANCE_NEAR

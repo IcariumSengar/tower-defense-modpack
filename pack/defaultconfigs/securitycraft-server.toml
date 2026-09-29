@@ -72,7 +72,9 @@ incorrectPasscodeDamage = 4
 # defaultconfigs/undeadnights-server.toml), so it only takes effect for a
 # fresh world; an existing save needs the same edit made directly to its
 # own world/serverconfig/securitycraft-server.toml.
-sentry_bullet_damage = 6
+# 6 -> 8 (2026-09-29, direct ask: "can the sentry do a little more
+# damage"). A zombie now goes down in 3 hits instead of 4.
+sentry_bullet_damage = 8
 #Set the amount of damage the player receives when they are suffocating in a reinforced block. The default is two and a half hearts. If the value is set to -1, vanilla suffocation damage will be used.
 #Range: > -1
 reinforced_suffocation_damage = 5

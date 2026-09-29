@@ -95,26 +95,11 @@ ServerEvents.recipes((event) => {
   // tooltip_tier_colors.js.
   event.remove({ output: 'securitycraft:trophy_system' })
 
-  // Cage Trap - non-lethal, traps a mob/player (except the owner) in a
-  // block cage on contact.
-  //
-  // Iron cost trimmed 2026-09-11, same feedback as Sentry/I.M.S. above:
-  // this was the single worst offender - 3x iron_block for 27 ingots,
-  // 28 total with the bars. Down to 1 block + 2 ingots: 9 + 2 + ~1
-  // (bars) = ~12, still a real step up from Electrified Fence's plain-
-  // ingot cost but no longer the most expensive trap in the roster.
+  // Cage Trap binned, 2026-09-29 (direct ask: "can we bin the cage trap and
+  // its quest. dont like it"). Recipe removed with no replacement, same
+  // treatment as the Trophy System above; its quest node and tier tooltip
+  // entry are gone too, and "No Turning Back" no longer needs it.
   event.remove({ output: 'securitycraft:cage_trap' })
-  event.shaped('securitycraft:cage_trap', [
-    'BBB',
-    'GRG',
-    'JKJ',
-  ], {
-    B: 'minecraft:iron_bars',
-    G: 'minecraft:gold_ingot',
-    R: 'minecraft:redstone',
-    J: 'minecraft:iron_ingot',
-    K: 'minecraft:iron_block',
-  })
 
   // Electrified Iron Fence - unbreakable fence, shocks anyone but the
   // owner on contact.

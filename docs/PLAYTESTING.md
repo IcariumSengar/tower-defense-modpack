@@ -321,6 +321,59 @@ Everything below is built and deployed, but only verified via
 decompiling the relevant mod, `node --check`, and/or a sandbox boot/RCON
 probe — not an actual playtest.
 
+- **Playtest batch, 2026-09-29** (your 25-item list, in your numbering;
+  the doubled 13/16/17 are split into a/b). Base items need a **fresh
+  world**. Sandbox-verified where a headless server or the sandbox client
+  can check it; the rest needs your eyes:
+  1. **Amulet** - covered by the ask-audit batch above (8-gold hand-in).
+  2. **Tesla Coil** - a powered coil with nothing in range stays quiet: no
+     random arcs, no sound. It never zaps the pedestal's or a lure's
+     invisible marker any more.
+  3. **Ceiling / loot** - on a new world: no gap in the ground floor's
+     ceiling, and no loot or sticks lying anywhere in or around the base.
+  4. **Power rig** - the bar counter, its canopy and the gate are gone; the
+     generator faces the room and you can see it from the door.
+  5. **Ambushers** - from wave 2 some burst out of the ground a few blocks
+     outside the walls (dirt spray, digging sound). None inside the base,
+     none stuck underground, no /tdforceclear needed.
+  6. **Airdrop** - every drop, including wave 5, flies its full ~20 s and
+     drops a crate.
+  7. **Pedestal screen** - empty-hand right-click on the pedestal opens it.
+     Buying spends levels and the buttons update. With the amulet on the
+     stand, "Take the amulet" gives it back. Esc closes it.
+  8. **Menu tips** - no tip mentions the sword/armour rusting or the
+     defences going dark at wave 5.
+  9. **The Last Written Wave** - new text.
+  10. **Iron Sides** - new quest under Room to Grow for the Basic to Iron
+      Tier Upgrade (8 iron around a lever, right-click a placed barrel).
+  11. **Starting kit** - no Flux Configurator.
+  12. **The Reaper** - black leather instead of iron (armour 20 -> 12).
+      Does it go down noticeably faster?
+  13a. **Crate message** - "Supply crate landed to the <direction>" plus
+      the [Add] map pin; no coordinates anywhere.
+  13b. **Item Collector** - 1 quartz + 1 redstone block + 3 ender pearls.
+  14. **Slows** - spikes slow hard (Slowness III), stakes and stake walls a
+      little (Slowness I).
+  15. **Tooltips** - every trap/turret shows a grey "Damage: ..." line under
+      its tier.
+  16a. **Cage Trap** - no recipe, no quest; "No Turning Back" doesn't need it.
+  16b. **Wired Different** - completes by looking at the generator
+      downstairs.
+  17a. **Lure** - the time left floats above it, a bell rings every 5 s and
+      nearby wave mobs walk to it.
+  17b. **Structures** - six ruins stand 100-130 blocks around a new base, and
+      the four Nolando StructureZ buildings (bank, hotel, two suburban
+      houses) turn up in the wider world. Enough variety now?
+  18. **Cobblestone** - plain barrels/chests often hold 8-20, Lootr ones
+      sometimes 4-12.
+  19. **Shotgun shells** - Shrapnel instead of gravel.
+  20. **Sentry** - 8 per shot (3 hits to a zombie); a small muzzle puff and a
+      white tracer along each bullet.
+  21. **Tesla Coil recipe** - lightning rod, 2 diamond blocks, gold block,
+      2 steel, netherite ingot.
+  22. **Flux Networks** - Flux Dust uses a lapis block, Flux Cores gold
+      blocks.
+
 - **Ask-audit batch, 2026-09-28** (every past request re-checked against
   the code; these are the gaps it closed). Base/house items need a
   **fresh world**:
@@ -334,7 +387,8 @@ probe — not an actual playtest.
   4. **Airdrop** - lands 90-110 blocks out in any direction (often
      outside the early border: place the amulet to go get it). The gun
      always comes with its own ammo; ~20% of crates hold a nether star.
-     Early east-side drops can have a short (2-3 s) flyover.
+     Every flyover is full length since 2026-09-29 (the plane ignores the
+     border now; see the 2026-09-29 batch, item 6).
   5. **Legendary bag** - orange beam, exactly one standout item.
   6. **Pedestal heal** - right-click with a golden carrot or nether star,
      amulet on the stand or not: it heals and the item never sits on the
@@ -346,10 +400,11 @@ probe — not an actual playtest.
      (all Tier 2 traps) gives a totem; "Zombie Masher" repeats every 1,500.
   9. **Brutes** - none before wave 20 from any source; horde brutes spawn
      at 60 HP like wave ones.
-  10. **Underground ambushers** - never inside the command post, and they
-      don't suffocate while waiting to dig.
+  10. **Underground ambushers** - superseded 2026-09-29: they now surface
+      outside the walls instead (2026-09-29 batch, item 5).
   11. **Command post** - roof, slabs, stairs, plates and carpets are all
-      reinforced (the bar's fence gate and the door stay vanilla).
+      reinforced (the door stays vanilla; the bar and its gate were removed
+      2026-09-29).
   12. **Late joiner** - a player who first joins after wave 5 gets no
       starter sword/armour.
   13. **Zoom** - Z zooms and nothing else is on Z (fresh installs; on an

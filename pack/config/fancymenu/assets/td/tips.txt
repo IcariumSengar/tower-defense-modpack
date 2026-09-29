@@ -5,6 +5,7 @@ Any zombie within 3 blocks of the pedestal hits it for its full attack, once a s
 An anvil clang means the pedestal is taking hits. Get back.
 A golden carrot on the pedestal mends a tenth of it. A nether star mends the lot.
 Every wave you clear patches the pedestal by five percent.
+Right-click the pedestal with an empty hand to spend your levels on upgrades.
 If the pedestal falls, the run is over. Start a new world to try again.
 Don't mine the pedestal. Broken is broken, whoever swung the pick.
 Right-click the note block upstairs to sound the horn and call the next wave.
@@ -13,7 +14,7 @@ Ready early? Sound the horn. Nobody makes you sit out the timer.
 Night falls when the horn sounds and holds until the last of them is down.
 Waves 1 to 8 are written down. After that it's Horde 9, Horde 10, and no end.
 A cave groan comes just before one of them rises. Learn to hear where.
-From wave 2, some start buried under the base and dig their way up.
+From wave 2, some burst out of the ground just outside your walls.
 They dig through anything you place. Only the base's reinforced stone holds.
 A bare-handed zombie gets through cobblestone in about two and a half seconds.
 Stuck under a wall, they stack cobblestone and climb.
@@ -31,20 +32,18 @@ A Legendary bag can hold a nether star. That's a whole pedestal back.
 Bounties pay out at 25, 100, 300 and 750 kills, then every 1500 after.
 Trap and turret kills count toward Bounties. Fire and falls don't.
 Every fifth wave cleared, a supply plane comes in from the west. Look up.
-The supply crate lands east of the base. Follow the beacon beam.
+The supply crate lands about a hundred blocks out. Chat says which way; follow the beacon beam.
 Click Add on the supply-drop line in chat to pin the crate to your map.
 Every supply crate carries a Legendary bag, a gun and ammo.
 The border grows every wave you clear: 5 blocks at first, more every third wave.
-Eight gold ingots in a ring make the Amulet. It goes in the Curios necklace slot.
+The Amulet can't be crafted. Hand eight gold ingots to its quest, then wear it in the Curios necklace slot.
 Wear the Amulet for Regeneration and Resistance.
 Until the Amulet sits on the pedestal, the border shoves you back.
 No ruin stands within nine chunks of the base. The good stuff is a walk away.
 Chests over 210 blocks from the pedestal get a bonus roll. Past 270, a better one.
 Open the barrels out in the ruins. Empty-looking ones still get rolled.
 Big abandoned watchtowers keep spawners full of brutes, elites and crawlers.
-The dead man's sword and armour rust away once wave 5 is cleared.
-After wave 5 the boarded gaps open, and the starter coil and Sentry go dark.
-The generator upstairs burns any food. Rotten flesh counts.
+The generator downstairs burns any food. Rotten flesh counts.
 There's a Waystone by the base door. Craft another and jump between them.
 A Wooden Stake takes 20 damage from the horde before it breaks. A Spike Trap, 60.
 Bouncing Betties and Claymores won't hurt you or break your walls.

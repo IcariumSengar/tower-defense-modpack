@@ -1,5 +1,6 @@
-// Spike Trap slow (2026-09-27, direct ask: "did you do the cobweb/slow
-// affect on the spikes?" -> "do it"). Tier 1 lost its only slowing trap
+// Spike Trap and Wooden Stake slows (2026-09-27, direct ask: "did you do
+// the cobweb/slow affect on the spikes?" -> "do it"; stakes added
+// 2026-09-29, see the constants below). Tier 1 lost its only slowing trap
 // when Barbed Wire went out with Create (2026-09-11). The old Trapcraft
 // Spikes' cobweb pairing had already been dropped by then, on the grounds
 // that slowing was Barbed Wire's job. So the Spike Trap now slows as well
@@ -21,7 +22,7 @@
 // ones the 10-tick invulnerability window then swallows: about 10 times a
 // second per mob standing in spikes. Hence the refresh check before the
 // block scan: the slow is only re-applied once it drops below
-// SPIKE_SLOW_REFRESH_BELOW_TICKS, so each mob gets a block scan and an
+// its trap's refreshBelow (TRAP_SLOWS), so each mob gets a block scan and an
 // effect update about twice a second, not ten times.
 //
 // The damage type isn't matched, because the procedure uses a vanilla
@@ -50,15 +51,32 @@
 // server). This file needs no guard at all: server_scripts only receive
 // server-side events.
 //
-// Slowness II for 40 ticks, refreshed while the mob stays in the spikes,
-// so it wears off 1.5-2s after the mob walks out. The vanilla effect swirl
-// is the visible cue.
-var SPIKE_SLOW_BLOCK = 'simply_traps:spike_trap'
-var SPIKE_SLOW_DURATION_TICKS = 40
-var SPIKE_SLOW_REFRESH_BELOW_TICKS = 30
-var SPIKE_SLOW_AMPLIFIER = 1 // 0 = Slowness I, 1 = Slowness II (-30% speed)
+// Refreshed while the mob stays in the trap, so the slow wears off a
+// second or two after it walks out. The vanilla effect swirl is the
+// visible cue.
+//
+// Stronger on spikes, and stakes slow too, 2026-09-29 (direct ask: "can you
+// increase the slow effect on the iron spikes and also add a little to the
+// wooden stake blocks"). Spikes went Slowness II/40 ticks -> III/60 ticks
+// (-45% speed). Wooden Stakes and Stake Walls now give Slowness I for 30
+// ticks (-15%). Both stake blocks use the same entityInside pattern as the
+// spike (StakeEntityCollidesInTheBlockProcedure /
+// StakeWallEntityCollidesInTheBlockProcedure: no collision, hurt every 2nd
+// tick while overlapping), so the same hurt hook covers all three.
+var TRAP_SLOWS = {
+  'simply_traps:spike_trap': { amplifier: 2, duration: 60, refreshBelow: 50 }, // Slowness III
+  'simply_traps:stake': { amplifier: 0, duration: 30, refreshBelow: 20 }, // Slowness I
+  'simply_traps:stake_wall': { amplifier: 0, duration: 30, refreshBelow: 20 },
+}
+// Any slowness this fresh can only have come from spikes (the strongest and
+// longest), so the block scan is skipped. Below it the scan runs, which is
+// how a mob stepping from stakes onto spikes gets upgraded to Slowness III.
+// A weaker trap never downgrades a stronger slow: a stake's refresh line
+// (20) is under anything a spike leaves behind until it has nearly worn off.
+var TRAP_SLOW_SKIP_ABOVE_TICKS = 50
 
-function isInSpikeTrap(level, e) {
+// The strongest trap slow among the cells the hitbox covers, or null.
+function strongestTrapSlowUnder(level, e) {
   var half = e.getBbWidth() / 2
   var x0 = Math.floor(e.getX() - half)
   var x1 = Math.floor(e.getX() + half)
@@ -66,21 +84,25 @@ function isInSpikeTrap(level, e) {
   var z1 = Math.floor(e.getZ() + half)
   var y0 = Math.floor(e.getY())
   var y1 = Math.floor(e.getY() + e.getBbHeight())
+  var best = null
   for (var x = x0; x <= x1; x++) {
     for (var z = z0; z <= z1; z++) {
       for (var y = y0; y <= y1; y++) {
-        if (`${level.getBlock(x, y, z).getId()}` === SPIKE_SLOW_BLOCK) return true
+        var slow = TRAP_SLOWS[`${level.getBlock(x, y, z).getId()}`]
+        if (slow && (!best || slow.amplifier > best.amplifier)) best = slow
       }
     }
   }
-  return false
+  return best
 }
 
 EntityEvents.hurt((event) => {
   var e = event.getEntity()
   var tags = e.getTags()
   if (!tags.contains('td_wave_mob') || tags.contains('td_structure_guard')) return
-  if (e.potionEffects.getDuration('minecraft:slowness') >= SPIKE_SLOW_REFRESH_BELOW_TICKS) return
-  if (!isInSpikeTrap(e.getLevel(), e)) return
-  e.potionEffects.add('minecraft:slowness', SPIKE_SLOW_DURATION_TICKS, SPIKE_SLOW_AMPLIFIER, false, true)
+  var duration = e.potionEffects.getDuration('minecraft:slowness')
+  if (duration >= TRAP_SLOW_SKIP_ABOVE_TICKS) return
+  var slow = strongestTrapSlowUnder(e.getLevel(), e)
+  if (!slow || duration >= slow.refreshBelow) return
+  e.potionEffects.add('minecraft:slowness', slow.duration, slow.amplifier, false, true)
 })

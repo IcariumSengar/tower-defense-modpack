@@ -62,13 +62,16 @@
 // any of them. Quest-chain removal documented in campaign.snbt.
 ServerEvents.recipes((event) => {
   event.remove({ output: 'itemcollectors:basic_collector' })
+  // Iron blocks -> ender pearls, 2026-09-29 (direct ask: "can the item
+  // collectors have a other crafting item rather than iron blocks - maybe
+  // ender pearls"). Pearls come from Rare/Epic bags and Lootr containers.
   event.shaped('itemcollectors:basic_collector', [
     ' Q ',
     ' R ',
-    'III',
+    'PPP',
   ], {
     Q: 'minecraft:quartz',
     R: 'minecraft:redstone_block',
-    I: 'minecraft:iron_block',
+    P: 'minecraft:ender_pearl',
   })
 })

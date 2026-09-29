@@ -1,0 +1,12 @@
+{
+  "name": "nolandostructurez:overgrown_suburban/zombie_resident",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:empty_pool_element"
+      }
+    }
+  ]
+}

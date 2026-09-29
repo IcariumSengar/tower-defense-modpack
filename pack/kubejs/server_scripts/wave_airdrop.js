@@ -319,17 +319,14 @@ var WAVE_AIRDROP_LENGTH = 200
 //    (ServerLevel#mayInteract checks the border), until the amulet goes
 //    on the pedestal - amulet_pedestal.js pushes the border out by 10M.
 //    That's the intended "go and get it" loop;
-//  - the PLANE can be pinned. If its flight line crosses the bordered
-//    square and the target is past the square's east edge, it is inside
-//    the border when it reaches that edge and stops dead, short of its
-//    drop distance - no crate. airdropFlightLength() shortens the flight
-//    for exactly that case (amulet off, roughly the eastern +/-25-37
-//    degrees at waves 5-10) so the plane spawns clear of the edge.
+//  - the PLANE could be pinned: vanilla walls an entity within about its
+//    own width of any edge, from inside or out, and the mod discards a
+//    plane whose x-velocity hits 0. That killed the live wave-5 drop on
+//    2026-09-28. Since 2026-09-29 the plane spawns with noPhysics (see the
+//    EntityEvents.spawned hook by findAirdropCrate), so neither the border
+//    nor terrain can stop it, and every flight is full length.
 var WAVE_AIRDROP_DISTANCE_MIN = 90
 var WAVE_AIRDROP_DISTANCE_MAX = 110
-// The plane's hitbox is 10 wide (DyairdropModEntities: sized(10, 3)), so
-// its centre starts this far past the border edge to be clear of it.
-var WAVE_AIRDROP_BORDER_CLEARANCE = 6
 // **Flight-path forceload, 2026-09-28.** Entities only tick inside a
 // player's simulation distance or a forced chunk (DistanceManager:
 // entity-ticking = within simulationDistance chunks of a player, checked
@@ -350,9 +347,13 @@ var WAVE_AIRDROP_BORDER_CLEARANCE = 6
 // removed here: `forceload remove` isn't reference-counted and would
 // strip the base's own.
 var WAVE_AIRDROP_BASE_FORCELOAD_RADIUS = 96 // KEEP IN SYNC with the pedestal +/-96 forceload in mob_aggro.js (ensurePedestalMarker) and playtest_starter_kit.js
-var WAVE_AIRDROP_TAIL_BLOCKS = 144 // the plane flies on after the drop until the 400-tick cap: ~136 blocks at 0.84 blocks/tick
+// The plane flies on after the drop until the 400-tick cap. 144 was cut too
+// fine: the 2026-09-29 sandbox run measured the plane's last position at
+// target +152 (one block past the strip, where it froze in the sky), so
+// two chunks of margin now.
+var WAVE_AIRDROP_TAIL_BLOCKS = 176
 var WAVE_AIRDROP_FORCE_HOLD_TICKS = 480 // after launch: the mod's 60-tick summon delay + the plane's 400-tick life + margin
-var WAVE_AIRDROP_LANDED_NOTE_TICKS = 20 * 20 // action-bar "crate down at X, Z" line after touchdown
+var WAVE_AIRDROP_LANDED_NOTE_TICKS = 20 * 20 // action-bar "crate landed to the <direction>" line after touchdown
 var WAVE_AIRDROP_BEACON_BLOCK = 'minecraft:beacon'
 
 // 12s after the wave clears - the wave-clear subtitle (100-tick title
@@ -414,7 +415,7 @@ var WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS = 20 * 60 * 30 // stop watching an op
 function airdropInboundActionbarText(data, now) {
   if (data.getBoolean('td_airdropWatch')) return '§b✈ §fSupply plane coming in from the west - look up!'
   if (data.contains('td_airdropLandedUntilTick') && now < data.getInt('td_airdropLandedUntilTick')) {
-    return `§6Supply crate down at ${data.getInt('td_airdropCrateX')}, ${data.getInt('td_airdropCrateZ')} §f- follow the light beam`
+    return `§6Supply crate landed to the ${airdropCompassDirection(data, data.getInt('td_airdropCrateX'), data.getInt('td_airdropCrateZ'))} §f- follow the light beam`
   }
   return null
 }
@@ -497,14 +498,15 @@ function airdropReleaseForceload(server, data) {
 // the edge instead, a shorter flyover rather than no crate. A length of 1
 // still drops (the jar drops once distance flown is within 1 of it), and a
 // plane already overlapping the edge isn't blocked by it.
+//
+// Superseded 2026-09-29: the plane is noPhysics now (see the spawn hook by
+// findAirdropCrate), so the border can't pin it and the shortening only cut
+// flyovers short. A tick simulation of this version's 6-block clearance also
+// showed it missed cases (the real margin is ~11 blocks, and the west edge
+// pins rows that graze the z-edge band). Kept as a function so the call site
+// and the probe don't change.
 function airdropFlightLength(level, tx, tz) {
-  var border = level.getWorldBorder()
-  var c = WAVE_AIRDROP_BORDER_CLEARANCE
-  if (tz <= border.getMinZ() - c || tz >= border.getMaxZ() + c) return WAVE_AIRDROP_LENGTH
-  var eastEdge = border.getMaxX()
-  if (tx <= eastEdge) return WAVE_AIRDROP_LENGTH
-  if (tx - WAVE_AIRDROP_LENGTH >= eastEdge + c) return WAVE_AIRDROP_LENGTH
-  return Math.max(1, Math.floor(tx - eastEdge - c))
+  return WAVE_AIRDROP_LENGTH
 }
 
 function launchWaveAirdrop(server, level, data, now) {
@@ -535,6 +537,34 @@ function launchWaveAirdrop(server, level, data, now) {
   data.putBoolean('td_airdropCrateSeen', false)
   data.putInt('td_airdropWatchUntilTick', now + WAVE_AIRDROP_WATCH_TIMEOUT_TICKS)
 }
+
+// **Plane can't be walled, 2026-09-29.** The 2026-09-28 live wave-5 drop
+// that "didn't last very long in the air" was the border, not a freeze:
+// decompiled PlaneticksProcedure discards the plane (with a small
+// explosion) the moment its x-velocity is 0 or isInWall() is true, and
+// vanilla's Entity#collide adds the world border as a wall for any entity
+// within ~its own width of an edge. At wave 5 the border was 85 wide and the
+// flight row ran 9 blocks outside its south edge, so the plane was stopped
+// 120 blocks into a 200-block flight: no crate. (BORDER_START is 50 in
+// base_expansion.js; an 85-wide border is ~42 each side, not the ~75 once
+// assumed.) A tick simulation of the 90-110 any-direction targets still
+// failed ~24% of wave-10 drops even with airdropFlightLength's shortening.
+// Fix: noPhysics on the plane. Entity#move then skips collision entirely
+// (border and blocks), and isInWall() returns false, so the plane always
+// flies its full length and drops. It also stops the post-drop crash into
+// the border's far edge. The flag isn't saved to NBT; a plane reloaded
+// mid-flight (a restart during the 20 s flyover) loses it, which is the old
+// behaviour, not a new failure.
+var WAVE_AIRDROP_PLANE_TYPES = ['dyairdrop:plane', 'dyairdrop:transportplane']
+EntityEvents.spawned((event) => {
+  var entity = event.entity
+  if (!WAVE_AIRDROP_PLANE_TYPES.includes(`${entity.type}`)) return
+  try {
+    entity.noPhysics = true
+  } catch (e) {
+    console.log(`wave_airdrop.js: could not set noPhysics on the plane: ${e}`)
+  }
+})
 
 function findAirdropCrate(level) {
   return level.getEntities().find((e) => WAVE_AIRDROP_CRATE_ENTITIES.includes(`${e.type}`))
@@ -593,6 +623,21 @@ function placeAirdropBeacon(server, level, data, x, y, z) {
   data.putInt('td_airdropBeaconY', y + 1)
   data.putInt('td_airdropBeaconZ', z)
   data.putBoolean('td_airdropBeaconActive', true)
+}
+
+// Compass direction from the pedestal to (x, z), 8 points ("north",
+// "north-east", ...). Chat and titles say this instead of coordinates,
+// 2026-09-29 (direct ask: "the coordinates message pop-up when the supply
+// crate drops is unnecessary. just tell which compass direction it landed
+// in"). The Xaero [Add] line below stays: it pins the crate without printing
+// any numbers. North is -z. Math.atan2 is fine in this Rhino (only Math.PI
+// is missing, see airdropPlanFlight).
+var AIRDROP_COMPASS_POINTS = ['east', 'south-east', 'south', 'south-west', 'west', 'north-west', 'north', 'north-east']
+function airdropCompassDirection(data, x, z) {
+  var dx = x - data.getInt('td_pedestalX')
+  var dz = z - data.getInt('td_pedestalZ')
+  var eighths = Math.round(Math.atan2(dz, dx) / (6.283185307179586 / 8))
+  return AIRDROP_COMPASS_POINTS[((eighths % 8) + 8) % 8]
 }
 
 // Xaero's Minimap share protocol (header item 1): `<sender>` is what the
@@ -741,8 +786,8 @@ PlayerEvents.tick((event) => {
   if (ly === null) {
     sendAirdropWaypoint(server, lx, data.getInt('td_airdropFlightY'), lz)
     server.runCommandSilent(`title @a title {"text":"","color":"gold"}`)
-    server.runCommandSilent(`title @a subtitle {"text":"Supply crate down near ${lx}, ${lz}.","color":"gold","bold":true}`)
-    server.runCommandSilent(`tellraw @a {"text":"Supply crate down near ${lx}, ${lz}. Click Add on the line above to put it on your map.","color":"gold"}`)
+    server.runCommandSilent(`title @a subtitle {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)}.","color":"gold","bold":true}`)
+    server.runCommandSilent(`tellraw @a {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)}. Click Add on the line above to pin it on your map.","color":"gold"}`)
     return
   }
   data.putInt('td_airdropCrateX', lx)
@@ -755,8 +800,8 @@ PlayerEvents.tick((event) => {
   placeAirdropBeacon(server, level, data, lx, ly, lz)
   sendAirdropWaypoint(server, lx, ly, lz)
   server.runCommandSilent(`title @a title {"text":"","color":"gold"}`)
-  server.runCommandSilent(`title @a subtitle {"text":"Supply crate down at ${lx}, ${lz} - follow the light beam.","color":"gold","bold":true}`)
-  server.runCommandSilent(`tellraw @a {"text":"Supply crate down at ${lx}, ${lz}. Click Add on the line above to put it on your map.","color":"gold"}`)
+  server.runCommandSilent(`title @a subtitle {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)} - follow the light beam.","color":"gold","bold":true}`)
+  server.runCommandSilent(`tellraw @a {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)}. Click Add on the line above to pin it on your map.","color":"gold"}`)
 })
 
 // Old wave-8+ speed-clear countdown display removed entirely (2026-09-08) -

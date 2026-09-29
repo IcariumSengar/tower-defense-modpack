@@ -46,7 +46,9 @@
 //   Component (Plastic -> Refinery). Rebuilt from parts that exist:
 //   a lightning rod (copper), two LV coils (copper wire), a gold block,
 //   steel, and a Flux Point so it's born wired - same "flux point in the
-//   recipe" convention tier3_turret_recipes.js already set.
+//   recipe" convention tier3_turret_recipes.js already set. (2026-09-29:
+//   the Flux Point and LV coils are now a netherite ingot and two diamond
+//   blocks - see the recipe below.)
 // - Simple Guns Fuel Tank (flame thrower ammo): blaze powder x2 + magma
 //   cream (slime again). Gunpowder + coal.
 //
@@ -88,6 +90,9 @@ ServerEvents.recipes((event) => {
   }
 
   // --- Flux Networks ---
+  // Obsidian swapped out of both recipes, 2026-09-29 (direct ask: "the flux
+  // dust should have lapis block instead of the obsidian block in its
+  // recipe. flux cores should have gold blocks instead of obsidian blocks").
   event.remove({ output: 'fluxnetworks:flux_core' })
   event.shaped('4x fluxnetworks:flux_core', [
     'fof',
@@ -95,12 +100,12 @@ ServerEvents.recipes((event) => {
     'fof',
   ], {
     f: 'fluxnetworks:flux_dust',
-    o: 'minecraft:obsidian',
+    o: 'minecraft:gold_block',
     e: 'minecraft:ender_pearl',
   }).id('kubejs:loot_aligned/flux_core')
 
   event.shapeless('4x fluxnetworks:flux_dust', [
-    'minecraft:obsidian',
+    'minecraft:lapis_block',
     'minecraft:redstone', 'minecraft:redstone', 'minecraft:redstone', 'minecraft:redstone',
   ]).id('kubejs:loot_aligned/flux_dust')
 
@@ -134,17 +139,23 @@ ServerEvents.recipes((event) => {
     'minecraft:iron_nugget', 'minecraft:iron_nugget',
   ]).id('kubejs:loot_aligned/casull')
 
+  // 2026-09-29 (direct ask: "the tesla coil recipe is way too faffy... i
+  // dont want the flux point to be an ingredient, nor do i want the copper
+  // coil. can you replace these with netherite ingot and diamond blocks
+  // respectively"): Flux Point -> netherite ingot, both LV coils -> diamond
+  // blocks. The coil is no longer born wired; it takes power from a Flux
+  // Point placed next to it like any other machine.
   event.remove({ output: 'immersiveengineering:tesla_coil' })
   event.shaped('immersiveengineering:tesla_coil', [
     ' L ',
-    'cGc',
-    'sFs',
+    'DGD',
+    'sNs',
   ], {
     L: 'minecraft:lightning_rod',
-    c: 'immersiveengineering:coil_lv',
+    D: 'minecraft:diamond_block',
     G: 'minecraft:gold_block',
     s: 'immersiveengineering:ingot_steel',
-    F: 'fluxnetworks:flux_point',
+    N: 'minecraft:netherite_ingot',
   }).id('kubejs:loot_aligned/tesla_coil')
 
   // --- Refined Storage ---
@@ -169,6 +180,11 @@ ServerEvents.recipes((event) => {
     'minecraft:gunpowder', 'minecraft:gunpowder',
     'minecraft:coal', 'minecraft:coal',
   ]).id('kubejs:loot_aligned/fuel_tank')
+
+  // Shotgun shells take Shrapnel instead of gravel, 2026-09-29 (direct ask:
+  // "can the crafting material of ammo be shrapnel instead of gravel").
+  // r_3 (5 shotgun_ammo) is the only Simple Guns recipe with gravel in it.
+  event.replaceInput({ id: 'simple_guns_reworked:r_3' }, 'minecraft:gravel', 'kubejs:shrapnel')
 
   // --- Dead ends pulled, 2026-09-28 ---
   // Assault Rifle: reported as a gun that can't fire; the user asked to
