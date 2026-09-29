@@ -300,111 +300,90 @@ function healPedestalByPercent(player, data, percent) {
 
 // Golden carrot = 10% heal, nether star = full (100%) heal - the rare/
 // premium option, direct ask.
-//
-// **Real bug found + fixed 2026-09-08** (live report: right-click heals
-// the pedestal and the item visibly sits on it; right-clicking again to
-// take it back makes it "disappear" - not actually there, but not really
-// gone either, a phantom that occupies an inventory slot with nothing
-// real behind it). Root cause: this used to be a BlockEvents.rightClicked
-// handler that called event.cancel() + stack.shrink(1), trying to both
-// consume the item AND stop Supplementaries' own native "place held item
-// on the pedestal" interaction from also happening on the same click.
-// event.cancel() doesn't reliably suppress that - the block's own
-// ItemDisplayTile placement still visually goes through (client-predicted
-// before server confirmation), racing this handler's own shrink(1). Two
-// systems both thought they owned the item at once - exactly the
-// add/remove desync class already fixed once before for the rabbit-ghost
-// bug (see docs/QUEUE.md's 7-item batch, item 2).
-//
-// Fixed the same way amulet_pedestal.js already solves the identical
-// "don't fight Supplementaries' own interaction" problem for the amulet:
-// don't intercept the click at all. Let the native placement happen
-// normally (no race), poll the pedestal's own real Container slot
-// (getDisplayedItem(), same call amulet_pedestal.js's own tick-poll
-// already proved reachable from KubeJS), and when a healing item is
-// actually sitting there, heal + consume it for real via
-// setDisplayedItem(air) - a real setter on Moonlight's ItemDisplayTile
-// (decompiled directly, not guessed), the same base class
-// PedestalBlockTile extends. This makes the pedestal's own display slot
-// the single source of truth for "is an item here," never two competing
-// paths again.
 var PEDESTAL_HEAL_ITEMS = {
   'minecraft:golden_carrot': { percent: 0.1, message: "§d[Pedestal] §fThe carrot's glow seeps into the stone. It holds a little steadier." },
   'minecraft:nether_star': { percent: 1.0, message: '§d[Pedestal] §fSomething ancient answers. The pedestal is whole again.' },
 }
 
-PlayerEvents.tick((event) => {
-  var player = event.entity
-  var level = player.getLevel()
-  // Real multiplayer fix, 2026-09-08 (see world_state.js) - shared
-  // pedestal state, not player.persistentData.
-  var data = worldData(level)
-  if (!data || !data.contains('td_pedestalX')) return
-
-  if (level.getTime() % 10 !== 0) return
-
-  var x = data.getInt('td_pedestalX')
-  var y = data.getInt('td_pedestalY')
-  var z = data.getInt('td_pedestalZ')
-  if (`${level.getBlock(x, y, z).id}` !== 'supplementaries:pedestal') return
-
-  var pedestalTile = level.getBlockEntity([x, y, z])
-  if (!pedestalTile) return
-
-  var displayed
-  try {
-    displayed = pedestalTile.getDisplayedItem()
-  } catch (e) {
-    return
-  }
-  if (!displayed || displayed.isEmpty()) return
-
-  var heal = PEDESTAL_HEAL_ITEMS[`${displayed.id}`]
-  if (!heal) return
-  if (!healPedestalByPercent(player, data, heal.percent)) return
-  pedestalTile.setDisplayedItem(Item.of('minecraft:air'))
-  // Toast, not chat (2026-09-09, real playtest ask: "less noise from the
-  // chat window") - no existing popup covers a manual heal-item use.
-  player.notify(heal.message)
-})
-
-// Right-click-to-heal (2026-09-09, direct ask: "the quest book says to
-// heal the pedestal you put the item on it and it disappears - I want to
-// just right click it and it heals, not putting the item on it... if the
-// amulet is on it, then this mechanic would work properly"). Gated on
-// td_amuletOnPedestal (amulet_pedestal.js) specifically, per that exact
-// ask, not just "a heal item is in hand." That gating is also what makes
-// this safe to hook directly, unlike the tick-poll heal above's own real
-// history (see its header): with the amulet already occupying the
-// pedestal's one display slot, Supplementaries' own canPlaceItem (no item
-// TYPE filter, "just checks the slot is empty" - amulet_pedestal.js's own
-// header) can never place anything else there, so nothing competes with
-// this handler for the same click the way a duplicate placement attempt
-// once did. Checked against the real stored pedestal coordinate, not just
-// the block id - Supplementaries' pedestal is a normal placeable block a
-// player could put down elsewhere too.
+// Right-click-to-heal, for everyone and whether or not the amulet is on
+// the stand (2026-09-28, direct ask: right-click the pedestal with a
+// golden carrot or nether star and it heals on the spot, the item is used
+// up, and it is never placed on the stand). This replaces two earlier
+// halves:
+// - a tick poll (2026-09-08) that let Supplementaries put the item on the
+//   stand, then healed and deleted it up to half a second later. Removed:
+//   the stand now never holds a heal item, so there's nothing left for it
+//   to find, and dropping it also removes a double-heal path.
+// - this handler gated on td_amuletOnPedestal (2026-09-09), the only case
+//   where cancelling the click was known to be safe (a full slot means
+//   Supplementaries never tries to place anything).
 //
-// Real limitation, not glossed over: not yet right-clicked in a live
-// game - flag this for confirmation on the next playtest, same bar as
-// every other untested first pass in this file.
+// Why it's safe to cancel on an empty stand now. The 09-08 "phantom item"
+// bug came from client prediction: ItemDisplayTile.interact (Moonlight,
+// decompiled) does its setItem + shrink on the CLIENT too, so the clicking
+// player's client puts the item on the stand before the server's answer
+// arrives. The server never places it (the cancel stops PedestalBlock.use
+// there), so this handler pushes the real state back to that client right
+// away: setChanged() on the server tile re-sends its empty contents
+// (ItemDisplayTile.setChanged -> level.sendBlockUpdated, needsToUpdate-
+// ClientWhenChanged() is true for the pedestal), and a full inventory
+// resync puts back an item the client took from its own hand when nothing
+// was consumed. At worst the item shows on the stand for one round trip.
+//
+// Main hand only: Supplementaries only places from the main hand, and an
+// off-hand event for the same click must never heal a second time.
+// Checked against the real stored pedestal position, since Supplementaries'
+// pedestal is a normal craftable block a player can put down anywhere.
+//
+// event.cancel() throws in this KubeJS build (EventJS.cancel -> EventExit,
+// decompiled), so everything happens before it. The 09-09 handler called
+// player.notify() after cancel(), so its heal toast never showed.
 BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
-  var player = event.entity
-  var level = player.getLevel()
-  var data = worldData(level)
-  if (!data || !data.getBoolean('td_amuletOnPedestal')) return
-  if (!data.contains('td_pedestalX')) return
-
-  var pos = event.getBlock().getPos()
-  if (pos.getX() !== data.getInt('td_pedestalX') || pos.getY() !== data.getInt('td_pedestalY') || pos.getZ() !== data.getInt('td_pedestalZ')) return
-
+  if (`${event.getHand()}` !== 'MAIN_HAND') return
   var heal = PEDESTAL_HEAL_ITEMS[`${event.item.id}`]
   if (!heal) return
-  if (!healPedestalByPercent(player, data, heal.percent)) return
 
-  event.item.shrink(1)
+  var player = event.entity
+  var level = player.getLevel()
+  var data = worldData(level)
+  if (!data || !data.contains('td_pedestalX')) return
+  var block = event.getBlock()
+  if (block.getX() !== data.getInt('td_pedestalX') || block.getY() !== data.getInt('td_pedestalY') || block.getZ() !== data.getInt('td_pedestalZ')) return
+
+  // The real pedestal and a heal item: from here on the item never goes
+  // on the stand, healed or not. Nothing is used up at full health or on
+  // a fallen pedestal.
+  var health = data.getInt('td_pedestalHealth')
+  if (data.getBoolean('td_pedestalDestroyed') || (data.contains('td_pedestalHealth') && health <= 0)) {
+    player.notify('§d[Pedestal] §fThere is nothing left here to mend.')
+  } else if (!data.contains('td_pedestalHealth') || health >= pedestalMaxHealth(data)) {
+    player.notify('§d[Pedestal] §fThe pedestal is already whole.')
+  } else if (healPedestalByPercent(player, data, heal.percent)) {
+    if (!player.isCreative()) event.item.shrink(1)
+    // Toast, not chat (2026-09-09, real playtest ask: "less noise from
+    // the chat window").
+    player.notify(heal.message)
+  }
+  pedestalHealClickResync(player, block)
   event.cancel()
-  player.notify(heal.message)
 })
+
+// Undoes the clicking client's predicted placement (see above). Each half
+// is guarded on its own, so a failure here can never stop the cancel that
+// follows it.
+function pedestalHealClickResync(player, block) {
+  try {
+    var tile = block.getEntity()
+    if (tile) tile.setChanged()
+  } catch (e) {
+    console.error(`pedestal_health.js: pedestal resync after a heal click failed (${e})`)
+  }
+  try {
+    player.containerMenu.sendAllDataToRemote()
+  } catch (e) {
+    console.error(`pedestal_health.js: inventory resync after a heal click failed (${e})`)
+  }
+}
 
 function pedestalAttackDamage(mob) {
   try {

@@ -3957,6 +3957,13 @@ gas-station guard without drowned; mineshafts excluded at 13 chunks.
 
 ## The amulet
 
+> **Current state (2026-09-28, supersedes the crafting and buff details
+> below):** the amulet has no recipe. It is the reward for handing 8 gold
+> ingots to the "Not Just Jewelry" quest, claimed once per player. It is
+> fire/lava-proof (`.fireResistant()`) and buffs Regeneration I +
+> Resistance I while worn. See "2026-09-28 ask-audit batch" at the end of
+> this file.
+
 **The amulet** — *live, confirmed working in-game* (built 2026-08-30;
 several real bugs found and fixed via actual playtesting since — see
 below). A custom item that draws mob
@@ -8508,6 +8515,13 @@ to here for.
 
 ### Realistic Airdrop - real mod verification, not trusted from the spec
 
+> **Current state (2026-09-28):** the crate lands 90-110 blocks from the
+> pedestal in a uniformly random direction (the 09-22 "50-70 east so the
+> plane crosses the base" trade was reverted at the user's request). The
+> plane's flight row is force-loaded until touchdown. Each crate carries
+> a gun plus that gun's own ammo, and ~20% carry a nether star. See
+> "2026-09-28 ask-audit batch" at the end of this file.
+
 **"Airdrop incoming" cues, 2026-09-10** (playtest: "it dropped but i
 missed the plane coming over and stuff, i want to know when to look
 up"). The old single "SUPPLIES INBOUND" title fired in the same tick as
@@ -9693,3 +9707,97 @@ sign-off in real play is still the user's.
 **Fresh-install note**: a brand-new game directory still shows vanilla's
 one-time accessibility onboarding screen before the title screen (the
 sandbox did). That is vanilla behaviour, not the reskin.
+
+## 2026-09-28 ask-audit batch
+
+*live, not yet seen in real play.* The user asked whether everything
+they had ever requested was built. Every typed message and question
+answer across all transcripts was re-read and checked against the code
+(~200 asks). This batch closes the gaps. The user made the design calls
+in four question rounds and excluded two items (deposit-all button,
+dedicated-server restart after game over). The play checklist is in
+PLAYTESTING.md "Ask-audit batch".
+
+- **Amulet from a quest.**
+  - "Not Just Jewelry" is an item task: consume 8 `gold_ingot`, reward 1
+    `kubejs:amulet`, claimed per player (FTB team progress is shared, so
+    one hand-in covers the whole party).
+  - Recipes for `kubejs:amulet` and the legacy `kubejs:amulet_pedestal`
+    are removed.
+  - Fire/lava-proof. The tooltip lists the real buffs.
+- **Straggler outline** (`wave_status.js`).
+  - Trigger: nothing left to spawn or queued, and at most 2 `td_wave_mob`
+    alive.
+  - Those mobs get vanilla Glowing (infinite, no particles) and join the
+    red team `td_stragglers`, so a red outline shows through walls.
+  - It is removed if the count rises again, at game over, and at wave end.
+  - Only change of note: the two stragglers count as allies of each
+    other.
+- **Explosion rule** (`explosion_player_safety.js`, `afterExplosion`).
+  - If the exploder is null or a player, the blast loses all block damage
+    and every player is pruned from its hit list; mobs are still hurt.
+  - Enemy blasts (exploder is a mob: the Demolition Zombie's TNT and its
+    burning self-destruct) are untouched.
+  - Covered: I.M.S. bombs, bazooka, grenades, charged potato, every
+    SecurityCraft mine, OMT grenade, IE HE and gunpowder barrel,
+    Supplementaries bombs, vanilla TNT, beds and anchors.
+  - `mine_player_safety.js` / `omtreborn_grenade_safety.js` remain as a
+    redundant second layer.
+- **I.M.S.**
+  - New placements default to mobs-only targeting
+    (`sentry_default_mode.js`).
+  - Recipe is 2 Bouncing Betties + Portable Radar + iron ingot (16 iron).
+- **Airdrop.**
+  - Lands 90-110 blocks out in any direction.
+  - The flight row is force-loaded, but never inside the base's permanent
+    ±96 square (`WAVE_AIRDROP_BASE_FORCELOAD_RADIUS` must mirror it).
+  - Flights whose line the border would block are shortened.
+  - Contents: 15 per-gun sub-tables under
+    `kubejs:chests/airdrop/`, each gun with its own ammo. The Laser Gun's
+    energized dust comes only from here.
+  - 20% nether star pool.
+  - Players reach a crate outside the border by placing the amulet.
+- **Legendary bag.**
+  - One roll from: nether star 25%, minigun 10%, totem 8%, OMT grenade
+    turret 8%, enchanted netherite sword 8%, chestplate 7%, leggings 7%,
+    OMT rocket turret 6%, IE Tesla Coil 6%, axe/helmet/boots 5% each.
+  - Beam is orange (255,120,0).
+  - BountyBags generates `config/bountybags/*_bag.toml` from the JSON
+    only when the TOML is missing. `sync_instance.sh` wipes `config/`,
+    so a sync plus a restart regenerates it. Never ship the TOMLs.
+- **Brutes.**
+  - Undead Nights levels 1-11 (waves 9-19) use brute-free copies of the
+    mixed, elite and boss hordes.
+  - Horde brutes get 60 HP (Mutant Brute) and 0.28 speed, the same as
+    wave-table brutes.
+- **Pedestal heal.**
+  - Right-click with a golden carrot (+10%) or nether star (full) always
+    heals and consumes the item, and the pedestal's own item placement is
+    cancelled.
+  - Nothing is consumed at full HP or after the pedestal is destroyed.
+- **Game-over guards.** After `td_pedestalDestroyed` or
+  `td_hardcoreGameOver` there is no wave clear, border growth, wave
+  milestone or boss.
+- **Smaller fixes.**
+  - Underground ambushers avoid the command post (and behind it) and get
+    a carved air pocket at `pedestalY-6`.
+  - Strays return to the real spawn band.
+  - Rotten Mutant drops bags.
+  - Camel, fox, skeleton horse and zombie horse are blocked.
+  - Sentry FX fire only for Sentry shots.
+  - Fire and lava deaths of wave mobs count for bounties.
+  - Command post roof, slabs, stairs, plates and carpets are reinforced
+    (the bar's fence gate stays vanilla by user choice: a placed
+    reinforced gate has no owner and would never open).
+  - The zcraft migration is skipped on fort worlds.
+  - No starter gear for late joiners (`td_starterGearRemoved`).
+  - Amethyst is in `scav_hardware`.
+  - Quests: Zombie Masher repeats; Know Your Enemy is one kill each;
+    Thin the Horde is 3 zombies; "It's Up to You Now" is removed; "No
+    Turning Back" gives a totem; stale recipe text is fixed.
+- **Removed.**
+  - Zombies More.
+  - The Assault Rifle recipe (`simple_guns_reworked:r_10`).
+  - IE `crafting/generator` and `crafting/radiator` (the Diesel Generator
+    and, as a side effect, the unused Excavator).
+

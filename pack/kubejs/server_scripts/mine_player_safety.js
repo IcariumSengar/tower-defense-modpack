@@ -4,6 +4,16 @@
 // bouncing bettie or the claymore exploded and destroyed my own blocks...
 // only harm enemies not players."
 //
+// **2026-09-28 corrections.** (1) This file never covered the I.M.S.: the
+// I.M.S. launches `securitycraft:imsbomb` entities (decompiled
+// IMSBlockEntity.launchMine), never a `bouncingbetty`, so the Betty
+// window below could not match its blasts. (2) The "null exploder" worry
+// below mixed up two mobs: the dynamite is Zombies More's Explosive
+// Zombie (not in the roster); the roster's Demolition Zombie (Undead
+// Nights) throws a PrimedTnt it owns. explosion_player_safety.js now
+// sanitizes every blast not traced to an enemy mob, the I.M.S. included;
+// this file's matches stay as a redundant second layer.
+//
 // **Bug #1, why the previous fix never fired**: bouncing_betty_safety.js
 // matched spawned entities against `securitycraft:bouncing_betty` (with an
 // underscore) - that's the real id of the BLOCK/item (confirmed working
@@ -44,7 +54,7 @@
 //   (bytecode-confirmed: `pos.getX()/getY()/getZ()` fed straight into
 //   `Level#explode`), so an exact integer-position match is precise, no
 //   radius needed.
-// - Bouncing Betty/I.M.S.: same entity-spawn-position + detonation-tick-
+// - Bouncing Betty: same entity-spawn-position + detonation-tick-
 //   window idea the old script used (real fuse is 16 ticks after spawn,
 //   not the block's own hardcoded `setFuse(15)` - `Bullet`/`BouncingBetty`
 //   entity ticks with a post-decrement check), just matched against the
@@ -77,7 +87,7 @@
 var BOUNCING_BETTY_ENTITY_TYPE = 'securitycraft:bouncingbetty' // real registered entity id - see header
 var BOUNCING_BETTY_DETONATION_TICK = 16 // real fuse (15) + 1 - post-decrement tick check in the entity's own tick()
 var BOUNCING_BETTY_WINDOW_TICKS = 3 // tolerance either side of the real tick
-var BOUNCING_BETTY_MATCH_RADIUS = 10 // blast radius (6, or 3 halved) + margin for I.M.S.'s own tracking/launch drift
+var BOUNCING_BETTY_MATCH_RADIUS = 10 // blast radius (6, or 3 halved) + margin; the I.M.S. never matched here (see header)
 
 var pendingBouncingBettys = [] // {x, y, z, validFromTick, validUntilTick}
 

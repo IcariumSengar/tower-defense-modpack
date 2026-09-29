@@ -43,9 +43,22 @@
 // SecurityCraft/Trapcraft/FTB Quests integrations, but real playtesting
 // is still the actual bar.
 
+// Tooltip rewritten 2026-09-28. The old "the desert heat doesn't bite" was
+// left over from the Fire Resistance buff, which Resistance replaced
+// 2026-09-06. amulet_worn.js is the source of truth: Regeneration I +
+// Resistance I (-20% damage) while worn.
+//
+// fireResistant() (2026-09-28): the amulet is a one-per-player quest
+// reward now, with no recipe to replace one, so a dropped amulet must
+// survive fire and lava (KubeJS ItemBuilder.fireResistant() ->
+// Item.Properties.fireResistant(), checked in the kubejs-forge 2001.6.5
+// jar; netherite items use the same flag).
 StartupEvents.registry('item', (event) => {
   event.create('amulet', 'basic')
-    .tooltip('§dWorn: mends faster, the desert heat doesn\'t bite')
+    .tooltip('§dWorn: slowly mends wounds and blunts every blow')
+    .tooltip('§7Regeneration I, Resistance I (-20% damage taken)')
+    .tooltip('§7On the pedestal: the border lets you pass')
+    .fireResistant()
     .attachCuriosCapability(
       CuriosJSCapabilityBuilder.create()
         .onEquip((slotContext, prevStack, stack) => {
@@ -84,10 +97,9 @@ StartupEvents.registry('item', (event) => {
 // player's actual pedestal (and, with it, their save's own game-over
 // failsafe) the next time they logged in. Keeping the block type
 // registered costs nothing (no new build ever places it again) and
-// avoids that real, silent data loss. Its own recipe still works too,
-// as a genuine fallback if an old save's block is ever lost - the same
-// reasoning this recipe has had since the original pedestal/amulet
-// reversal.
+// avoids that real, silent data loss. Its own recipe was removed
+// 2026-09-28 (amulet_pedestal.js): on a new world it was a dead-end craft
+// that only ate gold, and a lost pedestal is game over anyway.
 StartupEvents.registry('block', (event) => {
   event.create('amulet_pedestal')
     .displayName('Amulet Pedestal')

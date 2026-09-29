@@ -10,7 +10,7 @@
 #partial file, filling anything missing with defaults).
 [worldevents]
 	#enable=false: this pack drives every airdrop itself via wave_airdrop.js's
-	#own wave%5===0 trigger (/setairdrop random @r ...). The mod's own built-in
+	#own wave%5===0 trigger (/setairdrop free <x> <z> ...). The mod's own built-in
 	#"global airdrop event" (unconditionally on by default, fires automatically
 	#every `gap` in-game days near a random player) is a second, autonomous
 	#airdrop source this pack does not want layered on top of its own - same
@@ -36,7 +36,8 @@
 	#forceload=false: the mod author's own comment on this field (translated
 	#from the shipped Chinese: "may damage already-loaded permanent chunks,
 	#use cautiously on servers") is a real flagged risk this pack doesn't need
-	#to take - every /setairdrop call here targets a position near a currently
-	#online player (via `random @r` + a small drift), whose own chunks are
-	#already loaded by normal player-tracking distance.
+	#to take. Since 2026-09-28 the crate lands 90-110 blocks from the pedestal
+	#in any direction, often outside simulation distance, so wave_airdrop.js
+	#force-loads the plane's own flight row itself (and releases it after
+	#touchdown) instead of turning this global switch on.
 	forceload = false

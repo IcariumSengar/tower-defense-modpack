@@ -50,3 +50,34 @@ EntityEvents.spawned((event) => {
   if (`${entity.getMode().name()}` !== 'CAMOUFLAGE_HP') return
   entity.toggleMode(null, SENTRY_DEFAULT_MODE, false)
 })
+
+// I.M.S. defaults to mobs only too (2026-09-28, same ask applied to the
+// other SecurityCraft turret). Decompiled IMSBlockEntity: its mode is a
+// private `targetingMode` Option (default PLAYERS_AND_MOBS), reachable
+// through the public customOptions() array. TargetingMode's order is
+// PLAYERS, PLAYERS_AND_MOBS, MOBS and EnumOption.toggle() steps to the
+// next ordinal, so one toggle from the default lands on MOBS. The three
+// calls after it copy SecurityCraft's own ToggleOption packet handler:
+// toggle, onOptionChanged (marks the block entity dirty so it saves),
+// sendBlockUpdated (syncs the customize screen). BlockEvents.placed only
+// fires for a real placement, unlike the Sentry's spawned event, so a
+// player who later picks "Players and Mobs" keeps it.
+BlockEvents.placed(['securitycraft:ims'], (event) => {
+  try {
+    var be = event.getBlock().getEntity()
+    if (!be) return
+    var options = be.customOptions()
+    for (var i = 0; i < options.length; i++) {
+      var option = options[i]
+      if (`${option.getName()}` !== 'targetingMode') continue
+      if (`${option.get().name()}` !== 'PLAYERS_AND_MOBS') return
+      option.toggle()
+      be.onOptionChanged(option)
+      var state = be.getBlockState()
+      event.getLevel().sendBlockUpdated(be.getBlockPos(), state, state, 3)
+      return
+    }
+  } catch (e) {
+    console.error(`sentry_default_mode.js: failed to set the I.M.S. to mobs-only (${e})`)
+  }
+})

@@ -119,7 +119,18 @@ const RARE_MOBS = ['mutantszombies:split_head_zombie']
 // wave_spawner.js's WAVES header comment) - Epic tier is a single mob now,
 // same "honest consequence, not papered over" reasoning the comment above
 // already applied to Rare.
-const EPIC_MOBS = ['undeadnights:elite_zombie']
+//
+// `mutantszombies:rotten_mutant` added 2026-09-28 - real gap: it spawns as
+// a wave mob (endless tier 2 in wave_spawner.js, both mixed hordes in the
+// Undead Nights horde config) but was never in any list here, so its kills
+// never dropped a bag or rolled the 2% Legendary. Every other mob any wave
+// path can produce (WAVES, the endless tiers, the UN hordes and UN's
+// horde_zombie fallback, both bosses) was already covered - checked
+// 2026-09-28. Placed in Epic by its decompiled stats (30 HP / 7 attack,
+// between the mutant_zombie trash and Elite Zombie); the tier is only a
+// label since the 2026-09-08 redesign below - every mob in ALL_WAVE_MOBS
+// gets the same four rolls.
+const EPIC_MOBS = ['undeadnights:elite_zombie', 'mutantszombies:rotten_mutant']
 const LEGENDARY_MOBS = ['mutantszombies:crawler', 'undeadnights:demolition_zombie', 'mutantszombies:zombie_brute', 'mutantszombies:mutant_brute']
 
 // **Redesigned 2026-09-08, direct ask - real design change, not a

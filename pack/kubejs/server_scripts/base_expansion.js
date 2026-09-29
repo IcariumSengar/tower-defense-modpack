@@ -74,6 +74,9 @@ PlayerEvents.tick(function (event) {
 
   // Only react to the true -> false transition (a wave just cleared).
   if (!wasInWave || isInWave) return
+  // Both game-over paths also end the wave (true -> false), and that is not
+  // a clear - no border growth for a run that just ended (2026-09-28 audit).
+  if (data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')) return
 
   // wave_spawner.js increments td_waveNumber at spawn time and never
   // decrements it, so at the moment a wave clears this already holds

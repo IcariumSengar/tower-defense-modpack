@@ -19,10 +19,12 @@ checked at each point) is archived at
 - **Starting gear**: a Sharpness 100 netherite sword and full iron
   armor, given to inventory (not equipped). A Flux Configurator too, for
   manually re-linking the starter power rig if the automatic link ever
-  fails. The amulet also starts in inventory, unequipped.
+  fails. A player joining after the wave-5 gear loss gets only the
+  configurator. The amulet is NOT given: it's the reward for handing in 8
+  gold to the "Not Just Jewelry" quest (one per player, not craftable).
 - **No Wave Horn item any more** (removed 2026-09-13) — the horn is now
-  a real note block placed upstairs in the starter house's power-rig
-  room; right-click it to summon the next wave.
+  a real note block placed upstairs in the command post, by the yard
+  window; right-click it to summon the next wave.
 - **Fixed spawn point**, chosen at world-load time on a town-free
   desert/badlands "anchor grid" point that every structure set keeps
   clear (nothing within ~150 blocks), with a small walled compound
@@ -94,9 +96,11 @@ forces the real generator via a datapack override regardless.
   self-destructs.
 - **Airdrops** land every 5th wave clear (5, 10, 15...): ~12 seconds
   after the wave-cleared popup a "LOOK UP" title + bell plays as the
-  plane spawns 200 blocks west of the base and crosses it on a real
-  ~10-second flyover before the crate drops 50-70 blocks from the
-  pedestal, on the eastern side; a beacon beam on top of the crate marks
+  plane spawns west of the landing spot and flies east for ~10 seconds
+  (shorter when the early border is in the way) before the crate drops
+  90-110 blocks from the pedestal in any direction (2026-09-28; often
+  outside the early border, so place the amulet to go get it); the
+  crate always holds a gun plus that gun's ammo; a beacon beam on top of the crate marks
   the landing spot until the crate is opened, the action bar shows the
   crate's coordinates for 20 seconds, and chat gets a Xaero "Supply Drop
   shared a waypoint" line - click Add, then confirm, to put it on your
@@ -108,12 +112,14 @@ forces the real generator via a datapack override regardless.
   anvil sound and a gold chat line alongside it.
 
 **The amulet + pedestal**
-- Amulet starts unequipped; equipping it via Curios (necklace slot)
-  should apply Regeneration + Fire Resistance.
-- Placing it on a crafted pedestal (`kubejs:amulet_pedestal`) redirects
-  wave-mob targeting to the pedestal and lets you cross the worldborder
-  without being pushed back — this is a permanent objective marker, not
-  amulet-gated, and exists from world creation regardless.
+- The amulet comes from the "Not Just Jewelry" quest (hand in 8 gold;
+  one per player; no recipe; fire/lava-proof). Equipping it via Curios
+  (necklace slot) applies Regeneration I + Resistance I, and while worn
+  the worldborder pushes you back.
+- Placing it on the pre-built Supplementaries pedestal in the yard lets
+  you cross the worldborder (you lose the buffs). Wave mobs target the
+  pedestal whether or not the amulet is on it - it's a permanent
+  objective marker from world creation.
 
 **Multiplayer**: shared campaign state (wave number, pedestal HP, horn
 cooldown, etc.) lives on a permanent world-level marker entity, not a
@@ -315,6 +321,40 @@ Everything below is built and deployed, but only verified via
 decompiling the relevant mod, `node --check`, and/or a sandbox boot/RCON
 probe — not an actual playtest.
 
+- **Ask-audit batch, 2026-09-28** (every past request re-checked against
+  the code; these are the gaps it closed). Base/house items need a
+  **fresh world**:
+  1. **Amulet** - no recipe in JEI. Hand 8 gold to "Not Just Jewelry";
+     each player claims one. Drop it in lava: it survives.
+  2. **Straggler outline** - when a wave is down to its last 2 mobs they
+     glow red through walls; a third mob turning up clears it.
+  3. **Explosions** - bazooka, grenades, I.M.S. and mines never break
+     blocks or hurt players (you or friends). A Demolition Zombie's TNT
+     still does. A new I.M.S. starts on "mobs only".
+  4. **Airdrop** - lands 90-110 blocks out in any direction (often
+     outside the early border: place the amulet to go get it). The gun
+     always comes with its own ammo; ~20% of crates hold a nether star.
+     Early east-side drops can have a short (2-3 s) flyover.
+  5. **Legendary bag** - orange beam, exactly one standout item.
+  6. **Pedestal heal** - right-click with a golden carrot or nether star,
+     amulet on the stand or not: it heals and the item never sits on the
+     stand. At full HP nothing is used.
+  7. **Game over** - after the pedestal falls, killing the leftovers must
+     not show "WAVE CLEARED", grow the border or start a countdown.
+  8. **Quests** - "Thin the Horde" is 3 zombies; every Know Your Enemy
+     quest is one kill; "It's Up to You Now" is gone; "No Turning Back"
+     (all Tier 2 traps) gives a totem; "Zombie Masher" repeats every 1,500.
+  9. **Brutes** - none before wave 20 from any source; horde brutes spawn
+     at 60 HP like wave ones.
+  10. **Underground ambushers** - never inside the command post, and they
+      don't suffocate while waiting to dig.
+  11. **Command post** - roof, slabs, stairs, plates and carpets are all
+      reinforced (the bar's fence gate and the door stay vanilla).
+  12. **Late joiner** - a player who first joins after wave 5 gets no
+      starter sword/armour.
+  13. **Zoom** - Z zooms and nothing else is on Z (fresh installs; on an
+      existing install unbind Xaero's "Enlarge Minimap" by hand).
+
 - **Structure-gen rework, 2026-09-27** (sandbox-pregenerated and checked
   block by block; needs a **fresh world**, and on an old seed the base
   lands somewhere new):
@@ -391,7 +431,8 @@ probe — not an actual playtest.
   1. **Airdrop** - real beacon beam on top of the crate, a Xaero
      "Supply Drop shared a waypoint" chat line (click Add, confirm),
      the plane crosses the base from the west, the crate lands 50-70
-     blocks from the pedestal on the eastern side, the plane flies 40
+     blocks from the pedestal on the eastern side (placement superseded
+     2026-09-28: 90-110 blocks, any direction), the plane flies 40
      above pedestal height. Confirm the plane is actually visible
      crossing overhead, the beam is visible from the base, and the Add
      click opens Xaero's prefilled waypoint screen.

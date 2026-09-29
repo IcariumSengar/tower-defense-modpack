@@ -80,6 +80,13 @@ var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:generic_kill',
 ]
 
+// Fire deaths DO count for real wave mobs (2026-09-28): the IE Chem
+// Turret and the Simple Guns flamethrower kill by setting mobs alight,
+// so the killing blow is on_fire/in_fire (lava moats: lava) and those
+// kills were silently lost. Still excluded for anything not tagged
+// td_wave_mob, so an untagged zombie burning at dawn stays uncounted.
+var BOUNTY_WAVE_MOB_FIRE_TYPES = ['minecraft:in_fire', 'minecraft:on_fire', 'minecraft:lava']
+
 // **max_progress is NOT read from bounties.snbt - real root cause of "all
 // five bounties completed at once", 2026-09-10.** Decompiled the installed
 // ftb-quests-forge-2001.4.22.jar's CustomTask directly: it has a
@@ -154,7 +161,10 @@ EntityEvents.death((event) => {
   if (entity.getTags().contains('td_structure_guard')) return
 
   var typeId = bountyDamageTypeId(event.source)
-  if (typeId !== null && BOUNTY_EXCLUDED_DAMAGE_TYPES.includes(typeId)) return
+  if (typeId !== null && BOUNTY_EXCLUDED_DAMAGE_TYPES.includes(typeId)) {
+    var burningWaveMob = BOUNTY_WAVE_MOB_FIRE_TYPES.includes(typeId) && entity.getTags().contains('td_wave_mob')
+    if (!burningWaveMob) return
+  }
 
   var server = event.level.getServer()
   server.runCommandSilent(`scoreboard players add @a ${BOUNTY_OBJECTIVE} 1`)

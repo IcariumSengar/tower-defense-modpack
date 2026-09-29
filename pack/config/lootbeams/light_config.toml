@@ -20,7 +20,7 @@ glow_effect_radius = 0.5
 
 [customColorSetting]
 enable_custom_color = true
-color_override_by_name = { "bountybags:legendary_loot_bag" = { r = 255, g = 215, b = 0 } }
+color_override_by_name = { "bountybags:legendary_loot_bag" = { r = 255, g = 120, b = 0 } }
 color_override_by_tag = [  ]
 color_override_by_modid = [  ]
 

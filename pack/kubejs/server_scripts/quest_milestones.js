@@ -1,10 +1,21 @@
 // Quest-book milestone bridge (2026-09-09, quest book redesign v3 - see
-// docs/FEATURES.md "Quest book redesign v3"). Nine Campaign quests use a
-// `custom` task with no button so the player can't self-tick them; this
+// docs/FEATURES.md "Quest book redesign v3"). Campaign quests with a
+// `custom` task and no button, so the player can't self-tick them; this
 // script completes each one the moment the world state it describes
-// actually happens: horn first used, waves 1/3/8/15 cleared, the wave-5
-// starter-gear removal, the boss dying, the amulet worn, the amulet set on
-// the pedestal.
+// actually happens: horn first used, waves 1/3/8/15 cleared, the boss
+// dying, the amulet worn, the amulet set on the pedestal.
+//
+// The wave-5 gear-removal milestone ("It's Up to You Now", task
+// 0D4F31AEC6072549) was dropped 2026-09-28 along with that quest (user
+// request). Its td_q_gear flag may linger on older markers; nothing reads
+// it. td_starterGearRemoved itself is still live (wave_status.js sets it,
+// playtest_starter_kit.js's login handler reads it).
+//
+// The amulet milestones don't care where the amulet came from (a crafting
+// recipe before 2026-09-28, the "Not Just Jewelry" quest reward since):
+// td_amuletWorn is set by the Curios onEquip hook in
+// startup_scripts/amulet.js, td_amuletOnPedestal by amulet_pedestal.js's
+// poll of the pedestal slot.
 //
 // Completion goes through FTB Quests' own `/ftbquests change_progress
 // <players> complete <id>` - the exact idiom bounty_kills.js already runs
@@ -33,7 +44,6 @@ var QM_TASKS = {
   horn: '5A1C0E7B93D4F216',
   wave1: '6B2D1F8CA4E50327',
   wave3: '7C3E209DB5F61438',
-  gear: '0D4F31AEC6072549',
   wave8: '1E5042BFD718365A',
   boss: '2F6153C0E829476B',
   wave15: '307264D1F93A587C',
@@ -112,12 +122,12 @@ PlayerEvents.tick(function (event) {
   if (!data) return
   var server = player.getServer()
 
-  // Wave-clear edge detection. A pedestal loss also flips td_inWave false
-  // (pedestal_destruction.js ends the wave), and that is not a clear.
+  // Wave-clear edge detection. A pedestal loss or a hardcore game over also
+  // flips td_inWave false (both end the wave), and neither is a clear.
   var wasInWave = data.getBoolean('td_q_prevInWave')
   var inWave = data.getBoolean('td_inWave')
   data.putBoolean('td_q_prevInWave', inWave)
-  if (wasInWave && !inWave && !data.getBoolean('td_pedestalDestroyed')) {
+  if (wasInWave && !inWave && !data.getBoolean('td_pedestalDestroyed') && !data.getBoolean('td_hardcoreGameOver')) {
     data.putInt('td_q_lastClearedWave', data.getInt('td_waveNumber'))
   }
   var cleared = data.getInt('td_q_lastClearedWave')
@@ -125,7 +135,6 @@ PlayerEvents.tick(function (event) {
   if (data.getInt('td_lastHornUseTick') > 0) qmCompleteShared(server, data, 'horn')
   if (cleared >= 1) qmCompleteShared(server, data, 'wave1')
   if (cleared >= 3) qmCompleteShared(server, data, 'wave3')
-  if (data.getBoolean('td_starterGearRemoved')) qmCompleteShared(server, data, 'gear')
   if (cleared >= 8) qmCompleteShared(server, data, 'wave8')
   if (cleared >= 15) qmCompleteShared(server, data, 'wave15')
   if (data.getBoolean('td_amuletOnPedestal')) qmCompleteShared(server, data, 'amuletOnPedestal')

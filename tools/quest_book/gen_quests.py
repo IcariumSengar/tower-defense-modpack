@@ -403,7 +403,7 @@ b4 = bounty("Reaper", "Seven hundred fifty kills. Whatever is still coming at yo
     "minecraft:netherite_sword", "716E054554316AE5", "81F132C101C25BDA", 750, [r_lvl(20, "7F52A5324A25C675"), r_item("bountybags:epic_loot_bag", 1, "E20C2DD434AA49FD"), r_item("minecraft:golden_apple", 1, "82AFACFF977AA3F0")], 6.75, 1.75, "diamond", [b3["id"]])
 b5 = bounty("Zombie Masher", "Fifteen hundred kills, and counting. There's no ceiling on this one - claim it again every fifteen hundred after, for as long as they keep coming.",
     "bountybags:legendary_loot_bag", "6C33E795D76D13CF", "1355429CD45AF725", 1500, [r_item("bountybags:legendary_loot_bag", 1, "0FDBC49878804E0D")], 9.5, 2.0, "gear", [b4["id"]],
-    extra={"can_repeat": "true", "repeat_cooldown": 1})
+    extra={"can_repeat": True, "repeat_cooldown": 1})
 bounties_chapter = {
     "default_hide_dependency_lines": False, "default_quest_shape": "", "filename": "bounties", "group": "",
     "icon": "bountybags:legendary_loot_bag", "id": "32583EA8E824D51C", "order_index": 2, "progression_mode": "flexible",

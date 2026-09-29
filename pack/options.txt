@@ -1,3 +1,5 @@
 version:3465
 key_key.ftbquests.quests:key.keyboard.tab
 key_gui.xaero_new_waypoint:key.keyboard.k
+key_justzoom.keybinds.keybind.zoom:key.keyboard.z
+key_gui.xaero_enlarge_map:key.keyboard.unknown

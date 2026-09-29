@@ -57,10 +57,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -110,10 +110,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -163,10 +163,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -216,10 +216,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -269,10 +269,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": true,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -322,10 +322,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -375,10 +375,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -428,10 +428,10 @@
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
           1,
-          2
+          5
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -480,11 +480,11 @@
         "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
-          2,
-          3
+          5,
+          6
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -533,11 +533,11 @@
         "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
-          2,
-          3
+          5,
+          6
         ],
         "bossHordeEnabled": true,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,
@@ -586,11 +586,11 @@
         "chanceForRandomHorde": 0,
         "hordeSelectionMode": "sequential",
         "listOfPossibleHordes": [
-          2,
-          3
+          5,
+          6
         ],
         "bossHordeEnabled": false,
-        "bossHordeId": 4
+        "bossHordeId": 7
       },
       "difficultySettingsLureEffect": {
         "enableLureHordeEffect": false,

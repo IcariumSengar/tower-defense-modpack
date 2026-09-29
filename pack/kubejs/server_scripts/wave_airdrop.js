@@ -43,7 +43,10 @@
 //   border via its own BorderIntegrationHandler) - drift is kept modest
 //   below specifically so this can't realistically launch the crate
 //   outside the live worldborder even at wave 5 (the earliest trigger,
-//   smallest border).
+//   smallest border). [Superseded: `random` was replaced by `free` with a
+//   target chosen here on 2026-09-22, and crates now land 90-110 blocks
+//   out, usually past the border - see the 2026-09-28 note by the
+//   distance constants below.]
 // - `<blockid>` = `dyairdrop:airdroplarge`, a real registered block
 //   (confirmed in `DyairdropModBlocks`) - the mod's own biggest crate,
 //   matching this slot's existing "big reward" framing. Its tile entity
@@ -97,6 +100,11 @@
 // rolls, and a guaranteed 2-4 grenades. No re-recipe layer added, matching
 // this pack's existing "don't re-recipe stock mod content" convention (see
 // FEATURES.md's Storage & power system entry for the precedent).
+// [2026-09-28: the gun and ammo rolls were independent, so only ~34% of
+// crates held ammo the gun could fire. The gun pick is now a weighted pick
+// of per-gun bundles (data/kubejs/loot_tables/chests/airdrop/*.json: the
+// gun plus the ammo its ReloadProcedure really consumes), same weights.
+// 15 guns - the Assault Rifle is broken and stays out.]
 // Real config judgment calls (pack/config/dyairdrop.toml, header comment
 // there has the full reasoning): `enable=false` (this pack's own trigger
 // replaces the mod's autonomous global-event airdrop entirely, not
@@ -104,8 +112,12 @@
 // near-crate mechanic would reintroduce a non-zombie-family mob
 // (pillager) and a second, untracked spawn system on top of this pack's
 // own wave/horde spawning), `forceload=false` (avoids a real risk the mod
-// author's own comment flags, unnecessary here since every drop lands near
-// an already-loaded online player).
+// author's own comment flags: its forceload path runs `forceload add ~280
+// ~ ~-280 ~` and later `forceload remove all` (decompiled
+// Flycode2forceloadProcedure), which would also drop the base's own
+// permanent forceload. The "every drop lands near a loaded player" reason
+// first given here stopped being true - this file force-loads just the
+// plane's own flight path now, see the 2026-09-28 note below).
 //
 // **"Airdrop incoming" cues, 2026-09-10** - direct playtest feedback: "it
 // dropped but i missed the plane coming over and stuff, i want to know
@@ -182,7 +194,12 @@
 // flyover this asked for, now with a genuine ~50-tick (~2.5s) margin
 // under the raised cap instead of 5, and `flytime*2`=400 still exceeds
 // the new 250 cap, so the post-drop tail is governed by it the same way
-// as before (~2.5s flyaway before despawn).
+// as before (~2.5s flyaway before despawn). [Cap raised again 250 -> 400
+// on 2026-09-22 (MODS.md constant-patch entry): the plane really nets
+// 0.84 blocks/tick with drag, so the drop lands at tick ~238, only 12
+// under 250. The installed jar's PlaneticksProcedure reads `timer >=
+// 400` (re-checked 2026-09-28); the plane now flies ~8s and ~136 blocks
+// past the drop before despawning.]
 //
 // Landing beacon: neither the mod nor this file previously tracked the
 // crate's landing spot proactively - `td_airdropCrateX/Y/Z` was only ever
@@ -203,7 +220,7 @@
 // redrawn on the same 10-tick cadence `pollAirdropCrateCleanup` already
 // runs on, plus one bigger one-off burst the instant landing is
 // detected. `force` is deliberate: the crate can land 90-110 blocks from
-// the player (`WAVE_AIRDROP_DRIFT_MIN`/`MAX`), well past vanilla's normal
+// the pedestal (`WAVE_AIRDROP_DISTANCE_MIN`/`MAX`), well past vanilla's normal
 // particle-visibility range - the whole point is a real long-range
 // landmark, not a close-up effect. Stops the moment
 // `pollAirdropCrateCleanup`'s own loot-check clears the watch (looted or
@@ -244,7 +261,9 @@
 //     removed together with the crate by pollAirdropCrateCleanup's own
 //     exits (looted / broken by hand / 30-min timeout), and only ever one
 //     tracked at a time (a new landing removes the previous drop's).
-//  3. Closer and in view: the landing spot is now chosen HERE, 50-70
+//  3. [The distance/arc half of this was reverted 2026-09-28 - see the
+//     note by the distance constants below. The `free` command half
+//     stands.] Closer and in view: the landing spot is now chosen HERE, 50-70
 //     blocks from the pedestal (was 90-110 from a random player), and
 //     handed to `/setairdrop free <x> <z> ...` (explicit target; decompiled
 //     SetairdropCommand - 7 args: x z height length blockid loot_table
@@ -272,32 +291,67 @@ var WAVE_AIRDROP_LOOT_TABLE = 'kubejs:chests/wave_airdrop'
 // Absolute Y 100 -> pedestal-relative, 2026-09-22 (see header item 4).
 var WAVE_AIRDROP_HEIGHT_ABOVE_PEDESTAL = 40
 // 60 -> 120 -> 200, 2026-09-15 (see header) - a real 10s pre-drop flyover
-// at the patched 1.0 blocks/tick plane speed, safe now that the mod's own
-// 205-tick despawn ceiling is also constant-patched up to 250.
+// at the patched 1.0 blocks/tick plane speed (0.84 measured, with drag).
+// The mod's own despawn ceiling is constant-patched 205 -> 250 -> 400, so
+// the drop at tick ~238 has real margin. Only ever shortened by
+// airdropFlightLength() below, for a flight the border would block.
 var WAVE_AIRDROP_LENGTH = 200
-// Drift range widened 10-30 -> 90-110, 2026-09-12 (direct ask: "the
-// airdrop should land randomally 100 blocks away in any direction" - the
-// "any direction" half was already true, `/setairdrop random` already
-// free-drifts in a random direction from the target player, see this
-// file's own header). Centered on 100 with a real +/-10 spread so it's
-// still "random," not a laser-precise 100.00 every time. Real tradeoff
-// accepted, not glossed over: the old 10-30 range was deliberately kept
-// modest specifically so a drop couldn't realistically land outside the
-// live world border even at wave 5 (the earliest trigger, smallest
-// border) - 100 blocks routinely will, at least for the first several
-// airdrop waves before base_expansion.js's growth catches up. That's
-// fine for the CRATE itself (a plain `/setblock`, unaffected by border
-// collision) and for the PLAYER retrieving it (world border only clips
-// non-player entities in vanilla; player movement isn't blocked by it,
-// and border damage is already disabled pack-wide) - just a real,
-// accepted change from "always inside the safe zone" to "sometimes a
-// short walk past it," not a silent one.
-// 90-110 from a random player -> 50-70 from the pedestal, 2026-09-22 (see
-// header item 3). The old drift constants are gone with `/setairdrop
-// random`; the border reasoning above still holds a fortiori at this range.
-var WAVE_AIRDROP_DISTANCE_MIN = 50
-var WAVE_AIRDROP_DISTANCE_MAX = 70
-var WAVE_AIRDROP_APPROACH_ARC_DEG = 75 // landing direction: within +/- this of due east from the pedestal
+// **Landing spot, 2026-09-28: 90-110 blocks from the pedestal, uniformly
+// random direction (0-360).** History: 10-30 drift from a random player
+// (original) -> 90-110 drift (2026-09-12, direct ask: "the airdrop should
+// land randomally 100 blocks away in any direction") -> 50-70 from the
+// pedestal inside a +/-75 degree eastern arc (2026-09-22, header item 3,
+// so the flyover crossed the base) -> back to ~100 in any direction: the
+// user rejected the arc trade and restated the original ask. The plane
+// still spawns WAVE_AIRDROP_LENGTH blocks west of the target and flies
+// east (jar behaviour), so it crosses the base only when the crate lands
+// east of it - accepted.
+//
+// The world border, corrected 2026-09-28 (the old note here said the
+// border only clips non-player entities - wrong: vanilla clips EVERY
+// entity that is inside it and near its edge, players included,
+// Entity#collideBoundingBox -> WorldBorder#isInsideCloseToBorder,
+// checked in this build's bytecode). Its half-width is ~42 at wave 5 and
+// ~80 at wave 10, and only passes 110 around wave 13 (base_expansion.js),
+// so early crates usually land outside it:
+//  - the crate (/setblock) and its beacon don't care;
+//  - a player can't walk out, and can't open or break a block out there
+//    (ServerLevel#mayInteract checks the border), until the amulet goes
+//    on the pedestal - amulet_pedestal.js pushes the border out by 10M.
+//    That's the intended "go and get it" loop;
+//  - the PLANE can be pinned. If its flight line crosses the bordered
+//    square and the target is past the square's east edge, it is inside
+//    the border when it reaches that edge and stops dead, short of its
+//    drop distance - no crate. airdropFlightLength() shortens the flight
+//    for exactly that case (amulet off, roughly the eastern +/-25-37
+//    degrees at waves 5-10) so the plane spawns clear of the edge.
+var WAVE_AIRDROP_DISTANCE_MIN = 90
+var WAVE_AIRDROP_DISTANCE_MAX = 110
+// The plane's hitbox is 10 wide (DyairdropModEntities: sized(10, 3)), so
+// its centre starts this far past the border edge to be clear of it.
+var WAVE_AIRDROP_BORDER_CLEARANCE = 6
+// **Flight-path forceload, 2026-09-28.** Entities only tick inside a
+// player's simulation distance or a forced chunk (DistanceManager:
+// entity-ticking = within simulationDistance chunks of a player, checked
+// in this build's bytecode). A west-side target puts the plane's spawn
+// point 290-310 blocks west of the pedestal - past any player's
+// simulation distance (12 on the client, 10 on the dedicated server, 8 in
+// MODS.md's lean profile) and past the base's own +/-96 forceload - so
+// the plane would hang there frozen and no crate would ever drop. Likely
+// already seen: the live save's wave-5 drop on 2026-09-28 (plane spawn
+// 167 blocks west, 10 chunks out, under the old eastern arc) never landed
+// - no crate, no plane left in the save, no obstruction on its path; the
+// wave-10 one, same geometry mirrored, landed fine. So
+// the chunk row the plane flies along is force-loaded from the moment
+// the drop is scheduled (wave clear, 12s before launch - time to load or
+// generate them before the mod summons the plane 60 ticks after
+// /setairdrop) until the plane is gone and the crate is down. Chunks
+// inside the base's permanent forceload square are never added or
+// removed here: `forceload remove` isn't reference-counted and would
+// strip the base's own.
+var WAVE_AIRDROP_BASE_FORCELOAD_RADIUS = 96 // KEEP IN SYNC with the pedestal +/-96 forceload in mob_aggro.js (ensurePedestalMarker) and playtest_starter_kit.js
+var WAVE_AIRDROP_TAIL_BLOCKS = 144 // the plane flies on after the drop until the 400-tick cap: ~136 blocks at 0.84 blocks/tick
+var WAVE_AIRDROP_FORCE_HOLD_TICKS = 480 // after launch: the mod's 60-tick summon delay + the plane's 400-tick life + margin
 var WAVE_AIRDROP_LANDED_NOTE_TICKS = 20 * 20 // action-bar "crate down at X, Z" line after touchdown
 var WAVE_AIRDROP_BEACON_BLOCK = 'minecraft:beacon'
 
@@ -375,33 +429,104 @@ function airdropInboundActionbarText(data, now) {
 // deferred to the tick handler below.
 function maybeTriggerWaveAirdrop(player, data, waveNumber) {
   if (waveNumber % WAVE_AIRDROP_INTERVAL !== 0) return
-  data.putInt('td_airdropDueTick', player.getLevel().getTime() + WAVE_AIRDROP_DELAY_TICKS)
+  var now = player.getLevel().getTime()
+  data.putInt('td_airdropDueTick', now + WAVE_AIRDROP_DELAY_TICKS)
   data.putBoolean('td_airdropPending', true)
+  // Landing spot picked and its flight path force-loaded now, 12s ahead of
+  // the launch (see the 2026-09-28 forceload note up top).
+  airdropPlanFlight(player.getServer(), data, now)
 }
 
-function launchWaveAirdrop(server, data, now) {
-  // Landing spot: 50-70 blocks from the pedestal inside an eastern arc, so
-  // the plane (always spawned WAVE_AIRDROP_LENGTH blocks west of its target,
-  // flying east) crosses the base before it drops - header item 3. Math.PI
-  // is undefined in this Rhino build (mob_aggro.js's confirmed finding),
-  // hence the literal.
+// Picks the landing spot (90-110 blocks, any direction - see the distance
+// constants) and force-loads the chunk row the plane will fly along: from
+// WAVE_AIRDROP_LENGTH (+1 chunk) west of the target to the end of its
+// post-drop tail east of it. Math.PI is undefined in this Rhino build
+// (mob_aggro.js's confirmed finding), hence the literal 2*pi.
+function airdropPlanFlight(server, data, now) {
+  if (data.getBoolean('td_airdropForceActive')) airdropReleaseForceload(server, data)
   var px = data.getInt('td_pedestalX')
-  var py = data.getInt('td_pedestalY')
   var pz = data.getInt('td_pedestalZ')
   var distance = WAVE_AIRDROP_DISTANCE_MIN + Math.random() * (WAVE_AIRDROP_DISTANCE_MAX - WAVE_AIRDROP_DISTANCE_MIN)
-  var angle = (Math.random() * 2 - 1) * WAVE_AIRDROP_APPROACH_ARC_DEG * (3.141592653589793 / 180)
+  var angle = Math.random() * 6.283185307179586
   var tx = Math.round(px + Math.cos(angle) * distance)
   var tz = Math.round(pz + Math.sin(angle) * distance)
-  var height = py + WAVE_AIRDROP_HEIGHT_ABOVE_PEDESTAL
+  data.putInt('td_airdropTargetX', tx)
+  data.putInt('td_airdropTargetZ', tz)
+  data.putBoolean('td_airdropTargetSet', true)
+  data.putInt('td_airdropForceCX0', (tx - WAVE_AIRDROP_LENGTH - 16) >> 4)
+  data.putInt('td_airdropForceCX1', (tx + WAVE_AIRDROP_TAIL_BLOCKS) >> 4)
+  data.putInt('td_airdropForceCZ', tz >> 4)
+  data.putBoolean('td_airdropForceActive', true)
+  // Provisional - launchWaveAirdrop() restarts the hold from the launch tick.
+  data.putInt('td_airdropForceUntilTick', now + WAVE_AIRDROP_DELAY_TICKS + WAVE_AIRDROP_FORCE_HOLD_TICKS)
+  airdropForceStrip(server, data, 'add')
+}
+
+// Runs `forceload <verb>` over the stored flight strip, skipping any chunk
+// column inside the base's permanent forceload square (never touched here -
+// see the forceload note up top). The strip is one chunk row: the plane
+// flies due east at a fixed z, and an entity ticks by its own chunk.
+function airdropForceStrip(server, data, verb) {
+  var cx0 = data.getInt('td_airdropForceCX0')
+  var cx1 = data.getInt('td_airdropForceCX1')
+  var cz = data.getInt('td_airdropForceCZ')
+  var px = data.getInt('td_pedestalX')
+  var pz = data.getInt('td_pedestalZ')
+  var r = WAVE_AIRDROP_BASE_FORCELOAD_RADIUS
+  var segments = [[cx0, cx1]]
+  if (cz >= (pz - r) >> 4 && cz <= (pz + r) >> 4) {
+    segments = [[cx0, Math.min(cx1, ((px - r) >> 4) - 1)], [Math.max(cx0, ((px + r) >> 4) + 1), cx1]]
+  }
+  for (var i = 0; i < segments.length; i++) {
+    var a = segments[i][0]
+    var b = segments[i][1]
+    if (a > b) continue
+    server.runCommandSilent(`forceload ${verb} ${a * 16} ${cz * 16} ${b * 16 + 15} ${cz * 16 + 15}`)
+  }
+}
+
+function airdropReleaseForceload(server, data) {
+  data.putBoolean('td_airdropForceActive', false)
+  airdropForceStrip(server, data, 'remove')
+}
+
+// Flight length for this target: WAVE_AIRDROP_LENGTH, unless the border
+// would pin the plane (see the border note by the distance constants) -
+// flight line inside the bordered square's z-span, target past its east
+// edge, spawn point short of that edge. Then the plane spawns just east of
+// the edge instead, a shorter flyover rather than no crate. A length of 1
+// still drops (the jar drops once distance flown is within 1 of it), and a
+// plane already overlapping the edge isn't blocked by it.
+function airdropFlightLength(level, tx, tz) {
+  var border = level.getWorldBorder()
+  var c = WAVE_AIRDROP_BORDER_CLEARANCE
+  if (tz <= border.getMinZ() - c || tz >= border.getMaxZ() + c) return WAVE_AIRDROP_LENGTH
+  var eastEdge = border.getMaxX()
+  if (tx <= eastEdge) return WAVE_AIRDROP_LENGTH
+  if (tx - WAVE_AIRDROP_LENGTH >= eastEdge + c) return WAVE_AIRDROP_LENGTH
+  return Math.max(1, Math.floor(tx - eastEdge - c))
+}
+
+function launchWaveAirdrop(server, level, data, now) {
+  // A drop scheduled before flights were planned at schedule time
+  // (2026-09-28) has no stored target - plan it here instead; the 60-tick
+  // summon delay still gives the strip a moment to load.
+  if (!data.getBoolean('td_airdropTargetSet')) airdropPlanFlight(server, data, now)
+  data.putBoolean('td_airdropTargetSet', false)
+  var tx = data.getInt('td_airdropTargetX')
+  var tz = data.getInt('td_airdropTargetZ')
+  var height = data.getInt('td_pedestalY') + WAVE_AIRDROP_HEIGHT_ABOVE_PEDESTAL
+  var length = airdropFlightLength(level, tx, tz)
+  data.putInt('td_airdropForceUntilTick', now + WAVE_AIRDROP_FORCE_HOLD_TICKS)
   // Logged so a "never saw the drop" report can be checked against where it
   // actually went (the mod's own coordinates chat line was on the `random`
   // path only).
-  console.log(`wave_airdrop.js: supply plane launched toward (${tx}, ${tz}) at Y ${height}, spawning ${WAVE_AIRDROP_LENGTH} blocks west of it`)
+  console.log(`wave_airdrop.js: supply plane launched toward (${tx}, ${tz}) at Y ${height}, spawning ${length} blocks west of it`)
   server.runCommandSilent(
-    `setairdrop free ${tx} ${tz} ${height} ${WAVE_AIRDROP_LENGTH} "${WAVE_AIRDROP_BLOCK_ID}" "${WAVE_AIRDROP_LOOT_TABLE}" false`
+    `setairdrop free ${tx} ${tz} ${height} ${length} "${WAVE_AIRDROP_BLOCK_ID}" "${WAVE_AIRDROP_LOOT_TABLE}" false`
   )
   server.runCommandSilent(`title @a title {"text":"LOOK UP","color":"gold","bold":true}`)
-  server.runCommandSilent(`title @a subtitle {"text":"Supply plane coming in from the west - watch it cross the base.","color":"yellow"}`)
+  server.runCommandSilent(`title @a subtitle {"text":"Supply plane coming in from the west - watch the sky.","color":"yellow"}`)
   // Played at each player's own position (no distance falloff) - the
   // plane's own engine sound plays at the plane, which may start well
   // outside earshot depending on where it spawns.
@@ -431,18 +556,37 @@ function findLandedCrateY(level, x, z, fromY) {
 // older crate (the player right-clicking it) cannot strip the fresh drop's
 // beam; called without crate coords (a new landing) it clears whatever
 // beacon is tracked.
-function removeAirdropBeacon(server, data, crateX, crateY, crateZ) {
+//
+// 2026-09-28: crates now land 90-110 blocks out, past the base's permanent
+// forceload, and a command aimed at an unloaded position silently does
+// nothing - that would untrack a beacon that's still standing (breakable,
+// a free beacon). Reading the block first loads its chunk (Level#getChunk,
+// FULL, load=true - the same path playtest_starter_kit.js relies on), so
+// the setblock right after always lands.
+function removeAirdropBeacon(server, level, data, crateX, crateY, crateZ) {
   if (!data.getBoolean('td_airdropBeaconActive')) return
   var bx = data.getInt('td_airdropBeaconX')
   var by = data.getInt('td_airdropBeaconY')
   var bz = data.getInt('td_airdropBeaconZ')
   if (crateX !== undefined && (bx !== crateX || by !== crateY + 1 || bz !== crateZ)) return
   data.putBoolean('td_airdropBeaconActive', false)
-  server.runCommandSilent(`execute if block ${bx} ${by} ${bz} ${WAVE_AIRDROP_BEACON_BLOCK} run setblock ${bx} ${by} ${bz} minecraft:air`)
+  if (`${level.getBlock(bx, by, bz).getId()}` !== WAVE_AIRDROP_BEACON_BLOCK) return
+  server.runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air`)
+}
+
+// Whether the chunk holding x/z is loaded, WITHOUT loading it
+// (LevelAccessor#hasChunk). If this build's Rhino can't reach the method,
+// fall back to the old behaviour (always poll).
+function airdropChunkLoaded(level, x, z) {
+  try {
+    return level.hasChunk(x >> 4, z >> 4)
+  } catch (e) {
+    return true
+  }
 }
 
 function placeAirdropBeacon(server, level, data, x, y, z) {
-  removeAirdropBeacon(server, data)
+  removeAirdropBeacon(server, level, data)
   if (!level.getBlock(x, y + 1, z).getBlockState().isAir()) return
   server.runCommandSilent(`setblock ${x} ${y + 1} ${z} ${WAVE_AIRDROP_BEACON_BLOCK}`)
   data.putInt('td_airdropBeaconX', x)
@@ -505,20 +649,26 @@ function pollAirdropCrateCleanup(server, level, data, now) {
   var x = data.getInt('td_airdropCrateX')
   var y = data.getInt('td_airdropCrateY')
   var z = data.getInt('td_airdropCrateZ')
+  // 2026-09-28: the crate lands 90-110 blocks out now, past the base's
+  // permanent forceload. With nobody near it, level.getBlock() below would
+  // synchronously load its chunk every 10 ticks for up to 30 min - skip
+  // the cycle instead. Nothing can loot it while it's unloaded; the
+  // timeout and removal simply wait until it's loaded again.
+  if (!airdropChunkLoaded(level, x, z)) return
   if (now >= data.getInt('td_airdropCrateWatchUntilTick')) {
     data.putBoolean('td_airdropCrateWatch', false)
-    removeAirdropBeacon(server, data, x, y, z)
+    removeAirdropBeacon(server, level, data, x, y, z)
     return
   }
   var block = level.getBlock(x, y, z)
   if (`${block.getId()}` !== WAVE_AIRDROP_BLOCK_ID) {
     data.putBoolean('td_airdropCrateWatch', false) // already gone (broken by hand, or replaced)
-    removeAirdropBeacon(server, data, x, y, z)
+    removeAirdropBeacon(server, level, data, x, y, z)
     return
   }
   if (!airdropCrateLooted(block)) return
   data.putBoolean('td_airdropCrateWatch', false)
-  removeAirdropBeacon(server, data, x, y, z)
+  removeAirdropBeacon(server, level, data, x, y, z)
   server.runCommandSilent(`setblock ${x} ${y} ${z} minecraft:air`)
   server.runCommandSilent(`particle minecraft:poof ${x + 0.5} ${y + 0.5} ${z + 0.5} 0.4 0.4 0.4 0.02 25`)
   server.runCommandSilent(`playsound minecraft:block.wool.break block @a ${x} ${y} ${z} 1 0.8`)
@@ -536,10 +686,21 @@ PlayerEvents.tick((event) => {
   // can be sitting there while the next drop is already in flight.
   pollAirdropCrateCleanup(player.getServer(), level, data, now)
 
+  // Flight strip released once the plane is gone (hold elapsed) and the
+  // crate is down or the watch gave up - see the forceload note up top.
+  if (
+    data.getBoolean('td_airdropForceActive') &&
+    !data.getBoolean('td_airdropPending') &&
+    !data.getBoolean('td_airdropWatch') &&
+    now >= data.getInt('td_airdropForceUntilTick')
+  ) {
+    airdropReleaseForceload(player.getServer(), data)
+  }
+
   if (data.getBoolean('td_airdropPending')) {
     if (now < data.getInt('td_airdropDueTick')) return
     data.putBoolean('td_airdropPending', false)
-    launchWaveAirdrop(player.getServer(), data, now)
+    launchWaveAirdrop(player.getServer(), level, data, now)
     return
   }
 

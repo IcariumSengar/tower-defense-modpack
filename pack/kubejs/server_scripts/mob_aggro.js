@@ -425,20 +425,25 @@ function ensurePedestalMarker(player, level) {
 // beyond STRAY_DISTANCE of the pedestal (checked regardless of border
 // membership, unlike the strip/target block below - see that block's own
 // 2026-09-09 comment for why THAT check stays border-scoped) gets
-// teleported back to a fresh point just outside the compound's own real
-// footprint (td_compoundX0/X1/Z0/Z1, playtest_starter_kit.js) - same
-// rejection-sampling idea as wave_spawner.js's own
-// randomObjectiveRelativePosition(), redeclared here per this codebase's
-// per-file convention (top-level var/const don't share scope, and the
-// tuning here is genuinely different - a "pull back into the fight"
-// range, not a fresh-spawn band). Not killed, not warped onto the player
-// - just given a position the strip/target logic below can do something
+// sent back toward the fight. Not killed, not warped onto the player -
+// just given a position the strip/target logic below can do something
 // useful with again.
+//
+// Where it goes back to, since 2026-09-28 (the user chose to keep the
+// current spawn behaviour and return strays into it): the same place a
+// fresh wave mob spawns - wave_spawner.js's tdWaveSpawnBand/
+// tdCompoundSpawnRect/tdSpawnBandPoint (top-level functions, global across
+// server_scripts): the 48-64 band around the pedestal, clamped by the live
+// border the same way, outside the padded compound, with the same
+// guaranteed-outside fallback. It used to be its own 20-40 ring - inside
+// the spawn band, right up against the walls - dropped at the pedestal's
+// Y. Landing is now `spreadplayers` (maxRange 4), the same heightmap-aware
+// "stand on real, dry ground" snap the spawner uses, instead of a raw
+// teleport to the pedestal's Y that could bury the mob in a dune or leave
+// it in the air. If spreadplayers finds no safe spot the mob stays put and
+// is retried next check.
 var STRAY_DISTANCE = 90
 var STRAY_DISTANCE_SQ = STRAY_DISTANCE * STRAY_DISTANCE
-var STRAY_RETURN_MIN = 20
-var STRAY_RETURN_MAX = 40
-var STRAY_RETURN_PADDING = 4
 var STRAY_CHECK_INTERVAL = 100 // 5 real seconds - not time-critical to catch instantly
 
 // See the retaliation block in the tick handler below (2026-09-10).
@@ -450,24 +455,6 @@ var aggroRetaliation = {} // mob uuid -> level tick the current retaliation wind
 // own LURE_ATTRACT_RADIUS constant (redeclared per-file, see this file's
 // own header on why top-level var/const don't share across files here).
 var LURE_ATTRACT_RADIUS = 40
-
-function isInsideCompoundBounds(data, px, pz) {
-  if (!data.contains('td_compoundX0')) return false
-  var pad = STRAY_RETURN_PADDING
-  return px >= data.getInt('td_compoundX0') - pad && px <= data.getInt('td_compoundX1') + pad &&
-    pz >= data.getInt('td_compoundZ0') - pad && pz <= data.getInt('td_compoundZ1') + pad
-}
-
-function pickStrayReturnPoint(data, cx, cz) {
-  for (var attempt = 0; attempt < 20; attempt++) {
-    var angle = Math.random() * 2 * 3.141592653589793
-    var distance = STRAY_RETURN_MIN + Math.random() * (STRAY_RETURN_MAX - STRAY_RETURN_MIN)
-    var px = Math.floor(cx + Math.cos(angle) * distance)
-    var pz = Math.floor(cz + Math.sin(angle) * distance)
-    if (!isInsideCompoundBounds(data, px, pz)) return { x: px, z: pz }
-  }
-  return { x: Math.floor(cx + STRAY_RETURN_MAX), z: Math.floor(cz) }
-}
 
 PlayerEvents.tick(function (event) {
   var player = event.entity
@@ -565,8 +552,10 @@ PlayerEvents.tick(function (event) {
       var dxp = ex - aggroTarget.getX()
       var dzp = ez - aggroTarget.getZ()
       if (dxp * dxp + dzp * dzp > STRAY_DISTANCE_SQ) {
-        var back = pickStrayReturnPoint(aggroTarget.persistentData, aggroTarget.getX(), aggroTarget.getZ())
-        e.teleportTo(back.x, aggroTarget.getY(), back.z)
+        var back = tdSpawnBandPoint(tdWaveSpawnBand(level), tdCompoundSpawnRect(aggroTarget.persistentData), aggroTarget.getX(), aggroTarget.getZ())
+        // spreadplayers' targets argument is an entity selector, so the raw
+        // UUID resolves (only players-only arguments reject one).
+        player.getServer().runCommandSilent(`spreadplayers ${back.x} ${back.z} 0 4 false ${e.uuid}`)
         return
       }
     }

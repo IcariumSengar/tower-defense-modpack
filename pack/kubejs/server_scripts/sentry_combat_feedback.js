@@ -14,11 +14,8 @@
 // applies directly. Its `m_5790_` (onHitEntity) calls
 // `DamageSources.arrow(this, owner)` - vanilla's own "arrow" damage
 // message id, same as any vanilla arrow - confirmed real via decompile,
-// not assumed. This pack has no bow-wielding mobs and no dispenser-arrow
-// traps (skeletons stripped in the zombie-apocalypse pivot), so in
-// practice `getSource().getType() === 'arrow'` only ever fires for a
-// Sentry's own bullets, same scope caveat the old pellet hook documented
-// for itself.
+// not assumed. (The impact hook used to key on that 'arrow' id alone -
+// see the 2026-09-28 note above it for why it no longer does.)
 //
 // Deliberately just the two event-driven cues (muzzle + impact), not the
 // old system's third effect (a per-tick tracer trail scanning every live
@@ -68,9 +65,22 @@ EntityEvents.spawned((event) => {
   level.getServer().runCommandSilent(`playsound minecraft:item.crossbow.shoot neutral @a ${x} ${y} ${z} 0.5 1.6`)
 })
 
+// Impact FX restricted to real Sentry shots, 2026-09-28. The old
+// 'arrow'-only check also caught player bow hits and every Simple Guns
+// bullet (all vanilla AbstractArrows, see gun_damage_bump.js). Decompiled
+// `Sentry.performRangedAttack`: it fires a `securitycraft:bullet` owned
+// by the Sentry, or (with an ammo container below) a dispensed
+// projectile it calls setOwner(this) on. So: the damage's owner is a
+// Sentry, or its direct entity is a Sentry bullet. getActual()/
+// getImmediate() are KubeJS's names for getEntity()/getDirectEntity()
+// (DamageSourceMixin in the installed kubejs jar).
 EntityEvents.hurt((event) => {
   var source = event.getSource()
-  if (source.getType() !== 'arrow') return
+  var direct = source.getImmediate()
+  if (direct == null) return
+  var owner = source.getActual()
+  var fromSentry = (owner != null && `${owner.type}` === 'securitycraft:sentry') || `${direct.type}` === 'securitycraft:bullet'
+  if (!fromSentry) return
   var entity = event.getEntity()
   var level = entity.level
   if (level.isClientSide()) return // method call - see wave_mob_spike_slow.js's header

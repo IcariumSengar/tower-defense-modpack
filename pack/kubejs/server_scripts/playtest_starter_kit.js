@@ -83,16 +83,24 @@ function starterGearNbt(extra) {
 // player's own first login (which must NOT rebuild the base, just give
 // them their own copy of this gear - see the existingMarker branch
 // below).
-function giveStarterKit(player) {
-  player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
-  // kubejs:wave_horn item removed entirely, 2026-09-13 (direct ask: "now
-  // that the wave horn is a block, no need for the item") - the upstairs
-  // note block (this same function's own waveNoteBlockX/Y/Z placement,
-  // further down) is now the only way to sound the horn.
-  player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
-  player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
-  player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
-  player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
+//
+// `withGear` false (2026-09-28, multiplayer fix): a player whose first
+// login comes after the wave-5 removal (td_starterGearRemoved on the
+// marker) gets only the untagged tools. Before, every late joiner got the
+// full sword and armour and kept them, since the only removal is
+// wave_status.js's one-shot `/clear @a` at wave 5.
+function giveStarterKit(player, withGear) {
+  if (withGear) {
+    player.give(Item.of('minecraft:netherite_sword', 1, starterGearNbt('Enchantments:[{id:"minecraft:sharpness",lvl:100}]')))
+    // kubejs:wave_horn item removed entirely, 2026-09-13 (direct ask: "now
+    // that the wave horn is a block, no need for the item") - the upstairs
+    // note block (this same function's own waveNoteBlockX/Y/Z placement,
+    // further down) is now the only way to sound the horn.
+    player.give(Item.of('minecraft:iron_helmet', 1, starterGearNbt()))
+    player.give(Item.of('minecraft:iron_chestplate', 1, starterGearNbt()))
+    player.give(Item.of('minecraft:iron_leggings', 1, starterGearNbt()))
+    player.give(Item.of('minecraft:iron_boots', 1, starterGearNbt()))
+  }
   // Manual fallback for the starter power rig (see starter_flux_network.js)
   // - if the reflection-based auto-link ever fails on a given world, this
   // is the mod's own real tool for linking the pre-placed generator/plug/
@@ -101,6 +109,32 @@ function giveStarterKit(player) {
   // whether auto-link succeeds, since it's the normal way to add MORE
   // devices to the network later anyway, not just a failure fallback.
   player.give(Item.of('fluxnetworks:flux_configurator', 1))
+}
+
+// Login-side half of the wave-5 gear removal (2026-09-28, multiplayer
+// fix). wave_status.js's `/clear @a` only reaches players online at that
+// moment, so anyone offline at wave 5 kept the sword and armour for good.
+// The login handler calls this on every login once the marker has
+// td_starterGearRemoved: same items and same td_starter_gear NBT match as
+// that /clear, same flavour line, and only if something was actually
+// taken (runCommandSilent returns /clear's item count, 0 on "no items").
+// `execute as <uuid> ... @s` because /clear's target is players-only and
+// rejects a raw UUID (the quest_milestones.js idiom).
+var STARTER_KIT_GEAR_ITEMS = [
+  'minecraft:netherite_sword',
+  'minecraft:iron_helmet',
+  'minecraft:iron_chestplate',
+  'minecraft:iron_leggings',
+  'minecraft:iron_boots',
+]
+
+function sweepLateStarterGear(player) {
+  var server = player.getServer()
+  var removed = 0
+  STARTER_KIT_GEAR_ITEMS.forEach(function (id) {
+    removed += Number(server.runCommandSilent(`execute as ${player.uuid} run clear @s ${id}{td_starter_gear:1b}`)) || 0
+  })
+  if (removed > 0) player.tell('§8§o[The blade and armor crumble to rust and dust in your hands.]')
 }
 
 // Seed-independent spawn-biome search (2026-09-06) - real replacement
@@ -1630,13 +1664,28 @@ function buildStarterBase(server, level, x, z) {
   //   looking down the yard to the gate.
   // - every board and pane -> its SecurityCraft reinforced twin, exact
   //   connection state preserved (a blanket /fill would flatten them).
-  // The full-block shell (cyan terracotta, stone bricks, mossy stone
-  // bricks, moss, andesite roof slabs) is reinforced by the replace-fills
-  // right after - rotation-invariant blocks, no per-cell list needed.
-  // Checked against the SecurityCraft jar's 632 blockstates: 21 of the 24
-  // block types in this NBT have a real reinforced id; the 95
-  // smooth_stone_slab floor/roof cells don't and stay vanilla (a digger
-  // never reaches them). A more complete shell than the Brick House's 75%.
+  // Everything else is reinforced by the replace-fills right after, over
+  // the building's footprint. They stop short of the local-x=8 row on the
+  // yard face on purpose: it only holds vines and 9 foundation blocks that
+  // sit flush with the yard's own vanilla stone-brick floor, outside the
+  // walls, so reinforcing them would only leave an undiggable strip in the
+  // yard. Full uniform reinforcement, finished 2026-09-28 (the user's
+  // 2026-09-04 pick). The 09-22 comment here said the 95 smooth_stone_slab
+  // floor/roof cells had no twin. They do: reinforced_stone_slab, whose
+  // model uses the smooth_stone textures (reinforced_normal_stone_slab is
+  // plain stone). Directional pieces get one fill per state the rotated NBT
+  // actually has, filtered on facing/half only. Vanilla's /fill runs
+  // Block.updateFromNeighbourShapes on each placed state (BlockInput.place,
+  // checked in the 1.20.1 jar), and SecurityCraft's stairs count vanilla
+  // stairs as stairs (isBlockStairs), so the bar counter's inner corner
+  // works its shape out again in any fill order. Every other NBT property
+  // is the default (waterlogged/powered false).
+  // Still vanilla, on purpose: the dark oak door (no reinforced door
+  // twin), the vines and workstations, and the birch fence gate behind the
+  // bar. SecurityCraft's reinforced gate only opens for its owner or an
+  // allowlist (ReinforcedFenceGateBlock.use, decompiled), and a /fill-
+  // placed one has no owner, so it would seal off the Culinary Generator
+  // at local (1,1,4) for good. That gate is the only way to reach it.
   const CAFE4_FIXUPS = [
     [0, 0, 0, 'securitycraft:reinforced_stone_bricks'],  // jigsaw
     [2, 0, 1, 'securitycraft:reinforced_stone_bricks'],  // sunk pre-filled chest
@@ -1742,6 +1791,20 @@ function buildStarterBase(server, level, x, z) {
     ['minecraft:moss_block', 'securitycraft:reinforced_moss_block'],
     ['minecraft:andesite_slab[type=bottom]', 'securitycraft:reinforced_andesite_slab[type=bottom]'],
     ['minecraft:andesite_slab[type=double]', 'securitycraft:reinforced_andesite_slab[type=double]'],
+    // 2026-09-28 additions. Counts are from cafe4.nbt, states after the
+    // clockwise_90 rotation (north->east, east->south, south->west).
+    ['minecraft:smooth_stone_slab[type=bottom]', 'securitycraft:reinforced_stone_slab[type=bottom]'],  // 35
+    ['minecraft:smooth_stone_slab[type=top]', 'securitycraft:reinforced_stone_slab[type=top]'],  // 37
+    ['minecraft:smooth_stone_slab[type=double]', 'securitycraft:reinforced_stone_slab[type=double]'],  // 23
+    ['minecraft:birch_slab[type=bottom]', 'securitycraft:reinforced_birch_slab[type=bottom]'],  // 5
+    ['minecraft:birch_slab[type=top]', 'securitycraft:reinforced_birch_slab[type=top]'],  // 3
+    ['minecraft:birch_stairs[facing=south,half=top]', 'securitycraft:reinforced_birch_stairs[facing=south,half=top]'],  // 4, bar counter
+    ['minecraft:birch_stairs[facing=west,half=top]', 'securitycraft:reinforced_birch_stairs[facing=west,half=top]'],  // 1, bar counter
+    ['minecraft:birch_stairs[facing=north,half=bottom]', 'securitycraft:reinforced_birch_stairs[facing=north,half=bottom]'],  // 1, chair
+    ['minecraft:stone_brick_stairs[facing=east,half=bottom]', 'securitycraft:reinforced_stone_brick_stairs[facing=east,half=bottom]'],  // 1, foundation
+    ['minecraft:birch_pressure_plate', 'securitycraft:reinforced_birch_pressure_plate'],  // 6, table tops
+    ['minecraft:white_carpet', 'securitycraft:reinforced_white_carpet'],  // 4
+    ['minecraft:red_carpet', 'securitycraft:reinforced_red_carpet'],  // 4
   ].forEach(([from, to]) => {
     run(`fill ${buildingX0} ${floorY} ${buildingZ0} ${buildingX1} ${floorY + BUILDING_HEIGHT - 1} ${buildingZ1} ${to} replace ${from}`)
   })
@@ -2001,6 +2064,12 @@ function buildStarterBase(server, level, x, z) {
     worldD.putBoolean('td_starterPowerRigRelocated', true)
     worldD.putBoolean('td_starterTrapsRelocated', true)
     worldD.putBoolean('td_starterTeslaCoilUpright', true)
+    // The zcraft cleanup's own done-flag lives on each player, and no
+    // player exists at build time, so the build marks the WORLD instead
+    // and the migration checks this first (2026-09-28 fix). Before this it
+    // fired on every fort world's second login and set air into two cells
+    // the gate-platform props can use.
+    worldD.putBoolean('td_zcraftCleanupDone', true)
   }
 
   // Starter power rig coordinates (blocks already placed above) - read by
@@ -2059,8 +2128,9 @@ function buildStarterBase(server, level, x, z) {
   run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
 
   // House reinforcement now lives in the command-post section above
-  // (2026-09-22): replace-fills for the full-block shell plus the
-  // per-cell CAFE4_FIXUPS list for boards and panes. The old
+  // (2026-09-22, completed 2026-09-28): replace-fills for every cafe4 block
+  // with a reinforced twin, plus the per-cell CAFE4_FIXUPS list for boards
+  // and panes. The old
   // HOUSE_REINFORCE_BLOCKS list (212 cells, 2026-09-04) was a per-cell
   // map of the Abandoned Brick House's own NBT and went with that
   // building.
@@ -2203,22 +2273,39 @@ PlayerEvents.loggedIn((event) => {
   // (same doorX/wallY0/z1 relationship the base-building code uses:
   // doorX = td_pedestalX, wallY0 = td_pedestalY, z1 = td_pedestalZ + 7)
   // and blindly overwrites them with air regardless of what's actually
-  // there now - safe either way, a fresh world never had anything there.
+  // there now.
+  //
+  // **"Safe either way" was wrong, fixed 2026-09-28.** The flag above is
+  // per-player and td_playtestKitGiven turns true on the first login, so
+  // this fired on the SECOND login of every world, fresh ones included.
+  // On the three-front fort those two cells can hold a gate-platform prop.
+  // It now skips any world the marker says never had the props: the fresh
+  // build's own td_zcraftCleanupDone, or td_layoutVersion 2 for fort
+  // worlds built 09-22..09-28, before that flag existed. The zcraft props
+  // were gone from fresh builds by 09-05, long before the fort. No marker
+  // found means it can't tell, so it waits for a later login rather than
+  // guess.
   if (!data.getBoolean('td_zcraftCleanupDone') && data.getBoolean('td_playtestKitGiven')) {
-    data.putBoolean('td_zcraftCleanupDone', true)
-    var oldDoorX = data.getInt('td_pedestalX')
-    var oldWallY0 = data.getInt('td_pedestalY')
-    var oldZ1 = data.getInt('td_pedestalZ') + 7
-    server.runCommandSilent(`setblock ${oldDoorX - 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
-    server.runCommandSilent(`setblock ${oldDoorX + 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+    var zcraftWorldD = worldData(level)
+    if (zcraftWorldD) {
+      data.putBoolean('td_zcraftCleanupDone', true)
+      if (!zcraftWorldD.getBoolean('td_zcraftCleanupDone') && zcraftWorldD.getInt('td_layoutVersion') < 2) {
+        var oldDoorX = data.getInt('td_pedestalX')
+        var oldWallY0 = data.getInt('td_pedestalY')
+        var oldZ1 = data.getInt('td_pedestalZ') + 7
+        server.runCommandSilent(`setblock ${oldDoorX - 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+        server.runCommandSilent(`setblock ${oldDoorX + 2} ${oldWallY0} ${oldZ1 + 1} minecraft:air`)
+      }
+    }
   }
 
   // The amulet is NO LONGER starter gear (reversed 2026-09-01,
   // docs/FEATURES.md's "The amulet" - "the pedestal is pre-built, the
-  // amulet is crafted"). It now has a real crafting recipe
-  // (server_scripts/amulet_pedestal.js) instead of being given here;
-  // the empty pre-built pedestal (in buildStarterBase) is the intended
-  // hook - "something was supposed to be here."
+  // amulet is crafted"). Since 2026-09-28 it isn't crafted either: it's the
+  // reward for handing 8 gold to its quest, one per player (the recipe in
+  // amulet_pedestal.js is gone). Nothing here gives it; the empty pre-built
+  // pedestal (in buildStarterBase) is still the intended hook - "something
+  // was supposed to be here."
 
   // Real multiplayer fix, 2026-09-08 (see docs/FEATURES.md's
   // "Multiplayer / LAN readiness" for the full bug writeup). Real root
@@ -2596,9 +2683,20 @@ PlayerEvents.loggedIn((event) => {
   // (set once, at world build) already places a player with no personal
   // spawn override directly in the courtyard on login, so no manual
   // teleport is needed on the normal path.
+  //
+  // Once wave 5 has taken the starter gear (td_starterGearRemoved, set on
+  // the marker by wave_status.js's FIXED_WAVE_EVENTS), a late joiner gets
+  // the kit without it, and anyone who was offline for the removal loses
+  // theirs here (2026-09-28). Checked every login, not once, so gear
+  // stashed in a chest at wave 5 and picked up later still goes at the
+  // next login. It's 5 commands per login and silent when there's nothing
+  // to take.
+  var kitWorldD = existingMarker ? existingMarker.persistentData : null
+  var starterGearGone = !!(kitWorldD && kitWorldD.getBoolean('td_starterGearRemoved'))
+  if (starterGearGone) sweepLateStarterGear(player)
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
-  giveStarterKit(player)
+  giveStarterKit(player, !starterGearGone)
   // Seeds this player's own row on the Waves Cleared sidebar (objective
   // created once per world in buildStarterBase). `add 0` creates a
   // missing score at 0 and leaves an existing one untouched, so a late

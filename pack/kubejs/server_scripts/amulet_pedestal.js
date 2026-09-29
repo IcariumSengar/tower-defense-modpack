@@ -67,38 +67,13 @@
 // an unrelated wave-clear while the amulet happens to be away.
 var BORDER_EXPAND_DELTA = 10000000
 
-ServerEvents.recipes((event) => {
-  // New 2026-09-01, part of the pedestal/amulet reversal - the amulet
-  // previously had no recipe at all (only ever given programmatically
-  // at login). Hollow gold ring, matching "Not Just Jewelry"'s flavor
-  // text ("melt what gold you can spare and see what comes of it") -
-  // plain gold_ingot only, no invented material, Uncommon-tier per
-  // loot_bag_open.js.
-  event.shaped('kubejs:amulet', [
-    'GGG',
-    'G G',
-    'GGG',
-  ], {
-    G: 'minecraft:gold_ingot',
-  })
-
-  // kubejs:amulet_pedestal's own recipe (sandstone-toned, matching its
-  // shrine model) kept as a real fallback/spare for any already-in-
-  // progress save whose actual placed pedestal is still this custom
-  // block, not Supplementaries' - see startup_scripts/amulet.js's own
-  // comment on why that block registration itself also stays. New
-  // worlds never see this recipe used (Supplementaries' own pedestal
-  // recipe is what JEI shows once a fresh base ships the real block),
-  // but it costs nothing to leave working.
-  event.shaped('kubejs:amulet_pedestal', [
-    'GGG',
-    'GSG',
-    'GGG',
-  ], {
-    G: 'minecraft:gold_ingot',
-    S: 'minecraft:sandstone',
-  })
-})
+// No recipes here any more (2026-09-28). The amulet is a quest reward now
+// (user decision 2026-09-25, confirmed 09-28): hand 8 gold in to "Not Just
+// Jewelry", one amulet per player, not craftable. Its old 8-gold-ring
+// shaped recipe went, and so did the legacy kubejs:amulet_pedestal recipe:
+// every world since 2026-09-05 builds Supplementaries' pedestal, so on a
+// new world that craft was a dead end that only ate gold. The legacy block
+// stays registered (startup_scripts/amulet.js) so old saves keep theirs.
 
 // Shared by both the new tick-poll (real supplementaries:pedestal) and
 // the legacy right-click handler (any already-in-progress save still

@@ -60,15 +60,17 @@ ServerEvents.recipes((event) => {
   // detonate on anything entering its radius.
   //
   // Iron cost trimmed 2026-09-11, same feedback as Sentry above: the
-  // center iron_block (9 ingots) was the biggest single ingredient
-  // here even before the 4 Bouncing Betties (2 ingots each) and
-  // Portable Radar (7) are counted - dropped to a plain ingot. New
-  // total 8 (Betties) + 1 (ingot) + 7 (radar) = 16, down from 24.
+  // center iron_block (9 ingots) was dropped to a plain ingot.
+  //
+  // 2026-09-28: that trim was announced as 24 -> 16 iron but the math
+  // was wrong - a Bouncing Betty is 4 iron, not 2 (2 ingots plus a
+  // heavy weighted pressure plate, itself 2 ingots), so 4 Betties + 1
+  // ingot + Portable Radar (7) was still 24. Now 2 Betties (8) + 1
+  // ingot + radar (7) = 16, the stock shape minus its bottom row.
   event.remove({ output: 'securitycraft:ims' })
   event.shaped('securitycraft:ims', [
     'BPB',
     ' I ',
-    'B B',
   ], {
     B: 'securitycraft:bouncing_betty',
     P: 'securitycraft:portable_radar',
@@ -130,9 +132,10 @@ ServerEvents.recipes((event) => {
   // recipes (checked in the same jar) never touched a Reinforced
   // ingredient to begin with:
   // - Bouncing Betty: minecraft:heavy_weighted_pressure_plate +
-  //   2x forge:ingots/iron + 2x forge:gunpowder.
-  // - Claymore: 2x minecraft:tripwire_hook + 2x forge:string +
-  //   a Bouncing Betty + forge:dusts/redstone + forge:gunpowder.
+  //   2x forge:ingots/iron + 1x forge:gunpowder.
+  // - Claymore: 2x minecraft:tripwire_hook + 3x forge:string +
+  //   a Bouncing Betty + 2x forge:dusts/redstone + forge:gunpowder.
+  // (Counts re-read from the jar's recipe JSON 2026-09-28.)
 
   // Universal Block Reinforcer (all 3 tiers) - dropped entirely per
   // direct ask, now that nothing above depends on it. Recipes stripped

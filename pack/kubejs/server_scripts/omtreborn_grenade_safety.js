@@ -3,6 +3,10 @@
 // launcher dont blow up blocks and dont harm the player... across the
 // board... for all turrets or traps (bouncing betty etc)."
 //
+// 2026-09-28: the grenade's null-source blast is now also sanitized by
+// explosion_player_safety.js's general rule; this match stays as a
+// redundant second layer.
+//
 // **Block damage** - already off by the mod's own shipped default.
 // Decompiled `GrenadeProjectile.explode()` directly (omtreborn-1.1.0.jar):
 // it only calls `Level#explode` with `ExplosionInteraction.BLOCK` (and a

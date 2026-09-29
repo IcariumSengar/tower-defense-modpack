@@ -16,10 +16,11 @@
 //
 // Not covered: the blast from bazooka / grenade / charged-potato impacts.
 // Those call Level#explode with a NULL source entity and a fixed power
-// (3.0 / 4.0 / ...), so the damage can't be traced to a gun. Raising the
-// power would also widen the blast (and the bazooka's is TNT-type, so it
-// breaks blocks). Their direct hits ARE bumped, since the projectile
-// itself is an arrow.
+// (3.0 / 2.0 / 4.0), so the damage can't be traced to a gun. Raising the
+// power would also widen the blast. Their direct hits ARE bumped, since
+// the projectile itself is an arrow. Since 2026-09-28 those blasts no
+// longer break blocks or hurt players (explosion_player_safety.js);
+// their damage to mobs is unchanged.
 //
 // The tag stops a double bump. EntityEvents.spawned also fires when a
 // saved chunk reloads an arrow stuck in the ground, and tags persist in

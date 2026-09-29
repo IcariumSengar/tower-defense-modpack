@@ -387,6 +387,77 @@ function waveObjective(player, data) {
   return { x: player.getX(), y: player.getY(), z: player.getZ() }
 }
 
+// Straggler outline (2026-09-28, user decision): once a wave is down to its
+// last TD_STRAGGLER_MAX enemies - nothing left to spawn or queued
+// (tdWaveSpawnsOutstanding, wave_spawner.js) - those td_wave_mob get a red
+// glowing outline, which the client draws through walls, until they die.
+// Driven from the remaining-count poll below off the same entity pass, no
+// scan of its own. If the count climbs again (a late queued spawn, an Undead
+// Nights horde landing, an underground ambusher) the outline comes off
+// anything that no longer qualifies; the clear branch empties the team.
+//
+// Glow = the vanilla Glowing effect (infinite, particles hidden). Red = a
+// scoreboard team with color red, since the outline takes its colour from
+// the entity's team. What joining a team changes, checked against the
+// 1.20.1 code rather than assumed: isAlliedTo is only true between two
+// members of the SAME team, so the only new relationship is the (at most
+// two) stragglers being allied with each other - nothing else in the pack
+// is on a team (grepped; no mob/trap mod in the pack creates one), so the
+// pedestal marker, players and lure blocks stay exactly as un-allied as
+// before, and wave mobs' targets are forced by mob_aggro.js regardless.
+// Default collisionRule (always) pushes like no team; friendly fire only
+// matters player-to-player. Counting is by td_wave_mob, never by team. A
+// dead mob leaves the team on its own (Scoreboard.entityRemoved, called on
+// removal for any non-player that isn't alive). Cosmetic side effects:
+// the mob's name renders red (death messages, Jade). Entity Culling never
+// culls an entity the client shows as glowing (CullTask checks
+// shouldEntityAppearGlowing), so the through-walls outline survives it.
+var TD_STRAGGLER_MAX = 2
+var TD_STRAGGLER_TEAM = 'td_stragglers'
+var TD_STRAGGLER_TAG = 'td_straggler'
+var tdStragglerTeamReady = false // per boot: team add is a silent no-op if it exists
+
+function tdStragglerMark(server, e) {
+  if (!tdStragglerTeamReady) {
+    server.runCommandSilent(`team add ${TD_STRAGGLER_TEAM}`)
+    server.runCommandSilent(`team modify ${TD_STRAGGLER_TEAM} color red`)
+    tdStragglerTeamReady = true
+  }
+  var id = `${e.uuid}`
+  e.getTags().add(TD_STRAGGLER_TAG)
+  // A non-player's scoreboard name IS its UUID string, and team join/leave
+  // take score-holder names (not player-only arguments), so the raw UUID
+  // works; effect takes an entity argument, which accepts it too.
+  server.runCommandSilent(`team join ${TD_STRAGGLER_TEAM} ${id}`)
+  server.runCommandSilent(`effect give ${id} minecraft:glowing infinite 0 true`)
+}
+
+function tdStragglerUnmark(server, e) {
+  var id = `${e.uuid}`
+  e.getTags().remove(TD_STRAGGLER_TAG)
+  server.runCommandSilent(`team leave ${id}`)
+  server.runCommandSilent(`effect clear ${id} minecraft:glowing`)
+}
+
+// wanted: the mobs that should glow right now ([] when none should);
+// marked: every live mob currently carrying the straggler tag. Only acts on
+// the difference, so a steady state costs no commands - and a second
+// player's poll in the same tick finds nothing left to do.
+function tdStragglerSync(server, wanted, marked) {
+  if (wanted.length === 0 && marked.length === 0) return
+  var wantedIds = {}
+  var markedIds = {}
+  wanted.forEach(function (e) { wantedIds[`${e.uuid}`] = true })
+  marked.forEach(function (e) {
+    var id = `${e.uuid}`
+    markedIds[id] = true
+    if (!wantedIds[id]) tdStragglerUnmark(server, e)
+  })
+  wanted.forEach(function (e) {
+    if (!markedIds[`${e.uuid}`]) tdStragglerMark(server, e)
+  })
+}
+
 PlayerEvents.tick((event) => {
   const player = event.player
   const level = player.getLevel()
@@ -417,8 +488,15 @@ PlayerEvents.tick((event) => {
   const isEndlessPhase = waveNumber > FINAL_WAVE
   const objective = waveObjective(player, data)
 
-  const hostileCount = level.getEntities().filter((e) => {
-    if (!HOSTILE_TYPES.includes(`${e.type}`)) return false
+  // One pass over the entity list feeds both the counter and the straggler
+  // outline (2026-09-28): `counted` is exactly what the old filter counted,
+  // `stragglerMarked` is every live mob still wearing the outline tag.
+  var counted = []
+  var stragglerMarked = []
+  level.getEntities().forEach((e) => {
+    if (!HOSTILE_TYPES.includes(`${e.type}`)) return
+    var tags = e.getTags()
+    if (tags.contains(TD_STRAGGLER_TAG) && e.getHealth() > 0) stragglerMarked.push(e)
     // Real bug found in playtest (2026-09-01): this used to match by
     // type only, so any vanilla zombie/skeleton/spider from a nearby
     // structure's real spawner block (spawners bypass doMobSpawning)
@@ -433,18 +511,35 @@ PlayerEvents.tick((event) => {
     // matching is gone for good - baked structure mobs of roster types
     // (u_desert's jigsaw husk piece, Philip's desert_pyramid) are exactly
     // what this counter must never see.
-    if (!e.getTags().contains('td_wave_mob')) return false
+    if (!tags.contains('td_wave_mob')) return
     // A killed mob plays a ~1 second death animation before actually
     // being removed from the world, so it's still present in
     // getEntities() during that window - excluding anything already at
     // 0 health makes the counter match what the player visually sees,
     // not the ~1 second-delayed removal.
-    if (e.getHealth() <= 0) return false
-    const dx = e.getX() - objective.x
-    const dy = e.getY() - objective.y
-    const dz = e.getZ() - objective.z
-    return dx * dx + dy * dy + dz * dz <= RADIUS * RADIUS
-  }).length
+    if (e.getHealth() <= 0) return
+    var dx = e.getX() - objective.x
+    var dy = e.getY() - objective.y
+    var dz = e.getZ() - objective.z
+    if (dx * dx + dy * dy + dz * dz <= RADIUS * RADIUS) counted.push(e)
+  })
+  const hostileCount = counted.length
+
+  // Game over stops the wave loop here (2026-09-28, real bug). After the
+  // pedestal fell (pedestal_destruction.js) or a hardcore game over
+  // (hardcore_death.js) - both flags live on the shared world state - the
+  // leftover wave mobs kept this poll running as if the run were live: any
+  // of them still in range flipped td_inWave back to true, and killing the
+  // last one ran the whole clear branch below (WAVE N CLEARED, pedestal
+  // heal, upgrade prompt, airdrop, wave-5 gear/trap removal, a fresh
+  // 10-minute countdown) - and base_expansion.js grew the border off that
+  // td_inWave edge. Past game over this poll only takes the straggler
+  // outline off anything still wearing it, and the hostiles HUD goes quiet;
+  // both game-over paths already reset the night lock and the countdown.
+  var runIsOver = data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')
+  var stragglersWanted = !runIsOver && hostileCount > 0 && hostileCount <= TD_STRAGGLER_MAX && !tdWaveSpawnsOutstanding(level)
+  tdStragglerSync(player.getServer(), stragglersWanted ? counted : [], stragglerMarked)
+  if (runIsOver) return
 
   const wasInWave = data.getBoolean('td_inWave')
 
@@ -467,6 +562,10 @@ PlayerEvents.tick((event) => {
     }
   } else if (wasInWave) {
     data.putBoolean('td_inWave', false)
+    // Straggler outline cleanup (see TD_STRAGGLER_MAX above): the live ones
+    // were already unmarked by this same poll; this catches any member
+    // that's unloaded or otherwise out of reach.
+    player.getServer().runCommandSilent(`team empty ${TD_STRAGGLER_TEAM}`)
     // Chat line removed 2026-09-09 (real playtest ask: "less noise from
     // the chat window") - the title/subtitle pair right below already
     // delivers this as a popup, the chat message was pure duplication.

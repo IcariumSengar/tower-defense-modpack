@@ -80,7 +80,7 @@
 			hide_until_deps_complete: true
 			description: [
 				"Walk up to the stone pedestal in the courtyard and look at it. That's the &ePedestal&r, and it's the only thing the horde wants: every wave mob paths straight for it, not for you. It has 300 health, shown on a bar whenever you're within 64 blocks, and a mob within reach hits it for its own attack damage. &cIf it reaches zero the waves stop and the run is over.&r"
-				"It can be healed: right-click it holding a golden carrot for 10% back, or a nether star for a full heal. The item goes onto the stand and is used up."
+				"It can be healed: right-click it holding a golden carrot for 10% back, or a nether star for a full heal. The item is used up on the spot and never sits on the stand, whether or not the amulet is there."
 			]
 			icon: "supplementaries:pedestal"
 			id: "1FCDA02A8AF6F019"
@@ -142,7 +142,7 @@
 		{
 			dependencies: ["2965C45D5F6A0991"]
 			hide_until_deps_complete: true
-			description: ["Five plain zombies by your own hand; turret and trap kills don't count here (they do for the Bounties tab). Wave 1 is nine mobs: five zombies, three husks, one zombie villager. Enough to find out whether your gear holds."]
+			description: ["Three plain zombies by your own hand; turret and trap kills don't count here (they do for the Bounties tab). Wave 1 is six mobs: three zombies, two husks, one zombie villager. Enough to find out whether your gear holds."]
 			icon: "minecraft:zombie_head"
 			id: "7F675AEBC7301832"
 			rewards: [
@@ -165,7 +165,7 @@
 					entity: "minecraft:zombie"
 					id: "2FBB03E59B623145"
 					type: "kill"
-					value: 5L
+					value: 3L
 				}
 			]
 			title: "Thin the Horde"
@@ -280,7 +280,7 @@
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
-			description: ["Three down, and the horde's just getting started. Wave 4 brings two Split Head Zombies; wave 5 the first Elites. Check Know Your Enemy before you sound the next horn, and spend what you've got - everything below this point on the tree is buildable now."]
+			description: ["Three down, and the horde's just getting started. Wave 4 brings two Split Head Zombies; wave 5 the first Elites. The diamond-shaped quests along the top of this page cover every mob in the horde, one each, and killing one opens the next; read them before you sound the next horn, and spend what you've got - everything below this point on the tree is buildable now."]
 			icon: "mutantszombies:split_head_zombie_spawn_egg"
 			id: "0882BEAE557D28DD"
 			rewards: [
@@ -307,56 +307,6 @@
 			]
 			title: "Three Down"
 			x: 16.0d
-			y: 0.0d
-		}
-		{
-			dependencies: ["0882BEAE557D28DD"]
-			hide_until_deps_complete: true
-			description: ["Feel that? The sword and armour just turned to rust in your hands - five waves was as far as whoever wore this gear ever got. From here you fight with what you've made and what you've looted, nothing else. The gaps between waves stretch to four minutes and more now. Use every one of them."]
-			icon: {
-				Count: 1
-				id: "minecraft:netherite_sword"
-				tag: {
-					Damage: 0
-				}
-			}
-			id: "03C4E700B07CBC15"
-			invisible: true
-			rewards: [
-				{
-					id: "720A183E1795E9EE"
-					item: "minecraft:golden_apple"
-					type: "item"
-				}
-				{
-					id: "28A5066F320BD531"
-					item: "bountybags:rare_loot_bag"
-					type: "item"
-				}
-				{
-					id: "5CCFFA9E49497C98"
-					type: "xp_levels"
-					xp_levels: 5
-				}
-			]
-			shape: "rsquare"
-			size: 1.5d
-			subtitle: "Completes on its own when wave 5 is cleared"
-			tasks: [
-				{
-					icon: {
-						Count: 1
-						id: "minecraft:netherite_sword"
-						tag: {
-							Damage: 0
-						}
-					}
-					id: "0D4F31AEC6072549"
-					type: "custom"
-				}
-			]
-			title: "It's Up to You Now"
-			x: 18.0d
 			y: 0.0d
 		}
 		{
@@ -395,7 +345,7 @@
 				}
 			]
 			title: "The Last Written Wave"
-			x: 20.0d
+			x: 18.0d
 			y: 0.0d
 		}
 		{
@@ -427,7 +377,7 @@
 				}
 			]
 			title: "The Reaper"
-			x: 22.0d
+			x: 20.0d
 			y: 0.0d
 		}
 		{
@@ -454,16 +404,24 @@
 				}
 			]
 			title: "No Ceiling"
-			x: 24.0d
+			x: 22.0d
 			y: 0.0d
 		}
 		{
 			dependencies: ["0882BEAE557D28DD"]
 			hide_until_deps_complete: true
-			description: ["Eight gold ingots in a ring make the &eAmulet&r. Gold comes as ingots from Rare bags or nuggets from Uncommon ones, nine to an ingot. It goes in the Curios necklace slot in your inventory, not an armour slot."]
+			description: [
+				"The &eAmulet&r can't be crafted. Carry eight gold ingots, open this quest and click the task to hand them in, and the amulet is your reward. Each player claims their own. Gold comes as ingots from Rare bags or nuggets from Uncommon ones, nine to an ingot."
+				"It goes in the Curios necklace slot in your inventory, not an armour slot. Fire and lava won't destroy it, but &cit's the only one you'll get&r, so don't lose it."
+			]
 			icon: "kubejs:amulet"
 			id: "7D3A5F912E6C0B48"
 			rewards: [
+				{
+					id: "00ABE60DFE08DB17"
+					item: "kubejs:amulet"
+					type: "item"
+				}
 				{
 					id: "1F84B26D9A5E307C"
 					type: "xp_levels"
@@ -477,13 +435,13 @@
 				}
 			]
 			shape: "pentagon"
-			subtitle: "8 gold ingots in a ring"
+			subtitle: "Hand in 8 gold ingots"
 			tasks: [
 				{
-					consume_items: false
-					only_from_crafting: true
+					consume_items: true
+					count: 8L
 					id: "5C0E7A34D2F9B168"
-					item: "kubejs:amulet"
+					item: "minecraft:gold_ingot"
 					type: "item"
 				}
 			]
@@ -611,7 +569,7 @@
 		{
 			dependencies: ["7F675AEBC7301832"]
 			hide_until_deps_complete: true
-			description: ["Twenty health, hits for 3. The floor of the whole roster, and most of wave 1."]
+			description: ["Twenty health, hits for 3. The floor of the whole roster, and half of wave 1."]
 			icon: "minecraft:zombie_spawn_egg"
 			id: "025466C9BEC5BE9D"
 			rewards: [
@@ -628,13 +586,13 @@
 				}
 			]
 			shape: "diamond"
-			subtitle: "Kill 3"
+			subtitle: "Kill one"
 			tasks: [
 				{
 					entity: "minecraft:zombie"
 					id: "1E63160F7D12C940"
 					type: "kill"
-					value: 3L
+					value: 1L
 				}
 			]
 			title: "Zombie"
@@ -661,13 +619,13 @@
 				}
 			]
 			shape: "diamond"
-			subtitle: "Kill 3"
+			subtitle: "Kill one"
 			tasks: [
 				{
 					entity: "minecraft:husk"
 					id: "00561BD9979AC803"
 					type: "kill"
-					value: 3L
+					value: 1L
 				}
 			]
 			title: "Husk"
@@ -694,13 +652,13 @@
 				}
 			]
 			shape: "diamond"
-			subtitle: "Kill 3"
+			subtitle: "Kill one"
 			tasks: [
 				{
 					entity: "minecraft:zombie_villager"
 					id: "0E8DC64CBE84AD2F"
 					type: "kill"
-					value: 3L
+					value: 1L
 				}
 			]
 			title: "Zombie Villager"
@@ -727,13 +685,13 @@
 				}
 			]
 			shape: "diamond"
-			subtitle: "Kill 3"
+			subtitle: "Kill one"
 			tasks: [
 				{
 					entity: "minecraft:drowned"
 					id: "0EBE628E466F665D"
 					type: "kill"
-					value: 3L
+					value: 1L
 				}
 			]
 			title: "Drowned"
@@ -872,13 +830,13 @@
 				}
 			]
 			shape: "diamond"
-			subtitle: "Kill 3"
+			subtitle: "Kill one"
 			tasks: [
 				{
 					entity: "undeadnights:horde_zombie"
 					id: "09F8613940E56AD6"
 					type: "kill"
-					value: 3L
+					value: 1L
 				}
 			]
 			title: "Horde Zombie"
@@ -918,9 +876,9 @@
 			y: -6.0d
 		}
 		{
-			dependencies: ["138F8B5037B3BCB1"]
+			dependencies: ["1ADC31A48FF6907E"]
 			hide_until_deps_complete: true
-			description: ["Wave 8, then the endless waves. 120 health, 18 damage, 18 armour, can't be knocked back, and it smashes trees in its way. Barbed wire and bear traps buy time; turrets finish it."]
+			description: ["From wave 20. 60 health, 18 damage, 18 armour, can't be knocked back, and it smashes trees in its way. It's quicker than it looks and will run you down, so don't count on outpacing it. Spikes slow it; turrets finish it."]
 			icon: "mutantszombies:mutant_brute_spawn_egg"
 			id: "660933A263779675"
 			rewards: [
@@ -946,11 +904,11 @@
 				}
 			]
 			title: "Mutant Brute"
-			x: 21.0d
+			x: 24.0d
 			y: -6.0d
 		}
 		{
-			dependencies: ["660933A263779675"]
+			dependencies: ["138F8B5037B3BCB1"]
 			hide_until_deps_complete: true
 			description: ["Wave 8. It carries TNT, lights it and throws it, and &cthe blast breaks blocks, your walls included&r. Kill it at range."]
 			icon: "undeadnights:demolition_zombie_spawn_egg"
@@ -978,13 +936,13 @@
 				}
 			]
 			title: "Demolition Zombie"
-			x: 22.5d
+			x: 21.0d
 			y: -6.0d
 		}
 		{
-			dependencies: ["0CF20A9914C828E9"]
+			dependencies: ["660933A263779675"]
 			hide_until_deps_complete: true
-			description: ["Endless waves only, from level 5. 100 health, 16 damage, 16 armour, knockback-immune, breaks trees."]
+			description: ["From wave 20, alongside the Mutant Brute. 100 health, 16 damage, 16 armour, knockback-immune, breaks trees, and just as quick on its feet."]
 			icon: "mutantszombies:zombie_brute_spawn_egg"
 			id: "4655A729AC448B0A"
 			rewards: [
@@ -1005,11 +963,11 @@
 				}
 			]
 			title: "Zombie Brute"
-			x: 24.0d
+			x: 25.5d
 			y: -6.0d
 		}
 		{
-			dependencies: ["4655A729AC448B0A"]
+			dependencies: ["0CF20A9914C828E9"]
 			hide_until_deps_complete: true
 			description: ["Endless waves only. 30 health, hits for 7, slow."]
 			icon: "mutantszombies:rotten_mutant_spawn_egg"
@@ -1032,7 +990,7 @@
 				}
 			]
 			title: "Rotten Mutant"
-			x: 25.5d
+			x: 22.5d
 			y: -6.0d
 		}
 		{
@@ -1231,7 +1189,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Heavy weighted pressure plate, 2 iron, 2 gunpowder"
+			subtitle: "A heavy weighted pressure plate, 2 iron, 1 gunpowder"
 			tasks: [
 				{
 					consume_items: false
@@ -1258,7 +1216,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "2 tripwire hooks, string, a Bouncing Betty, redstone, gunpowder"
+			subtitle: "2 tripwire hooks, 3 string, a Bouncing Betty, 2 redstone, 1 gunpowder"
 			tasks: [
 				{
 					consume_items: false
@@ -1285,7 +1243,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Iron, a Dispenser, a Portable Radar, Shrapnel, iron blocks"
+			subtitle: "Shrapnel, a Dispenser, redstone, a Portable Radar, 4 iron, an iron block"
 			tasks: [
 				{
 					consume_items: false
@@ -1312,7 +1270,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Iron bars, gold, redstone, iron blocks"
+			subtitle: "3 iron bars, 2 gold, redstone, 2 iron, an iron block"
 			tasks: [
 				{
 					consume_items: false
@@ -1339,7 +1297,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Iron, an Oak Fence"
+			subtitle: "4 iron, an Oak Fence"
 			tasks: [
 				{
 					consume_items: false
@@ -1366,7 +1324,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "2 Bouncing Betties, a Portable Radar, an iron block"
+			subtitle: "2 Bouncing Betties, a Portable Radar, an iron ingot"
 			tasks: [
 				{
 					consume_items: false
@@ -1378,6 +1336,32 @@
 			title: "I.M.S."
 			x: 20.0d
 			y: 7.5d
+		}
+		{
+			dependencies: ["5034B45EB70EE642", "72711938503E2603", "659544B22656B3CD", "17860922A24C885A"]
+			hide_until_deps_complete: true
+			description: ["Every trap on this branch is built: Bouncing Betty, Claymore, Sentry, Cage Trap, Electrified Fence and the I.M.S. That's the whole Tier 2 kit, and from here it's about where you put it. Keep the totem on you for the night the line breaks anyway."]
+			icon: "minecraft:totem_of_undying"
+			id: "55E57DB98E2E5206"
+			rewards: [
+				{
+					id: "5C57F59CD7B80306"
+					item: "minecraft:totem_of_undying"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			size: 1.5d
+			subtitle: "Build every Tier 2 trap"
+			tasks: [
+				{
+					id: "0510E84D90253F28"
+					type: "checkmark"
+				}
+			]
+			title: "No Turning Back"
+			x: 28.0d
+			y: 8.0d
 		}
 		{
 			dependencies: ["0882BEAE557D28DD"]
@@ -1460,7 +1444,7 @@
 		{
 			dependencies: ["5C44D121F112749F"]
 			hide_until_deps_complete: true
-			description: ["The &eCulinary Generator&r burns any food item for Flux - rotten flesh included, so every zombie you drop feeds it. Craft a Copper Generator, then upgrade it through Iron and Gold before the Culinary recipe unlocks: a Gold Generator plus Bread, 2 crops, 2 eggs and a redstone block. The eggs are a loot find - stores and farms out in the ruins carry them."]
+			description: ["The &eCulinary Generator&r burns any food item for Flux - rotten flesh included, so every zombie you drop feeds it. Craft a Copper Generator, then upgrade it through Iron and Gold before the Culinary recipe unlocks: a Gold Generator plus Bread, 4 crops, 2 eggs and a redstone block. The eggs are a loot find - stores and farms out in the ruins carry them."]
 			icon: "generatorgalore:culinary_generator"
 			id: "4B07331734543EB4"
 			rewards: [
@@ -1542,7 +1526,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "HV Capacitor, MV Coil, 3 aluminium plates, advanced electronics, iron component"
+			subtitle: "A lightning rod, 2 LV coils, a gold block, 2 steel, a Flux Point"
 			tasks: [
 				{
 					consume_items: false
@@ -1608,7 +1592,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Revolver, Revolver Magazine, Turntable, a Sentry, a Flux Point. 64 Flux/t just watching, +32 more while it's actually firing."
+			subtitle: "Revolver, Revolver Magazine, Turntable, Redstone Engineering Block, a Sentry, a Flux Point. 64 Flux/t just watching, +32 more while it's actually firing."
 			tasks: [
 				{
 					consume_items: false
@@ -1641,7 +1625,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Chemthrower, Metal Barrel, Turntable, an Electrified Iron Fence, a Flux Point. 64 Flux/t just watching, +32 more while it's actually spraying."
+			subtitle: "Chemthrower, Metal Barrel, Turntable, Redstone Engineering Block, an Electrified Iron Fence, a Flux Point. 64 Flux/t just watching, +32 more while it's actually spraying."
 			tasks: [
 				{
 					consume_items: false

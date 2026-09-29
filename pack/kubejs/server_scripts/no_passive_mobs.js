@@ -65,11 +65,21 @@
 // right tradeoff for this one.
 //
 // Deliberately genuinely-passive only, not every non-hostile mob -
-// wolf, fox, dolphin, polar_bear, and bee are left out on purpose since
+// wolf, dolphin, polar_bear, and bee are left out on purpose since
 // they're neutral/conditionally-aggressive in vanilla, not purely
 // passive - can be added if the user flags those too, but "passive
 // mobs" as asked doesn't obviously cover a mob that can still attack
 // you back.
+//
+// Checked against the full 1.20.1 vanilla mob list 2026-09-28 (camel was
+// a live report - desert villages bake one in). Added: camel (1.20), fox
+// (listed above as neutral, but a vanilla fox never attacks a player - it
+// only hunts chickens/rabbits/fish, so it is passive in vanilla's own
+// classification), skeleton_horse and zombie_horse (passive; the skeleton
+// trap is doMobSpawning-gated and zombie horses never spawn naturally, so
+// these only matter for a structure that bakes one in). Still out on
+// purpose: villager, wandering_trader, iron_golem, snow_golem (see the
+// explicit-list note above), and the neutrals named just above.
 var PASSIVE_MOB_TYPES = [
   'minecraft:cow', 'minecraft:mooshroom', 'minecraft:pig', 'minecraft:sheep',
   'minecraft:chicken', 'minecraft:rabbit', 'minecraft:horse', 'minecraft:donkey',
@@ -79,6 +89,7 @@ var PASSIVE_MOB_TYPES = [
   'minecraft:squid', 'minecraft:glow_squid', 'minecraft:axolotl', 'minecraft:bat',
   'minecraft:panda', 'minecraft:goat', 'minecraft:frog', 'minecraft:tadpole',
   'minecraft:sniffer', 'minecraft:strider', 'minecraft:allay',
+  'minecraft:camel', 'minecraft:fox', 'minecraft:skeleton_horse', 'minecraft:zombie_horse',
 ]
 
 EntityEvents.spawned((event) => {

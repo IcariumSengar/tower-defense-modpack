@@ -45,6 +45,101 @@ sub-decision.
 Built and (unless noted) already deployed to the live instance/dedicated
 server — nobody has actually confirmed these work in a real session yet.
 
+- **Ask-audit batch** (2026-09-28). The user asked "have we built
+  everything I asked for?". Every typed message (746) and every
+  question-round answer (213) across all transcripts was extracted, turned
+  into ~200 asks (latest decision wins) and checked against the code by
+  theme. About 160 were built as asked. This batch closes the rest, except
+  two the user excluded: a deposit-all button, and starting a new world on
+  the dedicated server after game over. Design calls were made in four
+  question rounds the same day.
+  - **Never built:**
+    - The amulet is now a quest reward: hand in 8 gold to "Not Just
+      Jewelry", one per player. It has no recipe and is fire/lava-proof.
+      The 09-25 session asked the design questions, then stopped.
+    - Red glow outline on the last 2 mobs of a wave (`wave_status.js`,
+      team `td_stragglers`).
+    - One explosion rule (`explosion_player_safety.js`): a blast not set
+      off by an enemy mob never breaks blocks or hurts players. That covers
+      the I.M.S., bazooka, grenades, charged potato, mines and TNT. The
+      Demolition Zombie's TNT is untouched.
+    - A newly placed I.M.S. starts on "mobs only".
+  - **Diverged, now as asked:**
+    - Airdrop lands 90-110 blocks from the pedestal in any direction. The
+      plane's flight row is force-loaded, since the old far drops froze
+      out of simulation distance. Flights blocked by the border are
+      shortened.
+    - Each crate holds a gun plus its own ammo (per-gun sub-tables), and
+      about 20% hold a nether star.
+    - The Legendary bag gives one standout item and has an orange beam.
+    - No brutes before wave 20 from any source (Undead Nights brute-free
+      hordes for levels 1-11). Horde brutes get 60 HP and 0.28 speed.
+    - Strays return to the real spawn band.
+    - "It's Up to You Now" is removed. "No Turning Back" (all Tier 2
+      traps) gives a totem.
+    - Pedestal heal is right-click, always; the item never sits on the
+      stand.
+    - I.M.S. recipe is now 16 iron.
+    - The command post roof, slabs, stairs, plates and carpets are
+      reinforced.
+  - **Bugs fixed:**
+    - Zombie Masher repeats again (it had a quoted boolean).
+    - Know Your Enemy: every quest is one kill, and the chain is reordered
+      by first appearance.
+    - "Thin the Horde" asks for 3 zombies.
+    - Underground ambushers stay out of the command post and get an air
+      pocket.
+    - After a game over there is no wave-clear, border growth, milestone
+      or boss.
+    - Rotten Mutant kills now drop bags.
+    - Camel, fox, skeleton horse and zombie horse are blocked.
+    - Z is only zoom (Xaero enlarge-minimap unbound in the shipped
+      `options.txt`).
+    - Sentry hit FX only for Sentry shots.
+    - Fire and lava kills of wave mobs count for bounties.
+    - The zcraft migration is skipped on fort worlds.
+    - Late joiners get no starter gear.
+    - Amethyst is added to `scav_hardware`.
+  - **Removed:**
+    - Zombies More (supplied no mobs any more).
+    - The Assault Rifle recipe.
+    - IE Diesel Generator and Radiator recipes (this also blocks the IE
+      Excavator, which is unused).
+    - The legacy amulet-pedestal recipe.
+  - **Server world:** its `serverconfig/securitycraft-server.toml`
+    (created 09-12, predating the pack defaults) was patched: mines no
+    longer break blocks, no fire, Sentry damage 6.
+  - **Sandbox-verified 2026-09-28** (server sandbox plus a client joined as
+    a real player; 52/52 + 3/3 + 1/1 scripts, 0 errors, 0 runtime errors or
+    warnings through the whole run, 96 quests):
+    - House: 0 of the 7 vanilla trim types left; 95 `reinforced_stone_slab`.
+    - Explosions: bazooka, grenade, charged potato, TNT and an I.M.S. bomb
+      all hurt mobs with no crater; a burning Demolition Zombie still
+      cratered.
+    - Airdrop: 200 crates, exactly one gun each with its ammo; nether star
+      in 22%. A real launch landed ~100 blocks NE with beacon and waypoint.
+    - Mobs: camel, fox and both undead horses are blocked. 40 Rotten
+      Mutant kills gave 8 bags.
+    - Bounties: a fire kill of a wave mob counts; untagged and guard fire
+      kills don't.
+    - Late joiner got only the Flux Configurator. Assault Rifle, IE
+      generator and radiator recipes are unknown.
+    - Straggler outline follows 3→none, 2→marked, +1→cleared, and
+      screenshots red through the command post wall.
+    - Stray returned 15 blocks out, on the ground.
+    - Wave-7 ambushers at pedestalY-6, none in the house. They took a
+      one-off 3 HP climbing up, then held steady.
+    - UN level 11: 8 hordes, 34 mobs, no brutes. Level 12: Mutant Brute at
+      60 HP and 0.28 speed.
+    - Pedestal destroyed mid-wave: outline cleared; killing the leftovers
+      gave no clear, countdown, border growth or milestone.
+    - `/tdforceclear` works from a player; from console it errors by
+      design (it needs a player).
+  - **Not verifiable without real mouse clicks:** pedestal right-click
+    heal, the amulet hand-in claim, I.M.S. hand placement mode, Legendary
+    bag opening and beam colour, Sentry FX visuals.
+  - **Checklist:** PLAYTESTING.md "Ask-audit batch".
+
 - **Structure-gen rework** (2026-09-27). **Fresh worlds only.** Synced to
   the instance and the dedicated server 2026-09-28 (hash-checked; the sync
   also carried the peer loot-tiering pass). A review measured ~1,150 structure starts/km², 57-59% of
@@ -191,7 +286,8 @@ server — nobody has actually confirmed these work in a real session yet.
   included. See FEATURES.md "Menu makeover".
 - **Six-item playtest batch** (2026-09-22) — (1) airdrop: beacon beam
   on the crate, Xaero share line (click Add), plane crosses the base
-  from the west, crate 50-70 from the pedestal; (2) the wave-5 clear no
+  from the west, crate 50-70 from the pedestal (placement superseded
+  2026-09-28: 90-110 blocks, any direction); (2) the wave-5 clear no
   longer crashes (Rhino `const` in a nested block), so the countdown
   runs after wave 5; (3) electrified fence shocks wave mobs standing
   next to it; (4) `ImmersiveEngineering-1.20.1-10.2.0-183-tdcoilfilter.jar`:
@@ -221,7 +317,8 @@ server — nobody has actually confirmed these work in a real session yet.
   5, a real stun-bypass fix (coil/fence no longer stun on top of not
   damaging), cooler zap/muzzle-flash cinematics, the coil moved onto the
   front wall next to the Sentry, the starter flux rig moved to the
-  house's exterior wall near the balcony, and the starter fence now
+  house's exterior wall near the balcony (since the 09-22 fort it sits
+  inside the command post, behind the bar), and the starter fence now
   fully seals the gate gap. Not yet seen in a real restart.
 - **Tier 4: Open Modular Turrets Reborn** (2026-09-15/16) — Grenade
   Turret + Rocket Turret added as Tier 4, plus a player/block

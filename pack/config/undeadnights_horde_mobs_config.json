@@ -20,7 +20,7 @@
       "horde2": [
         {"mobId": "minecraft:zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "minecraft:husk", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
-        {"mobId": "mutantszombies:mutant_brute", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:mutant_brute", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none", "nbtTags": "{Attributes:[{Name:'generic.max_health',Base:60.0d},{Name:'generic.movement_speed',Base:0.28d}],Health:60.0f}"},
         {"mobId": "undeadnights:horde_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "undeadnights:horde_zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "mutantszombies:rotten_mutant", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
@@ -33,10 +33,10 @@
         {"mobId": "minecraft:zombie", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "undeadnights:elite_zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "mutantszombies:crawler", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
-        {"mobId": "mutantszombies:zombie_brute", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:zombie_brute", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none", "nbtTags": "{Attributes:[{Name:'generic.movement_speed',Base:0.28d}]}"},
         {"mobId": "undeadnights:horde_zombie", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "undeadnights:elite_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
-        {"mobId": "mutantszombies:zombie_brute", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+        {"mobId": "mutantszombies:zombie_brute", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none", "nbtTags": "{Attributes:[{Name:'generic.movement_speed',Base:0.28d}]}"}
       ]
     },
     {
@@ -47,9 +47,42 @@
         {"mobId": "undeadnights:elite_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "undeadnights:elite_zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
         {"mobId": "mutantszombies:crawler", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
-        {"mobId": "mutantszombies:zombie_brute", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:zombie_brute", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none", "nbtTags": "{Attributes:[{Name:'generic.movement_speed',Base:0.28d}]}"},
         {"mobId": "undeadnights:demolition_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
-        {"mobId": "mutantszombies:mutant_brute", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+        {"mobId": "mutantszombies:mutant_brute", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none", "nbtTags": "{Attributes:[{Name:'generic.max_health',Base:60.0d},{Name:'generic.movement_speed',Base:0.28d}],Health:60.0f}"}
+      ]
+    },
+    {
+      "hordeName": "mixed_horde_no_brutes",
+      "dimension": "minecraft:overworld",
+      "horde5": [
+        {"mobId": "minecraft:zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "minecraft:husk", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:horde_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:horde_zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:rotten_mutant", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+      ]
+    },
+    {
+      "hordeName": "elite_horde_no_brutes",
+      "dimension": "minecraft:overworld",
+      "horde6": [
+        {"mobId": "minecraft:zombie", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:elite_zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:crawler", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:horde_zombie", "spawnChance": "10", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:elite_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
+      ]
+    },
+    {
+      "hordeName": "boss_horde_no_brutes",
+      "dimension": "minecraft:overworld",
+      "horde7": [
+        {"mobId": "minecraft:zombie", "spawnChance": "5", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:elite_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:elite_zombie", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "mutantszombies:crawler", "spawnChance": "20", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"},
+        {"mobId": "undeadnights:demolition_zombie", "spawnChance": "15", "countMin": 1, "countMax": 1, "extraSpawnInfo": "none"}
       ]
     }
   ],

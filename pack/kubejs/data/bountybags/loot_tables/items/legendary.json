@@ -2,16 +2,20 @@
   "type": "minecraft:gift",
   "pools": [
     {
-      "rolls": 5,
+      "rolls": 1,
       "entries": [
-        { "type": "minecraft:item", "name": "minecraft:netherite_ingot", "weight": 20, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
-        { "type": "minecraft:item", "name": "minecraft:netherite_scrap", "weight": 18, "functions": [{ "function": "minecraft:set_count", "count": { "min": 2, "max": 3 } }] },
-        { "type": "minecraft:item", "name": "minecraft:totem_of_undying", "weight": 2, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
-        { "type": "minecraft:item", "name": "minecraft:nether_star", "weight": 14, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
-        { "type": "minecraft:item", "name": "minecraft:diamond_block", "weight": 14, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
-        { "type": "minecraft:item", "name": "minecraft:enchanted_golden_apple", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 1 } }] },
-        { "type": "minecraft:item", "name": "minecraft:diamond", "weight": 8, "functions": [{ "function": "minecraft:set_count", "count": { "min": 3, "max": 5 } }] },
-        { "type": "minecraft:item", "name": "kubejs:shrapnel", "weight": 12, "functions": [{ "function": "minecraft:set_count", "count": { "min": 10, "max": 16 } }] }
+        { "type": "minecraft:item", "name": "minecraft:nether_star", "weight": 25 },
+        { "type": "minecraft:item", "name": "minecraft:totem_of_undying", "weight": 8 },
+        { "type": "minecraft:item", "name": "simple_guns_reworked:minguguuggn", "weight": 10 },
+        { "type": "minecraft:item", "name": "omtreborn:grenade_turret", "weight": 8 },
+        { "type": "minecraft:item", "name": "omtreborn:rocket_turret", "weight": 6 },
+        { "type": "minecraft:item", "name": "immersiveengineering:tesla_coil", "weight": 6 },
+        { "type": "minecraft:item", "name": "minecraft:netherite_sword", "weight": 8, "functions": [{ "function": "minecraft:set_enchantments", "enchantments": { "minecraft:sharpness": 5, "minecraft:unbreaking": 3, "minecraft:fire_aspect": 2, "minecraft:sweeping": 3 } }] },
+        { "type": "minecraft:item", "name": "minecraft:netherite_axe", "weight": 5, "functions": [{ "function": "minecraft:set_enchantments", "enchantments": { "minecraft:sharpness": 5, "minecraft:efficiency": 5, "minecraft:unbreaking": 3 } }] },
+        { "type": "minecraft:item", "name": "minecraft:netherite_helmet", "weight": 5, "functions": [{ "function": "minecraft:set_enchantments", "enchantments": { "minecraft:protection": 4, "minecraft:unbreaking": 3 } }] },
+        { "type": "minecraft:item", "name": "minecraft:netherite_chestplate", "weight": 7, "functions": [{ "function": "minecraft:set_enchantments", "enchantments": { "minecraft:protection": 4, "minecraft:unbreaking": 3 } }] },
+        { "type": "minecraft:item", "name": "minecraft:netherite_leggings", "weight": 7, "functions": [{ "function": "minecraft:set_enchantments", "enchantments": { "minecraft:protection": 4, "minecraft:unbreaking": 3 } }] },
+        { "type": "minecraft:item", "name": "minecraft:netherite_boots", "weight": 5, "functions": [{ "function": "minecraft:set_enchantments", "enchantments": { "minecraft:protection": 4, "minecraft:feather_falling": 4, "minecraft:unbreaking": 3 } }] }
       ]
     }
   ]

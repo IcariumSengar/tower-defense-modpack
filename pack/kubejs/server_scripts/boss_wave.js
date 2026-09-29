@@ -373,6 +373,10 @@ PlayerEvents.tick((event) => {
 
   var data = worldData(level)
   if (!data) return
+  // No boss after game over (2026-09-28, same fix as wave_status.js's
+  // clear-path guard): the horn is already blocked then, this just closes
+  // the few-tick window between a boss wave's horn and this poll.
+  if (data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')) return
   var waveNumber = data.getInt('td_waveNumber')
   if (waveNumber <= 0) return
   if (waveNumber % BOSS_WAVE_INTERVAL !== 0) return

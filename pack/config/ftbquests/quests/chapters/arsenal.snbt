@@ -514,7 +514,7 @@
 			y: 7.5d
 		}
 		{
-			description: ["Reloads the Flame Thrower for 30 charges. Comes back empty - refill it with 2 Blaze Powder, a Magma Cream and a Water Bucket."]
+			description: ["Reloads the Flame Thrower for 30 charges. Comes back empty - refill it with 2 gunpowder and 2 coal."]
 			icon: "simple_guns_reworked:fuel_tank"
 			id: "00D9C888CB4CD297"
 			rewards: [
@@ -538,7 +538,7 @@
 			y: 7.5d
 		}
 		{
-			description: ["The Laser Gun's ammo, burned one at a time with no reload."]
+			description: ["The Laser Gun's ammo, burned one at a time with no reload. It can't be crafted here: it comes in the airdrop crate with the Laser Gun."]
 			icon: "simple_guns_reworked:energized_dust"
 			id: "7CB29CE4A8798C66"
 			rewards: [

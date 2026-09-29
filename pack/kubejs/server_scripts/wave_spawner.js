@@ -432,6 +432,15 @@ var TIER2_MIN_LEVEL = 5
 // wave 20 exactly). Mutant Brute's wave 8 hand-authored appearance was
 // also removed (WAVES[7] above) for the same reason - no brute of
 // either type before wave 20 now, hand-authored or endless.
+//
+// That claim missed Undead Nights' own spawn_horde half until 2026-09-28:
+// config/undeadnights_horde_mobs_config.json still had mutant_brute in
+// mixed_horde (level 9 = wave 17 in single player, since `difficulty set`
+// resets UN's horde index every wave so each level's first listed horde is
+// the one that spawns; wave 9 for a second player) and zombie_brute in
+// elite_horde and the boss horde. The brutes now live only in copies of
+// those hordes (ids 5-7) that levels 12+ point at - see
+// undeadnights_difficulty_config.json. Keep the two gates on the same level.
 var BRUTE_TIER_MIN_LEVEL = 12
 
 // Brute speed fix, 2026-09-10 (direct ask: "the brutes aren't hard they
@@ -465,6 +474,14 @@ var BRUTE_MOVEMENT_SPEED = 0.28
 // boss_wave.js's summon NBT does, or the entity spawns at its old native
 // max HP with the new lower cap only affecting future healing/regen, not
 // its actual starting health.
+//
+// Undead Nights' hordes (levels 12+) get the same 60 from the same two
+// fields, set in the horde config's own nbtTags for mutant_brute
+// (2026-09-28). UN then multiplies max_health by its level health scale
+// (SpawnProcess.spawnHordeMob, decompiled) but never raises current health
+// for a non-UN mob unless dynamic scaling is on (it's off), so a horde
+// Mutant Brute also starts at 60 HP - only its displayed max is higher.
+// Keep that nbtTags value equal to this constant.
 var MUTANT_BRUTE_MAX_HEALTH = 60
 
 function pickEndlessOtherType(waveNumber) {
@@ -551,6 +568,13 @@ function staggerGapForWave(waveNumber) {
 // returns - the first tdTagHordeMobs call right after the command does
 // the real work, and this window is a 5-second safety net for any mob
 // that lands a tick late.
+// Correction, 2026-09-28 (re-decompiled UndeadNights-2.3.0): the COMMAND
+// doesn't spawn anything - SpawnHordeCommand only adds each player to
+// serverState.entitiesWithPendingHorde, and HordeSpawner's own level tick
+// spawns the horde on the next server tick. So the immediate sweep usually
+// tags 0 and this window does the real work. wave_status.js's straggler
+// outline treats the open window as "spawns still outstanding" for that
+// reason (tdWaveSpawnsOutstanding).
 var HORDE_TAG_WINDOW_TICKS = 100
 var HORDE_TAG_RADIUS = 128
 // The world-state marker (world_state.js's findWorldStateEntity: the
@@ -730,6 +754,202 @@ function waveObjective(player, data) {
 // forceload set up in playtest_starter_kit.js at world-build time, not
 // a toggle - see that file's own comment for the real resource-cost
 // tradeoff this accepts.
+
+// Spawn-band geometry, pulled out of useWaveHorn 2026-09-28 so it exists
+// once. mob_aggro.js's stray return used its own 20-40 block ring; the user
+// chose to keep this spawn behaviour and send strays back into the SAME
+// band instead, so both files now call these (top-level FUNCTIONS are
+// global across server_scripts in this build, and these close over this
+// file's own vars). The numbers and maths are the ones useWaveHorn already
+// used inline - see its band comment for the history behind 48-64, the
+// border clamp and the margin.
+var TD_SPAWN_BAND_MIN = 48
+var TD_SPAWN_BAND_MAX = 64
+var TD_SPAWN_BORDER_MARGIN = 6 // spreadplayers maxRange 4, plus 2
+var TD_COMPOUND_SPAWN_PADDING = 4
+var TD_COMPOUND_SPAWN_MAX_ATTEMPTS = 30
+
+// Read fresh on every call - the border grows every clear
+// (base_expansion.js), so a cached band would go stale.
+function tdWaveSpawnBand(level) {
+  var border = level.getWorldBorder()
+  var halfWidth = border.getSize() / 2
+  var max = Math.max(15, Math.min(TD_SPAWN_BAND_MAX, halfWidth - TD_SPAWN_BORDER_MARGIN))
+  return {
+    min: Math.min(TD_SPAWN_BAND_MIN, max - 10),
+    max: max,
+    minX: Math.ceil(border.getMinX() + TD_SPAWN_BORDER_MARGIN),
+    maxX: Math.floor(border.getMaxX() - TD_SPAWN_BORDER_MARGIN),
+    minZ: Math.ceil(border.getMinZ() + TD_SPAWN_BORDER_MARGIN),
+    maxZ: Math.floor(border.getMaxZ() - TD_SPAWN_BORDER_MARGIN),
+  }
+}
+
+// The compound's real persisted footprint (td_compoundX0/X1/Z0/Z1,
+// playtest_starter_kit.js), padded so nothing spawns hugging the outer wall
+// face. null on a save that never persisted it - callers then skip the
+// check rather than block spawning.
+function tdCompoundSpawnRect(data) {
+  if (!data || !data.contains('td_compoundX0')) return null
+  return {
+    x0: data.getInt('td_compoundX0') - TD_COMPOUND_SPAWN_PADDING,
+    x1: data.getInt('td_compoundX1') + TD_COMPOUND_SPAWN_PADDING,
+    z0: data.getInt('td_compoundZ0') - TD_COMPOUND_SPAWN_PADDING,
+    z1: data.getInt('td_compoundZ1') + TD_COMPOUND_SPAWN_PADDING,
+  }
+}
+
+// A column in the band around (cx, cz), clamped into the live border box
+// and outside the padded compound.
+//
+// Compound-aware rejection sampling (2026-09-09, paired with the border
+// revert to 50 - see playtest_starter_kit.js's BORDER_START comment): with
+// the border at 50 a uniform band can land inside the compound in some
+// directions (its back wall sits ~17-20 blocks from the pedestal) while
+// clearing it in others, so the angle/distance is re-rolled until the
+// candidate lands outside - cheap (pure arithmetic, no chunk access) and
+// self-correcting, whichever directions are clear get picked more often.
+//
+// Real playtest report (2026-09-11): "an enemy spawned in my house. this
+// shouldn't happen." The loop used to fall back to its last (possibly
+// inside-compound) attempt once it ran out of tries; a growing compound
+// eats more of the band over a long campaign, so that stopped being rare.
+// When resampling fails it now projects a point just outside the
+// compound's own nearest edge instead, geometrically guaranteed clear.
+//
+// Math.PI is undefined in this KubeJS/Rhino build (2026-09-02, the root
+// cause of the "nothing spawns" saga) - hence the literal.
+function tdSpawnBandPoint(band, rect, cx, cz) {
+  var PI = 3.141592653589793
+  for (var attempt = 0; attempt < TD_COMPOUND_SPAWN_MAX_ATTEMPTS; attempt++) {
+    var angle = Math.random() * 2 * PI
+    var distance = band.min + Math.random() * (band.max - band.min)
+    // Hard clamp into the live border box - a mob summoned even one block
+    // past the border is pinned there for good, unable to path back in.
+    var px = Math.min(Math.max(Math.floor(cx + Math.cos(angle) * distance), band.minX), band.maxX)
+    var pz = Math.min(Math.max(Math.floor(cz + Math.sin(angle) * distance), band.minZ), band.maxZ)
+    if (!rect || px < rect.x0 || px > rect.x1 || pz < rect.z0 || pz > rect.z1) return { x: px, z: pz }
+  }
+  var side = Math.floor(Math.random() * 4) // 0=N(-Z) 1=S(+Z) 2=W(-X) 3=E(+X)
+  var fx, fz
+  if (side === 0) {
+    fx = rect.x0 + Math.random() * (rect.x1 - rect.x0)
+    fz = rect.z0 - 1
+  } else if (side === 1) {
+    fx = rect.x0 + Math.random() * (rect.x1 - rect.x0)
+    fz = rect.z1 + 1
+  } else if (side === 2) {
+    fx = rect.x0 - 1
+    fz = rect.z0 + Math.random() * (rect.z1 - rect.z0)
+  } else {
+    fx = rect.x1 + 1
+    fz = rect.z0 + Math.random() * (rect.z1 - rect.z0)
+  }
+  var safePoint = {
+    x: Math.min(Math.max(Math.floor(fx), band.minX), band.maxX),
+    z: Math.min(Math.max(Math.floor(fz), band.minZ), band.maxZ),
+  }
+  console.log(`wave_spawner.js: could not find a spawn point outside the compound after ${TD_COMPOUND_SPAWN_MAX_ATTEMPTS} random attempts - using a guaranteed-outside point (${safePoint.x},${safePoint.z}) instead`)
+  return safePoint
+}
+
+// True while a wave still has mobs to come: queued staggered spawns
+// (baseline, hand-authored, underground ambush) or an open Undead Nights
+// horde-tagging window. wave_status.js's straggler outline reads this - a
+// var can't be read across files here, a function can.
+function tdWaveSpawnsOutstanding(level) {
+  return pendingSpawns.length > 0 || level.getTime() <= tdHordeTagUntil
+}
+
+// Underground ambush placement (2026-09-28, real playtest bug: an ambusher
+// picked a column inside the command post, and "highest block minus 6"
+// there is the building's upstairs floor, so it spawned wedged in it).
+// Three changes, all here:
+// - Never a column inside the command post (the_lost_city:cafe4,
+//   playtest_starter_kit.js). Its footprint isn't persisted, so it's
+//   derived from the same layout constants that file places it with: the
+//   building's side walls sit SIDE_MARGIN in from td_compoundX0/X1 (5 on
+//   the td_layoutVersion 2 fort, 3 on the older Brick House layout) and its
+//   yard face is 5 rows north of the pedestal on both layouts (the fort's
+//   vine column hangs one row further south). Padded one block, and run
+//   back to the compound's back wall - an ambusher behind the building
+//   would tunnel through it toward the pedestal.
+// - Depth is measured from the yard floor (td_pedestalY, the walking level
+//   the whole compound is levelled to), not the highest block in the
+//   column, so nothing standing on a column (a roof, a wall, a player's
+//   turret) can lift the spawn out of the ground. On an open yard column
+//   this is the same Y as before (MOTION_BLOCKING there is td_pedestalY).
+// - The mob starts in a carved 1x2 pocket (feet + head), never inside a
+//   solid block: summoned into stone it suffocates, and ESM's digging goal
+//   (ESM_EntityAIDigging.canUse, decompiled) only starts once the mob has
+//   stood on the same block for 20 checks with its navigation done - a
+//   sealed pocket is exactly that. Only ever carved out of natural ground
+//   or air (TD_AMBUSH_CARVABLE), so a column under anything a player built
+//   down there is skipped instead of hollowed out. The pocket is re-checked
+//   and carved at the spawn tick itself (the spawn handler below), not at
+//   queue time - the ground can change in between.
+var TD_UNDERGROUND_DIG_DEPTH = 6
+var TD_AMBUSH_MAX_ATTEMPTS = 16
+var TD_AMBUSH_CARVABLE = [
+  'minecraft:air', 'minecraft:cave_air',
+  'minecraft:dirt', 'minecraft:coarse_dirt', 'minecraft:rooted_dirt', 'minecraft:grass_block',
+  'minecraft:podzol', 'minecraft:mycelium', 'minecraft:mud', 'minecraft:clay',
+  'minecraft:sand', 'minecraft:red_sand', 'minecraft:gravel',
+  'minecraft:sandstone', 'minecraft:red_sandstone', 'minecraft:terracotta',
+  'minecraft:stone', 'minecraft:granite', 'minecraft:diorite', 'minecraft:andesite',
+  'minecraft:tuff', 'minecraft:calcite', 'minecraft:deepslate', 'minecraft:dripstone_block',
+]
+
+function tdAmbushBlockCarvable(id) {
+  if (TD_AMBUSH_CARVABLE.indexOf(id) !== -1) return true
+  // Badlands' coloured terracotta bands and ores are natural ground too;
+  // glazed terracotta never generates in the ground.
+  if (id.indexOf('minecraft:') === 0 && /_terracotta$/.test(id) && id.indexOf('glazed') === -1) return true
+  return /_ore$/.test(id)
+}
+
+function tdAmbushPocketOk(level, x, y, z) {
+  return tdAmbushBlockCarvable(`${level.getBlock(x, y, z).getId()}`) &&
+    tdAmbushBlockCarvable(`${level.getBlock(x, y + 1, z).getId()}`)
+}
+
+// Padded command-post footprint, extended back to the compound's back wall.
+// null when the save never persisted the compound.
+function tdCommandPostExclusion(data) {
+  if (!data.contains('td_compoundX0') || !data.contains('td_pedestalZ')) return null
+  var sideMargin = data.getInt('td_layoutVersion') >= 2 ? 5 : 3
+  return {
+    x0: data.getInt('td_compoundX0') + sideMargin - 1,
+    x1: data.getInt('td_compoundX1') - sideMargin + 1,
+    z0: data.getInt('td_compoundZ0'),
+    z1: data.getInt('td_pedestalZ') - 3,
+  }
+}
+
+// {x, y, z} of the pocket's floor block, or null when no valid column
+// turned up (the caller drops that one ambusher rather than force it).
+function tdPickUndergroundAmbushPos(level, data, objective) {
+  var y = Math.floor(objective.y) - TD_UNDERGROUND_DIG_DEPTH
+  var hasCompound = data.contains('td_compoundX0')
+  var exclusion = tdCommandPostExclusion(data)
+  for (var attempt = 0; attempt < TD_AMBUSH_MAX_ATTEMPTS; attempt++) {
+    var px, pz
+    if (hasCompound) {
+      px = data.getInt('td_compoundX0') + Math.floor(Math.random() * (data.getInt('td_compoundX1') - data.getInt('td_compoundX0') + 1))
+      pz = data.getInt('td_compoundZ0') + Math.floor(Math.random() * (data.getInt('td_compoundZ1') - data.getInt('td_compoundZ0') + 1))
+      if (exclusion && px >= exclusion.x0 && px <= exclusion.x1 && pz >= exclusion.z0 && pz <= exclusion.z1) continue
+    } else {
+      // No persisted compound bounds (old save) - fall back tight to the
+      // objective itself, the best available stand-in for "under the base."
+      px = Math.floor(objective.x) + Math.floor(Math.random() * 7) - 3
+      pz = Math.floor(objective.z) + Math.floor(Math.random() * 7) - 3
+    }
+    // getBlock also loads the chunk (reference_kubejs_loadtime_gotchas);
+    // the compound is forceloaded anyway.
+    if (tdAmbushPocketOk(level, px, y, pz)) return { x: px, y: y, z: pz }
+  }
+  return null
+}
 
 function useWaveHorn(player) {
   var level = player.getLevel()
@@ -935,127 +1155,20 @@ function useWaveHorn(player) {
   // guarantees "not inside the compound" now is the rejection-sampling
   // check in randomObjectiveRelativePosition() below, not border size, so
   // the border could shrink back without reopening the regression. The
-  // border-box clamp right below stays too (a mob summoned even one block
-  // past the border gets stuck there for good, unable to path back in) -
-  // every spawn point still has to satisfy both checks.
-  var SPAWN_BAND_MIN = 48
-  var SPAWN_BAND_MAX = 64
-  var border = level.getWorldBorder()
-  var borderHalfWidth = border.getSize() / 2
-  var BORDER_SAFETY_MARGIN = 6 // spreadplayers maxRange 4, plus 2
-  var SPAWN_DISTANCE_MAX = Math.max(15, Math.min(SPAWN_BAND_MAX, borderHalfWidth - BORDER_SAFETY_MARGIN))
-  var SPAWN_DISTANCE_MIN = Math.min(SPAWN_BAND_MIN, SPAWN_DISTANCE_MAX - 10)
-  var spawnMinX = Math.ceil(border.getMinX() + BORDER_SAFETY_MARGIN)
-  var spawnMaxX = Math.floor(border.getMaxX() - BORDER_SAFETY_MARGIN)
-  var spawnMinZ = Math.ceil(border.getMinZ() + BORDER_SAFETY_MARGIN)
-  var spawnMaxZ = Math.floor(border.getMaxZ() - BORDER_SAFETY_MARGIN)
-
-  // Real, confirmed root cause of the "nothing spawns" saga across this
-  // whole pack's history (2026-09-02): Math.PI is undefined in this
-  // exact KubeJS/Rhino environment - confirmed on a clean sandbox boot,
-  // at top-level script scope, with zero event-callback involvement
-  // (Math.cos/Math.sin/Math.random all work fine; Math.PI and Math.E
-  // specifically do not - a real quirk in how this KubeJS version
-  // exposes Math's static fields, not a guess). Every angle computed
-  // below was silently NaN, so every mob spawn position was NaN,NaN -
-  // /summon with NaN coordinates fails silently (runCommandSilent
-  // suppresses the feedback), so no wave mob has ever actually spawned
-  // via this function. The staggered pendingSpawns queue still drained
-  // normally regardless (queue entries are removed once processed,
-  // whether their summon succeeded or not), which is why re-using the
-  // horn still looked correctly gated for the first few seconds after
-  // each use - that was the queue itself, not real mobs, misleading
-  // every earlier investigation into this bug. Hardcoded literal below,
-  // not Math.PI - see mob_aggro.js's own historical flag on this exact
-  // constant for the earlier, unconfirmed version of this same worry.
-  var PI = 3.141592653589793
-
-  // Compound-aware rejection sampling (2026-09-09, paired with the border
-  // revert to 50 - see playtest_starter_kit.js's BORDER_START comment).
-  // With the border back to 50, a uniform distance band can land inside
-  // the compound's own footprint in some directions (its back wall sits
-  // ~17-20 blocks from the pedestal) even while comfortably outside it in
-  // others (~7-9 blocks to the side/gate walls) - distance alone can't
-  // guarantee "outside the base" anymore the way it could at border 150.
-  // Reads the compound's real persisted footprint (td_compoundX0/X1/Z0/Z1,
-  // playtest_starter_kit.js) and just re-rolls the angle/distance until
-  // the candidate lands outside it (padded a few blocks so mobs don't
-  // spawn hugging the outer wall face) - cheap (pure arithmetic, no chunk
-  // access) and self-correcting: whichever directions are actually clear
-  // of the compound get picked more often, with zero manual per-direction
-  // tuning. Falls back to skipping the check entirely if the compound
-  // bounds were never persisted (an old save predating this, or the
-  // marker's own fallback-failed case) rather than blocking spawning.
-  var COMPOUND_SPAWN_PADDING = 4
-  var COMPOUND_SPAWN_MAX_ATTEMPTS = 30
-  var hasCompoundBounds = data.contains('td_compoundX0')
-  var compoundX0 = hasCompoundBounds ? data.getInt('td_compoundX0') - COMPOUND_SPAWN_PADDING : 0
-  var compoundX1 = hasCompoundBounds ? data.getInt('td_compoundX1') + COMPOUND_SPAWN_PADDING : 0
-  var compoundZ0 = hasCompoundBounds ? data.getInt('td_compoundZ0') - COMPOUND_SPAWN_PADDING : 0
-  var compoundZ1 = hasCompoundBounds ? data.getInt('td_compoundZ1') + COMPOUND_SPAWN_PADDING : 0
-
-  function isInsideCompound(px, pz) {
-    if (!hasCompoundBounds) return false
-    return px >= compoundX0 && px <= compoundX1 && pz >= compoundZ0 && pz <= compoundZ1
-  }
-
-  // Real playtest report (2026-09-11): "an enemy spawned in my house.
-  // this shouldn't happen." The random reject-and-resample loop above
-  // used to fall back to whatever its last (possibly inside-compound)
-  // attempt was once it ran out of tries - accepted at the time as
-  // better than silently dropping the spawn, but a growing compound
-  // (base_expansion.js) eats more and more of the fixed 48-64 band over
-  // a long campaign, so that "rare" fallback stops being rare. Real
-  // fix: when resampling fails, compute a point that's geometrically
-  // guaranteed clear of the compound rectangle instead of gambling on
-  // one more random draw - project outward from the compound's own
-  // nearest edge rather than from the objective's radius.
-  function guaranteedOutsideCompoundPoint() {
-    var side = Math.floor(Math.random() * 4) // 0=N(-Z) 1=S(+Z) 2=W(-X) 3=E(+X)
-    var px, pz
-    if (side === 0) {
-      px = compoundX0 + Math.random() * (compoundX1 - compoundX0)
-      pz = compoundZ0 - 1
-    } else if (side === 1) {
-      px = compoundX0 + Math.random() * (compoundX1 - compoundX0)
-      pz = compoundZ1 + 1
-    } else if (side === 2) {
-      px = compoundX0 - 1
-      pz = compoundZ0 + Math.random() * (compoundZ1 - compoundZ0)
-    } else {
-      px = compoundX1 + 1
-      pz = compoundZ0 + Math.random() * (compoundZ1 - compoundZ0)
-    }
-    return {
-      x: Math.min(Math.max(Math.floor(px), spawnMinX), spawnMaxX),
-      z: Math.min(Math.max(Math.floor(pz), spawnMinZ), spawnMaxZ),
-    }
-  }
+  // border-box clamp stays too (a mob summoned even one block past the
+  // border gets stuck there for good, unable to path back in) - every
+  // spawn point still has to satisfy both checks.
+  //
+  // Band limits, compound rectangle and point picker live in
+  // tdWaveSpawnBand/tdCompoundSpawnRect/tdSpawnBandPoint above since
+  // 2026-09-28 (shared with mob_aggro.js's stray return) - same numbers,
+  // same clamp, same rejection sampling and guaranteed-outside fallback as
+  // the inline versions that used to sit here. Read once per horn use.
+  var spawnBand = tdWaveSpawnBand(level)
+  var compoundSpawnRect = tdCompoundSpawnRect(data)
 
   function randomObjectiveRelativePosition() {
-    for (var attempt = 0; attempt < COMPOUND_SPAWN_MAX_ATTEMPTS; attempt++) {
-      var point = rawObjectiveRelativePosition()
-      if (!isInsideCompound(point.x, point.z)) return point
-      if (attempt === COMPOUND_SPAWN_MAX_ATTEMPTS - 1) {
-        var safePoint = guaranteedOutsideCompoundPoint()
-        console.log(`wave_spawner.js: could not find a spawn point outside the compound after ${COMPOUND_SPAWN_MAX_ATTEMPTS} random attempts - using a guaranteed-outside point (${safePoint.x},${safePoint.z}) instead`)
-        return safePoint
-      }
-    }
-  }
-
-  function rawObjectiveRelativePosition() {
-    var angle = Math.random() * 2 * PI
-    var distance = SPAWN_DISTANCE_MIN + Math.random() * (SPAWN_DISTANCE_MAX - SPAWN_DISTANCE_MIN)
-    var px = Math.floor(objective.x + Math.cos(angle) * distance)
-    var pz = Math.floor(objective.z + Math.sin(angle) * distance)
-    // Hard clamp into the live border box (see the band comment above) -
-    // a mob summoned even one block past the border is pinned there for
-    // good, unable to path back in.
-    return {
-      x: Math.min(Math.max(px, spawnMinX), spawnMaxX),
-      z: Math.min(Math.max(pz, spawnMinZ), spawnMaxZ),
-    }
+    return tdSpawnBandPoint(spawnBand, compoundSpawnRect, objective.x, objective.z)
   }
 
   // Underground ambush spawns (2026-09-10, direct ask: "can you make the
@@ -1076,25 +1189,11 @@ function useWaveHorn(player) {
   // connected in a headless sandbox means mob_aggro.js's targeting loop
   // never runs). Needs a real playtest to confirm it reads as "coming up
   // from underground," not just that the mob stops idling.
-  var UNDERGROUND_DIG_DEPTH = 6
+  // Column/depth/pocket rules moved to tdPickUndergroundAmbushPos above
+  // (2026-09-28 command-post fix - see its comment). Can return null; the
+  // queue loops below skip that ambusher.
   function undergroundAmbushPos() {
-    var px, pz
-    if (data.contains('td_compoundX0')) {
-      px = data.getInt('td_compoundX0') + Math.floor(Math.random() * (data.getInt('td_compoundX1') - data.getInt('td_compoundX0') + 1))
-      pz = data.getInt('td_compoundZ0') + Math.floor(Math.random() * (data.getInt('td_compoundZ1') - data.getInt('td_compoundZ0') + 1))
-    } else {
-      // No persisted compound bounds (old save) - fall back tight to the
-      // objective itself, the best available stand-in for "under the base."
-      px = Math.floor(objective.x) + Math.floor(Math.random() * 7) - 3
-      pz = Math.floor(objective.z) + Math.floor(Math.random() * 7) - 3
-    }
-    // Forces the chunk to actually load/generate before reading the
-    // heightmap (reference_kubejs_loadtime_gotchas: getHeight alone
-    // returns -64 on an unloaded chunk) - same call surfaceHeightAt() in
-    // playtest_starter_kit.js already relies on for the same reason.
-    level.getBlock(px, 64, pz).getId()
-    var surfaceY = level.getHeight('MOTION_BLOCKING', px, pz)
-    return { x: px, y: surfaceY - UNDERGROUND_DIG_DEPTH, z: pz }
+    return tdPickUndergroundAmbushPos(level, data, objective)
   }
 
   // Wave 3+ only - the compound/walls exist from wave 1
@@ -1239,6 +1338,7 @@ function useWaveHorn(player) {
     var undergroundAmbushCount = undergroundAmbushCountForWave(waveNumber)
     for (var ui = 0; ui < undergroundAmbushCount; ui++) {
       var uPos = undergroundAmbushPos()
+      if (!uPos) continue // no valid column this wave - see tdPickUndergroundAmbushPos
       var uSpawnTick = currentTick + baselineIndex * baselineStaggerGap
       pendingSpawns.push({
         mobType: 'minecraft:zombie',
@@ -1307,6 +1407,7 @@ function useWaveHorn(player) {
   var undergroundAmbushCount = undergroundAmbushCountForWave(waveNumber)
   for (var ui = 0; ui < undergroundAmbushCount; ui++) {
     var uPos = undergroundAmbushPos()
+    if (!uPos) continue // no valid column - skipped, and not counted in "N mobs incoming"
     var uSpawnTick = currentTick + mobIndex * staggerGap
     pendingSpawns.push({
       mobType: 'minecraft:zombie',
@@ -1520,6 +1621,26 @@ PlayerEvents.tick(function (event) {
       // spawns queued by undergroundAmbushPos() above - tagged separately
       // from plain td_wave_mob purely so a stuck/idle report is easy to
       // grep for later, no other consumer reads it.
+      //
+      // Pocket re-checked and carved here, at the spawn tick (2026-09-28,
+      // see tdPickUndergroundAmbushPos): the queued column was valid when
+      // the horn blew, but a capped spawn can wait a long time and the
+      // player may have dug there since. A column that no longer qualifies
+      // gets one fresh pick; if none turns up this ambusher is dropped.
+      if (spawn.underground) {
+        if (!tdAmbushPocketOk(level, spawn.x, spawn.y, spawn.z)) {
+          var ambushData = worldData(level)
+          var ambushRepick = ambushData ? tdPickUndergroundAmbushPos(level, ambushData, waveObjective(player, ambushData)) : null
+          if (!ambushRepick) {
+            console.log(`wave_spawner.js: dropped an underground ambusher - no carvable pocket under the compound`)
+            return
+          }
+          spawn.x = ambushRepick.x
+          spawn.y = ambushRepick.y
+          spawn.z = ambushRepick.z
+        }
+        server.runCommandSilent(`fill ${spawn.x} ${spawn.y} ${spawn.z} ${spawn.x} ${spawn.y + 1} ${spawn.z} minecraft:air`)
+      }
       var summonTags = spawn.underground ? '["td_justSpawned","td_wave_mob","td_undergroundAmbush"]' : '["td_justSpawned","td_wave_mob"]'
       // See BRUTE_SPEED_FIX_TYPES/BRUTE_MOVEMENT_SPEED's own comment above
       // for why this is here - real decompiled brute speed is slower than

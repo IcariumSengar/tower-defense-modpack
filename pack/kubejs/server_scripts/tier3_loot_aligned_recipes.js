@@ -169,4 +169,16 @@ ServerEvents.recipes((event) => {
     'minecraft:gunpowder', 'minecraft:gunpowder',
     'minecraft:coal', 'minecraft:coal',
   ]).id('kubejs:loot_aligned/fuel_tank')
+
+  // --- Dead ends pulled, 2026-09-28 ---
+  // Assault Rifle: reported as a gun that can't fire; the user asked to
+  // "pull it". r_10 is the only recipe that makes
+  // simple_guns_reworked:assault_rifle, and no recipe uses it as an input.
+  event.remove({ id: 'simple_guns_reworked:r_10' })
+  // IE Generator Block + Radiator: parts for the Diesel Generator, which
+  // was dropped 2026-09-11 for Generator Galore's Culinary Generator. No
+  // recipe uses either block. The Radiator is also an Excavator part, and
+  // the Excavator is unused in this pack too.
+  event.remove({ id: 'immersiveengineering:crafting/generator' })
+  event.remove({ id: 'immersiveengineering:crafting/radiator' })
 })
