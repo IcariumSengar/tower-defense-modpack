@@ -15,7 +15,7 @@ var LADDER_MIN_CLIMB_DY = 1.5 // blocks the target must be above the mob
 var LADDER_SEARCH_RADIUS = 6 // horizontal blocks to scan around the mob
 var LADDER_SEARCH_DOWN = 1 // blocks below the mob's feet to scan
 var LADDER_SEARCH_UP = 3 // blocks above the mob's feet to scan
-var LADDER_RESCAN_TICKS = 40 // ticks between rescans while a ladder is cached
+var LADDER_RESCAN_TICKS = 40 // ticks between one mob's ladder scans, hit or miss
 var LADDER_MAX_COLUMN = 64 // max blocks followed up or down
 var LADDER_STUCK_THRESHOLD = 0.05 // horizontal blocks per check; less is no progress
 var LADDER_AT_FOOT_RANGE = 1.3 // horizontal blocks; closer than this, press in
@@ -142,6 +142,10 @@ PlayerEvents.tick((event) => {
   var level = event.entity.getLevel()
   var now = Number(level.getTime())
   if (now % LADDER_ASSIST_INTERVAL_TICKS !== 0) return
+  // Wave mobs are in the overworld. Game time is shared by every dimension,
+  // so a player elsewhere must not take the tick's pass: the cleanup below
+  // would drop every overworld mob's state.
+  if (`${level.dimension}` !== 'minecraft:overworld') return
   // PlayerEvents.tick fires once per online player; only the first call in a
   // tick runs, since a second pass would measure zero movement for every mob.
   // getTime() returns a Java long; Number() makes it a JS number for ===.
@@ -196,9 +200,9 @@ PlayerEvents.tick((event) => {
     // or is making no progress.
     if (!ladderNavIsDone(e) && horizontalMoved > LADDER_STUCK_THRESHOLD) return
 
-    // With no column cached this rescans on every check; LADDER_RESCAN_TICKS
-    // only throttles a mob that already has one.
-    if (!state.ladder || now >= state.nextScanTick) {
+    // A scan reads (2R+1)^2 * (DOWN+UP+1) blocks, so a mob with no ladder in
+    // reach waits as long as one with a cached ladder before the next scan.
+    if (now >= state.nextScanTick) {
       state.nextScanTick = now + LADDER_RESCAN_TICKS
       state.ladder = findLadderColumn(level, bx, by, bz, Math.floor(target.getY()) - 1)
     }

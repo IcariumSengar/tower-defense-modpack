@@ -7,9 +7,10 @@
 // wall-top platforms and a ring of ruins. The pedestal marker entity it
 // creates holds the world's shared state (worldData() in world_state.js).
 //
-// The login handler gives each player the starter kit once, sweeps starter
-// gear the wave-5 removal missed, claims the starter fences, and runs
-// one-shot migrations for saves built with older layouts.
+// The login handler builds the base as a last resort if the load-time build
+// failed, claims the starter fences, syncs the player's Waves Cleared score,
+// sweeps starter gear the wave-5 removal missed and gives each player the
+// starter kit once.
 
 // The starter sword and armour carry td_starter_gear:1b (plus a Lore line)
 // so the wave-5 removal (wave_status.js) and sweepLateStarterGear take
@@ -46,6 +47,9 @@ var STARTER_KIT_GEAR_ITEMS = [
   'minecraft:iron_boots',
 ]
 
+// Also called by wave_status.js for every overworld player every
+// STARTER_GEAR_SWEEP_TICKS once td_starterGearRemoved is set, for starter
+// gear recovered later from a corpse or a chest.
 function sweepLateStarterGear(player) {
   var server = player.getServer()
   var removed = 0
@@ -338,6 +342,18 @@ function surfaceHeightAt(level, x, z) {
   return level.getHeight('MOTION_BLOCKING', x, z)
 }
 
+// Loads every chunk overlapping the block box, the same way. /fill, /setblock
+// and /place reject a position in an unloaded chunk, and the first-login
+// fallback can build far from the chunks vanilla keeps loaded around the
+// spawn. A chunk loaded this way stays loaded for the rest of the tick.
+function starterLoadChunks(level, x0, z0, x1, z1) {
+  for (var cx = Math.floor(x0 / 16); cx <= Math.floor(x1 / 16); cx++) {
+    for (var cz = Math.floor(z0 / 16); cz <= Math.floor(z1 / 16); cz++) {
+      level.getBlock(cx * 16, 64, cz * 16).getId()
+    }
+  }
+}
+
 // Starting border width in blocks, centred on the spawn, and the levelled
 // field's half-width (a few blocks past the border). At this size
 // wave_spawner.js clamps its 48-64 block spawn band to the border, so early
@@ -488,7 +504,7 @@ function buildStarterBase(server, level, x, z) {
   server.runCommandSilent('worldborder damage amount 0')
 
   // Waves Cleared sidebar, once per world. wave_status.js sets the score on
-  // each clear; each player's row is seeded on their first login.
+  // each clear; the login handler seeds each player's row and catches it up.
   server.runCommandSilent('scoreboard objectives add td_waves_cleared dummy {"text":"Waves Cleared"}')
   server.runCommandSilent('scoreboard objectives setdisplay sidebar td_waves_cleared')
 
@@ -505,7 +521,7 @@ function buildStarterBase(server, level, x, z) {
   // Layout: the three-front fort (docs/FEATURES.md, "Three-front fort").
   // North is -z. The gate wall is 2 blocks south of the spawn point; the
   // pedestal is 9 blocks north of it and 9 from each flank wall; then come 4
-  // open rows, the command post (the protected rear) and a back margin.
+  // open rows, the command post and a back margin.
   // Command post size after rotation: 9 wide (x), 8 deep (z), 10 tall.
   const BUILDING_WIDTH = 9
   const BUILDING_DEPTH = 8
@@ -562,6 +578,8 @@ function buildStarterBase(server, level, x, z) {
     : siteBiome === 'minecraft:desert'
       ? { top: 'minecraft:sand', topDepth: 3, sub: 'minecraft:sandstone' }
       : { top: 'minecraft:grass_block', topDepth: 1, sub: 'minecraft:dirt' }
+  // Everything the build places lies inside the field.
+  starterLoadChunks(level, fieldX0, fieldZ0, fieldX1, fieldZ1)
   starterFillBoxChunked(run, fieldX0, floorY + 1, fieldZ0, fieldX1, floorY + FIELD_CLEAR_ABOVE, fieldZ1, 'minecraft:air')
   starterFillBoxChunked(run, fieldX0, floorY - FIELD_FILL_BELOW, fieldZ0, fieldX1, floorY - fieldBlocks.topDepth, fieldZ1, fieldBlocks.sub)
   starterFillBoxChunked(run, fieldX0, floorY - fieldBlocks.topDepth + 1, fieldZ0, fieldX1, floorY, fieldZ1, fieldBlocks.top)
@@ -653,7 +671,9 @@ function buildStarterBase(server, level, x, z) {
 
   // Random full-height breaches on all four walls, with rubble at the outer
   // foot, kept clear of the corners (BREACH_CORNER_BUFFER), the weak
-  // section, the gate platform and the flank posts (see below).
+  // section, the gate platform and the flank posts (see below). They are
+  // open from wave 1: the starter fence covers only the gate and the fixed
+  // flank holes.
   const BREACH_MIN_WIDTH = 2
   const BREACH_MAX_WIDTH = 3
   const BREACH_CORNER_BUFFER = 3
@@ -1226,8 +1246,14 @@ LevelEvents.loaded((event) => {
 // Builds the base once per world (a no-op once the marker exists).
 // Normally called from ServerEvents.loaded on a fresh world; the login
 // handler calls it as a last-resort fallback, in which case the world
-// spawn is still vanilla's and the site search runs here.
+// spawn is still vanilla's and the site search runs here. level must be the
+// overworld: the marker is looked up in level, while the build's console
+// commands (spawn, border) always act on the overworld.
 function ensureBaseBuilt(server, level, reason) {
+  if (`${level.dimension}` !== 'minecraft:overworld') {
+    console.error(`playtest_starter_kit.js: ensureBaseBuilt called with ${level.dimension} (${reason}) - skipped, the base only builds in the overworld`)
+    return null
+  }
   if (findWorldStateEntity(level)) return null
   var site = pendingBaseSite || findBaseSite(level)
   pendingBaseSite = null
@@ -1252,9 +1278,10 @@ function ensureBaseBuilt(server, level, reason) {
 // put ruins this close: ruins_pool's one exclusion zone keeps its starts
 // 12+ chunks from every anchor, which the town anchors need. /place
 // structure fails unless every chunk it touches is loaded
-// (PlaceCommand.checkLoaded). Jigsaw starts snap to the target's chunk
-// and follow the heightmap; their chests, guard spawners and Lootr
-// conversion work as in a natural start.
+// (PlaceCommand.checkLoaded), so the chunks within 3 of each target are
+// loaded first; a ruin reaching past them fails and is logged as FAILED.
+// Jigsaw starts snap to the target's chunk and follow the heightmap; their
+// chests, guard spawners and Lootr conversion work as in a natural start.
 var RUIN_RING_COUNT = 6
 var RUIN_RING_MIN_DIST = 100
 var RUIN_RING_MAX_DIST = 130
@@ -1284,15 +1311,7 @@ function placeStarterRuinRing(server, level, cx, cz) {
     var x = Math.floor(cx + Math.cos(angle) * dist)
     var z = Math.floor(cz + Math.sin(angle) * dist)
     var id = choices.splice(Math.floor(Math.random() * choices.length), 1)[0]
-    // Meant to load the chunks within 3 of the target, but level.getBlock
-    // alone only wraps a position and loads nothing. /place relies on the
-    // spawn chunks vanilla keeps loaded around the site; a ruin reaching past
-    // them fails and is logged as FAILED.
-    for (var dx = -3; dx <= 3; dx++) {
-      for (var dz = -3; dz <= 3; dz++) {
-        level.getBlock(x + dx * 16, 64, z + dz * 16)
-      }
-    }
+    starterLoadChunks(level, x - 48, z - 48, x + 48, z + 48)
     var y = surfaceHeightAt(level, x, z)
     var placed = server.runCommandSilent(`place structure ${id} ${x} ${y} ${z}`)
     report.push(`${id} (${x}, ${z})${placed ? '' : ' FAILED'}`)
@@ -1309,24 +1328,26 @@ ServerEvents.loaded((event) => {
   }
 })
 
-// Login: the base-build fallback, fence ownership, then the per-player kit.
+// Login: the base-build fallback, fence ownership and the Waves Cleared
+// score, then the per-player kit.
 PlayerEvents.loggedIn((event) => {
   const player = event.player
   const data = player.persistentData
-  const level = player.getLevel()
   const server = player.getServer()
+  // The marker lives in the overworld, and a player can log in anywhere.
+  const overworld = server.getLevel('minecraft:overworld')
 
   // The marker's existence is the world's "base built" signal. Building
   // here is the last-resort fallback for a world whose load-time build
   // failed; it also moves the player onto the new spawn.
-  var existingMarker = findWorldStateEntity(level)
+  var existingMarker = findWorldStateEntity(overworld)
   if (!existingMarker) {
     console.error('playtest_starter_kit.js: no pedestal marker found at login - the load-time build did not happen, building the base now as a fallback')
     try {
-      var built = ensureBaseBuilt(server, level, 'first-login fallback')
+      var built = ensureBaseBuilt(server, overworld, 'first-login fallback')
       if (built) {
-        existingMarker = built.marker || findWorldStateEntity(level)
-        player.teleportTo(built.spawnX + 0.5, built.spawnY, built.spawnZ + 0.5)
+        existingMarker = built.marker || findWorldStateEntity(overworld)
+        server.runCommandSilent(`execute in minecraft:overworld run tp ${player.uuid} ${built.spawnX + 0.5} ${built.spawnY} ${built.spawnZ + 0.5}`)
       }
     } catch (e) {
       console.error(`playtest_starter_kit.js: fallback base build failed (${e})`)
@@ -1347,13 +1368,21 @@ PlayerEvents.loggedIn((event) => {
         var ownerName = `${player.getProfile().getName()}`
         var fencePositions = starterFencePositions(worldD.getInt('td_pedestalX'), worldD.getInt('td_pedestalY'), starterGateWallZ(worldD), starterFenceFlanksFromData(worldD))
         fencePositions.forEach(function (pos) {
-          var fenceBE = level.getBlockEntity(pos)
+          var fenceBE = overworld.getBlockEntity(pos)
           if (fenceBE) fenceBE.setOwner(ownerUuid, ownerName)
         })
       } catch (e) {
         console.error(`playtest_starter_kit.js: starter trap fence owner assignment failed (${e}) - the fence posts stay placed but unowned, and WILL shock the player on contact`)
       }
     }
+
+    // Waves Cleared row: wave_status.js sets it only for players online at a
+    // clear, so every login seeds it or catches it up to
+    // td_q_lastClearedWave (quest_milestones.js). Raise-only, because that
+    // key trails a clear by up to a second; an unset score fails the
+    // `unless` test, so a new row starts at the current count.
+    var clearedWaves = worldD.getInt('td_q_lastClearedWave')
+    server.runCommandSilent(`execute as ${player.uuid} unless score @s td_waves_cleared matches ${clearedWaves}.. run scoreboard players set @s td_waves_cleared ${clearedWaves}`)
   }
 
   // Per-player setup. Once wave 5 has removed the starter gear
@@ -1366,7 +1395,4 @@ PlayerEvents.loggedIn((event) => {
   if (data.getBoolean('td_playtestKitGiven')) return
   data.putBoolean('td_playtestKitGiven', true)
   giveStarterKit(player, !starterGearGone)
-  // Seed Waves Cleared rows: `add 0` creates a missing score at 0 and
-  // leaves existing ones alone, so a late joiner resets nobody's count.
-  server.runCommandSilent('scoreboard players add @a td_waves_cleared 0')
 })

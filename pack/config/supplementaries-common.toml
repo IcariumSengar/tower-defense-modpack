@@ -1,0 +1,14 @@
+#Tower Defense: the cannon and cannonballs are cut. A cannonball's impact
+#breaks blocks without firing Forge's explosion event, so
+#explosion_player_safety.js can't make it block-safe. Only the keys set here
+#differ from Supplementaries' defaults; Forge fills in the rest on load.
+[functional]
+
+	[functional.cannon]
+		enabled = false
+
+		[functional.cannon.cannonball]
+			enabled = false
+			#Radius of the 'explosion' when a cannonball hits a block. Set to 0 to disable
+			#Range: 0.0 ~ 10.0
+			break_radius = 0.0

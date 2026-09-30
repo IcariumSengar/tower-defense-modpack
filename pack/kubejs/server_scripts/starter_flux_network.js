@@ -20,13 +20,17 @@ function linkStarterFluxNetwork(player, level, data) {
 
     var secCls = resolveClass(player, 'sonar.fluxnetworks.api.network.SecurityLevel')
     var secValueOf = findMethodByNameAndShape(secCls, 'valueOf', 1, 'sonar.fluxnetworks.api.network.SecurityLevel', ['java.lang.String'])
-    var securityPrivate = secValueOf.invoke(null, ['PRIVATE'])
+    // The owner is whoever logged in first. On a PUBLIC network every other
+    // player gets USER access, so they can open these blocks and join their
+    // own Flux Points; a PRIVATE one blocks everyone but the owner. Editing or
+    // deleting the network still needs the owner (or an admin they add).
+    var securityPublic = secValueOf.invoke(null, ['PUBLIC'])
 
     // createNetwork(owner, name, colour, security level, password)
     var createNetwork = findMethodByNameAndShape(dataCls, 'createNetwork', 5, 'sonar.fluxnetworks.common.connection.FluxNetwork', [
       'net.minecraft.world.entity.player.Player', 'java.lang.String', 'int', 'sonar.fluxnetworks.api.network.SecurityLevel', 'java.lang.String',
     ])
-    var network = createNetwork.invoke(networkData, [player, 'House Grid', boxInt(player, 0x3399ff), securityPrivate, ''])
+    var network = createNetwork.invoke(networkData, [player, 'House Grid', boxInt(player, 0x3399ff), securityPublic, ''])
 
     var getNetworkID = findMethodByNameAndShape(network.getClass(), 'getNetworkID', 0, 'int', null)
     var networkId = parseInt(`${getNetworkID.invoke(network, [])}`, 10)

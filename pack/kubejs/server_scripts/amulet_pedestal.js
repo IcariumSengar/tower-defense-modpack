@@ -7,9 +7,7 @@
 // The pedestal is a Supplementaries pedestal block at td_pedestalX/Y/Z.
 // Supplementaries itself places the amulet on it (right-click with the amulet
 // in hand), and pedestal_upgrades.js's pedestal screen takes it back off, so
-// this file only polls what the pedestal holds. Older saves have the legacy
-// kubejs:amulet_pedestal block there instead. It has no inventory, so its
-// right-click handler at the bottom does the placing and taking.
+// this file only polls what the pedestal holds.
 
 // Vanilla's border blocks movement by itself, so letting players past means
 // moving it. This many blocks are added to its width when the amulet goes on
@@ -23,21 +21,51 @@ function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
   data.putBoolean('td_amuletOnPedestal', hasAmulet)
 
   var server = player.getServer()
-  var currentBorderSize = level.getWorldBorder().getSize()
+  // The size the border is heading to, which is its size when it isn't
+  // moving. During base_expansion.js's growth getSize() is the part-grown
+  // size, and a `set ... 0` from that would end the growth there for good.
+  var borderTargetSize = level.getWorldBorder().getLerpTarget()
 
   if (hasAmulet) {
-    server.runCommandSilent(`worldborder set ${currentBorderSize + BORDER_EXPAND_DELTA} 0`)
+    server.runCommandSilent(`worldborder set ${borderTargetSize + BORDER_EXPAND_DELTA} 0`)
     player.tell('§d[Amulet] §fThe pendant settles onto the stand. The line at the border loosens - you can walk past it without being pushed back.')
   } else {
     // The border starts at BORDER_START (50, playtest_starter_kit.js) and
     // only grows, so a result below 50 means the matching expansion never
     // happened. Leave the border alone then.
-    var shrunkBorderSize = currentBorderSize - BORDER_EXPAND_DELTA
+    var shrunkBorderSize = borderTargetSize - BORDER_EXPAND_DELTA
     if (shrunkBorderSize >= 50) {
       server.runCommandSilent(`worldborder set ${shrunkBorderSize} 0`)
+      amuletReturnWaveMobsInsideBorder(server, level, data)
     }
     player.tell('§d[Amulet] §fYou lift the pendant back off its stand.')
   }
+}
+
+// Wave mobs left outside the border when it closes can't path back in, and
+// mob_aggro.js leaves mobs outside the border alone, so they would hold the
+// wave open. Each one goes to a fresh point in wave_spawner.js's spawn band,
+// as mob_aggro.js sends strays back. Runs after the shrink, so the band fits
+// the closed border.
+function amuletReturnWaveMobsInsideBorder(server, level, data) {
+  var marker = findWorldStateEntity(level)
+  if (!marker) return
+  var border = level.getWorldBorder()
+  var minX = border.getMinX()
+  var maxX = border.getMaxX()
+  var minZ = border.getMinZ()
+  var maxZ = border.getMaxZ()
+  var band = tdWaveSpawnBand(level)
+  var rect = tdCompoundSpawnRect(data)
+  level.getEntities().forEach(function (e) {
+    if (!e.getTags().contains('td_wave_mob')) return
+    var ex = e.getX()
+    var ez = e.getZ()
+    if (ex >= minX && ex <= maxX && ez >= minZ && ez <= maxZ) return
+    var back = tdSpawnBandPoint(band, rect, marker.getX(), marker.getZ())
+    // spreadplayers takes an entity selector, so a raw UUID works here.
+    server.runCommandSilent(`spreadplayers ${back.x} ${back.z} 0 4 false ${e.uuid}`)
+  })
 }
 
 PlayerEvents.tick((event) => {
@@ -53,8 +81,7 @@ PlayerEvents.tick((event) => {
   var y = data.getInt('td_pedestalY')
   var z = data.getInt('td_pedestalZ')
 
-  // Only Supplementaries' pedestal has an inventory to poll; the legacy
-  // block is handled by the right-click handler below.
+  // Nothing to poll once the pedestal has been destroyed.
   var block = level.getBlock(x, y, z)
   if (`${block.id}` !== 'supplementaries:pedestal') return
 

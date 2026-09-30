@@ -21,8 +21,8 @@ EntityEvents.spawned((event) => {
 })
 
 // Bullets are collected at spawn, so this walks only that short list, never
-// the level's entity list. A bullet leaves the list once it is removed,
-// stops moving or passes SENTRY_TRACER_MAX_TICKS.
+// the level's entity list. A bullet leaves the list once it is removed or
+// passes SENTRY_TRACER_MAX_TICKS.
 ServerEvents.tick((event) => {
   if (sentryTracers.length === 0) return
   var server = event.server
@@ -38,7 +38,13 @@ ServerEvents.tick((event) => {
     var dx = nx - t.x
     var dy = ny - t.y
     var dz = nz - t.z
-    if (dx * dx + dy * dy + dz * dz < 0.0001) continue // stuck in a block
+    // A bullet spawned this tick hasn't moved yet: an entity added during the
+    // level's entity loop first ticks on the next tick. A bullet never lodges
+    // (it discards itself on any hit), so one that hasn't moved is kept.
+    if (dx * dx + dy * dy + dz * dz < 0.0001) {
+      live.push(t)
+      continue
+    }
     for (var s = 1; s <= SENTRY_TRACER_POINTS_PER_TICK; s++) {
       var f = s / SENTRY_TRACER_POINTS_PER_TICK
       server.runCommandSilent(`particle minecraft:end_rod ${t.x + dx * f} ${t.y + dy * f} ${t.z + dz * f} 0 0 0 0 1`)

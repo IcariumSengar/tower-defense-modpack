@@ -24,5 +24,10 @@ var PASSIVE_MOB_TYPES = [
 
 EntityEvents.spawned((event) => {
   var entity = event.getEntity()
-  if (PASSIVE_MOB_TYPES.includes(`${entity.type}`)) event.cancel()
+  if (!PASSIVE_MOB_TYPES.includes(`${entity.type}`)) return
+  // A rider joins after its mount (a baby zombie's jockey chicken). Left on
+  // a mount that never joins the level, the rider never ticks, so it is
+  // dismounted first.
+  entity.ejectPassengers()
+  event.cancel()
 })

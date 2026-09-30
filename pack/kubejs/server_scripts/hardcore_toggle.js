@@ -8,7 +8,7 @@ ServerEvents.commandRegistry((event) => {
       .then(
         Commands.literal('enable').executes((context) => {
           var player = context.source.getPlayerOrException()
-          var data = worldData(player.getLevel())
+          var data = worldData(player.getServer().getLevel('minecraft:overworld'))
           if (!data) {
             player.tell('§c[Hardcore] §fNothing to enable yet - the base hasn\'t finished building.')
             return 0
@@ -22,7 +22,7 @@ ServerEvents.commandRegistry((event) => {
       .then(
         Commands.literal('disable').executes((context) => {
           var player = context.source.getPlayerOrException()
-          var data = worldData(player.getLevel())
+          var data = worldData(player.getServer().getLevel('minecraft:overworld'))
           if (!data) {
             player.tell('§c[Hardcore] §fNothing to disable yet - the base hasn\'t finished building.')
             return 0

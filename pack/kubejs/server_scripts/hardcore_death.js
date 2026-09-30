@@ -15,7 +15,8 @@ EntityEvents.death((event) => {
   var entity = event.entity
   if (`${entity.type}` !== 'minecraft:player') return
   var player = entity
-  var level = event.level
+  // Run state lives on the overworld marker, wherever the player died.
+  var level = player.getServer().getLevel('minecraft:overworld')
   var data = worldData(level)
   if (!data) return
   if (!data.getBoolean('td_hardcoreEnabled')) return
@@ -100,7 +101,7 @@ function triggerHardcoreGameOver(player, level) {
 // death screen, and any player's tick kicks everyone.
 PlayerEvents.tick((event) => {
   var player = event.player
-  var level = player.getLevel()
+  var level = player.getServer().getLevel('minecraft:overworld')
   if (level.getTime() % HARDCORE_KICK_POLL_TICKS !== 0) return
   var data = worldData(level)
   if (!data || !data.getBoolean('td_hardcoreGameOver')) return
@@ -110,26 +111,43 @@ PlayerEvents.tick((event) => {
   hardcoreKickAll(player.getServer())
 })
 
-// Any respawn after game over re-applies spectator and kicks everyone at once,
-// which also covers Respawn clicked before the scheduled kick.
+// Spectator mode and the GAME OVER reminder title for `target`, a player name
+// or selector (both commands take players only, so not a UUID).
+function hardcoreSpectate(server, target) {
+  server.runCommandSilent(`gamemode spectator ${target}`)
+  server.runCommandSilent(`title ${target} title {"text":"GAME OVER","color":"dark_red","bold":true}`)
+  server.runCommandSilent(`title ${target} subtitle {"text":"This run ended in hardcore. Spectating only - start a new world to play again.","color":"gray"}`)
+}
+
+// Respawn clicked while the kick is still scheduled kicks everyone at once.
+// Any later respawn comes from a player who was kicked while dead: their save
+// has 0 health, so reopening the world shows the death screen again. That
+// player only becomes a spectator.
 PlayerEvents.respawned((event) => {
   var player = event.player
-  var data = worldData(player.getLevel())
-  if (!data) return
-  if (!data.getBoolean('td_hardcoreGameOver')) return
-  player.getServer().runCommandSilent('gamemode spectator @a')
-  data.remove('td_hardcoreKickTick')
-  hardcoreKickAll(player.getServer())
-})
-
-// On login after game over: spectator mode and a reminder title, but no kick.
-PlayerEvents.loggedIn((event) => {
-  var player = event.player
-  var data = worldData(player.getLevel())
+  var data = worldData(player.getServer().getLevel('minecraft:overworld'))
   if (!data) return
   if (!data.getBoolean('td_hardcoreGameOver')) return
   var server = player.getServer()
-  server.runCommandSilent('gamemode spectator @a')
-  server.runCommandSilent('title @a title {"text":"GAME OVER","color":"dark_red","bold":true}')
-  server.runCommandSilent('title @a subtitle {"text":"This run ended in hardcore. Spectating only - start a new world to play again.","color":"gray"}')
+  if (data.contains('td_hardcoreKickTick')) {
+    server.runCommandSilent('gamemode spectator @a')
+    data.remove('td_hardcoreKickTick')
+    hardcoreKickAll(server)
+    return
+  }
+  hardcoreSpectate(server, player.getName().getString())
+})
+
+// On login after game over: spectator mode and a reminder title, but no kick.
+// A kick still scheduled with nobody else online belongs to a session that
+// ended before it ran (everyone quit during the GAME OVER title), so it is
+// dropped rather than kicking this one.
+PlayerEvents.loggedIn((event) => {
+  var player = event.player
+  var data = worldData(player.getServer().getLevel('minecraft:overworld'))
+  if (!data) return
+  if (!data.getBoolean('td_hardcoreGameOver')) return
+  var server = player.getServer()
+  if (server.getPlayers().length <= 1) data.remove('td_hardcoreKickTick')
+  hardcoreSpectate(server, '@a')
 })

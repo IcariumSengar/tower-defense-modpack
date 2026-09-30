@@ -52,6 +52,11 @@ var WAVE_AIRDROP_TAIL_BLOCKS = 176
 var WAVE_AIRDROP_FORCE_HOLD_TICKS = 480
 var WAVE_AIRDROP_LANDED_NOTE_TICKS = 20 * 20 // action-bar "crate landed" line
 var WAVE_AIRDROP_BEACON_BLOCK = 'minecraft:beacon'
+// A beacon draws no beam without a full 3x3 layer of #beacon_base_blocks under
+// it. Reinforced iron is in that tag, and a survival player can't break or
+// un-reinforce one placed by command (it has no owner), so the base is no
+// source of iron.
+var WAVE_AIRDROP_BEACON_BASE_BLOCK = 'securitycraft:reinforced_iron_block'
 
 // The launch comes 12 s after the wave clear, so the LOOK UP title doesn't
 // overwrite the wave-clear titles and the flight strip has time to load. The
@@ -63,9 +68,9 @@ var WAVE_AIRDROP_CRATE_ENTITIES = ['dyairdrop:airdrop', 'dyairdrop:smallairdrop'
 
 // Looted-crate cleanup: the mod doesn't remove a crate when it is emptied. One
 // crate is watched at a time, the one that last landed or was last opened, and
-// removed once it has been looted. Watching stops after 30 minutes and the
-// crate stays.
-var WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS = 20 * 60 * 30
+// removed once it has been looted. An unlooted crate stays for good: the mod's
+// own crate removal is off (airdropstolentime in pack/config/dyairdrop.toml,
+// and the patched jar, docs/MODS.md "Patched jars").
 
 // Action-bar line from launch until the crate lands, then for
 // WAVE_AIRDROP_LANDED_NOTE_TICKS after; null otherwise. The action bar is one
@@ -75,7 +80,8 @@ var WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS = 20 * 60 * 30
 function airdropInboundActionbarText(data, now) {
   if (data.getBoolean('td_airdropWatch')) return '§b✈ §fSupply plane coming in from the west - look up!'
   if (data.contains('td_airdropLandedUntilTick') && now < data.getInt('td_airdropLandedUntilTick')) {
-    return `§6Supply crate landed to the ${airdropCompassDirection(data, data.getInt('td_airdropCrateX'), data.getInt('td_airdropCrateZ'))} §f- follow the light beam`
+    var beam = data.getBoolean('td_airdropBeaconActive') ? ' §f- follow the light beam' : ''
+    return `§6Supply crate landed to the ${airdropCompassDirection(data, data.getInt('td_airdropCrateX'), data.getInt('td_airdropCrateZ'))}${beam}`
   }
   return null
 }
@@ -199,20 +205,28 @@ function findLandedCrateY(level, x, z, fromY) {
   return null
 }
 
-// Removes the tracked beacon. Given crate coordinates, it only does so if the
-// beacon sits on that crate, so ending the watch on an older crate can't take
-// down the newest drop's beam. The block read loads the chunk first: a setblock
-// into an unloaded chunk fails silently and would leave an untracked, breakable
-// beacon.
+// Removes the tracked beacon and its base. Given crate coordinates, it only
+// does so if the beacon stands on that crate, so ending the watch on an older
+// crate can't take down the newest drop's beam. Each block is read before it
+// is set: the read loads its chunk (the base can reach into a neighbouring
+// one), and a setblock into an unloaded chunk fails silently and would leave
+// an untracked, breakable beacon.
 function removeAirdropBeacon(server, level, data, crateX, crateY, crateZ) {
   if (!data.getBoolean('td_airdropBeaconActive')) return
   var bx = data.getInt('td_airdropBeaconX')
   var by = data.getInt('td_airdropBeaconY')
   var bz = data.getInt('td_airdropBeaconZ')
-  if (crateX !== undefined && (bx !== crateX || by !== crateY + 1 || bz !== crateZ)) return
+  if (crateX !== undefined && (bx !== crateX || by <= crateY || bz !== crateZ)) return
   data.putBoolean('td_airdropBeaconActive', false)
-  if (`${level.getBlock(bx, by, bz).getId()}` !== WAVE_AIRDROP_BEACON_BLOCK) return
-  server.runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air`)
+  if (`${level.getBlock(bx, by, bz).getId()}` === WAVE_AIRDROP_BEACON_BLOCK) {
+    server.runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air`)
+  }
+  for (var dx = -1; dx <= 1; dx++) {
+    for (var dz = -1; dz <= 1; dz++) {
+      if (`${level.getBlock(bx + dx, by - 1, bz + dz).getId()}` !== WAVE_AIRDROP_BEACON_BASE_BLOCK) continue
+      server.runCommandSilent(`setblock ${bx + dx} ${by - 1} ${bz + dz} minecraft:air`)
+    }
+  }
 }
 
 // Whether the chunk holding (x, z) is loaded, without loading it. If Rhino
@@ -225,17 +239,38 @@ function airdropChunkLoaded(level, x, z) {
   }
 }
 
-// A beacon on the landed crate marks it from far away. A beacon draws its beam
-// without a pyramid, and the crate fell through this column, so the sky above
-// it is clear. One beacon is tracked at a time.
+// A beacon over the landed crate marks it from far away: a 3x3 base on top of
+// the crate with the beacon on it. The base only goes into air, so where the
+// ground beside the crate is higher it is raised up to two blocks, and without
+// room it isn't placed at all. The crate fell through this column, so the sky
+// above the beacon is clear. One beacon is tracked at a time. Returns whether
+// it was placed.
 function placeAirdropBeacon(server, level, data, x, y, z) {
   removeAirdropBeacon(server, level, data)
-  if (!level.getBlock(x, y + 1, z).getBlockState().isAir()) return
-  server.runCommandSilent(`setblock ${x} ${y + 1} ${z} ${WAVE_AIRDROP_BEACON_BLOCK}`)
-  data.putInt('td_airdropBeaconX', x)
-  data.putInt('td_airdropBeaconY', y + 1)
-  data.putInt('td_airdropBeaconZ', z)
-  data.putBoolean('td_airdropBeaconActive', true)
+  for (var baseY = y + 1; baseY <= y + 3; baseY++) {
+    if (!airdropBeaconRoom(level, x, baseY, z)) continue
+    server.runCommandSilent(`fill ${x - 1} ${baseY} ${z - 1} ${x + 1} ${baseY} ${z + 1} ${WAVE_AIRDROP_BEACON_BASE_BLOCK}`)
+    server.runCommandSilent(`setblock ${x} ${baseY + 1} ${z} ${WAVE_AIRDROP_BEACON_BLOCK}`)
+    data.putInt('td_airdropBeaconX', x)
+    data.putInt('td_airdropBeaconY', baseY + 1)
+    data.putInt('td_airdropBeaconZ', z)
+    data.putBoolean('td_airdropBeaconActive', true)
+    return true
+  }
+  return false
+}
+
+// Whether the 3x3 layer at baseY around (x, z) and the block above its centre
+// are all air. The reads also load every chunk the base touches, which the
+// fill needs.
+function airdropBeaconRoom(level, x, baseY, z) {
+  if (!level.getBlock(x, baseY + 1, z).getBlockState().isAir()) return false
+  for (var dx = -1; dx <= 1; dx++) {
+    for (var dz = -1; dz <= 1; dz++) {
+      if (!level.getBlock(x + dx, baseY, z + dz).getBlockState().isAir()) return false
+    }
+  }
+  return true
 }
 
 // Eight-point compass direction ("north", "north-east", ...) from the pedestal
@@ -257,14 +292,23 @@ function sendAirdropWaypoint(server, x, y, z) {
   server.runCommandSilent(`tellraw @a {"text":"<Supply Drop> xaero-waypoint:Supply Crate:S:${x}:${y}:${z}:6:false:0"}`)
 }
 
-// The tracked beacon can't be broken, or every drop would hand out a free
-// beacon. pollAirdropCrateCleanup removes it.
-BlockEvents.broken(WAVE_AIRDROP_BEACON_BLOCK, (event) => {
-  var block = event.block
+// The tracked beacon and its base can't be broken, or every drop would hand out
+// a free beacon. Survival players already can't break the unowned base; this
+// also holds in creative. pollAirdropCrateCleanup removes them.
+function airdropBeaconPart(block) {
   var data = worldData(block.getLevel())
-  if (!data || !data.getBoolean('td_airdropBeaconActive')) return
-  if (block.getX() !== data.getInt('td_airdropBeaconX') || block.getY() !== data.getInt('td_airdropBeaconY') || block.getZ() !== data.getInt('td_airdropBeaconZ')) return
-  event.cancel()
+  if (!data || !data.getBoolean('td_airdropBeaconActive')) return false
+  var dx = block.getX() - data.getInt('td_airdropBeaconX')
+  var dy = block.getY() - data.getInt('td_airdropBeaconY')
+  var dz = block.getZ() - data.getInt('td_airdropBeaconZ')
+  if (dy === 0) return dx === 0 && dz === 0
+  return dy === -1 && Math.abs(dx) <= 1 && Math.abs(dz) <= 1
+}
+BlockEvents.broken(WAVE_AIRDROP_BEACON_BLOCK, (event) => {
+  if (airdropBeaconPart(event.block)) event.cancel()
+})
+BlockEvents.broken(WAVE_AIRDROP_BEACON_BASE_BLOCK, (event) => {
+  if (airdropBeaconPart(event.block)) event.cancel()
 })
 
 // One-off burst at landing. `force` shows it to players up to 512 blocks away
@@ -285,7 +329,6 @@ BlockEvents.rightClicked(WAVE_AIRDROP_BLOCK_ID, (event) => {
   data.putInt('td_airdropCrateX', block.getX())
   data.putInt('td_airdropCrateY', block.getY())
   data.putInt('td_airdropCrateZ', block.getZ())
-  data.putInt('td_airdropCrateWatchUntilTick', level.getTime() + WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS)
   data.putBoolean('td_airdropCrateWatch', true)
 })
 
@@ -308,21 +351,15 @@ function airdropCrateLooted(block) {
 }
 
 // Removes the watched crate, and its beacon, once it has been looted. The
-// beacon also goes if the crate is broken or the watch times out.
-function pollAirdropCrateCleanup(server, level, data, now) {
+// beacon also goes if the crate is broken.
+function pollAirdropCrateCleanup(server, level, data) {
   if (!data.getBoolean('td_airdropCrateWatch')) return
   var x = data.getInt('td_airdropCrateX')
   var y = data.getInt('td_airdropCrateY')
   var z = data.getInt('td_airdropCrateZ')
   // Skipped while the crate's chunk is unloaded: getBlock() would load it
-  // synchronously on every poll. Nobody can loot it meanwhile, and the timeout
-  // waits until it is loaded again.
+  // synchronously on every poll. Nobody can loot it meanwhile.
   if (!airdropChunkLoaded(level, x, z)) return
-  if (now >= data.getInt('td_airdropCrateWatchUntilTick')) {
-    data.putBoolean('td_airdropCrateWatch', false)
-    removeAirdropBeacon(server, level, data, x, y, z)
-    return
-  }
   var block = level.getBlock(x, y, z)
   if (`${block.getId()}` !== WAVE_AIRDROP_BLOCK_ID) {
     data.putBoolean('td_airdropCrateWatch', false) // crate broken or replaced
@@ -349,7 +386,7 @@ PlayerEvents.tick((event) => {
   if (!data) return
 
   // Independent of the drop below: an old crate can outlast the next launch.
-  pollAirdropCrateCleanup(player.getServer(), level, data, now)
+  pollAirdropCrateCleanup(player.getServer(), level, data)
 
   // Release the flight strip once the hold is over and the landing watch ended.
   if (
@@ -406,13 +443,12 @@ PlayerEvents.tick((event) => {
   data.putInt('td_airdropCrateX', lx)
   data.putInt('td_airdropCrateY', ly)
   data.putInt('td_airdropCrateZ', lz)
-  data.putInt('td_airdropCrateWatchUntilTick', now + WAVE_AIRDROP_CRATE_WATCH_TIMEOUT_TICKS)
   data.putBoolean('td_airdropCrateWatch', true)
   data.putInt('td_airdropLandedUntilTick', now + WAVE_AIRDROP_LANDED_NOTE_TICKS)
   fireAirdropLandingBurst(server, lx, ly, lz)
-  placeAirdropBeacon(server, level, data, lx, ly, lz)
+  var beam = placeAirdropBeacon(server, level, data, lx, ly, lz) ? ' - follow the light beam' : ''
   sendAirdropWaypoint(server, lx, ly, lz)
   server.runCommandSilent(`title @a title {"text":"","color":"gold"}`)
-  server.runCommandSilent(`title @a subtitle {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)} - follow the light beam.","color":"gold","bold":true}`)
+  server.runCommandSilent(`title @a subtitle {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)}${beam}.","color":"gold","bold":true}`)
   server.runCommandSilent(`tellraw @a {"text":"Supply crate landed to the ${airdropCompassDirection(data, lx, lz)}. Click Add on the line above to pin it on your map.","color":"gold"}`)
 })

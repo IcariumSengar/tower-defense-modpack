@@ -5,7 +5,11 @@
 // the amulet is worn.
 
 const AMULET_EFFECT_DURATION_TICKS = 200 // 10 seconds
-const AMULET_EFFECT_REFRESH_TICKS = 60 // ticks
+// Regeneration I heals on each tick its remaining duration is a multiple of
+// 50, and every refresh resets that duration to 200. A refresh interval that
+// is a multiple of 50 keeps vanilla's rate of one heal per 50 ticks; any other
+// interval heals faster.
+const AMULET_EFFECT_REFRESH_TICKS = 50 // ticks
 
 PlayerEvents.tick((event) => {
   const player = event.entity

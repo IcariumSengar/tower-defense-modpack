@@ -56,10 +56,17 @@ BlockEvents.placed('kubejs:lure_block', (event) => {
   }
 })
 
+// True while the lure block a marker was placed with is still there.
+function lureBlockPresent(level, data) {
+  var block = level.getBlock(data.getInt('td_lureBlockX'), data.getInt('td_lureBlockY'), data.getInt('td_lureBlockZ'))
+  return `${block.getId()}` === 'kubejs:lure_block'
+}
+
 // Nearest live lure marker within `radius` blocks of (x, z), or null.
 // mob_aggro.js calls this by name for each wave mob it steers, so it must stay
 // a top-level function. The marker list is built once per level per tick and
-// reused; markers discarded earlier in the tick are skipped.
+// reused; markers whose block is gone, or that were discarded earlier in the
+// tick, are skipped.
 var tdLureCacheTick = -1
 var tdLureCacheLevel = null
 var tdLureCacheList = []
@@ -69,7 +76,7 @@ function nearestActiveLure(level, x, z, radius) {
   if (tdLureCacheTick !== now || tdLureCacheLevel !== level) {
     var lures = []
     level.getEntities().forEach(function (e) {
-      if (e.getTags().contains('td_lure_target')) lures.push(e)
+      if (e.getTags().contains('td_lure_target') && lureBlockPresent(level, e.persistentData)) lures.push(e)
     })
     tdLureCacheTick = now
     tdLureCacheLevel = level
@@ -91,21 +98,29 @@ function nearestActiveLure(level, x, z, radius) {
 }
 
 // Once a second, for each live lure: refresh the countdown nameplate, particles
-// and bell. At expiry, remove the block if it is still there and discard the
-// marker. Mining the block early doesn't end the lure; the marker keeps drawing
-// mobs until it expires.
+// and bell. At expiry, remove the block and discard the marker. A lure whose
+// block is already gone (mined, blown up, dug through) ends on the next pass
+// the same way, so a lure lasts at most as long as its block.
+var tdLureLastTick = {} // dimension id -> game time of its last pass
+
 PlayerEvents.tick((event) => {
   var level = event.player.getLevel()
-  var now = level.getTime()
+  var now = Number(level.getTime())
   if (now % 20 !== 0) return
+  // PlayerEvents.tick runs once per online player; one pass per dimension per
+  // tick, or every player would add another bell and nameplate update.
+  var dim = `${level.dimension}`
+  if (tdLureLastTick[dim] === now) return
+  tdLureLastTick[dim] = now
 
   var server = event.player.getServer()
   level.getEntities().forEach(function (e) {
     if (!e.getTags().contains('td_lure_target')) return
     var data = e.persistentData
     var remaining = data.getInt('td_lureExpireTick') - now
+    var blockPresent = lureBlockPresent(level, data)
 
-    if (remaining > 0) {
+    if (remaining > 0 && blockPresent) {
       e.mergeNbt({ CustomName: lureNameplate(remaining) })
       server.runCommandSilent(`particle minecraft:note ${e.getX()} ${e.getY() + 0.3} ${e.getZ()} 0.35 0.2 0.35 1 3`)
       var secondsLeft = Math.ceil(remaining / 20)
@@ -121,11 +136,11 @@ PlayerEvents.tick((event) => {
     var bx = data.getInt('td_lureBlockX')
     var by = data.getInt('td_lureBlockY')
     var bz = data.getInt('td_lureBlockZ')
-    if (`${level.getBlock(bx, by, bz).getId()}` === 'kubejs:lure_block') {
+    if (blockPresent) {
       server.runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air`)
-      server.runCommandSilent(`particle minecraft:poof ${bx + 0.5} ${by + 0.5} ${bz + 0.5} 0.4 0.4 0.4 0.02 20`)
       server.runCommandSilent(`playsound minecraft:entity.zombie.death block @a ${bx} ${by} ${bz} 0.6 1.2`)
     }
+    server.runCommandSilent(`particle minecraft:poof ${bx + 0.5} ${by + 0.5} ${bz + 0.5} 0.4 0.4 0.4 0.02 20`)
     e.discard()
   })
 })

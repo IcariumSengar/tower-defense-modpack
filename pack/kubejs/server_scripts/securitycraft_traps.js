@@ -57,3 +57,15 @@ ServerEvents.recipes((event) => {
   event.remove({ output: 'securitycraft:universal_block_reinforcer_lvl2' })
   event.remove({ output: 'securitycraft:universal_block_reinforcer_lvl3' })
 })
+
+// An I.M.S. always places loaded with four bombs, and breaking it drops one
+// Bouncing Betty per loaded bomb. Capping the drop at the two Betties the
+// recipe costs stops a craft, place and break loop from minting Betties.
+var SC_IMS_BETTY_DROP_MAX = 2
+
+LootJS.modifiers((event) => {
+  event.addBlockLootModifier('securitycraft:ims').modifyLoot('securitycraft:bouncing_betty', (item) => {
+    if (item.getCount() > SC_IMS_BETTY_DROP_MAX) item.setCount(SC_IMS_BETTY_DROP_MAX)
+    return item
+  })
+})

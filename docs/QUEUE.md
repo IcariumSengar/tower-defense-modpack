@@ -45,6 +45,14 @@ sub-decision.
 Built and (unless noted) already deployed to the live instance/dedicated
 server — nobody has actually confirmed these work in a real session yet.
 
+- **Script cleanup and bug sweep, 2026-09-30.** Comments rewritten and
+  dead code dropped (commit 8ab355c), then about 70 fixes from a
+  subsystem-by-subsystem bug sweep, with 13 design calls decided in three
+  question rounds. Checklist: PLAYTESTING.md "Bug sweep, 2026-09-30".
+  Spec: FEATURES.md "2026-09-30 script cleanup and bug sweep". Open
+  question: wave mobs reloaded from disk come back without Epic Siege
+  Mod's digging and pillaring (restoring it needs an untested reflection
+  call into ESM).
 - **Playtest batch, 2026-09-29** (25 items from the user's first play
   on the 09-28 build; the ask-audit batch below had not reached the
   instance yet, so its amulet change covered item 1). Decided in three

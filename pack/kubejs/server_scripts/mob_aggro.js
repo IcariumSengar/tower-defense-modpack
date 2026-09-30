@@ -1,8 +1,9 @@
 // Points wave mobs at the pedestal. Only WAVE_MOB_TYPES entities tagged
-// td_wave_mob are touched, never structure mobs. Every 10 ticks, for each
-// online player, each wave mob inside the world border targets the first of:
-//   - that player, if within MELEE_BLOCK_RANGE (standing in its way);
-//   - a live player it is retaliating against;
+// td_wave_mob are touched, never structure mobs. Every 10 ticks, while any
+// player is in the overworld, each wave mob inside the world border targets
+// the first of:
+//   - the nearest live player within MELEE_BLOCK_RANGE (standing in its way);
+//   - a live player who hit it, for AGGRO_RETALIATION_TICKS;
 //   - the nearest Lure Block within LURE_ATTRACT_RADIUS (lure_block.js);
 //   - the permanent td_pedestal_target marker (world_state.js).
 // Wave mobs beyond STRAY_DISTANCE go back to wave_spawner.js's spawn band.
@@ -10,7 +11,7 @@
 // setTarget() alone does not stick: Epic Siege Mod replaces vanilla target
 // selection with goals that keep retargeting nearby players.
 // stripAutoRetargeting() removes them, along with every TargetGoal except
-// HurtByTargetGoal, once per mob.
+// HurtByTargetGoal, once per mob each time it joins the level.
 //
 // Class names used by stripAutoRetargeting():
 var GOAL_SELECTOR_TYPE = 'net.minecraft.world.entity.ai.goal.GoalSelector'
@@ -66,7 +67,8 @@ function aggroResolveClass(anyMob, className) {
 
 // Removes a mob's automatic targeting so that only this file, and
 // HurtByTargetGoal, decide what it attacks. Reflection is slow, so the tick
-// handler calls this once per mob and tags it td_retarget_stripped.
+// handler calls this once per mob and tags it td_retarget_stripped; the
+// spawned handler below clears the tag when the mob is loaded again.
 //
 // Every goal in every GoalSelector field is checked, not just
 // targetSelector: ESM_EntityAINearestAttackableTarget does not extend
@@ -130,21 +132,50 @@ var STRAY_CHECK_INTERVAL = 100 // ticks (5 s); a multiple of the 10-tick pass
 
 var AGGRO_RETALIATION_TICKS = 160 // 8 s
 var aggroRetaliation = {} // mob uuid -> game time its retaliation window ends
+var aggroPassLastTick = -1
+
+// Goals are not saved: a wave mob loaded back from disk (restart, chunk reload)
+// has its default target goals again, and Epic Siege Mod skips mobs loaded from
+// disk. Clearing the tag makes the tick handler strip it again.
+// EntityEvents.spawned fires for disk loads as well as new spawns.
+EntityEvents.spawned(function (event) {
+  var tags = event.getEntity().getTags()
+  if (tags.contains('td_retarget_stripped')) tags.remove('td_retarget_stripped')
+})
+
+// True when the player with this uuid is the mob's last attacker. Vanilla
+// clears that 100 ticks after the hit.
+function aggroLastHurtBy(mob, playerUuid) {
+  var attacker = mob.getLastHurtByMob()
+  return attacker != null && `${attacker.uuid}` === playerUuid
+}
 
 PlayerEvents.tick(function (event) {
-  var player = event.entity
-  var level = player.getLevel()
-
-  if (level.getTime() % 10 !== 0) return
+  var level = event.entity.getLevel()
+  var now = Number(level.getTime())
+  if (now % 10 !== 0) return
+  // The marker and the wave mobs are in the overworld. Game time is shared by
+  // every dimension, and PlayerEvents.tick runs once per online player, so the
+  // first overworld player of the tick runs the pass for everyone.
+  if (`${level.dimension}` !== 'minecraft:overworld') return
+  if (now === aggroPassLastTick) return
+  aggroPassLastTick = now
 
   var aggroTarget = findWorldStateEntity(level)
   if (!aggroTarget) return
 
-  var checkStrayThisTick = level.getTime() % STRAY_CHECK_INTERVAL === 0
+  var server = event.entity.getServer()
+  var checkStrayThisTick = now % STRAY_CHECK_INTERVAL === 0
 
   // Blocks, 3D. A little over a player's 3-block reach, allowing for movement
   // between passes.
   var MELEE_BLOCK_RANGE = 3.5
+  // A dead player keeps ticking at the death-screen position; without the
+  // health check, mobs standing on the body would target it indefinitely.
+  var livePlayers = []
+  level.getPlayers().forEach(function (p) {
+    if (p.getHealth() > 0) livePlayers.push(p)
+  })
   var border = level.getWorldBorder()
   var borderMinX = border.getMinX()
   var borderMaxX = border.getMaxX()
@@ -158,6 +189,7 @@ PlayerEvents.tick(function (event) {
     if (e.getTags().contains('td_structure_guard')) return
     if (!e.getTags().contains('td_wave_mob')) return
     var ex = e.getX()
+    var ey = e.getY()
     var ez = e.getZ()
 
     // Stray correction. It runs before the border test, so strays outside the
@@ -172,7 +204,7 @@ PlayerEvents.tick(function (event) {
         var back = tdSpawnBandPoint(tdWaveSpawnBand(level), tdCompoundSpawnRect(aggroTarget.persistentData), aggroTarget.getX(), aggroTarget.getZ())
         // spreadplayers takes an entity selector, so a raw UUID works here;
         // only players-only arguments reject one.
-        player.getServer().runCommandSilent(`spreadplayers ${back.x} ${back.z} 0 4 false ${e.uuid}`)
+        server.runCommandSilent(`spreadplayers ${back.x} ${back.z} 0 4 false ${e.uuid}`)
         return
       }
     }
@@ -185,34 +217,40 @@ PlayerEvents.tick(function (event) {
       stripAutoRetargeting(e)
       e.getTags().add('td_retarget_stripped')
     }
-    var dx = e.getX() - player.getX()
-    var dy = e.getY() - player.getY()
-    var dz = e.getZ() - player.getZ()
-    // A dead player keeps ticking at the death-screen position; without the
-    // health check, mobs standing on the body would target it indefinitely.
-    var isBlockingPath = player.getHealth() > 0 &&
-      dx * dx + dy * dy + dz * dz <= MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
 
-    var nearbyLure = isBlockingPath ? null : nearestActiveLure(level, ex, ez, LURE_ATTRACT_RADIUS)
-    var desiredTarget = isBlockingPath ? player : (nearbyLure || aggroTarget)
+    // The nearest live player within MELEE_BLOCK_RANGE is standing in its way.
+    var blocker = null
+    var blockerDistSq = MELEE_BLOCK_RANGE * MELEE_BLOCK_RANGE
+    for (var i = 0; i < livePlayers.length; i++) {
+      var p = livePlayers[i]
+      var dx = ex - p.getX()
+      var dy = ey - p.getY()
+      var dz = ez - p.getZ()
+      var distSq = dx * dx + dy * dy + dz * dz
+      if (distSq > blockerDistSq) continue
+      blocker = p
+      blockerDistSq = distSq
+    }
 
-    // Retaliation. A stripped wave mob gets a player target only from the
-    // blocking rule or from HurtByTargetGoal, so a live player target on a pass
-    // where the blocking rule does not apply means it is fighting back. The
-    // target is kept over any lure or the pedestal for AGGRO_RETALIATION_TICKS
-    // from the pass that first sees it; later hits do not extend the window.
-    // This also keeps a mob chasing for the window after a blocking player
-    // steps away.
+    var nearbyLure = blocker ? null : nearestActiveLure(level, ex, ez, LURE_ATTRACT_RADIUS)
+    var desiredTarget = blocker || nearbyLure || aggroTarget
+
+    // Retaliation. HurtByTargetGoal gives a stripped wave mob the player who hit
+    // it. A window opens only when the mob's current player target is also its
+    // last attacker, so a target left from the blocking rule goes back to the
+    // lure or pedestal on the next pass. The target is kept over any lure or
+    // the pedestal for AGGRO_RETALIATION_TICKS from the pass that opens the
+    // window; later hits do not extend it.
     var currentTarget = e.getTarget()
     var currentTargetUuid = currentTarget ? `${currentTarget.uuid}` : null
     var mobUuid = `${e.uuid}`
-    if (!isBlockingPath && currentTarget && `${currentTarget.type}` === 'minecraft:player' && currentTarget.getHealth() > 0) {
+    if (!blocker && currentTarget && `${currentTarget.type}` === 'minecraft:player' && currentTarget.getHealth() > 0) {
       var retaliateUntil = aggroRetaliation[mobUuid]
-      if (retaliateUntil === undefined) {
-        retaliateUntil = level.getTime() + AGGRO_RETALIATION_TICKS
+      if (retaliateUntil === undefined && aggroLastHurtBy(e, currentTargetUuid)) {
+        retaliateUntil = now + AGGRO_RETALIATION_TICKS
         aggroRetaliation[mobUuid] = retaliateUntil
       }
-      if (level.getTime() < retaliateUntil) {
+      if (retaliateUntil !== undefined && now < retaliateUntil) {
         desiredTarget = currentTarget
       } else {
         delete aggroRetaliation[mobUuid]

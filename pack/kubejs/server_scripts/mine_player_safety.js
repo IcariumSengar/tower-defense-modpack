@@ -1,9 +1,9 @@
-// Keeps players and blocks out of Claymore and Bouncing Betty blasts. It is a
-// second layer: explosion_player_safety.js already strips every blast not
-// caused by a mob, these included. Blasts are matched positively, so anything
-// unmatched, such as an enemy's TNT, is left alone. The I.M.S. launches
-// securitycraft:imsbomb entities rather than Betties, so only
-// explosion_player_safety.js covers it.
+// Keeps players, dropped items, XP orbs and blocks out of Claymore and
+// Bouncing Betty blasts. It is a second layer: explosion_player_safety.js
+// already strips every friendly blast, these included. Blasts are matched
+// positively, so anything unmatched, such as an enemy's TNT, is left alone.
+// The I.M.S. launches securitycraft:imsbomb entities rather than Betties, so
+// only explosion_player_safety.js covers it.
 //
 // - Claymore: explodes at its own block position with no entity involved.
 //   Placed Claymores are kept in worldData() as td_claymoreRegistry
@@ -111,10 +111,8 @@ LevelEvents.afterExplosion((event) => {
 
   if (bettyIdx !== -1) pendingBouncingBettys.splice(bettyIdx, 1)
 
-  // Spare players and clear the block list. (Mines break no blocks anyway:
-  // mineExplosionsBreakBlocks = false in securitycraft-common.toml.)
-  event.getAffectedEntities().forEach((e) => {
-    if (`${e.type}` === 'minecraft:player') event.removeAffectedEntity(e)
-  })
-  event.removeAllAffectedBlocks()
+  // spareFriendlyBlast() is in explosion_player_safety.js. (Mines break no
+  // blocks anyway: mineExplosionsBreakBlocks = false in
+  // securitycraft-common.toml.)
+  spareFriendlyBlast(event)
 })

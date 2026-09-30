@@ -76,11 +76,12 @@ forces the real generator via a datapack override regardless.
   removal both fire at wave 5.
 - **Boss waves every 10th wave** (10, 20, 30...): odd index is **The
   Reaper** (a reskinned Elite Zombie — 200 HP, 24 attack, 0.36 speed,
-  iron armor, chosen for speed/damage over an unkillable tank), even
-  index is **The Demolisher** (Demolition Zombie — 350 HP, 15 attack,
-  netherite armor, throws live TNT and can breach undefended blocks).
-  A boss kill always drops a Sentry, 12 Shrapnel, and a guaranteed Totem
-  of Undying.
+  black leather armor, chosen for speed/damage over an unkillable tank),
+  even index is **The Demolisher** (Demolition Zombie — 350 HP, 15
+  attack, golden armor; the tank of the two. It throws no TNT, but blows
+  itself up if set on fire, which counts as a kill). Bosses spawn in the
+  same 48-64 band as wave mobs. A boss kill always drops a Sentry, 12
+  Shrapnel, and a guaranteed Totem of Undying.
 - Mobs spawn from a safe band outside the compound (48-64 blocks once
   the border has grown enough to fit it, clamped tighter early on so
   nothing spawns past the border) and walk in, staggered, with a sound
@@ -93,15 +94,17 @@ forces the real generator via a datapack override regardless.
   climb — a known, accepted limit.
 - **Lure Block** (Target block + rotten flesh + redstone): pulls any
   wave mob within 40 blocks off the pedestal for 60 seconds, then
-  self-destructs.
+  self-destructs. It is one use: breaking it early ends the lure and
+  gives nothing back.
 - **Airdrops** land every 5th wave clear (5, 10, 15...): ~12 seconds
   after the wave-cleared popup a "LOOK UP" title + bell plays as the
   plane spawns west of the landing spot and flies east for ~10 seconds
   (shorter when the early border is in the way) before the crate drops
   90-110 blocks from the pedestal in any direction (2026-09-28; often
   outside the early border, so place the amulet to go get it); the
-  crate always holds a gun plus that gun's ammo; a beacon beam on top of the crate marks
-  the landing spot until the crate is opened, the action bar shows the
+  crate always holds a gun plus that gun's ammo; a beacon on a 3x3
+  reinforced-iron base on top of the crate sends up a beam that marks it
+  until the crate is emptied, and an unlooted crate never despawns, the action bar shows the
   crate's coordinates for 20 seconds, and chat gets a Xaero "Supply Drop
   shared a waypoint" line - click Add, then confirm, to put it on your
   map (Xaero's Minimap has no way for a server to add a waypoint
@@ -137,7 +140,9 @@ doesn't desync the campaign or re-trigger the base build. Built
 - **Stake Walls** are already mounted on the compound's own perimeter
   walls (wall-mounted, non-solid, continuous contact damage on anything
   climbing past) — nothing to craft to see them, though the recipe
-  (4 logs → 4) exists if you want more elsewhere.
+  (4 logs → 4) exists if you want more elsewhere. Stake Walls you place
+  yourself wear out like Wooden Stakes (same 20 HP); the ones built into
+  the base walls never do.
 - No Bear Trap, no Slime Trap, no Barbed Wire — all removed with no
   replacement (Trapcraft dropped entirely 2026-09-08, Create/Create:
   Crafts & Additions removed entirely 2026-09-11).
@@ -180,8 +185,10 @@ mob roster).
   backstop.
 - **Gun Turret** and **Chemthrower Turret** (single-target, unlike Tier
   4's turrets below) — each built with a Tier 2 SecurityCraft item
-  (Sentry / Electrified Iron Fence) plus a Flux Point spliced into the
-  recipe, so they arrive already wired for wireless power.
+  (Sentry / Electrified Iron Fence) in place of IE's Advanced Electronic
+  Component. Like the Tesla Coil, each runs from a Flux Point placed
+  next to it plus a redstone signal; a newly placed Chemthrower Turret
+  starts with Ignite Fluid on.
 - Sophisticated Storage barrels and a Refined Storage network round out
   storage — both ship with their stock recipes, no re-tiering.
 
@@ -213,8 +220,11 @@ Auto-given on first login. 4 chapters:
   → Tier 2 → Tier 3 → Tier 4, plus the amulet side-quests and wave
   milestones). Reveals itself as you go: only the first quest is visible
   on a fresh world, each next one appears as its dependency completes.
-- **Bounties** — kill-count tasks per mob tier, shown one tier at a
-  time (e.g. First Blood at 25 kills, Exterminator at 100).
+- **Bounties** — one world-wide count of wave-mob kills (every player's,
+  turret's and trap's), shown one tier at a time (e.g. First Blood at 25
+  kills, Exterminator at 100). A team that was offline gets missed tiers
+  at its next login; each quest team is paid one Zombie Masher per 1500
+  kills.
 - **Tips & Tricks** — standalone gameplay tips.
 - **Arsenal** — 24 flat, dependency-free item-possession quests, one
   per Simple Guns gun/ammo type; completes on pickup or crafting, not
@@ -321,6 +331,57 @@ Everything below is built and deployed, but only verified via
 decompiling the relevant mod, `node --check`, and/or a sandbox boot/RCON
 probe — not an actual playtest.
 
+- **Bug sweep, 2026-09-30** (fixes from the script bug sweep; the
+  comment cleanup before it changes no behaviour). Sandbox-checked: all
+  scripts load with 0 errors, a fresh world builds, and every API the
+  fixes rely on resolves. Items marked (fresh) need a new world. The rest
+  needs real play:
+  1. **Waves clear exactly once.** A mob that wanders back after the
+     clear doesn't reopen the wave or pay out twice. A horn click while
+     mobs are still queued is refused without the horn sound and doesn't
+     cancel the countdown.
+  2. **Restart mid-wave** (or save and quit): the rest of the queued wave
+     still arrives.
+  3. **Endless hordes:** one horde per wave whatever the player count;
+     horde mobs don't despawn while you're away, and structure mobs are
+     never pulled into a wave.
+  4. **/tdforceclear** kills only wave mobs (stash guards survive) and
+     cancels the queued spawns.
+  5. **Logging in while in the Nether** no longer rebuilds the base. The
+     Waves Cleared sidebar shows the real count for late joiners.
+  6. **The Demolisher** wears gold armour (much easier to kill), spawns
+     48-64 blocks out like the waves, its bar reaches late joiners, and a
+     burning Demolisher's self-destruct counts as a kill (loot drops, the
+     bar clears).
+  7. **Explosions:** wave-8 Demolition Zombies throw TNT at close range;
+     no explosion can remove the pedestal block (the run ends only when
+     its HP hits 0), or knock the airdrop beacon loose.
+  8. **Zombie piles** climb walls but never break blocks.
+  9. **Airdrop:** a beacon beam rises from the crate, on a reinforced-iron
+     base you can't mine, and an unopened crate stays until it's looted.
+  10. **Loot and bounties:** only wave mobs drop loot bags or count for
+      Bounties; the bag-open popup shows only what the bag gave; each
+      team gets each Bounty payout once.
+  11. **Traps:** Stake Walls you place wear out; friendly blasts no
+      longer destroy loot bags or XP; Sentry bombs don't hurt players;
+      Simply Traps' barbed wire and grass trap recipes are gone; the
+      Supplementaries cannon is gone; breaking an I.M.S. gives back at
+      most 2 Bouncing Betties.
+  12. **Turrets:** the Sentry tracer line shows; a Chem Turret places with
+      Ignite on; the Gun and Chem Turret recipes use the Precision Scope;
+      the flamethrower keeps a mob burning 7.5 s.
+  13. **Pedestal:** only the amulet goes on the stand, and anything stuck
+      there can be taken back from its screen; taking the amulet needs
+      you within 32 blocks; placing or lifting it while the border grows
+      no longer loses growth; lifting it mid-wave returns stranded mobs.
+  14. **Lure Block** is one use: mining it gives nothing back and ends
+      the lure.
+  15. **Multiplayer:** a second player can use the starter House Grid
+      (fresh); milestone quests reach players who were offline.
+  16. **Hardcore:** a death in the Nether ends the run; reopening after
+      the game-over kick makes you a spectator without another kick.
+  17. **Your existing single-player save** still has Sentry damage 6: set
+      `sentry_bullet_damage = 8` in its `serverconfig/securitycraft-server.toml`.
 - **Playtest batch, 2026-09-29** (your 25-item list, in your numbering;
   the doubled 13/16/17 are split into a/b). Base items need a **fresh
   world**. Sandbox-verified where a headless server or the sandbox client
@@ -367,7 +428,7 @@ probe — not an actual playtest.
   18. **Cobblestone** - plain barrels/chests often hold 8-20, Lootr ones
       sometimes 4-12.
   19. **Shotgun shells** - Shrapnel instead of gravel.
-  20. **Sentry** - 8 per shot (3 hits to a zombie); a small muzzle puff and a
+  20. **Sentry** - 8 per shot (3 hits to a zombie) (fresh world, or a save whose serverconfig/securitycraft-server.toml has sentry_bullet_damage = 8); a small muzzle puff and a
       white tracer along each bullet.
   21. **Tesla Coil recipe** - lightning rod, 2 diamond blocks, gold block,
       2 steel, netherite ingot.
@@ -428,8 +489,11 @@ probe — not an actual playtest.
   6. **Base area** - no mineshaft openings in or near the compound.
 
 - **Guns + backpacks, 2026-09-27**:
-  1. **Guns hit 50% harder** - any Simple Guns weapon. Direct hits are
-     bumped; bazooka/grenade blasts are not.
+  1. **Guns hit 50% harder** - the bullet guns and the laser. The
+     flamethrower, bazooka, charged potato and grenade deal no direct
+     damage, so the bump doesn't touch them and their blasts are
+     unscaled; instead a flamethrower hit keeps a mob burning 7.5 s
+     instead of 5 s.
   2. **Backpack** - craft one (4 leather, 4 string, chest), press B to
      open, wear it on your back, then upgrade with a copper ring.
   3. **Xaero new waypoint** is on K now.
@@ -527,7 +591,7 @@ probe — not an actual playtest.
   shocks wave mobs standing next to a fence (item 3 above).
 - **Airdrop flyover + landing beacon** (2026-09-15): confirm the plane's
   flight genuinely takes ~10 seconds now, and a visible beam of light
-  marks the crate's landing spot until it's opened. **"Didn't see the
+  marks the crate's landing spot until it's emptied. **"Didn't see the
   plane fly overhead" reported again 2026-09-16** despite the flight
   actually running (confirmed in the live log - the plane did launch),
   same complaint the 2026-09-10 title+bell fix was meant to solve.

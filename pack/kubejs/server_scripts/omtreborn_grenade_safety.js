@@ -1,10 +1,10 @@
-// Keeps players and blocks out of OMT Reborn Grenade Turret blasts, as a
-// second layer to explosion_player_safety.js. omtreborn-common.toml in
-// pack/defaultconfigs already turns off turret damage to players
-// (globalCanTargetPlayers) and grenade block damage (canGrenadesDestroyBlocks),
-// but a grenade also calls Level#explode (null source, strength 0.1), and that
-// vanilla explosion hurts whatever is in range. Rockets make no vanilla
-// explosion, so they need nothing here.
+// Keeps players, dropped items, XP orbs and blocks out of OMT Reborn Grenade
+// Turret blasts, as a second layer to explosion_player_safety.js.
+// omtreborn-common.toml in pack/defaultconfigs already turns off turret damage
+// to players (globalCanTargetPlayers) and grenade block damage
+// (canGrenadesDestroyBlocks), but a grenade also calls Level#explode (null
+// source, strength 0.1), and that vanilla explosion hurts whatever is in
+// range. Rockets make no vanilla explosion, so they need nothing here.
 //
 // Grenades fly well away from their spawn point, so a spawn-radius match
 // would also catch enemy blasts. The live grenade entities are kept instead
@@ -41,8 +41,5 @@ LevelEvents.afterExplosion((event) => {
 
   liveGrenades.splice(matchIdx, 1)
 
-  event.getAffectedEntities().forEach((e) => {
-    if (`${e.type}` === 'minecraft:player') event.removeAffectedEntity(e)
-  })
-  event.removeAllAffectedBlocks()
+  spareFriendlyBlast(event) // explosion_player_safety.js
 })

@@ -16,6 +16,8 @@
 
 var STG_GUARD_TAG = 'td_structure_guard'
 var STG_TIERED_TAG = 'td_guard_tiered'
+// Added to a tiered guard once it has passed the guard cap, and saved with it.
+var STG_PLACED_TAG = 'td_guard_placed'
 // Blocks from the pedestal. Same bands as MID_TIER_RADIUS and HIGH_TIER_RADIUS
 // in structure_loot_progression.js, so guards and loot scale together.
 var STG_MID_RADIUS = 210
@@ -235,12 +237,13 @@ function stgGuardsNear(level, x, y, z) {
 }
 
 // Registered for each guard mob type; wave mobs of those types return at the
-// tag check. EntityEvents.spawned also fires for entities loading from disk,
-// so saved guards go through the same checks when their chunk reloads.
+// tag check. EntityEvents.spawned also fires for entities loading from disk;
+// STG_PLACED_TAG keeps a saved guard out of the cap when its chunk reloads, so
+// the cap only ever stops new spawns.
 function stgOnGuardSpawn(event) {
   var entity = event.getEntity()
   var tags = entity.getTags()
-  if (!tags.contains(STG_GUARD_TAG)) return
+  if (!tags.contains(STG_GUARD_TAG) || tags.contains(STG_PLACED_TAG)) return
   var level = event.getLevel()
   var x = Math.floor(entity.getX())
   var y = Math.floor(entity.getY())
@@ -258,6 +261,7 @@ function stgOnGuardSpawn(event) {
   }
 
   if (stgGuardsNear(level, x, y, z) >= STG_CAP[stgTierAt(level, x, z)]) event.cancel()
+  entity.addTag(STG_PLACED_TAG)
 }
 
 STG_GUARD_IDS.forEach((id) => {

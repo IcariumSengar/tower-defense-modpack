@@ -31,6 +31,13 @@
 	#system on top of this pack's own carefully tuned wave/horde spawning.
 	#The airdrop is a wave-clear reward, not a new threat generator.
 	enableenemies = false
+	#airdropstolentime: minutes after landing before the mod deletes an unopened
+	#crate with no player within `distance` ("your airdrop has been stolen").
+	#A crate stays until it is looted, so this is far past any run's length.
+	#Must be written as a float: the mod rejects anything but a Double and
+	#falls back to its default of 5.0. The mod's other, unconditional removal
+	#(20000 ticks) is patched out of the jar (docs/MODS.md, "Patched jars").
+	airdropstolentime = 100000000.0
 
 [Performance]
 	#forceload=false: the mod author's own comment on this field (translated

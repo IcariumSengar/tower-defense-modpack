@@ -91,6 +91,10 @@ var BRUTE_MOVEMENT_SPEED = 0.28
 // too. Keep the two equal.
 var MUTANT_BRUTE_MAX_HEALTH = 60
 
+// /summon skips finalizeSpawn, where Undead Nights hands a Demolition Zombie
+// its TNT, so summoned ones get it in their NBT: the mod's default stack.
+var DEMOLITION_ZOMBIE_TNT_COUNT = 3
+
 function pickEndlessOtherType(waveNumber) {
   // Keyed on the endless level (1-40), the scale the Undead Nights difficulty
   // config uses.
@@ -109,9 +113,10 @@ function pickEndlessOtherType(waveNumber) {
 
 // Spawns waiting for their tick, drained by the PlayerEvents.tick handler
 // below. Staggering spreads a wave's arrival out and lets each mob's sound
-// cue play first. In memory only: a server restart drops anything still
-// queued. Entries: {mobType, x, y, z, spawnTick, soundTick, soundPlayed},
-// plus underground: true for ambushers.
+// cue play first. Entries: {mobType, x, y, z, spawnTick, soundTick,
+// soundPlayed, underground}; underground marks ambushers. A restart or
+// /reload empties this array, so tdSaveSpawnQueue mirrors it on the marker
+// and tdRestoreSpawnQueue rebuilds it.
 var pendingSpawns = []
 
 // Ticks between queued spawns: 16 on wave 1, 3 fewer each wave, down to 4
@@ -124,30 +129,18 @@ function staggerGapForWave(waveNumber) {
   return Math.max(MIN_STAGGER_GAP_TICKS, BASE_STAGGER_GAP_TICKS - (waveNumber - 1) * 3)
 }
 
-// Tagging Undead Nights' horde mobs, which spawn_horde creates untagged.
-// useWaveHorn snapshots the untagged roster mobs already in the level; for
-// HORDE_TAG_WINDOW_TICKS afterwards, any other untagged roster mob within
-// HORDE_TAG_RADIUS of a player is tagged td_wave_mob, structure guards
-// excepted. spawn_horde only queues the horde and Undead Nights spawns it on
-// its next tick, so the window does the tagging. A structure mob whose chunk
-// loads inside the window and radius gets tagged too; a rare edge, accepted.
-var HORDE_TAG_WINDOW_TICKS = 100 // 5 seconds
-var HORDE_TAG_RADIUS = 128 // blocks from a player; hordes spawn 70-75 out
+// Undead Nights' horde mobs get td_un_horde, and persistence, from their
+// nbtTags in undeadnights_horde_mobs_config.json; tdTagHordeMobs turns that
+// into td_wave_mob as each one joins the level. spawn_horde only queues the
+// horde and Undead Nights spawns it on a later tick, so for
+// HORDE_LANDING_WINDOW_TICKS after the horn (td_hordeLandingUntilTick on the
+// marker) the wave counts as still arriving.
+var HORDE_LANDING_WINDOW_TICKS = 100 // 5 seconds
 // The world-state marker: the td_pedestal_target armor stand worldData()
 // lives on. Undead Nights' commands run as it (see useWaveHorn).
 var WAVE_STATE_MARKER_SELECTOR = '@e[type=minecraft:armor_stand,tag=td_pedestal_target,limit=1]'
-var tdHordeTagUntil = 0
-var tdHordeTagSnapshot = {}
-
-function tdSnapshotUntaggedRosterMobs(level) {
-  var snap = {}
-  level.getEntities().forEach(function (e) {
-    if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
-    if (e.getTags().contains('td_wave_mob')) return
-    snap[`${e.uuid}`] = true
-  })
-  return snap
-}
+// Horde mobs tagged since the spawn drain last logged a count.
+var tdHordeTaggedCount = 0
 
 // Undead Nights places a player's horde 70-75 blocks from that player with
 // no regard for the base, so horde mobs can land inside the compound. A newly
@@ -184,36 +177,22 @@ function tdRelocateIfInsideCompound(entity, level) {
   console.log(`wave_spawner.js: relocated a horde ${entity.type} out of the compound, (${Math.floor(ex)},${Math.floor(ez)}) -> (${Math.floor(nx)},${Math.floor(nz)})`)
 }
 
-function tdTagHordeMobs(player, level) {
-  var tagged = 0
-  level.getEntities().forEach(function (e) {
-    if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
-    var tags = e.getTags()
-    if (tags.contains('td_wave_mob') || tags.contains('td_structure_guard')) return
-    if (tdHordeTagSnapshot[`${e.uuid}`]) return
-    var dx = e.getX() - player.getX()
-    var dz = e.getZ() - player.getZ()
-    if (dx * dx + dz * dz > HORDE_TAG_RADIUS * HORDE_TAG_RADIUS) return
-    tags.add('td_wave_mob')
-    tdRelocateIfInsideCompound(e, level)
-    tagged++
-  })
-  return tagged
+// EntityEvents.spawned handler, registered below for every roster type. It
+// also fires for mobs loaded from disk, which already carry td_wave_mob.
+// Forge posts the event before the mob is placed in its entity section, so
+// moving it here is safe.
+function tdTagHordeMobs(event) {
+  var entity = event.getEntity()
+  var tags = entity.getTags()
+  if (!tags.contains('td_un_horde') || tags.contains('td_wave_mob')) return
+  tags.add('td_wave_mob')
+  tdRelocateIfInsideCompound(entity, event.getLevel())
+  tdHordeTaggedCount++
 }
 
-// Live td_wave_mob roster mobs within radius blocks of origin ({x, y, z}).
-function nearbyWaveMobCount(origin, level, radius) {
-  return level.getEntities().filter(function (e) {
-    if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return false
-    if (!e.getTags().contains('td_wave_mob')) return false
-    // A killed mob stays in the entity list through its ~1 s death animation.
-    if (e.getHealth() <= 0) return false
-    var dx = e.getX() - origin.x
-    var dy = e.getY() - origin.y
-    var dz = e.getZ() - origin.z
-    return dx * dx + dy * dy + dz * dz <= radius * radius
-  }).length
-}
+WAVE_MOB_TYPES.forEach(function (id) {
+  EntityEvents.spawned(id, tdTagHordeMobs)
+})
 
 // Most wave mobs alive at once. The endless baseline grows fast (about 111
 // mobs at wave 20, 841 at wave 40), so a due spawn waits in the queue for a
@@ -264,15 +243,23 @@ var TD_COMPOUND_SPAWN_MAX_ATTEMPTS = 30
 // to fit inside it (max at least 15, min at most max - 10).
 function tdWaveSpawnBand(level) {
   var border = level.getWorldBorder()
-  var halfWidth = border.getSize() / 2
+  var size = border.getSize()
+  // While the amulet is on the pedestal the border is BORDER_EXPAND_DELTA
+  // wider (amulet_pedestal.js) and closes again when it is lifted, so the
+  // band fits the closed border and queued mobs can't land outside it.
+  var data = worldData(level)
+  if (data && data.getBoolean('td_amuletOnPedestal') && size > BORDER_EXPAND_DELTA) size -= BORDER_EXPAND_DELTA
+  var halfWidth = size / 2
+  var centerX = border.getCenterX()
+  var centerZ = border.getCenterZ()
   var max = Math.max(15, Math.min(TD_SPAWN_BAND_MAX, halfWidth - TD_SPAWN_BORDER_MARGIN))
   return {
     min: Math.min(TD_SPAWN_BAND_MIN, max - 10),
     max: max,
-    minX: Math.ceil(border.getMinX() + TD_SPAWN_BORDER_MARGIN),
-    maxX: Math.floor(border.getMaxX() - TD_SPAWN_BORDER_MARGIN),
-    minZ: Math.ceil(border.getMinZ() + TD_SPAWN_BORDER_MARGIN),
-    maxZ: Math.floor(border.getMaxZ() - TD_SPAWN_BORDER_MARGIN),
+    minX: Math.ceil(centerX - halfWidth + TD_SPAWN_BORDER_MARGIN),
+    maxX: Math.floor(centerX + halfWidth - TD_SPAWN_BORDER_MARGIN),
+    minZ: Math.ceil(centerZ - halfWidth + TD_SPAWN_BORDER_MARGIN),
+    maxZ: Math.floor(centerZ + halfWidth - TD_SPAWN_BORDER_MARGIN),
   }
 }
 
@@ -328,11 +315,82 @@ function tdSpawnBandPoint(band, rect, cx, cz) {
   return safePoint
 }
 
-// True while the current wave still has mobs to come: queued spawns, or an
-// open horde-tagging window (the horde may not have landed yet).
-// wave_status.js holds back its straggler outline until this is false.
+// True while the current wave still has mobs to come: queued spawns (on the
+// marker only, until tdRestoreSpawnQueue has run after a restart), or a horde
+// that may not have landed yet. wave_status.js opens a wave (td_inWave) while
+// this is true, and waits for it to be false before it clears a wave or
+// outlines stragglers.
 function tdWaveSpawnsOutstanding(level) {
-  return pendingSpawns.length > 0 || level.getTime() <= tdHordeTagUntil
+  if (pendingSpawns.length > 0) return true
+  var data = worldData(level)
+  if (!data) return false
+  return `${data.getString('td_spawnQueue')}` !== '' || Number(level.getTime()) <= data.getInt('td_hordeLandingUntilTick')
+}
+
+function tdQueueSpawn(mobType, x, y, z, spawnTick, underground) {
+  pendingSpawns.push({
+    mobType: mobType,
+    x: x,
+    y: y,
+    z: z,
+    spawnTick: spawnTick,
+    soundTick: spawnTick - SOUND_LEAD_TICKS,
+    soundPlayed: false,
+    underground: underground,
+  })
+}
+
+// td_spawnQueue on the marker: the queue's mobs as "type*count" pairs joined
+// by commas, ambusher types prefixed with "~". Positions and timing are not
+// kept; tdRestoreSpawnQueue rolls new ones. Rewritten whenever the queue
+// changes.
+function tdSaveSpawnQueue(data) {
+  var counts = {}
+  var order = []
+  pendingSpawns.forEach(function (spawn) {
+    var key = (spawn.underground ? '~' : '') + spawn.mobType
+    if (!counts[key]) {
+      counts[key] = 0
+      order.push(key)
+    }
+    counts[key]++
+  })
+  data.putString('td_spawnQueue', order.map(function (key) { return `${key}*${counts[key]}` }).join(','))
+}
+
+// Rebuilds pendingSpawns from td_spawnQueue after a restart or /reload,
+// staggered from currentTick at the wave's gap.
+function tdRestoreSpawnQueue(player, level, data, currentTick) {
+  var saved = `${data.getString('td_spawnQueue')}`
+  if (saved === '') return
+  var objective = waveObjective(player, data)
+  var band = tdWaveSpawnBand(level)
+  var rect = tdCompoundSpawnRect(data)
+  var gap = staggerGapForWave(data.getInt('td_waveNumber'))
+  var index = 0
+  saved.split(',').forEach(function (entry) {
+    var parts = entry.split('*')
+    var underground = parts[0].charAt(0) === '~'
+    var mobType = underground ? parts[0].substring(1) : parts[0]
+    var count = parseInt(parts[1], 10) || 0
+    for (var i = 0; i < count; i++) {
+      var pos = underground ? tdPickAmbushPos(level, data, objective) : tdSpawnBandPoint(band, rect, objective.x, objective.z)
+      tdQueueSpawn(mobType, pos.x, underground ? pos.y : Math.floor(objective.y), pos.z, currentTick + index * gap, underground)
+      index++
+    }
+  })
+  console.log(`wave_spawner.js: restored ${index} queued wave spawn(s) from the marker`)
+}
+
+// Drops everything the current wave still has to come: the queue and the
+// horde landing window. Used by /tdforceclear (wave_status.js) and at game
+// over. Returns the number of queued spawns dropped.
+function tdCancelOutstandingSpawns(data) {
+  var dropped = pendingSpawns.length
+  pendingSpawns = []
+  data.putString('td_spawnQueue', '')
+  data.putInt('td_hordeLandingUntilTick', 0)
+  return dropped
 }
 
 // Ambushers surface TD_AMBUSH_WALL_GAP_MIN-MAX blocks outside a random
@@ -378,49 +436,44 @@ function tdPickAmbushPos(level, data, objective) {
   return { x: fallback.x, y: y, z: fallback.z }
 }
 
-// Starts the next wave, or tells the player why it can't. Called by the Wave
-// Horn note block and by the countdown when it runs out.
+// Starts the next wave, or tells the player why it can't, and returns whether
+// a wave started. Called by the Wave Horn note block and by the countdown
+// when it runs out.
 function useWaveHorn(player) {
   var level = player.getLevel()
   var server = player.getServer() // console source: /summon needs op level 2
   // Shared world state (world_state.js); null until the base is built.
   var data = worldData(level)
-  if (!data) return
+  if (!data) return false
 
   // After a loss the horn is silent for good: pedestal_destruction.js sets
   // td_pedestalDestroyed, hardcore_death.js sets td_hardcoreGameOver, and
   // neither is ever cleared.
   if (data.getBoolean('td_pedestalDestroyed')) {
     player.tell('§8§oThe horn has nothing left to call to.')
-    return
+    return false
   }
 
   if (data.getBoolean('td_hardcoreGameOver')) {
     player.tell('§8§oThe horn has nothing left to call to.')
-    return
+    return false
   }
 
-  var currentTick = level.getTime()
+  // The current wave is open from the horn until wave_status.js has run its
+  // clear: its queue covers the ticks before that file's next poll sets
+  // td_inWave, which stays true until the clear. Leftover mobs don't block
+  // the horn after it.
+  if (data.getBoolean('td_inWave') || tdWaveSpawnsOutstanding(level)) {
+    player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
+    return false
+  }
 
-  // One use per second: holding right-click repeats the click every few ticks.
-  // td_lastHornUseTick also completes the "Sound the Horn" quest
-  // (quest_milestones.js).
-  var lastTick = data.getInt('td_lastHornUseTick')
-  if (currentTick - lastTick < 20) return
+  var currentTick = Number(level.getTime())
+  // Completes the "Sound the Horn" quest (quest_milestones.js).
   data.putInt('td_lastHornUseTick', currentTick)
-
   player.playSound(Utils.getSound('minecraft:event.raid.horn'))
 
   var objective = waveObjective(player, data)
-  // Refuse while the current wave is still alive near the pedestal or still
-  // queued (queued mobs don't exist yet for nearbyWaveMobCount to see).
-  // Radius 96 matches wave_status.js's RADIUS: the spawn band plus the
-  // spreadplayers snap puts fresh mobs up to 68 blocks out.
-  if (nearbyWaveMobCount(objective, level, 96) > 0 || pendingSpawns.length > 0) {
-
-    player.tell('§c[Wave Horn] §fClear the current wave before summoning the next one.')
-    return
-  }
 
   // A manual use doesn't wait for the countdown. It cancels it, so the
   // countdown can't start another wave when it reaches zero. The 10-minute
@@ -463,30 +516,25 @@ function useWaveHorn(player) {
     var endlessLevel = Math.min(waveNumber - WAVES.length, 40)
     // Undead Nights' commands need an entity source, and they send their chat
     // messages to that entity rather than to the command output, so they run
-    // as the world-state marker: an armor stand drops the messages. spawn_horde
-    // with no target sends a horde at every player in the level, spawning 70-75
-    // blocks from each (undeadnights-server.toml).
+    // as the world-state marker: an armor stand drops the messages.
+    // spawn_horde targets only the player nearest the pedestal (distance=0..
+    // keeps the pick in the marker's dimension), so one horde comes however
+    // many players are online, 70-75 blocks from that player
+    // (undeadnights-server.toml).
     //
     // Setting the difficulty resets Undead Nights' sequential horde index, so
     // it is only sent when the level changes. The level changes every wave up
-    // to 40, so a lone player always gets each level's first listed horde
+    // to 40, so each wave gets its level's first listed horde
     // (undeadnights_difficulty_config.json).
     if (data.getInt('td_lastEndlessLevel') !== endlessLevel) {
       data.putInt('td_lastEndlessLevel', endlessLevel)
       server.runCommandSilent(`execute as ${WAVE_STATE_MARKER_SELECTOR} run undeadnights difficulty set ${endlessLevel}`)
     }
-    // Snapshot the roster mobs already here, then open the tagging window; the
-    // PlayerEvents.tick handler below does the tagging.
-    tdHordeTagSnapshot = tdSnapshotUntaggedRosterMobs(level)
-    tdHordeTagUntil = currentTick + HORDE_TAG_WINDOW_TICKS
-    server.runCommandSilent(`execute as ${WAVE_STATE_MARKER_SELECTOR} run undeadnights spawn_horde`)
+    data.putInt('td_hordeLandingUntilTick', currentTick + HORDE_LANDING_WINDOW_TICKS)
+    server.runCommandSilent(`execute as ${WAVE_STATE_MARKER_SELECTOR} at @s run undeadnights spawn_horde @p[distance=0..]`)
     // The horde scream is replayed here: hordeSpawnedMessageAndSound is off in
     // undeadnights-server.toml, since it also posts a chat line.
     server.runCommandSilent('execute as @a at @s run playsound undeadnights:horde_scream hostile @s ~ ~ ~ 1 1')
-    // Usually tags nothing: the horde lands on Undead Nights' next tick, inside
-    // the tagging window.
-    var hordeTagged = tdTagHordeMobs(player, level)
-    console.log(`wave_spawner.js: endless wave ${waveNumber} - tagged ${hordeTagged} Undead Nights horde mob(s) as td_wave_mob immediately after spawn_horde`)
 
     // Baseline on top of the horde: plain zombies plus tier-weighted other
     // types, queued back to back at the 4-tick stagger floor. The exponents
@@ -498,30 +546,12 @@ function useWaveHorn(player) {
     var baselineIndex = 0
     for (var zi = 0; zi < baselineZombieCount; zi++) {
       var zPos = randomObjectiveRelativePosition()
-      var zSpawnTick = currentTick + baselineIndex * baselineStaggerGap
-      pendingSpawns.push({
-        mobType: 'minecraft:zombie',
-        x: zPos.x,
-        y: Math.floor(objective.y),
-        z: zPos.z,
-        spawnTick: zSpawnTick,
-        soundTick: zSpawnTick - SOUND_LEAD_TICKS,
-        soundPlayed: false,
-      })
+      tdQueueSpawn('minecraft:zombie', zPos.x, Math.floor(objective.y), zPos.z, currentTick + baselineIndex * baselineStaggerGap, false)
       baselineIndex++
     }
     for (var mi = 0; mi < baselineOtherCount; mi++) {
       var mPos = randomObjectiveRelativePosition()
-      var mSpawnTick = currentTick + baselineIndex * baselineStaggerGap
-      pendingSpawns.push({
-        mobType: pickEndlessOtherType(waveNumber),
-        x: mPos.x,
-        y: Math.floor(objective.y),
-        z: mPos.z,
-        spawnTick: mSpawnTick,
-        soundTick: mSpawnTick - SOUND_LEAD_TICKS,
-        soundPlayed: false,
-      })
+      tdQueueSpawn(pickEndlessOtherType(waveNumber), mPos.x, Math.floor(objective.y), mPos.z, currentTick + baselineIndex * baselineStaggerGap, false)
       baselineIndex++
     }
 
@@ -529,19 +559,10 @@ function useWaveHorn(player) {
     for (var ui = 0; ui < undergroundAmbushCount; ui++) {
       var uPos = undergroundAmbushPos()
       if (!uPos) continue // defensive: tdPickAmbushPos always returns a point
-      var uSpawnTick = currentTick + baselineIndex * baselineStaggerGap
-      pendingSpawns.push({
-        mobType: 'minecraft:zombie',
-        x: uPos.x,
-        y: uPos.y,
-        z: uPos.z,
-        spawnTick: uSpawnTick,
-        soundTick: uSpawnTick - SOUND_LEAD_TICKS,
-        soundPlayed: false,
-        underground: true,
-      })
+      tdQueueSpawn('minecraft:zombie', uPos.x, uPos.y, uPos.z, currentTick + baselineIndex * baselineStaggerGap, true)
       baselineIndex++
     }
+    tdSaveSpawnQueue(data)
 
     player.notify(`§6${tdWaveLabel(waveNumber)} - difficulty ${endlessLevel}, +${baselineZombieCount + baselineOtherCount} baseline`)
     server.runCommandSilent(`title @a title {"text":"${tdWaveLabel(waveNumber).toUpperCase()}","color":"gold","bold":true}`)
@@ -551,7 +572,7 @@ function useWaveHorn(player) {
     // Bell at each player: a server-sourced playsound at ~ ~ ~ would play at
     // world spawn.
     server.runCommandSilent(`execute as @a at @s run playsound minecraft:block.bell.use master @s ~ ~ ~ 1 1 1`)
-    return
+    return true
   }
 
   // Written waves 1-8.
@@ -566,18 +587,9 @@ function useWaveHorn(player) {
     var count = pair[1]
     for (var i = 0; i < count; i++) {
       var pos = randomObjectiveRelativePosition()
-      var spawnTick = currentTick + mobIndex * staggerGap
-      pendingSpawns.push({
-        mobType: mobType,
-        x: pos.x,
-        // Rough ground level; the spawn tick's spreadplayers snap fixes the
-        // height.
-        y: Math.floor(objective.y),
-        z: pos.z,
-        spawnTick: spawnTick,
-        soundTick: spawnTick - SOUND_LEAD_TICKS,
-        soundPlayed: false,
-      })
+      // Rough ground level; the spawn tick's spreadplayers snap fixes the
+      // height.
+      tdQueueSpawn(mobType, pos.x, Math.floor(objective.y), pos.z, currentTick + mobIndex * staggerGap, false)
       mobIndex++
       totalMobs++
     }
@@ -587,20 +599,11 @@ function useWaveHorn(player) {
   for (var ui = 0; ui < undergroundAmbushCount; ui++) {
     var uPos = undergroundAmbushPos()
     if (!uPos) continue // defensive: tdPickAmbushPos always returns a point
-    var uSpawnTick = currentTick + mobIndex * staggerGap
-    pendingSpawns.push({
-      mobType: 'minecraft:zombie',
-      x: uPos.x,
-      y: uPos.y,
-      z: uPos.z,
-      spawnTick: uSpawnTick,
-      soundTick: uSpawnTick - SOUND_LEAD_TICKS,
-      soundPlayed: false,
-      underground: true,
-    })
+    tdQueueSpawn('minecraft:zombie', uPos.x, uPos.y, uPos.z, currentTick + mobIndex * staggerGap, true)
     mobIndex++
     totalMobs++
   }
+  tdSaveSpawnQueue(data)
 
   var displayWave = Math.min(waveNumber, WAVES.length)
   server.runCommandSilent(`title @a title {"text":"WAVE ${displayWave}","color":"gold","bold":true}`)
@@ -608,11 +611,17 @@ function useWaveHorn(player) {
   server.runCommandSilent(`tellraw @a {"text":"Wave ${displayWave} has started.","color":"gold"}`)
   // Bell at each player, as in the endless branch.
   server.runCommandSilent(`execute as @a at @s run playsound minecraft:block.bell.use master @s ~ ~ ~ 1 1 1`)
+  return true
 }
 
 // The Wave Horn: the note block playtest_starter_kit.js places upstairs in
 // the command post (td_waveNoteBlockX/Y/Z). Other note blocks are left
 // alone. The click isn't cancelled, so the horn block still changes pitch.
+// One click per player per second gets through: holding right-click repeats
+// the click every few ticks, and each click fires once per hand.
+var TD_HORN_CLICK_COOLDOWN_TICKS = 20
+var tdHornLastClickTick = {} // player uuid -> game time of their last accepted click
+
 BlockEvents.rightClicked('minecraft:note_block', function (event) {
   var player = event.entity
   var level = player.getLevel()
@@ -622,27 +631,52 @@ BlockEvents.rightClicked('minecraft:note_block', function (event) {
   if (pos.getX() !== data.getInt('td_waveNoteBlockX') ||
     pos.getY() !== data.getInt('td_waveNoteBlockY') ||
     pos.getZ() !== data.getInt('td_waveNoteBlockZ')) return
+  var now = Number(level.getTime())
+  var uuid = `${player.uuid}`
+  var last = tdHornLastClickTick[uuid]
+  if (last !== undefined && now - last < TD_HORN_CLICK_COOLDOWN_TICKS) return
+  tdHornLastClickTick[uuid] = now
   useWaveHorn(player)
 })
 
-// Drains pendingSpawns. Each queued mob's cave-sound cue plays at its spawn
-// point, then on its spawn tick the mob is summoned and snapped onto the
-// surface with spreadplayers, which is why the queued y only needs to be
-// roughly right. Also runs the horde-tagging window.
+// Drains pendingSpawns once per tick, in whichever player's tick comes first,
+// always in the overworld, where the base is and where /summon puts the
+// mobs. Each queued mob's cave-sound cue plays at its spawn point, then on
+// its spawn tick the mob is summoned and snapped onto the surface with
+// spreadplayers, which is why the queued y only needs to be roughly right.
+var tdSpawnDrainTick = -1
+var tdSpawnQueueRestored = false
+
 PlayerEvents.tick(function (event) {
   var player = event.entity
-  var level = player.getLevel()
-  var currentTick = level.getTime()
+  var server = player.getServer()
+  var level = server.getLevel('minecraft:overworld')
+  if (!level) return
+  var currentTick = Number(level.getTime())
+  if (currentTick === tdSpawnDrainTick) return
+  tdSpawnDrainTick = currentTick
 
-  // Horde-tagging window (HORDE_TAG_WINDOW_TICKS), every 10 ticks.
-  if (currentTick <= tdHordeTagUntil && currentTick % 10 === 0) {
-    var newlyTagged = tdTagHordeMobs(player, level)
-    if (newlyTagged > 0) console.log(`wave_spawner.js: tagged ${newlyTagged} Undead Nights horde mob(s) as td_wave_mob`)
+  if (tdHordeTaggedCount > 0) {
+    console.log(`wave_spawner.js: tagged ${tdHordeTaggedCount} Undead Nights horde mob(s) as td_wave_mob`)
+    tdHordeTaggedCount = 0
   }
 
+  if (pendingSpawns.length === 0 && tdSpawnQueueRestored) return
+  var data = worldData(level)
+  if (!data) return
+  if (!tdSpawnQueueRestored) {
+    tdSpawnQueueRestored = true
+    if (pendingSpawns.length === 0) tdRestoreSpawnQueue(player, level, data, currentTick)
+  }
   if (pendingSpawns.length === 0) return
 
-  var server = player.getServer()
+  // A lost run spawns nothing more (pedestal_destruction.js,
+  // hardcore_death.js).
+  if (data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')) {
+    tdCancelOutstandingSpawns(data)
+    return
+  }
+
   var stillPending = []
   // Concurrent cap: count live wave mobs only on ticks where some spawn is
   // due, and after a count at the cap reuse it for TD_CAP_RECHECK_TICKS
@@ -666,8 +700,10 @@ PlayerEvents.tick(function (event) {
 
   pendingSpawns.forEach(function (spawn) {
     if (!spawn.soundPlayed && currentTick >= spawn.soundTick) {
+      // Volume 5 carries 80 blocks (16 per unit), so the whole compound hears
+      // a spawn anywhere in the band; up close it is no louder than volume 1.
       server.runCommandSilent(
-        `playsound minecraft:ambient.cave ambient @a ${spawn.x} ${spawn.y} ${spawn.z} 1 0.6`
+        `playsound minecraft:ambient.cave ambient @a ${spawn.x} ${spawn.y} ${spawn.z} 5 0.6`
       )
       spawn.soundPlayed = true
     }
@@ -688,10 +724,13 @@ PlayerEvents.tick(function (event) {
       var isMutantBrute = spawn.mobType === 'mutantszombies:mutant_brute'
       var healthFix = isMutantBrute ? `,{Name:"generic.max_health",Base:${MUTANT_BRUTE_MAX_HEALTH}}` : ''
       var healthField = isMutantBrute ? `,Health:${MUTANT_BRUTE_MAX_HEALTH}.0f` : ''
+      var tntField = spawn.mobType === 'undeadnights:demolition_zombie'
+        ? `,HandItems:[{id:"minecraft:tnt",Count:${DEMOLITION_ZOMBIE_TNT_COUNT}b},{}]`
+        : ''
       // PersistenceRequired: no despawning while players are away.
       // follow_range 128: pathfinding is capped at follow range (35 for a
       // vanilla zombie), and mobs spawn up to 68 blocks from the pedestal.
-      var summonNbt = `{Attributes:[{Name:"generic.follow_range",Base:128}${speedFix}${healthFix}],PersistenceRequired:1b,Tags:${summonTags}${healthField}}`
+      var summonNbt = `{Attributes:[{Name:"generic.follow_range",Base:128}${speedFix}${healthFix}],PersistenceRequired:1b,Tags:${summonTags}${healthField}${tntField}}`
       // td_justSpawned lets the commands below find this mob and comes off at
       // the end of this block, so the next spawn (same type, same tick) can't
       // match it.
@@ -724,7 +763,9 @@ PlayerEvents.tick(function (event) {
     }
   })
 
+  var anySummoned = stillPending.length !== pendingSpawns.length
   pendingSpawns = stillPending
+  if (anySummoned) tdSaveSpawnQueue(data)
 })
 
 // Countdown to the next wave. wave_status.js starts it on a clear
@@ -735,17 +776,18 @@ var COUNTDOWN_DISPLAY_THROTTLE = 20 // ticks between action-bar refreshes
 PlayerEvents.tick(function (event) {
   var player = event.entity
   var level = player.getLevel()
-  // The first player tick to see the expiry clears td_countdownActive before
-  // calling useWaveHorn, so one wave starts however many players are online.
   var data = worldData(level)
   if (!data || !data.getBoolean('td_countdownActive')) return
 
-  var currentTick = level.getTime()
+  var currentTick = Number(level.getTime())
   var remaining = data.getInt('td_countdownEndTick') - currentTick
 
+  // useWaveHorn clears td_countdownActive when it starts the wave, so one
+  // wave starts however many players are online. Until it does, the
+  // countdown stays at zero and tries again once a second, holding while a
+  // wave is still open.
   if (remaining <= 0) {
-    data.putBoolean('td_countdownActive', false)
-    useWaveHorn(player)
+    if (-remaining % 20 === 0 && !data.getBoolean('td_inWave')) useWaveHorn(player)
     return
   }
 

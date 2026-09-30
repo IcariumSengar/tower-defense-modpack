@@ -1,18 +1,21 @@
 // Wave progress: the "hostiles remaining" action bar, wave-clear detection and
 // everything a clear triggers once (popup, pedestal heal, upgrade prompt,
 // airdrop, daylight, fixed-wave story beats, countdown to the next wave), plus
-// the straggler outline, a delayed-title queue and /tdforceclear.
+// the straggler outline, a delayed-title queue, the late starter-gear sweep
+// and /tdforceclear.
 //
 // A wave counts only td_wave_mob mobs of roster types within RADIUS of the
 // pedestal. State lives on the world-state marker (worldData() in
-// world_state.js). This file sets td_inWave, whose true -> false edge
-// base_expansion.js and quest_milestones.js treat as a clear, and starts the
-// countdown (td_countdownEndTick/td_countdownActive) that wave_spawner.js
-// displays and acts on.
+// world_state.js). This file sets td_inWave when a new wave's spawns show up
+// in wave_spawner.js's queue and clears it, once per wave, when the wave is
+// beaten; that true -> false edge is what base_expansion.js and
+// quest_milestones.js treat as a clear. The clear also starts the countdown
+// (td_countdownEndTick/td_countdownActive) that wave_spawner.js displays and
+// acts on.
 
 // Counting radius around the pedestal, in blocks: wave mobs spawn 48-64 out,
 // plus up to 4 from the spreadplayers snap, so 96 leaves slack for knockback
-// and wandering. Must equal the 96 in useWaveHorn's check (wave_spawner.js).
+// and wandering.
 const RADIUS = 96
 
 // Set by playtest_starter_kit.js on the starter sword and armor only.
@@ -43,6 +46,12 @@ function countdownTicksForWave(waveNumber) {
   return Math.max(MIN_WAVE_GAP_TICKS, raw)
 }
 
+// Empties a starter-trap cell only while it still holds the block the starter
+// base put there, so a block a player has since placed in it stays.
+function tdClearStarterCell(server, x, y, z, blockId) {
+  server.runCommandSilent(`execute if block ${x} ${y} ${z} ${blockId} run setblock ${x} ${y} ${z} minecraft:air`)
+}
+
 // One-time story beats, run by the clear branch when wave `wave` is cleared;
 // flagKey on the marker records that one has run. action gets the player whose
 // poll caught the clear: player.tell reaches only them, commands use @a.
@@ -55,8 +64,9 @@ const FIXED_WAVE_EVENTS = [
 
       // /clear also reaches armor and offhand slots, and in 1.20.1 its NBT
       // argument is a partial match, so the tag alone finds the starter gear.
-      // At login, sweepLateStarterGear (playtest_starter_kit.js) clears the
-      // same items from anyone who missed this /clear; keep the lists in step.
+      // sweepLateStarterGear (playtest_starter_kit.js) clears the same items
+      // at login and every STARTER_GEAR_SWEEP_TICKS after this, for gear this
+      // /clear missed (a death corpse, a chest); keep the lists in step.
       server.runCommandSilent(`clear @a minecraft:netherite_sword{${STARTER_GEAR_TAG}:1b}`)
       server.runCommandSilent(`clear @a minecraft:iron_helmet{${STARTER_GEAR_TAG}:1b}`)
       server.runCommandSilent(`clear @a minecraft:iron_chestplate{${STARTER_GEAR_TAG}:1b}`)
@@ -80,14 +90,14 @@ const FIXED_WAVE_EVENTS = [
       if (data && data.contains('td_starterTeslaCoilX')) {
         // The lever on the coil's west face. td_starterTrapsRemoved is already
         // set, so tesla_coil_auto_power.js won't setblock it back.
-        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaCoilX') - 1} ${data.getInt('td_starterTeslaCoilY')} ${data.getInt('td_starterTeslaCoilZ')} minecraft:air`)
-        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaCoilX')} ${data.getInt('td_starterTeslaCoilY')} ${data.getInt('td_starterTeslaCoilZ')} minecraft:air`)
-        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaCoilDummyX')} ${data.getInt('td_starterTeslaCoilDummyY')} ${data.getInt('td_starterTeslaCoilDummyZ')} minecraft:air`)
-        server.runCommandSilent(`setblock ${data.getInt('td_starterTeslaFluxPointX')} ${data.getInt('td_starterTeslaFluxPointY')} ${data.getInt('td_starterTeslaFluxPointZ')} minecraft:air`)
+        tdClearStarterCell(server, data.getInt('td_starterTeslaCoilX') - 1, data.getInt('td_starterTeslaCoilY'), data.getInt('td_starterTeslaCoilZ'), 'minecraft:lever')
+        tdClearStarterCell(server, data.getInt('td_starterTeslaCoilX'), data.getInt('td_starterTeslaCoilY'), data.getInt('td_starterTeslaCoilZ'), 'immersiveengineering:tesla_coil')
+        tdClearStarterCell(server, data.getInt('td_starterTeslaCoilDummyX'), data.getInt('td_starterTeslaCoilDummyY'), data.getInt('td_starterTeslaCoilDummyZ'), 'immersiveengineering:tesla_coil')
+        tdClearStarterCell(server, data.getInt('td_starterTeslaFluxPointX'), data.getInt('td_starterTeslaFluxPointY'), data.getInt('td_starterTeslaFluxPointZ'), 'fluxnetworks:flux_point')
         // Saves before td_layoutVersion 2 get no flank positions
         // (starterFenceFlanksFromData() is null): those columns are solid wall.
         starterFencePositions(data.getInt('td_pedestalX'), data.getInt('td_pedestalY'), starterGateWallZ(data), starterFenceFlanksFromData(data)).forEach((pos) => {
-          server.runCommandSilent(`setblock ${pos[0]} ${pos[1]} ${pos[2]} minecraft:air`)
+          tdClearStarterCell(server, pos[0], pos[1], pos[2], 'securitycraft:electrified_iron_fence')
         })
       }
       server.runCommandSilent('kill @e[type=securitycraft:sentry,tag=td_starter_trap_sentry]')
@@ -181,8 +191,8 @@ function tdStragglerUnmark(server, e) {
 }
 
 // wanted: the mobs that should glow now. marked: every live mob wearing the
-// straggler tag. Only the difference is acted on, so a steady state (or a
-// second player's poll in the same tick) sends no commands.
+// straggler tag. Only the difference is acted on, so a steady state sends no
+// commands.
 function tdStragglerSync(server, wanted, marked) {
   if (wanted.length === 0 && marked.length === 0) return
   var wantedIds = {}
@@ -198,21 +208,13 @@ function tdStragglerSync(server, wanted, marked) {
   })
 }
 
-// Hostiles counter and wave-clear detection, polled in each online player's
-// tick. td_inWave is shared, so the clear branch runs once per wave: the
-// first poll that sees no hostiles flips it.
-PlayerEvents.tick((event) => {
-  const player = event.player
-  const level = player.getLevel()
-
-  // Every 4 ticks (5 times a second); each pass walks the whole entity list.
-  if (level.getTime() % 4 !== 0) return
-
-  const data = worldData(level)
-  if (!data) return
-  const waveNumber = data.getInt('td_waveNumber')
+// The world half of the wave poll, run once per poll tick by the handler
+// below: counts the wave, syncs the straggler outline and runs the clear.
+// `player` is whoever's tick got there first. Returns the count.
+function tdPollWave(player, level, data) {
+  var waveNumber = data.getInt('td_waveNumber')
   // Measured from the pedestal (waveObjective, wave_spawner.js).
-  const objective = waveObjective(player, data)
+  var objective = waveObjective(player, data)
 
   // One pass feeds the counter (counted: live td_wave_mob within RADIUS) and
   // the straggler sync (stragglerMarked: live tagged stragglers, anywhere).
@@ -233,76 +235,112 @@ PlayerEvents.tick((event) => {
     var dz = e.getZ() - objective.z
     if (dx * dx + dy * dy + dz * dz <= RADIUS * RADIUS) counted.push(e)
   })
-  const hostileCount = counted.length
+  var hostileCount = counted.length
 
   // After a game over (pedestal_destruction.js, hardcore_death.js) the poll
-  // only takes straggler outlines off: leftover mobs would otherwise set
-  // td_inWave again and the last kill would run the clear branch. Both
-  // game-over paths already end the night lock and cancel the countdown.
+  // only takes straggler outlines off. Both game-over paths already end the
+  // wave, the night lock and the countdown.
   var runIsOver = data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')
-  var stragglersWanted = !runIsOver && hostileCount > 0 && hostileCount <= TD_STRAGGLER_MAX && !tdWaveSpawnsOutstanding(level)
+  var inWave = data.getBoolean('td_inWave')
+  var outstanding = tdWaveSpawnsOutstanding(level)
+  var stragglersWanted = !runIsOver && inWave && hostileCount > 0 && hostileCount <= TD_STRAGGLER_MAX && !outstanding
   tdStragglerSync(player.getServer(), stragglersWanted ? counted : [], stragglerMarked)
-  if (runIsOver) return
+  if (runIsOver) return 0
 
-  const wasInWave = data.getBoolean('td_inWave')
-
-  if (hostileCount > 0) {
-    // The action bar is one line, shared with pedestal_health.js's alert and
-    // wave_airdrop.js's airdrop notice. Those win while active (pedestal
-    // first); this 5-times-a-second refresh would otherwise wipe them.
-    var pedestalAlert = pedestalAlertActionbarText(data, level.getTime())
-    var airdropAlert = airdropInboundActionbarText(data, level.getTime())
-    player.setStatusMessage(pedestalAlert || airdropAlert || `§c⚔ ${tdWaveLabel(waveNumber)} — Hostiles remaining: ${hostileCount}`)
-    if (!wasInWave) {
-      data.putBoolean('td_inWave', true)
-    }
-  } else if (wasInWave) {
-    data.putBoolean('td_inWave', false)
-    // Live stragglers were unmarked above; this also clears unloaded ones.
-    player.getServer().runCommandSilent(`team empty ${TD_STRAGGLER_TEAM}`)
-    // Subtitle only, for the smaller font. The empty title is still needed:
-    // vanilla shows a subtitle only while a title is on screen.
-    player.getServer().runCommandSilent(`title @a title {"text":""}`)
-    player.getServer().runCommandSilent(`title @a subtitle {"text":"${tdWaveLabel(waveNumber).toUpperCase()} CLEARED","color":"green","bold":true}`)
-    // Sidebar objective created in buildStarterBase (playtest_starter_kit.js).
-    player.getServer().runCommandSilent(`scoreboard players set @a td_waves_cleared ${waveNumber}`)
-
-    // Heal the pedestal by 5% of its max HP (pedestal_health.js).
-    healPedestalByPercent(player, data, 0.05)
-
-    // Upgrade prompt (pedestal_upgrades.js). Guarded: td_inWave is already
-    // false, so a throw here would skip the rest of this branch for good.
-    try {
-      offerPedestalUpgrades(player.getServer(), data)
-    } catch (err) {
-      console.error('[wave_status] pedestal upgrade prompt failed: ' + err)
-    }
-
-    // Airdrop on every 5th wave (wave_airdrop.js); a no-op otherwise.
-    maybeTriggerWaveAirdrop(player, data, waveNumber)
-
-    // End the night lock useWaveHorn (wave_spawner.js) set at wave start.
-    player.getServer().runCommandSilent('time set day')
-    player.getServer().runCommandSilent('gamerule doDaylightCycle true')
-
-    // The flag is set before the action runs, so a beat fires at most once.
-    FIXED_WAVE_EVENTS.forEach((fixedEvent) => {
-      if (waveNumber !== fixedEvent.wave || data.getBoolean(fixedEvent.flagKey)) return
-      data.putBoolean(fixedEvent.flagKey, true)
-      fixedEvent.action(player)
-    })
-
-    // Start the countdown to the next wave; wave_spawner.js shows it on the
-    // action bar and starts the next wave when it runs out.
-    data.putInt('td_countdownEndTick', level.getTime() + countdownTicksForWave(waveNumber))
-    data.putBoolean('td_countdownActive', true)
+  // td_inWave opens on the first poll after the horn, while the new wave's
+  // spawns are still queued, and closes at the clear below, so each wave
+  // clears once. A leftover that walks back into range after the clear was
+  // never queued, so it can't reopen the wave.
+  if (!inWave) {
+    if (outstanding) data.putBoolean('td_inWave', true)
+    return hostileCount
   }
+  // Mobs still queued or a horde still landing hold the clear off.
+  if (hostileCount > 0 || outstanding) return hostileCount
+  data.putBoolean('td_inWave', false)
+  // Live stragglers were unmarked above; this also clears unloaded ones.
+  player.getServer().runCommandSilent(`team empty ${TD_STRAGGLER_TEAM}`)
+  // Subtitle only, for the smaller font. The empty title is still needed:
+  // vanilla shows a subtitle only while a title is on screen.
+  player.getServer().runCommandSilent(`title @a title {"text":""}`)
+  player.getServer().runCommandSilent(`title @a subtitle {"text":"${tdWaveLabel(waveNumber).toUpperCase()} CLEARED","color":"green","bold":true}`)
+  // Sidebar objective created in buildStarterBase (playtest_starter_kit.js).
+  player.getServer().runCommandSilent(`scoreboard players set @a td_waves_cleared ${waveNumber}`)
+
+  // Heal the pedestal by 5% of its max HP (pedestal_health.js).
+  healPedestalByPercent(player, data, 0.05)
+
+  // Upgrade prompt (pedestal_upgrades.js). Guarded: td_inWave is already
+  // false, so a throw here would skip the rest of the clear for good.
+  try {
+    offerPedestalUpgrades(player.getServer(), data)
+  } catch (err) {
+    console.error('[wave_status] pedestal upgrade prompt failed: ' + err)
+  }
+
+  // Airdrop on every 5th wave (wave_airdrop.js); a no-op otherwise.
+  maybeTriggerWaveAirdrop(player, data, waveNumber)
+
+  // End the night lock useWaveHorn (wave_spawner.js) set at wave start.
+  player.getServer().runCommandSilent('time set day')
+  player.getServer().runCommandSilent('gamerule doDaylightCycle true')
+
+  // The flag is set before the action runs, so a beat fires at most once.
+  FIXED_WAVE_EVENTS.forEach((fixedEvent) => {
+    if (waveNumber !== fixedEvent.wave || data.getBoolean(fixedEvent.flagKey)) return
+    data.putBoolean(fixedEvent.flagKey, true)
+    fixedEvent.action(player)
+  })
+
+  // Start the countdown to the next wave; wave_spawner.js shows it on the
+  // action bar and starts the next wave when it runs out.
+  data.putInt('td_countdownEndTick', level.getTime() + countdownTicksForWave(waveNumber))
+  data.putBoolean('td_countdownActive', true)
+  return 0
+}
+
+// Starter gear recovered after the wave-5 /clear (from a death corpse, a chest
+// or the ground) crumbles within this many ticks of reaching an inventory.
+var STARTER_GEAR_SWEEP_TICKS = 100
+
+// The wave poll, every 4 ticks (5 times a second). PlayerEvents.tick runs
+// once per online player, so the entity scan and the clear (tdPollWave) run
+// only in the first overworld player's tick on a poll tick, and every
+// overworld player's tick then shows the counter from that result.
+var tdWavePollTick = -1
+var tdWavePollHostiles = 0
+
+PlayerEvents.tick((event) => {
+  var player = event.player
+  var level = player.getLevel()
+  var now = Number(level.getTime())
+  if (now % 4 !== 0) return
+
+  var data = worldData(level)
+  if (!data) return
+  if (now !== tdWavePollTick) {
+    tdWavePollTick = now
+    tdWavePollHostiles = tdPollWave(player, level, data)
+  }
+
+  // Only during a wave: between waves the countdown owns the action bar. The
+  // bar is one line, shared with pedestal_health.js's alert and
+  // wave_airdrop.js's airdrop notice. Those win while active (pedestal
+  // first); this 5-times-a-second refresh would otherwise wipe them.
+  if (tdWavePollHostiles > 0 && data.getBoolean('td_inWave')) {
+    var pedestalAlert = pedestalAlertActionbarText(data, now)
+    var airdropAlert = airdropInboundActionbarText(data, now)
+    player.setStatusMessage(pedestalAlert || airdropAlert || `§c⚔ ${tdWaveLabel(data.getInt('td_waveNumber'))} — Hostiles remaining: ${tdWavePollHostiles}`)
+  }
+
+  if (now % STARTER_GEAR_SWEEP_TICKS === 0 && data.getBoolean('td_starterGearRemoved')) sweepLateStarterGear(player)
 })
 
-// /tdforceclear (op level 2) unsticks a wave whose last mob is out of reach.
-// It kills every roster-type mob within RADIUS of the pedestal, td_wave_mob
-// or not, so the next poll sees none and runs the normal clear branch. Spawns
-// still queued in wave_spawner.js are not cancelled.
+// /tdforceclear (op level 2, run by a player) unsticks a wave: it kills every
+// live td_wave_mob in the overworld, wherever it is, and drops the spawns the
+// wave still has queued (tdCancelOutstandingSpawns, wave_spawner.js), so the
+// next poll runs the normal clear. Structure guards and untagged mobs are
+// left alone.
 ServerEvents.commandRegistry((event) => {
   var Commands = event.commands
   event.register(
@@ -310,24 +348,22 @@ ServerEvents.commandRegistry((event) => {
       .requires((source) => source.hasPermission(2))
       .executes((context) => {
         var player = context.source.getPlayerOrException()
-        var level = context.source.getLevel()
+        var level = player.getServer().getLevel('minecraft:overworld')
         var data = worldData(level)
         if (!data) {
           player.tell('§c[Wave] §fNothing to force-clear - the base hasn\'t finished building yet.')
           return 0
         }
-        var objective = waveObjective(player, data)
+        var dropped = tdCancelOutstandingSpawns(data)
         var killed = 0
         level.getEntities().forEach((e) => {
-          if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
-          var dx = e.getX() - objective.x
-          var dy = e.getY() - objective.y
-          var dz = e.getZ() - objective.z
-          if (dx * dx + dy * dy + dz * dz > RADIUS * RADIUS) return
+          var tags = e.getTags()
+          if (!tags.contains('td_wave_mob') || tags.contains('td_structure_guard')) return
+          if (e.getHealth() <= 0) return
           e.kill()
           killed++
         })
-        player.tell(`§6[Wave] §aForce-cleared - killed ${killed} hostile(s).`)
+        player.tell(`§6[Wave] §aForce-cleared - killed ${killed} wave mob(s), dropped ${dropped} queued spawn(s).`)
         return killed
       })
   )

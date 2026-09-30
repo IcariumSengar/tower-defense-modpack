@@ -478,7 +478,7 @@
 		{
 			dependencies: ["46EBB02979D3B684"]
 			hide_until_deps_complete: true
-			description: ["Right-click the pedestal holding the amulet to set it down. You lose the buffs and the border opens: you can walk out. To take it back, right-click the pedestal with an empty hand and press &eTake the amulet&r. The horde targets the pedestal either way; what changes is whether you're inside the wall with it."]
+			description: ["Right-click the pedestal holding the amulet to set it down. You lose the buffs and the border opens: you can walk out. To take it back, right-click the pedestal with an empty hand and press &eTake the amulet&r. The horde targets the pedestal either way; what changes is whether you're inside the wall with it. Nothing else goes on the stand; if something ends up there, the same screen hands it back."]
 			icon: "supplementaries:pedestal"
 			id: "4B8F2D6A93E7C051"
 			rewards: [
@@ -1062,7 +1062,7 @@
 		{
 			dependencies: ["67A7BF98D2C077DE"]
 			hide_until_deps_complete: true
-			description: ["Place a &eLure Block&r and every wave mob within 40 blocks turns off the pedestal and heads for it instead. It lasts 60 seconds, with the time left floating above it and a bell ringing every few seconds while it works, then breaks itself. Set it past your spikes so the horde has to walk the line to reach it. A mob you just hit, or one you're standing in front of, still comes for you first."]
+			description: ["Place a &eLure Block&r and every wave mob within 40 blocks turns off the pedestal and heads for it instead. It lasts 60 seconds, with the time left floating above it and a bell ringing every few seconds while it works, then breaks itself. Break it sooner and it's gone for good. Set it past your spikes so the horde has to walk the line to reach it. A mob you just hit, or one you're standing in front of, still comes for you first."]
 			icon: "kubejs:lure_block"
 			id: "45F3123A81BC11C5"
 			rewards: [
@@ -1259,7 +1259,7 @@
 		{
 			dependencies: ["1F577A9343223A6D"]
 			hide_until_deps_complete: true
-			description: ["Looks like a normal fence, but it's unbreakable and shocks anyone but you who touches it. Line a chokepoint with it and mobs pay for every step."]
+			description: ["Looks like a normal fence, but it's unbreakable and shocks any mob that touches it. It never hurts a player. Line a chokepoint with it and mobs pay for every step."]
 			icon: "securitycraft:electrified_iron_fence"
 			id: "659544B22656B3CD"
 			rewards: [
@@ -1286,7 +1286,7 @@
 		{
 			dependencies: ["0779CC4FD2E4B480"]
 			hide_until_deps_complete: true
-			description: ["Holds up to 4 Bouncing Betties and fires them at anything that gets close - each one tracks its target down before it goes off. Refill it by right-clicking with more Bouncing Betties."]
+			description: ["Holds up to 4 Bouncing Betties and fires them at anything that gets close - each one tracks its target down before it goes off. Refill it by right-clicking with more Bouncing Betties. Breaking it returns at most 2 Bouncing Betties."]
 			icon: "securitycraft:ims"
 			id: "17860922A24C885A"
 			rewards: [
@@ -1591,7 +1591,7 @@
 		{
 			dependencies: ["4F7597CFC2BED87F"]
 			hide_until_deps_complete: true
-			description: ["Auto-aims and fires on its own at anything hostile in range, no redstone clock needed - just power and a signal to enable it. Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."]
+			description: ["Auto-aims and fires on its own at anything hostile in range, no redstone clock needed. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."]
 			icon: "immersiveengineering:turret_gun"
 			id: "54BAD02969997982"
 			rewards: [
@@ -1608,7 +1608,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Revolver, Revolver Magazine, Turntable, Redstone Engineering Block, a Sentry, a Flux Point. 64 Flux/t just watching, +32 more while it's actually firing."
+			subtitle: "Revolver, Revolver Magazine, Precision Scope, Turntable, Redstone Engineering Block, a Sentry. 64 Flux/t just watching, +32 more while it's actually firing."
 			tasks: [
 				{
 					consume_items: false
@@ -1624,7 +1624,7 @@
 		{
 			dependencies: ["4F7597CFC2BED87F"]
 			hide_until_deps_complete: true
-			description: ["Sprays whatever fluid it's fed at anything hostile in range, with a pilot light to set the spray alight if it's flammable. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."]
+			description: ["Sprays whatever fluid it's fed at anything hostile in range. Its pilot light is on when you place it, so creosote or any other flammable fluid sets mobs burning; switch Ignite Fluid off in its screen for a cold spray. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."]
 			icon: "immersiveengineering:turret_chem"
 			id: "63884A2BC335FF75"
 			rewards: [
@@ -1641,7 +1641,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Chemthrower, Metal Barrel, Turntable, Redstone Engineering Block, an Electrified Iron Fence, a Flux Point. 64 Flux/t just watching, +32 more while it's actually spraying."
+			subtitle: "Chemthrower, Metal Barrel, Precision Scope, Turntable, Redstone Engineering Block, an Electrified Iron Fence. 64 Flux/t just watching, +32 more while it's actually spraying."
 			tasks: [
 				{
 					consume_items: false

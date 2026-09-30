@@ -3,10 +3,13 @@
 // player what they got, and Pick Up Notifier only reacts to item entities
 // being picked up, so this script feeds it by hand.
 //
-// Right-clicking a bag starts a short listening window, and every inventory
-// change inside it is sent to Pick Up Notifier. BountyBags grants the loot
-// synchronously in the bag's use(), so the window only has to last until the
-// player's next tick.
+// Right-clicking a bag records the player's item counts before BountyBags'
+// use() runs, which grants the loot synchronously. The next level tick counts
+// again and sends Pick Up Notifier the amount of each item that went up, so
+// loot that merges into a stack shows what the bag gave, and the bag itself
+// (which went down) doesn't show. Levels tick before players, so items picked
+// up off the ground in that tick aren't counted; Pick Up Notifier shows those
+// itself.
 var LOOT_BAG_NAMES = { // only the keys (bag item ids) are read
   'bountybags:uncommon_loot_bag': 'Uncommon Bounty Bag',
   'bountybags:rare_loot_bag': 'Rare Bounty Bag',
@@ -75,34 +78,72 @@ function notifyPickUpNotifier(player, stack) {
   }
 }
 
-// Listening windows, by player uuid: { startTick }.
-var pendingBagOpens = {}
+// Item counts in the player's inventory, keyed by item id and NBT. When
+// samples is given, it also collects one stack per key.
+function lbnInventoryCounts(player, samples) {
+  var counts = {}
+  var inv = player.getInventory()
+  for (var i = 0; i < inv.getContainerSize(); i++) {
+    var stack = inv.getItem(i)
+    if (stack.isEmpty()) continue
+    var key = `${stack.id}|${stack.getTag()}`
+    counts[key] = (counts[key] || 0) + stack.getCount()
+    if (samples && !samples[key]) samples[key] = stack
+  }
+  return counts
+}
+
+// Sends each item whose count rose since `before`, with the amount gained.
+function lbnNotifyGains(player, before) {
+  var samples = {}
+  var after = lbnInventoryCounts(player, samples)
+  Object.keys(after).forEach((key) => {
+    var gained = after[key] - (before[key] || 0)
+    // The message carries the count in a byte, so large gains go in parts.
+    while (gained > 0) {
+      var part = Math.min(gained, 64)
+      var shown = samples[key].copy()
+      shown.setCount(part)
+      notifyPickUpNotifier(player, shown)
+      gained -= part
+    }
+  })
+}
+
+// Open windows: { uuid, player, startTick, before }.
+var pendingBagOpens = []
 
 ItemEvents.rightClicked((event) => {
   var id = `${event.item.id}`
   if (!LOOT_BAG_NAMES[id]) return
-  var uuid = `${event.entity.uuid}`
-  pendingBagOpens[uuid] = {
-    startTick: event.entity.getLevel().getTime(),
+  var player = event.entity
+  var uuid = `${player.uuid}`
+  // A second open before the window closes keeps the first record, so the
+  // gains from both are shown.
+  for (var i = 0; i < pendingBagOpens.length; i++) {
+    if (pendingBagOpens[i].uuid === uuid) return
   }
+  pendingBagOpens.push({
+    uuid: uuid,
+    player: player,
+    startTick: Number(player.getLevel().getTime()),
+    before: lbnInventoryCounts(player, null),
+  })
 })
 
-// The event carries the slot's resulting stack, not the amount added.
-PlayerEvents.inventoryChanged((event) => {
-  var uuid = `${event.entity.uuid}`
-  var pending = pendingBagOpens[uuid]
-  if (!pending) return
-  var stack = event.getItem()
-  if (stack.isEmpty()) return
-  notifyPickUpNotifier(event.entity, stack)
-})
-
-// Closes the window on the player's next tick.
-PlayerEvents.tick((event) => {
-  var uuid = `${event.player.uuid}`
-  var pending = pendingBagOpens[uuid]
-  if (!pending) return
-  var level = event.player.getLevel()
-  if (level.getTime() - pending.startTick < 1) return
-  delete pendingBagOpens[uuid]
+// Closes a window on its player's level's first tick after the click.
+LevelEvents.tick((event) => {
+  if (pendingBagOpens.length === 0) return
+  var level = event.level
+  var now = Number(level.getTime())
+  for (var i = pendingBagOpens.length - 1; i >= 0; i--) {
+    var pending = pendingBagOpens[i]
+    if (pending.player.isRemoved()) {
+      pendingBagOpens.splice(i, 1)
+      continue
+    }
+    if (pending.player.getLevel() !== level || now <= pending.startTick) continue
+    pendingBagOpens.splice(i, 1)
+    lbnNotifyGains(pending.player, pending.before)
+  }
 })

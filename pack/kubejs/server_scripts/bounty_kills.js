@@ -1,22 +1,23 @@
 // Bounties chapter (config/ftbquests/quests/chapters/bounties.snbt).
 //
-// Each wave-roster (WAVE_MOB_TYPES) death adds a kill to every online player's
-// td_hostile_kills score and to the world total in worldData()
-// (world_state.js). Structure guards never count, and neither do
-// environmental deaths or /kill (BOUNTY_EXCLUDED_DAMAGE_TYPES), except fire
-// and lava deaths of wave mobs. Deaths are classified by damage type rather
+// Each td_wave_mob death adds one to the world kill count td_bountyKillCount
+// in worldData() (world_state.js), the only bounty counter. Structure mobs and
+// guards never count, and neither do environmental deaths or /kill
+// (BOUNTY_EXCLUDED_DAMAGE_TYPES). Deaths are classified by damage type rather
 // than by killer because trap damage often has no attacking entity (the
 // fence shock in wave_mob_fence_shock.js has none).
 //
-// A tier completes through /ftbquests change_progress when a player's score
-// reaches its threshold; bqSyncPlayerProgress() fills the bars in between.
+// When the count reaches a tier's threshold, /ftbquests change_progress
+// completes it for everyone online; the repeatable Zombie Masher completes the
+// same way at every multiple of BOUNTY_REPEATABLE_INTERVAL. FTB Quests keeps
+// progress per quest team, so a party is paid once. bqSyncPlayerProgress()
+// fills the bars in between and completes whatever a player's team missed
+// while nobody in it was online.
 
 // Damage type ids that don't count: environmental deaths, plus generic_kill
-// from /kill and /tdforceclear.
+// from /kill and /tdforceclear. Fire and lava do count: the Chemthrower Turret
+// and the Simple Guns flamethrower kill by burning, and lava moats by lava.
 var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
-  'minecraft:in_fire',
-  'minecraft:on_fire',
-  'minecraft:lava',
   'minecraft:drown',
   'minecraft:starve',
   'minecraft:freeze',
@@ -27,13 +28,6 @@ var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:generic_kill',
 ]
 
-// Fire and lava still count when the victim is a td_wave_mob: the Chemthrower
-// Turret and the Simple Guns flamethrower kill by burning, and lava moats by
-// lava. An untagged zombie burning at dawn still doesn't count.
-var BOUNTY_WAVE_MOB_FIRE_TYPES = ['minecraft:in_fire', 'minecraft:on_fire', 'minecraft:lava']
-
-var BOUNTY_OBJECTIVE = 'td_hostile_kills'
-var BOUNTY_MOD_OBJECTIVE = 'td_bountyMod1500'
 var BOUNTY_REPEATABLE_INTERVAL = 1500
 var BOUNTY_REPEATABLE_TASK_ID = '1355429CD45AF725'
 
@@ -48,15 +42,6 @@ var BOUNTY_FIXED_TIERS = [
 ]
 var BOUNTY_REPEATABLE_TITLE = 'Zombie Masher'
 
-ServerEvents.loaded((event) => {
-  var server = event.server
-  server.runCommandSilent(`scoreboard objectives add ${BOUNTY_OBJECTIVE} dummy {"text":"Hostile Kills"}`)
-  // Scratch objective for the repeatable tier's modulo. The fake player #const
-  // holds the divisor: scoreboard operation %= needs a score on both sides.
-  server.runCommandSilent(`scoreboard objectives add ${BOUNTY_MOD_OBJECTIVE} dummy`)
-  server.runCommandSilent(`scoreboard players set #const ${BOUNTY_MOD_OBJECTIVE} ${BOUNTY_REPEATABLE_INTERVAL}`)
-})
-
 // The damage type's registry id (e.g. minecraft:on_fire), or null if it
 // can't be read. A null type counts. Read through typeHolder() because
 // getMsgId(), getEntity() and getDirectEntity() fail from Rhino in this build.
@@ -70,46 +55,28 @@ function bountyDamageTypeId(source) {
 
 EntityEvents.death((event) => {
   var entity = event.entity
-  if (!WAVE_MOB_TYPES.includes(`${entity.type}`)) return
-  // Structure guards never count, or a guard spawner could farm the
-  // repeatable Zombie Masher.
-  if (entity.getTags().contains('td_structure_guard')) return
-
+  // Only wave mobs count, never a structure spawner's mobs, which could farm
+  // the repeatable Zombie Masher.
+  if (!entity.getTags().contains('td_wave_mob')) return
   var typeId = bountyDamageTypeId(event.source)
-  if (typeId !== null && BOUNTY_EXCLUDED_DAMAGE_TYPES.includes(typeId)) {
-    var burningWaveMob = BOUNTY_WAVE_MOB_FIRE_TYPES.includes(typeId) && entity.getTags().contains('td_wave_mob')
-    if (!burningWaveMob) return
-  }
+  if (typeId !== null && BOUNTY_EXCLUDED_DAMAGE_TYPES.includes(typeId)) return
 
-  var server = event.level.getServer()
-  server.runCommandSilent(`scoreboard players add @a ${BOUNTY_OBJECTIVE} 1`)
-
-  // World copy for bqSyncPlayerProgress(); KubeJS has no scoreboard reader.
-  // It counts every kill; the scoreboard only credits players who are online.
   var bqData = worldData(event.level)
-  if (bqData) bqData.putInt('td_bountyKillCount', bqData.getInt('td_bountyKillCount') + 1)
+  if (!bqData) return
+  var kills = bqData.getInt('td_bountyKillCount') + 1
+  bqData.putInt('td_bountyKillCount', kills)
 
-  // Exact score match: kills only rise by one, so each threshold is hit once
-  // and a finished tier isn't re-completed on every later kill.
+  // Kills only rise by one, so each threshold is met once.
+  var server = event.level.getServer()
   BOUNTY_FIXED_TIERS.forEach((tier) => {
-    server.runCommandSilent(
-      `execute as @a[scores={${BOUNTY_OBJECTIVE}=${tier.threshold}}] run ftbquests change_progress @s complete ${tier.taskId}`
-    )
-    server.runCommandSilent(
-      `execute as @a[scores={${BOUNTY_OBJECTIVE}=${tier.threshold}}] run tellraw @s {"text":"[Bounty] ${tier.title} complete - ${tier.threshold} kills.","color":"gold"}`
-    )
+    if (kills !== tier.threshold) return
+    server.runCommandSilent(`ftbquests change_progress @a complete ${tier.taskId}`)
+    server.runCommandSilent(`tellraw @a {"text":"[Bounty] ${tier.title} complete - ${tier.threshold} kills.","color":"gold"}`)
   })
-
-  // Repeatable tier: kill count mod BOUNTY_REPEATABLE_INTERVAL in the scratch
-  // objective, completing on exactly 0.
-  server.runCommandSilent(`execute as @a run scoreboard players operation @s ${BOUNTY_MOD_OBJECTIVE} = @s ${BOUNTY_OBJECTIVE}`)
-  server.runCommandSilent(`execute as @a run scoreboard players operation @s ${BOUNTY_MOD_OBJECTIVE} %= #const ${BOUNTY_MOD_OBJECTIVE}`)
-  server.runCommandSilent(
-    `execute as @a[scores={${BOUNTY_MOD_OBJECTIVE}=0}] run ftbquests change_progress @s complete ${BOUNTY_REPEATABLE_TASK_ID}`
-  )
-  server.runCommandSilent(
-    `execute as @a[scores={${BOUNTY_MOD_OBJECTIVE}=0}] run tellraw @s {"text":"[Bounty] ${BOUNTY_REPEATABLE_TITLE} complete - another ${BOUNTY_REPEATABLE_INTERVAL} kills banked.","color":"gold"}`
-  )
+  if (kills % BOUNTY_REPEATABLE_INTERVAL === 0) {
+    server.runCommandSilent(`ftbquests change_progress @a complete ${BOUNTY_REPEATABLE_TASK_ID}`)
+    server.runCommandSilent(`tellraw @a {"text":"[Bounty] ${BOUNTY_REPEATABLE_TITLE} complete - another ${BOUNTY_REPEATABLE_INTERVAL} kills banked.","color":"gold"}`)
+  }
 })
 
 // Progress bars. change_progress can only complete or reset a task, so the
@@ -140,9 +107,12 @@ var bqIsCompletedMethod = null
 var bqSetProgressMethod = null
 var bqLongValueOfMethod = null
 var bqSetMaxProgressMethod = null
-// Task objects: {task, threshold} per fixed tier, plus the repeatable task.
+var bqGetCompletionCountMethod = null
+// Task objects: {task, threshold} per fixed tier, plus the repeatable task and
+// its quest.
 var bqFixedTierTasks = []
 var bqRepeatableTask = null
+var bqRepeatableQuest = null
 
 // Method#invoke passes a JS number as a Double, which a long parameter
 // rejects; Long.valueOf(String) returns a java.lang.Long instead.
@@ -161,6 +131,7 @@ function bqInitProgressReflection(anyObj) {
     var teamDataCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.TeamData')
     var taskCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.task.Task')
     var questObjectCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.QuestObject')
+    var questCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.Quest')
     var entityCls = bqResolveClass(anyObj, 'net.minecraft.world.entity.Entity')
     var stringCls = bqResolveClass(anyObj, 'java.lang.String')
     var longCls = bqResolveClass(anyObj, 'java.lang.Long')
@@ -174,6 +145,7 @@ function bqInitProgressReflection(anyObj) {
     bqGetOrCreateTeamDataMethod = serverQuestFileCls.getMethod('getOrCreateTeamData', [entityCls])
     bqIsCompletedMethod = teamDataCls.getMethod('isCompleted', [questObjectCls])
     bqSetProgressMethod = teamDataCls.getMethod('setProgress', [taskCls, longPrimitiveCls])
+    bqGetCompletionCountMethod = teamDataCls.getMethod('getCompletionCount', [questCls])
     bqLongValueOfMethod = longCls.getMethod('valueOf', [stringCls])
 
     // Task ids are 64-bit hex, beyond JS number precision, so Long.parseLong
@@ -202,6 +174,7 @@ function bqInitProgressReflection(anyObj) {
     if (repeatable === null || resolved.some((entry) => entry.task === null)) return false
     bqFixedTierTasks = resolved
     bqRepeatableTask = repeatable
+    bqRepeatableQuest = repeatable.getQuest()
 
     var customTaskCls = bqResolveClass(anyObj, 'dev.ftb.mods.ftbquests.quest.task.CustomTask')
     bqSetMaxProgressMethod = customTaskCls.getMethod('setMaxProgress', [longPrimitiveCls])
@@ -218,14 +191,21 @@ function bqInitProgressReflection(anyObj) {
 
 // Init runs on the first server ticks: ServerQuestFile.INSTANCE is still null
 // at ServerEvents.loaded, and the maximums must be in place before a client's
-// login sync, which carries them. This loop gives up after BQ_INIT_MAX_TICKS.
+// login sync, which carries them. After BQ_INIT_MAX_TICKS this loop gives up
+// and the bars stay off until a restart; the tiers still complete through
+// change_progress in the death handler.
 var bqInitTicksTried = 0
 var BQ_INIT_MAX_TICKS = 1200 // ticks (one minute)
 ServerEvents.tick((event) => {
-  if (bqProgressInitDone || bqInitTicksTried >= BQ_INIT_MAX_TICKS) return
+  if (bqProgressInitDone) return
   bqInitTicksTried++
-  if (bqInitProgressReflection(event.server)) console.log(`[bounty_kills] bounty tasks resolved on server tick ${bqInitTicksTried}`)
-  else if (bqInitTicksTried === BQ_INIT_MAX_TICKS) console.log('[bounty_kills] gave up waiting for ServerQuestFile - bounty max progress NOT applied')
+  if (bqInitProgressReflection(event.server)) {
+    console.log(`[bounty_kills] bounty tasks resolved on server tick ${bqInitTicksTried}`)
+  } else if (bqInitTicksTried >= BQ_INIT_MAX_TICKS) {
+    bqProgressInitDone = true
+    bqProgressAvailable = false
+    console.log('[bounty_kills] gave up resolving the bounty tasks - bars and max progress NOT applied')
+  }
 })
 
 // FTB Quests ignores the max_progress values in bounties.snbt (CustomTask
@@ -244,10 +224,10 @@ function bqApplyMaxProgress() {
   console.log(`[bounty_kills] bounty task max progress applied: ${applied.join('/')}`)
 }
 
-// Mirrors the world kill total onto the bars of the player's quest team.
+// Mirrors the world kill total onto the bars of the player's quest team, and
+// completes any tier the team reached while nobody in it was online.
 function bqSyncPlayerProgress(player, killCount) {
-  bqInitProgressReflection(player)
-  if (!bqProgressAvailable) return
+  if (!bqProgressInitDone || !bqProgressAvailable) return
   try {
     var teamData = bqGetOrCreateTeamDataMethod.invoke(bqServerQuestFileInstance, [player])
 
@@ -262,19 +242,28 @@ function bqSyncPlayerProgress(player, killCount) {
 
     // Repeatable tier: kills mod the interval. A completed task is left alone
     // until its reward is claimed and FTB Quests resets it; writing 0 (the
-    // value right after completion) would clear the completion.
+    // value right after completion) would clear the completion. FTB Quests
+    // adds one to the team's completion count each time the reward is claimed
+    // and the quest resets; a team whose count is behind the world count's
+    // whole intervals (offline at a multiple, or still holding an unclaimed
+    // completion when the next one came) completes the next one here.
     if (`${bqIsCompletedMethod.invoke(teamData, [bqRepeatableTask])}` !== 'true') {
-      bqSetProgressMethod.invoke(teamData, [bqRepeatableTask, bqBoxLong(killCount % BOUNTY_REPEATABLE_INTERVAL)])
+      var paid = Number(`${bqGetCompletionCountMethod.invoke(teamData, [bqRepeatableQuest])}`)
+      var owed = Math.floor(killCount / BOUNTY_REPEATABLE_INTERVAL) > paid
+      var progress = owed ? BOUNTY_REPEATABLE_INTERVAL : killCount % BOUNTY_REPEATABLE_INTERVAL
+      bqSetProgressMethod.invoke(teamData, [bqRepeatableTask, bqBoxLong(progress)])
     }
   } catch (e) {
     console.log(`[bounty_kills] progress-display sync failed: ${e}`)
   }
 }
 
-// Every 10 ticks, sync this player's bars with the world total.
+// Every 10 ticks, sync this player's bars with the world total. The marker
+// lives in the overworld, whichever dimension the player is in.
 PlayerEvents.tick((event) => {
-  if (event.player.getLevel().getTime() % 10 !== 0) return
-  var data = worldData(event.player.getLevel())
+  var player = event.player
+  if (player.getLevel().getTime() % 10 !== 0) return
+  var data = worldData(player.getServer().getLevel('minecraft:overworld'))
   if (!data) return
-  bqSyncPlayerProgress(event.player, data.getInt('td_bountyKillCount'))
+  bqSyncPlayerProgress(player, data.getInt('td_bountyKillCount'))
 })

@@ -849,9 +849,10 @@ Philip's Ruins' singular `philipsruins:chest/...` path entirely):
   someone left things in, occasionally almost nothing.
 - **`structure_chest_loot_fix.js` rewritten without any structure lookup.**
   At first right-click, a plain chest/trapped chest/barrel/dispenser/dropper
-  that is untagged, empty, more than 100 blocks from the pedestal (structure
-  sets are excluded for 9 chunks around the base, so nothing inside that
-  radius can be world-gen storage - and the base's own script-placed double
+  that is untagged, empty, more than 45 blocks from the pedestal (that
+  covers the base's own containers and nearly all of its levelled field;
+  the ruin ring's containers can land about 60 out, so they roll like
+  any other - and the base's own script-placed double
   chest is safe) and not in the player-placed registry gets the storage
   table merged as {LootTable, LootTableSeed}. `BlockEvents.placed`/`broken`
   maintain `td_playerContainers` on the shared marker (same string-registry
@@ -1677,7 +1678,7 @@ resolved as *courtyard* centre for visibility, and everything since
 both on the front wall) silently assumed the funnel. Three layouts were
 put to the user — keep the funnel / true centre with four fronts /
 three-front fort — and the three-front fort was chosen: pedestal
-centred on the *open* ground, the house as the protected rear.
+centred on the *open* ground, the house across the rear (the back wall still has random, unfenced breaches).
 
 *Layout (new constants in `buildStarterBase`).* Gate at `z1 = z+2`
 unchanged. **Pedestal at `z1-9`** (was `z1-7`), 8 open rows in front,
@@ -1710,8 +1711,10 @@ equal 9/9/9 geometry takes over.
   against. Inner barricade and work-alley fixtures were offered and
   declined — the yard stays open ground.
 - **Starter fence seals the flank holes too until wave 5** (9 blocks
-  each, 27 total), matching the existing "the previous occupant boarded
-  every hole; the boards come down at wave 5" rule for the gate. Gated
+  each, 27 total), matching the gate's fence. The random 2-3 wide
+  breaches in the flank and back walls are left open from wave 1
+  (decision 2026-09-30), so mobs can reach the yard through them from
+  the first wave. Gated
   on a new persisted `td_layoutVersion = 2` — `starterFencePositions()`
   only returns the flank ranges when the key is ≥ 2, otherwise the
   wave-5 removal in `wave_status.js` would set air into the *solid*
@@ -1719,8 +1722,8 @@ equal 9/9/9 geometry takes over.
   come from the flanks instead: leave the flank holes open from wave 1
   (the gate-wall Sentry still reaches the pedestal at 9 blocks; the
   coil's 6-block range would not).
-- **`WEAK_WALL` unchanged** at the back-west corner — purely narrative
-  now that the rear is the protected side.
+- **`WEAK_WALL` unchanged** at the back-west corner — purely narrative;
+  the rear is not sealed (random back-wall breaches stay open).
 
 *Step 0 — the `td_pedestalZ + 7` derivations.* Five places recompute
 the gate wall as pedestal + 7 and three of them run on new worlds:
@@ -3444,8 +3447,8 @@ script, creative player at noon) - what they caught:**
 **Known edges, accepted or open:** `factory_overrun` (Lost City factory,
 weight 3 of 265) and the observatory each hold 11 guard spawners - the
 factory's were illager spawners before; guard XP still counts toward
-pedestal upgrades (not decided); native zombie/husk spawners (40 in
-reachable pieces) still pay bags and bounties, as before; `.nbt` changes
+pedestal upgrades (not decided); native zombie/husk spawners pay no bags
+or bounties: only td_wave_mob kills do; `.nbt` changes
 only reach pieces generated after this ships, so this needs a fresh world.
 
 **Wasteland re-skin + one-tag structure gating — spec 2026-09-10, ready
@@ -8558,10 +8561,15 @@ the map waypoint had never worked - the mod's `addwaypointxaero` command
 server is its chat share protocol (`xaero-waypoint:...` system message ->
 "<sender> shared a waypoint: <name> [Add]", Add opens the prefilled
 waypoint screen) and nothing silent, so the landing now sends exactly
-that line; (2) a real `minecraft:beacon` goes on top of the landed crate
-- a beacon beams with no pyramid, the sky column above the crate is
-clear by construction - unbreakable while tracked, removed with the
-crate; (3) the landing spot is picked by the pack (50-70 blocks from the
+that line; (2) a `minecraft:beacon` on a 3x3 base of
+`securitycraft:reinforced_iron_block` goes on top of the landed crate (a
+vanilla beacon draws no beam without a base layer; reinforced iron is in
+`#minecraft:beacon_base_blocks`, and command-placed reinforced blocks
+have no owner, so survival players can't break or un-reinforce them).
+The base only goes into air and is raised up to two blocks where the
+ground beside the crate is higher; the sky column above is clear by
+construction; beacon and base are unbreakable while tracked and removed
+with the crate; (3) the landing spot is picked by the pack (50-70 blocks from the
 pedestal, inside a +/-75 degree eastern arc) and handed to
 `/setairdrop free`, so the plane's fixed 200-block westerly approach
 crosses the base before the drop; (4) plane altitude is now pedestal Y +
@@ -8677,18 +8685,19 @@ or a data-pack tag:
   would desync `wave_status.js`'s hostile-remaining counter and
   `mob_aggro.js`'s pedestal-targeting the same way untracked spawns have
   broken both before.
-- `hordeSmashingPower` (default 4) governs a block-destruction mechanic,
-  checked directly against this pack's real wall materials before
-  shipping rather than assumed safe from the "smash through walls"
-  framing in web search results: it requires vanilla `mobGriefing=true`
-  **and** the target block must be in a small hardcoded allowlist tag
-  (`data/forge/tags/blocks/horde_breakable.json`, read directly from the
-  jar) containing only leaves/crops/glass/ice/sea_lantern/sweet_berry_bush
-  - no stone, wood, cobblestone, or SecurityCraft reinforced block is in
-  that list. The perimeter walls, the pedestal, and every placed Tier 1+
-  machine are exactly as safe from this as they were before Enhanced
-  Hordes existed - this mechanic is structurally incapable of touching
-  them, independent of the power number. Left at default.
+- `hordeSmashingPower` (default 4) and the `forge:horde_breakable` tag
+  govern two block-breaking rules inside the stacking code, both gated
+  only by vanilla `mobGriefing`. A stacked horde mob breaks
+  `forge:horde_breakable` blocks (leaves, crops, glass, ice, glowstone,
+  sea lantern) in its own column. A horde mob overlapped by at least
+  `hordeSmashingPower` other horde mobs breaks every non-air block in
+  the 3x3 around it at feet and head height, plus the block above each,
+  unless it is in `forge:horde_unbreakable`. That tag holds vanilla
+  unbreakables only and there is no hardness check, so the pedestal,
+  reinforced walls, fences and traps were all exposed. Piles are meant
+  to climb only (decision 2026-09-30), so `enhanced_hordes_config.js`
+  sets `hordeSmashingPower 0` on every server start (Enhanced Hordes
+  skips the 3x3 rule at 0) and empties `forge:horde_breakable`.
 
 Real participant list, `data/forge/tags/entity_types/hordes.json`
 (read directly, not the research's own invented `horde_settings` block):
@@ -9332,9 +9341,9 @@ so the entity reference is held directly — no lookup to race. A
 through `Level#getChunk(x, z)` → FULL, load=true, the same path
 vanilla's own `setInitialSpawn` takes via `PlayerRespawnLogic`) so every
 heightmap read is against a generated chunk. The login handler is now
-per-player only (starter kit, coordinate mirror, sidebar score seed via
-`scoreboard players add @a td_waves_cleared 0` so a late joiner no
-longer resets everyone's count), with the full site-search-and-build
+per-player only (starter kit, coordinate mirror, sidebar score sync on
+every login from `td_q_lastClearedWave` (raise-only), so a late joiner
+or a player offline at a clear shows the real count), with the full site-search-and-build
 kept as a logged last-resort fallback for a world where the load-time
 path failed. Both loot scripts read the base position live from the
 marker's persistentData (`worldData(level)`), with their radii shifted
@@ -9896,3 +9905,56 @@ Decisions came from three question rounds.
 - **#8 tips**: the two wave-5 rust/defences tips removed (a surprise); the
   amulet, crate-direction, ambusher and generator tips corrected; a
   pedestal-screen tip added.
+
+## 2026-09-30 script cleanup and bug sweep
+
+*live in the repo, sandbox-checked, not yet seen in real play.* The user
+asked for another bug sweep and for the scripts to "look less like they
+have been vibe coded".
+
+**Cleanup (commit 8ab355c, no gameplay change).** Every comment in the 56
+KubeJS scripts was rewritten from dated changelog narrative into short
+notes on what the code does and why; each rewrite was checked to leave
+the code identical. One wave roster (`WAVE_MOB_TYPES`), one
+`waveObjective()`, one `LURE_ATTRACT_RADIUS`; dead code removed; the
+one-shot upgrades for worlds made before 2026-09-22 dropped (user's
+call), including `ensurePedestalMarker` and the old
+`kubejs:amulet_pedestal` block. `pack/kubejs/README.md` now holds the
+conventions and the Rhino/KubeJS rules that used to be repeated across
+file headers.
+
+**Sweep.** Subsystem finders over every script, plus mechanical checks
+(log mining, an AST scan for the Rhino hazards, all 989 namespaced ids
+checked against the installed jars, lint). Each finding was fixed by an
+agent that first tried to refute it. Decisions (three question rounds):
+- The Demolisher boss stays a tank but drops to golden armour and throws
+  no TNT; the scripted wave-8 Demolition Zombies get their stock TNT.
+- Enhanced Hordes piles climb only (`hordeSmashingPower 0`, empty
+  `forge:horde_breakable`).
+- Random side and back wall breaches stay open from wave 1.
+- The pedestal block, and the tracked airdrop beacon, are removed from
+  every explosion's block list.
+- Flamethrower hits burn 7.5 s; only `td_wave_mob` kills drop bags or
+  count for Bounties; turret recipes use IE's Precision Scope instead of
+  a Flux Point; the Supplementaries cannon is disabled; Chem Turrets
+  place with Ignite on.
+
+**Mechanisms that changed** (details in the scripts' comments):
+- Wave end: `wave_status.js` opens `td_inWave` only while the wave's
+  spawns are queued or its horde is landing, and closes it once at the
+  clear, so a returning straggler can't reopen or re-clear a wave. The
+  horn gate is `td_inWave` plus outstanding spawns; the queue is mirrored
+  on the marker (`td_spawnQueue`) and survives restarts.
+- Undead Nights hordes: one `spawn_horde @p[distance=0..]` from the
+  marker, so one horde per wave. Every horde entry's nbtTags carry
+  `Tags:['td_un_horde']` and `PersistenceRequired:1b`, and an
+  `EntityEvents.spawned` handler turns `td_un_horde` into `td_wave_mob`.
+  This supersedes the snapshot/128-block/5-second tagging described in
+  the 2026-09-10 section above.
+- Airdrop: the beacon sits on a 3x3 `securitycraft:reinforced_iron_block`
+  base (a vanilla beacon draws no beam without one), and the crate no
+  longer deletes itself (`airdropstolentime` in `dyairdrop.toml`, plus a
+  fourth constant patch to the dyairdrop jar; see docs/MODS.md).
+- Anything that reads run state from a player's dimension now uses the
+  overworld (login fallback, hardcore game over), and per-player tick
+  work that is really world work runs once per tick.

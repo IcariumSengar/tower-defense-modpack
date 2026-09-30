@@ -10,7 +10,7 @@
 	quest_links: [ ]
 	quests: [
 		{
-			description: ["Every hostile you put down counts toward this, not just wave kills - turrets and traps get credit too. The guards a structure's spawner keeps sending don't count. Twenty-five down. Just the start."]
+			description: ["Every wave zombie that goes down counts toward this, whoever or whatever drops it - turrets and traps get credit too, and so does every other player's kill. Zombies from a structure's spawner don't count. Twenty-five down. Just the start."]
 			icon: "minecraft:rotten_flesh"
 			id: "605797091B509B1A"
 			rewards: [
@@ -172,6 +172,6 @@
 			y: 0.0d
 		}
 	]
-	subtitle: ["Every kill counts, wave or not - structure guards excepted"]
+	subtitle: ["Every wave kill counts - yours, your friends' and your turrets'"]
 	title: "Bounties"
 }

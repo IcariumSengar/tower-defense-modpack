@@ -1,13 +1,14 @@
-// Boss waves. Every 10th wave summons a boss 10-30 blocks from the
-// pedestal, with a boss bar, music and a title for every player. Boss waves
-// alternate between The Reaper and The Demolisher, and a kill drops a
-// Sentry, 12 shrapnel and a Totem of Undying.
+// Boss waves. Every 10th wave summons a boss in the wave mobs' spawn band,
+// with a boss bar, music and a title for every player. Boss waves alternate
+// between The Reaper and The Demolisher, and a kill drops a Sentry, 12
+// shrapnel and a Totem of Undying.
 //
 // The boss is tagged td_wave_mob, so it counts toward the wave
 // (wave_status.js) and is steered at the pedestal (mob_aggro.js) like any
 // other wave mob. td_boss marks it for this file and quest_milestones.js.
-// Wave state comes from worldData() (world_state.js); tdWaveLabel() is in
-// wave_spawner.js.
+// Wave state comes from worldData() (world_state.js), where td_bossActive
+// is set from the boss's spawn until its fight ends. tdWaveLabel() and the
+// spawn band helpers are in wave_spawner.js.
 
 var BOSS_WAVE_INTERVAL = 10
 var BOSS_BOSSBAR_ID = 'kubejs:main_boss'
@@ -30,17 +31,19 @@ var BOSS_TYPES = {
     arrivalSound: 'minecraft:entity.wither.spawn',
     arrivalSubtitle: 'has arrived.',
   },
-  // demolition_zombie throws lit TNT by itself (TntIgniteAndThrowGoal).
+  // The tank. demolition_zombie's TntIgniteAndThrowGoal throws only from the
+  // TNT stack finalizeSpawn puts in its hand, so this boss throws no TNT.
   demolisher: {
     entityType: 'undeadnights:demolition_zombie',
     name: 'The Demolisher',
     nameColor: 'gold',
     maxHealth: 350,
     attackDamage: 15,
-    armorMaterial: 'netherite',
+    // demolition_zombie has 4 armor of its own; the golden set adds 11.
+    armorMaterial: 'golden',
     music: 'minecraft:music_disc.11',
-    arrivalSound: 'minecraft:entity.tnt.primed',
-    arrivalSubtitle: 'is rigging the base to blow.',
+    arrivalSound: 'minecraft:entity.zombie.break_wooden_door',
+    arrivalSubtitle: 'is coming for the pedestal.',
   },
 }
 
@@ -70,18 +73,11 @@ function spawnBoss(player, data, waveNumber) {
   var objective = waveObjective(player, data) // wave_spawner.js
   var boss = bossConfigForWave(waveNumber)
 
-  // Math.PI is undefined in this Rhino build.
-  var PI = 3.141592653589793
-  var angle = Math.random() * 2 * PI
-
-  // 10-30 blocks out, shortened when the world border is small: a mob summoned
-  // outside the border can't path back in.
-  var borderHalfWidth = level.getWorldBorder().getSize() / 2
-  var BORDER_SAFETY_MARGIN = 5
-  var spawnDistance = Math.max(10, Math.min(30, borderHalfWidth - BORDER_SAFETY_MARGIN))
-
-  var x = Math.floor(objective.x + Math.cos(angle) * spawnDistance)
-  var z = Math.floor(objective.z + Math.sin(angle) * spawnDistance)
+  // Same band as wave mobs: 48-64 blocks out, inside the border and outside
+  // the compound.
+  var spawnPoint = tdSpawnBandPoint(tdWaveSpawnBand(level), tdCompoundSpawnRect(data), objective.x, objective.z)
+  var x = spawnPoint.x
+  var z = spawnPoint.z
   var y = Math.floor(objective.y)
 
   // Single-quoted in the NBT, so its double quotes need no escaping.
@@ -98,16 +94,24 @@ function spawnBoss(player, data, waveNumber) {
 
   server.runCommandSilent(`summon ${boss.entityType} ${x} ${y} ${z} ${summonNbt}`)
   // Summoned at the pedestal's height, then spreadplayers moves it onto the
-  // surface within 6 blocks. td_bossJustSpawned picks out the new boss and is
-  // removed straight after.
-  server.runCommandSilent(
-    `spreadplayers ${x} ${z} 0 6 false @e[type=${boss.entityType},tag=td_bossJustSpawned,limit=1,sort=nearest]`
-  )
-  server.runCommandSilent(
-    `tag @e[type=${boss.entityType},tag=td_bossJustSpawned,limit=1,sort=nearest] remove td_bossJustSpawned`
-  )
+  // surface within 4 blocks, as wave_spawner.js does. td_bossJustSpawned
+  // picks out the new boss and is removed straight after.
+  var newBoss = `@e[type=${boss.entityType},tag=td_bossJustSpawned,limit=1,sort=nearest]`
+  server.runCommandSilent(`spreadplayers ${x} ${z} 0 4 false ${newBoss}`)
+  // Arrival cue where the boss landed. The band is past normal particle (32
+  // blocks) and sound (16) range: force sends the smoke up to 512 blocks, and
+  // players out of sound range hear it at volume 0.5 from its direction.
+  server.runCommandSilent(`execute at ${newBoss} run particle minecraft:large_smoke ~ ~1 ~ 1.5 1.5 1.5 0.02 80 force`)
+  server.runCommandSilent(`execute at ${newBoss} run playsound ${boss.arrivalSound} hostile @a ~ ~ ~ 1 0.6 0.5`)
+  server.runCommandSilent(`tag ${newBoss} remove td_bossJustSpawned`)
 
-  // Shown to every player, unlike pedestal_health.js's range-limited bar.
+  data.putBoolean('td_bossActive', true)
+  bossCachedEntity = null
+
+  // Shown to every player, unlike pedestal_health.js's range-limited bar. A
+  // bar left over from an earlier fight is removed first, since `bossbar add`
+  // keeps an existing bar and its old name.
+  server.runCommandSilent(`bossbar remove ${BOSS_BOSSBAR_ID}`)
   server.runCommandSilent(`bossbar add ${BOSS_BOSSBAR_ID} "${boss.name}"`)
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} color red`)
   server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} max ${boss.maxHealth}`)
@@ -121,8 +125,6 @@ function spawnBoss(player, data, waveNumber) {
   server.runCommandSilent(`tellraw @a {"text":"[Boss] ${boss.name} is out there somewhere - find it and end it.","color":"red"}`)
   // At each player: a console playsound at ~ ~ ~ would sound from world spawn.
   server.runCommandSilent(`execute as @a at @s run playsound ${boss.music} master @s ~ ~ ~ 1 1 1`)
-  server.runCommandSilent(`particle minecraft:large_smoke ${x} ${y + 1} ${z} 1.5 1.5 1.5 0.02 80`)
-  server.runCommandSilent(`playsound ${boss.arrivalSound} hostile @a ${x} ${y} ${z} 1 0.6`)
 }
 
 // Boss trigger. Polls td_waveNumber, which useWaveHorn() in wave_spawner.js
@@ -149,46 +151,82 @@ PlayerEvents.tick((event) => {
   spawnBoss(player, data, waveNumber)
 })
 
-// Every 10 ticks, copy the boss's health onto the boss bar.
-var BOSS_BOSSBAR_UPDATE_THROTTLE = 10
+// The live boss, kept between polls so its removal can be seen: a burning
+// demolition_zombie removes itself (reason KILLED) and explodes without
+// dying, so no death event fires. Found again by a scan after a reload.
+var bossCachedEntity = null
 
-PlayerEvents.tick((event) => {
-  var player = event.player
-  var level = player.getLevel()
-  if (level.getTime() % BOSS_BOSSBAR_UPDATE_THROTTLE !== 0) return
+// Ends the fight: removes the bar and stops the music, and for a kill shows
+// the title and drops the rewards where the boss was. Called from the death
+// event, and from the poll below for a boss removed without one.
+function endBossFight(server, bossEntity, killed) {
+  var data = worldData(server.getLevel('minecraft:overworld'))
+  if (data) data.putBoolean('td_bossActive', false)
+  bossCachedEntity = null
 
-  var bosses = level.getEntities().filter(function (e) {
-    return e.getTags().contains('td_boss') && e.getHealth() > 0
-  })
-  if (bosses.length === 0) return
-
-  var boss = bosses[0]
-  player.getServer().runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} value ${Math.max(0, Math.round(boss.getHealth()))}`)
-})
-
-// Boss death: clear the bar and the music, announce it and drop the rewards.
-// quest_milestones.js handles the boss quest from the same event.
-EntityEvents.death((event) => {
-  var entity = event.entity
-  if (!entity.getTags().contains('td_boss')) return
-
-  var level = event.level
-  var server = level.getServer()
-  var x = entity.getX()
-  var y = entity.getY()
-  var z = entity.getZ()
-  var boss = bossConfigForEntityType(entity.type)
-
+  var boss = bossConfigForEntityType(bossEntity.type)
   server.runCommandSilent(`bossbar remove ${BOSS_BOSSBAR_ID}`)
   server.runCommandSilent(`stopsound @a master ${boss.music}`)
+  if (!killed) return
 
+  var x = bossEntity.getX()
+  var y = bossEntity.getY()
+  var z = bossEntity.getZ()
   server.runCommandSilent(`title @a title {"text":"${boss.name} FALLS","color":"gold","bold":true}`)
   server.runCommandSilent(`title @a subtitle {"text":"The base breathes easier - for now.","color":"gray"}`)
   // At each player, like the boss music.
   server.runCommandSilent(`execute as @a at @s run playsound minecraft:entity.wither.death master @s ~ ~ ~ 1 1 1`)
   server.runCommandSilent(`particle minecraft:totem_of_undying ${x} ${y + 1} ${z} 1.0 1.0 1.0 0.02 100`)
 
-  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"securitycraft:sentry",Count:1b}}`)
-  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"kubejs:shrapnel",Count:12b}}`)
-  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"minecraft:totem_of_undying",Count:1b}}`)
+  // Invulnerable, so the fire a demolition_zombie's blast leaves behind can't
+  // burn the rewards.
+  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"securitycraft:sentry",Count:1b},Invulnerable:1b}`)
+  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"kubejs:shrapnel",Count:12b},Invulnerable:1b}`)
+  server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"minecraft:totem_of_undying",Count:1b},Invulnerable:1b}`)
+}
+
+// Every 10 ticks during a fight: copy the boss's health onto the bar, give
+// the bar to players who joined since the spawn (it keeps only the players it
+// was given), and end the fight for a boss removed without a death event.
+var BOSS_BOSSBAR_UPDATE_THROTTLE = 10
+
+ServerEvents.tick((event) => {
+  var server = event.server
+  var level = server.getLevel('minecraft:overworld')
+  if (!level || level.getTime() % BOSS_BOSSBAR_UPDATE_THROTTLE !== 0) return
+  var data = worldData(level)
+  if (!data || !data.getBoolean('td_bossActive')) return
+
+  var boss = bossCachedEntity
+  if (boss && boss.isRemoved()) {
+    bossCachedEntity = null
+    // A chunk unload or a portal also removes the entity object; only KILLED
+    // or DISCARDED means the boss is gone.
+    var reason = `${boss.getRemovalReason()}`
+    if (reason === 'KILLED' || reason === 'DISCARDED') {
+      endBossFight(server, boss, reason === 'KILLED')
+      // quest_milestones.js completes the boss quest from the death event,
+      // which this removal skipped.
+      if (reason === 'KILLED') qmCompleteShared(server, data, 'boss')
+      return
+    }
+    boss = null
+  }
+  if (!boss) {
+    boss = level.getEntities().find(function (e) {
+      return e.getTags().contains('td_boss') && e.getHealth() > 0
+    })
+    if (!boss) return
+    bossCachedEntity = boss
+  }
+  server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} value ${Math.max(0, Math.round(boss.getHealth()))}`)
+  server.runCommandSilent(`bossbar set ${BOSS_BOSSBAR_ID} players @a`)
+})
+
+// Boss death. quest_milestones.js completes the boss quest from the same
+// event.
+EntityEvents.death((event) => {
+  var entity = event.entity
+  if (!entity.getTags().contains('td_boss')) return
+  endBossFight(event.level.getServer(), entity, true)
 })

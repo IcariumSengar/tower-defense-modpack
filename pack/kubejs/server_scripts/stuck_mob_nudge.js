@@ -33,6 +33,10 @@ PlayerEvents.tick((event) => {
   var level = event.player.getLevel()
   var now = Number(level.getTime())
   if (now % STUCK_CHECK_INTERVAL_TICKS !== 0) return
+  // Wave mobs are in the overworld. Game time is shared by every dimension,
+  // so a player elsewhere must not take the tick's pass: the cleanup below
+  // would drop every overworld mob's state.
+  if (`${level.dimension}` !== 'minecraft:overworld') return
   // PlayerEvents.tick fires once per online player; only the first call in a
   // tick runs, since a second pass would measure zero movement for every mob.
   // getTime() returns a Java long; Number() makes it a JS number for ===.

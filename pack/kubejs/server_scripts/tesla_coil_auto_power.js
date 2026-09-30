@@ -46,11 +46,17 @@ ServerEvents.tick((event) => {
   // presence next changes.
   var key = 'td_starterTeslaCoilPowered'
   if (data.getBoolean(key) === enemyNear) return
+
+  // The lever cell sits beside the gate platform, so the player may have
+  // broken the lever or built there; /setblock would delete that block and
+  // empty a container. Only a lever that is still there is flipped.
+  var leverX = data.getInt('td_starterTeslaCoilX') - 1
+  var leverY = data.getInt('td_starterTeslaCoilY')
+  var leverZ = data.getInt('td_starterTeslaCoilZ')
+  if (`${level.getBlock(leverX, leverY, leverZ).getId()}` !== 'minecraft:lever') return
   data.putBoolean(key, enemyNear)
 
   // /setblock replaces the whole blockstate, so face and facing must match the
   // lever placeStarterTraps() placed.
-  event.server.runCommandSilent(
-    `setblock ${data.getInt('td_starterTeslaCoilX') - 1} ${data.getInt('td_starterTeslaCoilY')} ${data.getInt('td_starterTeslaCoilZ')} minecraft:lever[face=wall,facing=west,powered=${enemyNear}]`
-  )
+  event.server.runCommandSilent(`setblock ${leverX} ${leverY} ${leverZ} minecraft:lever[face=wall,facing=west,powered=${enemyNear}]`)
 })

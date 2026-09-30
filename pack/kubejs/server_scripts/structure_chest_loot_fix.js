@@ -21,9 +21,12 @@ var TARGET_BLOCK_IDS = [
 ]
 
 var STORAGE_TABLE = 'kubejs:chests/scavenge_storage'
-// Blocks from the pedestal. Structures start about 150 blocks out
-// (playtest_starter_kit.js); anything closer is the base's or a player's.
-var BASE_EXCLUSION_RADIUS = 100
+// Blocks from the pedestal. Covers the base's own containers (within 7)
+// and nearly all of its levelled field (corners about 46 out), for any
+// player container td_playerContainers missed. The ruin ring
+// (playtest_starter_kit.js) aims 100-130 blocks out, but a rotated ruin can
+// put a container about 60 from the pedestal, so the radius stays under that.
+var BASE_EXCLUSION_RADIUS = 45
 // One roll per container, ever. The open that rolls a table clears LootTable,
 // and a looted container saves an empty Items list, so "no table, no items"
 // alone would refill it on every click. Instead, the first check of a

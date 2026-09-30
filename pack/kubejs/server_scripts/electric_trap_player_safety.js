@@ -28,13 +28,14 @@ EntityEvents.hurt((event) => {
   if (!ELECTRIC_TRAP_IMMUNE_TYPES.includes(`${entity.type}`)) return
   var sourceType = `${event.getSource().getType()}`
   if (!ELECTRIC_TRAP_DAMAGE_TYPES.includes(sourceType)) return
-  event.cancel()
   // The coil applies Stunned before it deals damage, so cancelling the hit
-  // leaves the stun. Strip it in the same tick.
-  if (!TESLA_STUN_DAMAGE_TYPES.includes(sourceType)) return
-  try {
-    entity.removeEffect(getTeslaStunnedEffect(entity))
-  } catch (e) {
-    console.error(`electric_trap_player_safety.js: failed to strip Tesla Coil's Stunned effect (${e})`)
+  // leaves the stun. Strip it first: cancel() throws.
+  if (TESLA_STUN_DAMAGE_TYPES.includes(sourceType)) {
+    try {
+      entity.removeEffect(getTeslaStunnedEffect(entity))
+    } catch (e) {
+      console.error(`electric_trap_player_safety.js: failed to strip Tesla Coil's Stunned effect (${e})`)
+    }
   }
+  event.cancel()
 })

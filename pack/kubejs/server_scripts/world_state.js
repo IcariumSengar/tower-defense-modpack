@@ -10,9 +10,15 @@
 // The marker is cached: worldData() runs in many tick handlers, and a lookup
 // scans every entity in the level. A cached marker is used only while it is
 // still in the world and in the level asked about. Misses are not cached.
+//
+// Only the given level is searched, so a "has the base been built" check
+// must pass the overworld, not a player's level: in any other dimension the
+// lookup always misses.
 var tdWorldStateEntityCache = null
 
 function findWorldStateEntity(level) {
+  // The marker only exists in the overworld; skip the scan anywhere else.
+  if (`${level.dimension}` !== 'minecraft:overworld') return null
   var cached = tdWorldStateEntityCache
   if (cached && !cached.isRemoved() && cached.getLevel() === level) return cached
   var found = level.getEntities().find(function (e) {

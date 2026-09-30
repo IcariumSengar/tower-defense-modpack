@@ -9,8 +9,9 @@
 //   buttons run it.
 // - On each wave clear, offerPedestalUpgrades() (called by wave_status.js)
 //   prompts every player who can afford a tier.
-// Buying needs the player within PEDESTAL_UPGRADE_RANGE of the pedestal. A
-// Max HP tier also heals the HP it adds, through healPedestalBy().
+// Buying, and taking an item off the stand, need the player within
+// PEDESTAL_UPGRADE_RANGE of the pedestal. A Max HP tier also heals the HP it
+// adds, through healPedestalBy().
 var PEDESTAL_UPGRADE_COSTS = [5, 10, 15] // XP levels, not points, for tiers I, II, III
 var PEDESTAL_UPGRADE_RANGE = 32 // blocks from the pedestal, horizontally
 var PEDESTAL_UPGRADE_ROMAN = ['0', 'I', 'II', 'III']
@@ -29,6 +30,15 @@ function pedestalUpgradeEffectText(stat, tier) {
 // names are [A-Za-z0-9_], so they are safe in a command.
 function pedestalUpgradeTell(server, player, components) {
   server.runCommandSilent(`tellraw ${player.getName().getString()} ${JSON.stringify(components)}`)
+}
+
+// Whether `player` is within PEDESTAL_UPGRADE_RANGE of the stored pedestal.
+// worldData() is null outside the pedestal's dimension, so a caller holding
+// `data` from the player's level has already checked the dimension.
+function pedestalPlayerInRange(player, data) {
+  var dx = player.getX() - (data.getInt('td_pedestalX') + 0.5)
+  var dz = player.getZ() - (data.getInt('td_pedestalZ') + 0.5)
+  return dx * dx + dz * dz <= PEDESTAL_UPGRADE_RANGE * PEDESTAL_UPGRADE_RANGE
 }
 
 // The cheapest next tier across all three stats, or -1 if all are maxed.
@@ -106,9 +116,7 @@ function buyPedestalUpgrade(player, stat, fromGui) {
   var px = data.getInt('td_pedestalX')
   var py = data.getInt('td_pedestalY')
   var pz = data.getInt('td_pedestalZ')
-  var dx = player.getX() - (px + 0.5)
-  var dz = player.getZ() - (pz + 0.5)
-  if (dx * dx + dz * dz > PEDESTAL_UPGRADE_RANGE * PEDESTAL_UPGRADE_RANGE) {
+  if (!pedestalPlayerInRange(player, data)) {
     player.tell('§c[Pedestal] §fGet back to the pedestal to upgrade it.')
     return 0
   }
@@ -146,8 +154,8 @@ function buyPedestalUpgrade(player, stat, fromGui) {
 // Upgrade screen: a 3-row chest GUI from KubeJS's server-side openChestGUI,
 // drawn by vanilla's chest screen, so clients need no extra mod. Layout (x
 // 0-8 across, y 0-2 down): pedestal status at (4,0); Max HP, Armor and
-// Thorns at (2,1), (4,1) and (6,1); Take the amulet at (4,2) while it is on
-// the stand. There is no Close button: Esc closes it like any chest, and
+// Thorns at (2,1), (4,1) and (6,1); a Take button at (4,2) while the stand
+// holds anything. There is no Close button: Esc closes it like any chest, and
 // this Rhino can't reach ServerPlayer.closeContainer (doCloseContainer
 // closes only the server side and leaves the client's screen open).
 //
@@ -157,11 +165,17 @@ function buyPedestalUpgrade(player, stat, fromGui) {
 // ConcurrentModificationException. The refresh only swaps items.
 //
 // The empty-hand click that would make Supplementaries hand over the stand's
-// item opens this screen instead, so Take the amulet does the lift: it
-// empties the stand and gives back the exact stack, and amulet_pedestal.js's
-// tick poll sees the empty stand and shrinks the border.
+// item opens this screen instead, so the Take button is the only way to get
+// the item back: it empties the stand and gives back the exact stack. Taking
+// the amulet is the lift: amulet_pedestal.js's tick poll sees the empty stand
+// and shrinks the border.
 var PEDESTAL_GUI_STAT_X = { hp: 2, armor: 4, thorns: 6 }
 var PEDESTAL_GUI_ICONS = { hp: 'minecraft:golden_apple', armor: 'minecraft:iron_chestplate', thorns: 'minecraft:cactus' }
+
+// A click on a stat within this many ticks of the same screen buying it is
+// dropped: the screen has already refreshed when a double-click's second
+// press arrives, so that press would buy the next tier.
+var PEDESTAL_GUI_REBUY_TICKS = 10
 
 // A JSON text component, escaped for a single-quoted SNBT string.
 function pedestalGuiText(text, color) {
@@ -175,19 +189,24 @@ function pedestalGuiItem(id, name, nameColor, lore) {
   return Item.of(id, 1, `{HideFlags:127,display:{Name:'${pedestalGuiText(name, nameColor)}',Lore:[${loreNbt}]}}`)
 }
 
-// The pedestal's block entity if td_amuletOnPedestal is set and the stand
-// holds the amulet, else null.
-function pedestalGuiAmuletTile(level, data) {
-  if (!data.getBoolean('td_amuletOnPedestal')) return null
+// The pedestal's block entity and the stack on its stand, or null when the
+// stand is empty or the pedestal is gone.
+function pedestalGuiStand(level, data) {
   var tile = level.getBlockEntity([data.getInt('td_pedestalX'), data.getInt('td_pedestalY'), data.getInt('td_pedestalZ')])
   if (!tile) return null
-  var displayed = tile.getDisplayedItem()
-  if (!displayed || displayed.isEmpty() || `${displayed.id}` !== 'kubejs:amulet') return null
-  return tile
+  var displayed
+  try {
+    displayed = tile.getDisplayedItem()
+  } catch (e) {
+    return null
+  }
+  if (!displayed || displayed.isEmpty()) return null
+  return { tile: tile, item: displayed }
 }
 
 // Fills every slot from the current state; runs on open and after each click.
-function fillPedestalGui(gui, player) {
+// Records the tier each stat slot shows in `shownTiers`.
+function fillPedestalGui(gui, player, shownTiers) {
   var level = player.getLevel()
   var data = worldData(level)
   if (!data) return
@@ -206,6 +225,7 @@ function fillPedestalGui(gui, player) {
 
   PEDESTAL_UPGRADE_STAT_ORDER.forEach((stat) => {
     var tier = pedestalUpgradeTier(data, stat)
+    shownTiers[stat] = tier
     var label = PEDESTAL_UPGRADE_LABELS[stat]
     var item
     if (tier >= pedestalUpgradeMaxTier()) {
@@ -226,34 +246,70 @@ function fillPedestalGui(gui, player) {
     })
   })
 
-  var amuletTile = pedestalGuiAmuletTile(level, data)
+  var stand = pedestalGuiStand(level, data)
+  var takeButton = Item.of('minecraft:air')
+  if (stand) {
+    var standId = `${stand.item.id}`
+    var isAmulet = standId === 'kubejs:amulet'
+    var takeName = isAmulet ? 'Take the amulet' : `Take the ${stand.item.getHoverName().getString()}`
+    if (!pedestalPlayerInRange(player, data)) {
+      takeButton = pedestalGuiItem(standId, takeName, 'gray', [['Walk back to the pedestal to take it.', 'gray']])
+    } else if (isAmulet) {
+      takeButton = pedestalGuiItem(standId, takeName, 'light_purple', [
+        ['Lift the pendant off the stand.', 'gray'],
+        ['The border closes back in.', 'gray'],
+      ])
+    } else {
+      takeButton = pedestalGuiItem(standId, takeName, 'white', [['Only the amulet belongs on the stand.', 'gray']])
+    }
+  }
   gui.slot(4, 2, (slot) => {
-    slot.item = amuletTile
-      ? pedestalGuiItem('kubejs:amulet', 'Take the amulet', 'light_purple', [
-          ['Lift the pendant off the stand.', 'gray'],
-          ['The border closes back in.', 'gray'],
-        ])
-      : Item.of('minecraft:air')
+    slot.item = takeButton
   })
 
 }
 
-function pedestalGuiTakeAmulet(player) {
+// The Take button. It needs the player at the pedestal, as buying does: from
+// anywhere else, lifting the amulet would pull every player outside the
+// border back to its edge (amulet_border.js).
+function pedestalGuiTakeFromStand(player) {
   var level = player.getLevel()
   var data = worldData(level)
   if (!data) return
-  var tile = pedestalGuiAmuletTile(level, data)
-  if (!tile) return
-  var stack = tile.getDisplayedItem().copy()
-  tile.setDisplayedItem(Item.of('minecraft:air'))
-  tile.setChanged()
+  var stand = pedestalGuiStand(level, data)
+  if (!stand) return
+  if (!pedestalPlayerInRange(player, data)) {
+    player.tell('§c[Pedestal] §fGet back to the pedestal to take it.')
+    return
+  }
+  var stack = stand.item.copy()
+  stand.tile.setDisplayedItem(Item.of('minecraft:air'))
+  stand.tile.setChanged()
   player.give(stack)
 }
 
+// A stat click buys only the tier its slot showed. A slot drawn before someone
+// else bought that tier just redraws, so nobody pays a price they weren't
+// shown. `lastBuyTicks` holds the game time this screen last bought each stat.
+function pedestalGuiBuy(player, stat, shownTiers, lastBuyTicks) {
+  var data = worldData(player.getLevel())
+  if (!data) return
+  var now = Number(player.getLevel().getTime())
+  if (lastBuyTicks[stat] !== undefined && now - lastBuyTicks[stat] < PEDESTAL_GUI_REBUY_TICKS) return
+  if (pedestalUpgradeTier(data, stat) !== shownTiers[stat]) {
+    player.tell(`§7[Pedestal] Someone else just upgraded ${PEDESTAL_UPGRADE_LABELS[stat]}. Check the new price.`)
+    return
+  }
+  if (buyPedestalUpgrade(player, stat, true) === 1) lastBuyTicks[stat] = now
+}
+
 function openPedestalUpgradeGui(player) {
+  // Per screen, filled in by fillPedestalGui and pedestalGuiBuy.
+  var shownTiers = {}
+  var lastBuyTicks = {}
   player.openChestGUI(Text.of('Pedestal'), 3, (gui) => {
     gui.playerSlots = false
-    fillPedestalGui(gui, player)
+    fillPedestalGui(gui, player, shownTiers)
     gui.anyClicked = (e) => {
       var type = `${e.type}`
       // Left/right clicks and shift-clicks only.
@@ -261,39 +317,65 @@ function openPedestalUpgradeGui(player) {
       var x = e.slot.x
       var y = e.slot.y
       if (x === 4 && y === 2) {
-        pedestalGuiTakeAmulet(player)
+        pedestalGuiTakeFromStand(player)
       } else if (y === 1) {
         PEDESTAL_UPGRADE_STAT_ORDER.forEach((stat) => {
-          if (PEDESTAL_GUI_STAT_X[stat] === x) buyPedestalUpgrade(player, stat, true)
+          if (PEDESTAL_GUI_STAT_X[stat] === x) pedestalGuiBuy(player, stat, shownTiers, lastBuyTicks)
         })
       } else {
         return
       }
-      fillPedestalGui(gui, player)
+      fillPedestalGui(gui, player, shownTiers)
       gui.sync()
     }
   })
 }
 
-// Empty main hand on the stored pedestal opens the screen; same guards as the
-// heal handler in pedestal_health.js. If the stand holds an item, the
-// clicking client has already predicted taking it, so
-// pedestalHealClickResync() puts the stand and inventory right before the
-// screen opens. event.cancel() throws in this KubeJS build, so it comes last.
+// The refusal notice below goes out at most once per
+// PEDESTAL_STAND_REFUSED_NOTICE_TICKS per player: holding right-click repeats
+// the click every 4 ticks.
+var PEDESTAL_STAND_REFUSED_NOTICE_TICKS = 60
+var pedestalStandRefusedNoticeTick = {} // player UUID -> game time of the last notice
+
+// Main hand on the stored pedestal; same guards as the heal handler in
+// pedestal_health.js, which handles the heal items. An empty hand opens the
+// screen. The stand holds only the amulet, which Supplementaries places: any
+// other item would sit there with only the Take button to get it back, and
+// keep the amulet off meanwhile, so it is refused while the stand is empty.
+// With the stand full Supplementaries places nothing and the item's own use
+// goes ahead; sneaking with an item skips the block's use anyway. The
+// clicking client has already predicted the exchange with the stand, so
+// pedestalHealClickResync() puts the stand and inventory right first.
+// event.cancel() throws in this KubeJS build, so it comes last.
 BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   if (`${event.getHand()}` !== 'MAIN_HAND') return
-  if (!event.item.isEmpty()) return
+  var held = event.item
+  var heldId = `${held.id}`
+  if (!held.isEmpty() && (heldId === 'kubejs:amulet' || PEDESTAL_HEAL_ITEMS[heldId])) return
   var player = event.entity
-  var data = worldData(player.getLevel())
+  var level = player.getLevel()
+  var data = worldData(level)
   if (!data || !data.contains('td_pedestalX') || data.getBoolean('td_pedestalDestroyed')) return
   var block = event.getBlock()
   if (block.getX() !== data.getInt('td_pedestalX') || block.getY() !== data.getInt('td_pedestalY') || block.getZ() !== data.getInt('td_pedestalZ')) return
-  pedestalHealClickResync(player, block)
-  try {
-    openPedestalUpgradeGui(player)
-  } catch (e) {
-    console.error(`pedestal_upgrades.js: could not open the upgrade screen (${e}) - showing the chat menu`)
-    showPedestalUpgradeMenu(player)
+  if (held.isEmpty()) {
+    pedestalHealClickResync(player, block)
+    try {
+      openPedestalUpgradeGui(player)
+    } catch (e) {
+      console.error(`pedestal_upgrades.js: could not open the upgrade screen (${e}) - showing the chat menu`)
+      showPedestalUpgradeMenu(player)
+    }
+  } else {
+    if (player.isShiftKeyDown() || pedestalGuiStand(level, data)) return
+    var now = Number(level.getTime())
+    var key = `${player.uuid}`
+    var lastNotice = pedestalStandRefusedNoticeTick[key]
+    if (lastNotice === undefined || now - lastNotice >= PEDESTAL_STAND_REFUSED_NOTICE_TICKS) {
+      pedestalStandRefusedNoticeTick[key] = now
+      player.notify('§d[Pedestal] §fOnly the amulet sits on the stand.')
+    }
+    pedestalHealClickResync(player, block)
   }
   event.cancel()
 })
@@ -326,8 +408,9 @@ function offerPedestalUpgrades(server, data) {
 ServerEvents.commandRegistry((event) => {
   var Commands = event.commands
   // /pedestal (also run by the wave-clear [Upgrades] link) opens the same
-  // screen as an empty-hand click, from any distance; buying still needs the
-  // player within PEDESTAL_UPGRADE_RANGE. The chat menu is the fallback.
+  // screen as an empty-hand click, from any distance; buying and taking still
+  // need the player within PEDESTAL_UPGRADE_RANGE. The chat menu is the
+  // fallback.
   event.register(
     Commands.literal('pedestal')
       .executes((context) => {

@@ -2,10 +2,12 @@
 // Flesh Suffer's death sound from The Flesh That Hates, bundled under
 // kubejs/assets/kubejs/ (sounds/flesh_suffer_death.ogg and sounds.json).
 //
-// HIGH_TIER_DEATH_SOUND_TYPES is loot_bag_drops.js's EPIC_MOBS plus
-// LEGENDARY_MOBS, minus mutantszombies:rotten_mutant.
+// HIGH_TIER_DEATH_SOUND_TYPES must match loot_bag_drops.js's EPIC_MOBS plus
+// LEGENDARY_MOBS; it is a copy so the sound doesn't depend on that file
+// loading.
 var HIGH_TIER_DEATH_SOUND_TYPES = [
   'undeadnights:elite_zombie',
+  'mutantszombies:rotten_mutant',
   'mutantszombies:crawler',
   'undeadnights:demolition_zombie',
   'mutantszombies:zombie_brute',

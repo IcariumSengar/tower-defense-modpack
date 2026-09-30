@@ -16,13 +16,20 @@ function triggerPedestalDestroyed(player) {
 
   var server = player.getServer()
 
+  // However the block went, the HP pool and its bar go with it. The bar is
+  // saved with the world and would otherwise stay on screen for good.
+  data.putInt('td_pedestalHealth', 0)
+  server.runCommandSilent(`bossbar remove ${PEDESTAL_BOSSBAR_ID}`)
+
   // End the wave and undo wave_spawner.js's night lock, as a wave clear does.
   if (data.getBoolean('td_inWave')) {
     data.putBoolean('td_inWave', false)
     server.runCommandSilent('time set day')
     server.runCommandSilent('gamerule doDaylightCycle true')
   }
-  // Stop any countdown to the next wave.
+  // Drop the spawns the wave still had queued, and stop any countdown to the
+  // next wave.
+  tdCancelOutstandingSpawns(data)
   data.putBoolean('td_countdownActive', false)
 
   // One popup: GAME OVER, with the reason as subtitle, as in hardcore_death.js.
@@ -50,9 +57,10 @@ PlayerEvents.tick((event) => {
   var data = worldData(level)
   if (!data) return
 
-  // Nothing to do once triggered, or before playtest_starter_kit.js has built
-  // the base and set td_pedestalX.
-  if (data.getBoolean('td_pedestalDestroyed')) return
+  // Nothing to do once triggered, after a hardcore game over (whose own GAME
+  // OVER has already played), or before playtest_starter_kit.js has built the
+  // base and set td_pedestalX.
+  if (data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')) return
   if (!data.contains('td_pedestalX')) return
 
   if (level.getTime() % 20 !== 0) return // once a second

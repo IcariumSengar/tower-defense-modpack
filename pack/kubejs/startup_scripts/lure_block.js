@@ -9,5 +9,7 @@ StartupEvents.registry('block', (event) => {
     .hardness(0.5)
     .resistance(0.5)
     .tagBlock('mineable/pickaxe')
+    // One use: breaking it early, by hand or by a blast, gives nothing back.
+    .noDrops()
     .model('kubejs:block/lure_block')
 })

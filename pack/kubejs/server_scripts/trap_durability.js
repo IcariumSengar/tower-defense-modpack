@@ -1,21 +1,25 @@
-// Simply Traps' Wooden Stake and Spike Trap never break on their own, so this
-// gives each placed one an HP pool. Once a second a trap loses HP equal to the
-// summed attack damage of the wave mobs within TRAP_RANGE of it, and at 0 HP
-// it breaks for good, leaving no drop. Only td_wave_mob counts: structure mobs
-// never wear down base defences.
+// Simply Traps' Wooden Stake, Stake Wall and Spike Trap never break on their
+// own, so this gives each one a player places an HP pool. Once a second a trap
+// loses HP equal to the summed attack damage of the wave mobs within
+// TRAP_RANGE of it, and at 0 HP it breaks for good, leaving no drop. Only
+// td_wave_mob counts: structure mobs never wear down base defences. The Stake
+// Walls playtest_starter_kit.js sets on the base walls are never tracked, so
+// they last.
 //
 // Placed traps are tracked in worldData() (world_state.js) as td_trapRegistry,
 // a ';'-separated list of "x,y,z,code,hp" entries.
 //
-// HP: a plain zombie (3 attack damage) wears out a stake in 7 seconds. The
-// Spike Trap (five iron ingots) lasts three times as long and also hits twice
-// as hard (SpikeDamageMultiplier in simplytraps.toml).
+// HP: a plain zombie (3 attack damage) wears out a stake or Stake Wall in 7
+// seconds. The Spike Trap (five iron ingots) lasts three times as long and also
+// hits twice as hard (SpikeDamageMultiplier in simplytraps.toml).
 var TRAP_TYPES = {
   'simply_traps:stake': { code: 'W', maxHp: 20, breakSound: 'minecraft:block.wood.break' },
+  'simply_traps:stake_wall': { code: 'S', maxHp: 20, breakSound: 'minecraft:block.wood.break' },
   'simply_traps:spike_trap': { code: 'I', maxHp: 60, breakSound: 'minecraft:block.metal.break' },
 }
 var TRAP_CODE_TO_ID = {
   W: 'simply_traps:stake',
+  S: 'simply_traps:stake_wall',
   I: 'simply_traps:spike_trap',
 }
 var TRAP_IDS = Object.keys(TRAP_TYPES)
@@ -70,8 +74,13 @@ BlockEvents.placed(TRAP_IDS, (event) => {
   if (!info) return
   var data = worldData(event.getLevel())
   if (!data) return
-  var list = getTrapRegistry(data)
-  list.push({ x: block.getX(), y: block.getY(), z: block.getZ(), code: info.code, hp: info.maxHp })
+  var x = block.getX()
+  var y = block.getY()
+  var z = block.getZ()
+  // Drop any entry left at this cell by a trap that went without a player
+  // break (an explosion, a piston), or its lower HP would break the new trap.
+  var list = getTrapRegistry(data).filter((t) => !(t.x === x && t.y === y && t.z === z))
+  list.push({ x: x, y: y, z: z, code: info.code, hp: info.maxHp })
   setTrapRegistry(data, list)
 })
 

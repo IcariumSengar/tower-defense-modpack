@@ -248,9 +248,11 @@ PlayerEvents.tick((event) => {
   var data = worldData(level)
   if (!data) return
 
-  // Nothing to do once destroyed, or before playtest_starter_kit.js has built
-  // the base and set td_pedestalHealth.
-  if (data.getBoolean('td_pedestalDestroyed')) return
+  // Nothing to do once the run is over, or before playtest_starter_kit.js has
+  // built the base and set td_pedestalHealth. After a hardcore game over the
+  // leftover horde would otherwise wear the pedestal down and end the run a
+  // second time.
+  if (data.getBoolean('td_pedestalDestroyed') || data.getBoolean('td_hardcoreGameOver')) return
   if (!data.contains('td_pedestalHealth')) return
 
   var now = level.getTime()
@@ -274,6 +276,8 @@ PlayerEvents.tick((event) => {
     // By type, not by the td_wave_mob tag: any roster mob at the pedestal
     // damages it, wave-spawned or not.
     if (!WAVE_MOB_TYPES.includes(`${e.type}`)) return
+    // A killed mob stays in the level for its 20-tick death animation.
+    if (e.getHealth() <= 0) return
     var dx = e.getX() - x
     var dy = e.getY() - y
     var dz = e.getZ() - z
