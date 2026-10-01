@@ -331,6 +331,32 @@ Everything below is built and deployed, but only verified via
 decompiling the relevant mod, `node --check`, and/or a sandbox boot/RCON
 probe — not an actual playtest.
 
+- **Playtest batch, 2026-09-30** (13 items, in the user's numbering;
+  spec: FEATURES.md "2026-09-30 playtest batch"). Items marked (fresh)
+  need a new world.
+  1. (fresh) No double chest, smithing table, cartography table or
+     stonecutter in the command post; the four barrels are still there.
+  2. (fresh) You spawn on the step outside the command post door, facing
+     the pedestal and the gate, on first join and after dying without a
+     bed.
+  3. Opening a loot bag completes "Open It".
+  4. "Three Down" is gone; the amulet, Tier 2 traps, base upgrades, Item
+     Collector and "The Last Written Wave" appear once "Open It" is done.
+  5. Upgrade tiers cost 6, 12 and 18 levels, in the screen and the chat
+     menu.
+  6. A hostile mob standing at an electrified fence gets shocked (sparks,
+     damage) whether or not it came from a wave.
+  7. Cheap and Cheerful gives 6 Wooden Stakes.
+  8. Past the Line reads short.
+  9. The "Kill one" quests are gone; Thin the Horde is still there.
+  10. Better Than Nothing gives 4 Spike Traps.
+  11. The Lure Block looks like a bait crate, and the red core on top
+      pulses, placed and in the inventory.
+  12. Take the amulet from the pedestal screen, close the screen: the
+      amulet is in your inventory. Items you walk over while the screen is
+      open stay on the ground until you close it.
+  13. The item popups on the right show what a loot bag gave.
+
 - **Bug sweep, 2026-09-30** (fixes from the script bug sweep; the
   comment cleanup before it changes no behaviour). Sandbox-checked: all
   scripts load with 0 errors, a fresh world builds, and every API the

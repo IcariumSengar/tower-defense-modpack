@@ -45,6 +45,13 @@ sub-decision.
 Built and (unless noted) already deployed to the live instance/dedicated
 server — nobody has actually confirmed these work in a real session yet.
 
+- **Playtest batch, 2026-09-30** (13 items from the first session on the
+  bug-sweep build). Bag opens were failing (a sweep regression that also
+  broke "Open It" and the pickup popups); the pedestal screen's Take button
+  deleted the amulet (KubeJS's chest screen writes the inventory back on
+  close); the fence shock skipped untagged mobs. Plus base, spawn, quest,
+  cost and lure-texture changes. Checklist: PLAYTESTING.md "Playtest batch,
+  2026-09-30". Spec: FEATURES.md "2026-09-30 playtest batch".
 - **Script cleanup and bug sweep, 2026-09-30.** Comments rewritten and
   dead code dropped (commit 8ab355c), then about 70 fixes from a
   subsystem-by-subsystem bug sweep, with 13 design calls decided in three

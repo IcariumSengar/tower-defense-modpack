@@ -12,7 +12,7 @@
 // Buying, and taking an item off the stand, need the player within
 // PEDESTAL_UPGRADE_RANGE of the pedestal. A Max HP tier also heals the HP it
 // adds, through healPedestalBy().
-var PEDESTAL_UPGRADE_COSTS = [5, 10, 15] // XP levels, not points, for tiers I, II, III
+var PEDESTAL_UPGRADE_COSTS = [6, 12, 18] // XP levels, not points, for tiers I, II, III
 var PEDESTAL_UPGRADE_RANGE = 32 // blocks from the pedestal, horizontally
 var PEDESTAL_UPGRADE_ROMAN = ['0', 'I', 'II', 'III']
 var PEDESTAL_UPGRADE_STAT_ORDER = ['hp', 'armor', 'thorns']
@@ -169,6 +169,19 @@ function buyPedestalUpgrade(player, stat, fromGui) {
 // the item back: it empties the stand and gives back the exact stack. Taking
 // the amulet is the lift: amulet_pedestal.js's tick poll sees the empty stand
 // and shrinks the border.
+//
+// While a KubeJS chest screen is open, KubeJS keeps the player's 36 main
+// inventory slots aside and leaves them empty, and on the first server tick
+// after the screen closes it writes every slot back from that copy,
+// overwriting whatever is in it by then (kubejs-forge 2001.6.5,
+// MinecraftServerMixin's post-tick). An item given or picked up while the
+// screen is open would be deleted. So the Take button parks the stack in the
+// player's persistentData (PEDESTAL_TAKEN_KEY, which survives a logout) and
+// pedestalGuiDeliverTaken() gives it from ServerEvents.tick, which KubeJS
+// posts after the write-back; pickups wait until the screen is closed.
+var PEDESTAL_TAKEN_KEY = 'td_pedestalTakenItems' // JSON list of {id, count, nbt}
+var PEDESTAL_CHEST_MENU_CLASS = 'dev.latvian.mods.kubejs.gui.chest.CustomChestMenu'
+var pedestalTakenPending = {} // player UUID -> true while something is parked
 var PEDESTAL_GUI_STAT_X = { hp: 2, armor: 4, thorns: 6 }
 var PEDESTAL_GUI_ICONS = { hp: 'minecraft:golden_apple', armor: 'minecraft:iron_chestplate', thorns: 'minecraft:cactus' }
 
@@ -258,9 +271,13 @@ function fillPedestalGui(gui, player, shownTiers) {
       takeButton = pedestalGuiItem(standId, takeName, 'light_purple', [
         ['Lift the pendant off the stand.', 'gray'],
         ['The border closes back in.', 'gray'],
+        ['It lands in your inventory when you close this.', 'gray'],
       ])
     } else {
-      takeButton = pedestalGuiItem(standId, takeName, 'white', [['Only the amulet belongs on the stand.', 'gray']])
+      takeButton = pedestalGuiItem(standId, takeName, 'white', [
+        ['Only the amulet belongs on the stand.', 'gray'],
+        ['It lands in your inventory when you close this.', 'gray'],
+      ])
     }
   }
   gui.slot(4, 2, (slot) => {
@@ -285,8 +302,53 @@ function pedestalGuiTakeFromStand(player) {
   var stack = stand.item.copy()
   stand.tile.setDisplayedItem(Item.of('minecraft:air'))
   stand.tile.setChanged()
-  player.give(stack)
+  var pdata = player.persistentData
+  var parked = pdata.contains(PEDESTAL_TAKEN_KEY) ? JSON.parse(`${pdata.getString(PEDESTAL_TAKEN_KEY)}`) : []
+  var nbt = stack.getNbt()
+  parked.push({ id: `${stack.id}`, count: stack.getCount(), nbt: nbt ? `${nbt}` : null })
+  pdata.putString(PEDESTAL_TAKEN_KEY, JSON.stringify(parked))
+  pedestalTakenPending[`${player.uuid}`] = true
 }
+
+function pedestalInChestScreen(player) {
+  return `${player.containerMenu.getClass().getName()}` === PEDESTAL_CHEST_MENU_CLASS
+}
+
+// Gives the parked stacks once the player is alive with no chest screen open.
+// KubeJS's write-back runs under the same conditions and before
+// ServerEvents.tick, so by then it has already happened.
+function pedestalGuiDeliverTaken(player) {
+  var pdata = player.persistentData
+  if (!pdata.contains(PEDESTAL_TAKEN_KEY)) return true
+  if (!player.isAlive() || pedestalInChestScreen(player)) return false
+  var parked = JSON.parse(`${pdata.getString(PEDESTAL_TAKEN_KEY)}`)
+  pdata.remove(PEDESTAL_TAKEN_KEY)
+  parked.forEach((p) => player.give(p.nbt ? Item.of(p.id, p.count, p.nbt) : Item.of(p.id, p.count)))
+  return true
+}
+
+ServerEvents.tick((event) => {
+  if (Object.keys(pedestalTakenPending).length === 0) return
+  var online = {}
+  var players = event.server.getPlayers()
+  for (var i = 0; i < players.length; i++) {
+    var uuid = `${players[i].uuid}`
+    online[uuid] = true
+    if (pedestalTakenPending[uuid] && pedestalGuiDeliverTaken(players[i])) delete pedestalTakenPending[uuid]
+  }
+  // Offline: the stacks stay parked, and the login handler picks them up.
+  Object.keys(pedestalTakenPending).forEach((uuid) => {
+    if (!online[uuid]) delete pedestalTakenPending[uuid]
+  })
+})
+
+PlayerEvents.loggedIn((event) => {
+  if (event.player.persistentData.contains(PEDESTAL_TAKEN_KEY)) pedestalTakenPending[`${event.player.uuid}`] = true
+})
+
+ItemEvents.canPickUp((event) => {
+  if (pedestalInChestScreen(event.getEntity())) event.cancel()
+})
 
 // A stat click buys only the tier its slot showed. A slot drawn before someone
 // else bought that tier just redraws, so nobody pays a price they weren't

@@ -9958,3 +9958,63 @@ agent that first tried to refute it. Decisions (three question rounds):
 - Anything that reads run state from a player's dimension now uses the
   overworld (login fallback, hardcore game over), and per-player tick
   work that is really world work runs once per tick.
+
+## 2026-09-30 playtest batch (13 items)
+
+*live in the repo, not yet seen in real play.* From the user's first
+session on the bug-sweep build (world "New Worldasd", waves 1-9). Causes
+were read from the instance's latest.log and the save, not guessed.
+Decisions came from one question round.
+
+1. **Base furniture.** The command post no longer has the double chest
+   (`playtest_starter_kit.js` placed it) or the cafe4 template's smithing
+   table, cartography table and stonecutter (set to air after the
+   `/place`). The four barrels stay. Supersedes the interior list in the
+   2026-09-22 three-front fort section. Fresh worlds only.
+2. **Spawn at the door.** The world spawn is the step outside the command
+   post's door (`doorX, buildingZ1 + 1`), angle 0, so players face south
+   over the pedestal to the gate. It stays in the open on purpose: vanilla
+   drops a joining or bedless-respawning player on the top block of the
+   spawn column, so a spawn inside would land on the roof (user chose
+   outside). The layout still hangs off the site point (x, z), and the
+   border stays centred on it. Fresh worlds only.
+3. and 13. **Bag opens.** The sweep's `loot_bag_notification.js` called
+   `stack.getTag()`, which KubeJS renames to `getNbt()`, so every bag open
+   threw. KubeJS skips an event's remaining handlers after an error, and
+   `quest_milestones.js` (loaded later) completes "Open It" from the same
+   `ItemEvents.rightClicked`. So both the Pick Up Notifier popup and "Open
+   It" died. Fixed the call, and the handler now catches its own errors.
+4. **"Three Down" removed**, with its wave-3 milestone in
+   `quest_milestones.js`. Its five dependents (The Last Written Wave, Not
+   Just Jewelry, Waste Not, Bouncing Betty, Room to Grow) now hang off
+   "Open It" (user's choice), so the whole tree shows after the first bag
+   instead of after wave 3. The main line closed up by two columns, and
+   the Tier 1 trap column moved to x=13 to keep the new lines clear.
+5. **Pedestal upgrades cost 6 / 12 / 18 levels** (were 5 / 10 / 15 since
+   they were added).
+6. **Fence shock hits any hostile mob.** `wave_mob_fence_shock.js` now
+   shocks every living MONSTER-category mob next to an electrified fence,
+   not just `td_wave_mob`. The husk was most likely an untagged spawner
+   guard that followed the player home (the save has untagged husk
+   clusters near the ruins). This is a deliberate exception to the
+   wave-mobs-only rule, which is about steering: the fence doesn't move
+   anything. SecurityCraft's entities are all MISC, so Sentries are safe.
+7. **Cheap and Cheerful** rewards 6 Wooden Stakes (was 4 sticks).
+8. **Past the Line** text cut to three sentences.
+9. **Kill quests removed.** The 14 diamond "Kill one" quests hanging off
+   Thin the Horde are gone. Thin the Horde itself stays.
+10. **Better Than Nothing** rewards 4 Spike Traps (was 2 iron ingots).
+11. **Lure Block texture.** A bait crate (user's pick of three drafts):
+    iron-cornered wooden crate with meat between the slats, and an iron
+    grate over a red core on top that pulses (8 interpolated frames, 24
+    ticks). Textures come from `tools/lure_block_art.py`; the model is now
+    `cube_bottom_top`, which also gives the item the normal 3/4 view.
+12. **Amulet Take lost the amulet.** While a KubeJS `openChestGUI` screen
+    is open, KubeJS keeps the player's 36 main slots aside and leaves them
+    empty, and on the first tick after it closes it writes all 36 back,
+    overwriting anything added meanwhile (kubejs-forge 2001.6.5,
+    `MinecraftServerMixin` post-tick). The Take button's `player.give` was
+    wiped that way. Take now parks the stack in the player's persistentData
+    (`td_pedestalTakenItems`) and `ServerEvents.tick`, which KubeJS posts
+    after the write-back, gives it once the screen is closed. Pickups are
+    refused while the screen is open, since they would be wiped too.

@@ -88,6 +88,19 @@ Minecraft and KubeJS APIs:
   `isClientSide()` (server scripts never need the guard).
 - `setDeltaMovement(x, y, z)` and `push(x, y, z)` throw; pass a `Vec3d`.
 - `event.cancel()` ends the handler by throwing, so call it last.
+- An error escaping a handler makes KubeJS skip every later handler of that
+  event, including other files' (files load in name order). A handler that
+  shares a busy event such as `ItemEvents.rightClicked` should catch its own
+  errors.
+- KubeJS renames some `ItemStack` methods: `getTag()` is `getNbt()` (also
+  `stack.nbt`), `setTag()` is `setNbt()`, `hasTag()` is `hasNBT()`; the old
+  names don't exist.
+- While a `player.openChestGUI` screen is open, KubeJS keeps the player's 36
+  main inventory slots aside and leaves them empty, and on the first tick
+  after it closes it writes all 36 back, overwriting whatever is there. Never
+  give items to a player with the screen open; `pedestal_upgrades.js` parks
+  them and gives them from `ServerEvents.tick` once it's closed, and blocks
+  pickups meanwhile.
 - `server.runCommandSilent` runs one console-level command positioned at the
   overworld world spawn, so `~ ~ ~` means spawn: use
   `execute as @a at @s run playsound ... @s ~ ~ ~` to reach each player.

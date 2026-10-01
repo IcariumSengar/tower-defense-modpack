@@ -158,7 +158,7 @@ hash = "1eebdd60e7d924afc3a83d77a4c6c999af3550ee53c3e4c601a2aec2dacaa302"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "0545503389dd5593f6eaf0ded83af2dcdac77c7ee8d44e153a6394858ae07b31"
+hash = "02ffbe661f6a801b4d8fdeefc33891120b3db85853b7094595e4e037a9ef50df"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
@@ -258,11 +258,11 @@ hash = "8fdeaee9684703c8fb6fbcf8818bf7a4c9f0f99cdfbb5ec9b05fb091c6507ab7"
 
 [[files]]
 file = "kubejs/README.md"
-hash = "2b9f734b76792ed8f71b20c04aa4c1e7c16cbc7cbbbcea512ff3e50e28765c3e"
+hash = "743ff679a7ee15ef32327a1f01ee41761f33eb6e719015959da6549ed8df8025"
 
 [[files]]
 file = "kubejs/assets/kubejs/models/block/lure_block.json"
-hash = "0db2d811f5b8f56cefa8fbd9243d0165e718d70d297d3399c3ed5d7a229df01b"
+hash = "c6a68af82108942e9c296c733aa8260e9553360c736dedb52e76ec94a349686c"
 
 [[files]]
 file = "kubejs/assets/kubejs/sounds.json"
@@ -271,6 +271,22 @@ hash = "0bd893ddadd18f58079acfc995fb4051ffcfc0996a097f3af32bb1e958832964"
 [[files]]
 file = "kubejs/assets/kubejs/sounds/flesh_suffer_death.ogg"
 hash = "e9050be076318be6312a0a501a5428b1ed515e2e49317c64b0db4774740b3204"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/lure_block_bottom.png"
+hash = "b8eac7ce86f3f93bb5978212d10142e9fb73d565a90b7a6b460bfd269a74aea7"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/lure_block_side.png"
+hash = "a8526c9286db680ef9cf61fa5339b15815d61cb5167eb76d48a24fb4eae87e2e"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/lure_block_top.png"
+hash = "ef5f300cfbe521cf93bd1bd146c807ed5574243a23c2df05a72919624755aceb"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/block/lure_block_top.png.mcmeta"
+hash = "eff55807164fe4f0db2f60ab8a75f03b75489abb0a3c89598e84a65db429ddb3"
 
 [[files]]
 file = "kubejs/assets/kubejs/textures/item/amulet.png"
@@ -1390,7 +1406,7 @@ hash = "a13326b27fae73e2d4b564c407381faf6e6c958742e9cc23cd20bc3a6d4a2f91"
 
 [[files]]
 file = "kubejs/server_scripts/loot_bag_notification.js"
-hash = "d11667437e9cb6e5502e49d8b826a868e1573e407b80eff2c0b42d38093d7a79"
+hash = "5eb51e13e7f066a71c1203a809e7cfaf20f0018ee2a8aa70f0c31a53e3103ac9"
 
 [[files]]
 file = "kubejs/server_scripts/loot_dead_weight_strip.js"
@@ -1426,15 +1442,15 @@ hash = "125edead51f258efbd8a8b1a1de4c2487469c59864aa578c1c6e2eba6a25f34e"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_upgrades.js"
-hash = "e03d0aca2d7e6394ea22a7604e56f49ab0cab7058585ff26219b9c811fb8887f"
+hash = "fa35896c91e4ece1eee3cd5af6e413d3c0548b07f45d8a4116ba11d9e5866371"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
-hash = "49bce49f5a76dfdabc62651f14b2cf796d14809d3eb23a297d01e802f37cc45c"
+hash = "5cd657ced70d40b0634326cdb9fedb6adb1d2f935229c240fe8f4a7e57cd3d69"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
-hash = "eea72e33df3d386748eac5c212d5f0c71559d11843d958833d272bbd04ee5845"
+hash = "7e6c72430772d5bc33eac10cf34e1c26b2f1590d812644fdd1489c73f7db87ba"
 
 [[files]]
 file = "kubejs/server_scripts/securitycraft_traps.js"
@@ -1514,7 +1530,7 @@ hash = "05f302d1b3239872f665b7baaa36d16ee4b8cad1478f804b99b98e28c59a0331"
 
 [[files]]
 file = "kubejs/server_scripts/wave_mob_fence_shock.js"
-hash = "5b465bd12697e752af409fdfe37b9519a5e066aeddd00f143922a8ced5f23475"
+hash = "42de2cbaa612a9ec50697c8bf50e18ab41d92b3e32827115f05e0d35960eaa3c"
 
 [[files]]
 file = "kubejs/server_scripts/wave_mob_spike_slow.js"
@@ -1542,7 +1558,7 @@ hash = "ddf53f3c1ab9ff059c99e6cb2c94d59544d275c1b9cfbb0de7eec9579ba885f9"
 
 [[files]]
 file = "kubejs/startup_scripts/lure_block.js"
-hash = "6ee10b6e420d6a5f285f17509081b9cb0fb4de9c3e8f1b0a555c71ccedf38a5e"
+hash = "ab469fca9235a1dff5300dbc14ca304e01254b0d30f4aecbef3fe738763835ea"
 
 [[files]]
 file = "kubejs/startup_scripts/shrapnel.js"

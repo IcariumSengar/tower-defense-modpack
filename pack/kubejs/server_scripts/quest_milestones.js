@@ -1,6 +1,6 @@
 // Completes the campaign's milestone quests. Each is an FTB Quests custom task
 // the player can't tick off by hand; this script completes it when its event
-// happens: the horn first sounded, waves 1, 3, 8 and 15 cleared, the boss
+// happens: the horn first sounded, waves 1, 8 and 15 cleared, the boss
 // killed, the amulet worn or set on the pedestal, and a loot bag opened.
 //
 // Completion runs /ftbquests change_progress for one player, and FTB Quests
@@ -16,7 +16,6 @@
 var QM_TASKS = {
   horn: '5A1C0E7B93D4F216',
   wave1: '6B2D1F8CA4E50327',
-  wave3: '7C3E209DB5F61438',
   wave8: '1E5042BFD718365A',
   boss: '2F6153C0E829476B',
   wave15: '307264D1F93A587C',
@@ -26,7 +25,7 @@ var QM_TASKS = {
 }
 
 // Shared milestones, in campaign order.
-var QM_SHARED_KEYS = ['horn', 'wave1', 'wave3', 'wave8', 'boss', 'wave15', 'amuletOnPedestal']
+var QM_SHARED_KEYS = ['horn', 'wave1', 'wave8', 'boss', 'wave15', 'amuletOnPedestal']
 
 // "Open It" is per player and completes on the first bag opened.
 var QM_LOOT_BAG_IDS = [
@@ -101,7 +100,6 @@ ServerEvents.tick(function (event) {
   var cleared = data.getInt('td_q_lastClearedWave')
   if (data.getInt('td_lastHornUseTick') > 0) qmCompleteShared(server, data, 'horn')
   if (cleared >= 1) qmCompleteShared(server, data, 'wave1')
-  if (cleared >= 3) qmCompleteShared(server, data, 'wave3')
   if (cleared >= 8) qmCompleteShared(server, data, 'wave8')
   if (cleared >= 15) qmCompleteShared(server, data, 'wave15')
   if (data.getBoolean('td_amuletOnPedestal')) qmCompleteShared(server, data, 'amuletOnPedestal')

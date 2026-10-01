@@ -4,7 +4,8 @@
 // and pins the world spawn there before vanilla prepares the spawn area.
 // ServerEvents.loaded then builds the compound before anyone can join:
 // levelled field, walls, command post, pedestal, power rig, starter traps,
-// wall-top platforms and a ring of ruins. The pedestal marker entity it
+// wall-top platforms and a ring of ruins, and moves the spawn to the command
+// post's door. The pedestal marker entity it
 // creates holds the world's shared state (worldData() in world_state.js).
 //
 // The login handler builds the base as a last resort if the load-time build
@@ -354,7 +355,7 @@ function starterLoadChunks(level, x0, z0, x1, z1) {
   }
 }
 
-// Starting border width in blocks, centred on the spawn, and the levelled
+// Starting border width in blocks, centred on the base site, and the levelled
 // field's half-width (a few blocks past the border). At this size
 // wave_spawner.js clamps its 48-64 block spawn band to the border, so early
 // waves spawn closer, always outside the compound (td_compoundX0/X1/Z0/Z1).
@@ -480,21 +481,20 @@ function placeStarterTraps(run, x0, x1, z0, z1, doorX, wallY0, flanks) {
   }
 }
 
-// Builds the starter compound around spawn point (x, z) and records its
-// layout on the marker. Normally runs with no player online, so everything
-// is server- or level-based. Returns the pedestal and spawn positions and
-// the marker entity.
+// Builds the starter compound around the site (x, z), sets the world spawn at
+// the command post's door and records the layout on the marker. Normally
+// runs with no player online, so everything is server- or level-based.
+// Returns the pedestal and spawn positions and the marker entity.
 function buildStarterBase(server, level, x, z) {
   // Standing level: the first block above ground in the MOTION_BLOCKING
   // heightmap, which ignores grass and other non-collidable plants.
   const y = surfaceHeightAt(level, x, z)
 
-  // World spawn at the base; spawnRadius 0 turns off vanilla's random
-  // scatter around it, so everyone lands in the yard.
-  server.runCommandSilent(`setworldspawn ${x} ${y} ${z}`)
+  // spawnRadius 0 turns off vanilla's random scatter around the world spawn,
+  // which is set once the layout is known (below).
   server.runCommandSilent('gamerule spawnRadius 0')
 
-  // Border centred on the spawn, BORDER_START wide; base_expansion.js grows
+  // Border centred on the site, BORDER_START wide; base_expansion.js grows
   // it with `worldborder add` on each wave clear.
   server.runCommandSilent(`worldborder center ${x} ${z}`)
   server.runCommandSilent(`worldborder set ${BORDER_START}`)
@@ -519,7 +519,7 @@ function buildStarterBase(server, level, x, z) {
   const run = (cmd) => server.runCommandSilent(cmd)
 
   // Layout: the three-front fort (docs/FEATURES.md, "Three-front fort").
-  // North is -z. The gate wall is 2 blocks south of the spawn point; the
+  // North is -z. The gate wall is 2 blocks south of the site point; the
   // pedestal is 9 blocks north of it and 9 from each flank wall; then come 4
   // open rows, the command post and a back margin.
   // Command post size after rotation: 9 wide (x), 8 deep (z), 10 tall.
@@ -538,8 +538,7 @@ function buildStarterBase(server, level, x, z) {
   // pedestal, like the gate.
   const SIDE_MARGIN = 5
   const BACK_MARGIN = 2
-  // The gate wall sits this far south of the spawn point, so players spawn
-  // inside the yard rather than in the wall.
+  // The gate wall sits this far south of the site point (x, z).
   const GATE_OFFSET = 2
 
   const z1 = z + GATE_OFFSET
@@ -555,14 +554,23 @@ function buildStarterBase(server, level, x, z) {
   const x0 = buildingX0 - SIDE_MARGIN
   const x1 = buildingX1 + SIDE_MARGIN
   const z0 = buildingZ0 - BACK_MARGIN
-  // Border fit (BORDER_START 50, half-width 25, centred on the spawn):
+  // Border fit (BORDER_START 50, half-width 25, centred on the site):
   // z0 = z-21 is 4 blocks inside the north edge; x0/x1 = x-9/x+9. Recheck
   // if BUILDING_DEPTH or either gap grows.
   if (centerZ > z1 - KILL_ZONE_DEPTH - 1 || buildingZ1 + 1 > z1 - KILL_ZONE_DEPTH - 1) {
     console.error('playtest_starter_kit.js: layout constants put the pedestal or the command post inside the gate kill zone - recheck PEDESTAL_GATE_GAP / PEDESTAL_BUILDING_GAP / KILL_ZONE_DEPTH')
   }
 
-  // Level a (2*BASE_FIELD_HALF+1)^2 square around the spawn to one plane at
+  // World spawn on the step outside the command post's door (doorX,
+  // buildingZ1 + 1), angle 0 = facing south, out over the pedestal to the
+  // gate. It has to be open sky: vanilla puts a joining or bedless
+  // respawning player on the top block of the spawn column, so a spawn
+  // inside the building would land on its roof.
+  const spawnX = doorX
+  const spawnZ = buildingZ1 + 1
+  server.runCommandSilent(`setworldspawn ${spawnX} ${y} ${spawnZ} 0`)
+
+  // Level a (2*BASE_FIELD_HALF+1)^2 square around the site to one plane at
   // floorY: air for 16 blocks above, the biome's ground blocks from 8 below.
   // No replace filter, so water, lava and feature blocks go too. Runs before
   // any of the compound exists.
@@ -964,7 +972,7 @@ function buildStarterBase(server, level, x, z) {
   // shapes and connections). The fills stop at local x=7: the x=8 row
   // outside the walls is vines and foundation blocks flush with the yard
   // floor, which would become an undiggable strip. Left vanilla: the door
-  // (no reinforced twin), vines and workstations.
+  // (no reinforced twin) and vines.
   ;[
     ['minecraft:cyan_terracotta', 'securitycraft:reinforced_cyan_terracotta'],
     ['minecraft:stone_bricks', 'securitycraft:reinforced_stone_bricks'],
@@ -998,11 +1006,13 @@ function buildStarterBase(server, level, x, z) {
   //   Plug on top (1,2,4) and basic flux storage beside it (1,1,5). Plug and
   //   generator share a face, so no cables; starter_flux_network.js links
   //   Plug and storage at first login.
-  // - An empty double chest at (6,1,2)+(6,1,3) and 4 empty barrels at
-  //   (6,1..2,5..6) inside the doorway, all with air above in the NBT (a
-  //   chest under a solid block won't open).
-  const oldCraftingTablePos = cafeLocal(3, 1, 4)
-  run(`setblock ${oldCraftingTablePos.x} ${oldCraftingTablePos.y} ${oldCraftingTablePos.z} minecraft:air`)
+  // - The template's smithing table (3,1,3), cartography table (3,1,7) and
+  //   stonecutter (4,1,7) go too: none of them has a use in this pack.
+  // - 4 empty barrels at (6,1..2,5..6) inside the doorway.
+  ;[[3, 1, 4], [3, 1, 3], [3, 1, 7], [4, 1, 7]].forEach(([lx, ly, lz]) => {
+    var clearPos = cafeLocal(lx, ly, lz)
+    run(`setblock ${clearPos.x} ${clearPos.y} ${clearPos.z} minecraft:air`)
+  })
   const craftingStationPos = cafeLocal(3, 1, 6)
   run(`setblock ${craftingStationPos.x} ${craftingStationPos.y} ${craftingStationPos.z} craftingstation:crafting_station[waterlogged=false]`)
   const bioGeneratorPos = cafeLocal(1, 1, 4)
@@ -1022,13 +1032,6 @@ function buildStarterBase(server, level, x, z) {
   run(`setblock ${bioGeneratorX} ${bioGeneratorY} ${bioGeneratorZ} generatorgalore:culinary_generator[facing=south]`)
   run(`setblock ${fluxPlugX} ${fluxPlugY} ${fluxPlugZ} fluxnetworks:flux_plug`)
   run(`setblock ${fluxBatteryX} ${fluxBatteryY} ${fluxBatteryZ} fluxnetworks:basic_flux_storage`)
-  // Double chest facing north, into the room. ChestBlock pairs a LEFT half
-  // with its neighbour at facing.getClockWise() (east, for north), so the
-  // west half is left; local z=3 lands west of z=2 after the rotation.
-  const chestEastPos = cafeLocal(6, 1, 2)
-  const chestWestPos = cafeLocal(6, 1, 3)
-  run(`setblock ${chestWestPos.x} ${chestWestPos.y} ${chestWestPos.z} minecraft:chest[facing=north,type=left,waterlogged=false]`)
-  run(`setblock ${chestEastPos.x} ${chestEastPos.y} ${chestEastPos.z} minecraft:chest[facing=north,type=right,waterlogged=false]`)
   ;[[6, 1, 5], [6, 1, 6], [6, 2, 5], [6, 2, 6]].forEach(([lx, ly, lz]) => {
     var barrelPos = cafeLocal(lx, ly, lz)
     run(`setblock ${barrelPos.x} ${barrelPos.y} ${barrelPos.z} minecraft:barrel[facing=north,open=false]`)
@@ -1189,7 +1192,7 @@ function buildStarterBase(server, level, x, z) {
   // nearby.
   run(`forceload add ${centerX - 96} ${centerZ - 96} ${centerX + 96} ${centerZ + 96}`)
 
-  return { centerX: centerX, centerY: wallY0, centerZ: centerZ, spawnX: x, spawnY: y, spawnZ: z, marker: markerEntity }
+  return { centerX: centerX, centerY: wallY0, centerZ: centerZ, spawnX: spawnX, spawnY: y, spawnZ: spawnZ, marker: markerEntity }
 }
 
 // ---------------------------------------------------------------------
@@ -1347,7 +1350,7 @@ PlayerEvents.loggedIn((event) => {
       var built = ensureBaseBuilt(server, overworld, 'first-login fallback')
       if (built) {
         existingMarker = built.marker || findWorldStateEntity(overworld)
-        server.runCommandSilent(`execute in minecraft:overworld run tp ${player.uuid} ${built.spawnX + 0.5} ${built.spawnY} ${built.spawnZ + 0.5}`)
+        server.runCommandSilent(`execute in minecraft:overworld run tp ${player.uuid} ${built.spawnX + 0.5} ${built.spawnY} ${built.spawnZ + 0.5} 0 0`)
       }
     } catch (e) {
       console.error(`playtest_starter_kit.js: fallback base build failed (${e})`)

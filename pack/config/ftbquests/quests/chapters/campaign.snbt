@@ -280,38 +280,6 @@
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
-			description: ["Three down, and the horde's just getting started. Wave 4 brings two Split Head Zombies; wave 5 the first Elites. The diamond-shaped quests along the top of this page cover every mob in the horde, one each, and killing one opens the next; read them before you sound the next horn, and spend what you've got - everything below this point on the tree is buildable now."]
-			icon: "mutantszombies:split_head_zombie_spawn_egg"
-			id: "0882BEAE557D28DD"
-			rewards: [
-				{
-					id: "78C122E597037501"
-					item: "bountybags:rare_loot_bag"
-					type: "item"
-				}
-				{
-					id: "625E25CEC51CF406"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-			]
-			shape: "rsquare"
-			size: 1.5d
-			subtitle: "Completes on its own when wave 3 is cleared"
-			tasks: [
-				{
-					icon: "mutantszombies:split_head_zombie_spawn_egg"
-					id: "7C3E209DB5F61438"
-					type: "custom"
-				}
-			]
-			title: "Three Down"
-			x: 16.0d
-			y: 0.0d
-		}
-		{
-			dependencies: ["0882BEAE557D28DD"]
-			hide_until_deps_complete: true
 			description: [
 				"That was the last page of the diary. Whoever kept it wrote down eight waves, then stopped writing. From here on they're Hordes: each one bigger than the last, with things in them you haven't met yet. There's no final wave coming, so build like you're staying."
 			]
@@ -345,7 +313,7 @@
 				}
 			]
 			title: "The Last Written Wave"
-			x: 18.0d
+			x: 16.0d
 			y: 0.0d
 		}
 		{
@@ -377,7 +345,7 @@
 				}
 			]
 			title: "The Reaper"
-			x: 20.0d
+			x: 18.0d
 			y: 0.0d
 		}
 		{
@@ -404,11 +372,11 @@
 				}
 			]
 			title: "No Ceiling"
-			x: 22.0d
+			x: 20.0d
 			y: 0.0d
 		}
 		{
-			dependencies: ["0882BEAE557D28DD"]
+			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
 			description: [
 				"The &eAmulet&r can't be crafted. Carry eight gold ingots, open this quest and click the task to hand them in, and the amulet is your reward. Each player claims their own. Gold comes as ingots from Rare bags or nuggets from Uncommon ones, nine to an ingot."
@@ -505,7 +473,7 @@
 		{
 			dependencies: ["4B8F2D6A93E7C051"]
 			hide_until_deps_complete: true
-			description: ["Stand inside any ruin, house, tower or city block out past the border. Most barrels and cupboards out there are ordinary scavenging: food, timber, scrap metal. The &6gold-trimmed&r chests and barrels are the real stashes. Each one rolls its own loot for every player, always carries a bonus on top, and that bonus scales with distance from the base, so the further you go the better the haul, and the longer the pedestal stands on its own. They turn grey once you've looted yours. The stashes in the ruins and towns are guarded: a spawner nearby keeps sending the dead, day or night, and they get nastier the further out you are. Break it with a pickaxe to shut it off. Guards drop no loot bags - the stash is the prize."]
+			description: ["Stand inside any ruin, house or tower past the border. The &6gold-trimmed&r chests and barrels are the real stashes: each player gets their own roll, and the further out, the better the haul. A nearby spawner guards them; break it with a pickaxe to shut it off."]
 			icon: "minecraft:cracked_stone_bricks"
 			id: "4F1477C0746CED34"
 			rewards: [
@@ -567,433 +535,6 @@
 			y: -3.0d
 		}
 		{
-			dependencies: ["7F675AEBC7301832"]
-			hide_until_deps_complete: true
-			description: ["Twenty health, hits for 3. The floor of the whole roster, and half of wave 1."]
-			icon: "minecraft:zombie_spawn_egg"
-			id: "025466C9BEC5BE9D"
-			rewards: [
-				{
-					count: 2
-					id: "2D0CF85238BED841"
-					item: "minecraft:iron_ingot"
-					type: "item"
-				}
-				{
-					id: "7BDC34B98EE362BB"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "minecraft:zombie"
-					id: "1E63160F7D12C940"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Zombie"
-			x: 6.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["025466C9BEC5BE9D"]
-			hide_until_deps_complete: true
-			description: ["A zombie that gives you Hunger on hit. Same health, same speed."]
-			icon: "minecraft:husk_spawn_egg"
-			id: "17E8AFE1D66BD66C"
-			rewards: [
-				{
-					count: 2
-					id: "7429B51683F3FEF5"
-					item: "minecraft:iron_ingot"
-					type: "item"
-				}
-				{
-					id: "222950B5B4689610"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "minecraft:husk"
-					id: "00561BD9979AC803"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Husk"
-			x: 7.5d
-			y: -6.0d
-		}
-		{
-			dependencies: ["17E8AFE1D66BD66C"]
-			hide_until_deps_complete: true
-			description: ["A zombie in villager clothes. Nothing special about it, and no, you can't cure one mid-wave."]
-			icon: "minecraft:zombie_villager_spawn_egg"
-			id: "1D2DB95A7A2F4468"
-			rewards: [
-				{
-					count: 2
-					id: "0959B0CCC67BCD42"
-					item: "minecraft:iron_ingot"
-					type: "item"
-				}
-				{
-					id: "20B45E722DCDE09A"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "minecraft:zombie_villager"
-					id: "0E8DC64CBE84AD2F"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Zombie Villager"
-			x: 9.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["1D2DB95A7A2F4468"]
-			hide_until_deps_complete: true
-			description: ["From wave 2. Some carry tridents and throw them; kill those first."]
-			icon: "minecraft:drowned_spawn_egg"
-			id: "7F6C9D395DDA731E"
-			rewards: [
-				{
-					count: 2
-					id: "75C6D0C8D2FBB42B"
-					item: "minecraft:iron_ingot"
-					type: "item"
-				}
-				{
-					id: "5F73A1CC8BEA9E67"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "minecraft:drowned"
-					id: "0EBE628E466F665D"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Drowned"
-			x: 10.5d
-			y: -6.0d
-		}
-		{
-			dependencies: ["7F6C9D395DDA731E"]
-			hide_until_deps_complete: true
-			description: ["From wave 2. 24 health, 5 damage, and quicker than a zombie. The first step up."]
-			icon: "mutantszombies:mutant_zombie_spawn_egg"
-			id: "573C16E8A7C2E9B1"
-			rewards: [
-				{
-					id: "192A2A3B0E93BD42"
-					item: "bountybags:uncommon_loot_bag"
-					type: "item"
-				}
-				{
-					id: "505720393B6ABB21"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:mutant_zombie"
-					id: "3E497370A1D21909"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Mutant Zombie"
-			x: 12.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["573C16E8A7C2E9B1"]
-			hide_until_deps_complete: true
-			description: ["From wave 3. Same 24 health and 5 damage as the Mutant Zombie; it just swings with the other arm."]
-			icon: "mutantszombies:blister_zombie_spawn_egg"
-			id: "44913AF82EB04C5C"
-			rewards: [
-				{
-					id: "573D2674DEBC1DB0"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:blister_zombie"
-					id: "6F14812734963563"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Blister Zombie"
-			x: 13.5d
-			y: -6.0d
-		}
-		{
-			dependencies: ["44913AF82EB04C5C"]
-			hide_until_deps_complete: true
-			description: ["From wave 4, again in wave 6. Slow, but it hits for 6."]
-			icon: "mutantszombies:split_head_zombie_spawn_egg"
-			id: "4DB74CC3A8304108"
-			rewards: [
-				{
-					id: "70765D7C29E89B9D"
-					item: "bountybags:rare_loot_bag"
-					type: "item"
-				}
-				{
-					id: "28637E2C3D0DC91B"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:split_head_zombie"
-					id: "379E7551E5B3A32B"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Split Head Zombie"
-			x: 15.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["4DB74CC3A8304108"]
-			hide_until_deps_complete: true
-			description: ["From wave 5, in pairs. 5 armour, hits for 6, quicker than a zombie and slower than the horde."]
-			icon: "undeadnights:elite_zombie_spawn_egg"
-			id: "1A2D83B45E8BFAF1"
-			rewards: [
-				{
-					id: "433A09F6F1495FB3"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "undeadnights:elite_zombie"
-					id: "5E808F56B64511FA"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Elite Zombie"
-			x: 16.5d
-			y: -6.0d
-		}
-		{
-			dependencies: ["1A2D83B45E8BFAF1"]
-			hide_until_deps_complete: true
-			description: ["From wave 6, in fours. Fast, 4 armour, and they climb over each other, so a wall one block higher than the pile isn't a wall."]
-			icon: "undeadnights:horde_zombie_spawn_egg"
-			id: "643DE5D901EF47EF"
-			rewards: [
-				{
-					id: "52D91A44079BF8BE"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "undeadnights:horde_zombie"
-					id: "09F8613940E56AD6"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Horde Zombie"
-			x: 18.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["643DE5D901EF47EF"]
-			hide_until_deps_complete: true
-			description: ["Wave 8. Six health and dies to anything, but it's fast and it climbs straight up walls. Turrets handle it better than you do."]
-			icon: "mutantszombies:crawler_spawn_egg"
-			id: "138F8B5037B3BCB1"
-			rewards: [
-				{
-					id: "7EC9592EFCA4F6C3"
-					item: "bountybags:epic_loot_bag"
-					type: "item"
-				}
-				{
-					id: "38CF2A972B68A9B3"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:crawler"
-					id: "6A16CCE4E137C495"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Crawler"
-			x: 19.5d
-			y: -6.0d
-		}
-		{
-			dependencies: ["1ADC31A48FF6907E"]
-			hide_until_deps_complete: true
-			description: ["From wave 20. 60 health, 18 damage, 18 armour, can't be knocked back, and it smashes trees in its way. It's quicker than it looks and will run you down, so don't count on outpacing it. Spikes slow it; turrets finish it."]
-			icon: "mutantszombies:mutant_brute_spawn_egg"
-			id: "660933A263779675"
-			rewards: [
-				{
-					id: "42F5356772B57FE1"
-					item: "bountybags:epic_loot_bag"
-					type: "item"
-				}
-				{
-					id: "1C9C548BF9E1B21A"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:mutant_brute"
-					id: "50049A86911E6890"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Mutant Brute"
-			x: 24.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["138F8B5037B3BCB1"]
-			hide_until_deps_complete: true
-			description: ["Wave 8. It carries TNT, lights it and throws it, and &cthe blast breaks blocks, your walls included&r. Kill it at range."]
-			icon: "undeadnights:demolition_zombie_spawn_egg"
-			id: "0CF20A9914C828E9"
-			rewards: [
-				{
-					id: "1B2A158A6FE4D3F1"
-					item: "bountybags:epic_loot_bag"
-					type: "item"
-				}
-				{
-					id: "2ED3F880AD8C2E71"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "undeadnights:demolition_zombie"
-					id: "7B2479D6D173650C"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Demolition Zombie"
-			x: 21.0d
-			y: -6.0d
-		}
-		{
-			dependencies: ["660933A263779675"]
-			hide_until_deps_complete: true
-			description: ["From wave 20, alongside the Mutant Brute. 100 health, 16 damage, 16 armour, knockback-immune, breaks trees, and just as quick on its feet."]
-			icon: "mutantszombies:zombie_brute_spawn_egg"
-			id: "4655A729AC448B0A"
-			rewards: [
-				{
-					id: "7D49C61871B608A3"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:zombie_brute"
-					id: "47314F1E329CAF98"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Zombie Brute"
-			x: 25.5d
-			y: -6.0d
-		}
-		{
-			dependencies: ["0CF20A9914C828E9"]
-			hide_until_deps_complete: true
-			description: ["Endless waves only. 30 health, hits for 7, slow."]
-			icon: "mutantszombies:rotten_mutant_spawn_egg"
-			id: "1ADC31A48FF6907E"
-			rewards: [
-				{
-					id: "393AB35234AAC086"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-			]
-			shape: "diamond"
-			subtitle: "Kill one"
-			tasks: [
-				{
-					entity: "mutantszombies:rotten_mutant"
-					id: "3E6AAF35299207C3"
-					type: "kill"
-					value: 1L
-				}
-			]
-			title: "Rotten Mutant"
-			x: 22.5d
-			y: -6.0d
-		}
-		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
 			description: ["Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike, and horde mobs are slowed a little while they're on it. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."]
@@ -1006,9 +547,9 @@
 					xp_levels: 1
 				}
 				{
-					count: 4
+					count: 6
 					id: "2C305A9C3CBF6035"
-					item: "minecraft:stick"
+					item: "simply_traps:stake"
 					type: "item"
 				}
 			]
@@ -1023,7 +564,7 @@
 				}
 			]
 			title: "Cheap and Cheerful"
-			x: 14.0d
+			x: 13.0d
 			y: 1.5d
 		}
 		{
@@ -1039,9 +580,9 @@
 					xp_levels: 1
 				}
 				{
-					count: 2
+					count: 4
 					id: "6FCD715A4DB932C5"
-					item: "minecraft:iron_ingot"
+					item: "simply_traps:spike_trap"
 					type: "item"
 				}
 			]
@@ -1056,7 +597,7 @@
 				}
 			]
 			title: "Better Than Nothing"
-			x: 14.0d
+			x: 13.0d
 			y: 3.0d
 		}
 		{
@@ -1089,13 +630,13 @@
 				}
 			]
 			title: "Dinner Bell"
-			x: 14.0d
+			x: 13.0d
 			y: 4.5d
 		}
 		{
 			dependencies: ["0CBAE9737A4869E9"]
 			hide_until_deps_complete: true
-			description: ["The pedestal can be made tougher, and you pay in &eXP levels&r. Right-click the pedestal with an empty hand to open its upgrade screen (&e/pedestal&r, or &a[Upgrades]&r in chat after a wave clears, opens it too). Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 5, 10 and 15 levels. Upgrades belong to the pedestal, so anyone can chip in."]
+			description: ["The pedestal can be made tougher, and you pay in &eXP levels&r. Right-click the pedestal with an empty hand to open its upgrade screen (&e/pedestal&r, or &a[Upgrades]&r in chat after a wave clears, opens it too). Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 6, 12 and 18 levels. Upgrades belong to the pedestal, so anyone can chip in."]
 			icon: "minecraft:experience_bottle"
 			id: "2E93FD4CE7F6AE87"
 			rewards: [
@@ -1143,7 +684,7 @@
 			y: 10.5d
 		}
 		{
-			dependencies: ["0882BEAE557D28DD"]
+			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
 			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. The quartz and redstone come out of Rare bags; ender pearls turn up in Rare and Epic bags and in gold-trimmed chests out in the ruins."]
 			icon: "itemcollectors:basic_collector"
@@ -1176,7 +717,7 @@
 			y: 6.0d
 		}
 		{
-			dependencies: ["0882BEAE557D28DD"]
+			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
 			description: ["Step on it, it launches into the air, then explodes. Simple, cheap, and it doesn't care who trips it - keep it off your own patrol routes."]
 			icon: "securitycraft:bouncing_betty"
@@ -1337,7 +878,7 @@
 			y: 8.0d
 		}
 		{
-			dependencies: ["0882BEAE557D28DD"]
+			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
 			description: [
 				"Loot bags and wave drops pile up fast. A Sophisticated &eBarrel&r holds far more than a chest and takes upgrades in its own slots - no crafting station, no power needed. Build the storage before the power chain, because that one's long."

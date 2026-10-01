@@ -79,14 +79,15 @@ function notifyPickUpNotifier(player, stack) {
 }
 
 // Item counts in the player's inventory, keyed by item id and NBT. When
-// samples is given, it also collects one stack per key.
+// samples is given, it also collects one stack per key. KubeJS renames
+// ItemStack.getTag() to getNbt(); getTag() doesn't exist from a script.
 function lbnInventoryCounts(player, samples) {
   var counts = {}
   var inv = player.getInventory()
   for (var i = 0; i < inv.getContainerSize(); i++) {
     var stack = inv.getItem(i)
     if (stack.isEmpty()) continue
-    var key = `${stack.id}|${stack.getTag()}`
+    var key = `${stack.id}|${stack.getNbt()}`
     counts[key] = (counts[key] || 0) + stack.getCount()
     if (samples && !samples[key]) samples[key] = stack
   }
@@ -113,6 +114,9 @@ function lbnNotifyGains(player, before) {
 // Open windows: { uuid, player, startTick, before }.
 var pendingBagOpens = []
 
+// An error escaping a handler makes KubeJS skip the event's remaining
+// handlers, among them quest_milestones.js's "Open It", so this one catches
+// its own.
 ItemEvents.rightClicked((event) => {
   var id = `${event.item.id}`
   if (!LOOT_BAG_NAMES[id]) return
@@ -123,12 +127,16 @@ ItemEvents.rightClicked((event) => {
   for (var i = 0; i < pendingBagOpens.length; i++) {
     if (pendingBagOpens[i].uuid === uuid) return
   }
-  pendingBagOpens.push({
-    uuid: uuid,
-    player: player,
-    startTick: Number(player.getLevel().getTime()),
-    before: lbnInventoryCounts(player, null),
-  })
+  try {
+    pendingBagOpens.push({
+      uuid: uuid,
+      player: player,
+      startTick: Number(player.getLevel().getTime()),
+      before: lbnInventoryCounts(player, null),
+    })
+  } catch (e) {
+    console.error(`[loot_bag_notification] could not record the bag open: ${e}`)
+  }
 })
 
 // Closes a window on its player's level's first tick after the click.
