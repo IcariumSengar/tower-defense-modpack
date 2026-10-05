@@ -150,23 +150,35 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/arsenal.snbt"
-hash = "ce6c75b70b33de5fc83967a2f7c917bef80c9aa24c00ac5d287f33fea0e3f583"
+hash = "151e76d9f83d28b1b892d5b7ce0bd2b9ea78a6783eb531ffe7d9e376e5614650"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/bounties.snbt"
-hash = "1eebdd60e7d924afc3a83d77a4c6c999af3550ee53c3e4c601a2aec2dacaa302"
+hash = "1be7f7cdcaca3e6a0e89abd4179b7c55b880c61f30531c50376a8de1a07431da"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "02ffbe661f6a801b4d8fdeefc33891120b3db85853b7094595e4e037a9ef50df"
+hash = "fb2137c9cd37abff9e6f1b980b07a380f80d10ce49a5624a4ffe92aaf8dc1c23"
+
+[[files]]
+file = "config/ftbquests/quests/chapters/challenges.snbt"
+hash = "c7f845e054a57f76849a32cee8400bc4497066590c746647c18c65db47cf86b6"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
-hash = "ab1faba384f538288d512e384f0ea0b027bb9373215ba23e669381d03a0d3d0e"
+hash = "26f1972294a14279b91d1a8af6a328591cddb6910d512c724c39af0f0735eaba"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
 hash = "b84deaaaefda8d8a76b7bfb41aa664093dfebf30e270067f78232adaeb0752a9"
+
+[[files]]
+file = "config/ftbquests/quests/reward_tables/kit_dig_in.snbt"
+hash = "da34e401d98088455da4edf79aabdf2c12675a81846acd8528b04d3be31b8f09"
+
+[[files]]
+file = "config/ftbquests/quests/reward_tables/kit_power.snbt"
+hash = "dceebe85060d6e7af72572485e910b454762b31b11e7e33a779d362d54f1633c"
 
 [[files]]
 file = "config/generatorgalore/defaults.lock"
@@ -261,6 +273,10 @@ file = "kubejs/README.md"
 hash = "743ff679a7ee15ef32327a1f01ee41761f33eb6e719015959da6549ed8df8025"
 
 [[files]]
+file = "kubejs/assets/ftbquests/ftb_quests_theme.txt"
+hash = "b24b901c9670aafb14d3f4cc65b9547859e9e15c5072908dc4c136abc1d91ad7"
+
+[[files]]
 file = "kubejs/assets/kubejs/models/block/lure_block.json"
 hash = "c6a68af82108942e9c296c733aa8260e9553360c736dedb52e76ec94a349686c"
 
@@ -295,6 +311,30 @@ hash = "ba31412bf680fc3b17adc4fa8508354d4b619ab6dbd601e8643bc920fc6094e2"
 [[files]]
 file = "kubejs/assets/kubejs/textures/item/shrapnel.png"
 hash = "da479955a1e1a74c4a8737548fd15f4714cd2f0b15542276711a29d0f4f2de2b"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/act1.png"
+hash = "d6ad088d50cb2d1b7f56e11a8cc211980d2402e401949502ea6100436e17c4b3"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/act2.png"
+hash = "a92f3d148b94815b2929e89796f40d6d9cd182e3e6dce974f93ced98f0a59cb9"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/act3.png"
+hash = "edbc49f1e4248d127e724a7477d85db7ae9cd40d756946d9de56ea51f8689d32"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/act4.png"
+hash = "f9e893ddca7c1650608b05ff30660563705f5d02b1b718b73e1a6840c7d2a893"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/hud.png"
+hash = "d2e088891e6a49b26941d917c2037aeeff6d210ca15a7036bb875e1ed6fc4698"
+
+[[files]]
+file = "kubejs/assets/kubejs/textures/quests/legend.png"
+hash = "60652b6c554537e8743f7939027691d32d8d6175efcc5394267838eeb9f1104f"
 
 [[files]]
 file = "kubejs/assets/kubejs/textures/quests/panel.png"
@@ -627,6 +667,10 @@ hash = "3f2e1330d669bb83820ed1f91ddcb9dd3cfd37561eebb1520a829b842bc6b000"
 [[files]]
 file = "kubejs/data/kubejs/tags/worldgen/structure/ruins.json"
 hash = "658480489d79be2021856a6a7febeb3e2df1c50706dca4501512c6dde893c90a"
+
+[[files]]
+file = "kubejs/data/kubejs/tags/worldgen/structure/towns.json"
+hash = "7316e6987c01d157951274df9e90a42fc2bb36ef7a159a4fbc886328acfaeff0"
 
 [[files]]
 file = "kubejs/data/kubejs/worldgen/noise_settings/overworld_flat.json"
@@ -1342,11 +1386,11 @@ hash = "7a3b1d731df56582c3aa4cc1d3df7d2db77d14a1e6cb221cd235477d2913103d"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_border.js"
-hash = "38aa2333937399648711fd4bd383bcebbff57c68684884372299e854620bc880"
+hash = "e286d1d2a508cc0b22b6e752ae32dc9996be35e3bae006d3fa7afe2414aa4c8e"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_pedestal.js"
-hash = "12f339cc38feca6c93ca713880eb526eacbb8f64f450c3ed781e0efe0653e6d6"
+hash = "f6bb8de02e5beeed8ba82b5394edc1178ef01821a4b9c47d65cadab7895258bc"
 
 [[files]]
 file = "kubejs/server_scripts/amulet_worn.js"
@@ -1362,7 +1406,7 @@ hash = "3ff934a901ce2ae1d89188c9911455bc96bae915cefde43a47cf57482d3b6d6e"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
-hash = "fdd0b704bbf75c524cae6610364243d2746b41c766f224d5b9731600bc41a644"
+hash = "8452c3530abdc3a541db3c2a4e90f8ad6f5a1775ffa10dc1d3b9170e0254334f"
 
 [[files]]
 file = "kubejs/server_scripts/electric_trap_player_safety.js"
@@ -1375,6 +1419,10 @@ hash = "1c1b9dbc6a86fdd2e9e20bfdc8c40b501d77f8d65521f42450437f270ced085a"
 [[files]]
 file = "kubejs/server_scripts/explosion_player_safety.js"
 hash = "cf8325ff5f63a69c09ab2dd9caef188a3f280ea7bedea29729b3561ffb63130f"
+
+[[files]]
+file = "kubejs/server_scripts/field_tests.js"
+hash = "c4e32ba7b1caaccff6b20b29de0e1cd7d3a9f6679b94b240c9de593b7e92282e"
 
 [[files]]
 file = "kubejs/server_scripts/flesh_death_sound.js"
@@ -1438,11 +1486,11 @@ hash = "4be157888bd775ab3b5df31b099635b271a6cd18b13cac0aa5c59fec0410e3ec"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_health.js"
-hash = "125edead51f258efbd8a8b1a1de4c2487469c59864aa578c1c6e2eba6a25f34e"
+hash = "4ea52e821846081d8fd5b0cdacf96b6a9f5b1c90d502fe8056843f1d0e91b9f6"
 
 [[files]]
 file = "kubejs/server_scripts/pedestal_upgrades.js"
-hash = "fa35896c91e4ece1eee3cd5af6e413d3c0548b07f45d8a4116ba11d9e5866371"
+hash = "a81bf5128b0f73f6f19821107d8fef49b4840c09b92df9f134780445d8a06ebf"
 
 [[files]]
 file = "kubejs/server_scripts/playtest_starter_kit.js"
@@ -1450,7 +1498,7 @@ hash = "5cd657ced70d40b0634326cdb9fedb6adb1d2f935229c240fe8f4a7e57cd3d69"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
-hash = "7e6c72430772d5bc33eac10cf34e1c26b2f1590d812644fdd1489c73f7db87ba"
+hash = "1c3ae821671124cc861723b118f8d26028ea2989b5da9cad65bc2b4361356c95"
 
 [[files]]
 file = "kubejs/server_scripts/securitycraft_traps.js"
@@ -1518,7 +1566,7 @@ hash = "7b08ae9e052f2a59c10b524819e68480826d4d45e6900fda03e1b7ac1de34f52"
 
 [[files]]
 file = "kubejs/server_scripts/trap_durability.js"
-hash = "15aee1ec9952b6e172ff66b37d281bd0f8fc2482ef1719b142917f57cc2f660c"
+hash = "cc6142db99412d7bc69a84a2768526a6f6fa26602c490e6c2f66beed61741a4e"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
@@ -1538,11 +1586,11 @@ hash = "288a4346efc7c24ef6949d11ae3a3030ea1558cb5124a615d28c4a90211a6aa9"
 
 [[files]]
 file = "kubejs/server_scripts/wave_spawner.js"
-hash = "b5b4d84ee02f5b49c91f66196ba39e5645f4f5f14cd26dfe38156a11487ecb6a"
+hash = "ccc72fd488873283f023fc70012681b0185af2c04b71b8cc3f793891c2544958"
 
 [[files]]
 file = "kubejs/server_scripts/wave_status.js"
-hash = "35dc06109bf0df80e2839aecb938fada6be38faf68ce68a92c54b1ae5ac631bc"
+hash = "cab42452139a4d5f712302a3fb8beccf71d484b3d1e9b880224cbc60ad8899aa"
 
 [[files]]
 file = "kubejs/server_scripts/world_state.js"
