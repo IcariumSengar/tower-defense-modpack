@@ -13,13 +13,6 @@
 			description: ["Hover an item and press R to see a JEI recipe for it."]
 			icon: "minecraft:crafting_table"
 			id: "79499D560BC7471A"
-			rewards: [
-				{
-					id: "223B910590606981"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "rsquare"
 			tasks: [
 				{
@@ -35,13 +28,6 @@
 			description: ["Hover an item and press U to see what it's used for."]
 			icon: "minecraft:furnace"
 			id: "5D3642D6E7F4851B"
-			rewards: [
-				{
-					id: "19793A717BC05AF5"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "rsquare"
 			tasks: [
 				{
@@ -57,13 +43,6 @@
 			description: ["Press Tab to open this quest book, any time."]
 			icon: "minecraft:book"
 			id: "7758B40D3EA7892D"
-			rewards: [
-				{
-					id: "715333AC29EA6276"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "rsquare"
 			tasks: [
 				{
@@ -79,13 +58,6 @@
 			description: ["Hover an item and press A to bookmark it - pins it to its own row for quick access later, no more digging through the full list for something you use constantly."]
 			icon: "minecraft:nether_star"
 			id: "4F307FABBC819762"
-			rewards: [
-				{
-					id: "2C599971A9980880"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "rsquare"
 			tasks: [
 				{
@@ -101,13 +73,6 @@
 			description: ["Press Z to zoom in - Just Zoom's own default keybind, no config needed."]
 			icon: "minecraft:spyglass"
 			id: "48416CE429C41043"
-			rewards: [
-				{
-					id: "081D3B014C990D4A"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "rsquare"
 			tasks: [
 				{
@@ -123,13 +88,6 @@
 			description: ["Press M to open the full world map."]
 			icon: "minecraft:map"
 			id: "6A0B7CF30D95AD6B"
-			rewards: [
-				{
-					id: "26D3A5DF2F193170"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "rsquare"
 			tasks: [
 				{
@@ -142,16 +100,9 @@
 			y: 3.0d
 		}
 		{
-			description: ["Middle-click a container to auto-sort its items into it."]
+			description: ["Middle-click inside a chest or your inventory to sort the section you clicked. Sophisticated barrels and backpacks have their own sort button - use that one there."]
 			icon: "minecraft:chest"
 			id: "3A3562742EB7477D"
-			rewards: [
-				{
-					id: "051652716CAB5542"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -167,13 +118,6 @@
 			description: ["Just look at a block or mob - no keybind needed, live info shows up on its own."]
 			icon: "minecraft:spider_eye"
 			id: "28BF317932C2A7C3"
-			rewards: [
-				{
-					id: "130CEFBB6A777EBC"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -189,13 +133,6 @@
 			description: ["Right-click a loot bag to open it."]
 			icon: "bountybags:legendary_loot_bag"
 			id: "3A7685999BBC71CB"
-			rewards: [
-				{
-					id: "3CF936CF1675E07E"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -211,13 +148,6 @@
 			description: ["Open your inventory and find the Curios accessory slot - that's where the amulet goes, not the armor slots."]
 			icon: "minecraft:emerald"
 			id: "2745913D61C3930B"
-			rewards: [
-				{
-					id: "29DF355838F82B18"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -233,13 +163,6 @@
 			description: ["Set a Waystone, then teleport back to it from any other Waystone once unlocked."]
 			icon: "minecraft:ender_pearl"
 			id: "1F9FC168B58483E0"
-			rewards: [
-				{
-					id: "635196729DE4C72B"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -252,16 +175,9 @@
 			y: 3.0d
 		}
 		{
-			description: ["That crafting table by the furnace reaches further than it looks - it pulls from any chest or barrel touching it, right there in the crafting grid. No wiring, nothing to switch on. Build your stash around it instead of hauling it all to one spot."]
+			description: ["The Crafting Station in the command post reaches further than it looks - it pulls from any chest or barrel touching it, right there in the crafting grid. No wiring, nothing to switch on. Build your stash around it instead of hauling it all to one spot."]
 			icon: "craftingstation:crafting_station"
 			id: "1E8AEC3DD9DC2A7A"
-			rewards: [
-				{
-					id: "1C5727575A2C9F7C"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -274,16 +190,9 @@
 			y: 3.0d
 		}
 		{
-			description: ["Run /hardcore enable to flip on real permadeath for this world - optional, and off by default. Die with it on and no Totem of Undying saves you, and the run is over for good: no respawn, you are dropped out of the world, and it only ever opens again as a spectator. Changed your mind while you're still alive? /hardcore disable turns it back off."]
+			description: ["Run /hardcore enable to flip on real permadeath for this world - optional, and off by default. Die with it on and no Totem of Undying saves you: you're out, and you only come back as a spectator. With friends, the run ends once every player online is down; while someone is still standing, a death is a normal respawn. Changed your mind while you're still alive? /hardcore disable turns it back off."]
 			icon: "minecraft:totem_of_undying"
 			id: "5A1D9C3E7F208B46"
-			rewards: [
-				{
-					id: "2C6E4A8B1F3D0957"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-			]
 			shape: "circle"
 			tasks: [
 				{
@@ -295,7 +204,106 @@
 			x: 10.0d
 			y: 1.5d
 		}
+		{
+			description: [
+				"Put everyone in one FTB Teams party and the party shares this book: when anyone finishes a task, it's finished for all of you, and everyone online sees it."
+				"Rewards stay personal. Each of you opens the quest and claims your own copy, so watch for the &e!&r on a chapter. Without a party, everyone works through their own book."
+			]
+			icon: "minecraft:player_head"
+			id: "235E28AE35927E88"
+			shape: "circle"
+			subtitle: "Share one book with your friends"
+			tasks: [
+				{
+					id: "2B77311C29032D79"
+					type: "checkmark"
+				}
+			]
+			title: "Playing Together"
+			x: 11.5d
+			y: 0.0d
+		}
+		{
+			description: ["A Sentry, an I.M.S. or any other SecurityCraft defence belongs to the player who placed it: only they can change its mode, fit modules or break it. Decide between you who builds what."]
+			icon: "securitycraft:sentry"
+			id: "4615FBCBD0498332"
+			shape: "circle"
+			subtitle: "SecurityCraft defences have one owner"
+			tasks: [
+				{
+					id: "207E4804FCCF227B"
+					type: "checkmark"
+				}
+			]
+			title: "Who Owns What"
+			x: 11.5d
+			y: 1.5d
+		}
+		{
+			description: ["Mines, Claymores, the I.M.S., your rockets and grenades never hurt a player or break a block, so you can fight inside your own minefield. Spikes and stakes are different: they bite you just like they bite the horde."]
+			icon: "securitycraft:claymore"
+			id: "35B59A58BE75BAD4"
+			shape: "circle"
+			subtitle: "Your own explosions are safe"
+			tasks: [
+				{
+					id: "60DF688CC0243632"
+					type: "checkmark"
+				}
+			]
+			title: "Friendly Fire"
+			x: 11.5d
+			y: 3.0d
+		}
+		{
+			description: ["A coloured beam of light over something on the ground marks an item worth going back for, like a Legendary bag or good gear."]
+			icon: "minecraft:beacon"
+			id: "7CBF226400673B83"
+			shape: "circle"
+			subtitle: "A beam means loot worth the detour"
+			tasks: [
+				{
+					id: "513B143DBF80EF4C"
+					type: "checkmark"
+				}
+			]
+			title: "Follow the Light"
+			x: 13.0d
+			y: 0.0d
+		}
+		{
+			description: ["Press &eK&r to drop a waypoint where you stand: a ruin worth coming back to, a town, your waystone. It shows on the minimap and the world map (M)."]
+			icon: "minecraft:filled_map"
+			id: "1E7585B4849C7584"
+			shape: "circle"
+			subtitle: "Press K for a waypoint"
+			tasks: [
+				{
+					id: "4FC6C1011DACADC9"
+					type: "checkmark"
+				}
+			]
+			title: "Drop a Pin"
+			x: 13.0d
+			y: 1.5d
+		}
+		{
+			description: ["Hover any trap or turret in your inventory or in JEI: the tooltip shows its tier and how hard it hits. A free cheat sheet for what to build next."]
+			icon: "simply_traps:spike_trap"
+			id: "205EA614B583924C"
+			shape: "circle"
+			subtitle: "Hover a defence to compare it"
+			tasks: [
+				{
+					id: "70F0F9798A597F1A"
+					type: "checkmark"
+				}
+			]
+			title: "Tier Tooltips"
+			x: 13.0d
+			y: 3.0d
+		}
 	]
-	subtitle: ["Keys and habits worth knowing"]
-	title: "Tips and Tricks"
+	subtitle: ["Keys, habits and how things work"]
+	title: "Field Notes"
 }

@@ -1,0 +1,1346 @@
+{
+ "mechanics": [
+  {
+   "name": "Loot bag drops from wave kills",
+   "category": "loot economy",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "bountybags:uncommon_loot_bag",
+    "bountybags:rare_loot_bag",
+    "bountybags:epic_loot_bag",
+    "bountybags:legendary_loot_bag",
+    "entity tag td_wave_mob"
+   ],
+   "player_facing_summary": "Any wave mob (written-wave mobs, Undead Nights horde mobs, bosses) can drop Bounty Bags where it dies. Every mob type rolls the same odds with four independent rolls, so one kill can drop more than one bag. Structure mobs and stash guards never drop bags. The modifier has no killer condition, so trap and turret kills can drop bags too.",
+   "source_files": [
+    "pack/kubejs/server_scripts/loot_bag_drops.js",
+    "pack/config/bountybags-common.toml",
+    "pack/kubejs/server_scripts/boss_wave.js"
+   ],
+   "key_numbers": [
+    "Uncommon 20%, Rare 3.5%, Epic 3%, Legendary 2% per kill, four independent rolls (loot_bag_drops.js:22, 34-37). Expected about 0.285 bags per kill (derived).",
+    "Only mobs tagged td_wave_mob drop bags (loot_bag_drops.js:25-32). No killer condition in the modifier (loot_bag_drops.js:29-38), so trap and turret kills should drop bags through the vanilla loot path (not live-tested in this pass).",
+    "BountyBags' own mob drops are off: enableDrops = false (bountybags-common.toml:15).",
+    "Bags stack to 16 (instance config/bountybags/*_bag.toml, bagStackSize = 16).",
+    "Bosses roll the same bag odds on top of their fixed drops (boss_wave.js:90-92)."
+   ],
+   "unlock_or_cost": "None. Starts with the first kill of wave 1.",
+   "current_quest_coverage": "'Spoils of War' (campaign.snbt:207-241) quotes 20/3.5/3/2 and says tougher mobs don't carry better bags. Both are accurate. Its item task needs an Uncommon bag specifically (campaign.snbt:231-235). Bounties 'First Blood' says zombies from structure spawners don't count (bounties.snbt:13), which is also accurate.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "FTB item task per bag id with consume_items false. The current quest uses the Uncommon bag.",
+    "FTB item task on bountybags:rare_loot_bag or epic_loot_bag as 'first better bag' milestones.",
+    "Pace quests on kill volume with the existing world kill counter td_bountyKillCount (bounty_kills.js:56-80)."
+   ],
+   "teaching_hook": "Bags come from killing a lot, not from killing big things. Every wave mob has the same odds, and kills by your traps and turrets can still drop bags.",
+   "multiplayer_notes": "Bags are ground items at the kill, so the first player to walk over them gets them. The kill counter is world-wide. With default_reward_team false (data.snbt:6), each party member claims every quest reward separately.",
+   "reward_candidates": [
+    "Uncommon or Rare bags as small early rewards",
+    "XP levels, the pedestal-upgrade currency (6/12/18 levels per tier, pedestal_upgrades.js:15)"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Opening bags: contents by tier, pickup popups and the sneak preview",
+   "category": "loot economy",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "bountybags:uncommon_loot_bag",
+    "bountybags:rare_loot_bag",
+    "bountybags:epic_loot_bag",
+    "kubejs:shrapnel"
+   ],
+   "player_facing_summary": "Right-clicking a bag puts its loot straight into the inventory, and each item gained pops up in the bottom-right corner (Pick Up Notifier). Sneak + right-click opens a read-only viewer of what that bag can roll instead of opening it. Bag names are coloured by rarity: Uncommon yellow, Rare aqua, Epic and Legendary purple.",
+   "source_files": [
+    "pack/kubejs/server_scripts/loot_bag_notification.js",
+    "pack/kubejs/server_scripts/quest_milestones.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/uncommon.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/rare.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/epic.json",
+    "instance config/bountybags/*_bag.toml",
+    "instance config/pickupnotifier/pickupnotifier-client.toml",
+    "mods/BountyBags-5.9.0.jar (LootBagItem, ItemRegistry, BountyBagsConfig, LootEditorAccess)"
+   ],
+   "key_numbers": [
+    "Uncommon: 3 rolls from 17 entries, total weight 391. Examples: oak logs 4-8 (w70), iron ingots 3-5 (w30), iron nuggets 2-4 (w30), gold nuggets 6-15 (w20), string 2-4 (w20), Shrapnel 2-4 (w20, about 5% per roll), leather 2-3 (w15) (uncommon.json:5-23).",
+    "Rare: 3 rolls, total weight 193: gold ingots 6-9 (w45, about 23% per roll), iron 3-6 (w25), quartz 3-5 (w20), redstone block 1-2, obsidian 2-4, lapis block 1-2, iron block, TNT 1-2, ender pearl 1-2 (w8), diamond 1 (w5), Shrapnel 4-8 (w25) (rare.json:5-17).",
+    "Epic: 4 rolls, total weight 137: diamond 1-3 (w30), emerald 2-4 (w25), gold block 1-2 (w22), ender pearl 2-3 (w18), diamond block (w12), netherite scrap (w10), Shrapnel 6-10 (w20) (epic.json:5-13).",
+    "BountyBags reads its live TOMLs, which match these JSONs (instance config/bountybags/uncommon_bag.toml, rare_bag.toml, epic_bag.toml; loot amounts 3/3/4).",
+    "Popups: one per item gained, split into stacks of 64 (loot_bag_notification.js:97-111). Each shows for 80 ticks in the bottom-right corner (pickupnotifier-client.toml display_time = 80, screen_corner = BOTTOM_RIGHT).",
+    "Sneak-click opens the outcome viewer for non-ops because allowPublicLootView defaults to true (BountyBagsConfig, LootEditorAccess.canView; instance bountybags-common.toml). The 'Open It' detector ignores sneak clicks (quest_milestones.js:40-42).",
+    "Item rarity: uncommon UNCOMMON, rare RARE, epic and legendary both EPIC (BountyBags ItemRegistry)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "'Open It' (campaign.snbt:242-279) completes on the first non-sneak open (quest_milestones.js:38-44). Its text says 'every bag can carry Shrapnel', which is wrong: the Legendary bag has no Shrapnel (legendary.json:7-18). Tips 'Open a Loot Bag' (tips_and_tricks.snbt:188-209) is a duplicate checkmark. Nothing teaches the sneak preview or the popups.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Existing custom task driven by ItemEvents.rightClicked (quest_milestones.js:38-44).",
+    "'First Rare/Epic opened' custom tasks from the same event, keyed on event.item.id.",
+    "A 'peek inside' custom task: ItemEvents.rightClicked with isShiftKeyDown() true. This needs its own handler, because the existing one returns early on sneak (quest_milestones.js:42).",
+    "An 'open N bags' progress bar using the TeamData.setProgress reflection pattern in bounty_kills.js:82-120."
+   ],
+   "teaching_hook": "Sneak + right-click a bag to see everything it can roll before you open it. Open bags as soon as you get them, because the gold for the amulet and the Shrapnel for the Sentry come out of them.",
+   "multiplayer_notes": "Popups go only to the player who opened the bag (loot_bag_notification.js:68-79). 'Open It' is flagged per player, but FTB applies the completion to the whole party (quest_milestones.js:57-66).",
+   "reward_candidates": [
+    "A bag one tier above the player's current stage",
+    "A few iron ingots or gold nuggets early on"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Legendary jackpot bag and its orange beam",
+   "category": "loot economy",
+   "tier": "Wave 1 onward (2%), plus every airdrop",
+   "ids": [
+    "bountybags:legendary_loot_bag",
+    "minecraft:nether_star",
+    "omtreborn:grenade_turret",
+    "omtreborn:rocket_turret",
+    "immersiveengineering:tesla_coil",
+    "simple_guns_reworked:minguguuggn"
+   ],
+   "player_facing_summary": "Any wave kill has a 2% chance to drop a Legendary bag, and every airdrop crate holds one. On the ground it is the only bag with a light beam (orange). Opening it gives exactly one standout item.",
+   "source_files": [
+    "pack/kubejs/server_scripts/loot_bag_drops.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/legendary.json",
+    "pack/config/lootbeams/light_config.toml",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "pack/kubejs/server_scripts/pedestal_health.js",
+    "mods/Loot Beams Refork-forge-1.20.1-3.4.7.jar (Hooker, LBRarity, ModifyContext)"
+   ],
+   "key_numbers": [
+    "2% per wave-mob kill, same for every mob type (loot_bag_drops.js:37).",
+    "One guaranteed in every airdrop crate (wave_airdrop.json:5-8).",
+    "One item, weights out of 100: nether star 25, Minigun 10, totem 8, Grenade Turret 8, netherite sword (Sharpness V, Unbreaking III, Fire Aspect II, Sweeping III) 8, netherite chestplate 7, leggings 7, Rocket Turret 6, Tesla Coil 6, axe 5, helmet 5, boots 5 (legendary.json:5-18). The live legendary_bag.toml matches.",
+    "Orange beam, r255 g120 b0 (light_config.toml:21-23). A colour override marks the rarity as modified, which makes Loot Beams draw the beam even though only_equipment = true (Loot Beams jar: Hooker.checkRenderable, LBRarity.modifyColor -> ModifyContext(true)). No other bag gets a beam.",
+    "A nether star right-clicked on the pedestal heals it fully; a golden carrot heals 10% (pedestal_health.js:167-169)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "Given as a reward by 'The Reaper' and 'No Ceiling' (campaign.snbt:325-336, 357-362) and by 'Zombie Masher' (bounties.snbt:153-158). The 2% jackpot, the beam and the possible contents are never explained.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "FTB item task on bountybags:legendary_loot_bag with consume_items false ('Hit the jackpot').",
+    "Custom task on opening one: ItemEvents.rightClicked with an item-id check."
+   ],
+   "teaching_hook": "An orange beam on the battlefield is a Legendary bag, so go and get it. A nether star from one is a full pedestal heal, not a trophy.",
+   "multiplayer_notes": "One bag, and the first player to pick it up gets it. The beam is drawn client-side and every player sees it (Loot Beams is side both, pack/mods/loot-beams-refork.pw.toml).",
+   "reward_candidates": [
+    "Keep Legendary bags for milestone quests (boss, wave 15, the repeatable bounty), as now"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Loot Beams and dropped-item name tags",
+   "category": "QoL / loot visibility",
+   "tier": "Always",
+   "ids": [
+    "minecraft:diamond",
+    "minecraft:nether_star",
+    "minecraft:totem_of_undying",
+    "minecraft:end_crystal",
+    "minecraft:wither_skeleton_skull"
+   ],
+   "player_facing_summary": "Once they land, dropped equipment (swords, axes, armour, tools, bows, crossbows, shields, tridents) and a short whitelist of valuables (diamond, nether star, totem, end crystal, wither skull) show a light beam. Looking at any dropped item shows its name and rarity.",
+   "source_files": [
+    "pack/config/lootbeams/light_config.toml",
+    "instance config/lootbeams/loot_information_config.toml",
+    "instance config/lootbeams/custom_config.toml",
+    "instance config/lootbeams/sound_config.toml",
+    "mods/Loot Beams Refork jar (EquipmentConditions, Hooker)"
+   ],
+   "key_numbers": [
+    "Filter: all_item false, only_rare false, only_equipment true; whitelist of totem, end crystal, nether star, wither skull and diamond (light_config.toml:27-37).",
+    "The beam appears only once the item is on the ground (light_config.toml:14, require_on_ground = true).",
+    "Equipment means TieredItem, ArmorItem, ShieldItem, BowItem, CrossbowItem or TridentItem, plus the #minecraft:swords and #minecraft:axes tags (EquipmentConditions; custom_config.toml).",
+    "Name and rarity tag on look, for every item (loot_information_config.toml: NAME_AND_RARITY_IN_NAMETAG, showInfoForAllItem = true).",
+    "Beam sound is enabled (sound_config.toml enable_sound = true); exactly when it plays is unverified.",
+    "Whether Simple Guns weapons count as equipment is unverified."
+   ],
+   "unlock_or_cost": "None. Passive.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Nothing to detect. Teach it with a Tips checkmark, or attach the explanation to an item task such as the first diamond."
+   ],
+   "teaching_hook": "A beam means the item is worth the detour.",
+   "multiplayer_notes": "Client-side visuals that every player sees. Items go to whoever picks them up first.",
+   "reward_candidates": [],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Shrapnel (Tier 2 material that only comes from fighting)",
+   "category": "progression material",
+   "tier": "Bridge from Tier 1 to Tier 2",
+   "ids": [
+    "kubejs:shrapnel",
+    "securitycraft:sentry",
+    "simple_guns_reworked:shotgun_ammo"
+   ],
+   "player_facing_summary": "Scrap metal that comes only from fighting: Uncommon, Rare and Epic bags, plus 12 from each boss. It has no recipe. It goes into the Sentry and into Shotgun Ammo, where it replaces gravel.",
+   "source_files": [
+    "pack/kubejs/startup_scripts/shrapnel.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/*.json",
+    "pack/kubejs/server_scripts/boss_wave.js",
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js"
+   ],
+   "key_numbers": [
+    "Uncommon 2-4 (w20 of 391, 3 rolls), Rare 4-8 (w25 of 193, 3 rolls), Epic 6-10 (w20 of 137, 4 rolls) (uncommon.json:23, rare.json:17, epic.json:13).",
+    "12 per boss kill (boss_wave.js:184).",
+    "Not in the Legendary bag (legendary.json), and in no structure or airdrop table (it appears nowhere else under pack/kubejs/data).",
+    "The Sentry recipe takes 1 (securitycraft_traps.js:7-22). The Shotgun Ammo recipe simple_guns_reworked:r_3 takes Shrapnel in place of gravel (tier3_loot_aligned_recipes.js:146-148).",
+    "Tooltip: 'Scrap metal salvaged from the fight - fuel for Tier 2 tech.' (shrapnel.js:6-10)."
+   ],
+   "unlock_or_cost": "No recipe. Bags and bosses only.",
+   "current_quest_coverage": "'Open It' calls it 'the turret material' and wrongly says every bag can carry it (campaign.snbt:245). The Sentry quest subtitle lists Shrapnel (campaign.snbt:787). The Arsenal 'Shotgun Ammo' quest (arsenal.snbt:420-443) doesn't mention its Shrapnel cost.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "FTB item task on kubejs:shrapnel, count N, consume_items false.",
+    "Avoid a consuming turn-in, which would compete with the Sentry and shotgun shells for Shrapnel."
+   ],
+   "teaching_hook": "Shrapnel only comes from fighting. You can't loot your way to a Sentry or shotgun shells; you have to hold the line.",
+   "multiplayer_notes": "It comes in bags, so whoever picks up the bag gets it. A boss's Shrapnel drops as one invulnerable stack where the boss died (boss_wave.js:181-185).",
+   "reward_candidates": [
+    "Shrapnel suits combat and bounty milestones. Keep it out of exploration rewards so it stays fight-only."
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Where progression materials come from (exploration-only vs home-craftable)",
+   "category": "loot economy / progression",
+   "tier": "All tiers",
+   "ids": [
+    "minecraft:netherite_scrap",
+    "minecraft:diamond_block",
+    "minecraft:ender_pearl",
+    "minecraft:emerald",
+    "minecraft:netherite_upgrade_smithing_template",
+    "minecraft:egg",
+    "immersiveengineering:ingot_steel",
+    "omtreborn:raw_ferronite",
+    "fluxnetworks:flux_dust"
+   ],
+   "player_facing_summary": "Each source feeds a different part of progression. Fighting gives iron, gold and Shrapnel. Ruins give gems, pearls and emeralds, and better ones the further out you go. The airdrop gives netherite scrap and diamond blocks. A few machine inputs also have home-craftable routes.",
+   "source_files": [
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/*.json",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "pack/kubejs/server_scripts/tier4_turret_recipes.js",
+    "pack/kubejs/data/berezka_api/loot_tables/chests/*.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/scav_dairy.json"
+   ],
+   "key_numbers": [
+    "Fight-only: Shrapnel (bags, bosses); nether star (Legendary 25/100, airdrop 20%, wave_airdrop.json:34-42); totem (Legendary 8/100, one per boss, boss_wave.js:185).",
+    "Removed from every plain container: diamond, emerald, ender pearl, golden apple, enchanted golden apple (structure_loot_progression.js:148-154). These come from bags, Lootr stashes and the airdrop instead.",
+    "Lootr HIGH band only (over 270 blocks): blaze powder, magma block, netherite upgrade smithing template (structure_loot_progression.js:46-61). XP bottles come only from the Lootr prize roll (structure_loot_progression.js:69).",
+    "Netherite scrap: airdrop 2-4 guaranteed (wave_airdrop.json:10-21), Epic bag w10/137 per roll, Lootr HIGH w8/95. Netherite ingot = 4 scrap + 4 gold (campaign.snbt:1069).",
+    "Diamond blocks: airdrop 2-4 guaranteed (wave_airdrop.json:22-33), Epic w12/137, Lootr HIGH w5/95.",
+    "Eggs: scav_dairy (egg w10/39), used by the Lost City farm/store/dining tables and post-apocalypse food tables. Seeds come from berezka farm.json.",
+    "Home routes: steel from iron in a vanilla blast furnace (tier3_loot_aligned_recipes.js:66-70); Raw Ferronite = 2 steel + redstone (tier4_turret_recipes.js:8-12); Flux Dust = lapis block + 4 redstone (tier3_loot_aligned_recipes.js:58-63); Fuel Tank = empty tank + 2 gunpowder + 2 coal (139-144); Casull rounds = 4 casings + 2 gunpowder + 2 iron nuggets (93-100).",
+    "Ores are scarce by design: the stone layer is about y -16 to 2 (tier3_loot_aligned_recipes.js:1-5)."
+   ],
+   "unlock_or_cost": "Varies by material.",
+   "current_quest_coverage": "Only scattered one-liners, accurate where they exist: 'Waste Not' (pearls from Rare/Epic bags and gold-trimmed chests, campaign.snbt:689), 'Wired Different' (eggs from stores and farms, campaign.snbt:999), 'Sparks in the Dark' (scrap from supply crates and Epic bags, campaign.snbt:1069), 'Pack Mule' (leather and string, campaign.snbt:663), 'Not Just Jewelry' (gold from Rare and Uncommon bags, campaign.snbt:382).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "FTB item tasks per material with consume_items false, as a ledger of first finds.",
+    "Have each tier quest's subtitle name where an input comes from, not just the recipe."
+   ],
+   "teaching_hook": "Each material has a home: kill for metal and Shrapnel, scavenge for gems and pearls, look up for netherite.",
+   "multiplayer_notes": "Lootr rolls are per player, so a party exploring together multiplies gem and pearl income. The airdrop and plain containers are single shared rolls.",
+   "reward_candidates": [
+    "Under the no-shortcut rule, never reward steel, ferronite ingots or anything else a home furnace, blast furnace or generator produces.",
+    "Small amounts of loot-tier inputs (ender pearls, emeralds, obsidian) fit exploration quests.",
+    "Keep HIGH-only items (smithing template, netherite scrap) out of base-side quests, so travelling far stays the way to get them."
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Supply airdrop every 5th wave",
+   "category": "loot economy / exploration event",
+   "tier": "Waves 5, 10, 15, ...",
+   "ids": [
+    "dyairdrop:airdroplarge",
+    "dyairdrop:plane",
+    "kubejs:chests/wave_airdrop",
+    "minecraft:beacon",
+    "securitycraft:reinforced_iron_block"
+   ],
+   "player_facing_summary": "After every 5th wave clear, a plane flies in from the west (LOOK UP title) and drops a crate 90-110 blocks from the pedestal. On landing there is a flash and an end-rod burst visible from far off, a beacon beam on a 3x3 reinforced-iron stand on top of the crate, a title and action-bar line giving the compass direction, and a chat waypoint line that Xaero turns into a clickable [Add]. The crate disappears once it's empty.",
+   "source_files": [
+    "pack/kubejs/server_scripts/wave_airdrop.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/airdrop/*.json",
+    "pack/kubejs/server_scripts/wave_status.js",
+    "pack/kubejs/server_scripts/base_expansion.js"
+   ],
+   "key_numbers": [
+    "Every 5th wave (wave_airdrop.js:22), triggered on the clear (wave_status.js:282). Launch is 240 ticks (12 s) later (wave_airdrop.js:64). Drop height is pedestal Y + 40 (25). The plane spawns 200 blocks west (29). The crate lands 90-110 blocks from the pedestal in any direction (36-37).",
+    "Landing burst is visible up to 512 blocks (316-321). The beacon and its base are unbreakable and removed with the crate (298-312, 214-230). The 'landed' action-bar note lasts 400 ticks (53, 80-87).",
+    "Chat waypoint line '<Supply Drop> xaero-waypoint:Supply Crate:S:x:y:z:6:false:0', gold (287-293). The title and subtitle give an 8-point compass direction (276-285, 449-453).",
+    "Contents: 1 Legendary bag; 2-4 netherite scrap; 2-4 diamond blocks; 20% chance of a nether star; one gun with its own ammo (pistol 15, revolver 12, SMG 10, tommy gun 8, shotgun 8, double-barrel 8, auto shotgun 5, DMR 5, sniper 4, potato cannon 4, laser 3, flamethrower 3, heavy sniper 3, minigun 2, bazooka 2, out of 92); 2-4 grenades (wave_airdrop.json:3-74). Ammo counts per gun are in airdrop/*.json, e.g. pistol with 32-48 rounds, laser with 40-64 Energized Dust.",
+    "The first crate always lands outside the border. The border is 85 wide after wave 5 (starts at 50, playtest_starter_kit.js:362; growth per base_expansion.js:12-14) and the crate lands 90-110 out. Blocks beyond the border can't be used (wave_airdrop.js:31-35).",
+    "The crate is removed and its beacon cleared once the inventory is empty (wave_airdrop.js:340-375). A crate nobody loots stays forever (69-73)."
+   ],
+   "unlock_or_cost": "Free. Reaching it early needs the amulet on the pedestal.",
+   "current_quest_coverage": "No quest. It is only mentioned in 'Sparks in the Dark' ('supply crates', campaign.snbt:1069) and Arsenal 'Energized Dust' (arsenal.snbt:541). That Arsenal text says Energized Dust 'can't be crafted here', but a recipe exists (simple_guns_reworked rdut.json: amethyst + glowstone dust + redstone). Glowstone dust has no source in the pack's loot tables, so it may be effectively uncraftable; unverified.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Shared milestone when a crate lands: wave_airdrop.js sets td_airdropCrateWatch and td_airdropLandedUntilTick on the marker (443-447). Poll them the way quest_milestones.js polls its keys.",
+    "Per-player custom task from BlockEvents.rightClicked('dyairdrop:airdroplarge'). A handler already exists at wave_airdrop.js:324-333.",
+    "FTB observation task, observe_type 0 (BLOCK), dyairdrop:airdroplarge, to 'spot the crate'.",
+    "Item tasks for netherite scrap or diamond blocks as follow-ups."
+   ],
+   "teaching_hook": "Your first supply drop lands past the wall on purpose. Put the amulet on the pedestal, click [Add] on the chat line, and follow the beam. It's one crate for the whole team.",
+   "multiplayer_notes": "One shared container: the first player to open it can take everything. Titles, the waypoint line and the sounds go to every player (@a). Only one beacon exists at a time.",
+   "reward_candidates": [
+    "Small rewards (XP levels or an Uncommon bag); the crate itself is the prize.",
+    "Ammo for gun types the party doesn't have yet. Ammo is crafted at a crafting table, not produced by a machine."
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "The world border and the amulet gate (stay or explore)",
+   "category": "exploration gating",
+   "tier": "From the first clear; the amulet is available after 'Open It'",
+   "ids": [
+    "kubejs:amulet",
+    "supplementaries:pedestal"
+   ],
+   "player_facing_summary": "The play area is a world border that starts 50 blocks wide around the base and grows after each clear. While the amulet is anywhere other than the pedestal, the border shoves you back. Setting the amulet on the pedestal pushes the border 10,000,000 blocks out for everyone. Lifting it snaps the border back and teleports anyone outside to the edge.",
+   "source_files": [
+    "pack/kubejs/server_scripts/base_expansion.js",
+    "pack/kubejs/server_scripts/amulet_pedestal.js",
+    "pack/kubejs/server_scripts/amulet_border.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "docs/MODS.md"
+   ],
+   "key_numbers": [
+    "Starting width 50, no border damage (playtest_starter_kit.js:362, 497-504).",
+    "Growth per clear: 5 + 5*floor((wave-1)/3) blocks of width, over 10 s (base_expansion.js:8-14, 36). Width is 65 after wave 3, 85 after wave 5, 140 after wave 9, 200 after wave 12 and 275 after wave 15 (derived).",
+    "Amulet on the pedestal adds 10,000,000 to the border (amulet_pedestal.js:16, 20-43). Lifting it closes the border again and moves wave mobs left outside back into the spawn band (amulet_pedestal.js:50-69).",
+    "Push-back check every 5 ticks, to 1 block inside the edge; long pushes land the player on the surface (amulet_border.js:11-16, 43-62). One chat line per crossing (64-66).",
+    "Blocks beyond the border can't be used (wave_airdrop.js:33-34).",
+    "Xaero's World Map draws the border as a light-blue line (patched xaeroworldborder jar, docs/MODS.md:1574-1580)."
+   ],
+   "unlock_or_cost": "Amulet: hand in 8 gold ingots ('Not Just Jewelry').",
+   "current_quest_coverage": "'Wave One, Cleared' states the growth rule accurately (campaign.snbt:178). 'Wear It' and 'Leave It Behind' explain the wall and the pedestal toggle accurately (campaign.snbt:423, 449).",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Existing shared custom task amuletOnPedestal (quest_milestones.js:105).",
+    "Per-player 'first step past the line' custom task. amulet_border.js already tracks td_wasInsideBorderForAmulet per player (amulet_border.js:25-40).",
+    "Wave-count milestones from td_q_lastClearedWave (quest_milestones.js:75-89) to mark when ruins start falling inside the border."
+   ],
+   "teaching_hook": "The amulet is the key to the map. Wear it and you're tougher but fenced in. Leave it on the pedestal and the world opens up, but you're unbuffed out there and the horde still heads for the pedestal.",
+   "multiplayer_notes": "This is world state. One amulet on the pedestal opens the border for the whole party, and whoever lifts it pulls everyone outside back to the edge (amulet_border.js:43-62). The amulet hand-in is team-shared: one 8-gold hand-in completes 'Not Just Jewelry' for the party, and every member can then claim their own amulet (default_reward_team false, data.snbt:6; FTB QuestKey.forReward keys claims by player UUID).",
+   "reward_candidates": [
+    "Ender pearls or Waystone parts for crossing ('Leave It Behind' already gives 4 pearls)",
+    "Never a second amulet, or anything that stands in for one"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Starter ruin ring (6 ruins, 100-130 blocks out)",
+   "category": "structures / exploration",
+   "tier": "First expedition",
+   "ids": [
+    "postapocalypse_structures:redhouse",
+    "postapocalypse_structures:yellowhouse",
+    "abandoned_urban:gas_station",
+    "abandoned_urban:motel",
+    "watchtower_building:abandoned_watchtower",
+    "philipsruins:desert_structures",
+    "u_desert:desert_ruin/house",
+    "nolandostructurez:abandoned_suburban",
+    "nolandostructurez:overgrown_suburban",
+    "nolandostructurez:abandoned_bank",
+    "abandoned_structures:house1",
+    "abandoned_structures:gas_station"
+   ],
+   "player_facing_summary": "Every fresh world gets 6 medium ruins placed 100-130 blocks around the base at evenly spread angles. They are the nearest places with stashes and guard spawners.",
+   "source_files": [
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "pack/kubejs/server_scripts/structure_guard_tiers.js",
+    "client-1.20.1 SRG jar (net/minecraft/server/commands/PlaceCommand)",
+    "mods/ftb-quests-forge-2001.4.22.jar (StructureTask)"
+   ],
+   "key_numbers": [
+    "6 ruins at 100-130 blocks, picked without repeats from 12 candidates (playtest_starter_kit.js:1288-1304).",
+    "Placed once, when the base is built on a fresh world (playtest_starter_kit.js:1255-1275, 1306-1323). Their positions are only written to the console log (1322).",
+    "All in the NEAR band (210 blocks or less) for Lootr bonus loot and guard tier (structure_loot_progression.js:16-17; structure_guard_tiers.js:21-24).",
+    "They stay outside the border until its half-width reaches them: ruins along the axes between wave 12 (width 200) and wave 15 (width 275), diagonal ones from about wave 10 (derived from base_expansion.js:12-14)."
+   ],
+   "unlock_or_cost": "Needs the border open (amulet on the pedestal) until about waves 10-15.",
+   "current_quest_coverage": "'Past the Line' (campaign.snbt:473-503) uses an FTB structure task on #kubejs:ruins (493-498). It cannot see the ring ruins. The ring is placed with /place structure, and vanilla PlaceCommand only calls StructureStart.placeInChunk per chunk; it never registers the start (SRG jar, PlaceCommand.m_214587_ and m_289073_). FTB's structure task only finds registered starts (StructureTask.canSubmit -> StructureManager.getStructureWithPieceAt + StructureStart.isValid). So standing in a ring ruin does not complete 'Past the Line'. The first ruins it can detect are the natural ruins_pool row about 192 blocks out (docs/FEATURES.md:3827-3829).",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Store each ring ruin's position on the marker when it is placed, and add a KubeJS proximity custom task.",
+    "First Lootr open, via advancement lootr:1chest or lootr:1barrel. The ring's stashes are converted like natural ones (playtest_starter_kit.js:1286-1287).",
+    "FTB observation task, BLOCK, lootr:lootr_chest or lootr:lootr_barrel."
+   ],
+   "teaching_hook": "There are ruins in every direction just past the wall, so your first trip doesn't have to be far.",
+   "multiplayer_notes": "One ring per world. Each player still gets their own Lootr roll in each ruin.",
+   "reward_candidates": [
+    "Rare bag (the current 'Past the Line' reward)",
+    "Ender pearls toward a Waystone"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Ruins pool and the #kubejs:ruins structures",
+   "category": "structures / exploration",
+   "tier": "After the amulet goes on the pedestal",
+   "ids": [
+    "#kubejs:ruins (63 structure ids)",
+    "kubejs:ruins_pool (39 members)",
+    "abandoned_urban:observatory",
+    "abandoned_urban:plane_crash",
+    "abandoned_urban:train",
+    "the_lost_city:factory",
+    "the_lost_city:survivorscamp",
+    "philipsruins:start_nether_ruin"
+   ],
+   "player_facing_summary": "Past about 190 blocks, the wasteland has one building per 4x4-chunk cell: abandoned houses and mansions, gas stations, motels, watchtowers, desert ruins and outposts, banks, hotels and suburbs. Rarer landmarks (observatory, plane crash, train, Lost City camp, factory and survivors camp, nether ruin) and props (oasis, geyser, skeletons) are mixed in.",
+   "source_files": [
+    "pack/kubejs/data/kubejs/worldgen/structure_set/ruins_pool.json",
+    "pack/kubejs/data/kubejs/tags/worldgen/structure/ruins.json",
+    "pack/kubejs/data/kubejs/tags/worldgen/biome/ruins_biomes.json",
+    "docs/FEATURES.md"
+   ],
+   "key_numbers": [
+    "random_spread with spacing 4 and separation 2 chunks, exclusion 11 chunks from kubejs:base_anchor (ruins_pool.json:160-168), so the first row is about 192 blocks out (docs/FEATURES.md:3827-3829).",
+    "39 members, total weight 298. Landmarks and the train have weight 3; props 1-2 (ruins_pool.json:2-159).",
+    "About 38 structures in the 150-300 block ring (docs/FEATURES.md:3830-3832).",
+    "The tag has 63 ids, including 20 cut structures (required false) that no longer generate (docs/FEATURES.md:3848-3856).",
+    "Biomes: plains, sunflower plains, meadow, desert, badlands (ruins_biomes.json)."
+   ],
+   "unlock_or_cost": "Needs the border open.",
+   "current_quest_coverage": "The 'Past the Line' structure task on #kubejs:ruins works at these natural starts (campaign.snbt:493-498). There are no landmark-specific quests.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "FTB structure task per id (e.g. abandoned_urban:observatory, abandoned_urban:plane_crash, watchtower_building:abandoned_watchtower, u_desert:pillager_outpost/standard, nolandostructurez:abandoned_bank). It completes while the player stands inside a structure piece.",
+    "/locate works for these, so a hint quest can name a landmark."
+   ],
+   "teaching_hook": "Bigger buildings hold more stashes, and more guards.",
+   "multiplayer_notes": "Structure completion is shared by the team.",
+   "reward_candidates": [
+    "Landmark-flavoured rewards: watchtower -> spyglass; bank -> gold ingots; gas station -> grenades or gunpowder and coal for Fuel Tanks"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Lost City towns (expedition landmarks about 1 km out)",
+   "category": "structures / exploration",
+   "tier": "Late exploration",
+   "ids": [
+    "the_lost_city:city",
+    "abandoned_urban:city",
+    "the_lost_city:villages_city",
+    "the_lost_city:big_city_structure",
+    "kubejs:towns"
+   ],
+   "player_facing_summary": "Full-size towns and cities sit on a 1024-block grid of possible sites. About half the sites hold one, and the nearest is about 1 km from the base. No other structure can generate inside them. Every Lootr stash there is in the best (HIGH) tier.",
+   "source_files": [
+    "pack/kubejs/data/kubejs/worldgen/structure_set/towns.json",
+    "pack/config/lootr-common.toml",
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "pack/kubejs/server_scripts/structure_chest_loot_fix.js",
+    "docs/FEATURES.md"
+   ],
+   "key_numbers": [
+    "Members: the_lost_city:city 3, abandoned_urban:city 3, villages_city 2, big_city_structure 2. random_spread 64/63 chunks, frequency 0.5 (legacy_type_2), exclusion 13 chunks from minecraft:villages (towns.json:1-31).",
+    "About 45% of sites hold a town; the nearest is about 1 km out (docs/FEATURES.md:3816-3817, 3926-3928).",
+    "The Lost City city is full size (193x111x233). Skyscrapers are trimmed to 56-71 barrels each (docs/FEATURES.md:3880-3885, 3912-3913).",
+    "Towns are always more than 270 blocks out, so every Lootr stash there gets the HIGH pool (structure_loot_progression.js:16-17, 48-61). The Lootr stashes are the cars, towers and gas stations (berezka car, tower_chest, gas_station; lootr-common.toml:34). Shops and houses use plain tables (lootr-common.toml:35).",
+    "Almost half the Lost City's containers are empty, and those get the one-time scavenge roll (structure_chest_loot_fix.js:3-4)."
+   ],
+   "unlock_or_cost": "Needs the border open and a long trip.",
+   "current_quest_coverage": "None explicit. Towns are in #kubejs:ruins, so 'Past the Line' might complete there, but that is unverified.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "FTB structure task on the_lost_city:city and the other town ids. Berezka does build PoolElementStructurePieces (berezka_api jar, BerezkaDeferredStructure), but structure_chest_loot_fix.js:6-8 says its structures have no pieces to take a bounding box from. Test this live before relying on it.",
+    "Fallback: a custom task when a player opens a Lootr container whose roll comes from berezka_api:chests/car or tower_chest (LootJS context.getLootTableId(), as in structure_loot_progression.js:178).",
+    "A distance-from-pedestal check on a Lootr open (td_pedestalX/Z from worldData)."
+   ],
+   "teaching_hook": "A town is a 1 km expedition, so plan it: a waystone, food, the amulet on the pedestal. Go for the cars and towers, which always roll the best tier.",
+   "multiplayer_notes": "This sets up a natural split: someone holds the base while the others make the run.",
+   "reward_candidates": [
+    "Epic bag",
+    "A Waystone for the trip home",
+    "Ender pearls or emeralds"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Gold-trimmed Lootr stashes (per player, tiered by distance)",
+   "category": "loot economy / exploration",
+   "tier": "Exploration; NEAR, MID and HIGH distance bands",
+   "ids": [
+    "lootr:lootr_chest",
+    "lootr:lootr_barrel",
+    "lootr:lootr_trapped_chest",
+    "advancement lootr:1chest",
+    "advancement lootr:1barrel",
+    "advancement lootr:10loot",
+    "advancement lootr:25loot",
+    "advancement lootr:50loot",
+    "advancement lootr:100loot",
+    "stat lootr:looted_stat"
+   ],
+   "player_facing_summary": "The real stashes are Lootr containers, which have gold trim. Every player gets their own roll from each one. Once you've looted one it looks dull to you, but still gold to friends who haven't. Each open adds bonus loot by distance from the pedestal: a 30% chance of 4-12 cobblestone, one roll from that band's pool (with a 40% or 50% chance of a second roll in the MID and HIGH bands), and a 50% chance of a prize roll (guns, diamonds, golden apples, XP bottles, golden carrots and more).",
+   "source_files": [
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "pack/config/lootr-common.toml",
+    "pack/config/epicsiegemod-common.toml",
+    "mods/lootr-forge-1.20-0.7.35.94.jar (LootrChestBlockRenderer, ModStats, data/lootr/advancements, lang)"
+   ],
+   "key_numbers": [
+    "Per-player rolls: randomise_seed = true (lootr-common.toml:2). No decay or refresh (lootr-common.toml:69-90).",
+    "Bands by distance from the pedestal: NEAR up to 210 blocks, MID 210-270, HIGH beyond 270 (structure_loot_progression.js:16-17).",
+    "NEAR pool (total weight 100): iron 3-6 (w25), gold 2-4 (w15), redstone 6-12, gunpowder 4-8, copper 4-8, clay, quartz 3-6, obsidian 2-4 (21-30).",
+    "MID pool (total weight 118) adds redstone blocks, copper blocks, iron blocks, emerald 1-2 (w4) and lapis blocks (32-44).",
+    "HIGH pool (total weight 95): diamond 1-2 (w20), ender pearl 2-4 (w14), gold block 1-2 (w12), emerald 2-4, blaze powder, netherite scrap (w8), magma, diamond block (w5), netherite upgrade template (w4) (48-61).",
+    "Second-roll chance 0 / 0.4 / 0.5 by band (83-85). Prize chance 0.5 (86); the prize pool has total weight 96, of which guns are 32 (65-80). Cobble bonus 30%, 4-12 (173-174, 187).",
+    "The opened look is per player: LootrChestBlockRenderer checks getOpeners().contains(playerId) and switches to the chest_opened texture.",
+    "Breaking one needs sneaking and deletes everyone's loot in it (Lootr lang should_sneak; disable_break = false, lootr-common.toml:41). Digging mobs can't break Lootr blocks (epicsiegemod-common.toml:56).",
+    "Plain-tier tables are never converted to Lootr and never get the bonus (lootr-common.toml:35-39; structure_loot_progression.js:103-159)."
+   ],
+   "unlock_or_cost": "Needs the border open, and a guard spawner usually stands nearby.",
+   "current_quest_coverage": "'Past the Line' (campaign.snbt:476) says the gold-trimmed chests and barrels are the real stashes, each player gets their own roll, and the haul gets better further out. Accurate but very compressed. 'Waste Not' mentions pearls in gold-trimmed chests (campaign.snbt:689).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "FTB advancement tasks: lootr:1chest, lootr:1barrel, lootr:10loot, lootr:25loot, lootr:50loot, lootr:100loot (Lootr jar data/lootr/advancements). These are per-player triggers.",
+    "FTB stat task on lootr:looted_stat ('Chests Looted', registered in Lootr ModStats).",
+    "FTB observation task, BLOCK, lootr:lootr_chest, to teach players to recognise the trim.",
+    "KubeJS BlockEvents.rightClicked on Lootr blocks plus distance from td_pedestalX/Z for 'first MID stash' and 'first HIGH stash' custom tasks."
+   ],
+   "teaching_hook": "Gold trim means it's yours to take; dull means you've already had your share, though your friends haven't. Further out pays better. Never break one.",
+   "multiplayer_notes": "Loot is per player, so every player should open every stash, and a party's haul multiplies. The opened texture is per player too. Quest progress is still team-wide: an 'open 10 stashes' quest completes for everyone when one player hits 10, though each member still claims the reward.",
+   "reward_candidates": [
+    "XP levels (pedestal upgrade currency)",
+    "Rare bags",
+    "Not Legendary bags"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Plain containers and one-time scavenging",
+   "category": "loot economy / exploration",
+   "tier": "Exploration",
+   "ids": [
+    "kubejs:chests/scavenge_storage",
+    "kubejs:chests/scav_hardware",
+    "kubejs:chests/scav_building",
+    "kubejs:chests/scav_food",
+    "kubejs:chests/scav_ammo",
+    "kubejs:chests/scav_filler",
+    "kubejs:chests/scav_armory",
+    "kubejs:chests/scav_dairy"
+   ],
+   "player_facing_summary": "Ordinary chests and barrels in houses and ruins roll basic loot once, shared by everyone: food, building materials, hardware, sometimes ammo, and filler. Premium items are stripped out and bonus cobblestone is common. Empty world-generated containers 45 or more blocks from the pedestal get a scavenge roll on the first click. Nothing ever refills.",
+   "source_files": [
+    "pack/kubejs/server_scripts/structure_chest_loot_fix.js",
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "pack/kubejs/server_scripts/loot_dead_weight_strip.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/*.json",
+    "pack/kubejs/data/berezka_api/loot_tables/chests/*.json"
+   ],
+   "key_numbers": [
+    "Scavenge fill only 45 or more blocks from the pedestal (structure_chest_loot_fix.js:29), on chests, trapped chests, barrels, dispensers and droppers (15-21). One roll per container ever, via td_scavengeSeen (35, 119-136). Player-placed containers are excluded (76-99).",
+    "scavenge_storage rolls hardware 0-1, building 0-2, food 0-1, ammo 15% and filler 0-1 (scavenge_storage.json).",
+    "Plain tables lose diamonds, emeralds, ender pearls and golden apples (structure_loot_progression.js:148-154) and have a 60% chance of 8-20 cobblestone (171-172, 180).",
+    "scav_ammo: pistol ammo 4-10, rifle ammo 3-8, shotgun ammo 2-6, arrows 4-12 (scav_ammo.json). scav_armory (Lost City cars, gas stations and towers; watchtowers) includes guns, e.g. pistol w6 of 110.",
+    "Junk removed from all chest loot: rails, minecarts, saddles, horse armour, maps, leads, elytra, name tags and music discs (loot_dead_weight_strip.js:6-33)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "KubeJS: count calls where sclfMaybeAssign returns 'assigned' (structure_chest_loot_fix.js:103-137) to drive a 'scavenge N containers' custom task.",
+    "FTB stat task on minecraft:open_chest or open_barrel, though these count every chest, including ones at home."
+   ],
+   "teaching_hook": "Plain containers are shared and basic; gold-trimmed ones are personal and valuable. Ruins also supply cobblestone for walls, and some ammo.",
+   "multiplayer_notes": "Shared and first-come. Each container rolls once, ever.",
+   "reward_candidates": [
+    "Small XP rewards only"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Stash guard spawners (tiered by distance)",
+   "category": "mobs / exploration",
+   "tier": "Exploration; NEAR, MID and FAR tiers",
+   "ids": [
+    "minecraft:spawner",
+    "entity tag td_structure_guard",
+    "entity tag td_guard_tiered",
+    "minecraft:husk",
+    "minecraft:zombie_villager",
+    "mutantszombies:mutant_zombie",
+    "mutantszombies:blister_zombie",
+    "mutantszombies:split_head_zombie",
+    "undeadnights:elite_zombie",
+    "undeadnights:horde_zombie",
+    "mutantszombies:rotten_mutant",
+    "mutantszombies:crawler"
+   ],
+   "player_facing_summary": "Most stashes have a spawner nearby. The first time it fires, it turns into a guard spawner for its distance tier: husks and zombie villagers near the base, mutants in the middle band, and elites, horde zombies, rotten mutants and crawlers far out. Guards use their own AI and hunt players. They drop no bags and don't count for bounties. A pickaxe breaks the spawner, which also drops XP.",
+   "source_files": [
+    "pack/kubejs/server_scripts/structure_guard_tiers.js",
+    "pack/config/epicsiegemod-common.toml",
+    "pack/kubejs/server_scripts/loot_bag_drops.js",
+    "pack/kubejs/server_scripts/bounty_kills.js",
+    "client-1.20.1 SRG jar (SpawnerBlock)",
+    "docs/FEATURES.md",
+    "docs/QUEUE.md"
+   ],
+   "key_numbers": [
+    "NEAR (210 blocks or less): husk w3, zombie villager w1 (unbreakable leather helmet); SpawnCount 2, MaxNearby 4, player range 14, delay 300-600 ticks; cap 6 guards (structure_guard_tiers.js:44, 56-65).",
+    "MID (210-270): mutant zombie w2, blister w1, split-head w1; count 3, max 5, range 16, delay 200-400; cap 8 (66-73).",
+    "FAR (beyond 270): elite (40 HP, iron chestplate and helmet) w1, horde zombie (30 HP, iron helmet) w2, rotten mutant w1, crawler w1; count 3, max 6, range 16, delay 150-300; cap 10 (74-82).",
+    "The cap counts guards within plus or minus 24 blocks on every axis (45). Guards drop none of their gear (47).",
+    "No bags (loot_bag_drops.js:25-32) and no bounty credit (bounty_kills.js:56-60). Mobs can't dig spawners (epicsiegemod-common.toml:56).",
+    "Breaking a spawner drops 15 + rand(15) + rand(15) XP points (vanilla SpawnerBlock, SRG jar).",
+    "The observatory and the Lost City factory each hold 11 guard spawners (docs/FEATURES.md:3447-3449).",
+    "Guards can follow players home. The electrified fence now shocks any hostile mob, guards included (docs/FEATURES.md:9994-9999).",
+    "Open design question: guard XP still feeds pedestal upgrades (docs/FEATURES.md:3449; docs/QUEUE.md:407)."
+   ],
+   "unlock_or_cost": "Encountered at stashes.",
+   "current_quest_coverage": "'Past the Line' has one sentence: a nearby spawner guards the stashes, break it with a pickaxe (campaign.snbt:476). Bounties says structure-spawner zombies don't count (bounties.snbt:13).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "KubeJS BlockEvents.broken('minecraft:spawner') where the spawner's SpawnData contains td_structure_guard (pattern in structure_guard_tiers.js:199-200), for 'silence a spawner'.",
+    "EntityEvents.death of a td_guard_tiered mob, tiered with stgTierAt (structure_guard_tiers.js:99-109), for 'put down a far-tier guard'.",
+    "FTB observation task, BLOCK, minecraft:spawner.",
+    "Don't use FTB kill tasks by type: guards share types with wave mobs."
+   ],
+   "teaching_hook": "Break the spawner first, then loot. Further out, the guards are nastier.",
+   "multiplayer_notes": "The spawners are shared world blocks, and the guard cap applies per area.",
+   "reward_candidates": [
+    "An Uncommon bag or ammo",
+    "Hold off on XP-heavy rewards that encourage farming guards until the guard-XP question is decided"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Vanilla villages and way signs",
+   "category": "structures / exploration",
+   "tier": "Late exploration",
+   "ids": [
+    "#minecraft:village",
+    "supplementaries:way_sign (structure)",
+    "waystones:waystone"
+   ],
+   "player_facing_summary": "Vanilla villages still generate, at double the normal spacing. They keep their villagers, so emeralds can be traded, and may hold a Waystone. Supplementaries way signs at crossroads point to the nearest village and show the distance.",
+   "source_files": [
+    "pack/kubejs/data/minecraft/worldgen/structure_set/villages.json",
+    "pack/kubejs/data/supplementaries/worldgen/structure_set/way_signs.json",
+    "pack/kubejs/server_scripts/no_passive_mobs.js",
+    "pack/config/lootr-common.toml",
+    "mods/supplementaries-1.20-3.1.43-forge.jar (way_sign_destinations.json)",
+    "instance config/supplementaries-common.toml",
+    "instance config/waystones-common.toml"
+   ],
+   "key_numbers": [
+    "Villages: spacing 64, separation 16 chunks, exclusion 9 chunks from the base anchor (villages.json).",
+    "Villagers are deliberately not removed (no_passive_mobs.js:10-12).",
+    "Way signs: spacing 19, separation 10, exclusion 9 (way_signs.json). They point only to #minecraft:village (Supplementaries jar way_sign_destinations.json) and show distance (show_distance_text = true, instance supplementaries-common.toml).",
+    "Waystones can generate in villages (waystones-common.toml:44).",
+    "Butcher, fisher, tannery, shepherd, mason and cartographer chests are plain tier; other village chests such as the weaponsmith's stay Lootr (lootr-common.toml:35)."
+   ],
+   "unlock_or_cost": "Needs the border open.",
+   "current_quest_coverage": "None. Villages aren't in #kubejs:ruins.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "FTB structure task on #minecraft:village.",
+    "FTB observation task on the Supplementaries sign post block (exact block id unverified).",
+    "Item task on emeralds for a trading quest."
+   ],
+   "teaching_hook": "Way signs point you to villages, which have traders for your emeralds and often a waystone.",
+   "multiplayer_notes": "Shared world structures.",
+   "reward_candidates": [
+    "Emeralds, carefully (they also go into Warp Stones)"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Waystones",
+   "category": "travel",
+   "tier": "Mid exploration",
+   "ids": [
+    "waystones:waystone",
+    "waystones:warp_stone",
+    "waystones:warp_dust",
+    "waystones:return_scroll"
+   ],
+   "player_facing_summary": "A Waystone stands in the courtyard. Players craft more and place them where they loot. Travel between activated waystones is free and instant. Each player has to right-click a waystone to activate it for themselves. Wild waystones also generate across the world and in villages.",
+   "source_files": [
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "instance config/waystones-common.toml (mod defaults, not shipped in repo)",
+    "mods/waystones-forge-1.20.1-14.1.20.jar (data/waystones/recipes, PlayerWaystoneManager)",
+    "pack/config/xaero/minimap/profiles/default.cfg"
+   ],
+   "key_numbers": [
+    "The courtyard waystone is placed by the base build (playtest_starter_kit.js:1040-1047).",
+    "Recipes (mod default, no KubeJS override): Waystone = 4 stone bricks + 1 Warp Stone + 3 obsidian; Warp Stone = 4 amethyst shards + 4 ender pearls + 1 emerald (Waystones jar waystone.json, warp_stone.json).",
+    "Waystone-to-waystone travel costs 0 XP (waystoneXpCostMultiplier = 0.0, waystones-common.toml:95; allowWaystoneToWaystoneTeleport = true, :69). Warp Stone item cooldown 30 s (:18).",
+    "Wild waystones about every 25 chunks (frequency = 25, :33), plus in villages (:44). Only creative players can make a waystone global (:71).",
+    "Activation is per player (PlayerWaystoneManager.isWaystoneActivated(Player, IWaystone)).",
+    "The minimap shows waystones (default.cfg:119-120).",
+    "Ingredient sources: amethyst (scav_hardware w6), ender pearls (Rare and Epic bags, Lootr), emerald (Epic bag, Lootr MID/HIGH/prize, the 'Spoils of War' reward), obsidian (Rare bag, Lootr pools), stone bricks (scav_building)."
+   ],
+   "unlock_or_cost": "Crafted. Pearls and emeralds come from loot.",
+   "current_quest_coverage": "'A Stone That Remembers' (campaign.snbt:504-536) is an item task for crafting one. Tips 'Use a Waystone' (tips_and_tricks.snbt:232-253) is a checkmark. 'The Last Written Wave' rewards a waystone (campaign.snbt:295-297). None of them teach the ingredient chain, the free travel or per-player activation.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "FTB item task on waystones:waystone or waystones:warp_stone.",
+    "KubeJS BlockEvents.rightClicked('waystones:waystone') plus distance from the pedestal, for 'activate a waystone away from base'.",
+    "Detecting the teleport itself is unverified; it fires a Balm event, not a KubeJS one."
+   ],
+   "teaching_hook": "Plant a waystone at the edge of what you've cleared. It's free to hop home when the horn is about to sound.",
+   "multiplayer_notes": "Each friend has to right-click each waystone themselves before they can travel to it. Placed waystones are shared world blocks.",
+   "reward_candidates": [
+    "Warp Dust or a Warp Stone (both crafting-table outputs, not machine outputs)",
+    "A Waystone at an expedition milestone",
+    "A Return Scroll (recipe is in the jar; its behaviour in this pack is unverified)"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Xaero map: waypoints, deathpoints and the border line",
+   "category": "QoL / navigation",
+   "tier": "Always",
+   "ids": [
+    "key.ftbquests.quests",
+    "gui.xaero_new_waypoint",
+    "gui.xaero_waypoints_key",
+    "gui.xaero_open_map",
+    "key.corpse.death_history"
+   ],
+   "player_facing_summary": "A minimap plus a full world map on M. Hostile mobs show as red dots; other players are hidden from the radar. K drops a waypoint and U opens the waypoint list. A deathpoint marks where you died. The border appears on the map as a light-blue line, and waystones are shown.",
+   "source_files": [
+    "pack/options.txt",
+    "pack/config/xaero/minimap/profiles/default.cfg",
+    "pack/config/xaero/minimap/default_radar_categories_client.json",
+    "mods/xaerominimap-forge-1.20.1-26.4.2.jar (MinimapKeyMappings)",
+    "mods/xaeroworldmap-forge-1.20.1-1.45.0.jar (ControlsRegister)",
+    "mods/corpse-forge-1.20.1-1.0.23.jar (Main)",
+    "docs/MODS.md"
+   ],
+   "key_numbers": [
+    "options.txt: new waypoint on K (line 3); Xaero's enlarge-map key unbound so Z is zoom only (line 5).",
+    "Jar defaults: waypoint list U (key code 85), new waypoint B (66, rebound to K), enlarge map Z (90) (MinimapKeyMappings); world map M (77) (ControlsRegister).",
+    "Radar: players hidden (default_radar_categories_client.json:57); hostiles shown in colour 12, red (line 120).",
+    "Deathpoints on and removed once reached (default.cfg:29, 31). Waystone waypoints on (default.cfg:119-120).",
+    "Border line light blue, 0xD055FFFF (docs/MODS.md:1574-1580).",
+    "Key clash: U opens Xaero's waypoint list and also Corpse's 'Open Player Death History' (Corpse Main KEY_DEATH_HISTORY default 85). Both are in-game keys."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "Tips 'Open the World Map' (M) checkmark (tips_and_tricks.snbt:122-143). Nothing covers K, U, deathpoints or the border line.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Checkmark only: these are client-side actions.",
+    "Clicking [Add] on the airdrop waypoint is client-side and can't be detected."
+   ],
+   "teaching_hook": "Press K to drop a waypoint on ruins and towns you find. After a death, your deathpoint leads back to your corpse. The blue line on the map is the border.",
+   "multiplayer_notes": "Waypoints live on each player's own client. The airdrop waypoint line goes to everyone. Teammates don't show on the radar (the players category is hidden); whether Xaero's tracked-player sync works on this server is unverified.",
+   "reward_candidates": [
+    "Small XP rewards only"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Wave-mob targeting rules (they want the pedestal)",
+   "category": "mobs",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "entity tag td_wave_mob",
+    "armor stand tagged td_pedestal_target",
+    "kubejs:lure_block"
+   ],
+   "player_facing_summary": "Wave mobs ignore you unless you are within 3.5 blocks of them, or you've hit them, which gives an 8-second grudge. A Lure Block within 40 blocks pulls them away. Otherwise they head for the pedestal. A wave mob dragged more than 90 blocks from the pedestal is teleported back into the spawn band. Wave mobs outside the border are left alone.",
+   "source_files": [
+    "pack/kubejs/server_scripts/mob_aggro.js",
+    "pack/kubejs/server_scripts/lure_block.js",
+    "pack/kubejs/server_scripts/wave_spawner.js"
+   ],
+   "key_numbers": [
+    "Blocking range 3.5 blocks (mob_aggro.js:172). Retaliation 160 ticks, 8 s (mob_aggro.js:133).",
+    "Lure pull radius 40 blocks for 60 s (lure_block.js:17, 20; mob_aggro.js:235).",
+    "Stray leash: 90 blocks from the pedestal, checked every 100 ticks (mob_aggro.js:129-131).",
+    "Mobs outside the border are skipped (mob_aggro.js:212-215). Dead players are ignored (mob_aggro.js:173-178).",
+    "Wave mobs are summoned with follow range 128 (wave_spawner.js:731-733)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "'Find the Pedestal' says mobs path for the pedestal, not you (campaign.snbt:82). 'Dinner Bell' covers the lure, and says a mob you've just hit or are standing in front of still comes for you (campaign.snbt:606). Both are accurate, but neither gives the 8 s grudge or the 90-block leash.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "These are rules rather than actions. Teach them in a wave-1 info quest (checkmark) or in existing quest text."
+   ],
+   "teaching_hook": "Stay out of the lane unless you mean to fight. Hitting a mob pulls it off the pedestal for 8 seconds, which is how you kite. You can't drag wave mobs far: past 90 blocks they snap back.",
+   "multiplayer_notes": "The blocker is the nearest living player. A grudge is held against whoever hit the mob.",
+   "reward_candidates": [],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Wave roster progression (written waves and Hordes)",
+   "category": "mobs",
+   "tier": "Waves 1-8 written; Hordes from wave 9",
+   "ids": [
+    "minecraft:zombie",
+    "minecraft:husk",
+    "minecraft:drowned",
+    "minecraft:zombie_villager",
+    "mutantszombies:mutant_zombie",
+    "mutantszombies:blister_zombie",
+    "mutantszombies:split_head_zombie",
+    "mutantszombies:rotten_mutant",
+    "undeadnights:elite_zombie",
+    "undeadnights:horde_zombie",
+    "undeadnights:demolition_zombie",
+    "mutantszombies:crawler",
+    "mutantszombies:zombie_brute",
+    "mutantszombies:mutant_brute"
+   ],
+   "player_facing_summary": "Waves 1-8 are hand-written. From wave 9, 'Horde N' sets Undead Nights' difficulty (levels 1-40) and adds a growing baseline of mobs, with heavier types unlocking as the level rises. The mutants are tougher zombies without special abilities; elites are armoured.",
+   "source_files": [
+    "pack/kubejs/server_scripts/wave_spawner.js",
+    "pack/config/undeadnights_horde_mobs_config.json",
+    "pack/config/undeadnights_difficulty_config.json",
+    "pack/defaultconfigs/undeadnights-server.toml",
+    "mods/MutantsZombies-1.4.0 jar (createAttributes)",
+    "mods/UndeadNights-2.3.0 jar (EliteZombieEntity)"
+   ],
+   "key_numbers": [
+    "Written waves (wave_spawner.js:19-28): W1 3 zombies, 2 husks, 1 zombie villager; W2 adds drowned and 3 mutants; W3 blisters; W4 split-heads; W5 2 elites; W6 4 horde zombies; W7 elites and horde zombies; W8 4 crawlers, the first demolition zombie, an elite and 4 horde zombies.",
+    "Ambushers on top (509-512) give totals of 6, 10, 11, 9, 6, 10, 8 and 13 for waves 1-8 (derived).",
+    "Endless phase: tier 2 (elite, horde, demolition, rotten, and crawler three times) from wave 13 (wave_spawner.js:66, 72); brutes from wave 20 (77), matching Undead Nights levels 12 and up.",
+    "Baseline per Horde: round(12 + wave*1.09^L) zombies plus round(7 + wave*1.05^L) others, where L is the Undead Nights level (543-544). About 111 at wave 20 (197-199). At most 60 wave mobs alive at once (202).",
+    "40 Undead Nights levels (undeadnights_difficulty_config.json). The horde lands 70-75 blocks from the player nearest the pedestal (undeadnights-server.toml:51, 54; wave_spawner.js:520-523). The spawn band is 48-64 blocks, clamped to the border (wave_spawner.js:235-264).",
+    "Mutant variants (M&Z jar): mutant 24 HP / 5 attack / speed 0.28; blister 24 / 5 / 0.28; split-head 24 / 6 / 0.2; rotten 30 / 7 / 0.18. Elite base: speed 0.27, attack 6, armour 5 (UN jar). Mobs summoned by /summon skip Undead Nights' spawn setup (wave_spawner.js:94-95; boss_wave.js:16-17)."
+   ],
+   "unlock_or_cost": "Wave count.",
+   "current_quest_coverage": "'Thin the Horde' gives wave 1's composition accurately (campaign.snbt:145). 'The Last Written Wave' says only 'things you haven't met yet' (campaign.snbt:284), which is vague by design. The 14 per-mob 'Kill one' quests were removed on 2026-09-30 (commit c94f019; docs/FEATURES.md:10004-10005).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "The existing wave milestones (quest_milestones.js:75-116). More thresholds (waves 5, 10, 20, 30) can use the same td_q_lastClearedWave poll.",
+    "FTB observation task, observe_type 5 (ENTITY_TYPE), per mob type, for first sightings.",
+    "KubeJS EntityEvents.death with td_wave_mob plus a type check, for first kills."
+   ],
+   "teaching_hook": "The ramp: mutants are just tougher zombies, elites arrive at wave 5, the demolition zombie at wave 8, brutes at wave 20.",
+   "multiplayer_notes": "Wave size doesn't scale with player count (player-count scaling was binned in docs/IDEAS.md).",
+   "reward_candidates": [
+    "A bag at each wave milestone"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "Crawler",
+   "category": "mobs",
+   "tier": "Wave 8; 3 of 7 tier-2 Horde picks; far-tier guard",
+   "ids": [
+    "mutantszombies:crawler"
+   ],
+   "player_facing_summary": "A low, fast and fragile mob that climbs walls and leaps at its target. Four of them arrive at wave 8.",
+   "source_files": [
+    "mods/MutantsZombies-1.4.0-Forge-mc1.20.1.jar (CrawlerEntity)",
+    "pack/kubejs/server_scripts/wave_spawner.js",
+    "pack/kubejs/server_scripts/structure_guard_tiers.js",
+    "pack/kubejs/server_scripts/flesh_death_sound.js"
+   ],
+   "key_numbers": [
+    "6 HP, 3 attack, speed 0.3 (a vanilla zombie is 0.23), follow range 35 (CrawlerEntity attributes). It implements IAdvancedClimber (Advanced Wall Climber API) and has LeapAtTargetGoal.",
+    "4 in wave 8 (wave_spawner.js:27). Listed three times out of seven in the tier-2 Horde list (64-66).",
+    "Far-tier guard roster (structure_guard_tiers.js:80).",
+    "Plays the elite death cry when it dies (flesh_death_sound.js:8-15)."
+   ],
+   "unlock_or_cost": "Wave 8.",
+   "current_quest_coverage": "None, since the Know Your Enemy kill quests were removed.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "FTB observation task, observe_type 5 (ENTITY_TYPE), mutantszombies:crawler.",
+    "KubeJS EntityEvents.death with td_wave_mob. An FTB kill task would be ambiguous because crawlers are also guards."
+   ],
+   "teaching_hook": "Walls don't stop crawlers; they climb. But one hit kills them, so cover the wall tops with turrets or a Tesla Coil.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [
+    "A small reward after the first sighting"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "Brutes (Zombie Brute and Mutant Brute)",
+   "category": "mobs",
+   "tier": "Wave 20 onward",
+   "ids": [
+    "mutantszombies:zombie_brute",
+    "mutantszombies:mutant_brute"
+   ],
+   "player_facing_summary": "Heavy, armoured hitters that can't be knocked back. They appear only from wave 20, from both the baseline and the Undead Nights hordes.",
+   "source_files": [
+    "mods/MutantsZombies-1.4.0-Forge-mc1.20.1.jar (ZombieBruteEntity, MutantBruteEntity)",
+    "pack/kubejs/server_scripts/wave_spawner.js",
+    "pack/config/undeadnights_horde_mobs_config.json",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js"
+   ],
+   "key_numbers": [
+    "Zombie Brute: 100 HP, 16 attack, 16 armour, attack knockback 1.5, base speed 0.21 (jar).",
+    "Mutant Brute: 120 HP in the jar, halved to 60 by the pack (wave_spawner.js:86-92); 18 attack, 18 armour, base speed 0.2.",
+    "Both are knockback-immune (wave_spawner.js:79-81), and the pack raises both to speed 0.28 (83-84). Horde-spawned brutes get the same 60 HP and 0.28 speed from the horde config's nbtTags (undeadnights_horde_mobs_config.json, mixed_horde).",
+    "Wave 20 onward only (wave_spawner.js:71-77). Never guards, and natural spawns are off.",
+    "Damage that ignores armour, per the pack's own tooltip lines: stakes, spikes, electrified fence, Tesla Coil (tooltip_tier_colors.js:44-52)."
+   ],
+   "unlock_or_cost": "Wave 20.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "FTB kill task on mutantszombies:zombie_brute or mutant_brute. This is unambiguous: brutes are never guards and don't spawn naturally.",
+    "FTB observation task, ENTITY_TYPE."
+   ],
+   "teaching_hook": "Armour 16-18 shrugs off weak hits. Armour-ignoring damage (spikes, fence, Tesla) is what brings brutes down.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [
+    "A Rare or Epic bag for the first brute kill"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "Demolition Zombie",
+   "category": "mobs",
+   "tier": "Wave 8 onward; also 'The Demolisher' boss",
+   "ids": [
+    "undeadnights:demolition_zombie"
+   ],
+   "player_facing_summary": "Carries 3 TNT and throws it. If it is on fire when it takes damage, it detonates on the spot: a fiery, block-breaking blast that hurts players too. The first one arrives at wave 8.",
+   "source_files": [
+    "pack/kubejs/server_scripts/wave_spawner.js",
+    "mods/UndeadNights-2.3.0-Forge-mc1.20.1.jar (DemolitionZombieEntity.hurt, TntIgniteAndThrowGoal)",
+    "pack/kubejs/server_scripts/explosion_player_safety.js",
+    "pack/kubejs/server_scripts/boss_wave.js",
+    "pack/config/epicsiegemod-common.toml"
+   ],
+   "key_numbers": [
+    "Summoned holding 3 TNT (wave_spawner.js:94-96, 727-729).",
+    "DemolitionZombieEntity.hurt: if it is on fire, it removes itself (reason KILLED) and explodes with power 5.0, fire on, TNT block interaction (UN jar). No death event fires, so no bag drops and no bounty is counted (boss_wave.js:154-157 notes this for the boss).",
+    "Its blast counts as an enemy explosion, so it hurts players and breaks blocks (explosion_player_safety.js:1-8).",
+    "Epic Siege Mod's own TNT-dropping zombies are off (demolitionMobs = [], epicsiegemod-common.toml:81)."
+   ],
+   "unlock_or_cost": "Wave 8.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "FTB kill task on undeadnights:demolition_zombie. It isn't in the guard roster, so the task is unambiguous.",
+    "Detonations have no death event; poll for removal the way boss_wave.js:193-214 does."
+   ],
+   "teaching_hook": "Kill it well away from your wall, and never set one on fire near the base: hitting a burning demolition zombie makes it blow up.",
+   "multiplayer_notes": "The blast can hit teammates.",
+   "reward_candidates": [
+    "Bouncing Betties or Claymores for killing it at range"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "Digging through walls",
+   "category": "mobs / siege AI",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "entity tag td_dig_haste",
+    "securitycraft reinforced blocks"
+   ],
+   "player_facing_summary": "Every roster mob can dig through anything you build, stone included, and they dig 4x faster than normal. Reinforced blocks, stashes and spawners can't be dug.",
+   "source_files": [
+    "pack/config/epicsiegemod-common.toml",
+    "pack/kubejs/server_scripts/wave_mob_dig_haste.js",
+    "pack/kubejs/server_scripts/mob_aggro.js"
+   ],
+   "key_numbers": [
+    "diggerMobs is the whole roster (epicsiegemod-common.toml:48). diggingRequiresTools = false, so stone can be dug (:76). Lootr blocks and spawners are blacklisted (:56).",
+    "Hidden Haste XV gives 4x dig speed: about 10 s per cobblestone block bare-handed becomes about 2.5 s (wave_mob_dig_haste.js:1-14).",
+    "Reinforced blocks (hardness -1) are undiggable (wave_mob_dig_haste.js:7-8).",
+    "Digging starts only once the mob's navigation has finished (mob_aggro.js:262-267)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "No reliable detection. Epic Siege Mod breaks blocks directly, and whether KubeJS BlockEvents.broken fires for those breaks is unverified. Teach it in text, e.g. attached to a wave-2 milestone."
+   ],
+   "teaching_hook": "Anything you place can be dug in about 2.5 seconds a block. Thick walls buy time; traps do the killing. Only the starter base's reinforced blocks are dig-proof.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [
+    "Cobblestone stacks (ruins already supply it)"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Getting over walls: pillaring, horde stacking and leaping",
+   "category": "mobs / siege AI",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "forge:hordes entity tag",
+    "minecraft:cobblestone"
+   ],
+   "player_facing_summary": "Zombies that can't reach their target build cobblestone pillars to climb. Vanilla-type zombies pile on top of each other to scale walls. Mobs also leap at their target.",
+   "source_files": [
+    "pack/config/epicsiegemod-common.toml",
+    "pack/kubejs/server_scripts/enhanced_hordes_config.js",
+    "mods/EpicSiegeMod-14.171.jar (ESM_EntityAIPillarUp)",
+    "mods/eh2.0-forge1.20.1.jar (data/forge/tags/entity_types/hordes.json, EnhancedHordesModGameRules)"
+   ],
+   "key_numbers": [
+    "buildingMobs is the whole roster and pillarBlocks = cobblestone (epicsiegemod-common.toml:84, 94). The pillar goal places a block every 15 ticks and triggers within 4 blocks of the target (ESM_EntityAIPillarUp). Whether mobs need to carry blocks: no inventory check found, so not verified.",
+    "jumping = true, jumpHeight 0.4 for the whole roster (epicsiegemod-common.toml:96-102).",
+    "Horde stacking is on for forge:hordes: zombie, zombie villager, husk, drowned (plus zombified piglin and slime) (enhanced_hordes_config.js:11-19; EH jar tag; gamerule default true).",
+    "Block-breaking by stacks and horde multiplying are both off (enhanced_hordes_config.js:20-27)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "No detection; teach it in text."
+   ],
+   "teaching_hook": "Height alone won't stop them: vanilla zombies pile up and anything stuck by your wall starts building a cobblestone pillar. Kill zones beat tall walls.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [
+    "Spike Traps or Stake Walls"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Ladders are routes for zombies too",
+   "category": "mobs / siege AI",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "minecraft:ladder"
+   ],
+   "player_facing_summary": "When a wave mob's target is above it and it's stuck, the pack walks it to a nearby ladder that reaches the target and climbs it up.",
+   "source_files": [
+    "pack/kubejs/server_scripts/ladder_climb_assist.js"
+   ],
+   "key_numbers": [
+    "Helps when the target is 1.5 or more blocks above the mob (ladder_climb_assist.js:14).",
+    "Searches 6 blocks horizontally and 1 down to 3 up (15-17), every 40 ticks (18). Follows ladder columns up to 64 blocks (19).",
+    "Pass every 5 ticks (13). Upward nudge 0.25 blocks per tick when the mob isn't rising (25-26). Stash guards are skipped (158)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item task on minecraft:ladder (found in scav_building) as part of a 'fortify' quest, with the warning in the text."
+   ],
+   "teaching_hook": "A ladder up the outside of your wall is a ladder for them. Keep ladders on the inside.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Stalled-mob nudge (trenches and doorway jams)",
+   "category": "mobs / siege AI",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "entity tag td_wave_mob"
+   ],
+   "player_facing_summary": "A wave mob that makes no progress for 3 seconds gets pushed toward its target, but only when the cell ahead is open at foot and head height. That carries it over a trench lip or through a jammed doorway, never through a wall.",
+   "source_files": [
+    "pack/kubejs/server_scripts/stuck_mob_nudge.js"
+   ],
+   "key_numbers": [
+    "Checked every 10 ticks. Less than 0.05 blocks of horizontal movement for 6 checks in a row (3 s) counts as stuck. The push is 0.3 blocks per tick and needs both cells ahead to be passable (stuck_mob_nudge.js:11-16, 85-98)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "No detection; teach it in text."
+   ],
+   "teaching_hook": "Trenches and doorway jams only hold them for about 3 seconds. Solid walls are what actually stop them.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Underground ambushers",
+   "category": "mobs",
+   "tier": "Wave 2 onward",
+   "ids": [
+    "minecraft:zombie",
+    "entity tag td_undergroundAmbush"
+   ],
+   "player_facing_summary": "Every wave from wave 2 on, a few zombies burst out of the ground 4-7 blocks outside a random compound wall, throwing up a spray of ground particles and a digging sound.",
+   "source_files": [
+    "pack/kubejs/server_scripts/wave_spawner.js"
+   ],
+   "key_numbers": [
+    "Count per wave: 1 for waves 2-4, 2 for waves 5-6, 3 for waves 7-8. In the Hordes, 2 plus 1 per 5 Undead Nights levels, up to 6 (wave_spawner.js:507-512).",
+    "They surface 4-7 blocks outside a wall (401-402, 407-437).",
+    "70 ground-block particles and a rooted-dirt break sound (747-755).",
+    "Tagged td_undergroundAmbush; nothing reads that tag yet (718-720)."
+   ],
+   "unlock_or_cost": "Wave 2.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "KubeJS EntityEvents.spawned or death on a td_undergroundAmbush mob, for a shared milestone revealed after the fact ('they came up from below')."
+   ],
+   "teaching_hook": "The wall isn't the only front. Something always comes up just outside it.",
+   "multiplayer_notes": "Nothing special.",
+   "reward_candidates": [
+    "A small reward, unlocked after the first ambush"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "Battlefield cues: spawn rumble, hostile counter, red-glow stragglers, death cry",
+   "category": "mobs / readability",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "entity tag td_straggler",
+    "team td_stragglers",
+    "sound kubejs:flesh_suffer_death"
+   ],
+   "player_facing_summary": "Each spawn is announced by a cave rumble where the mob is about to appear. The action bar counts the hostiles left. When a wave is down to its last two mobs, they glow red through walls. Heavy mobs give a death cry when they die.",
+   "source_files": [
+    "pack/kubejs/server_scripts/wave_spawner.js",
+    "pack/kubejs/server_scripts/wave_status.js",
+    "pack/kubejs/server_scripts/flesh_death_sound.js"
+   ],
+   "key_numbers": [
+    "Cave rumble at the spawn point 12 ticks before each mob, volume 5 (heard about 80 blocks away) (wave_spawner.js:122-127, 702-708). A bell plays at each player when a wave starts (574, 613); Hordes add a horde scream (537).",
+    "Hostile counter in the action bar counts wave mobs within 96 blocks (wave_status.js:19, 330-334).",
+    "The last 2 mobs glow red, but only once nothing is left to spawn (wave_status.js:154-184, 246).",
+    "Death cry for 6 heavy types: elite, rotten mutant, crawler, demolition zombie, zombie brute and mutant brute (flesh_death_sound.js:8-15, 21-24).",
+    "A countdown to the next wave shows in the action bar between waves (wave_spawner.js:774-806)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "'Sound the Horn' mentions the countdown timer (campaign.snbt:118). Nothing covers the rumble or the glow.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "A shared milestone the first time stragglers glow (hook into tdStragglerMark, wave_status.js:172-184).",
+    "EntityEvents.death of a mob tagged td_straggler, for 'finish off a straggler'."
+   ],
+   "teaching_hook": "Listen for the cave rumble to learn where they spawn. The red glow shows you the last two.",
+   "multiplayer_notes": "The rumble and the glow are visible and audible to everyone.",
+   "reward_candidates": [],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Boss waves",
+   "category": "mobs",
+   "tier": "Every 10th wave",
+   "ids": [
+    "undeadnights:elite_zombie (The Reaper)",
+    "undeadnights:demolition_zombie (The Demolisher)",
+    "entity tag td_boss",
+    "bossbar kubejs:main_boss"
+   ],
+   "player_facing_summary": "Every 10th wave brings a named boss with a boss bar and music for every player. Bosses alternate between The Reaper and The Demolisher. A kill drops a Sentry, 12 Shrapnel and a Totem of Undying.",
+   "source_files": [
+    "pack/kubejs/server_scripts/boss_wave.js",
+    "pack/kubejs/server_scripts/quest_milestones.js"
+   ],
+   "key_numbers": [
+    "Every 10th wave (boss_wave.js:13). Waves 10, 30, ... bring The Reaper: elite zombie, 200 HP, 24 attack, speed 0.36, black leather. Waves 20, 40, ... bring The Demolisher: demolition zombie, 350 HP, 15 attack, gold armour, no TNT (18-55).",
+    "Boss bar for everyone, plus a music disc track and titles (114-127).",
+    "Drops a Sentry, 12 Shrapnel and a Totem as invulnerable items (183-185), plus the normal bag rolls (90-92).",
+    "docs/MODS.md:65 still calls mutant_brute the 600 HP 'Behemoth' boss. That is stale against boss_wave.js."
+   ],
+   "unlock_or_cost": "Wave 10.",
+   "current_quest_coverage": "'The Reaper' (campaign.snbt:319-350) is a custom task that completes on any boss death (quest_milestones.js:118-126; removal case at boss_wave.js:206-211). Its text keeps the boss vague, but the title gives away the first boss's name. Bounties also has a 'Reaper' quest at 750 kills (bounties.snbt:108-144), which shares the name.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "The existing custom task.",
+    "A separate hidden 'Demolisher' quest keyed on the boss's entity type at death (the td_boss tag plus undeadnights:demolition_zombie)."
+   ],
+   "teaching_hook": "Be ready before wave 10. The boss heads for the pedestal like everything else, and its drops are a Tier 2 starter pack.",
+   "multiplayer_notes": "Shared bar and music. Drops lie on the ground for the first player to reach them.",
+   "reward_candidates": [
+    "A Legendary bag (current)"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "Death, corpse recovery and respawn",
+   "category": "death / QoL",
+   "tier": "Always",
+   "ids": [
+    "corpse:corpse",
+    "key.corpse.death_history",
+    "minecraft:totem_of_undying",
+    "advancement minecraft:adventure/totem_of_undying"
+   ],
+   "player_facing_summary": "When you die, your items stay in a corpse at the spot. Anyone can open it, and it never despawns while it holds items. A deathpoint marks it on the minimap. After respawning you get 10 seconds of total immunity. If a zombie-type mob killed you, a zombie of that type, named after you, rises where you fell.",
+   "source_files": [
+    "world serverconfig/corpse-server.toml (mod defaults; same on the dedicated server)",
+    "mods/corpse-forge-1.20.1-1.0.23.jar (Main, HistoryCommand)",
+    "pack/config/xaero/minimap/profiles/default.cfg",
+    "pack/config/epicsiegemod-common.toml",
+    "mods/EpicSiegeMod-14.171.jar (PlayerHandler, ZombieHandler)",
+    "pack/kubejs/server_scripts/hardcore_death.js",
+    "pack/kubejs/server_scripts/wave_status.js"
+   ],
+   "key_numbers": [
+    "Corpse settings: only_owner = false (corpse-server.toml:22); turns into a skeleton after 72000 ticks, 1 hour (:10); despawns 600 ticks after it is emptied (:29) and never while it still holds items (force_time = -1, :32); deaths stored forever (death_storage_duration = -1, :5). No keepInventory is set anywhere in the scripts.",
+    "Death history key defaults to U (Corpse Main KEY_DEATH_HISTORY, key code 85), the same key as Xaero's waypoint list. /deathhistory needs permission level 2 (HistoryCommand).",
+    "Xaero deathpoints are on and removed once reached (default.cfg:29, 31).",
+    "On respawn, login or dimension change, Epic Siege Mod gives Resistance at amplifier 5 (full immunity) for 200 ticks, 10 s (epicsiegemod-common.toml:19; PlayerHandler).",
+    "infectiousZombies = true (epicsiegemod-common.toml:157). If a mob extending Zombie (vanilla zombie, husk, drowned, zombie villager, or the Undead Nights elite, horde and demolition zombies) kills a player, a persistent zombie of the same type, named after the player, spawns at the death spot (ZombieHandler). Mutants & Zombies mobs extend Monster, not Zombie, so they don't trigger it. The new zombie isn't td_wave_mob, so it isn't steered or counted and drops no bags.",
+    "Starter gear picked up from a corpse after wave 5 crumbles within 100 ticks (wave_status.js:302-304; playtest_starter_kit.js:54-60).",
+    "Hardcore: the run ends only when every online player is dead (hardcore_death.js:25-28)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "None for corpses or deathpoints. Tips 'Go Hardcore' (tips_and_tricks.snbt:277) reads as if one death ends the run, which is wrong in multiplayer, where a death while anyone else online is alive is an ordinary death.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "FTB stat task on minecraft:deaths of 1 or more, for a first-death quest.",
+    "FTB advancement task on minecraft:adventure/totem_of_undying (in the vanilla 1.20.1 jar), for a totem save.",
+    "KubeJS interaction with a corpse:corpse entity, for 'recover your corpse'. Whether that interaction reaches KubeJS's entity-interact event is unverified."
+   ],
+   "teaching_hook": "Dying doesn't lose your gear: follow your deathpoint back and open your corpse. You get 10 seconds of immunity after respawning. If a zombie killed you, expect your own zombie standing over the body.",
+   "multiplayer_notes": "Teammates can recover your corpse, or loot it. In hardcore, the run ends only when everyone online is down.",
+   "reward_candidates": [
+    "Food (bread, cooked beef) and a few XP levels",
+    "Not totems: they are the Tier 2 capstone reward and a boss drop"
+   ],
+   "spoiler_sensitive": true
+  },
+  {
+   "name": "No passive mobs: food comes from loot",
+   "category": "survival / exploration",
+   "tier": "Always",
+   "ids": [
+    "minecraft:bread",
+    "minecraft:cooked_beef",
+    "minecraft:wheat_seeds",
+    "minecraft:egg"
+   ],
+   "player_facing_summary": "Animals never spawn and are removed from structures, so meat and eggs come only from loot. Food comes from bags, kitchen and food chests, and farm chests that also hold seeds.",
+   "source_files": [
+    "pack/kubejs/server_scripts/no_passive_mobs.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/scav_food.json",
+    "pack/kubejs/data/berezka_api/loot_tables/chests/farm.json",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js"
+   ],
+   "key_numbers": [
+    "Cancelled on join: cows, pigs, sheep, chickens, rabbits, horses and 28 other types (no_passive_mobs.js:13-23, 25-33). Villagers, traders, golems and wolves are kept (10-12).",
+    "doMobSpawning is false (playtest_starter_kit.js:511-512).",
+    "Uncommon bags carry bread 3-6 (w25), cooked beef 2-4, apples, carrots (uncommon.json). scav_food has 14 entries, including golden carrot w4 of 111. Farm chests have wheat, pumpkin, melon and beetroot seeds plus bone meal (farm.json).",
+    "Bread replaces cake in the Culinary Generator recipes because there are no cows (tier3_loot_aligned_recipes.js:13-14)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "Only indirect: 'Wired Different' mentions eggs (campaign.snbt:999) and rotten flesh as fuel (998).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task on minecraft:wheat_seeds or bread.",
+    "Checkmark."
+   ],
+   "teaching_hook": "There are no animals. Live off bags or farm seeds from farm chests, and every zombie's rotten flesh feeds the generator.",
+   "multiplayer_notes": "Food chests are shared.",
+   "reward_candidates": [
+    "Bread or cooked beef: good early rewards"
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "Bounty kill counter (team-wide)",
+   "category": "mobs / progression",
+   "tier": "Wave 1 onward",
+   "ids": [
+    "td_bountyKillCount (marker data)"
+   ],
+   "player_facing_summary": "Every wave-mob death counts toward the Bounties chapter, whoever or whatever made the kill. Structure mobs, guards, environmental deaths and /kill don't count.",
+   "source_files": [
+    "pack/kubejs/server_scripts/bounty_kills.js",
+    "pack/config/ftbquests/quests/chapters/bounties.snbt"
+   ],
+   "key_numbers": [
+    "Excluded damage types: drown, starve, freeze, fall, out_of_world, cramming, in_wall, generic_kill (bounty_kills.js:20-29). Fire and lava kills count.",
+    "Tiers at 25, 100, 300 and 750 kills, then a repeat every 1500 (31-42). Completions go to everyone online through change_progress @a (73-78).",
+    "Progress bars sync, and quests missed while offline are completed for that team (82 onward)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "The Bounties chapter (bounties.snbt:12-173) is accurate.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "The existing setup."
+   ],
+   "teaching_hook": "Every kill the team or its defences make adds up to one shared bounty.",
+   "multiplayer_notes": "One world counter; rewards are claimed per player.",
+   "reward_candidates": [
+    "Bags and XP, as now. The 'Reaper' name clashes with the boss 'The Reaper'."
+   ],
+   "spoiler_sensitive": false
+  },
+  {
+   "name": "QoL keybinds and HUD helpers (Tips chapter)",
+   "category": "QoL",
+   "tier": "Always",
+   "ids": [
+    "key.ftbquests.quests",
+    "key.jei.showRecipe",
+    "key.jei.showUses",
+    "key.jei.bookmark",
+    "justzoom zoom",
+    "gui.xaero_open_map",
+    "gui.xaero_new_waypoint",
+    "sophisticatedbackpacks open_backpack",
+    "inventorysorter SORT"
+   ],
+   "player_facing_summary": "Keys a new player needs: Tab for the quest book, R / U / A for JEI recipe / uses / bookmark, Z to zoom, M for the map, K for a waypoint, U for the waypoint list (which clashes with the corpse death history), B for the backpack, middle-click to sort. Jade, damage numbers and held-torch light need no key. Sneak + right-click on a bag previews it. The Crafting Station pulls from containers next to it.",
+   "source_files": [
+    "pack/options.txt",
+    "mods/jei-1.20.1-forge-15.49.0.191.jar (InternalKeyMappings)",
+    "mods/inventorysorter jar (Action)",
+    "mods/sophisticatedbackpacks jar (KeybindHandler)",
+    "mods/xaerominimap and xaeroworldmap jars",
+    "mods/corpse jar",
+    "pack/config/sodiumdynamiclights-client.toml",
+    "instance config/damagenumbers.json",
+    "dedicated server serverconfig/craftingstation-server.toml",
+    "pack/config/ftbquests/quests/chapters/tips_and_tricks.snbt"
+   ],
+   "key_numbers": [
+    "Quest book on Tab (options.txt:2). Vanilla's player list is also Tab and is not rebound; how the two interact in multiplayer is unverified.",
+    "JEI: R (82) recipe, U (85) uses, A (65) bookmark (InternalKeyMappings).",
+    "Z zoom (options.txt:4; Just Zoom is client-only, pack/mods/just-zoom.pw.toml).",
+    "M world map (Xaero ControlsRegister, 77). K new waypoint (options.txt:3). U waypoint list (Xaero, 85) clashes with Corpse death history (85).",
+    "B opens the backpack (Sophisticated Backpacks open_backpack, 66).",
+    "Middle-click sorts (Inventory Sorter Action SORT, mouse button 2).",
+    "Damage numbers don't show damage to players (damagenumbers.json isPlayerDamageShown = false). A held torch lights the area (sodiumdynamiclights-client.toml:13, self = true).",
+    "The Crafting Station shows adjacent inventories in its grid (craftingstation-server.toml)."
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "Tips has 12 checkmark quests, all accurate where they exist (tips_and_tricks.snbt). Missing: K and U for waypoints, B for the backpack (B is in campaign 'Pack Mule', campaign.snbt:663), the bag sneak preview, the corpse history key, and the U and Tab clashes.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Checkmark only: these are client-side actions.",
+    "Jade could be shown with an observation task on any block."
+   ],
+   "teaching_hook": "A one-screen cheat sheet. Rebind U for one of Xaero's waypoint list or the corpse death history.",
+   "multiplayer_notes": "Tab also opens the player list, which matters on the server.",
+   "reward_candidates": [
+    "1 XP level each, as now"
+   ],
+   "spoiler_sensitive": false
+  }
+ ],
+ "notes": [
+  "Detection gap: the 6 ruin-ring ruins are placed with /place structure. Vanilla PlaceCommand only calls StructureStart.placeInChunk and never registers the start (client-1.20.1 SRG jar, PlaceCommand.m_289073_), and FTB's structure task uses getStructureWithPieceAt + isValid. So 'Past the Line' cannot complete at the nearest ruins. The first ruins it can detect are about 192 blocks out. Fix options: store ring positions on the marker and use a KubeJS proximity custom task, or use Lootr advancements.",
+  "Inaccurate quest text: 'Open It' (campaign.snbt:245) says every bag can carry Shrapnel; the Legendary bag cannot (legendary.json). Tips 'Go Hardcore' (tips_and_tricks.snbt:277) implies one death ends the run; in multiplayer the run ends only when every online player is dead (hardcore_death.js:25-28). Arsenal 'Energized Dust' says it can't be crafted; a recipe exists (rdut.json: amethyst + glowstone dust + redstone), but glowstone dust has no source in the pack's loot tables (unverified whether it's obtainable).",
+  "Keybind clashes: U opens both Xaero's waypoint list (MinimapKeyMappings, 85) and Corpse's death history (Corpse Main, 85). Tab is bound to the quest book (options.txt:2) while vanilla's player list is also Tab by default.",
+  "Multiplayer reward economics: default_reward_team is false (data.snbt:6), and FTB QuestKey.forReward keys claims by player UUID. So every reward pays out once per party member, regardless of who did the task. Quest progress itself is team-shared. One player's 8-gold hand-in therefore lets every member claim an amulet, and per-player mechanics (Lootr, waystone activation) can't be gated per player with standard tasks.",
+  "Existing reward that may break the no-shortcut rule: 'Fragmentation' rewards 4 IE steel ingots (campaign.snbt:1211-1215), and steel is the vanilla blast furnace's output (tier3_loot_aligned_recipes.js:66-70). Flag it for the user's decision.",
+  "The 14 per-mob 'Kill one' quests (Know Your Enemy) and 'Three Down' were removed on 2026-09-30 by the user's choice (commit c94f019; docs/FEATURES.md:9987-10005). Any mob-teaching chain is a re-introduction and should be offered as a choice, for example as observation-task field notes revealed after the first sighting instead of kill quests.",
+  "docs/IDEAS.md binned a bounty/quest shop, party perks and player-count scaling (docs/IDEAS.md:107-118). Reward and multiplayer plans shouldn't propose them without a new reason.",
+  "Open design question that affects quest design: guard XP still feeds pedestal upgrades (docs/FEATURES.md:3449; docs/QUEUE.md:407), and guard spawners drop 15-43 XP when broken. Don't build quests that reward farming guards until this is decided.",
+  "Epic Siege Mod's infectiousZombies = true (epicsiegemod-common.toml:157) is a live mod default not documented anywhere in the pack's docs. A player killed by a zombie-class mob raises a named, persistent, untagged zombie at their corpse. Ask whether the user wants it before writing quest text around it.",
+  "Lost City towns: whether FTB's structure task sees Berezka structures is unverified. Berezka builds PoolElementStructurePieces, but structure_chest_loot_fix.js:6-8 says they have no usable pieces. Test it live, or use a LootJS table-id-based custom task.",
+  "Useful per-player detectors already in the jars: Lootr advancements lootr:1chest, 1barrel, 10loot, 25loot, 50loot, 100loot, social; the stat lootr:looted_stat; vanilla minecraft:deaths and minecraft:adventure/totem_of_undying. FTB observation task observe_type 5 (ENTITY_TYPE) works for first-sighting quests. FTB kill tasks are unambiguous only for brutes and the demolition zombie, the roster types that are never guards.",
+  "Timing hook: the first airdrop (wave 5) always lands outside the border (border 85 wide against a 90-110 block landing), which makes it a natural tutorial for putting the amulet on the pedestal.",
+  "Stale docs: docs/MODS.md:65 describes mutant_brute as the 600 HP / 30 attack 'Behemoth' boss. boss_wave.js now uses elite_zombie (The Reaper, 200 HP) and demolition_zombie (The Demolisher, 350 HP). The Bounties 'Reaper' quest (750 kills) shares its name with the boss.",
+  "BountyBags also registers unused dragon, warden and wither bags (ItemRegistry). They never drop, but are visible in JEI and creative.",
+  "Config provenance: Pick Up Notifier, Loot Beams (except light_config.toml), Waystones, Corpse and damage-numbers values come from instance or server generated defaults, not repo-shipped configs. Re-check them if those mods update."
+ ]
+}

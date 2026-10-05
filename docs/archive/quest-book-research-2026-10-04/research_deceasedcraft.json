@@ -1,0 +1,273 @@
+{
+ "packs": [
+  {
+   "name": "DeceasedCraft - Urban Zombie Apocalypse",
+   "source": "Local instance C:/Users/mattf/curseforge/minecraft/Instances/DeceasedCraft - Urban Zombie Apocalypse : config/ftbquests/quests (data.snbt, chapter_groups.snbt, chapters/*.snbt, reward_tables/lunchbox.snbt). All titles, subtitles and descriptions are {lang.key} references resolved from mods/DCTweaks_5.10.14.jar!assets/deceasedcraft/lang/en_us.json. All 387 chapter images are in DCTweaks_5.10.14.jar!assets/deceasedcraft/textures/custom/** (plus a zh_cn/ copy of every text-bearing image). The custom book theme is in kubejs/assets/ftbquests/ftb_quests_theme.txt plus textures/gui and shapes/{Circle,Square} PNGs. I checked engine behaviour against the FTB-Quests GitHub branch 1.20.1/main, whose gradle.properties reads mod_version=2001.4.22, the same version the tower-defense pack runs. Scratch renders are in the scratchpad: dc_all_chapters.txt, dc_view/*.png.",
+   "version_info": "MC 1.20.1 Forge. ftb-quests-forge-2001.4.16, ftb-library 2001.2.10, ftb-teams 2001.3.1; data.snbt version 13. The FTBQ add-on 'Quest Kill Task' 0.2.0 (MuonR) is installed. data.snbt: default progression_mode flexible, default_reward_team false, default_autoclaim_rewards disabled, pause_game true, drop_loot_crates false, no emergency items. The book opens on F7 (from the hotkey list).",
+   "scale": "801 quests in 30 chapters across 7 groups. Two chapters are always_invisible WIP: Traps (19 quests) and Machinery (35), so roughly 747 quests are visible. 387 chapter images; 147 set an explicit order, 15 have hover text, 2 are revealed by a quest, 3 are clickable, 4 use alpha. Only 325 of 801 quests have a title; the other 476 show their item, advancement or entity name. 236 subtitles. One reward table. Tasks: item 627, advancement 89, checkmark 75, kill 17, biome 7, dimension 1. Rewards: item 386, xp (raw points) 344, random 6, xp_levels 5, choice 2.",
+   "progression_presentation": "STRUCTURE (group order, then chapters):\n- Story Quests (group titles use §6§l gold bold): The First Days (30 quests, autofocus_id on 'Welcome'); Seeking the Cure (13); Into the Dark/abyss (2, hidden until The Cure is done).\n- Guides: Useful Hotkeys, District List, Survival, Temperature, ParCool!, Horde Buildings, Horde Waves, Scrapping.\n- Combat: Armor Sets, Melee Weapons, Ranged Weapons, Boss Monsters (plus the hidden WIP Traps).\n- Technology: The Basics, Advanced Materials, Power Generation, Refined Storage, Bullet Automation, Cannons (plus the hidden WIP Machinery).\n- Transportation: Road Vehicles, Trains, Planes.\n- Collectibles: '1 - Badges', '2 - Plushies', '3 - Music Discs' (numbered to force list order).\n- Credits.\n\nGATING is deliberately soft:\n- The book default is flexible.\n- 116 quests use dependency_requirement one_started, so a quest unlocks once any dependency is merely started (DependencyRequirement ONE_STARTED: needOne=true, completed=false). Dependency lines mostly guide rather than lock.\n- 79 per-quest progression_mode:linear overrides sit only where order matters: story (Cure 12, Abyss 2) and process chains (Bullet Automation 23, The Basics 7, Steels 3, hidden Machinery 32). Another 79 'flexible' overrides are redundant.\n- Spoiler control: 13 hide_details_until_startable (12 in the Cure chapter), 16 hide_until_deps_visible, 8 hide_until_deps_complete. The Abyss chapter's quests are all hidden, so the chapter itself stays invisible until its prerequisite is met.\n- Power Generation's reactor wing uses hidden quests plus two chapter images with dependency:'1256A9DA47EE3A51'. Those images draw only after the team completes that quest (ChapterImage.shouldShowImage), so the map grows a new framed section.\n- Only 3 optional and 3 can_repeat quests.\n\nVISUAL GRAMMAR (every chapter is a designed canvas):\n- Three type levels, all baked PNG art:\n  - Gold bevelled block-letter chapter banners: 1024x256 PNGs placed at 20x5 or 40x10 units ('THE FIRST DAYS', 'SURVIVAL', 'CHAPTER ONE / SEEKING THE CURE').\n  - White boxed pixel-font section labels: DEATH, HEALING, LIMB DAMAGE, WATER, COMMON BUILDINGS, SPECIAL BUILDINGS, NPCS.\n  - Plain white pixel column labels: AXE, KNIFE, BAT and so on.\n- Panels come from a 4-piece torn-parchment kit (paper_frame straight/corner/center/full, 128-256px). The pieces are rotated 0/90/-90/180 and laid at order -1/-2 to build panels of any size; the straight piece is used 106 times and the corner 56.\n- Tier is shown by frame material, consistently in every chapter: wood T1, iron T2, steel T3, netherite T4 (512px frames), plus white 'T1'-'T4' pixel badges.\n  - Melee: rows are 1024x512 slate panels with the same tier borders, and chalk divider lines (equipment_gap, 45 uses) separate the columns.\n  - Armor and Bosses: a faded big arrow (equipment_arrow, alpha 50, order -1) runs behind the tier frames to show direction.\n- Quest size encodes importance:\n  - Spine nodes: 1.5 squares.\n  - Story hubs: 2.5 (Welcome, Rediscovering the Cure).\n  - Guide hubs: 3.5-4.0 (LIFE, DEATH, the horde guides).\n  - Table row headers: 5.0 ('Tier 1 - Wood/Wool').\n  - Catalogue tiles: 2.5 squares, so item icons read like a shop shelf.\n  - Side info nodes: 1.0.\n- Shapes: square for spine and info cards; circle for 'base set' items; hexagon for milestones and raw sources; pentagon for ore veins; gear for devices (WIP Traps).\n- Custom theme (kubejs/assets/ftbquests/ftb_quests_theme.txt plus PNGs): hand-drawn square and circle node outlines, a painted green tick, a black padlock, a red '!!' alert and a chevron dependency texture. Panels are tan #B79B73 with brown #301C00 borders. Uncompleted dependency lines are dark brown #1F1105 and thicker (0.25 vs default 0.17). Unselected lines animate (speed 0.25 vs default 0), so chevrons always flow toward what comes next.\n\nHOW FAR ALONG AM I:\n- The First Days is a left-to-right timeline: Welcome > The First Days > Suburb Residential (Tier 1) > Dealing with Tempreature > Moving Onward (Tier 2) > Settling Down > Moving Onward (Tier 3) > The Wasteland (Tier 4) > 'Rediscovering the Cure: A New Chapter Begins'. Tier frames and T badges sit behind the milestones.\n- District List has a hot-to-cold thermometer bar over district polaroids with skull-star danger ratings.\n- Stock FTBQ cues, re-skinned: chapter names turn cyan when started and green when complete, with a red '!!' for unclaimed rewards; hovering a quest shows its % progress.\n- There is no overall completion meter.",
+   "teaching": "How it teaches with little text: the precomputed 'median 35 chars' was measured on raw lang keys. Resolved and with colour codes stripped, the overall median is 29 chars because 49.6% of quests are empty catalogue tiles. Teaching chapters carry 2-4 short paragraphs: First Days median 275 chars, Seeking the Cure 302, Refined Storage 257, Power 160, Survival 81. The heavy lifting is visual and spatial.\n\n(1) IMAGES DO THE EXPLAINING:\n- Annotated UI screenshots: Useful Hotkeys info_1/info_2, 1700x1100, with callouts 'OPEN GUIDEBOOK', 'INVITE FRIEND TO PARTY', 'NUTRITION INFO', 'BLOCK SEARCH', 'ALTERNATE CRAFTING METHODS', 'BOOKMARKS'.\n- Sepia hand-drawn 2-panel how-to cards: ParCool 'CAT LEAP: WHILE SPRINTING > TAP SPRINT KEY'; Scrapping 'SCRAPPABLE' and 'SCRAP HAMMER'.\n- Numbered 1-2-3 infographics paired with replicas of the exact on-screen banners (Horde Buildings, Horde Waves).\n- Diagrams with quests placed on them: Survival's PLAYER LIMBS figure has the limb-debuff quests at each body part.\n- Polaroid screenshots of real places.\n- 15 images carry hover tooltips, written as lang keys and translated by FTBQ.\n\n(2) SUBTITLES ARE HOVER HINTS. The map tooltip shows the subtitle in grey under the title (QuestButton.addMouseOverText). Production chains therefore read as flowcharts: an untitled item node plus a subtitle such as 'Crush blaze rods into blaze powder.' (Bullet Automation). Elsewhere subtitles are jokes ('Jesse, we need to cook!').\n\n(3) TITLES ARE TAGGED BY ACQUISITION VERB: '§9Craft§r', '§aLoot§r', '§6Tech§r' and combinations such as '§9Craft§r | §aLoot§r - Healing Items'.\n\n(4) COLOUR-CODE CONVENTION in descriptions:\n- §b aqua for key items and places (207 uses).\n- §6 gold for hotkeys ([F10], [H], [Shift + Ctrl]) and for cross-references to chapters or manual paths (138).\n- §c red for 'NOTE:'/'WARNING:'/danger (48).\n- §e yellow for tier labels (33).\n- §7 grey and §o italic for lore after a '----------' divider.\n- No {image:}, no page breaks, no clickable links in descriptions.\n\n(5) HUB AND DEEP-DIVE: story nodes end with pointers such as 'do check out the §6Survival§r chapter' or 'consult the §6District List§r chapter'. Tech nodes defer to Ponder '[W]' and to Engineer's Manual paths like '§6[Power,Wires,Generators > Power Generation]§r'. Only 5 quest_links exist in the whole book.\n\n(6) TASK TYPES that make the player do the thing:\n- item 627: craft or obtain; itemfilters 'Any #armorset:...' tags count any piece of a set.\n- advancement 89, of which:\n  - 70 are DCTweaks advancements with trigger minecraft:impossible, granted by mod code when you enter each building or find each NPC. A code-side detector is bridged into the book this way.\n  - Others are Immersive Engineering multiblock and Create advancements.\n- checkmark 75: read-and-tick info cards; 27 of the 41 tasks in The First Days are checkmarks.\n- kill 17: bosses.\n- biome 7: entering a district.\n- dimension 1.\n\n(7) CHUNKING complex mechanics:\n- One rule per node: Gun Durability; Gunshot Sounds ('Gunshots §cattract nearby zombies§r!'); Throwing ('[R]', thrown weapons deal §btwice§r the damage); Repairing.\n- Numbered build spines: Cannons 'Step 0: Moulding' > 'Step 1: Casting' > 'Step 1.5: Moving Your Cannon' > 'Step 2: Drilling' > 'Step 2.5' > 'Step 3: Annealing' > 'Step 4: Mounting'.\n- Two-track ladders that merge: Temperature cold I-III and heat I-III combine into 'Adaptive Insulation I-III'.\n- Escalating names: 'I need healing.' > 'I need healing!' > 'I NEED HEALING!!'.\n- 'Where it drops' rows: 'SMG Parts can be found in the §eHighrise Office§r district.'\n- Mirrored columns comparing two mods: Create SU vs IE FE.\n- Discovery prompts: 'Mass Torch Production... See if you can find it!'\n\n(8) THREAT TEACHING:\n- Welcome warns of the one zombie-free day.\n- 'Unavoidable Infection'.\n- The Horde Waves and Horde Buildings guides.\n- District danger stars.\n- Boss Monsters is 17 untitled kill tasks with no descriptions, so there is no fight guidance.\n- Base defence and traps are taught only in the hidden WIP Traps chapter (which contains 'Tower Defense - Tesla Turret / Gun Turret / Flame Turret').\n\n(9) OUTSIDE THE BOOK:\n- 470 'lore.*' lang keys for in-world notes and news (ContinuumTech, police, hospital, reactor). Story is mainly environmental; the book carries a thin narrative spine.\n- An NPC quest log on F8.\n- Lootable skill guide books (kubejs skill_guide_books.js).\n- 11 attributed tips in DCTweaks; I could not verify they are displayed, as no Tips mod jar is present.",
+   "rewards": "TYPES: item 386, xp 344 (raw points), xp_levels 5, random 6, choice 2. Not used: team_reward, per-reward autoclaim, loot crates, command, toast, gamestage, advancement rewards.\n\nREWARD TABLE: every random and choice reward draws from one named table, 'Lunchbox' (reward_tables/lunchbox.snbt).\n- icon create:red_toolbox, use_title true, loot_size 2.\n- Contents: juices, cookies, purified water (weight 60), sandwiches, and one golden apple.\n- Always flagged exclude_from_claim_all, so it must be clicked.\n- It is used even on unrelated milestones such as 'Upgrade Parts', 'The Industrial Age' and 'All Aboard!'.\n\nWHAT IS GIVEN:\n(a) Onboarding kit. Welcome gives a baseball bat. Its four rule cards give leather leggings, boots, chestplate and helmet, so reading the onboarding builds a full starter set.\n(b) The thing just taught, usually 1-2 of it: bandage > bandage, coat > coat, steel > 2 steel, armor component > component, Ammo Boxes > ammo box.\n(c) The next step's inputs:\n- Goggles > 4 cogwheels.\n- 'Step 0: Moulding' > 32 oak logs.\n- 'Step 2: Drilling' > 4 piston extension poles.\n- 'Lead Rain' > 16 AP + 16 flak rounds.\n- Kinetic Dynamo > 2 LV connectors.\n(d) Multiplied copies of defence devices in the WIP Traps chapter: turrets x3, barbed or razor wire x15.\n(e) XP ladders that double per tier:\n- Melee rows: T1 50, T2 100, T3 200, T4 400.\n- Bosses: 200 / 500 / 1000 / 2000.\n- Buildings: 50 up to 400 by district tier and building size.\n- NPCs: up to 800.\n- Info cards: 10-30.\n- Story capstones are the only big level rewards: The Catalog, The Precursor and The X Factor give 30 xp_levels each; the Abyss gives 10 and 30.\n(f) Collectible albums pay the NPC-shop currency, which has a sink in traders: 12 apocalypsenow:money per badge, 6 per plushie, money blocks for 7 plushies. The 50 music discs pay nothing.\n(g) Joke or consolation rewards: 8 cookies across Cannons, apples, a poisonous potato for reaching 'The Wasteland - Tier 4 (END OF CONTENT)', a zombie head for the Credits.\n\nWHAT THE PLAYER SEES: item icons in reward slots; the Lunchbox shows as a named toolbox icon; the theme's red '!!' alert marks unclaimed rewards on chapters and quests. There are no titles, sounds or commands on claim.",
+   "multiplayer": "Stock handling only.\n- Quest progress is shared per FTB Team.\n- default_reward_team is false and no reward overrides it, so every party member claims every reward separately. FTBQ keys claims by player UUID, and uses the nil UUID only for team rewards (QuestKey.forReward). Rewards therefore multiply with party size.\n- Explicit multiplayer teaching:\n  - The info_1.png screenshot callout: 'INVITE FRIEND TO PARTY - OPENS UP THE TEAM UI - PLAYERS IN THE SAME TEAM WILL BE ABLE TO SEE EACH OTHER ON THE MAP'.\n  - The hotkey list includes 'F9: Voice Chat Menu'.\n  - The Horde Waves text warns: 'This counter is tracked §6per player§r, and not tied to overall server time. §cIf you are in multiplayer, this could mean hordes back to back!§r'.\n- The 'Quest Kill Task' add-on (CurseForge 'Quests Kill Task Tweaks') grants kill-task progress to every team whose members damaged, tanked, debuffed or buffed against the mob within the last minute. Stock FTBQ 2001.4.22 credits only a real, non-fake ServerPlayer killer (FTBQuestsEventHandler.playerKill).\n- No co-op quests, shared-goal quests, role splits or team-reward tables.",
+   "standout_examples": [
+    {
+     "where": "C:/Users/mattf/curseforge/minecraft/Instances/DeceasedCraft - Urban Zombie Apocalypse/config/ftbquests/quests/chapters/guides.snbt ('The First Days'; spine 44FC50E18E90F2C8 -> 6F11CF9A0CE70DFD; side quest 7B16A2768209D41F)",
+     "what": "Left-to-right tier timeline: Welcome (size 2.5 square) > ... > Rediscovering the Cure (2.5). Wood, iron, steel and netherite frame images (8x8) sit behind the four tier milestones, with white T1-T4 badges above, inside a torn-parchment band. Size-1 side quests above and below are tagged Craft, Loot or Tech, and each ends by pointing to a Guides chapter.",
+     "excerpt": "'§9Craft§r | §aLoot§r - Healing Items': \"Looted §bstring§r and §bwool§r can be crafted into §bbandages§r, which provide a small amount of healing. ... For further information on the body part health system in this mod, do check out the §6Survival§r chapter.\"",
+     "why_it_works": "One screen shows the whole arc and where the player is on it. The tier code matches every other chapter. Side nodes can stay to 2-3 sentences because they hand off to deep-dive chapters."
+    },
+    {
+     "where": "guides.snbt quests 44FC50E18E90F2C8 (Welcome), 7AFF562B41079294, 7AE195FFCA7345BE, 0C3E338DD89AFFCB, 2FC6350D01CD4306",
+     "what": "Welcome (checkmark) rewards a baseball bat. The four must-know rule cards around it ('The Nether and the End', 'Talents and Specialization', 'Unavoidable Infection', 'Survivor Radar') reward leather leggings, boots, chestplate and helmet.",
+     "excerpt": "Unavoidable Infection, subtitle 'One bite is all it takes… well, maybe a couple.': \"All zombies have a chance to §cinfect§r their victims upon making contact during an attack. ... Certain armor types can negate this effect.\" (reward: minecraft:leather_chestplate)",
+     "why_it_works": "Reading the core rules assembles a complete starter armor set. Reading is rewarded with survivability, and the player can watch the set fill in."
+    },
+    {
+     "where": "chapters/questguidehordebuilding.snbt (1 quest, 20 images); art in DCTweaks_5.10.14.jar!assets/deceasedcraft/textures/custom/horde_building/",
+     "what": "One size-4 quest under a parchment panel tiled from 9 rotated paper_frame pieces. Three numbered steps (1536x256, red painted 1/2/3 with pixel text) are each paired with a replica of the in-game banner, and hovering the banner repeats it. Three polaroids of real horde buildings are pinned at ±2° rotation. Horde Waves repeats the template, ending with '[ THE HORDE HAS ARRIVED... ]' over a horde silhouette at alpha 200.",
+     "excerpt": "Image hover keys: quest.guide.hordebuilding.desc_1.horde = \"You have entered a horde building!\" / desc_2.horde = \"The horde seems to be lessening...\" / desc_3.horde = \"The horde has been defeated!\"; quest text: \"Certain §bspecial buildings§r will always contain a §chorde§r of infected.\"",
+     "why_it_works": "It teaches the player to recognise the exact feedback the game will give, in order, at a glance, without opening the quest. This maps directly onto wave, boss and airdrop cues."
+    },
+    {
+     "where": "chapters/basic_needs.snbt (Survival): quests 2137CEBC56AAD97A 'LIFE', 78EDCBE29F6F6C23 'Headache', 4DC3618211020E71 'Weakness'; image custom/survival/playerlimbs.png",
+     "what": "A 12x12 'PLAYER LIMBS' diagram (the mod's limb-health screen redrawn). Six small square quests sit at head, arms, torso, legs and feet. Each icon is the real status-effect texture, via ftbquests:custom_icon {Icon:\"minecraft:textures/mob_effect/weakness.png\"}. LIFE (3.5) sits above, DEATH (3.5) below, with WATER and HEALING ladders under boxed labels on each side.",
+     "excerpt": "Headache, subtitle 'Caused by damage to your head.': \"Headaches occasionally give you §cblindness§r — beware!\"; Weakness: \"§cWeakens§r your attack damage, possibly reducing it to 0 if it's already low enough.\"",
+     "why_it_works": "Cause (which limb) and effect (the HUD icon the player will see) are taught by position, in one sentence each. Each node pays a plaster, so clicking through stocks first aid."
+    },
+    {
+     "where": "chapters/questmainbuildings.snbt ('District List', 77 quests, 125 images); art custom/district/*.png",
+     "what": "A 100x4 thermometer bar (fire icon to snowflake) runs over six district polaroids ordered hot to cold. Each polaroid has a skull plus 1-5 star danger rating and a handwritten scrawl ('EXTREMELY HOT!!!', 'COLD!'); the unreached Wasteland photo is blacked out. Below each sit COMMON BUILDINGS, SPECIAL BUILDINGS and NPCS boxes in the district's tier frame. They are filled with untitled advancement-task quests (one per building or NPC) paying 50-800 XP.",
+     "excerpt": "Retail District: \"A sprawling retail district, the largest of which is the Terrace Plaza Mall. §cHigh§r threat. §bVery cold§r!\" (task: biome #deceasedcraft:retail_district; reward 12x apocalypsenow:money)",
+     "why_it_works": "It works as both a danger atlas and an exploration checklist: where to go next, what surviving there takes, and what you have already seen. The blacked-out photo teases without spoiling."
+    },
+    {
+     "where": "chapters/the_first_cure.snbt ('Seeking the Cure'; quest 498A69A82C40A1AC and capstone 3868EB3CF99FB29F)",
+     "what": "Linear story chapter. 'Understanding the Basics' (10 golden apples) fans out to five 'Gather Research - <District>' quests, each a rumour naming a landmark. They fan back into The Catalog (30 levels), then The Precursor (30 levels), then The Cure. hide_details_until_startable keeps each step's text hidden until it is reachable, and the capstone sets up a hidden next chapter.",
+     "excerpt": "\"Rumors suggest a key piece of the cure research is up for for sale at the §bCasino§r, every gambler’s favorite place. Take it for yourself, or find someone who knows where it is.\" ... capstone: \"§oPerhaps... perhaps we need to go deeper.§r\"",
+     "why_it_works": "Lore doubles as directions, and spoilers stay hidden. The fan-out and fan-in shape makes the climax feel earned, and the biggest rewards (30 levels) are reserved for it."
+    },
+    {
+     "where": "chapters/power_generation.snbt quest 1256A9DA47EE3A51 'Fundamentals of Nuclear Physics' plus two images carrying dependency:\"1256A9DA47EE3A51\"",
+     "what": "Create (SU) and Immersive Engineering (FE) are mirrored in two steel-framed columns around a hexagon hub, with the conversion nodes (alternator SU>FE, motor FE>SU) mirrored at the same height. Below, a 'REACTORS' header and a 13x13 steel frame draw only once the team completes the reactor intro quest. That quest's dependents are hide_until_deps_complete.",
+     "excerpt": "\"Even destroyed, the nuclear power plant in the wasteland provides a significant amount of reactor components... Perhaps it is time to try building your own?\" Image SNBT: {dependency:\"1256A9DA47EE3A51\", image:\"deceasedcraft:textures/custom/headers/header_thebasics_reactors.png\", width:16.0d, height:2.0d}",
+     "why_it_works": "The map grows a new framed wing at the moment of discovery, a progression beat that needs no extra text. Every reward is the next part needed (goggles > cogwheels, dynamo > LV connectors)."
+    },
+    {
+     "where": "chapters/cannons.snbt ('Step 0: Moulding' ... 'Step 4: Mounting'; 'Lead Rain')",
+     "what": "A vertical numbered spine with half-steps (0, 1, 1.5, 2, 2.5, 3, 4) runs down a chalk divider that separates autocannons (left) from artillery (right). Ingredient nodes hang off each step, and the rewards are the next step's inputs.",
+     "excerpt": "'Step 2: Drilling' (subtitle 'Drill go brrr...'): \"The next step is boring a hole in the cannon. This requires mounting the cannon on a turntable, providing the drill with torque and water, as well as piston extension pol[es]...\" (reward 4x create:piston_extension_pole)",
+     "why_it_works": "A complex multiblock process becomes an ordered checklist, and rewards remove friction for the very next step instead of handing out generic loot."
+    }
+   ],
+   "weaknesses": [
+    "Catalogue bloat. About 375 of 801 quests are untitled 'obtain or visit X' tiles: Melee Weapons 141 (135 untitled), Plushies 76, Music Discs 50 (no rewards), 70 building and NPC visits, and Armor Sets 38 ('Obtain a piece of the X set.'). It reads as checkbox spam with filler XP.",
+    "Rewards in raw XP points (344 of them, 10-2000 points) are small and opaque. Only 5 xp_levels rewards exist. Filler cookies and apples appear throughout, and a poisonous potato is the reward for reaching the final tier.",
+    "Checkmark-heavy onboarding: 27 of the 41 tasks in The First Days are read-and-tick checkmarks, so the player clicks through rather than doing anything.",
+    "Gating is mostly cosmetic. one_started is used on 116 quests and the book default is flexible, so outside the Cure story there is little sense of unlocking; dependency lines guide rather than gate.",
+    "Unfinished or broken content is shipped:\n- Visible 'END OF CONTENT' quests (The Wasteland, The X Factor 'cannot yet be completed').\n- The Abyss chapter title is stored as 'quest.main.abyss' without braces, so the raw key would display.\n- The portal quest's 'quest.main.abyss.portal.*' keys are missing from the lang file (it defines '.origin.*' instead).\n- Two missing task-title keys (quest.guide.animal_pen, quest.nuclear.guidebook).\n- Two parkour hover texts are just '-'.\n- One untitled Serene Seasons calendar quest.\n- Typos: 'Tempreature', 'introudces', 'hs been disabled'.",
+    "Text baked into images (every header, step and banner) needs a full per-language image set: DCTweaks carries a zh_cn/ copy plus a separate Chinese resource pack. One credits PNG is 5.5 MB. Editing any wording means re-rendering art.",
+    "Two key areas teach nothing: the boss bestiary (17 untitled kill tasks with empty descriptions) and base defence/traps (the Traps chapter is hidden WIP).",
+    "Per the 2001.4.22 source (Reward.getAutoClaimType), rewards in always_invisible chapters default to auto-claim. The two hidden WIP chapters contain completable item quests with rewards (for example 'Barbed Wire': 15 barbed wire + 50 XP), so they may be granted silently. Not runtime-verified.",
+    "Multiplayer: per-player claims multiply every reward by party size; there is no co-op content; and the per-player horde timer can produce back-to-back hordes, which is only acknowledged in text."
+   ]
+  }
+ ],
+ "patterns": [
+  {
+   "name": "Tier-material visual code used in every chapter",
+   "description": "The same four frame materials (wood, iron, steel, netherite) and white T1-T4 badges mark tier wherever tiered content appears: story milestones, armor, weapon-table rows, boss ladder, district columns. A faded big arrow behind tier rows shows direction.",
+   "evidence": [
+    "DeceasedCraft guides.snbt: wood/iron/steel/netherite_frame_full images at the 4 tier milestones plus bosses_t1..t4 badges",
+    "DeceasedCraft chapter_defensive.snbt (Armor Sets): 4 tier frames left-to-right, equipment_arrow 40x3 alpha 50 order -1 behind them",
+    "DeceasedCraft chapter_2_combat.snbt (Melee): equipment_tier1..4_background 90x18 rows; XP 50/100/200/400 by row",
+    "DeceasedCraft pest_control.snbt (Bosses): vertical T1-T4 ladder; questmainbuildings.snbt: district columns framed by tier"
+   ],
+   "ftbq_mechanism": "Chapter 'images' list entries {image:'ns:textures/...png', x, y, width, height, rotation, order} (negative order = under other images; all images draw behind quests per QuestPanel.addWidgets). DC hosts its PNGs in a mod jar; a KubeJS asset path (kubejs/assets/<ns>/textures/...) also works and is where DC's own theme override lives.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The TD pack has 4 defence tiers (T1 stakes/lure, T2 SecurityCraft, T3 power/Tesla/IE turrets, T4 rocket/grenade turrets) plus tiered loot bags. One shared tier colour/frame code across Campaign, the tier branches, the Arsenal and Bounties gives an instant sense of 'how far along'. The art is a handful of small reusable PNGs and is client-side only."
+  },
+  {
+   "name": "Milestone timeline spine with a hand-off capstone",
+   "description": "The main chapter is one row (or fishbone) of larger square milestone nodes on a parchment band, with small side quests above and below each milestone. The last node is a big capstone that explicitly opens the next chapter.",
+   "evidence": [
+    "DeceasedCraft guides.snbt: Welcome (2.5) > The First Days > Suburb (Tier 1) > ... > The Wasteland (Tier 4) > 'Rediscovering the Cure' (2.5, subtitle 'A New Chapter Begins', text 'The real story begins now.')",
+    "Chapter autofocus_id = 44FC50E18E90F2C8 (Welcome), so the book opens focused on the start of the spine"
+   ],
+   "ftbq_mechanism": "Quest size 1.5-2.5 with shape square for the spine and size 1 for side nodes; default dependency lines; paper_frame band images at order -1; chapter key autofocus_id (present in 2001.4.22 Chapter.java).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The existing Campaign fishbone maps directly: waves 1-8 > Hordes, boss every 10th wave, airdrop every 5th, border growth. A capstone per act ('the border opens...') gives the 'chapter turn' feeling."
+  },
+  {
+   "name": "Hub-and-deep-dive cross-referencing",
+   "description": "Spine and story nodes stay short and end with a pointer to the guide chapter (named in gold) or to the mod's own manual or Ponder page that covers the details.",
+   "evidence": [
+    "DeceasedCraft guides.snbt 7B16A2768209D41F: 'For further information on the body part health system in this mod, do check out the §6Survival§r chapter.'",
+    "DeceasedCraft power_generation.snbt 462F03EBB60A2A5A: 'Make sure to consult the Engineer's Manual §6[Power,Wires,Generators > Power Generation]§r as well as use Create's ponder feature'",
+    "Only 5 quest_links in the whole book; cross-references are text"
+   ],
+   "ftbq_mechanism": "Description text with a colour convention (§6 = chapter or manual name, §b = item or place). In 2001.4.22 an image 'click' value of '#<hexId>' opens that quest or chapter in-book (QuestScreen.handleClick), and quest_links can place a node from another chapter. DC uses neither for navigation.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The SecurityCraft manual and IE Engineer's Manual already document traps and Tesla/IE turrets. The book can teach the TD-specific why and when, and point at those manuals for the how. Clickable banner images could jump from the Campaign spine to each Tier chapter."
+  },
+  {
+   "name": "Acquisition-verb title tags",
+   "description": "A colour-coded prefix on each title tells the player how they will get the thing, for example Craft, Loot, Tech, or combinations.",
+   "evidence": [
+    "DeceasedCraft guides.snbt: '§9Craft§r - Backpack', '§aLoot§r - Golden Apples', '§6Tech§r | §aLoot§r - Power', '§9Craft§r | §aLoot§r - Ranged Weapons'"
+   ],
+   "ftbq_mechanism": "Formatting codes in the quest title, inline or via a lang key.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The TD economy has distinct sources: crafting, wave loot bags, airdrop crates, ruin stashes beyond the border, and pedestal upgrades bought with XP levels. Tags like Craft / Loot Bag / Airdrop / Stash / Pedestal would teach where things come from at a glance, at zero cost."
+  },
+  {
+   "name": "Diagram-as-map with status-effect icons",
+   "description": "Quests are positioned on an illustration so that location carries meaning. Info nodes use the actual HUD effect texture as their icon.",
+   "evidence": [
+    "DeceasedCraft basic_needs.snbt: playerlimbs.png 12x12 with Headache/Weakness/Mining Fatigue/Vulnerability/Hard Falling/Slowness nodes at the body parts",
+    "Icons via ftbquests:custom_icon tag {Icon:'minecraft:textures/mob_effect/weakness.png'}, {Icon:'legendarysurvivaloverhaul:textures/mob_effect/headache.png'}"
+   ],
+   "ftbq_mechanism": "One large chapter image plus small square quests (size 1) placed over it. Quest icon {id:'ftbquests:custom_icon', tag:{Icon:'<texture path>'}}.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "A top-down sketch of the fort can carry nodes on the gates, walls, pedestal, horn note block and lure block to teach the base layout. Amulet buffs, Haste and pedestal upgrades can use their real effect icons."
+  },
+  {
+   "name": "Numbered infographic with exact HUD-message replicas",
+   "description": "A one-quest guide chapter explains a system in 3 numbered steps. Each step is paired with a replica of the exact on-screen message the player will see, with the same text on hover.",
+   "evidence": [
+    "DeceasedCraft questguidehordebuilding.snbt: hordebuilding_desc1-3 plus banners '[ YOU HAVE ENTERED A HORDE BUILDING! ]' > '[ THE HORDE SEEMS TO BE LESSENING... ]' > '[ THE HORDE HAS BEEN DEFEATED! ]', hover keys quest.guide.hordebuilding.desc_N.horde",
+    "DeceasedCraft questguidehordewave.snbt: 3 steps plus '[ THE HORDE HAS ARRIVED... ]' over a horde silhouette (alpha 200, order -2); quest task = craft the horde calendar"
+   ],
+   "ftbq_mechanism": "Images with baked text plus hover:['lang.key'] (hover strings are passed through translate, per ChapterImage.addHoverText); one size-4 quest whose item task is the tracking tool.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The TD pack's core loop is driven by cues: horn, wave title, boss bar, airdrop signal, pedestal HP, GAME OVER. Showing the exact cue teaches recognition. The pack appears English-only, so baked-text cost is lower than DC's, but plain hover text is cheaper still."
+  },
+  {
+   "name": "Hand-drawn two-panel how-to cards",
+   "description": "Small sepia sketch cards on torn parchment show an action as before/after with the input key ('WHILE SPRINTING' > 'TAP SPRINT KEY'). They are scattered at slight rotations like a scrapbook, with the control repeated on hover.",
+   "evidence": [
+    "DeceasedCraft questguideparkour.snbt: 9 parkour cards (catleap, slide, vault...) rotations -10° to +5°, hover e.g. 'Tap shift while running to cat leap!'",
+    "DeceasedCraft questguidescrapping.snbt: 'SCRAPPABLE' and 'SCRAP HAMMER' cards next to one quest"
+   ],
+   "ftbq_mechanism": "Chapter images with rotation and hover; one checkmark or item quest beside them.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Good for physical actions (sound the horn, place the lure, set the amulet on the pedestal, use SecurityCraft tools), but it needs art. The repo's Python art generators (tools/menu_art) make it feasible. Keep the set small."
+  },
+  {
+   "name": "Danger atlas plus exploration checklist",
+   "description": "Region polaroids ordered along a hazard axis, each with a star danger rating and a short hazard line, over per-location 'visited' nodes. Unreached regions are shown blacked out.",
+   "evidence": [
+    "DeceasedCraft questmainbuildings.snbt: thermometer.png 100x4; polaroids with skull-star ratings; biome tasks per district; 70 advancement tasks per building/NPC paying 50-800 XP by tier",
+    "Wasteland polaroid is a black frame (teaser without spoiler)"
+   ],
+   "ftbq_mechanism": "biome tasks; advancement tasks whose advancements use trigger minecraft:impossible and are granted by mod code (DCTweaks); images with ratings baked in.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "The ruins, stashes and spawner guards beyond the expanding border fit a ring-distance danger map. Risks: it can bloat (DC's 70 tiles) and spoil discovery, against the 'keep story surprises' rule. Use blacked-out entries and few nodes. TD can detect visits with its existing KubeJS custom tasks or the structure task."
+  },
+  {
+   "name": "Reveal-on-progress (images and quests that appear)",
+   "description": "New map sections, headers and frames appear only when the team reaches them, and story text is hidden until startable, so progress literally reshapes the book.",
+   "evidence": [
+    "DeceasedCraft power_generation.snbt: 'REACTORS' header plus steel frame images with dependency:'1256A9DA47EE3A51'; dependents hide_until_deps_complete",
+    "DeceasedCraft the_first_cure.snbt: 12 linear quests with hide_details_until_startable",
+    "DeceasedCraft questmainabyss.snbt: whole chapter hidden (hide_until_deps_complete / hide_until_deps_visible) until The Cure is done"
+   ],
+   "ftbq_mechanism": "Image key dependency:'<questId>' (drawn only when TeamData.isCompleted, so per team). Quest keys hide_until_deps_complete, hide_until_deps_visible, hide_details_until_startable. A chapter auto-hides when all its quests are invisible (2001.4.15/16 behaviour).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Ideal for reveals: the Endless/Hordes wing after wave 8, boss panels after the first boss, the T3/T4 wings, the border-growth map. It fits the user's 'keep story surprises' rule, and the TD book already uses hide_until_deps_complete 42 times. Reveals are per team, so a party sees them together."
+  },
+  {
+   "name": "Numbered build steps whose rewards are the next step's inputs",
+   "description": "A multi-stage build becomes 'Step 0 ... Step 4', with half-steps for gotchas, and each reward supplies what the next step needs.",
+   "evidence": [
+    "DeceasedCraft cannons.snbt: 'Step 0: Moulding' (reward 32 oak logs) > 'Step 1: Casting' (7 casting sand) > 'Step 1.5: Moving Your Cannon' > 'Step 2: Drilling' (4 piston extension poles) > ... > 'Step 4: Mounting' (lever + button)",
+    "DeceasedCraft power_generation.snbt: Goggles > 4 cogwheels, Kinetic Dynamo > 2 LV connectors"
+   ],
+   "ftbq_mechanism": "Linear or plain dependencies; size-1.5 square step nodes with size-1 ingredient nodes; item rewards.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "T3 is a chain (culinary generator > Flux Networks > Tesla Coil and IE turrets). Steps teach the order. Caveat from the user's own rule ('loot shortcuts undermine the choice'): reward inputs and helpers, never the finished defence or a home machine's output."
+  },
+  {
+   "name": "Subtitle-as-instruction flowchart",
+   "description": "Production chains are drawn as untitled item nodes (the item name shows automatically) whose subtitle is the action. Hovering the map reads like a recipe flowchart.",
+   "evidence": [
+    "DeceasedCraft bullet_automation.snbt: untitled nodes with subtitles 'Crush blaze rods into blaze powder.', 'Burn logs into charcoal.', 'Crush sandstone into nitrate dust.' converging on 'Final Assembly' > 'The Bullets' (size 3)",
+    "Verified: the 2001.4.22 QuestButton.addMouseOverText adds the subtitle in grey under the title (plus % progress)"
+   ],
+   "ftbq_mechanism": "Leave the quest title empty, put the step verb in the subtitle, use an item task; shapes encode node class (hexagon source, pentagon ore vein, circle part).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Cheap, readable teaching for ammo and power chains and for wave-prep checklists, with no extra art."
+  },
+  {
+   "name": "Onboarding kit assembled from rule cards",
+   "description": "The first must-read info cards each pay one piece of a coherent starter kit, so finishing onboarding completes a set.",
+   "evidence": [
+    "DeceasedCraft guides.snbt: Welcome > baseball bat; the four rule cards around it > leather leggings, boots, chestplate, helmet"
+   ],
+   "ftbq_mechanism": "Checkmark tasks with one item reward each, laid out radially around a size-2.5 Welcome quest.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's first minutes (sound the horn, protect the pedestal, place stakes and lure, open loot bags) could each pay a piece of a starter defence kit. Per-player claims mean each friend gets their own kit; check that against the no-shortcut rule."
+  },
+  {
+   "name": "Named, iconed reward table as a recurring treat",
+   "description": "One themed table with its own name and icon is reused for random or choice rewards and must be clicked deliberately.",
+   "evidence": [
+    "DeceasedCraft reward_tables/lunchbox.snbt: title 'Lunchbox', icon create:red_toolbox, use_title true, loot_size 2, weighted food and drink plus 1 golden apple; used by 6 random + 2 choice rewards, all exclude_from_claim_all:true"
+   ],
+   "ftbq_mechanism": "reward_tables/*.snbt {title, icon, use_title, loot_size, rewards:[{item, weight, random_bonus}]}; quest reward {type:'random'|'choice', table_id, exclude_from_claim_all:true}. all_table and loot types also exist in 2001.4.22.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Quest reward tables can mirror the pack's own tiered loot bags and airdrop crate (same names and icons), so quest payouts look like in-world supply drops instead of bare XP."
+  },
+  {
+   "name": "Rewards that double per tier",
+   "description": "Reward size doubles per tier, making the difficulty curve visible in the reward column. The largest rewards are reserved for story capstones.",
+   "evidence": [
+    "DeceasedCraft chapter_2_combat.snbt XP by row: T1 50, T2 100, T3 200, T4 400",
+    "DeceasedCraft pest_control.snbt bosses: 200/500/1000/2000; the_first_cure.snbt capstones 30 xp_levels"
+   ],
+   "ftbq_mechanism": "xp or xp_levels rewards sized by tier.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "In TD, XP levels are a real currency (pedestal upgrades), so level rewards are meaningful, unlike DC's barely noticeable raw points. But per-player claims multiply them by party size, which conflicts with the pack's 'nothing scales by player count' rule. It needs a team_reward decision."
+  },
+  {
+   "name": "Collection album paying shop currency",
+   "description": "Sticker-album grids on a parchment panel: untitled item-collection quests, each paying a currency with a sink (NPC traders).",
+   "evidence": [
+    "DeceasedCraft questcollectionbadges.snbt: 8 badges x 12 money; questcollectionplushie.snbt: 76 plushies x 6 money (7 pay money blocks); questcollectiondiscs.snbt: 50 discs, no reward"
+   ],
+   "ftbq_mechanism": "Untitled item tasks in a grid; item rewards in currency; paper_bg image behind.",
+   "fit_for_td_pack": "low",
+   "fit_reason": "Adds bulk without teaching anything, against the user's lean-pack preference. Bounties already covers repeatable goals."
+  },
+  {
+   "name": "Genre custom theme for the book itself",
+   "description": "A resource-pack theme turns the book into a survivor's journal: hand-drawn node outlines and icons, parchment-coloured panels, brown animated chevron dependency lines.",
+   "evidence": [
+    "DeceasedCraft kubejs/assets/ftbquests/ftb_quests_theme.txt: widget_border #301C00, context_menu color=#B79B73, dependency_line_uncompleted_color #1F1105, dependency_line_thickness 0.25, dependency_line_unselected_speed 0.25",
+    "Texture overrides: ftbquests/textures/shapes/{Square,Circle}/{background,outline,shape}.png, gui/complete.png (painted tick), locked.png, alert.png (red '!!'), dependency.png (chevron), ftblibrary/textures/gui/background_squares.png (wood planks)"
+   ],
+   "ftbq_mechanism": "assets/ftbquests/ftb_quests_theme.txt plus texture overrides in any resource namespace (KubeJS assets works). 2001.4.22 also adds selected_chapter_highlight_1/2 theme keys.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "One text file and about ten small PNGs, client-side only, with no runtime cost. A rust/sand desert palette would match the Fallout-TV feel and the existing FancyMenu/Drippy menu makeover."
+  },
+  {
+   "name": "Advancement bridge for code-detected events",
+   "description": "Mod code grants 'impossible' advancements when something happens in the world (entered building X, met NPC Y). Advancement tasks in the book consume them, and players also get vanilla toasts and chat announcements.",
+   "evidence": [
+    "DCTweaks_5.10.14.jar data/deceasedcraft/advancements/building/** and npcs/*.json: criteria trigger minecraft:impossible, show_toast true, announce_to_chat true",
+    "DeceasedCraft questmainbuildings.snbt: 70 advancement tasks (untitled, inherit the advancement title, e.g. 'Suburban House - A' / 'Visit Suburban House Type A')"
+   ],
+   "ftbq_mechanism": "advancement task {advancement:'ns:path', criterion:''}; untitled quests inherit the advancement's name and icon.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "TD already uses KubeJS custom tasks (13) for wave and kill events. Advancements add free toasts and team chat announcements (useful for 'Wave 10 cleared' or 'first ruin looted') but duplicate the custom-task path."
+  }
+ ],
+ "multiplayer_notes": [
+  "DeceasedCraft relies entirely on stock FTB Teams behaviour: shared quest progress, and per-player reward claims (default_reward_team false, no team_reward overrides). In 2001.4.22, QuestKey.forReward keys a team reward to the nil UUID, giving one claim per team; any other reward is keyed per player, giving one claim each. A party of 3 therefore receives 3x every reward.",
+  "Autoclaim semantics (TeamData.checkAutoCompletion, 2001.4.22): per-player rewards are auto-granted only to team members online at completion; offline members claim later. A team reward with autoclaim goes only to the submitting player.",
+  "For the TD pack, XP levels buy pedestal upgrades and the design rule is 'nothing scales by player count'. Per-player XP or currency rewards would make the economy grow with party size. This is a choice to surface: team_reward for economy-type rewards versus per-player for personal kit.",
+  "Stock kill tasks count only a real (non-fake) ServerPlayer killer (FTBQuestsEventHandler.playerKill), so turret and trap kills never count. DC adds the 'Quest Kill Task' add-on, which credits every team that damaged, tanked, debuffed or buffed within one minute. That still ignores pure turret kills. TD's Bounties chapter already counts turret kills via KubeJS custom tasks.",
+  "Chapter-image reveals (image 'dependency') and hidden quests are evaluated on team data, so in a party the map reveal happens for everyone at once. Good for shared milestones such as wave N or the first boss.",
+  "Repeatable-quest cooldowns (repeat_cooldown, added in 2001.4.18) start when the first team member claims, giving one shared cadence per team. Useful for repeatable bounties.",
+  "DC's only explicit multiplayer teaching: an annotated screenshot callout ('INVITE FRIEND TO PARTY ... PLAYERS IN THE SAME TEAM WILL BE ABLE TO SEE EACH OTHER ON THE MAP'), 'F9: Voice Chat Menu' in the hotkey list, and a warning that the per-player horde timer can cause back-to-back hordes in multiplayer. It has no co-op quests, shared-goal tasks, or role-based branches."
+ ]
+}

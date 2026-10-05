@@ -1,0 +1,523 @@
+{
+ "hard_constraints": [
+  {
+   "date": "2026-08-30",
+   "rule": "The quest book is the pack's tutorial and must stay in sync with the mechanics. Any new or changed craftable or mechanic gets its quest written or revised in the same pass. Precedent: the Lure Block went undiscovered for 2 weeks, and on 2026-09-26 the user said 'i totally forgot about the lure block. is it even in the quest book?'. The same rule is a working principle at docs/IDEAS.md:278-287.",
+   "source_quote": "i really need to quest book to guide the player to these mechanics, it acts as a tutorial/guide. can we make sure thet if new mechanics get fleshed out then the quest book is updated with new quests or refined such that we keep this is all in sync"
+  },
+  {
+   "date": "2026-08-30",
+   "rule": "One quest per distinct item or mechanic. No single quest's text may describe several items. Restated 2026-09-11 for the trap rework: 'ensure that the quest books still acts a aguide to understand what these are how to use them'.",
+   "source_quote": "i actualy want thhe 1 quest per item idea... this means that a quest doesnt just have a wall of text describing multiple things"
+  },
+  {
+   "date": "2026-09-03 (confirmed 2026-09-09)",
+   "rule": "The main campaign is ONE chapter: a linear spine at the start with side branches (a tree), not separate Basics/Tier 1/Tier 2 tabs. The 2026-09-09 'fishbone' layout (spine plus ribs) built on this was approved with 'send it' and got 'Layout reads well'. A 2026-09-09 08:33 answer of 'Topic-based chapters' was overtaken the same day by the fishbone. Separate tabs now exist only for Tips, Bounties and the Arsenal (guns) chapter, which the user asked for.",
+   "source_quote": "I would prefer to a bit liner in the beginning rtaher than and basics section then a tier 1 etc...each of these chapters feel empty of fun.  Why not have a single chapter with more of a tree like structure  + answers 'The branching tree layout itself', 'Linear spine + side branches (Recommended)'"
+  },
+  {
+   "date": "2026-09-09",
+   "rule": "Quests must explain how each mechanic really works, cover every system, and not be a tick-box exercise. Quest text should answer the practical questions the player will have, such as range, setup, and what each turret does.",
+   "source_quote": "I think the player should have more of a guide experience rather than a tick box exercise  + answers 'Add real mechanical explanations (Recommended)', 'Full pass, all systems (Recommended)'"
+  },
+  {
+   "date": "2026-09-08 / 2026-09-09",
+   "rule": "Anything the game can detect must complete from the real event: the milestone bridge, the Bounty kill counter, and Open It on the first bag opened. Checkmarks are fine only as story connective tissue (2026-09-03: 'Keep checkmarks as connective tissue (Recommended)') and in the Tips chapter (2026-09-04).",
+   "source_quote": "the bounty quests shouldnt be a checkmark to complete, they should complete on the event that the relevant amount of enemies are killed. / can the open it quest not be a checkmark quest but one that can be complted by opening a loot bag / 'Yes, build the bridge (Recommended)'"
+  },
+  {
+   "date": "2026-09-10",
+   "rule": "Keep progression flexible (data.snbt:24) and reveal quests one step at a time with hide_until_deps_complete (42 occurrences across the chapters). Do not switch to linear mode.",
+   "source_quote": "when starting the game, the quests tend to all trigger at the same time. they are speerate quests but i wanted it to feel a bit more piecemeal  + answer 'Keep flexible, hide quests until unlocked'"
+  },
+  {
+   "date": "2026-09-30",
+   "rule": "After Three Down was removed, 'Open It' (first bag opened) is the gate that unlocks the rest of the tree: the amulet line, the Tier 2 traps, Room to Grow, the Item Collector and the wave-8 milestone.",
+   "source_quote": "\"Three Down\" is the gate for ... With it gone, what should unlock them?\"=\"Open It (Recommended)\""
+  },
+  {
+   "date": "2026-09-05 to 2026-09-28",
+   "rule": "Quests and menu tips must never announce scripted surprises in advance: the wave-5 gear rusting and starter defences going dark, the longer gaps between waves, what later hordes contain, boss details. A hint is the most they may give.",
+   "source_quote": "it should say soemthing like, the gear looks battered, notched in places.  more of a hint. i want the loasing gearto be a surprise (09-05) / i dont want the player to know that they will lose their stuff at wave 5, it should be seomthing that is learned through multiple playthroughs (09-09) / remove this tip as it needs to be a surprise (09-28)"
+  },
+  {
+   "date": "2026-09-28",
+   "rule": "Every number and claim in quest text must match the current code. Text must never mention removed content.",
+   "source_quote": "the its up to you quest mentions that the gaps between ways are 4 minutes more. this is wrong, remove it. / three down quest still references boomers, we removed these remember (09-10)"
+  },
+  {
+   "date": "2026-09-25 / 2026-09-28",
+   "rule": "The amulet cannot be crafted. It is the reward of 'Not Just Jewelry' for handing in 8 gold ingots, one per player, and it is fire- and lava-proof (campaign.snbt:382-414; startup_scripts/amulet.js:2). The point is to keep the choice between wearing it and leaving it on the pedestal.",
+   "source_quote": "change to a a quest gives an amulet rather than being able to craft it. the issue i found was i was ablt o craft multiple amulets leading to me not having this quandry as to whether i stay and wear the amulet or go by putting it on the pedestal  + answers 'One per player', 'Hand in 8 gold (Recommended)', 'Fire/lava-proof (Recommended)', '8-gold hand-in is right'"
+  },
+  {
+   "date": "2026-09-05 to 2026-09-29",
+   "rule": "Bounties chapter: fixed tiers at 25/100/300/750 kills, then a repeatable every 1500 (bounty_kills.js:31,38-41). Turret and trap kills count, and every future killing machine must count too. Only tagged wave mobs count; kills from structure or guard spawners don't (bounty_kills.js:60; bounties.snbt:13). Each tier shows a live X/Y counter, not FTB's rainbow 'custom' circle.",
+   "source_quote": "with the bounties...i guess we'll need to alwasy make sure that when new traps/ killing machines are added to the game then it counts towards the bounty (09-05) / 'Guards don't count (Recommended)' (09-28) / 'Who should drop loot bags?'='Only wave mobs (Recommended)' (09-29) / can the bounties quests have a counter on them like 1/25 killed (09-09)"
+  },
+  {
+   "date": "2026-09-06",
+   "rule": "Loot bags are the default reward, with higher-tier bags later in the chapter. They replaced gold rewards and XP-only rewards.",
+   "source_quote": "a loot bag is a fun reward in general. can we revist the quest rewards and change them to lootbags. the later qyqests in the chapter can be a higher tier loot bag"
+  },
+  {
+   "date": "2026-09-05 / 2026-09-11 / 2026-09-28",
+   "rule": "Totems of Undying stay super rare. Exactly one capstone quest pays one: 'No Turning Back', which unlocks after progressing through the trap tiers (campaign.snbt:863,876). The waystone reward stays on 'The Last Written Wave' (campaign.snbt:296).",
+   "source_quote": "i like that it gives you a totem of undying and a waystone. perhaps it should juts be one quest that completes the chapter / want to feel like that you have to progress through the tiers before you get to it (09-05) / this item needs to be super rare (09-11) / 'Restore it (Recommended)' (09-28)"
+  },
+  {
+   "date": "2026-09-10",
+   "rule": "Quest progress belongs to one world and does not carry over. Every new world, including the one after a game over, starts the book from zero.",
+   "source_quote": "Can we drop the whole quest book progress carries over between worlds. Its buggy and im not invested in the idea"
+  },
+  {
+   "date": "2026-09-04 / 2026-09-09",
+   "rule": "Tab opens the quest book by default on every install, friends' included, through the shipped options.txt.",
+   "source_quote": "doesnt look like the open quest keybind is set to tab by default.  I dont want to have to set this everytime i start a new instance  + answer 'Use Tab anyway'"
+  },
+  {
+   "date": "2026-08-30 / 2026-09-10",
+   "rule": "Every item quest must click through to its JEI recipe (FTB XMod Compat). The task item has to match the recipe output, including NBT such as the barrel's woodType (campaign.snbt:906-913).",
+   "source_quote": "ive noticed that i cant click on the item quest and it take we to the JEI item. can you enable this feature? / i couldnt click through to the recipe on the room to grow quest"
+  },
+  {
+   "date": "2026-09-22 / 2026-09-28",
+   "rule": "No Immersive Engineering manual quest and no mention of the Diesel Generator. 'Wired Different' teaches the pre-placed generator through a look-at (observation) task.",
+   "source_quote": "I dont need any mention of the diesel generator in the quests. also dont want the immersive engineering book quest. / can the wired different quest just be to look at the generatot rather than make one"
+  },
+  {
+   "date": "2026-09-04 / 2026-09-08",
+   "rule": "Design for multiplayer: 2-4 players in one FTB Teams party.",
+   "source_quote": "'is this pack singleplayer-only...'='No, plan for multiplayer' / 'What's the realistic player count...'='2-4 players'"
+  },
+  {
+   "date": "2026-09-02 / 2026-09-04",
+   "rule": "Process: write the plan as a spec and hold it. Don't build or dispatch until the user says 'send it'. Put open decisions to the user in small structured question rounds, not prose walls. Track numbered feedback literally.",
+   "source_quote": "can you stop shipping build requests from the queue unless I say so / lets make this simple, not a wall of text to anaylse constantly"
+  },
+  {
+   "date": "2026-09-09 (docs/IDEAS.md:141-148)",
+   "rule": "Technical: every hand-written FTB Quests id must start with hex 0-7. FTB Quests 2001.4.22 silently re-mints ids starting 8-F on load, which breaks scripted change_progress task ids.",
+   "source_quote": "Before deploying anything under `pack/config/ftbquests`, `grep -E '^\\s*id: \"[89A-F]'` must be empty."
+  },
+  {
+   "date": "2026-08-19 (docs/IDEAS.md:160-162)",
+   "rule": "Keep the footprint small. Any quest add-on mod we propose on our own initiative must be the lean option, with its cost called out.",
+   "source_quote": "Keep footprint small — default to the leaner option for anything proposed on this session's own initiative; call out footprint cost before suggesting something bulky."
+  }
+ ],
+ "preferences": [
+  {
+   "date": "2026-10-04",
+   "preference": "The current goal: a quest book that gives a sense of progression, teaches the mechanics and is interactive, built on the pack's many blocks and traps, with a view of what rewards look like and multiplayer covered.",
+   "source_quote": "I have a tonne of cool mechanics, blocks, traps that can lend themseleves to a fun interactive quest book. This should also include a view of what the rewards should look like to a player.  Dont forget to consider the multiplayer element"
+  },
+  {
+   "date": "2026-08-19",
+   "preference": "Theme: Fallout-TV post-apocalyptic south-west US desert with a DIY feel. The book reads as the diary of whoever held the base before, and new mysteries unlock as you progress.",
+   "source_quote": "like a dear diary left over from a previous unfortuate soul. unlock new mysteries as you progress"
+  },
+  {
+   "date": "2026-08-29 / 2026-09-03",
+   "preference": "Inspiration comes from ATM10, other progression packs and benbenlaw's packs. What the user values in benbenlaw's packs is the branching tree layout.",
+   "source_quote": "see ATM10's quest book or other progression based modpack's quest books for inspiration / See the modpacks created by Creator benbenlaw for inspiration / 'The branching tree layout itself'"
+  },
+  {
+   "date": "2026-09-09",
+   "preference": "Voice: direct second person. The diary voice appears only on milestone pages.",
+   "source_quote": "'What voice should the quest text use?'='Direct, diary only on milestones (Recommended)'"
+  },
+  {
+   "date": "2026-09-03",
+   "preference": "Mostly practical advice, with a light sense that there is more still to learn.",
+   "source_quote": "can you make it a little less mysterious vibe, more practical advice mixed with there is more to learn yet"
+  },
+  {
+   "date": "2026-09-09",
+   "preference": "The game should feel like you learn things over several playthroughs, not from text that tells you everything up front.",
+   "source_quote": "i wonder if there are some other things that can be added that giev the player a feel of - Im learning stuff the more i play a game."
+  },
+  {
+   "date": "2026-09-10 / 2026-09-11",
+   "preference": "Clean, aligned layout: nodes sit in line under their dependency, with no long diagonal connector lines.",
+   "source_quote": "they just need to be brought for in line with the other / the cheap and cheeful quest looks funny on a diagnal line off open it quest. can you clean this up"
+  },
+  {
+   "date": "2026-09-09 / 2026-09-10",
+   "preference": "Real, meaningful icons on every quest and task, never FTB's rainbow 'custom' placeholder.",
+   "source_quote": "the sound the horn quest has the same colourful circle with the text - custom.  this should be less of a placeholder icon. / the bounty quests still have the custom icon"
+  },
+  {
+   "date": "2026-09-09",
+   "preference": "Show routine notices as themed popups, not chat spam.",
+   "source_quote": "can I get less noise from the chat window... I would prefer that most of the message appear in a cool way as popups.  + 'Routine pings only (Recommended)'"
+  },
+  {
+   "date": "2026-09-04 / 2026-09-05",
+   "preference": "The loot-reveal popup (Pick Up Notifier) fires only when a bag is opened, not on every pickup, and should look cooler than chat.",
+   "source_quote": "if it notifies me on every pick up. it will feel spammy, can we have fire only when opeing a loot bag / i thought the mod that we installed has it appear in a cooler way"
+  },
+  {
+   "date": "2026-09-05",
+   "preference": "When an event has several pieces of text, show them as separate popups with time between them so the player can read each one.",
+   "source_quote": "I would like to see to text popups but with some time in between to let the player read everything"
+  },
+  {
+   "date": "2026-09-11",
+   "preference": "Keep crafting simple to suit the frenetic pace. The pre-placed power is fine; the player just hooks things up with Flux Points.",
+   "source_quote": "the crafting recipe and process is just too convoluted for the frenetic nature of this pack"
+  },
+  {
+   "date": "2026-08-30 / 2026-09-05",
+   "preference": "Each machine quest should say exactly what the machine does and how to set it up.",
+   "source_quote": "gives the player a good indication of what each turrent does? worried that the quests are guiding enough / might need to guide the player on how it works in the qust book... whats the range? what do you mean by wired up?"
+  },
+  {
+   "date": "2026-09-28",
+   "preference": "Use look-at (observation) tasks for things already placed in the base, such as the generator and the pedestal, instead of asking the player to craft one.",
+   "source_quote": "can the wired different quest just be to look at the generatot rather than make one"
+  },
+  {
+   "date": "2026-09-11",
+   "preference": "A guns-and-ammo chapter whose quests complete when you get the item and explain how to use it. This was built as the Arsenal chapter (arsenal.snbt, git b82f7b4, 2026-09-25).",
+   "source_quote": "can we have a quest book chapter for the guns and their ammo. when you get the gun or ammo the quest completes and it has an exmplainer of how to use it"
+  },
+  {
+   "date": "2026-09-11 / 2026-09-28",
+   "preference": "Storage quests should teach how to handle loot overflow: the Sophisticated barrel and its upgrades, including basic-to-iron.",
+   "source_quote": "making a sophiscated barrel and associated upgrades is explained and well understood so that a player can deal with the loot overspill / add a quest in the sophiscated chests branch that details the iron upgrade too"
+  },
+  {
+   "date": "2026-09-04 to 2026-09-09",
+   "preference": "Tips & Tricks chapter: checkmark tips for keys and habits (Z zoom, R/U JEI, M map, A bookmark, Reach Further for connected inventories, the /hardcore toggle). The user said 'no' to an F3 tip (FEATURES.md:7488-7489).",
+   "source_quote": "can we have a tips and tricks section in the quest book, this will have checkmark quests that inform the player of useful tips. using z to zoom, using r and u for JEI, m for map etc"
+  },
+  {
+   "date": "2026-09-26",
+   "preference": "The Lure Block quest belongs in the campaign's trap branch (it is now 'Dinner Bell').",
+   "source_quote": "'Want me to add a Lure Block quest to the book?'='Campaign, trap branch (Recommended)'"
+  },
+  {
+   "date": "2026-09-05",
+   "preference": "A quest may hand over an item that blocks progress.",
+   "source_quote": "what if the hand crank was given as a reward for one of the quests instead"
+  },
+  {
+   "date": "2026-09-03",
+   "preference": "Killing mobs should feel like it advances your tech. Gating a material behind exploration is the exception, not the rule.",
+   "source_quote": "I want the game to feel like killing mobs means progressing your tech. however I may want some materials to be gated in some way i.e not in loot bags. but these are the exception, not the rule."
+  },
+  {
+   "date": "2026-09-10",
+   "preference": "Past wave 8 the vocabulary is 'Horde N'.",
+   "source_quote": "can we rename this and any other new wave popup to you the horde vocab"
+  },
+  {
+   "date": "2026-09-05",
+   "preference": "Ask the user whether shipped changes actually worked in play.",
+   "source_quote": "can you prompt me for answers on whether things worked as expected too? i like this style of interaction"
+  }
+ ],
+ "cut_or_binned": [
+  {
+   "date": "2026-08-31",
+   "item": "'The Reckoning' and 'No Turning Back', the last two Basics quests",
+   "reason_quote": "The last 2 quests in hte basics chapter are pointless, remove them"
+  },
+  {
+   "date": "2026-09-05",
+   "item": "The duplicated 'Sound the Horn' quest",
+   "reason_quote": "can you just have the one quest (the repeatable one) and it shouldnt be a dependency for other quests, just informative"
+  },
+  {
+   "date": "2026-09-05",
+   "item": "Separate wave-5 and wave-8 story quests. They were merged into one capstone gated behind the tiers.",
+   "reason_quote": "I dont like the no turning back and the reckoning quest that speaks to wave 8 and 5... perhaps it should juts be one quest that completes the chapter."
+  },
+  {
+   "date": "2026-09-05",
+   "item": "Teaching a spike-plus-cobweb combo",
+   "reason_quote": "can you scrp the plan to combo the spikes with cobweb slow"
+  },
+  {
+   "date": "2026-09-05",
+   "item": "XP-only rewards",
+   "reason_quote": "the xp is not useful. i wonder if the rewards shou;d give the player some benefits by completing them"
+  },
+  {
+   "date": "2026-09-06",
+   "item": "Gold-ingot quest rewards, replaced by loot bags",
+   "reason_quote": "not liking the gold rewards in the quest book actually... the quest rewards that currently give gold, can be basic loot bags instead"
+  },
+  {
+   "date": "2026-09-08",
+   "item": "Trapcraft and its quests (spikes, igniter 'Spark and Flame', fan 'Herd Them In', magnetic chest)",
+   "reason_quote": "i want to drop trapcraft as I dont like the traps (i quite like the magnet chest, but think we can come up with a diffrernt mod for this mechanic)"
+  },
+  {
+   "date": "2026-09-09",
+   "item": "Medieval Defense Turrets arrow turret quest 'Wired for War'",
+   "reason_quote": "'What's wrong with the Arrow Turret specifically?'='Too weak / boring, Visual/thematic mismatch'"
+  },
+  {
+   "date": "2026-09-09 / 2026-09-10",
+   "item": "Boomer Zombie and its Know Your Enemy quest",
+   "reason_quote": "can you just remove the boomers for now. i cant figure out how to balance these. they keep blowing up my pedestal!"
+  },
+  {
+   "date": "2026-09-10",
+   "item": "Quest-progress carry-over between worlds",
+   "reason_quote": "Can we drop the whole quest book progress carries over between worlds. Its buggy and im not invested in the idea"
+  },
+  {
+   "date": "2026-09-10",
+   "item": "Slime Trap and Bear Trap quests and traps, with no replacement",
+   "reason_quote": "the slime trap and the bear trap are not great  -> 'Remove them, no replacement'"
+  },
+  {
+   "date": "2026-09-10",
+   "item": "Tinted rib background panels (campaign.snbt:8 is now images: [])",
+   "reason_quote": "now that we've hidden the quests, the coloured sections of the quest are just always there and it looks weird. juts remove that colour"
+  },
+  {
+   "date": "2026-09-11",
+   "item": "Advanced Tower Defense Tier 2 turret-chain quests (Tech Tablet, Winding Mechanism, Workbench, blueprints, bases, Musket Sentry, Anvil Launcher)",
+   "reason_quote": "the crafting recipe and process is just too convoluted for the frenetic nature of this pack  -> 'Remove entirely (Recommended)'"
+  },
+  {
+   "date": "2026-09-11",
+   "item": "Create and its quests (Barbed Wire 'Sharpened Scrap', Hand Crank 'Turn the Crank', flamethrower nozzle 'Turn Up the Heat')",
+   "reason_quote": "'Everything, Create included' / 'Drop it, no replacement (Recommended)'"
+  },
+  {
+   "date": "2026-09-11 / 2026-09-22",
+   "item": "Engineer's Manual (IE book) quest and the Diesel Generator content",
+   "reason_quote": "why is there a quest to create a IE manual. this should be an optional quest alongside the IE traps when they come / its the deisel generator, this has been taken out as its too complicated to build / I dont need any mention of the diesel generator in the quests"
+  },
+  {
+   "date": "2026-09-10 / 2026-09-12",
+   "item": "The Behemoth boss and its spoiler-heavy quest. The boss quest is now 'The Reaper'.",
+   "reason_quote": "the behemoth quest again as too much spoliers in it / just remove the behemoth its too tanky"
+  },
+  {
+   "date": "2026-09-13",
+   "item": "The Wave Horn item and the repeatable 'Lost the Horn?' quest. The horn is now a note block.",
+   "reason_quote": "now that the wave horn is a block, no need for the item"
+  },
+  {
+   "date": "2026-09-25",
+   "item": "The craftable amulet and its crafting quest",
+   "reason_quote": "i was ablt o craft multiple amulets leading to me not having this quandry as to whether i stay and wear the amulet or go by putting it on the pedestal"
+  },
+  {
+   "date": "2026-09-26",
+   "item": "Bounty/quest shop (FTB trade quests or QuestShop). The bin also closed the old Loot Tiers/Machines/Map Expansion/Shop chapter plan (docs/IDEAS.md:107-110).",
+   "reason_quote": "might bin some ideas as they are potentially old  -> ticked 'Bounty shop' ('Spend loot/currency for items via FTB Quests or QuestShop. Needs custom deposit scripting')"
+  },
+  {
+   "date": "2026-09-26",
+   "item": "Mid-ramp story beats (a diary page, radio crackle or distant explosion at waves 3-4), rotating wave modifiers, the boss-wave building gift, the roguelike wave choice and an invented loot-material economy",
+   "reason_quote": "same 09-26 bin round ('Mid-ramp story beats', 'Rotating wave modifiers', 'Boss-wave building gift', 'Roguelike wave choice', 'Invented loot materials' ticked)"
+  },
+  {
+   "date": "2026-09-26",
+   "item": "Player-count scaling and party-wide perks",
+   "reason_quote": "same 09-26 bin round: 'Player-count scaling + perks' ticked (option text: 'Reviewed 09-12 and deliberately left off (trimmed waves 1-8 instead)')"
+  },
+  {
+   "date": "2026-09-28",
+   "item": "'It's Up to You Now' quest and the wave-5 rust/defences menu tips",
+   "reason_quote": "its up to you now quest could be something else...i dont want the player to know that they will lose their stuff at wave 5 (09-09) / this is wrong, remove it... remove this tip as it needs to be a surprise (09-28)"
+  },
+  {
+   "date": "2026-09-28",
+   "item": "Cage Trap and its quest",
+   "reason_quote": "can we bin the cage trap and its quest. dont like it"
+  },
+  {
+   "date": "2026-09-30",
+   "item": "'Three Down' wave-3 milestone quest",
+   "reason_quote": "dont need the three down quest at all. remove it"
+  },
+  {
+   "date": "2026-09-30",
+   "item": "The 14 Know Your Enemy 'kill one' quests branching off Thin the Horde. Thin the Horde itself stays.",
+   "reason_quote": "all the quests that spin off thin the horde (the kill quests) can be removed. dont really like them"
+  },
+  {
+   "date": "2026-09-09 / 2026-09-30",
+   "item": "Specific reward swaps: shield and iron replaced by an Uncommon bag (Borrowed Time, Find the Pedestal); iron and sticks replaced by the trap itself (Better Than Nothing, Cheap and Cheerful)",
+   "reason_quote": "can borrowed time reward a uncommon lot bag instead of a shield / find the pedestal quest should give me an uncommon loot bag as a reward instead of iron / the better than nothing quest should give 4 spike traps as reward instead of the iron"
+  },
+  {
+   "date": "2026-09-04",
+   "item": "Cryptic, mysterious flavour text and the rule that every quest ends on an open question",
+   "reason_quote": "i hate the flvour text on the quests. it doenst sound human.  be a bit more literal rather than crytic all the time"
+  }
+ ],
+ "voice_and_tone_rules": [
+  "Second person, literal, present tense, short. The found-diary voice appears only on milestone pages (2026-09-09: 'Direct, diary only on milestones (Recommended)'; written down at docs/FEATURES.md:6602-6604).",
+  "Literal, not cryptic or mysterious in an 'AI' way. 2026-09-04: 'i hate the flvour text on the quests. it doenst sound human.  be a bit more literal rather than crytic all the time'. 2026-09-03: 'sounds quite AI... a little less mysterious vibe, more practical advice mixed with there is more to learn yet'.",
+  "Don't end every entry on a hedge or open question. The 'never worked out X' pattern was dropped on 2026-09-04/06. Keep an open question only where it is literally true, for example that the endless phase has no ceiling.",
+  "Snappy, and no inventories of contents. 2026-09-09 (Open It): 'make it snappier, dont need to list all the loot bag types'. 2026-09-10 (Last Written Wave): 'too verbose... remove all the info on mobs are going to spawn'. 2026-09-28: 'The last written wav quest text is terrible'. 2026-09-30: 'past the line quest text is too verbose'.",
+  "Hint, don't tell. Borrowed Time should say 'the gear looks battered, notched in places. more of a hint' (2026-09-05). Boss quests carry no specifics: 'the behemoth quest again as too much spoliers in it' (2026-09-10). Don't state the exact endless scaling numbers (fixed 2026-09-09) or the wave-gap lengths (2026-09-28).",
+  "Don't describe loot or contents that can change. 2026-09-11: 'the quest the last written wave speaks to the loot of the suppy crate this is now different. can you just remove this bit of the text'.",
+  "Describe mechanics accurately and read every number from the code. The user has caught wrong text before: the spikes-plus-web combo on 2026-09-05 ('have I missed something'), the pedestal heal on 2026-09-09 ('the item goes on the pedestal then disappears. I dont want it work like that'), and the '4 minutes' wave-gap claim on 2026-09-28 ('this is wrong').",
+  "Vocabulary: 'Wave N' for waves 1-8 and 'Horde N' after that (2026-09-10: 'rename this and any other new wave popup to you the horde vocab'). In the fiction the diary stops at wave 8 ('The Last Written Wave').",
+  "Theme: Fallout-TV wasteland with a DIY scavenger feel, framed as 'a dear diary left over from a previous unfortuate soul' (2026-08-19).",
+  "One item per quest, never a wall of text (2026-08-30).",
+  "Use colour codes sparingly (&e on item names, &c on warnings) and only inside descriptions. Formatting in chapter titles produced 'invalid formatting' errors twice (2026-09-05 item 8, 2026-09-08 item 2).",
+  "Use the user's own names: they call the Culinary Generator the 'bio generator' (2026-09-11)."
+ ],
+ "reward_feedback": [
+  {
+   "date": "2026-08-29",
+   "quote": "this may include some quests that are just informative and give a reward of xp or something",
+   "implication": "At first XP was acceptable for informative quests. This was overtaken a week later."
+  },
+  {
+   "date": "2026-09-05",
+   "quote": "would be good to review the quest rewards.  the xp is not useful. i wonder if the rewards shou;d give the player some benefits by completing them . traps give iron for example",
+   "implication": "Rewards must give a practical in-game benefit tied to the mechanic. XP alone is not enough."
+  },
+  {
+   "date": "2026-09-05",
+   "quote": "'...thematic items added to the 13 that were XP-only or empty — e.g. Sharpened Scrap +4 iron, Turn the Crank +8 andesite, No Turning Back +1 totem of undying'='Build as proposed (Recommended)'",
+   "implication": "The user approved thematic item rewards matched to each quest's subject."
+  },
+  {
+   "date": "2026-09-05",
+   "quote": "perhaps on completing tier 1 you get a waystone as a reward in the quest book",
+   "implication": "Milestones can pay out mobility and exploration tools. The waystone now sits on 'The Last Written Wave' (campaign.snbt:296)."
+  },
+  {
+   "date": "2026-09-05",
+   "quote": "i like that it gives you a totem of undying and a waystone. perhaps it should juts be one quest that completes the chapter... want to feel like that you have to progress through the tiers before you get to it",
+   "implication": "There is one big capstone reward, gated behind tier progression. Today that is 'No Turning Back', which pays the totem (campaign.snbt:863)."
+  },
+  {
+   "date": "2026-09-05",
+   "quote": "what if the hand crank was given as a reward for one of the quests instead",
+   "implication": "A quest may hand over an item that blocks progress."
+  },
+  {
+   "date": "2026-09-05",
+   "quote": "a chapter titles bounties/zombie masher... starts at 25, then 100, then 300, etc. the rewards are meaningful items.",
+   "implication": "Kill-milestone rewards should feel substantial and escalate. Today they are bags plus XP 5/10/15/20, and a Legendary bag on the repeatable (bounties.snbt)."
+  },
+  {
+   "date": "2026-09-06",
+   "quote": "a loot bag is a fun reward in general. can we revist the quest rewards and change them to lootbags. the later qyqests in the chapter can be a higher tier loot bag",
+   "implication": "Bags are the default reward currency, and the bag tier rises with progress through the chapter."
+  },
+  {
+   "date": "2026-09-09",
+   "quote": "find the pedestal quest should give me an uncommon loot bag as a reward instead of iron / can borrowed time reward a uncommon lot bag instead of a shield",
+   "implication": "Onboarding quests pay Uncommon bags (campaign.snbt:61-63, 88-91)."
+  },
+  {
+   "date": "2026-09-09",
+   "quote": "im getting way toos many rare loot bags...i need them to be rare right? / after completing wave 1 i got 2 legendary bags",
+   "implication": "Rare and Legendary bags must stay scarce, so quest rewards must not flood the high tiers. This matters more in multiplayer, where every player claims each reward."
+  },
+  {
+   "date": "2026-09-10 / 2026-09-11",
+   "quote": "can we reduce the chance of getting a totem of undying from a loot bag / im getting too many tokens of undying. this item needs to be super rare",
+   "implication": "No totem rewards beyond the single capstone."
+  },
+  {
+   "date": "2026-09-25",
+   "quote": "change to a a quest gives an amulet rather than being able to craft it... not having this quandry as to whether i stay and wear the amulet or go by putting it on the pedestal",
+   "implication": "A reward can be a unique item whose value is the choice it creates. It is one per player and must not be duplicated."
+  },
+  {
+   "date": "2026-09-03 / 2026-09-28",
+   "quote": "This bag contains 1 super rare item like a cool weapon or armouyr piece, or some kind of tech upgrade (with an 'orangey vertical falir', Diablo 3 style) / 'What should be inside?'='1 standout item (Recommended)'",
+   "implication": "The top-tier reward is one standout item with a visible effect (an orange Loot Beams beam). On 2026-09-28 the user chose 'Neither, keep as built' for additions to that pool."
+  },
+  {
+   "date": "2026-09-04 / 2026-09-05",
+   "quote": "can we have fire only when opeing a loot bag / i thought the mod that we installed has it appear in a cooler way and you can tweak the theme",
+   "implication": "Rewards are revealed through a themed popup on bag open (Pick Up Notifier via reflection), not as chat lines."
+  },
+  {
+   "date": "2026-09-30",
+   "quote": "cheap and cheerful quest should reward 6 wooden stakes / the better than nothing quest should give 4 spike traps as reward instead of the iron",
+   "implication": "A trap or craft quest pays out more of the thing it just taught, so the player can use it immediately (campaign.snbt:550-552, 583-585)."
+  },
+  {
+   "date": "2026-09-27 / 2026-09-30",
+   "quote": "'How should pedestal upgrades... be paid for?'='XP levels' / Can you make the pedestal upgrades cost slightly more xp.",
+   "implication": "XP now has a shared use: upgrades cost 6/12/18 levels (pedestal_upgrades.js:15). Whether XP rewards are now wanted again is the user's call; don't assume."
+  },
+  {
+   "date": "2026-09-08",
+   "quote": "have the shrapnel/scrap be part of the loot table in loot bags",
+   "implication": "No second currency. With the bounty shop binned on 2026-09-26, rewards are items and bags, not spendable points."
+  },
+  {
+   "date": "2026-09-06",
+   "quote": "because we start with the rolling machine anc the press, I dont want those specific items in the loot bags table.",
+   "implication": "Never put the output of a machine already placed at home into loot, including reward bags (working principle at docs/IDEAS.md:149-159)."
+  }
+ ],
+ "multiplayer_context": [
+  "How they play: solo on the CurseForge instance; over LAN with saxonie (2026-09-10: 'there are 2 players playing LAN'; 2026-09-25: 'a player has joined on LAN... group name Bob, player saxonie'); and on a dedicated server hosted on the user's PC at D:/mc-servers/tower-defense-modpack since 2026-09-11 ('Start fresh'). Three players played on 2026-09-12 ('What made the wave feel too hard with 3 players'='Just too many enemies overall').",
+  "People: the user plays as Halahad86. Friends are saxonie and peterbug (2026-09-12: 'peterbug is the player I want in the party. inviet sent'). The FTB Teams party is 'Bob2' (2026-09-12: 'Bob2 is the party name lol not another player'), called 'Bob' on 2026-09-25. Everyone is in ONE party, so quest progress is shared.",
+  "Friends install the pack from a CurseForge zip the user sends (2026-09-10: 'where can I find the zip file? i want to share it for multiplayer'). Memory notes the latest friend zip is 0.2.5.",
+  "Chat is blocked for some accounts. On 2026-09-12 the user reported 'all players getting https://aka.ms/JavaAccountSettings', and memory notes Halahad86 and saxonie can't open chat on a server, so FTB Teams invites had to be done by editing files. Anything that needs chat may be unusable for them on a server: typed commands such as /hardcore (taught at tips_and_tricks.snbt:277) and /pedestal, and clickable chat lines. Unverified whether '/' commands still work for them.",
+  "How quests complete: quest_milestones.js:6-12 completes a quest per player into that player's quest team. Shared milestones (horn, wave 1, 8 and 15, boss, amulet on pedestal) are recorded once per world on the marker entity and delivered to players who were offline or join later (quest_milestones.js:28, 91-115). 'Open It' and 'Wear It' fire per player (quest_milestones.js:30, 113-114).",
+  "How rewards are claimed (verified): data.snbt:6 sets default_reward_team: false, and no chapter overrides team_reward, so each party member claims every reward separately. Checked in the ftb-quests-forge-2001.4.22 jar: QuestKey.forReward keys a claim on the player's UUID unless Reward.isTeamReward() is true. A 3-player party therefore collects 3x every bag and totem reward.",
+  "Amulet: 'One per player' (2026-09-25). One 8-gold hand-in covers the whole party and each player claims their own amulet (docs/FEATURES.md:9733-9735; campaign.snbt:382).",
+  "Bounties: one world-wide count of wave-mob kills (bounty_kills.js:3), counting every player's, turret's and trap's kills. The chapter subtitle reads 'Every wave kill counts - yours, your friends' and your turrets'' (bounties.snbt:175). Each team gets each payout once (docs/PLAYTESTING.md:388-390).",
+  "Pedestal upgrades are shared world state: 'anyone can pay and everyone benefits' (pedestal_upgrades.js:1-3). The XP spent comes from the paying player.",
+  "Lootr: only the special stashes stay Lootr (2026-09-27: 'Special stashes (Recommended)'), and each player gets their own copy of a stash. Plain barrels are shared, first come first served.",
+  "Hardcore is an optional toggle (2026-09-01: 'Optional toggle (Recommended)'). It ends the run only when every player is dead (2026-09-09: 'the on death game over scenario should only trigger if all players are dead. if there is a 10s delay before a player can respawn theres a window in which a player can respawn get their body from the grave mod'). Code: hardcore_death.js:28-36.",
+  "Nothing scales with player count. The 2026-09-08 ask ('could it be scaled based on the number of players for example?') led to 'More mobs per wave, Party-wide perks', but 'Player-count scaling + perks' was binned on 2026-09-26. Waves 1-8 were trimmed after the 3-player session instead.",
+  "Late joiners get no starter gear after wave 5 (td_starterGearRemoved; docs/FEATURES.md:9807; playtest_starter_kit.js:26). All run state lives on the pedestal marker entity, not on players.",
+  "Server operations: the user restarts the server themselves (2026-09-12: 'I can cycle the server next time, just make the necessary edits when i request it'). Quest and KubeJS changes need sync_instance.sh and then sync_server.sh. The server's world dates from 2026-09-12 and is already at game over. On 2026-09-28 the user excluded building a restart-with-a-new-world path for the server.",
+  "Player explosives never hurt players or break blocks, which protects LAN friends too (2026-09-28: 'Yes, same rule (Recommended)', option text 'Covers you and LAN friends').",
+  "The Tab-for-quests keybind ships in options.txt. An earlier broken options.txt meant 'friends never got the Tab-for-quests bind' (docs/QUEUE.md:248-250); fixed 2026-09-27."
+ ],
+ "open_threads": [
+  "'Learning across playthroughs' (2026-09-09 item 11: 'i wonder if there are some other things that can be added that giev the player a feel of - Im learning stuff the more i play a game') was deferred with 'Just fix that one spoiler now'. The mid-ramp story beats route was binned on 2026-09-26, so any proposal needs a different mechanism and the user's decision.",
+  "XP rewards: most quests still pay XP levels (for example campaign.snbt:26-27, 151-152) despite 2026-09-05 'the xp is not useful'. Since 2026-09-27, XP buys shared pedestal upgrades (pedestal_upgrades.js:15). Ask the user whether XP is now a wanted reward.",
+  "Rewards multiply by party size because every player claims separately (data.snbt:6; verified in QuestKey.forReward). That conflicts with 2026-09-09 'i need them to be rare right?' and with the no-player-count-scaling stance. This has never been raised with the user. Options include marking high-tier or capstone rewards team_reward, or accepting the multiplication.",
+  "Hidden 'discovery' quests: the only precedent, 'It's Up to You Now' (made invisible until complete on 2026-09-10), was removed on 2026-09-28. Whether the user wants quests that only appear after the fact is unasked.",
+  "Chapter structure: the 2026-09-09 08:33 answer 'Topic-based chapters (Recommended)' conflicts with the fishbone approved the same day. The book today is Campaign, Tips, Bounties and Arsenal (docs/PLAYTESTING.md:216-231). Confirm whether more topic tabs are welcome.",
+  "Still waiting for real-play confirmation: the 2026-09-30 fix for 'Open It' and the bag popup (docs/QUEUE.md:48-54), the 8-gold amulet hand-in and claim (docs/QUEUE.md:113-115), and milestones reaching players who were offline (docs/PLAYTESTING.md:406).",
+  "Flexible mode still lets a hidden quest's tasks count before it is revealed (docs/FEATURES.md:9573-9576). That could bring back the 'all trigger at the same time' complaint when a branch opens.",
+  "The Arsenal chapter (built 2026-09-25 as '24 flat, dependency-free item-possession quests', docs/PLAYTESTING.md:229-231) has had no user feedback since.",
+  "Win state is undecided (docs/IDEAS.md:82-84). The campaign spine currently ends at 'No Ceiling' (wave 15, campaign.snbt:374), which fits the endurance framing.",
+  "Because quest progress is per world and a game over means a new world, players replay the whole book every run. The plan should consider whether replaying the early tutorial feels good.",
+  "'Shore It Up' (the pedestal upgrade screen) is still a checkmark (campaign.snbt:653) despite the preference for event triggers. Unverified whether opening that screen can be detected.",
+  "'Spoils of War' pays 2 emeralds (campaign.snbt:215-218). No pack script gives emeralds a use; they appear only as loot entries in structure_loot_progression.js. Their value is unverified.",
+  "Name clash: the Bounty tier 'Reaper' (bounties.snbt:141) and the boss quest 'The Reaper' (campaign.snbt:347).",
+  "Toast Control in the user's instance blocks advancement, recipe and tutorial toasts (instance config/toastcontrol-common.toml:7-13) but not modded toasts, so advancements can't serve as reward notifications. The file isn't shipped in pack/config, so friends run the mod's defaults (unverified).",
+  "The Lure Block ('Dinner Bell') numbers, 40 blocks and 60 seconds, are still unconfirmed in play (docs/QUEUE.md:331-333). The quest text depends on them.",
+  "Citation key: repo paths are relative to C:/Users/mattf/IdeaProjects/tower-defense-modpack/. Quest files are in pack/config/ftbquests/quests/ and scripts in pack/kubejs/server_scripts/. Memory notes are in C:/Users/mattf/.claude/projects/c--Users-mattf-IdeaProjects-tower-defense-modpack/memory/. Full user messages were extracted with C:/Users/mattf/AppData/Local/Temp/claude/c--Users-mattf-IdeaProjects-tower-defense-modpack/5e0b660c-c044-4693-ba72-6993f93e9770/scratchpad/full_user_msg.py. Dates are transcript UTC timestamps."
+ ],
+ "do_not_repropose": [
+  "A bounty or quest shop (FTB trade quests or QuestShop), or any spendable quest currency. Binned 2026-09-26; Shrapnel stays inside loot bags (2026-09-08).",
+  "The old multi-chapter plan (Loot Tiers / Machines / Map Expansion / Shop) or separate per-tier tabs such as Basics / Tier 1 / Tier 2. Superseded on 2026-09-03 and closed on 2026-09-26.",
+  "Per-mob 'Know Your Enemy' kill quests. Removed 2026-09-30: 'dont really like them'.",
+  "The 'Three Down' wave-3 milestone. Removed 2026-09-30.",
+  "'It's Up to You Now', or any quest or tip that gives away the wave-5 gear rust, the starter defences going dark, the longer wave gaps, horde contents or boss details.",
+  "Carrying quest progress between worlds. Dropped 2026-09-10.",
+  "Tinted colour panels behind ribs or sections. Removed 2026-09-10.",
+  "Linear progression mode. The user chose flexible with hide-until-unlocked on 2026-09-10.",
+  "Player-count scaling and party-wide perks. Binned 2026-09-26.",
+  "Mid-ramp story beats (diary page, radio crackle or distant explosion at waves 3-4), rotating wave modifiers, the boss-wave building gift, the roguelike wave choice and an invented loot-material economy. All binned 2026-09-26.",
+  "A craftable amulet, a free amulet, or an amulet in the starting kit. It is the 8-gold hand-in, one per player (2026-09-25 and 2026-09-28).",
+  "An Engineer's Manual (IE book) quest or any Diesel Generator wording (2026-09-22).",
+  "Slime Trap, Bear Trap or Cage Trap quests, or bringing those traps back (2026-09-10, 2026-09-28).",
+  "Quests for removed content: Trapcraft (igniter, fan, magnetic chest), Create (barbed wire, hand crank, 'Turn Up the Heat'), the Advanced Tower Defense turret chain, the Medieval Defense Turrets arrow turret, Boomer zombies, the Behemoth.",
+  "The repeatable 'Lost the Horn?' quest. The horn has been a note block since 2026-09-13.",
+  "Gold ingots, shields or raw iron as rewards where the user already swapped them (2026-09-06, 2026-09-09, 2026-09-30), and XP-only rewards (2026-09-05), unless the user reopens XP now that it buys pedestal upgrades.",
+  "More Totem of Undying rewards beyond the single 'No Turning Back' capstone (2026-09-11: 'this item needs to be super rare').",
+  "The diary voice on non-milestone quests, and the 'every quest ends on an open question' device (2026-09-04, 2026-09-09).",
+  "FTB '#tag' item tasks. They crashed the game on every launch in FTB Quests 2001.4.22 (docs/FEATURES.md:6006-6011).",
+  "Outputs of machines already placed at home as loot or bag contents (2026-09-06 principle, docs/IDEAS.md:149-159).",
+  "Hardcore on by default. It stays an optional toggle (2026-09-01)."
+ ]
+}

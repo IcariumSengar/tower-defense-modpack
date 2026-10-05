@@ -1,0 +1,789 @@
+{
+ "packs": [
+  {
+   "name": "FTB Quests 2001.4.22 + FTB Teams 2001.3.2 + FTB XMod Compat 2.1.x (the engine itself, verified from source)",
+   "source": "Source tag https://github.com/FTBTeam/FTB-Quests/tree/v2001.4.22 (quest/TeamData.java, quest/ServerQuestFile.java, quest/Quest.java, quest/QuestObject.java, quest/reward/*, quest/task/*, quest/ChapterImage.java, quest/loot/*, command/FTBQuestsCommands.java, client/gui/ToastQuestObject.java, client/FTBQuestsNetClient.java, item/LootCrateItem.java, forge/.../FTBQuestsForge.java) and its CHANGELOG.md; newer changelog https://github.com/FTBTeam/FTB-Quests/blob/1.21.1/main/CHANGELOG.md; FTB Teams https://github.com/FTBTeam/FTB-Teams/tree/1.20.1/main; XMod Compat https://github.com/FTBTeam/FTB-XMod-Compat/tree/1.20.1/main; FTB Library tag v2001.2.13 (TextComponentParser.java) and 1.20.1/main (ClientTextComponentUtils.java); maintainer answers in https://github.com/FTBTeam/FTB-Mods-Issues issues 181, 623, 783, 1089, 1219, 1228, 1363, 1538, 1598, 1929, 2070, 2174. Local copies: scratchpad/src/.",
+   "version_info": "Matches the installed jars listed in pack/mods/*.pw.toml: ftb-quests-forge-2001.4.22, ftb-teams-forge-2001.3.2, ftb-library-forge-2001.2.13, ftb-xmod-compat-forge-2.1.2. I read XMod at 2.1.3; the only change after 2.1.2 is an FTB Chunks event fix.",
+   "scale": "n/a (engine)",
+   "progression_presentation": "Chapter groups contain chapters, which sit in a left panel that slides out. Chapter titles are tinted by progress (not started, started, completed). A chapter shows an alert icon when the viewing player has rewards left to claim (ChapterPanel.java), and its subtitle shows as grey tooltip lines. Quests sit on a free grid joined by dependency lines: completed lines are green #64DC64 and uncompleted ones a washed-out red. Lines animate on hover, and hide_dependency_lines / hide_dependent_lines make them appear only on hover. Gating keys in 2001.4.22: dependencies plus dependency_requirement (all_completed, one_completed, all_started, one_started), min_required_dependencies, and progression_mode (linear or flexible, set per file, chapter or quest). Visibility keys: hide_until_deps_visible, hide_until_deps_complete (2001.4.9), hide_details_until_startable (the outline is visible but the quest can't be opened), invisible, invisible_until_tasks, hide_text_until_complete and optional. Also available: max_completable_dependents for exclusive branches (2001.4.13), a padlock on locked quests with a per-quest hide_lock_icon (2001.4.13), the file-level hide_excluded_quests (2001.4.17) and a per-chapter autofocus_id (2001.2.1). Visual grammar: shape (circle, square, rsquare, diamond, pentagon, hexagon, octagon, heart, gear, none), size, icon_scale, the chapter defaults default_quest_shape and default_quest_size, and tags. Chapter images take x, y, width, height, rotation, color tint, alpha, order, hover, click and dev (editor-only), plus an optional dependency quest. An image is drawn only once that quest is complete, which gives a native progressive reveal. Quest tooltips append a % progress figure (QuestButton.java). A resource pack can reskin the whole book through assets/ftbquests/ftb_quests_theme.txt, which supports selector sections ([*], [#tag], [<hex id>], ! negation) for colours, icons and lines. Pinned quests show their task progress on the HUD.",
+   "teaching": "Task types registered in 2001.4.22:\n- item (count, consume_items, only_from_crafting, task_screen_only, NBT matching)\n- checkmark\n- observation (observe_type block, block_tag, block_state, block_entity, block_entity_type, entity_type or entity_type_tag, plus a timer)\n- kill (only entity + value; counts only kills whose damage source entity is a real ServerPlayer)\n- location, structure, biome, dimension\n- advancement (+criterion), stat, xp, gamestage, fluid\n- custom (KubeJS FTBQuestsEvents.customTask with setCheck, setCheckTimer, setMaxProgress and setEnableButton)\n\nTask-level options: any task can be optional_task. If every task in a quest is optional, completing any one of them completes the quest (QuestObject.isCompletedRaw), so either/or quests are possible. require_sequential_tasks (2001.2.0) hides later tasks until the earlier ones are done, and multi-task quests show a toast for each finished task.\n\nDescription markup:\n- &-codes, plus &#RRGGBB hex colours (verified in the FTB Library v2001.2.13 parser)\n- {image:<texture> width:N height:N align:left|center|right fit:true text:\"hover\"}\n- {@pagebreak} for multi-page text\n- raw JSON text lines with clickEvent change_page (quest hyperlinks; the editor's L button inserts them)\n- {open_url:...}\n\nIn-world and contextual hooks:\n- `/ftbquests open_book <id>` has no permission requirement, so any player can click a chat link that opens a specific quest.\n- ftbquests:barrier is solid until the team completes its quest.\n- ftbquests:detector: when it receives a rising redstone signal, it force-completes its quest for every real player within a radius of 8.\n- ftbquests:screen_1/3/5/7 are in-world task screens: they show progress, accept hopper input for consume tasks, and can be skinned and made indestructible.",
+   "rewards": "Reward types:\n- item (count, random_bonus, only_one)\n- choice\n- all_table (2001.4.10)\n- random\n- loot\n- command (elevate_perms, silent; placeholders {p} {x} {y} {z} {chapter} {quest} {team} {team_id} {long_team_id} {member_count} {online_member_count})\n- custom (KubeJS customReward)\n- xp, xp_levels, advancement\n- toast: a custom toast built from the reward's title, icon and description\n- gamestage (player stages only)\n\nPer-reward settings: team_reward (tristate; the file default is default_reward_team), auto (default, disabled, enabled, no_toast or invisible; the file default is default_autoclaim_rewards, and always-invisible chapters force it on), exclude_from_claim_all, ignore_reward_blocking, and a custom title/icon.\n\nReward tables: float weights, empty_weight, use_title (the reward button shows the table title instead of 'Random Reward'), hide_tooltip, icon, and a loot_crate block {string_id, item_name, color, glow, drops{passive, monster, boss}}. Crate presets: common #92999A, uncommon #37AA69, rare #0094FF, epic #8000FF, legendary #FFC147 with glow.\n\nWhat the player sees:\n- A random reward's tooltip lists every table entry with its % chance.\n- Loot rewards and loot crates open a reveal screen (RewardNotificationsScreen). Using a crate plays an item-break sound and item particles, and using it while sneaking opens the whole stack.\n- A choice reward opens a picker.\n- Item toasts show the item name in its rarity colour.\n- An xp_levels toast reads '+N' in green.\n- Quest-complete toasts go to every online team member.\n- Chapter completion gets an 'important' toast with the UI_TOAST_CHALLENGE_COMPLETE fanfare.",
+   "multiplayer": "Progress is per FTB team; a solo player is a team of one. Task progress, completions and toasts are shared, and a party has no per-player task progress (the maintainer has said it won't be added: #1598, #1234, #783).\n\nRewards: with team_reward=false (the default), each member claims their own copy; claims are keyed by player UUID. With team_reward=true there is one copy per team, keyed by a nil UUID, and the first player to claim takes it.\n\nAutoclaim: per-player rewards go to every online member when the quest completes, and to offline members when they next log in. Team rewards go only to the player who completed the quest (fixed in 2001.4.12).\n\nParty membership: creating a party copies the creator's progress. Joining an existing party merges the joiner's progress into it (highest task progress, union of completions and claims), then immediately runs the joiner's pending autoclaims (2001.4.15). Leaving returns a player to their pre-party personal progress, but their per-player claims stay claimed (2001.3.3).\n\nRepeatable quests reset for the whole team as soon as one player has claimed all their rewards (Quest.checkRepeatable).",
+   "standout_examples": [
+    {
+     "where": "FTB-Mods-Issues #2070, maintainer desht (report was on 2101.1.24; 2001.4.22 has the same logic in Reward.forceProgress and TeamData.checkAutoCompletion)",
+     "what": "What 'Team Reward' actually means",
+     "excerpt": "If \"Team Reward\" is false, every player on the team gets the reward (it's awarded to all online players when someone claims it, and any offline players get awarded it when they next log in). If \"Team Reward\" is true, only the claiming player gets the reward.",
+     "why_it_works": "It settles the most common multiplayer confusion (#181, #1538, #2174). The 'all online players' part describes autoclaim. With manual claiming, which is this pack's default, each member clicks their own claim button."
+    },
+    {
+     "where": "ServerQuestFile.playerChangedTeam (v2001.4.22)",
+     "what": "What happens when a player joins or leaves a party",
+     "excerpt": "// player is joining an existing party team; merge all of their progress data into the party ... // player is leaving an existing party team; they get their old progress back // EXCEPT any rewards they've already claimed stay claimed! no claiming the reward again",
+     "why_it_works": "It shows what a friend who joins late will see: everything the party already finished, with their own per-player rewards waiting to be claimed. It also shows why nobody should leave or disband the party mid-run."
+    },
+    {
+     "where": "Quest.checkRepeatable (v2001.4.22)",
+     "what": "A repeatable quest resets on the first full claim",
+     "excerpt": "if (canBeRepeated() && rewards.stream().allMatch(r -> data.isRewardClaimed(player, r))) { forceProgress(data, new ProgressChange(data.getFile(), this, player));",
+     "why_it_works": "ProgressChange defaults to reset=true, so the quest is marked not completed for the whole team. Teammates who haven't claimed yet lose that cycle's reward unless it is autoclaimed. This affects the pack's repeatable Zombie Masher quest."
+    },
+    {
+     "where": "ChapterImage.shouldShowImage (v2001.4.22)",
+     "what": "Images that appear when a quest is completed",
+     "excerpt": "return !editorsOnly && (dependency == null || teamData.isCompleted(dependency));",
+     "why_it_works": "A chapter background (a map, poster or sketch) can fill in as the team progresses, with no scripting. It shows 'how far along am I' at a glance, like a Pip-Boy screen."
+    },
+    {
+     "where": "client/gui/ToastQuestObject.java (v2001.4.22)",
+     "what": "Built-in celebration hierarchy",
+     "excerpt": "public boolean isImportant() { return object instanceof Chapter; } ... if (object instanceof Chapter) { handler.play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1F, 1F)); }",
+     "why_it_works": "Only finishing a chapter plays the fanfare; quests and tasks get quiet toasts. So chapter size decides how often players hear a celebration, and any other big moment needs a command reward or KubeJS."
+    },
+    {
+     "where": "FTB XMod Compat KubeJSIntegration.onCompleted (1.20.1 branch)",
+     "what": "Completion events addressed by tag",
+     "excerpt": "FTBQuestsKubeJSEvents.OBJECT_COMPLETED.post(ScriptType.SERVER, event.getObject(), kjsEvent); for (String tag : object.getTags()) { FTBQuestsKubeJSEvents.OBJECT_COMPLETED.post(ScriptType.SERVER, '#' + tag, kjsEvent); }",
+     "why_it_works": "One FTBQuestsEvents.completed('#milestone', ...) handler can play a title and sound for the whole party on every quest tagged milestone. The event provides onlineMembers and notifiedPlayers."
+    }
+   ],
+   "weaknesses": [
+    "A party has no per-player task progress. A tutorial task one friend completes is completed for everyone, so the others can skip the lesson. The maintainer called adding it an 'extremely fundamental change' and it is not planned (#783, #1228, #1598).",
+    "Many players and pack makers read 'Team Reward' backwards (#181, #1538, #2174 'No way to disable team progress????').",
+    "Leaving or disbanding a party reverts a player to their pre-party progress. Maintainer (#623): 'quest progress is *always* tied to the team, never to the individual player'.",
+    "Repeatable quests: the first full claim resets the quest for the team (code above). Two bugs are still open: #1219 (repeatables give no rewards without autoclaim, reported on 2001.4.6) and #1929 (repeatable + autoclaim + team reward duplicates rewards in parties, reported on 2001.4.17).",
+    "The 2001.4.22 kill task has only entity + value: no tags, NBT or custom names. Kills by turrets, traps or fake players never count.",
+    "Non-consuming item tasks track the largest stack any single member holds, not the team total. Consuming tasks are additive.",
+    "Claim All in 2001.4.22 claims everything at once; the claim list you can review first arrived in 2101.1.23. Choice and loot rewards are always excluded from it.",
+    "Item reward toasts never show the count in 2001.4.22. ItemReward.claim sends DisplayItemRewardToastMessage(item, size) after the give-loop has counted size down to 0, so the 'Nx ' prefix is skipped. I verified this in the code but did not test it in game.",
+    "Completing a quest plays no fanfare; only completing a chapter does."
+   ]
+  },
+  {
+   "name": "Plants vs. Zombies (PopCap, 2009): Adventure Mode, Suburban Almanac, zombie notes",
+   "source": "plantsvszombies.fandom.com via the MediaWiki API: Template:AlmanacP1/Peashooter, Template:AlmanacP1/Wall-nut, Template:AlmanacZ1/Conehead Zombie, Level 1-1, Level 1-2, Level 1-1/Gallery, Note, Adventure Mode, Unsodded",
+   "version_info": "Original PC game. Per the wiki, the later FREE and Replanted versions redesigned Adventure Mode around a level selector.",
+   "scale": "5 areas of 10 levels each; most levels grant a new plant",
+   "progression_presentation": "One continuous Adventure track: Day, Night, Pool, Fog, Roof. 'In Adventure Mode, the player starts out with only a Peashooter. The fifth level in each area is a bonus level ... The tenth level of every stage is a conveyor-belt level.' The last zombie of a level drops a seed packet, followed by a full-screen reveal card ('You got the Sunflower!'), so the next tool is every level's visible prize. The playfield grows with the player: Level 1-1 has a single lawn row, Levels 1-2 and 1-3 have three lanes, and then the whole lawn opens. A zombie note after level 9 of each area foreshadows a format change at level 10. Later versions show each level's reward under it in the level selector.",
+   "teaching": "Learn by doing, with step prompts that each appear only after the previous step is done. In Level 1-1: 'Click on a seed packet to pick it up!', then 'Click on the grass to plant your seed!', then 'Nicely done!', then 'Click on the falling sun to collect it!'. One new plant per level means one new concept per level, and each can be used immediately. The Suburban Almanac gives every plant and zombie a card with one functional sentence, a stat word, the cost/recharge, and a short joke story.",
+   "rewards": "The reward is almost always the next tool (a seed packet). Occasionally it is an item or a minigame unlock, replays give money bags, and level 9 of each area gives a story note. Each reward gets its own reveal screen.",
+   "multiplayer": "The console versions add co-op, and their co-op note is a joke ('Dear you, Please do not play Co-Op. So not fair. Seriously. Also, do not apply butter.'). I found no co-op-specific progression.",
+   "standout_examples": [
+    {
+     "where": "Suburban Almanac: Peashooter (Template:AlmanacP1/Peashooter)",
+     "what": "Three-layer card: function, stat, flavour",
+     "excerpt": "Peashooters are your first line of defense. They shoot peas at attacking zombies. | Damage: normal | How can a single plant grow and shoot so many peas so quickly? Peashooter says, \"Hard work, commitment, and a healthy, well-balanced breakfast of sunlight and high-fiber carbon dioxide...\"",
+     "why_it_works": "The first sentence is all a player needs mid-fight, and the stat word places the plant against the other tools. The joke is optional reading that gives the item personality."
+    },
+    {
+     "where": "Suburban Almanac: Conehead Zombie",
+     "what": "Enemy card that leads with the mechanic",
+     "excerpt": "His traffic cone headpiece makes him twice as tough as normal zombies. | Toughness: medium | ...something made him stop, made him pick up a traffic cone and stick it on his head. Oh yeah. He likes to party.",
+     "why_it_works": "The mechanical fact ('twice as tough') comes first, and the visual cue (the cone) is the mechanic. It is a direct template for a Know Your Enemy entry."
+    },
+    {
+     "where": "Level 1-1 dialogue",
+     "what": "Prompts that follow the player's actions",
+     "excerpt": "Tutorial: Click on a seed packet to pick it up! ... Tutorial: Click on the grass to plant your seed! ... Tutorial: Nicely done! ... Tutorial: Click on the falling sun to collect it! ... Tutorial: Don't let the zombies reach your house!",
+     "why_it_works": "Each instruction appears only after the previous action. The level is one lane wide, so nothing else competes for attention."
+    },
+    {
+     "where": "Zombie notes (Note page)",
+     "what": "In-character warning before a format change",
+     "excerpt": "the note is earned after completing the ninth level in an area ... Day note (translation: Hello, we are about to launch an all-out attack on your house. Sincerely, the Zombies)",
+     "why_it_works": "A funny, in-character warning says something different is coming without explaining it. It fits the pack's boss every 10th wave."
+    },
+    {
+     "where": "Levels 1-1 to 1-3 (Level 1-1 and Unsodded pages)",
+     "what": "The playfield grows as the player gets better",
+     "excerpt": "It and Player's House - Day 1 are the only levels with one row on the lawn. / ...only three lanes that can be planted on, similar to level 1-2, and level 1-3",
+     "why_it_works": "The space expands as skills grow, the same shape as the pack's world border growing as waves are cleared."
+    }
+   ],
+   "weaknesses": [
+    "The in-game 'Help' is a zombie joke note ('When the Zombies show up, just sit there and don't do anything. You win the game when the Zombies get to your houze.'). It is charming but gives no help; real help was in the readme/manual.",
+    "Strictly linear, with no reward choice. On replays, Crazy Dave even forces three random seed slots."
+   ]
+  },
+  {
+   "name": "Kingdom Rush (Ironhide): Encyclopedia, Tips & Tricks, stars and upgrades",
+   "source": "kingdomrushtd.fandom.com via the MediaWiki API: Encyclopedia, Kingdom Rush, Star, Upgrades, Dark Knight, Goblin",
+   "version_info": "Kingdom Rush 1, Frontiers and Origins use stars to buy upgrades. Vengeance and Alliance use separate upgrade points.",
+   "scale": "Six upgrade trees with five linear upgrades each (KR1, Frontiers, Origins)",
+   "progression_presentation": "A campaign map of stages. Each stage awards 1-3 stars based on lives left: 18-20 lives give 3 stars, 6-17 give 2, and 1-5 give 1. Three stars unlock that stage's Heroic and Iron challenges, which are worth 1 star each. Stars are spent on six upgrade trees, so the total star count is both the progress meter and the currency.",
+   "teaching": "'An in-game encyclopedia records all new information as it is revealed in the game, such as tower and enemy statistics.' The Enemies page 'lists their statistics and special abilities, and updates whenever a new enemy is encountered.' Each entry is one italic line plus a stat block (HP, armor, magic resist, speed, lives taken, bounty). Tips are single sentences that 'pop-up during levels as you progress', and on the Flash and Steam versions 'if a player lose, then the game will randomly give a player a tip for better playing.' The wiki search summary also says enemies get info boxes in levels when they first appear, but I could not confirm that in the primary wikitext.",
+   "rewards": "Stars graded by performance, which buy permanent tower and spell upgrades; challenge modes unlock with 3 stars.",
+   "standout_examples": [
+    {
+     "where": "Encyclopedia: Dark Knight",
+     "what": "One-line identity plus the stat that matters",
+     "excerpt": "Full plated corrupted knights, almost impervious to damage. (infobox: armor = High (80%), speed = Slow (0.7), lives = 1, bounty = 25)",
+     "why_it_works": "The line says what the enemy feels like and the armor stat says what to do about it (magic or artillery). Direct template for enemy cards."
+    },
+    {
+     "where": "Encyclopedia: Tips & Tricks",
+     "what": "Tips one sentence long",
+     "excerpt": "\"Support barracks with ranged towers to maximize enemy exposure.\" / \"Artillery works best against high concentration of enemies.\" / \"Magic damage is the best way to deal with armored enemies.\"",
+     "why_it_works": "Each tip is one actionable sentence, short enough to show in a toast or chat line."
+    },
+    {
+     "where": "Tips & Tricks after a loss",
+     "what": "Teaching triggered by failure",
+     "excerpt": "On flash and Steam, if a player lose, then the game will randomly give a player a tip for better playing.",
+     "why_it_works": "A player who just lost is most receptive to a hint, and the tip costs nothing to show."
+    },
+    {
+     "where": "Star page",
+     "what": "Graded mastery that unlocks more content",
+     "excerpt": "18-20 lives: 3 stars / 6-17 lives: 2 stars / 1-5 lives: 1 star ... Unlocking a level's Heroic and Iron Challenge requires the player to obtain 3 stars in Campaign mode for that level.",
+     "why_it_works": "Lives map one-to-one onto pedestal HP. It gives skilled players a stretch goal without blocking weaker ones."
+    }
+   ],
+   "weaknesses": [
+    "In the Flash version, 'clicking on the Twitter and Facebook buttons gives 1 star each', which is a meaningless reward.",
+    "Fully upgrading everything requires replaying Heroic and Iron challenges, a known grind.",
+    "Per the Encyclopedia page, some special enemies and endless-mode chiefs never appear in the Encyclopedia."
+   ]
+  },
+  {
+   "name": "Bloons TD 6 (Ninja Kiwi): Quests, Achievements, Monkey Knowledge",
+   "source": "bloons.fandom.com via the MediaWiki API: Quests (BTD6), Achievements (BTD6), Monkey Knowledge (BTD6)",
+   "version_info": "Quests were added in v36.0; the quest page is marked outdated as of v53. The achievement counts are for v40.",
+   "scale": "33 quests; 151 achievements (138 visible, 13 hidden); Monkey Knowledge takes 134 points to complete",
+   "progression_presentation": "The player's account level gates content. 'The minimum level requirement to unlock a quest is at Level 10', and from Level 30 'almost every level up will reward the player with 1 Knowledge Point'. Points are spent in 6 Monkey Knowledge trees, where deeper rows require points already invested in that tree. There are four kinds of quest (Tales, Challenges, Tutorials, Experiments), and story quests are listed at the top.",
+   "teaching": "Each hero gets a Tutorial quest built from custom rounds. 'A tutorial of Quincy and his abilities, plus a number of custom rounds to help introduce some of his strengths. After successfully beating a few rounds, the player is told to place more towers.' Multi-part Tales chain challenges that isolate one mechanic. For example, the Epic Beast Quest teaches the Beast Handler's 'Merge system' through three restricted subquests.",
+   "rewards": "Quests reward powers (consumables), Monkey Money and Insta Monkeys (pre-upgraded towers). Achievements: 'Completing an achievement will enable the player to claim a set of specified rewards. The rewards for completed achievements are manually collected.' Rewards are often themed to the task.",
+   "standout_examples": [
+    {
+     "where": "Achievement: BFB Brawler",
+     "what": "The reward is a tool for the thing you just mastered",
+     "excerpt": "description = Destroy 10,000 BFBs | reward-1 = Monkey Money,500 | reward-2 = MOAB Mine,x3",
+     "why_it_works": "Killing many big blimps earns a consumable that kills big blimps. A kill ladder in the pack can pay out traps aimed at the same enemy."
+    },
+    {
+     "where": "Quest: Quincy, Student of Quincy (Tutorial)",
+     "what": "A tutorial that rewards with consumables",
+     "excerpt": "Requirements: Level 10 | Rewards: 2x Monkey Boost, 2x Energizing Totem, 2x Super Monkey Storm | Complete a custom scenario with only Quincy and his abilities, and then finish up the strengthened custom rounds with additional defense.",
+     "why_it_works": "The mechanic is isolated first (only the hero), then other towers are added, and the payout is useful one-shot items."
+    },
+    {
+     "where": "Monkey Knowledge",
+     "what": "Points from levelling feed upgrade trees",
+     "excerpt": "Starting from Level 30, almost every level up will reward the player with 1 Knowledge Point to use. Some upgrades require a certain amount of points to be spent in the tree before being unlocked",
+     "why_it_works": "XP has a visible sink with meaningful build choices, which is the role pedestal upgrades bought with XP levels could fill."
+    }
+   ],
+   "weaknesses": [
+    "Shortcuts are sold: 'it costs $9.99 USD' to jump to Rank 30, and Monkey Knowledge points sell for $0.99.",
+    "Hero tutorials are locked until Level 10 or higher, so players often use heroes long before the tutorial is available.",
+    "151 achievements is a sprawling checklist."
+   ]
+  },
+  {
+   "name": "Orcs Must Die! / Orcs Must Die! 2 (Robot Entertainment): skulls, trap unlocks, career milestones",
+   "source": "orcsmustdie.fandom.com via the MediaWiki API: Skull, Spike Trap",
+   "version_info": "Skull rules differ between OMD1 and OMD2; both are quoted.",
+   "progression_presentation": "Each level awards skulls for performance, and skulls buy trap upgrades. In OMD2, 'Of the 5 skulls earnable in the maps, 4 are based on how many Rift Points are left when the level is complete, and the remaining one is earned if the level is complete within the level's par time.' Repeatable bonus skulls stack on top.",
+   "teaching": "Traps arrive one per level. 'The Spike Trap is a floor placed Damage Trap introduced on The Hallway, level 1.' Each trap has a humorous lore blurb and a stat infobox (cost, damage, reset time, upgrade cost).",
+   "rewards": "Skulls, a single currency that buys trap upgrades. Example: 'Poisoned Spike Trap Cost: 8 Skulls'.",
+   "multiplayer": "There is a co-op-only bonus: 'Perfect Buddy Victory, 1 skull: Don't lose any Rift Point in co-op game.' Skulls picked up mid-mission are personal: '1 for each skull picked up during the mission (dropped by enemies), it is not shared with the other player.'",
+   "standout_examples": [
+    {
+     "where": "Skull page: bonus skulls",
+     "what": "Career kill milestones",
+     "excerpt": "100 Career Kills, 1 skull ... 1000 Career Kills, 1 skull: Kill 1000 enemies. 5000 Career Kills, 5 skulls ... 100000 Career Kills, 10 skulls: Kill 100000 enemies.",
+     "why_it_works": "A long-tail kill ladder like the pack's Bounties, and the reward grows at the big thresholds."
+    },
+    {
+     "where": "Spike Trap lore",
+     "what": "Flavour text for a trap",
+     "excerpt": "Skewer entire groups of orcs where it hurts the most – in the soles of their tender, moisturized feet. A hallway lined with spike traps is a perfect addition to the ambience of any rift fortress.",
+     "why_it_works": "One joke plus a placement hint (line a hallway), which teaches how to use the trap while entertaining."
+    },
+    {
+     "where": "Skull page: OMD2 grading",
+     "what": "Performance graded by remaining lives and time",
+     "excerpt": "4 are based on how many Rift Points are left when the level is complete, and the remaining one is earned if the level is complete within the level's par time.",
+     "why_it_works": "Rift points map onto pedestal HP and par time onto clear speed, so the pack already tracks both."
+    }
+   ],
+   "weaknesses": [
+    "Personal skull pickups are not shared in co-op, which can create inequality between partners.",
+    "Fully upgrading traps encourages replaying levels for skulls."
+   ]
+  },
+  {
+   "name": "They Are Billions (Numantian Games): campaign Technology Tree",
+   "source": "they-are-billions.fandom.com via the MediaWiki API: Technology Tree, Research",
+   "version_info": "The New Empire campaign",
+   "scale": "The full tree costs 14,220 research points, but at most about 10,950 can be earned",
+   "progression_presentation": "A campaign tech tree bought with research points. 'Research points are earned by completing colony missions and collecting loot in scouting missions.' 'The campaign starts with 50 Research points. You can collect up to 9,950 Research points during the campaign, and extra 1,000 points will be rewarded after completing The Goddess of Destiny. The whole technology tree costs 14,220 points to complete.' Inside each mission, research is tiered by buildings: Wood Workshop, then Stone Workshop, then Foundry.",
+   "teaching": "Each technology has a one-line description. The starting tech reads 'Basic technology based on steam and wind energy. The power grid is extended wirelessly using Tesla Towers.' New units and buildings are unlocked into the next mission.",
+   "rewards": "Research points from main missions and loot from exploration (scouting) both feed one tree.",
+   "standout_examples": [
+    {
+     "where": "Technology Tree page",
+     "what": "Choices you can't undo",
+     "excerpt": "Completing any mission will lock the technology options you researched recently. Failing a mission or replaying a mission, on the other hand, will not lock them and allow you to rechoose technology options.",
+     "why_it_works": "You can never own everything, so each pick says something about your strategy, and failure lets you try a different build."
+    },
+    {
+     "where": "Technology Tree page",
+     "what": "Exploration feeds base progress",
+     "excerpt": "Research points are earned by completing colony missions and collecting loot in scouting missions.",
+     "why_it_works": "It mirrors the pack's leave-to-explore choice: loot from ruins beyond the border could fund defences at home."
+    }
+   ],
+   "weaknesses": [
+    "Locking research on mission completion punishes experimentation unless the player knows about the replay workaround."
+   ]
+  },
+  {
+   "name": "7 Days to Die (The Fun Pimps): Basic Survival tutorial chain, trader quest tiers, shared quests",
+   "source": "7daystodie.fandom.com via the MediaWiki API: Tutorial Quests, Quests, Traders",
+   "version_info": "The tutorial listing is per Alpha 21.2 and may differ in 1.0 and later. The trader tier points and the Quest Limiter are per v2.4 b7.",
+   "scale": "8 tutorial quests; trader tiers 1-6",
+   "progression_presentation": "The tutorial is a strictly linear chain of 8 quests (Basic Survival 1-8), each handing over the next ('Gives Quest: Basic Survival 2'). Trader jobs are tiered: 'Tier 1 require 10 points to complete, with each T1 quest giving 1 point' up to 'Tier 6 require 60 points to complete, with each T6 quest giving 6 points'. After enough jobs, a special quest sends the player to another trader in a new biome.",
+   "teaching": "An in-world letter opens the game, then a gather -> craft -> place sequence repeats, each step one objective. Basic Survival 1 is 'Gather 10 Plant Fibers. Craft a Bedroll. Place a Bedroll.' Later steps cover a stone axe, clothing, a club, a bow, a building block (place and upgrade) and a campfire.",
+   "rewards": "Tutorial steps give a token 50 exp each, then the finale gives '4 skill points for Skills and Perks' and leads to the trader. Trader jobs pay XP plus Dukes plus a reward the player picks. After enough jobs, the trader gives '2000 dukes and the player will get to pick some loot'. A perk upgrade, The Daring Adventurer, makes the last tier 'allowing the player to choose two rewards'.",
+   "multiplayer": "From the Quests page: 'All quest objectives are shared except fetch objectives.' 'Fetch objectives require every player to locate their own White River Supplies.' 'Every player must turn in the shared quest individually. Every player gets their own reward upon turning it in, but the random rewards may be different between players.' 'Turning in a shared quest does count towards the completion of the quest tier.' High tiers 'should be reserved for teams instead of solo-play.'",
+   "standout_examples": [
+    {
+     "where": "Tutorial Quests: opening letter from Noah",
+     "what": "Tutorial framed as a letter from a stranger",
+     "excerpt": "Dear Friend, The wasteland can be an unforgiving place, I found you naked and left for dead with no supplies. ... Enclosed is a short guide to help you survive. If you complete it, we just might take in a new citizen.",
+     "why_it_works": "An in-world voice explains why there is a tutorial and promises a destination, much like the pack's 'diary from a previous soul'."
+    },
+    {
+     "where": "Basic Survival 1: Craft a Bedroll",
+     "what": "Micro-steps inside one quest",
+     "excerpt": "Task 1: Gather 10 Plant Fibers. Task 2: Craft a Bedroll. Task 3: Place a Bedroll. Reward: 50 exp. Gives Quest: Basic Survival 2.",
+     "why_it_works": "Gather, craft, then place teaches the whole loop of one item, and every step is verifiable."
+    },
+    {
+     "where": "Quests page: sharing",
+     "what": "Shared progress, personal payout",
+     "excerpt": "Every player must turn in the shared quest individually. Every player gets their own reward upon turning it in, but the random rewards may be different between players.",
+     "why_it_works": "This is exactly FTB's default (team progress, per-player claims, per-player random rolls), presented as a feature."
+    },
+    {
+     "where": "Traders: Opening Trade Routes",
+     "what": "Breadcrumb toward the frontier",
+     "excerpt": "We are expanding trade routes to the {General Direction}. Tell the folks at {Trader} that our dukes are shiny and they will have a reward and more work for you.",
+     "why_it_works": "It points the player outward with a direction and a promise, the way diary pages could point toward the next ruin."
+    }
+   ],
+   "weaknesses": [
+    "The tutorial rewards are token amounts (50 exp each) until the final 4 skill points.",
+    "v2.4 added a 'Quest Limiter parameter (base is three), which limits the amount of quests ... per day that count towards the player's quest tier level', which is friction for players who binge."
+   ]
+  },
+  {
+   "name": "Project Zomboid (The Indie Stone): skill books, Life and Living TV",
+   "source": "pzwiki.net was blocked (Cloudflare 403), so I used a third-party guide: https://xgamingserver.com/blog/project-zomboid-skills-leveling-guide/ (Build 41 with B42 notes). The multiplier ladder came from search summaries of pzfans.com and xgamingserver.",
+   "version_info": "Build 41, with notes on Build 42. These come from a secondary source and are not checked against the official wiki.",
+   "progression_presentation": "Skills level by doing. Five volumes of skill books match five skill bands, at x3, x5, x8, x12 and x16 (secondary source).",
+   "teaching": "'A book does not grant XP directly; instead it multiplies the XP you earn from doing the activity.' 'Reading is also progressive: every 10% of pages you finish unlocks 10% of the book's maximum bonus.' The Life and Living TV show teaches early skills, but it 'only broadcasts during roughly the first nine in-game days'.",
+   "rewards": "Knowledge rewards that multiply practice rather than replace it.",
+   "standout_examples": [
+    {
+     "where": "xgamingserver guide",
+     "what": "A reward that amplifies doing",
+     "excerpt": "A book does not grant XP directly; instead it multiplies the XP you earn from doing the activity.",
+     "why_it_works": "The player still has to play, but faster. Quest rewards should likewise supply the materials for the next attempt, not the finished result."
+    }
+   ],
+   "weaknesses": [
+    "'the multiplier switches off once you have leveled past the range', so books become dead loot.",
+    "The TV teaching window closes for good: per the guide, Life and Living airs only during roughly the first nine in-game days and stops entirely once the power grid goes down."
+   ]
+  },
+  {
+   "name": "State of Decay 2 (Undead Labs): primary goals, Legacies, Boons, Camp Osprey tutorial",
+   "source": "stateofdecay.fandom.com via the MediaWiki API: Goals, Legacies, Camp Osprey, Mobilization (the Legacies page is a stub)",
+   "progression_presentation": "Four always-visible Primary Goals: 'Establish a Home and Explore the Region / Promote a Community Member to Leader / Clear Your Town of Plague Hearts / Define your Community's Legacy'. The choice of leader type (Builder, Sheriff, Trader or Warlord) branches the late story.",
+   "teaching": "The tutorial at Camp Osprey teaches the core threat through what happens to you: 'A blood plague zombie suddenly attacks and bites one of the survivors, infecting them with blood plague.' A doctor then explains that it can be cured 'with the proper facilities and supplies'. Starting missions such as 'A New Home' and 'Healing The Sick' teach the base-building mechanics.",
+   "rewards": "Finishing a Legacy lets you 'choose a Boon to provide an additional benefit when you begin your next Community'. For example, Mobilization delivers 'an assortment of weapons and ammo ... to their locker when they start a community.'",
+   "standout_examples": [
+    {
+     "where": "Goals page",
+     "what": "A short list of macro goals that answers 'how far along am I'",
+     "excerpt": "Establish a Home and Explore the Region / Promote a Community Member to Leader / Clear Your Town of Plague Hearts / Define your Community's Legacy",
+     "why_it_works": "Four lines cover the whole arc. A quest book spine of 4-6 big nodes does the same job."
+    },
+    {
+     "where": "Camp Osprey tutorial",
+     "what": "Teaching through a scripted problem",
+     "excerpt": "A blood plague zombie suddenly attacks and bites one of the survivors, infecting them with blood plague. ... the only surviving doctor ... reveals that we can heal the plague with the proper facilities and supplies.",
+     "why_it_works": "The mechanic arrives as a personal problem with a stated solution, which creates urgency to learn."
+    }
+   ],
+   "weaknesses": [
+    "Boons carry over between runs; FTB Quests progress is per world, so the pack can't do this natively.",
+    "The wiki pages are stubs, so detail is thin."
+   ]
+  },
+  {
+   "name": "Dying Light (Techland): XP by doing, night bonus, nightly airdrop, co-op challenges",
+   "source": "dyinglight.fandom.com via the MediaWiki API: Night, Skills, Dying Light",
+   "progression_presentation": "Three skill trees each level by their own activity. 'Engaging in combat with enemies will help players to earn Power Points while performing parkour movement can earn Agility points. Completing missions, challenges and quests will help players to earn Survival points.' Maxed trees unlock Legend skills.",
+   "teaching": "Day and night are announced on screen: Crane 'will raise his watch ... until the onscreen message \"Night is Coming\" announces the official changeover.'",
+   "rewards": "'At night killing any infected does earn players double points for the combat skill tree, whilst running/doing parkour at night earns double points for the agility skill tree.' 'During each night around 00:00 ingame an airdrop will spawn, before being stolen promptly at about 08:00.'",
+   "multiplayer": "Four-player co-op with world challenges: 'Two challenges were showcased with one being a fight to kill as many infected as possible and the other being a race to an airdrop.'",
+   "standout_examples": [
+    {
+     "where": "Night page",
+     "what": "Risk-reward multiplier during the dangerous phase",
+     "excerpt": "At night killing any infected does earn players double points for the combat skill tree, whilst running/doing parkour at night earns double points for the agility skill tree.",
+     "why_it_works": "The scary phase pays more, which parallels the pack's waves at locked night."
+    },
+    {
+     "where": "Dying Light page: co-op",
+     "what": "Friendly competition inside co-op",
+     "excerpt": "Two challenges were showcased with one being a fight to kill as many infected as possible and the other being a race to an airdrop.",
+     "why_it_works": "A race to a crate is natural for the pack's airdrop every 5th wave."
+    }
+   ],
+   "weaknesses": [
+    "'Going out at night for newer players can be a very daunting experience', so a reward multiplier alone doesn't onboard players."
+   ]
+  },
+  {
+   "name": "Fallout 4 (Bethesda): Sanctuary settlement quest, perk chart, Pip-Boy Data tab, terminal voice",
+   "source": "fallout.fandom.com via the MediaWiki API: Sanctuary, Fallout 4 perks, Pip-Boy 3000 Mark IV, Vault Boy, Vault 111 terminal entries",
+   "progression_presentation": "The Pip-Boy Data tab 'is mainly used as a means to keep track of overall progression'. It shows 'Quests: All current and completed quests and miscellaneous objectives' and 'Workshops: ... current population, food and water production, defense, the number of beds and total settlement happiness.' The perk chart is a single Vault-Tec poster: it 'does not follow a strict \"tree\" format; any perk may be selected in any order so long as its base SPECIAL requirement is met', and higher ranks require higher levels. Vault Boy illustrates nearly every stat and perk; Leonard Boyarsky described 'the \"cards\" ... showing him doing all the different things in humorous ways.'",
+   "teaching": "Settlement building is taught by Sanctuary, one need at a time, each tracked as a percentage meter, with a check-in with Sturges between steps: beds, then water, then food, then defenses. The quick walkthrough adds the hidden rules ('beds ... must be inside a building to count'; 'A single turret will provide enough defense rating to complete the quest').",
+   "rewards": "Sanctuary pays only '150+ XP'; the real payoff is the working settlement. Perk points come from levelling.",
+   "standout_examples": [
+    {
+     "where": "Sanctuary quest stages",
+     "what": "A build quest split into percentage meters",
+     "excerpt": "Build sheltered beds for Sanctuary settlers (<Global=Min01BedPercent>%) / Talk to Sturges / Provide clean water ... / Provide food ... / Build defenses for Sanctuary (<Global=Min01SafetyPercent>%)",
+     "why_it_works": "Each sub-goal has a visible meter and a check-in. It could be done as sequential tasks in one quest, for example taking the fort from wood to stone to traps."
+    },
+    {
+     "where": "Sanctuary closing line (Sturges)",
+     "what": "An NPC voice celebrates the milestone",
+     "excerpt": "Thanks for doing that. We'll all sleep better at night knowing we have some defenses set up.",
+     "why_it_works": "It frames the defenses as protecting people, which fits a diary voice."
+    },
+    {
+     "where": "Vault 111 terminal entries",
+     "what": "Cheery corporate system text over grim facts",
+     "excerpt": "Welcome to ROBCO Industries (TM) Termlink / Thank you for choosing Vault-Tec! ... Occupant status: Deceased. Cause of Death: Asphyxiation due to Life Support failure.",
+     "why_it_works": "This is the Fallout voice. Status-style quest text (pedestal integrity, wave readouts) can use it while the diary carries the emotion."
+    }
+   ],
+   "weaknesses": [
+    "The Sanctuary reward is just XP, and the check-ins with Sturges between steps are busywork.",
+    "Rules that matter (beds must be indoors) are only in wiki tips, not taught in game."
+   ]
+  },
+  {
+   "name": "Fallout 76 (Bethesda): Reclamation Day tutorial, Overseer's journals breadcrumb chain, holotapes",
+   "source": "fallout.fandom.com via the MediaWiki API: Reclamation Day, Personal Matters, Overseer's journal entry 1, Reclamation Day: As a Team (cut content), Reclamation Day: Your C.A.M.P. (cut)",
+   "version_info": "The 'Reclamation Day: ...' holotape transcripts are cut content, kept only as voice references. The Battle Ready vs Fresh Dweller choice is current after the Wastelanders and later updates.",
+   "progression_presentation": "The tutorial walks the Vault: 'Waypoints, Mister Handy attendants, and cardboard cutouts of Vault Boy will lead the player character through the Vault as the voice of the overseer plays.' The objective flips from 'Leave Vault 76' to 'Discover the Overseer's mission' and back.",
+   "teaching": "Optional teaching stations: 'Basic gameplay mechanics, including the C.A.M.P., hunger, and dehydration are explained via interaction with the various Mister Handies manning the stations.' A projected slideshow gives tips. Everything is optional, with a safety net: 'Both investigating the overseer's office and interacting with any of the stations is optional; the overseer's log - Vault 76 holotape and all of the items given at the stations will still be automatically given to the player character upon exiting Vault 76.'",
+   "rewards": "Players skip or keep the early game: 'a \"Battle Ready Dweller\" (immediately set to level 20, skipping early leveling...) or a \"Fresh Dweller\" (only set to level 2, and allowed to choose one perk card)'. There is also a flat new-player supply bundle.",
+   "multiplayer": "A cut team holotape shows the intended voice for co-op onboarding: 'Without the guidance of the Overseer, your success will be up to you. Although each of you has unique skills, we are all better together. So find a friend. Or find many!' This is cut content.",
+   "standout_examples": [
+    {
+     "where": "Personal Matters quest",
+     "what": "Diary breadcrumb chain across the map",
+     "excerpt": "I found one of the Overseer's personal journals. She grew up in Appalachia, and she left holotapes in places that were important to her. / Find the next journal in Sutton / Find the next journal in Morgantown High School",
+     "why_it_works": "Each entry is found at a meaningful place and points to the next. The chain ends in a personal payoff. This fits diary pages in the stashes beyond the border."
+    },
+    {
+     "where": "Overseer's journal, entry 1",
+     "what": "Personal diary voice",
+     "excerpt": "Overseer's... let's call these personal journals. Not an official log. Just... something for me. ... God, I miss those early days. Just... being a kid. The three of us. Our simple life. Our simple house. I wonder if it's still standing...",
+     "why_it_works": "It is intimate and short, and ends on a hook that implies the next location, the 'previous unfortunate soul' tone the user asked for."
+    },
+    {
+     "where": "Reclamation Day: exiting the Vault",
+     "what": "Veteran skip choice",
+     "excerpt": "a \"Battle Ready Dweller\" (immediately set to level 20, skipping early leveling, and allowed to choose a premade S.P.E.C.I.A.L. loadout...) or a \"Fresh Dweller\" (only set to level 2, and allowed to choose one perk card)",
+     "why_it_works": "Returning players skip the tutorial while new players get the full ramp. Useful for repeat runs and hardcore restarts."
+    }
+   ],
+   "weaknesses": [
+    "Much of the tutorial was cut: the holotape menu options still read '(TEMP)'. Tutorial content goes stale easily.",
+    "Journal entries are long audio logs. In text form they would need trimming to 2-3 lines plus a page break."
+   ]
+  },
+  {
+   "name": "Tutorial and reward design research (Andersen et al. CHI 2012; NN/g; Miyamoto; Hecker; Hearthstone; Compton; Smith & Worch)",
+   "source": "Andersen et al., 'The Impact of Tutorials on Games of Varying Complexity' (CHI 2012) https://grail.cs.washington.edu/wp-content/uploads/2015/08/andersen2012tio.pdf | https://www.nngroup.com/articles/progressive-disclosure/ | https://www.nngroup.com/articles/chunking/ | https://en.wikipedia.org/wiki/World_1-1 (cites Eurogamer 2015) | https://chrishecker.com/Achievements_Considered_Harmful%3F | https://hearthstone.wiki.gg/wiki/Card_pack_statistics | https://www.gamedeveloper.com/design/designing-interesting-decisions-in-games-and-when-not-to- (Caleb Compton) | https://niemanstoryboard.org/2011/01/14/harvey-smith-on-environmental-storytelling-and-embedding-narrative/",
+   "progression_presentation": "Progressive disclosure: 'Initially, show users only a few of the most important options. Offer a larger set of specialized options upon request.' Staged disclosure is 'useful when you can divide a task into distinct steps that have little interaction'. Miyamoto designed World 1-1 so players 'gradually and naturally understand what they're doing', and could then 'play more freely'.",
+   "teaching": "Andersen et al. (45,000+ players): 'Giving tutorial instructions as closely as possible to when they were needed, rather than out of context in an up-front manual, increased play time by 16% and progress by 40% in Foldit but had no effect in the other two games.' 'Since players seem to learn more from exploring than from reading text ... it is important to design early levels in a way that maximizes a player's ability to experiment.' A help button 'actually reduced player progress by 12% and play time by 15% in Refraction'. Tutorials paid off only in the most complex, least conventional game. NN/g defines chunking as 'breaking up content into small, distinct units of information'.",
+   "rewards": "Hecker, summarising motivation research: 'Tangible, expected, contingent rewards reduce free-choice intrinsic motivation' while 'Verbal, unexpected, informational feedback, increases free-choice and self-reported intrinsic motivation.' Hearthstone's fairness guarantees: a Legendary is 'guaranteed to get one within 40 packs from the previous Normal Legendary card drop' and 'One Legendary card is guaranteed within the first 10 packs of a new card expansion.' Compton on choices: 'your decisions need to have consequences', 'the player needs to be able to predict what the consequences will be, at least to some extent', 'your choice should not be obvious'.",
+   "standout_examples": [
+    {
+     "where": "Andersen et al. 2012, Results",
+     "what": "Instructions at the moment of need beat an up-front manual in complex games",
+     "excerpt": "Giving tutorial instructions as closely as possible to when they were needed, rather than out of context in an up-front manual, increased play time by 16% and progress by 40% in Foldit but had no effect in the other two games.",
+     "why_it_works": "A heavily modded wave-defence pack with a pedestal, an amulet trade-off and tiered traps is the 'complex, unconventional' case, so contextual teaching is worth building."
+    },
+    {
+     "where": "Hecker, Achievements Considered Harmful?",
+     "what": "Which rewards help motivation",
+     "excerpt": "Tangible, expected, contingent rewards _reduce_ free-choice intrinsic motivation / Verbal, unexpected, informational feedback, _increases_ free-choice and self-reported intrinsic motivation",
+     "why_it_works": "This explains why 76 XP-level rewards feel flat. Informational completion text and surprise bonuses do better."
+    },
+    {
+     "where": "Smith & Worch (via Nieman Storyboard)",
+     "what": "Missable discoveries",
+     "excerpt": "It has to be possible to miss some things to make finding them meaningful.",
+     "why_it_works": "It supports secret or optional lore quests (diary pages, hidden feats) instead of putting everything on the main line."
+    }
+   ],
+   "weaknesses": [
+    "The Andersen games were browser puzzle games, so the effect sizes won't transfer exactly to Minecraft.",
+    "Hecker's slides are a summary of the literature, not new data."
+   ]
+  }
+ ],
+ "patterns": [
+  {
+   "name": "Field-guide card (Almanac format) for every enemy and defence",
+   "description": "Each new enemy, trap or turret gets a quest. Its subtitle is the one-line 'what it does / how to beat it', the first description line is a compact stat strip, and the last line is an optional in-world joke or diary aside. It should be readable in 3 seconds between waves.",
+   "evidence": [
+    "Plants vs. Zombies, Suburban Almanac (Peashooter, Conehead Zombie): function sentence + 'Damage: normal' / 'Toughness: medium' + short story",
+    "Kingdom Rush, Encyclopedia (Dark Knight): 'Full plated corrupted knights, almost impervious to damage.' + Armor High (80%), Speed Slow",
+    "Orcs Must Die, Spike Trap lore + infobox (cost, damage, reset)"
+   ],
+   "ftbq_mechanism": "The subtitle holds the function line. description[0] is a stat strip using &-codes, e.g. '&7Speed &cfast &8| &7Digs &eyes &8| &7Weak to &bfire'; description[2] is '&o' flavour, and {image:...} is optional. Two task options: an observation task for 'spot it' (observe_type entity_type, to_observe <mob id>, timer ~40), or a KubeJS custom task for 'kill one'. Native kill tasks in 2001.4.22 can't match the td_wave_mob tag and ignore turret and trap kills. The reward is the counter item, not XP. Trap cards use the same format with an item or craft task.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The book already has a Know Your Enemy rib and the pack has a long trap and turret roster. The card format cuts text sharply while still teaching the counter."
+  },
+  {
+   "name": "Drip-feed: one new tool revealed per wave cleared",
+   "description": "Each authored wave unlocks and teaches exactly one new tool or threat, and the reward is that tool. Future cards are visible as locked outlines so players anticipate them.",
+   "evidence": [
+    "Plants vs. Zombies: a seed packet and 'You got the Sunflower!' card after most levels; the lawn grows from 1 row (1-1) to 3 lanes (1-2, 1-3)",
+    "Orcs Must Die: 'Spike Trap ... introduced on The Hallway, level 1'",
+    "Kingdom Rush: the Encyclopedia 'updates whenever a new enemy is encountered'"
+   ],
+   "ftbq_mechanism": "The wave-clear milestone quests, already auto-completed by the KubeJS bridge, form the spine. Each tool card depends on its wave milestone and uses hide_details_until_startable (shows the outline and padlock) or hide_until_deps_complete (fully hidden). The reward is a small stack of the new item, an item reward like the user's '6 wooden stakes'. A chapter image with a `dependency` can reveal the next part of the map or poster.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The 8 authored waves pair naturally with 8 introductions, and border growth mirrors PvZ's widening lawn."
+  },
+  {
+   "name": "Just-in-time pointer: open the right page when it matters",
+   "description": "Show teaching when a mechanic first happens, not in an up-front manual. Each first occurrence pings chat with a clickable link that opens the relevant quest, or reveals a hidden quest.",
+   "evidence": [
+    "Andersen et al. 2012: in-context instructions gave +16% play time and +40% progress in the complex game; an up-front manual did not",
+    "Kingdom Rush: Tips & Tricks 'pop-up during levels as you progress'",
+    "Fallout 76: Mister Handy stations explain the C.A.M.P., hunger and thirst at the point of use"
+   ],
+   "ftbq_mechanism": "KubeJS handlers fire on the first airdrop landing, boss spawn, pedestal hit, stash-spawner sighting or amulet equip. Each sends a tellraw line whose clickEvent run_command is '/ftbquests open_book <hex id>'; in 2001.4.22 that command needs no permission. It can also add progress to a hidden custom task, revealing a quest set to invisible:true or hide_until_deps_complete.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The pack's mechanics are unconventional (pedestal targeting, amulet border trade-off, stashes), which is exactly where Andersen found tutorials pay off. Pointers react after the event, so the user's 'keep story surprises' rule holds."
+  },
+  {
+   "name": "Failure-triggered tip",
+   "description": "Right after a loss or a near-loss, give one specific tip and a link to the matching Tips quest.",
+   "evidence": [
+    "Kingdom Rush: 'if a player lose, then the game will randomly give a player a tip for better playing'",
+    "Super Mario Bros World 1-1 (Wikipedia, citing 1UP): the first Goomba is likely to kill a novice, little progress is lost, and 'the player learns from defeat'"
+   ],
+   "ftbq_mechanism": "KubeJS hooks on GAME OVER and on pedestal HP thresholds pick a tip based on the cause (diggers, breach, boss) and link the Tips quest with '/ftbquests open_book <id>'. The Tips chapter holds optional checkmark quests of at most 2 lines each.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The game-over and pedestal-HP signals already exist, so this costs a few lines of script."
+  },
+  {
+   "name": "Micro-steps inside one quest (gather → craft → place → use)",
+   "description": "Break a setup into ordered, verifiable steps inside one quest. Each step shows only when the previous one is done, and each completion toasts.",
+   "evidence": [
+    "7 Days to Die, Basic Survival 1: 'Gather 10 Plant Fibers. Craft a Bedroll. Place a Bedroll.'",
+    "Fallout 4, Sanctuary: beds → water → food → defenses, each with a % meter and a check-in"
+   ],
+   "ftbq_mechanism": "Set require_sequential_tasks:true (2001.2.0+). Tasks: an item task with only_from_crafting for crafting, then a custom task that checks placed/linked/powered state (use setCheckTimer to throttle it), then an observation or kill. Multi-task quests toast each finished task.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "It fits multi-step setups: SecurityCraft traps (craft, place, owner/link), T3 power (generator, Flux point, Tesla Coil), and IE turrets (place, power, ammo)."
+  },
+  {
+   "name": "Graded mastery bonuses (stars and skulls)",
+   "description": "Optional bonus quests reward how well a wave was held, not just that it was held.",
+   "evidence": [
+    "Kingdom Rush: '18-20 lives: 3 stars / 6-17 lives: 2 stars / 1-5 lives: 1 star'; 3 stars unlock the Heroic and Iron challenges",
+    "Orcs Must Die 2: '4 are based on how many Rift Points are left ... the remaining one is earned if the level is complete within the level's par time'"
+   ],
+   "ftbq_mechanism": "Use optional:true quests per wave or boss, with a custom task that checks pedestal HP % (and optionally clear time) at wave end. Give them a distinct shape (diamond) and reward a higher-tier loot bag. A 'Veteran' node can use min_required_dependencies (any N perfect waves).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Pedestal HP is a direct 'lives' analogue and is already tracked. It gives skilled groups something to chase in endless Hordes."
+  },
+  {
+   "name": "Kill-count ladder with guaranteed jackpots",
+   "description": "A long ladder of kill milestones with fixed, escalating payouts. The top rung is a guaranteed jackpot, so luck never decides the big reward.",
+   "evidence": [
+    "Orcs Must Die: career kills 100 → 100000 award skulls",
+    "Bloons TD 6, BFB Brawler: 'Destroy 10,000 BFBs' → Monkey Money + MOAB Mine x3",
+    "Hearthstone: guaranteed 'within 40 packs from the previous Normal Legendary card drop'"
+   ],
+   "ftbq_mechanism": "Keep the Bounties custom tasks, which count turret and trap kills too. Give each rung a fixed item reward (the bag tier). Make the top rung can_repeat with repeat_cooldown and auto:'enabled', so every online member receives the bag before the team-wide reset (see multiplayer notes).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The Bounties chapter already exists. This keeps it and fixes how it behaves in multiplayer."
+  },
+  {
+   "name": "Transparent odds and named caches",
+   "description": "When a reward is random, show the odds and give the cache a name and icon.",
+   "evidence": [
+    "FTB Quests 2001.4.22 RewardTable.addMouseOverText lists each entry with ' [x%]'",
+    "Hearthstone pity timers and duplicate protection",
+    "Hecker: unexpected, informational feedback motivates"
+   ],
+   "ftbq_mechanism": "Give reward tables use_title:true and a bag icon, so the button reads e.g. 'Scrapper's Cache'. Use random for normal rewards: it always gives an item, shows odds and can be claimed with Claim All. Reserve loot for jackpot reveals: it opens a reveal screen, can roll nothing through empty_weight, and is excluded from Claim All. Never put empty_weight on campaign quests.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The user already prefers loot bags (BountyBags). FTB tables add visible odds for 'one of these' payouts."
+  },
+  {
+   "name": "Choice rewards that let each player specialise",
+   "description": "Offer 2-3 reward options with no obviously best pick, so each player expresses a playstyle. In co-op, friends naturally split roles.",
+   "evidence": [
+    "7 Days to Die: the trader lets 'the player ... pick some loot'; The Daring Adventurer allows choosing two",
+    "They Are Billions: the tree costs 14,220 points but at most ~10,950 can be earned",
+    "Compton: 'your choice should not be obvious'"
+   ],
+   "ftbq_mechanism": "Use a choice reward: each player chooses for themselves, it is excluded from Claim All, and it opens a picker. Point it at a table such as 8 spike traps | 1 mine kit | 64 rounds. For an exclusive path, set max_completable_dependents:1 on the parent quest (2001.4.13+).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Choices are per player, which suits 2-4 friends. Balance work is needed so one option doesn't dominate."
+  },
+  {
+   "name": "Reward the thing taught, or the next step's parts",
+   "description": "Pay out the tool just taught or the ingredients for the next tier, not generic currency and not the finished product.",
+   "evidence": [
+    "Bloons TD 6: BFB Brawler pays MOAB Mine (a tool for the same job)",
+    "Project Zomboid (secondary source): books multiply XP from doing rather than granting it",
+    "The user's own reward batch: 'cheap and cheerful quest should reward 6 wooden stakes', 'better than nothing quest should give 4 spike traps'"
+   ],
+   "ftbq_mechanism": "Use item rewards (count; only_one for unique tools) and all_table for kits. Keep xp_levels only where XP has a sink (pedestal upgrades). Respect the pack rule: never hand out a home machine's output.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "It answers the user's 'the xp is not useful' complaint, and each reward pulls the player into the next step."
+  },
+  {
+   "name": "Informational and surprise rewards",
+   "description": "Mix after-action tips and unexpected hidden bonuses in with tangible rewards.",
+   "evidence": [
+    "Hecker: 'Verbal, unexpected, informational feedback, increases ... intrinsic motivation'",
+    "Smith & Worch: 'It has to be possible to miss some things to make finding them meaningful.'"
+   ],
+   "ftbq_mechanism": "hide_text_until_complete reveals a lesson or lore line after completion. Secret feats use invisible:true + optional:true and pop with the normal toast when discovered (e.g. 'kill a brute with one mine'). The toast reward type exists in 2001.4.22, but whether it works on a server is unverified.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "It is cheap, makes tangible rewards less predictable, and suits a pack with many emergent trap combinations."
+  },
+  {
+   "name": "Always-visible spine of 4-6 macro goals",
+   "description": "A short, permanent list of big goals tells players how far along they are at a glance, and side ribs hang off it.",
+   "evidence": [
+    "State of Decay 2: four Primary Goals",
+    "Fallout 4 Pip-Boy Data tab: 'mainly used as a means to keep track of overall progression'",
+    "Fallout 4 Workshops stats panel"
+   ],
+   "ftbq_mechanism": "Give the Campaign spine nodes shape gear or hexagon, size 1.5-2 and the tag milestone. Point the chapter's autofocus_id at the current spine node. Write a chapter subtitle such as 'Waves 1-8 - hold the line'. Keep dependency lines on the spine and set hide_dependency_lines on ribs. Quest tooltips already show %.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The current fishbone already has a spine. The spine nodes just need emphasis and a clear 'where am I'."
+  },
+  {
+   "name": "Progressive reveal art",
+   "description": "Background art (a map, Vault-Tec-style poster or diary sketch) fills in as milestones complete.",
+   "evidence": [
+    "Fallout 4: the perk chart poster and Vault Boy 'cards'",
+    "PvZ (later versions): the level selector shows each level's reward under it",
+    "FTB ChapterImage.shouldShowImage draws an image only when its dependency quest is complete"
+   ],
+   "ftbq_mechanism": "Chapter images with {image, x, y, width, height, dependency:<quest id>, order, alpha, color}. Textures come from a resource pack or KubeJS assets; I did not verify the path in this pack.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "It is a strong visual of progress, but it needs custom art."
+  },
+  {
+   "name": "Three voices: arrival letter, diary on milestones, terminal readouts",
+   "description": "Mechanic quests are terse and direct. Milestones carry a personal diary voice. Status quests read like a Vault-Tec terminal.",
+   "evidence": [
+    "7 Days to Die: Noah's 'Dear Friend' letter",
+    "Fallout 76: Overseer's journal entry 1",
+    "Fallout 4: Vault 111 terminal 'Occupant status: Deceased...'",
+    "PvZ: zombie notes"
+   ],
+   "ftbq_mechanism": "Diary text goes in description lines in '&o'. Terminal style uses &#RRGGBB green (hex codes parse in FTB Library 2001.2.13). Keep 3 lines or fewer, with lore on a second page after {@pagebreak}.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "It matches the user's chosen 'Direct, diary only on milestones' voice and the Fallout TV aesthetic."
+  },
+  {
+   "name": "Breadcrumb diary chain beyond the border",
+   "description": "Diary pages found in ruins each hint at the next place, building toward a personal payoff.",
+   "evidence": [
+    "Fallout 76, Personal Matters: journals 'in places that were important to her', 'Find the next journal in Sutton'",
+    "7 Days to Die: the Opening Trade Routes message",
+    "PvZ: the level-9 note before a format change"
+   ],
+   "ftbq_mechanism": "Add diary-page items (KubeJS) to the stash loot tables, each collected by an item task (consume_items:false). Page N+1's quest is invisible until page N is complete. The hint reward is either a chat line or a command reward (team_reward:true) that posts the Xaero 'xaero-waypoint:' share line. A chapter image map fills in via `dependency`.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Ruins with stashes already exist. It needs custom items and loot edits. Hints must stay vague so scripted beats aren't pre-announced."
+  },
+  {
+   "name": "Optional stations, guaranteed kit, veteran skip",
+   "description": "Teaching is optional and essential gear always arrives. Returning players can skip the basics.",
+   "evidence": [
+    "Fallout 76: stations are optional but the items 'will still be automatically given ... upon exiting Vault 76'",
+    "Fallout 76: Battle Ready vs Fresh Dweller choice"
+   ],
+   "ftbq_mechanism": "Essential kit is given via auto:'enabled' or the starter script. A 'Been here before' optional checkmark quest has a command reward (elevate_perms:true) running '/ftbquests change_progress @s complete <tutorial quest id>'. Permission level 2 passes the check in 2001.4.22, and the completion applies to the whole team.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Useful for repeat worlds and hardcore restarts, but less important than the core loop."
+  },
+  {
+   "name": "Tier gates by points, not full checklists",
+   "description": "Unlock the next tier when the player has done enough of the current one, not all of it.",
+   "evidence": [
+    "7 Days to Die: 'Tier 1 require 10 points ... each T1 quest giving 1 point'",
+    "Kingdom Rush: 3 stars unlock the challenges",
+    "Bloons TD 6: quests unlock at Level 10",
+    "Fallout 4: perk chart in any order once requirements are met"
+   ],
+   "ftbq_mechanism": "Put min_required_dependencies:N on the Tier 2/3/4 gate quest (any N of the previous tier's quests), or dependency_requirement 'one_completed'. Use hide_details_until_startable on next-tier cards. In flexible mode, early progress counts but completion waits for the gate.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "There are four defence tiers. Making players tick every T1 box before seeing T2 is checkbox spam."
+  },
+  {
+   "name": "Shared objective, personal payout",
+   "description": "The group shares objectives and each member collects their own reward, with their own random roll.",
+   "evidence": [
+    "7 Days to Die: 'Every player gets their own reward upon turning it in, but the random rewards may be different between players.'",
+    "FTB default team_reward=false: claims are keyed per player UUID"
+   ],
+   "ftbq_mechanism": "Use team_reward:false (the file default) for kits and bags; random tables then roll per player. For 'pool resources' goals use consume_items:true, which adds up across players. Non-consume item tasks track only the largest single holder.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "It is already the pack's default. Making it explicit avoids confusion."
+  },
+  {
+   "name": "World-changing rewards are claimed once per team",
+   "description": "Any reward that changes shared world state must fire once per team, not once per claiming player.",
+   "evidence": [
+    "FTB QuestKey.forReward keys team rewards to NIL_UUID; CommandReward runs as the claiming player",
+    "desht in #2174: 'Team Reward = true means it's one reward for the team.'"
+   ],
+   "ftbq_mechanism": "Set team_reward:true on command or custom rewards that spawn airdrops, upgrade the pedestal, move the border, place structures or post team-wide waypoints. Personal items stay per-player.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "With 2-4 players, a per-player world reward would run 2-4 times."
+  },
+  {
+   "name": "Party-wide milestone celebration",
+   "description": "Big moments get a shared title and sound for everyone online, plus an optional 'brag' line in chat.",
+   "evidence": [
+    "FTB 2001.4.22: chapter completion plays UI_TOAST_CHALLENGE_COMPLETE for all online team members",
+    "Craft to Exile 2 local book, 'Team Player' quest: 'Click here to brag' reward runs tellraw @a",
+    "Dying Light: on-screen 'Night is Coming'"
+   ],
+   "ftbq_mechanism": "Add tags:['milestone'] and one KubeJS FTBQuestsEvents.completed('#milestone', e => ...) handler that sends /title and /playsound to e.onlineMembers. Alternatively, use a command reward with elevate_perms:true and silent:true; keep it team_reward:true if it addresses @a.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Light on performance, and it adds no atmosphere effects (that area is closed). Keep it to real milestones only."
+  },
+  {
+   "name": "Friendly competition inside co-op",
+   "description": "Small race-style bonuses (first to the crate, most kills this wave) add spice without splitting the team.",
+   "evidence": [
+    "Dying Light co-op: 'a fight to kill as many infected as possible and ... a race to an airdrop'",
+    "Orcs Must Die 2: 'Perfect Buddy Victory' co-op bonus skull"
+   ],
+   "ftbq_mechanism": "Put a small team_reward:true bonus on the airdrop quest; the first player to claim it takes it. Or use a KubeJS 'first to open the crate' bonus. Co-op-only optional quests can use a custom task that checks for at least 2 online members. Never scale rewards by member count (pack rule).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Fun with 2-3 friends, but rivalry can sour. Keep the bonuses cosmetic or small."
+  },
+  {
+   "name": "XP has a visible sink: an upgrade tree in the book",
+   "description": "Show the pedestal upgrade tree in the book so XP-level rewards visibly buy something.",
+   "evidence": [
+    "Bloons TD 6: Monkey Knowledge points per level across 6 trees",
+    "Kingdom Rush: six upgrade trees bought with stars",
+    "They Are Billions: research points buy the campaign tree"
+   ],
+   "ftbq_mechanism": "Add a Pedestal Upgrades chapter where each purchase completes a quest, via a custom task bridged from the pedestal GUI. Unpurchased nodes use hide_details_until_startable, and min_required_dependencies sets the tree depth.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "It turns existing XP rewards into meaningful progress without new systems."
+  },
+  {
+   "name": "Rhythm beats every 5th and 10th wave",
+   "description": "Recurring special beats get their own visual shape and a vague in-character warning just before the big one.",
+   "evidence": [
+    "PvZ: every 5th level a bonus mini-game, level 9 a zombie note, level 10 a conveyor-belt level",
+    "Dying Light: a nightly airdrop at 00:00"
+   ],
+   "ftbq_mechanism": "Give each beat its own shape: airdrop quests octagon, boss quests gear, normal waves circle. A short in-character note quest is revealed after wave 9 (hide_until_deps_complete) and hints without naming the boss. The chapter subtitle states the rhythm.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "It mirrors the pack's airdrop every 5th wave and boss every 10th, and helps players read the book as a timeline."
+  },
+  {
+   "name": "In-world progress board for team goals",
+   "description": "Put a shared hand-in goal on a physical screen in the base, so the whole party sees and feeds it.",
+   "evidence": [
+    "FTB Quests 2001.4.22 task screens (ftbquests:screen_1/3/5/7; configurator added in 2001.2.0)",
+    "Fallout 4: Sanctuary percentage meters tracked in the Pip-Boy"
+   ],
+   "ftbq_mechanism": "Bind a screen_3 or screen_5 to a consume_items task (e.g. 'Reinforce the gate: 256 stone bricks'). It takes hopper input and can be skinned and made indestructible. The screen shows the progress of the placer's team.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "A natural fit for the command post, but it depends on the screen belonging to the party's team, and it is optional polish."
+  },
+  {
+   "name": "On-demand reference shelf (kept optional)",
+   "description": "A tips section players can browse, never required, with each tip one or two lines.",
+   "evidence": [
+    "Kingdom Rush Encyclopedia Tips & Tricks",
+    "Andersen 2012: a help button helped only in the complex game and cut progress 12% in a simple one",
+    "Fallout 76: projected slideshow tips"
+   ],
+   "ftbq_mechanism": "A Tips chapter of optional checkmark quests, each 2 lines or fewer, with quest_links from the related Campaign quests and {@pagebreak} for detail.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Tips and Tricks already exists. Restyle it into one-liners linked from the quests where each tip matters."
+  }
+ ],
+ "multiplayer_notes": [
+  "TEAM PROGRESS (verified, 2001.4.22): each FTB team has one progress record. Party members share all task progress, completions and toasts. Per-player task progress inside a party is not possible, and the maintainer has said so repeatedly (#783: 'an extremely fundamental change'; #1228, #1598).",
+  "TEACHING GOTCHA: when one friend completes a tutorial task, it is completed for everyone, so the others never do it. Mitigations: keep the lesson text readable after completion (don't use hide_text_until_complete for the lesson itself); keep manual claiming, which the pack already does via default_autoclaim_rewards 'disabled', so each player opens the quest to claim and sees the text; or write a KubeJS custom task that checks every online member (e.g. 'everyone has worn an amulet').",
+  "REWARD CLAIMS (verified): with team_reward=false (the pack's file default, data.snbt default_reward_team:false), every member claims their own copy once. Claims are keyed by player UUID (QuestKey.forReward). With team_reward=true there is one copy per team, and the first claimer takes it. Maintainer (#2070): 'If \"Team Reward\" is true, only the claiming player gets the reward.'",
+  "AUTOCLAIM (verified): per-player autoclaim gives the reward to every online member when the quest completes, and to offline members at their next login (TeamData.checkAutoCompletion runs in playerLoggedIn). A team reward with autoclaim goes only to the player who completed it (fixed in 2001.4.12).",
+  "JOINING A PARTY (verified, ServerQuestFile.playerChangedTeam): the joiner's personal progress merges into the party (highest task progress, union of completions and claims). The joiner can then claim their per-player rewards for every quest the party already finished, and pending autoclaims run at join (2001.4.15). A friend who joins late therefore gets a catch-up bundle, which is good to plan for.",
+  "CREATING OR LEAVING A PARTY (verified): creating a party copies the creator's progress. Leaving returns the player to their pre-party personal progress; quests completed in the party are gone for them, but claimed per-player rewards stay claimed (2001.3.3). The maintainer (#1089) calls the mod best for 'a group of people who form a permanent team'. Tell players never to leave or disband the party mid-run.",
+  "REPEATABLE QUESTS (verified in code): Quest.checkRepeatable resets a repeatable quest for the whole team as soon as one player has claimed all its rewards. Teammates who hadn't claimed yet lose that cycle's reward when claiming is manual. Concrete case: bounties.snbt 'Zombie Masher' (can_repeat:true, repeat_cooldown:1, a per-player legendary_loot_bag, manual claim) gives the bag only to whoever claims first in a party. Fix: set auto:'enabled' on that reward so all online members get it at completion. Offline members still miss that cycle (inferred from the code). Related open bugs: #1219 (2001.4.6) and #1929 (repeatable + autoclaim + team reward duplicates in parties, 2001.4.17); avoid that combination.",
+  "CONSUME VS HOLD (verified, ItemTask.submitTask): consume_items tasks add up across players, so friends can pool a hand-in. Non-consume item tasks take the largest stack any single member holds. Stat tasks use the highest single player's stat. Craft-only tasks add per craft.",
+  "CONCRETE CASE IN THE CURRENT BOOK (campaign.snbt): 'Not Just Jewelry' takes 8 gold ingots with consume_items:true, a team hand-in, and rewards item kubejs:amulet per player. One 8-gold hand-in therefore yields one amulet per party member, and later joiners can claim one without paying. 'Wear It' uses a custom task: one member equipping the amulet completes it for all. Confirm this is intended ('one amulet per player' was the user's decision).",
+  "KILL TASKS (verified, FTBQuestsEventHandler.playerKill): only kills whose damage source entity is a real ServerPlayer count; fake players, turrets and traps never do. Any member's kills count toward the team. The pack's Bounties already use custom tasks, which is correct; keep Know Your Enemy kills on custom tasks too.",
+  "COMMAND REWARDS (verified): they run as the claiming player (player.createCommandSourceStack). A per-player command reward that changes the world (airdrop, pedestal upgrade, border move, structure) runs once per claimer, so set team_reward:true for those. {member_count} and {online_member_count} placeholders exist, but the pack's rule is no player-count scaling.",
+  "TOASTS AND CELEBRATION (verified): quest and chapter completion toasts go to every online team member, and chapter completion adds the challenge fanfare. KubeJS FTBQuestsEvents.completed('#tag') exposes onlineMembers for party-wide titles.",
+  "CLAIM ALL (verified): the 2001.4.22 button claims everything claimable for the clicking player at once. Choice and loot rewards are always excluded and must be clicked individually.",
+  "LOOT CRATES (verified, FTBQuestsForge): if drop_loot_crates were enabled, crates would drop from any non-player death regardless of the killer (traps included) and belong to whoever picks them up. The pack has drop_loot_crates:false and uses BountyBags, so this doesn't apply now.",
+  "PARTY JOINING WORKAROUND (verified in FTB Teams 2001.3.2 source): setting a party's ftbteams:free_to_join property to true makes any player count as INVITED, so '/ftbteams party join <party>' works without an invite (AbstractTeamBase.getRankForPlayer). This sidesteps the Xbox-chat-blocked invite problem without editing team .snbt files.",
+  "IN-WORLD BLOCKS (verified): quest barrier blocks and task screens use the team of the player checking them or the placer. A detector block completes its quest for every real player within radius 8 when powered.",
+  "GENRE PRECEDENTS: 7 Days to Die shares objectives but makes 'fetch' objectives per player and lets each player turn in for their own (possibly different) random reward. Orcs Must Die 2 has a co-op-only bonus ('Perfect Buddy Victory') and keeps skull pickups personal. Dying Light uses co-op mini-competitions ('a race to an airdrop'). Fallout 76's cut holotape voice: 'we are all better together. So find a friend. Or find many!'",
+  "LOCAL EXAMPLE (C:/Users/mattf/curseforge/minecraft/Instances/Craft to Exile 2 - 2.0 Atlas Update/config/ftbquests/quests/chapters/jolly_cooperation.snbt, quest 'Team Player'): a milestone (hexagon, size 2.0, subtitle 'Achievement', checkmark 'Click Once Read') with a 'Click here to brag' command reward: /tellraw @a {\"text\":\"\",\"color\":\"blue\",\"extra\":[{\"selector\":\"@p\"},{\"text\":\" has achieved Team Player\"}]}. A cheap social broadcast."
+ ],
+ "reward_presentation_notes": [
+  "What a 2001.4.22 player sees when hovering a reward: item rewards show the full item tooltip (2001.2.1+). Random rewards list every table entry with its chance as '- Item [12.5%]' (RewardTable.addMouseOverText), unless hide_tooltip is set. Choice rewards list the options. use_title:true makes the button read the table's title, e.g. 'Scrapper's Cache', and the table icon becomes the reward icon.",
+  "On claim: an item reward toast shows the item name in its rarity colour (white, yellow, aqua, purple), so custom items with a rarity look tiered for free. In 2001.4.22 the toast never shows the count, because ItemReward passes the post-loop count of 0 (verified in code, not tested in game). Put counts in the quest text or the reward title if they matter. An xp_levels toast reads '+N' in green.",
+  "Reveal moments: loot rewards and FTB loot crates open a reveal screen listing what was rolled. Using a crate plays an item-break sound and item particles, and sneak-use opens the whole stack. Choice rewards open a picker. These are the only built-in reveal screens, so use them for jackpots.",
+  "Celebration hierarchy is built in: task toast (multi-task quests only), then quest toast (sent to all online team members), then chapter toast, which is marked important and plays UI_TOAST_CHALLENGE_COMPLETE. Toasts stay about 5 s. Anything bigger (title text, a goat horn at the pedestal) needs a command reward with elevate_perms:true and silent:true, or KubeJS on a #milestone tag.",
+  "Signals for unclaimed rewards: the chapter list shows an alert icon on chapters where the viewer has unclaimed rewards, and the top-right collect button claims all. Because claiming is manual in this pack, every claim is a moment where the player sees the quest text, so keep claiming manual for teaching quests but autoclaim repeatables.",
+  "Autoclaim modes: 'enabled' gives the reward plus a toast, 'no_toast' gives it silently, 'invisible' hides the bookkeeping. Use no_toast or invisible for behind-the-scenes rewards such as stage flags, so the toast stream stays meaningful.",
+  "Crate and bag colour ladder: FTB's built-in loot crate presets are common #92999A, uncommon #37AA69, rare #0094FF, epic #8000FF and legendary #FFC147 with glow. Match quest shape and colour to the BountyBags tiers so players read value at a glance.",
+  "Escalation within a chapter: the user already asked for 'the later quests in the chapter can be a higher tier loot bag'. PvZ's 'You got the Sunflower!' card and BTD6's manual claim of achievement rewards show the value of one clear reveal per milestone over many small drips.",
+  "Make XP mean something or replace it: Hecker says 'Tangible, expected, contingent rewards reduce free-choice intrinsic motivation', which fits the user's 'the xp is not useful'. 76 of the current 116 rewards are xp_levels. Keep XP only where it visibly buys pedestal upgrades; otherwise pay the item just taught or next-tier parts (BTD6 BFB Brawler pays MOAB Mines).",
+  "Fairness for random payouts: use random (always gives something, shows odds) rather than loot with empty_weight for quest rewards. Back luck with a guaranteed ladder: Hearthstone guarantees a Legendary 'within 40 packs' and 'within the first 10 packs'. The Bounties top rung is the pack's natural equivalent.",
+  "Informational completion text: hide_text_until_complete can reveal a one-line 'what you just learned' or a diary line after completion. That is Hecker's 'informational feedback', and it costs nothing.",
+  "Social bragging: a command reward like CtE2's 'Click here to brag' (tellraw @a '<player> has achieved Team Player') turns a solo milestone into a party moment. Give it team_reward:true if it should fire once per team.",
+  "Fallout voice for reward names: name tables and rewards in-world (Vault-Tec 'Survival Crate', 'Scrapper's Cache', 'Overseer's Stash') rather than 'Random Reward'. Fallout 76's 'Take your Survival Crate and build a new and better America.' is a cut-content voice reference."
+ ],
+ "version_caveats": [
+  "Every FTB behaviour above was read from the v2001.4.22 tag source, matching the installed ftb-quests-forge-2001.4.22.jar. FTB Teams was read from the 1.20.1/main branch, which equals the installed 2001.3.2. FTB Library was read at v2001.2.13; XMod Compat at 2.1.3 against 2.1.2 installed, where the only difference is an FTB Chunks event fix.",
+  "Newer than 2001.4.22, so not available (1.21.1 / 2101.x):\n- 2101.1.28: Visual Presets (normal/goal/info); Bézier dependency lines; chapter images as full objects (lock position, text on image, click action fields); undo/redo; JEI bookmarking; 'Suppress all Reward Autoclaiming'.\n- 2101.1.23: the reviewable Claim All screen. 2101.1.25: the 'Claim XP' button.\n- 2101.1.20: team stages for gamestage tasks and rewards (needs FTB Teams 2101.1.8+).\n- 2101.1.17: the colour-picker UI and rainbow &z.\n- 2101.1.16: entity-face icons. 2101.1.15: currency reward, barrier teleport. 2101.1.14: barrier GUI configuration.\n- 2101.1.13: client notification styles (chat, action bar), per-chapter auto-pin.\n- Kill task extras: entity type tags (2101.1.11), custom-name filter (2101.1.6), NBT filter (2101.1.26).\n- 2101.1.6: change_page jumps to a sub-page via '<id>/2'; command reward 'Permission Level' integer (2001.4.22 uses the boolean elevate_perms).\n- 2101.1.19: chapter default for 'Hide Text Until Quest Complete'.\n- 2101.x moves quest text into a translation system; 2001.4.22 keeps text inline in the chapter .snbt files.",
+  "Already in 2001.4.22, through backports: lock icons + hide_lock_icon + the 'none' shape + max_completable_dependents exclusive branching (2001.4.13); all_table rewards (2001.4.10); command placeholders {team}, {team_id}, {long_team_id}, {member_count}, {online_member_count} (2001.4.8-4.9); hide_until_deps_complete (2001.4.9); the team-reward autoclaim fix (2001.4.12); pending autoclaims on team join (2001.4.15); hide_excluded_quests (2001.4.17); repeat_cooldown (2001.4.18); keeping claimed rewards on leaving a party (2001.3.3); autofocus_id (2001.2.1); require_sequential_tasks and quest hyperlinks (2001.2.0); optional tasks (1902.4.16); {@pagebreak} (1902.4.12); hide_details_until_startable (1902.4.7). Either/or tasks (all tasks optional, one completes) are present in 2001.4.22 code, although the 1.21 changelog lists them under 2101.1.8.",
+  "Hex colours: '&#RRGGBB' already parses in quest text on 1.20.1 (FTB Library v2001.2.13 TextComponentParser). Only the colour-picker button is 1.21-only.",
+  "The ftbquests:toast reward exists and is registered in 2001.4.22. The 1.21 changelog says it was broken and fixed in 2101.1.13-14; whether it works on a 1.20.1 dedicated server is unverified.",
+  "Open or unresolved FTB bugs relevant here: #1219 (repeatables give no rewards without autoclaim, reported on 2001.4.6), #1929 (repeatable + autoclaim + team reward duplication in parties, 2001.4.17), #2151 (repeat cooldown shows 0, 1.21). I did not test any of them in game.",
+  "FTB Teams 2001.3.2 has no team stages. free_to_join is verified in source. setPartyCreationFromAPIOnly exists (changelog 2001.2.0), but I did not explore it.",
+  "The official FTB docs (docs.feed-the-beast.com) describe 1.21.1 and leave out most multiplayer details; I relied on source code and maintainer issue comments instead.",
+  "Game sources: PvZ is the original 2009 game; the FREE and Replanted versions changed Adventure Mode. Kingdom Rush details are for KR1, Frontiers and Origins (star-bought upgrades). BTD6 quest counts are for v36+ (the wiki is marked outdated at v53); achievement counts are for v40. The 7 Days to Die tutorial is per Alpha 21.2; trader tier points and the Quest Limiter are per v2.4 b7. Project Zomboid facts come from a third-party guide (Build 41/42) because pzwiki.net blocked fetching.",
+  "Fallout 76 'Reclamation Day: As a Team' and 'Your C.A.M.P.' holotapes are cut content, used only as voice references. The State of Decay 2 wiki pages are stubs. The Kingdom Rush 'info box when an enemy first appears' detail came from a search summary and is unverified in wikitext.",
+  "I could not open Reddit (403). Community complaints come only from FTB-Mods-Issues on GitHub."
+ ]
+}

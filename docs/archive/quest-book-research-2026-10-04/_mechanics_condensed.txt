@@ -1,0 +1,756 @@
+##### inventory_core-loop-story.json
+* Starter compound (walls, gate, weak points, firing platforms, spawn) [starter base|T0 - pre-built when the world is created] cov=none :: quest=No quest teaches the layout. 'Find the Pedestal' (campaign.snbt:111) o
+   hook: The walls are a funnel, not a fortress. The horde gets in through the gate, the two flank holes, the random breaches and the weak NW corner. The reinforced blocks near the gate can't be dug, but plain masonry can. Mobs climb the i
+   detect: KubeJS PlayerEvents.tick custom task: player standing on a firing-platform plank. The cells can be derived from td_pedestalX/Z and td_compoundX0/X1/Z1 || Observation task (type BLOCK) on minecraft:ladder or simply_traps:stake_wall. Matches any such block anywhere, so it's imprecise.
+   nums: Border starts 50 wide (BORDER_START, playtest_starter_kit.js:362), centred on the site, border damage 0 (:499- ; Levelled field 59x59 (BASE_FIELD_HALF = 50/2+4 = 29, :363, fills :577-593) ; Compound x = site x-9..x+9, z = site z-21..z+2 (layout constants :526-558)
+   cost: Pre-built on a fresh world in ServerEvents.loaded (playtest_starter_kit.js:1325-1332), with a first-login fallback (:1336-1358). Layout changes only reach fresh
+   reward: simply_traps:stake x6-8 (plug a breach) ; Torches
+   mp: Built once per world, and everyone shares it. The footprint is stored on the pedestal marker. Any player can repair or extend the walls.
+* Command post fittings: Crafting Station, House Grid power, barrels, Waystone [starter base|T0 - pre-placed] cov=partial :: quest='Wired Different' (campaign.snbt:1027) observes the generator and expl
+   hook: Every zombie's rotten flesh is generator fuel, and the power is wireless: any Flux Point that joins House Grid draws from it, wherever it is. The Waystone pair makes a loot run a round trip instead of a walk home.
+   detect: Observation task (BLOCK) on generatorgalore:culinary_generator (already used), craftingstation:crafting_station or waystones:waystone || KubeJS BlockEvents.rightClicked('waystones:waystone') to a per-player custom task (qmCompleteForPlayer)
+   nums: Building 9 wide x 8 deep x 10 tall (playtest_starter_kit.js:526-528), placed with /place template clockwise_90 ; Reinforced with per-state replace-fills; the door and vines stay vanilla (:970-1000) ; Crafting Station at local (3,1,6) (:1016-1017)
+   cost: Pre-placed. A second Culinary Generator is crafted via the KubeJS overrides in tier3_loot_aligned_recipes.js:17,30 (outside this scope). The Waystone uses the m
+   reward: Copper ingots (current) ; Bread or other food (generator fuel)
+   mp: House Grid belongs to whoever logged in first. On the PUBLIC network the others get USER access, so they can connect their own Flux Points, but editing or delet
+* Starter defences (Tesla Coil, Sentry, electrified gate fence) and their wave-5 failure [story beat / starter base|T0 - pre-placed, waves 1-5 only] cov=none [SPOILER] :: quest=None. The crafted 'Sentry' quest (campaign.snbt:796) calls it 'First t
+   hook: The gate is only sealed thanks to borrowed tech. The aha after wave 5: nothing shoots for you unless you built it, and the gate and flank holes are now open. Players who banked shrapnel and iron for their own Sentry or fence befor
+   detect: Reveal quest: call qmCompleteShared(server, data, 'starterTrapsGone') inside the FIXED_WAVE_EVENTS action (wave_status.js:83-117). Put it on a quest t || Pre-wave-5 'what's guarding the gate' quest: observation BLOCK immersiveengineering:tesla_coil or ENTITY_TYPE securitycraft:sentry. The text must not 
+   nums: Coil at doorX+5 on the wall top, standing upright, with a lever on its west face (playtest_starter_kit.js:443- ; Sentry at doorX-5, with its own support block (:465-471) ; Fence: doorX-2..doorX+2, 3 tall, plus 3x3 in each flank hole (:402-417, :473-475)
+   cost: Pre-placed. Removed for good at the wave-5 clear (td_starterTrapsRemoved). Fence owner is set to the first player to log in (playtest_starter_kit.js:1363-1380).
+   reward: After the reveal: kubejs:shrapnel x4-6 (a Sentry needs one, securitycraft_traps.js:10-22) ; Iron ingots
+   mp: World-level. One removal for everyone. Fence ownership goes to the first login, but players are never shocked anyway.
+* Starter kit and its wave-5 rusting [story beat|T0 - first login, waves 1-5] cov=good [SPOILER] :: quest='You're On Your Own' (campaign.snbt:44) and 'Borrowed Time' (:74, 'thi
+   hook: Don't build your plan around the god-sword. Waves 1-4 are the window to bank loot, XP and traps while the borrowed gear carries you. The reveal itself is the aha.
+   detect: Custom task completed from the wave-5 FIXED_WAVE_EVENTS action (wave_status.js:58-82) on a quest that stays invisible until then. The user cut the pre || Checkmark foreshadowing quests, as now.
+   nums: Sharpness 100 (playtest_starter_kit.js:30). Lore line (:20) ; Kit given once per player (:1398-1400). Late joiners after the removal get nothing (:25-27, :1395-1400) ; Removal at the wave-5 clear: GEAR_REMOVAL_WAVE 5 (wave_status.js:25). /clear by NBT tag (:70-74). Titles (:76-
+   cost: Free at first login. Removed at the wave-5 clear.
+   reward: After the reveal: an Uncommon or Rare loot bag ; XP levels
+   mp: Each player has their own kit flag. /clear @a only reaches online players; offline players lose the gear at their next login. The title reaches everyone, but th
+* Wave Horn (calling a wave) and the night lock [core loop|T0] cov=good :: quest='Sound the Horn' (campaign.snbt:138), custom task 5A1C0E7B93D4F216 com
+   hook: The horn is a choice, not a chore. Waves 1-8 never start until someone blows it, and calling early trades away the rest of the build window for faster progress. Every wave is fought in the dark, and daylight only returns with the 
+   detect: Existing shared custom task (quest_milestones.js:16-17, :101) || A vanilla note-block stat task would fire on any note block and even without a wave starting, so it's worse
+   nums: Click cooldown 20 ticks per player (wave_spawner.js:622-640) ; Refusal while a wave is open or queued (:462-469). Silent after a loss (:449-460) ; Raid-horn sound (:474). Countdown cancelled (:478-482). Night lock (:487-491). Day restored on clear (wave_sta
+   cost: Pre-placed. Can't be crafted or moved; any other note block is ignored.
+   reward: XP levels (current: 2) ; Torches (night fighting)
+   mp: Anyone can press it, and the shared td_inWave flag means one wave starts however many people press. The milestone is shared and also reaches late joiners throug
+* Countdown between waves (auto-start) [core loop|T0] cov=good :: quest='Sound the Horn' says 'after each clear a timer starts (10 minutes min
+   hook: The timer keeps running while you loot past the border. Plan trips that fit in 10 minutes, or the wave hits a base with nobody home.
+   detect: Custom task fired the first time the countdown branch starts a wave (useWaveHorn called from wave_spawner.js:790). It teaches 'the timer doesn't wait  || Custom task for 'home in time': a player within 32 blocks of the pedestal when a countdown-started wave begins
+   nums: Formula: 1800 + 300*(n-1) ticks before wave 5, 4800 + 300*(n-5) from wave 5 (wave_status.js:30-33, :42-47) ; Floor MIN_WAVE_GAP_TICKS 12000 = 10:00 (wave_status.js:40). In practice every gap is exactly 10:00 through wav ; Display refreshes once a second (wave_spawner.js:774, :794-805). At zero it retries every second while a wave 
+   cost: Automatic after every clear.
+   reward: Golden carrots (for a 'made it back in time' quest) ; XP levels
+   mp: One shared countdown on the marker, shown to every player in the overworld. The endless-wave toast from an auto-start goes only to whichever player's tick fired
+* Written waves 1-8 (composition) [core loop|Waves 1-8] cov=partial [SPOILER] :: quest='Thin the Horde' (campaign.snbt:171) gives wave 1's makeup accurately 
+   hook: Each wave adds one new problem: Crawlers climb walls and outrun zombies (speed 0.3 vs 0.23, wave_spawner.js:64-66), and the wave-8 Demolition Zombie throws TNT that blows holes in walls. The pedestal itself can't be blown up.
+   detect: Custom tasks per wave clear from td_q_lastClearedWave (quest_milestones.js:68-89, extend QM_TASKS) || Observation ENTITY_TYPE for first-sighting quests that stay hidden until seen
+   nums: WAVES table (wave_spawner.js:19-28) ; Totals including ambushers: 6/10/11/9/6/10/8/13, cumulative 73 by wave 8 (computed from :19-28 and :507-512) ; Spawn spacing 16, 13, 10, 7, then 4 ticks from wave 5 (:122-130)
+   cost: Each wave is started by the horn or the countdown.
+   reward: Escalating bags per wave cleared: Uncommon (waves 1-4), Rare (6-7), Epic at 8 (current) ; XP levels sized to pedestal upgrade tiers
+   mp: Shared, with no player-count scaling: one wave for the whole party.
+* Spawn ring, arrival cues and underground ambushers [core loop|All waves] cov=none :: quest=None.
+   hook: Listen: the cave sound tells you where each mob is about to appear, and a dirt burst means one just surfaced right outside your wall. Early waves spawn close because the border is small.
+   detect: Shared custom task the first time an ambusher spawns (inside the spawn.underground branch, wave_spawner.js:747-756) || Checkmark explainer quest
+   nums: Ring 48-64 blocks (wave_spawner.js:235-236). Shrinks to fit: max = max(15, min(64, half-width - 6)), min = min ; Spawns kept 4+ blocks outside the compound (:238-239) ; Sound cue 12 ticks ahead (:126), volume 5, about 80 blocks (:703-707)
+   cost: Automatic.
+   reward: Wooden Stakes or Spike Traps to cover the ambush lanes ; XP levels
+   mp: Shared. The cues play at the spawn point for every player.
+* Endless phase: Hordes (wave 9 and up) [core loop / endless|Wave 9+] cov=partial [SPOILER] :: quest='The Last Written Wave' (campaign.snbt:315) announces Hordes after wav
+   hook: Hordes mostly scale by numbers, and they arrive over the fight because of the 60-alive cap, so the wave keeps coming after the title fades. Automation and choke points beat sword work. There is no final wave (IDEAS.md:82-84).
+   detect: Custom tasks at more wave clears via td_q_lastClearedWave (e.g. 10, 20, 25, 30, 40): add to QM_TASKS and the poll in quest_milestones.js:100-105 || A 'waves cleared n/10' progress bar using the CustomTask.setMaxProgress + TeamData.setProgress reflection from bounty_kills.js:127-225
+   nums: Label 'Horde N' from wave 9 (wave_spawner.js:32-34) ; Difficulty level = min(wave-8, 40) (:516, :529-532) ; spawn_horde targets the player nearest the marker (:517-523, :534). Horde lands 70-75 blocks from that player 
+   cost: Automatic once wave 8 is cleared.
+   reward: Legendary bag at round-number hordes ; XP levels in pedestal-upgrade amounts (6/12/18)
+   mp: One horde per wave however many players are on; no player-count scaling (dynamicScalingEnabled false, difficulty config L3). If the player nearest the pedestal 
+* Endless difficulty curve (mob tiers and stat scaling) [core loop / endless|Wave 9+] cov=none [SPOILER] :: quest=None.
+   hook: Wave 20 is the step change. Brutes don't flinch from knockback and hit the pedestal for 16-18 a second each, so armor and thorns upgrades and a kill zone in front of the pedestal stop being optional.
+   detect: Hidden first-sighting quest: observation ENTITY_TYPE mutantszombies:zombie_brute or mutant_brute, revealed when seen || Custom tasks at the wave 13 and wave 20 clears (spoiler-sensitive, so keep them hidden)
+   nums: Tier weights: tier 0 max(5, 40-L), tier 1 30, tier 2 min(80, (L-4)*5) from L5, brutes min(80, (L-11)*5) from L ; TIER2_MIN_LEVEL 5, which is wave 13 (:71-72). BRUTE_TIER_MIN_LEVEL 12, which is wave 20 (:73-77) ; Crawler is 3 of 7 tier-2 picks (:64-66)
+   cost: Automatic, by wave number.
+   reward: Totem or Legendary bag at the wave-20 milestone ; Golden carrots
+   mp: Shared and deterministic by wave number, with no party-size scaling.
+* Wave mob targeting (the pedestal is the target) [core loop|All waves] cov=partial :: quest='Find the Pedestal' says 'every wave mob paths straight for it, not fo
+   hook: You can pull a mob, or the boss, off the pedestal by hitting it: each window buys 8 seconds of its attention. Standing in a doorway makes you the target of anything within 3.5 blocks. Otherwise they walk right past you to the pede
+   detect: Per-player custom task the first time a retaliation window opens for that player (mob_aggro.js:240-246) || Checkmark explainer, maybe paired with the boss quest
+   nums: Target priority: blocking player, then retaliation, then Lure Block, then pedestal marker (mob_aggro.js:1-9, : ; MELEE_BLOCK_RANGE 3.5 blocks (:172) ; AGGRO_RETALIATION_TICKS 160 = 8 s. Later hits don't extend it (:133, :238-256)
+   cost: Always on.
+   reward: One kubejs:lure_block (practice redirecting a horde) ; XP levels
+   mp: Whoever hit it gets the 8 seconds, and any player standing in its path draws it. One shared pass runs per tick.
+* Hostile counter and wave-clear detection [HUD / core loop|All waves] cov=partial :: quest='Wave One, Cleared' (campaign.snbt:178): 'Every mob down means the wav
+   hook: Only mobs within 96 blocks of the pedestal hold the wave open. When the number stalls, look for the glowing stragglers.
+   detect: Existing td_inWave true-to-false edge (quest_milestones.js:68-89)
+   nums: RADIUS 96 (wave_status.js:16-19) ; Counter text (:326-334) ; Clear conditions (:250-260). Polled every 4 ticks (:306-317)
+   cost: Always on.
+   reward: None specific
+   mp: One shared count, shown to every player in the overworld.
+* Straggler glow [HUD / core loop|All waves] cov=none :: quest=None. It was added in 12f1176 but never put in the book.
+   hook: Don't hunt blind: the last two light up through walls. Unverified edge case: one glowing outside the border can't reach you, so shoot it or open the border.
+   detect: Shared custom task the first time tdStragglerMark runs (wave_status.js:172-184)
+   nums: TD_STRAGGLER_MAX 2 (wave_status.js:165) ; Red team colour and infinite Glowing (:172-184) ; Conditions (:246). Team emptied on clear (:262)
+   cost: Automatic.
+   reward: XP levels ; A golden carrot
+   mp: Everyone sees the glow.
+* Wave-clear payout [core loop / rewards|All waves] cov=partial :: quest='Wave One, Cleared' covers the clear, the timer and the border growth.
+   hook: A clear is your only free heal, and it's small: 5% won't out-heal a breach, so golden carrots and upgrades matter. Watch chat for the green [Upgrades] link.
+   detect: Existing td_inWave edge tracking; add more QM keys for more wave numbers
+   nums: Clear branch (wave_status.js:259-299): subtitle :263-266, scoreboard :268, heal 0.05 :270-271, upgrade prompt  ; The 5% heal is 15 HP at base max, 30 HP at 600 (derived from pedestal_health.js:24, :29) ; Milestones at waves 1, 8 and 15 (quest_milestones.js:102-104)
+   cost: Automatic.
+   reward: XP levels at milestone waves ; Golden carrots
+   mp: Shared. The [Upgrades] link only reaches players who can afford a tier.
+* Border growth (Base Expansion) [core loop / world|All waves] cov=good :: quest='Wave One, Cleared' (campaign.snbt:178) describes the formula accurate
+   hook: The border is both a wall and the limit of the spawn ring. Early waves spawn close because the ring is squeezed inside it; the full 48-64 ring only arrives at wave 10, when the border is 140 wide. A bigger border means more ground
+   detect: Same as wave clears || Custom task when the border width first passes a threshold
+   nums: Width added = 5 + 5*floor((wave-1)/3) (base_expansion.js:10-14). Grows over 10 s (:8, :36) ; Starts at 50 (playtest_starter_kit.js:362). Width after waves 3/5/8/10/15/20/30: 65/85/125/160/275/435/875 (co ; Toast only for the player whose tick caught the clear (base_expansion.js:37-38)
+   cost: Automatic.
+   reward: Ender pearls (scouting) ; XP levels
+   mp: World-level, but only one player sees the toast with the number.
+* The Pedestal (shared HP, damage, boss bar, alerts) [pedestal|T0] cov=good :: quest='Find the Pedestal' (campaign.snbt:111): 300 HP, a bar within 64 block
+   hook: It's a damage-per-second race. Each mob hits it for its own attack damage every second, so a single brute that reaches it is a crisis, and the alerts tell you to come home wherever you are.
+   detect: Observation BLOCK supplementaries:pedestal (current) || Shared custom task on the first alert (firePedestalAlert, pedestal_health.js:110-118)
+   nums: Melee range 3.0 blocks (pedestal_health.js:13). Boss bar range 64 (:16-20) ; 300 HP (:24; playtest_starter_kit.js:1186-1188) ; Damage applied once a second, once per world however many players are on (pedestal_health.js:258-265)
+   cost: Pre-placed. If it's lost, the run is lost.
+   reward: Golden carrots ; XP levels
+   mp: The HP pool lives on the marker and is shared. The bar only shows within 64 blocks; the alerts reach everyone.
+* Pedestal healing [pedestal|T0] cov=good :: quest='Find the Pedestal', second paragraph (campaign.snbt:83), is accurate,
+   hook: A nether star is either a full pedestal heal or the core of a Totem of Undying (hardcore_totem_recipe.js:6-12), so it's a real choice. Golden carrots are the cheap per-wave patch.
+   detect: Per-player custom task inside the heal handler after a successful heal (pedestal_health.js:204-207): qmCompleteForPlayer(player,'pedestalHeal') || A separate custom task for a nether-star heal
+   nums: Golden carrot 10%, nether star 100% (pedestal_health.js:164-170) ; Main hand only, only the stored pedestal (:184-210) ; Heal effect: totem particles and beacon sound (:128-132)
+   cost: Golden carrot: 8 gold nuggets and a carrot (vanilla). Nether star: loot only.
+   reward: Golden carrots x4-8 ; One nether star at a big milestone, offered as a choice against a totem (FTB 'choice' rewa
+   mp: Anyone can heal it, and the HP is shared. The heal message goes to the healer.
+* Pedestal upgrades: Max HP, Armor, Thorns (GUI, /pedestal, [Upgrades] link) [pedestal|T0 onward (XP-gated)] cov=good :: quest='Shore It Up' (campaign.snbt:656) gives the stats, the 6/12/18 costs a
+   hook: XP levels are the pedestal's currency. Every kill you make yourself and every quest XP reward is pedestal armour. Armor first makes every heal go further; Thorns punishes crowds. By vanilla rules XP only drops from kills with a re
+   detect: Shared custom task on the first successful buy (buyPedestalUpgrade returns 1, pedestal_upgrades.js:136-151) || Per-player custom task in openPedestalUpgradeGui (:368-394)
+   nums: Costs [6, 12, 18] levels (pedestal_upgrades.js:15): 36 per stat, 108 to max all nine (derived) ; Range 32 blocks horizontal (:16, :35-42) ; +100 HP, 0.15 armor, 1 thorns per tier, max tier 3 (pedestal_health.js:26-32)
+   cost: XP levels only.
+   reward: XP levels sized to tiers: a 6-level reward lets a player buy tier I on the spot ; Golden carrots
+   mp: Tiers are shared world state and anyone can pay, so a party can pool levels. The GUI stops anyone paying a price that changed under them. XP is per player.
+* Pedestal stand: only the amulet, and the Take button [pedestal / amulet|T0] cov=partial :: quest='Leave It Behind' (campaign.snbt:449) explains Take, accurately. It do
+   hook: Lifting the amulet closes the border on everyone outside, which is why Take only works near the pedestal. Do it from home.
+   detect: Per-player custom task when the amulet is taken (pedestalGuiTakeFromStand, :292-311)
+   nums: Refusal rules (pedestal_upgrades.js:396-443). Notice limited to once per 60 ticks (:396-400) ; Take button and lore (:262-285). Take logic (:289-311) ; Item delivered after the screen closes (:173-182, :317-347). Pickups cancelled while it's open (:349-351)
+   cost: None.
+   reward: None (teaching only)
+   mp: Any player can take any amulet off the stand; amulets have no owner. A parked item survives a logout.
+* Game over: the pedestal falls [pedestal / fail state|T0] cov=partial :: quest='Find the Pedestal' says 'If it reaches zero the waves stop and the ru
+   hook: Never mine or piston the pedestal: removing the block by hand is an instant loss, even though explosions can't touch it.
+   detect: n/a
+   nums: 0-HP path (pedestal_health.js:317-330) ; Block check once a second (pedestal_destruction.js:54-75) ; Trigger (:12-52): titles :35-37, chat lines to one player :41-42, delayed title :44-47
+   cost: None.
+   reward: None
+   mp: One loss for the whole server. Titles reach everyone; the chat lines reach only one player.
+* Amulet: getting it and wearing it [amulet|Early (about 8 gold)] cov=good :: quest='Not Just Jewelry' (:416), 'Wear It' (:442) and the tip 'Find the Curi
+   hook: The amulet is the stay-or-explore lever. Worn, it makes you a tougher fighter at home; on the pedestal, it's the way out. It can't be replaced if lost.
+   detect: Existing: the item hand-in, plus the 'Wear It' custom task from td_amuletWorn (quest_milestones.js:113-114)
+   nums: Item, tooltip and fireResistant (startup_scripts/amulet.js:14-19). Curios equip/unequip hooks (:25-34) ; Buffs re-applied every 50 ticks for 200 ticks, hidden (amulet_worn.js:7, :12, :25-26) ; Border push checked every 5 ticks, 1-block margin; long pushes land on the surface 3 blocks inside (amulet_bor
+   cost: Quest reward only: 8 gold ingots handed in (campaign.snbt:378-419).
+   reward: Golden carrots (current) ; XP levels
+   mp: Each player has their own item and worn flag. FTB rewards are claimed per player: QuestKey.forReward keys on the player's UUID unless it's a team reward, and da
+* Amulet on the pedestal: opening the border [amulet / exploration|Early] cov=good :: quest='Leave It Behind' (campaign.snbt:469) is accurate, and 'Past the Line'
+   hook: The first supply crate (wave 5) always lands outside the border: 90-110 blocks from the pedestal against an 85-wide border. Blocks past the border can't be used, so the amulet is your ticket to the airdrop and the ruins. While it 
+   detect: Existing shared custom task (quest_milestones.js:105) || Per-player custom task the first time a player is outside the border with the amulet down (amulet_border.js isInside false while td_amuletOnPedestal)
+   nums: BORDER_EXPAND_DELTA 10,000,000 (amulet_pedestal.js:12-16) ; Toggle and chat lines (:18-43). Shrink skipped if the result would be under 50 (:33-40) ; Wave mobs outside are returned (:45-69)
+   cost: Needs the amulet.
+   reward: Ender pearls (current) ; A Waystone
+   mp: One amulet on the stand opens the border for the whole server. In a party, one player can park theirs while the others keep their buffs, so the stay-vs-explore 
+* Boss waves: The Reaper and The Demolisher [events / boss|Waves 10, 20, 30, ...] cov=partial [SPOILER] :: quest='The Reaper' (campaign.snbt:347): its custom task completes on any bos
+   hook: The boss walks to the pedestal, and The Reaper strips it in about 12 seconds. Intercept it out in the ring and hit it to drag it off for 8 seconds at a time (mob_aggro.js:133). The kill pays a totem.
+   detect: Existing shared custom task || Split into two custom tasks by boss type with bossConfigForEntityType (boss_wave.js:59-61): a hidden Demolisher quest revealed on kill
+   nums: Every 10th wave (boss_wave.js:13). Reaper on odd boss numbers, Demolisher on even (:50-55) ; Reaper: 200 HP, 24 attack, speed 0.36 (:19-33). Demolisher: 350 HP, 15 attack, throws no TNT (:34-47) ; Spawn, titles and music (:70-128). Boss bar refreshed every 10 ticks (:188-224)
+   cost: Automatic.
+   reward: Legendary bag (current) ; XP levels (current: 8)
+   mp: A shared fight; everyone gets the boss bar and music. The drops are physical items at the death spot, first come first served. The milestone is shared, and each
+* Supply airdrop (every 5th wave) [events / loot|Waves 5, 10, 15, ...] cov=none :: quest=No quest covers the airdrop. The Arsenal's 'Energized Dust' (arsenal.s
+   hook: Wave 5's crate lands past the wall, so you need the amulet on the pedestal to reach it. Follow the beam or click [Add] on the waypoint. Two diamond blocks, a netherite scrap and a nether star (both drop here) plus one gold block c
+   detect: Shared custom task at landing (wave_airdrop.js:443-453) || Per-player custom task on BlockEvents.rightClicked('dyairdrop:airdroplarge') (:323-333)
+   nums: Every 5th wave (wave_airdrop.js:22). Launch 240 ticks after the clear (:61-64) ; Height +40, approach 200 blocks from the west (:25-29). Landing 90-110 blocks out (:36-37) ; Messages (:75-87, :168-171, :433-453). Waypoint format (:287-293). Unbreakable beacon (:295-312). Removed once
+   cost: Automatic.
+   reward: For the first crate looted: XP levels, a Rare bag, a few grenades ; AVOID: gun-and-ammo kits outside the crate
+   mp: One shared crate per drop: it's a normal container, not Lootr, so first come first served. Everyone gets the messages and the waypoint.
+* Hardcore mode [optional rule|Optional] cov=inaccurate :: quest=Tip 'Go Hardcore' (tips_and_tricks.snbt:294) says any death without a 
+   hook: In a party it's last one standing: if a friend is still alive, your death is a normal respawn. Keep a totem in your off-hand (vanilla rule).
+   detect: Shared custom task in the enable branch (hardcore_toggle.js:16) || Item task minecraft:totem_of_undying for a 'carry insurance' follow-up
+   nums: No permission check (hardcore_toggle.js:1-3). Needs the base to exist (:12-15). Only the player who toggles it ; Game over only when all online players are dead (hardcore_death.js:25-39) ; Kick after 80 ticks (:41-43). Spectator mode (:93-94)
+   cost: A free command.
+   reward: A cosmetic trophy and XP ; At most one totem, and only at a late milestone
+   mp: World-level setting. Offline players don't count. Any member can flip it, and only they are told.
+* Totem of Undying recipe [crafting / hardcore|Mid (loot-gated)] cov=none :: quest=No quest teaches the recipe. 'No Turning Back' only says to keep the t
+   hook: An airdrop is a totem kit minus one gold block. The nether star is shared with the full pedestal heal, so you have to choose.
+   detect: Item task minecraft:totem_of_undying (any source) || KubeJS PlayerEvents.crafted for the crafted case, as a per-player custom task
+   nums: Recipe (hardcore_totem_recipe.js:5-13) ; Boss drop (boss_wave.js:185). Legendary bag weight 8/100 (legendary.json). 'No Turning Back' reward (campaign. ; Loot Beams whitelist includes totems and nether stars (lootbeams/light_config.toml:30-36)
+   cost: KubeJS recipe; ingredients come from loot.
+   reward: A gold block (the missing ingredient) ; XP levels
+   mp: A per-player item.
+* HUD and announcements (action bar, boss bars, sidebar, titles, toasts, sounds) [HUD|All] cov=none :: quest=The HUD as a whole isn't covered.
+   hook: Read the bar: red ⚔ means fight, blue ⏱ means build time, and red capitals mean the pedestal is being hit, wherever you are.
+   detect: n/a. Teach it with a checkmark 'reading the HUD' quest, ideally with an image
+   nums: Action-bar priority (wave_spawner.js:799-805; wave_status.js:326-334; pedestal_health.js:102-126; wave_airdrop ; Sidebar created (playtest_starter_kit.js:506-509), updated on clear (wave_status.js:268), caught up at login ( ; Boss bar for all players (boss_wave.js:111-120)
+   cost: Always on.
+   reward: None
+   mp: Several messages reach only one player: the Base Expansion toast (base_expansion.js:37-38), the 'Horde N - difficulty L' toast (wave_spawner.js:567), the wave-5
+* Quest milestone bridge (quest_milestones.js) [quest bridge|Infrastructure] cov=good :: quest=Every mapped quest exists in campaign.snbt and matches.
+   hook: n/a
+   detect: This is the mechanism for new detections: add a positive-hex id (first character 0-7, IDEAS.md:141-148) to QM_TASKS, then call qmCompleteShared(server
+   nums: Task ids (quest_milestones.js:16-25): horn 5A1C0E7B93D4F216 = 'Sound the Horn'. wave1 6B2D1F8CA4E50327 = 'Wave ; Shared keys (:27-28) ; Polled every 20 ticks on ServerEvents.tick, so clears with nobody online still count (:45, :91-116)
+   cost: n/a
+   mp: With one party, a 'per-player' task completes for everyone in it the first time anyone triggers it. The per-player td_qp_ flags still stop repeats.
+* Bounty kill counter (Bounties chapter) [quest bridge / rewards|All] cov=partial :: quest=bounties.snbt: First Blood, Exterminator, Culling, Reaper, Zombie Mash
+   hook: Traps and turrets earn bounties too, so automation pays.
+   detect: Existing
+   nums: Excluded damage types: drown, starve, freeze, fall, out_of_world, cramming, in_wall, generic_kill (bounty_kill ; Tiers 25/100/300/750 (:37-42). Repeatable every 1500 (:31-32) ; Only td_wave_mob deaths count (:56-60)
+   cost: Automatic.
+   reward: Existing XP 5/10/15/20 plus bags ; Zombie Masher: Legendary bag
+   mp: One shared world count. Completion is per team, and each member claims their own copy of the rewards (per-player claims). Whether more than one member can claim
+* Wave loot bags (BountyBags drops) [loot|All] cov=inaccurate :: quest='Spoils of War' (campaign.snbt:238) gives accurate odds. 'Open It' (:2
+   hook: Kill count pays, not how tough the mob is. Bags carry Shrapnel (for Sentries and shotgun shells) and gold (for the amulet).
+   detect: Existing first-open custom task (quest_milestones.js:38-44) || Set those quests to progression_mode linear (Quest has a per-quest progression_mode key), or stop giving Uncommon bags before wave 1
+   nums: Odds 0.2 / 0.035 / 0.03 / 0.02 (loot_bag_drops.js:22-38). Only td_wave_mob (:25-32) ; Contents are seeded from the JSON; installs read config/bountybags/*.toml (:5-9) ; Shrapnel comes from Uncommon, Rare and Epic bags only (shrapnel.js:1-3; legendary.json has none)
+   cost: Kill drops.
+   reward: Bags as the main reward currency, in escalating tiers
+   mp: Bags drop on the ground, so the first to pick one up gets it.
+* Ruin ring near the base [exploration|Early (beyond the border)] cov=partial :: quest='Past the Line' (campaign.snbt:500) uses a structure task on #kubejs:r
+   hook: The first ruins are about 100-130 blocks out, beyond the early border, so they come once the amulet is on the pedestal.
+   detect: Structure task (existing). Location tasks can't work because positions differ per world
+   nums: RUIN_RING_COUNT 6, 100-130 blocks out (playtest_starter_kit.js:1277-1304). Placement (:1306-1323)
+   cost: Fresh worlds only.
+   reward: Rare bag (current) ; Ender pearls
+   mp: The ruins are shared, but Lootr stashes are per player (outside this scope).
+* /tdforceclear (operator unstick) [admin|Admin] cov=none :: quest=None.
+   hook: For a stuck wave, such as an unreachable glowing straggler.
+   detect: n/a
+   nums: wave_status.js:339-370
+   cost: Op only.
+   mp: Op only. On the dedicated server the user has to grant op themselves.
+  NOTE How to read citations: file:line references point to the absolute paths in each entry's source_files. The repo root is C:/Users/mattf/IdeaProjects/tower-defense-modpack. Jar facts come from javap on the instance jars (extracted under the scratchpad j
+  NOTE Team progress vs per-player rewards (multiplayer). FTB Quests progress is per team, but rewards are claimed per player: dev.ftb.mods.ftbquests.util.QuestKey.forReward keys on the player's UUID unless Reward.isTeamReward(), and data.snbt:6 sets defaul
+  NOTE Flexible progression completes tasks early. data.snbt:24 and campaign.snbt:10 use flexible mode, and TeamData.canStartTasks returns true for FLEXIBLE regardless of dependencies. Examples: 'Spoils of War' (hold an Uncommon bag) is met by bags handed o
+  NOTE FTB Quests 2001.4.22 capabilities, from the jar. Task types: advancement, biome, checkmark, custom, dimension, fluid, forge energy, gamestage, item, kill, location, observation, stat, structure, xp. Observation types: BLOCK, BLOCK_TAG, BLOCK_STATE, B
+  NOTE Progress bars on custom tasks: the snbt max_progress is ignored (bounty_kills.js:211-225). A 'waves cleared n/10' or 'upgrades bought n/9' bar needs the same CustomTask.setMaxProgress plus TeamData.setProgress reflection.
+  NOTE Removed by the user's own choice: the 'It's Up to You Now' quest (12f1176), and 'Three Down' plus the 14 'Kill one' bestiary quests (c94f019, FEATURES.md:9984-10005). Don't re-add per-mob kill quests without a new reason.
+##### inventory_defences-tech.json
+* Wooden Stake [trap|1] cov=good :: quest='Cheap and Cheerful' (campaign.snbt:537-569): item task with subtitle 
+   hook: It hurts you too, and it is consumable: every wave mob on or beside it drains its 20 HP, so stake lines need rebuilding between waves. Mobs are only slowed while they stand on it.
+   detect: Keep the item task (consume_items:false) || KubeJS BlockEvents.placed('simply_traps:stake') -> 'execute as <uuid> run ftbquests change_progress @s complete <customTaskId>' (the qmCompleteForPlay
+   nums: Recipe: 3 logs in a diagonal make 4 stakes (stake_recipe.json in the jar; tier1_recipes.js:1-5 keeps the stock ; Damage per hit = 1.0 x StakeDamageMultiplier 1.0 (StakeEntityCollidesInTheBlockProcedure: dconst_1 * STAKEDMG; ; Damage type minecraft:generic is in vanilla bypasses_armor (1.20.1 jar tag), so it ignores armour
+   cost: 3 logs for 4 stakes, available from the start. Oak logs come from Uncommon bags (weight 70/391, 4-8 per roll; bountybags/loot_tables/items/uncommon.json) and sc
+   reward: a stack of logs ; a handful of stakes as a restock
+   mp: No owner, so anyone can break it. The HP registry is shared world state (td_trapRegistry in worldData; trap_durability.js:9-10). An item task completes for the 
+* Stake Wall [trap|1] cov=none :: quest=No quest. The tier tooltip lists it as Tier 1 (tooltip_tier_colors.js:
+   hook: Despite the name it does not block anything: zombies walk through it bleeding and slowed. The base's own stake walls are permanent, but the ones you add wear out.
+   detect: Item task for simply_traps:stake_wall || Observation BLOCK simply_traps:stake_wall. The player is already looking at them on the base walls, which suits an early 'notice the walls' quest
+   nums: Recipe: 4 logs make 4 Stake Walls (stake_wall_recipe.json, stock) ; Damage per hit = 1.0 x StakeWallDamageMultiplier 1.0 (simplytraps.toml:1; StakeWallEntityCollidesInTheBlockPro ; No collision; it hurts any entity whose hitbox overlaps it (wave_mob_spike_slow.js:3-5)
+   cost: 4 logs for 4, available from the start.
+   reward: logs ; a few Stake Walls
+   mp: No owner. Placed walls share the world trap registry.
+* Spike Trap [trap|1] cov=good :: quest='Better Than Nothing' (campaign.snbt:570-602): item task with subtitle
+   hook: The slowness outlasts the trap by about 3 s, so place spikes inside the reach of your Sentry, I.M.S. or Tesla Coil. A horde caught on spikes stays in the kill zone longer.
+   detect: Item task (existing) || BlockEvents.placed('simply_traps:spike_trap') custom task
+   nums: Recipe: 5 iron ingots in an X make 1 (tier1_recipes.js:11-18). This replaces the stock 3 iron bars + 3 smooth  ; Damage = 2.0 (ldc in SpikeTrapEntityWalksOnTheBlockProcedure) x SpikeDamageMultiplier 2.0 (simplytraps.toml:3) ; Slowness III (amplifier 2) for 60 ticks, re-applied below 50 (wave_mob_spike_slow.js:18)
+   cost: 5 iron ingots each. Iron comes from Uncommon bags (3-5 per roll, weight 30/391), Rare bags and scav_hardware.
+   reward: iron ingots ; 2 spike traps instead of 4, so a party of 4 is not flooded
+   mp: Shared world registry and no owner. The reward of 4 traps is paid to every party member (default_reward_team: false), which is 20 iron worth per player.
+* Trap wear (HP pools on placed traps) [mechanic|1] cov=partial :: quest=Mentioned qualitatively in 'Cheap and Cheerful' ('worn down fast') and
+   hook: Big hitters wear traps faster, because the drain equals the mob's attack damage. Plan to rebuild your trap lines in the gap between waves.
+   detect: Shared custom task fired from trap_durability.js's break branch (lines 143-156), for example qmCompleteShared(server, data, 'trapWorn') from quest_mil
+   nums: Stake 20 HP, Stake Wall 20 HP, Spike Trap 60 HP (trap_durability.js:16-18) ; Reach 1.2 blocks from the trap centre to the mob's feet (trap_durability.js:29) ; Check every 20 ticks (trap_durability.js:31)
+   cost: Applies automatically to every placed Simply Traps block.
+   reward: iron or logs to rebuild ; XP levels
+   mp: The registry lives on the pedestal marker, so it is shared by the party.
+* Lure Block [trap|1] cov=good :: quest='Dinner Bell' (campaign.snbt:603-635): item task with subtitle 'A Targ
+   hook: Place it past your spike line so the horde has to walk the traps to reach it. Standing next to mobs, or hitting them, overrides the lure for you.
+   detect: Item task (existing) || BlockEvents.placed('kubejs:lure_block') custom task: 'Ring the bell'
+   nums: Recipe FRF/RTR/FRF: 4 rotten flesh, 4 redstone, 1 target block (lure_block.js:5-15) ; Duration 1200 ticks = 60 s (lure_block.js:17) ; Pull radius 40 blocks, horizontal (lure_block.js:20)
+   cost: 4 rotten flesh, 4 redstone and a target block (vanilla target = hay bale + 4 redstone).
+   reward: a spare Lure Block ; rotten flesh and redstone
+   mp: The lure is a world entity, so it pulls mobs away from everyone. Its countdown advances only while a player is online in that dimension (PlayerEvents.tick, lure
+* Bouncing Betty [trap|2] cov=partial :: quest='Bouncing Betty' (campaign.snbt:719-745): item task, subtitle correct.
+   hook: Keep a stack: it is a mine, the I.M.S.'s refill, and the core of a Claymore. Stepping on your own Betty wastes it but cannot hurt you.
+   detect: Item task || BlockEvents.placed custom task
+   nums: Recipe ' P '/'IGI': heavy weighted pressure plate + 2 iron + 1 gunpowder, kept stock (securitycraft_traps.js:5 ; Explosion power 6.0 (BouncingBetty.explode picks 3.0f/6.0f; smallerMineExplosion=false, securitycraft-server.t ; Fuse 15, so it explodes on the 16th tick (mine_player_safety.js:11-17)
+   cost: 4 iron and 1 gunpowder. Gunpowder comes from Uncommon bags (15/391) and scav_hardware.
+   reward: gunpowder ; a heavy weighted pressure plate
+   mp: It belongs to whoever placed it. Non-owners cannot break SecurityCraft blocks (allow_breaking_non_owned_blocks=false, securitycraft-server.toml:107), and FTB Te
+* Claymore [trap|2] cov=good :: quest='Claymore' (campaign.snbt:746-772): item task; the subtitle and text m
+   hook: It only fires forward. Aim it down a lane. Defuse it with Wire Cutters (shears + 4 iron) before moving it.
+   detect: Item task || BlockEvents.placed custom task
+   nums: Recipe HSH/SBS/RGR: 2 tripwire hooks, 3 string, 1 Bouncing Betty, 2 redstone, 1 gunpowder (claymore.json, stoc ; Explosion power 3.5 (ClaymoreBlock.explode picks 1.5f/3.5f): up to 50 damage, 7-block reach (tooltip_tier_colo ; Range option: default 5, adjustable 1-10 (ClaymoreBlockEntity IntOption 'range')
+   cost: Consumes a Bouncing Betty plus string, tripwire hooks, redstone and gunpowder (scav_hardware carries tripwire hooks and string).
+   reward: Wire Cutters ; string and tripwire hooks
+   mp: Owned by the placer; only the owner can break it (securitycraft-server.toml:107).
+* Sentry [turret|2] cov=partial :: quest='Sentry' (campaign.snbt:773-799): item task, subtitle correct. The tex
+   hook: Ignore the 'Camouflage' placement message: it is already set to hostiles only. Only the person who placed it can reconfigure it. A Speed Module (7 iron, paper, sugar) doubles its fire rate.
+   detect: Item task || Observation task, observe_type ENTITY_TYPE, to_observe securitycraft:sentry (proves one was placed)
+   nums: Recipe SDR/IPI/IBI: 1 Shrapnel, Dispenser, redstone, 4 iron, Portable Radar (7 iron + redstone torch + redston ; Bullet damage 8 (securitycraft-server.toml:77). This is a SERVER config, applied to new worlds only (:70-74) ; Fires every 10 ticks (2/s), or every 5 with a Speed Module (Sentry.getShootingSpeed)
+   cost: Needs Shrapnel, which only comes from fighting, plus 20 iron and a dispenser (bow, cobblestone, redstone). The boss also drops one Sentry (boss_wave.js:183).
+   reward: Shrapnel ; Speed Module
+   mp: Owner-only interaction (Sentry's interact method checks isOwnedBy). Team co-ownership is off (securitycraft-server.toml:28-34), so a teammate cannot change its 
+* Electrified Iron Fence [trap|2] cov=partial :: quest='Electrified Fence' (campaign.snbt:800-826): item task, subtitle corre
+   hook: Zombies will not path through fences, so use fences to build funnels, and anything waiting beside one takes 6 damage a second. Build an extra fence: the Chemthrower Turret recipe eats one.
+   detect: Item task || BlockEvents.placed custom task
+   nums: Recipe ' I '/'IFI'/' I ': 4 iron + 1 oak fence (securitycraft_traps.js:41-50) ; Pack shock: every 20 ticks, 6 damage of type securitycraft:electricity to MONSTER-category mobs within 0.5 blo ; securitycraft:electricity bypasses armour (SecurityCraft's bypasses_armor tag)
+   cost: 4 iron and an oak fence.
+   reward: iron ingots ; an oak fence stack
+   mp: Owned by the placer, and only the owner can break it. The starter gate fences are claimed by the first player to log in (playtest_starter_kit.js:1363-1378).
+* I.M.S. (Intelligent Munitions System) [turret|2] cov=partial :: quest='I.M.S.' (campaign.snbt:827-853): item task, subtitle correct. The tex
+   hook: Put a chest of Bouncing Betties directly underneath it and it reloads itself, which is also how a teammate can keep your I.M.S. fed. A Speed Module halves the reload. Modules go in through a Universal Block Modifier (emerald + 2 i
+   detect: Item task || KubeJS check (in an existing throttled tick, or on BlockEvents.placed of a chest) that a container with Betties sits directly under an I.M.S.: 'Automa
+   nums: Recipe 'BPB'/' I ': 2 Bouncing Betties, Portable Radar, 1 iron ingot; 16 iron in total (securitycraft_traps.js ; Starts with 4 bombs (IMSBlockEntity: bombsRemaining = 4) ; Range option: default 15, adjustable 1-30 (IMSBlockEntity IntOption 'range')
+   cost: 2 Bouncing Betties and a Portable Radar. Running cost: one Betty (4 iron + gunpowder) per shot.
+   reward: 4 Bouncing Betties as a full reload ; Speed Module
+   mp: Owner-only hand refill and configuration. Feeding it from a chest underneath works for anyone.
+* SecurityCraft Mine, block mines and Track Mine (craftable, not in the roster) [trap|2 (unassigned)] cov=none :: quest=No quest, and absent from tooltip_tier_colors.js. Whether these were m
+   hook: A Sand Mine looks exactly like the desert floor.
+   detect: Item task || BlockEvents.placed custom task (for example 'Hide a Sand Mine')
+   nums: Mine: ' I '/'IGI' makes 3 (mine.json). Power 3.0 (MineBlock.explode picks 1.0f/3.0f): up to 43 damage, 6-block ; Block mines: shapeless block + Mine (for example sand_mine.json). Power 5.0 (BaseFullMineBlock.explode picks 2 ; Track Mine: 'I I'/'ISI'/'IGI' makes 6. Power 6.0 (TrackMineBlock)
+   cost: Very cheap. A Mine costs about 1 iron each, against 4 iron for a Bouncing Betty.
+   reward: gunpowder ; 3 Mines
+   mp: Owned by the placer (SecurityCraft ownership rules).
+* SecurityCraft utility kit: Wire Cutters, modules, Universal Block Modifier, Taser, Remote Access Sentry [weapon/tool|2] cov=partial :: quest=Only the 'Claymore' quest names Wire Cutters and flint and steel. Modu
+   hook: The cheapest damage upgrade in Tier 2 is the Speed Module: it doubles a Sentry's or I.M.S.'s output for 7 iron.
+   detect: Item tasks per tool (one quest per item, per the IDEAS.md:278-285 working principle) || KubeJS entity interaction with a Sentry while holding a speed_module: 'Overclock' custom task
+   nums: Wire Cutters: shears + 4 iron (wire_cutters.json) ; Speed Module: 7 iron + paper + sugar (speed_module.json). Sentry fire interval 10 -> 5 ticks (Sentry.getShooti ; Universal Block Modifier: emerald + 2 iron + 2 redstone (universal_block_modifier.json)
+   cost: Sugar (scav_dairy), paper (scav_filler) and emeralds (Uncommon quest rewards, MID/HIGH stash pools) come from loot.
+   reward: Speed Module (fits a Sentry or I.M.S. milestone) ; Wire Cutters (fits the Claymore quest)
+   mp: Modules can only be inserted by the owner of the target block or entity.
+* Shrapnel [crafting_material|2 feeder] cov=inaccurate :: quest='Open It' (campaign.snbt:245) says 'every bag can carry Shrapnel, the 
+   hook: Every kill is a chance at Tier 2 tech. You cannot mine or craft Shrapnel, only fight for it.
+   detect: Item task for kubejs:shrapnel (consume_items:false) || Pairs naturally with the 'Spoils of War' and 'Open It' bag quests
+   nums: Uncommon bag: 2-4, weight 20/391 per roll, 3 rolls (uncommon.json:23) ; Rare: 4-8, weight 25/193, 3 rolls (rare.json:17) ; Epic: 6-10, weight 20/137, 4 rolls (epic.json:13)
+   cost: Only from kills.
+   reward: Shrapnel itself, the thematic reward for kill and bounty milestones ; an Uncommon or Rare bag
+   mp: Bags drop per kill. A quest item task completes for the whole party.
+* Friendly-fire and block safety for player defences [mechanic|all] cov=partial :: quest=Scattered. 'Electrified Fence' says it never hurts players (correct). 
+   hook: You can stand in your own minefield and loot bags survive your blasts, but your spikes still bite you.
+   detect: A tips-chapter checkmark quest || An item task on the first explosive bought, carrying the rule in its description
+   nums: Friendly blast = exploder is null, a player or a Sentry; it spares players, minecraft:item and minecraft:exper ; The pedestal block and the airdrop beacon are removed from every explosion's block list (explosion_player_safe ; OMT turrets cannot target players (omtreborn-common.toml:20), and their projectiles cannot destroy blocks (:11
+   cost: Always on.
+   reward: none needed: this is a tip, so 1 XP level
+   mp: This protects teammates too: no team-kill from mines or turrets.
+* Ownership of placed defences (multiplayer) [multiplayer|2-4] cov=none :: quest=No quest mentions it.
+   hook: Whoever places a SecurityCraft defence is its only operator, so decide who builds what.
+   detect: A tips checkmark quest in a multiplayer section || If the user wants party-wide control: flip enable_team_ownership to true (the FTB Teams precedence is already set). That is a config decision for the 
+   nums: enable_team_ownership = false; team_ownership_precedence = [FTB_TEAMS, VANILLA] is already configured (securit ; allow_breaking_non_owned_blocks = false (securitycraft-server.toml:105-107) ; Sentry interaction and I.M.S. hand refill both check isOwnedBy (Sentry interact method; IMSBlock.use)
+   cost: Configuration, not a craftable.
+   reward: n/a
+   mp: This is the main friction point for a party of 2-4 sharing one base.
+* Item Collector [storage|2 (support)] cov=good :: quest='Waste Not' (campaign.snbt:686-718): item task; the subtitle and text 
+   hook: Put one on a chest at the edge of the kill zone and it vacuums up loot bags while you fight. It feeds whatever it is attached to. Whether that works on the Culinary Generator, to burn rotten flesh automatically, is plausible from 
+   detect: Item task (existing) || BlockEvents.placed custom task
+   nums: Recipe ' Q '/' R '/'PPP': quartz, redstone block, 3 ender pearls (tier2_recipes.js:4-16; the stock recipe was  ; Basic collector maximum range defaults to 5 (configurable 1-10); no filter (ItemCollectorsConfig basicCollecto ; Output goes to the item handler on the face it is attached to (CollectorBlockEntity.getOutputItemHandler reads
+   cost: Quartz and redstone blocks come from Rare bags. Ender pearls come from Rare and Epic bags and from HIGH-tier stashes.
+   reward: ender pearls ; a chest
+   mp: No ownership; it serves everyone.
+* Culinary Generator and generator upgrade chain [power|3] cov=partial :: quest='Wired Different' (campaign.snbt:994-1030): observation task on the ge
+   hook: Zombies are fuel: rotten flesh burns. Anything touching the generator draws power directly, and anything on the network draws through a Flux Point.
+   detect: Observation BLOCK generatorgalore:culinary_generator (existing) || Item task for generatorgalore:copper_generator, opening a 'build a second generator' branch
+   nums: Pack config: generationRate 4096, transferRate 4096, bufferCapacity 100000, fuelType FOOD (culinary.json:2-7). ; Recipe ICI/IGI/ERE: 4 crops, bread, Gold Generator, 2 eggs, redstone block (tier3_loot_aligned_recipes.js:16-2 ; Copper, Iron and Gold generators burn solid fuel at 8, 16 and 32 FE/t (jar data/generatorgalore/generators/cop
+   cost: Pre-built. A second one costs a full Copper, Iron and Gold generator chain plus bread, crops and eggs (eggs come from scav_dairy loot).
+   reward: food stacks (bread, cooked beef) ; eggs (a loot-only ingredient)
+   mp: Shared block; anyone can feed it.
+* Flux Networks: Plug, Point, Basic Flux Storage, House Grid [power|3] cov=partial :: quest='No Cables Needed' (campaign.snbt:1031-1063) asks for a Flux Plug item
+   hook: Plug = in, Point = out. Every machine you add needs its own Point, and Points cost gold blocks.
+   detect: Item task for fluxnetworks:flux_point as a separate quest (one quest per item) || BlockEvents.placed('fluxnetworks:flux_point') custom task
+   nums: Flux Dust: lapis block + 4 redstone makes 4 (tier3_loot_aligned_recipes.js:58-63) ; Flux Core: 4 dust + 4 gold blocks + 1 ender pearl makes 4 (tier3_loot_aligned_recipes.js:44-56) ; Flux Point: 4 cores + redstone block (fluxpoint.json). Derived: about 4 gold blocks (36 gold) and 1 ender pear
+   cost: Gold-heavy. Gold comes as 6-9 ingots per Rare-bag roll (weight 45/193) and as gold blocks from Epic bags and HIGH-tier stashes.
+   reward: lapis block and redstone (Flux Dust inputs) ; an ender pearl
+   mp: House Grid is PUBLIC, so teammates can join their Points. Only the first player to log in can edit or delete it (starter_flux_network.js:23-27).
+* Tesla Coil [turret|3] cov=good :: quest='Sparks in the Dark' (campaign.snbt:1064-1098): item task. The subtitl
+   hook: It picks a random target, not the nearest, and burns power whenever its lever is on. Put it where the horde bunches up and switch it off between waves.
+   detect: Item task (existing) || Shared milestone from tesla_coil_cinematics.js's EntityEvents.hurt branch for 'ieTesla' (lines 25-44): 'first zap'
+   nums: Recipe ' L '/'DGD'/'sNs': lightning rod, 2 diamond blocks, gold block, 2 steel, netherite ingot (tier3_loot_al ; Zap cycle every 32 ticks (TeslaCoilBlockEntity.tickServer gameTime % 32) ; Range 6 blocks, 3 in low-power mode (ldc 6.0, divided by 2.0)
+   cost: Expensive: 2 diamond blocks (Epic bags 12/137; airdrops 2-4) and a netherite ingot (4 scrap + 4 gold).
+   reward: a lightning rod (existing) ; a netherite ingot's gold half (4 gold)
+   mp: Shared block, no owner rules found.
+* Immersive Engineering Gun Turret [turret|3] cov=inaccurate :: quest='Point and Shoot' (campaign.snbt:1132-1164): item task. The subtitle (
+   hook: No bullets, no shots. Load Casull rounds, then craft the casings it hands back into new rounds.
+   detect: Item task (existing) || Item task for immersiveengineering:casull as its own quest
+   nums: Recipe ' s '/' gc'/'bte': Precision Scope (toolupgrade_railgun_scope), IE Revolver, Sentry, Revolver Magazine, ; Range 16 (TurretGunBlockEntity.getRange) ; Charge-up 5 + active 5 ticks, so 2 shots/s
+   cost: Consumes a Sentry, the Tier 2 to Tier 3 recipe link, plus a long steel chain (see the IE components entry).
+   reward: 8 Casull rounds as a starter magazine (crafted ammo, not a machine output) ; gunpowder
+   mp: The GUI belongs to the owner (TurretBlockEntity.hasOwnerRights). Whether teammates can load ammo by hopper is unverified.
+* Immersive Engineering Chemthrower Turret [turret|3] cov=partial :: quest='Liquid Fire' (campaign.snbt:1165-1197): item task. The text (pre-lit,
+   hook: It needs fluid, not bullets. Build a Coke Oven to turn coal into creosote, and leave Ignite on.
+   detect: Item task (existing) || FTB Quests fluid task for creosote (1000 mB in a tank item or bucket): a 'Fuel it' sub-quest
+   nums: Recipe: Precision Scope, Chemthrower, Electrified Iron Fence, Metal Barrel, Turntable, Redstone Engineering Bl ; Ignite set on placement only (tier3_turret_recipes.js:40-49) ; Range 8, tank 4000 mB, charge-up 10 ticks (TurretChemBlockEntity)
+   cost: Consumes an Electrified Iron Fence plus the Chemthrower chain: heavy engineering (gold version), wooden grips, fluid pipe, drill waterproof upgrade (blue dye).
+   reward: clay balls and sandstone (Coke Oven inputs) ; coal
+   mp: Same IE owner-rights rule as the Gun Turret.
+* Steel and the Immersive Engineering parts chain [crafting|3] cov=none :: quest=No quest. The parts are only listed in the turret subtitles. 'Fragment
+   hook: No IE machines are needed. A vanilla Blast Furnace makes steel, and the Hammer and Wirecutter work in the crafting grid.
+   detect: Item tasks: one quest each for Steel Ingot, Engineer's Hammer and Turntable, mirroring the recipe chain into the Gun/Chem Turret quests || Advancement tasks are possible if IE's advancements cover these items (unverified)
+   nums: Steel: iron ingot in a Blast Furnace, 200 ticks, 0.7 xp (tier3_loot_aligned_recipes.js:66-70) ; Heavy Engineering uses gold instead of electrum: 4 steel sheetmetal, 4 steel components, 1 gold make 4 (tier3_ ; Treated wood: plank + coal + plank make 2 (tier3_loot_aligned_recipes.js:84-91)
+   cost: Iron, copper, coal, string, glass and amethyst (for the spyglass), all from loot or mob drops.
+   reward: copper ingots ; coal
+   mp: Personal crafting; item tasks complete for the whole team.
+* Refined Storage network [storage|3] cov=inaccurate :: quest='The Grid' (campaign.snbt:1099-1131): item task for the Controller. 'E
+   hook: Disks hold the items. External Storage on a chest or barrel pulls that container into the Grid. Put a Flux Point next to the Controller.
+   detect: Item tasks: Controller, Disk Drive, Grid, 1k disk, External Storage (one per item) || Observation BLOCK refinedstorage:controller
+   nums: Controller: 4 Quartz Enriched Iron, Advanced Processor, 2 silicon, Machine Casing (controller.json) ; Quartz Enriched Iron: 3 iron + quartz make 4 (quartz_enriched_iron.json). Silicon: smelted quartz ; Processor Binding: string + rotten flesh + string make 8, in place of slime (tier3_loot_aligned_recipes.js:118
+   cost: Quartz, iron, diamond, glass and rotten flesh.
+   reward: quartz ; a diamond
+   mp: No security unless a Security Manager is built; everyone shares the Grid.
+* Sophisticated Storage barrels and upgrades [storage|3 per tooltip (built early)] cov=good :: quest='Room to Grow', 'Bigger on the Inside' and 'Iron Sides' (campaign.snbt
+   hook: Upgrades go in the slots on the right side of the barrel's screen. Tier upgrades are used on the placed barrel.
+   detect: Item tasks (existing) || Observation BLOCK sophisticatedstorage:barrel
+   nums: Barrel: 6 oak planks, 2 oak slabs, lever (oak_barrel.json) ; Upgrade Base: 4 iron + 5 planks (upgrade_base.json) ; Stack Upgrade T1: base + 8 logs, x2. T2: T1 + 6 iron + 2 iron blocks, x4. T3: T2 + 6 gold + 2 gold blocks, x8.
+   cost: Planks and iron early, then gold and diamond.
+   reward: iron ingots ; logs
+   mp: No ownership; shared base storage.
+* Sophisticated Backpacks [storage|early] cov=good :: quest='Pack Mule' (campaign.snbt:660-685): item task; text matches the code.
+   hook: Wear it on your back and press B, so loot runs past the border don't end with a full inventory.
+   detect: Item task (existing) || Item tasks for each backpack tier
+   nums: Backpack: 4 string, 4 leather, chest (backpack.json) ; Each tier is 8 ingots of its material around the previous backpack (copper_backpack.json, iron_backpack.json,  ; Slots: 27, 45, 54, 81, 108, 120; upgrade slots: 1, 1, 2, 3, 5, 7 (sophisticatedbackpacks-server.toml:28-79)
+   cost: Leather and string come from Uncommon bags and scav_filler.
+   reward: leather ; string
+   mp: Teammates can right-click a backpack you are wearing to open it (allowOpeningOtherPlayerBackpacks). Each player needs their own backpack.
+* Crafting Station [crafting|starter] cov=good :: quest='Reach Further' in Tips (tips_and_tricks.snbt:254-275): checkmark task
+   hook: Build your stash around it instead of carrying materials to it.
+   detect: Replace the checkmark with observation BLOCK craftingstation:crafting_station
+   nums: Recipe: crafting table, shapeless (crafting_station.json) ; Pre-placed in the command post (playtest_starter_kit.js:1017)
+   cost: Pre-built; a crafting table makes another.
+   reward: 1 XP level
+   mp: Shared block.
+* OMT Reborn Turret Bases (tiers, power, ammo) [turret|4] cov=none :: quest=No quest. 'Fragmentation' and 'Fire for Effect' only say 'Mount one on
+   hook: Match the base tier to the head: Grenade needs Tier 2+, Rocket needs Tier 3+, or the head pops off. Load ammo into the base.
+   detect: Item tasks for turret_base_tier_2 and turret_base_tier_3, each gating its head quest || Observation BLOCK omtreborn:turret_base_tier_2
+   nums: Base capacity / max IO / max heads: T1 500/50/1, T2 35,000/100/1, T3 150,000/1,000/2, T4 500,000/2,500/3, T5 1 ; Recipes: T1 4 logs + 4 cobblestone + furnace; T2 4 cobblestone + 2 ferronite + 2 iron + IO bus; T3 5 cobbled d ; A head whose turretTier is above the base tier is destroyed with drops (TurretHeadBlockEntity.updateChecks cal
+   cost: Ferronite and IO Buses (gold + 3 redstone + ferronite).
+   reward: IO Bus inputs (gold, redstone) ; cobblestone or deepslate stacks
+   mp: Bases have owner and trust settings (unverified detail). Players can never be targeted (omtreborn-common.toml:20).
+* Grenade Turret (OMT) [turret|4] cov=partial :: quest='Fragmentation' (campaign.snbt:1198-1230): item task. The text is corr
+   hook: Area denial for bunched hordes, but it cannot hit what is hugging the turret. Keep spikes or a fence between the turret and the mobs.
+   detect: Item task (existing) || EntityEvents.spawned('omtreborn:grenade_projectile') shared milestone; tier4_turret_fx.js:38-51 already hooks it
+   nums: Recipe ' T '/'KCA'/'SSS': Sensor T2, Cauldron, Chamber T2, Barrel T2, 3 stone (grenade_turret.json) ; Range 18, minimum range 4, fire rate 40 ticks, damage 5, 500 FE per shot, accuracy deviation 26.5, max 3 simul ; Blast: every living entity within a 3-block box takes damage x0.9 as normal damage plus x0.1 armour-bypassing 
+   cost: Tier 2 internals with about 3.5 ferronite, plus a Tier 2 base with about 3 more.
+   reward: 8 grenade ammo ; iron nuggets and gunpowder
+   mp: Shared block. Never targets players.
+* Rocket Turret (OMT) [turret|4] cov=partial :: quest='Fire for Effect' (campaign.snbt:1231-1263): item task. The text (Ferr
+   hook: Long range, but rockets need Ferronite too. Budget ammo, not just the turret.
+   detect: Item task (existing) || EntityEvents.spawned('omtreborn:rocket_projectile') shared milestone (tier4_turret_fx.js)
+   nums: Recipe 'NT '/'NCA'/'DFD': 2 TNT, Sensor T3, Chamber T3, Barrel T3, 2 cobbled deepslate, Ferronite Frame (rocke ; Range 30, minimum 5, fire rate 42 ticks, damage 8, 5,000 FE per shot, max 3 simultaneous (OMTConfig$ConfigTurr ; Blast box 5 blocks (RocketProjectile.explode ldc 5.0)
+   cost: About 17 ferronite for the head (FEATURES.md:5321-5322; recount: Sensor T3 11, Chamber T3 1.5, Frame 4), plus the Tier 3 base.
+   reward: rocket ammo (4) ; gunpowder
+   mp: Shared block.
+* Ferronite chain [crafting_material|4] cov=partial :: quest=Named in 'Fragmentation' and 'Fire for Effect' text; no quest of its o
+   hook: No mining needed: steel and redstone become Ferronite.
+   detect: Item tasks for raw_ferronite, then ferronite_ingot, then io_bus
+   nums: Raw Ferronite: 2 IE steel + 1 redstone (tier4_turret_recipes.js:7-12) ; Ingot: smelting 200 ticks or blasting 100 (ferronite_ingot_smelting.json, ferronite_ingot_blasting.json) ; IO Bus: gold + 3 redstone + ferronite (io_bus.json). Coil: 4 copper + ferronite make 2 (ferronite_coil.json). 
+   cost: Each ingot costs about 2 iron (as steel) and 1 redstone.
+   reward: redstone ; copper ingots (for coils)
+   mp: Personal crafting.
+* Other craftable OMT heads, upgrades and addons (not in the roster) [turret|4 (unassigned)] cov=none :: quest=No quest, no tooltip tier line.
+   hook: The Range Upgrade (+2 per the config's rangeUpgrade) and Fire Rate Upgrade make Tier 4 scale. This is a user design decision.
+   detect: Item tasks, if the user keeps them || Otherwise remove the recipes with event.remove, keeping the book and JEI in sync (IDEAS.md:278-285)
+   nums: Machine Gun Turret: Sensor T2 + hopper + Chamber T2 + Barrel T2 + 3 stone. Head tier 2. Range 18, fire rate 10 ; Incendiary Turret: 2 magma blocks + T3 parts + frame. Head tier 3. Range 18 (minimum 4), 38 ticks, damage 2, 1 ; Potato Cannon Turret: tier 1, range 12, 20 ticks, damage 1, potato ammo. Disposable Item Turret: tier 1, range
+   cost: Varies. The Machine Gun Turret is cheaper than the Grenade Turret.
+   reward: a Range Upgrade as a Tier 4 capstone (quartz, diamond, IO bus)
+   mp: Same base rules.
+* Pistol-ammo guns: Pistol, Revolver, Submachine Gun, Tommy Gun [weapon|early to mid] cov=inaccurate :: quest=Arsenal (arsenal.snbt:12-107, 372-395): item tasks worth 1 level each.
+   hook: R reloads from your inventory, and one ammo type feeds four guns. Craft up the chain: Pistol, then SMG, then Tommy Gun.
+   detect: Item tasks (existing) || EntityEvents.death of a td_wave_mob whose direct source entity type starts with simple_guns_reworked: (gun_damage_bump.js already filters on that name
+   nums: Pistol: iron nugget, tripwire hook, 4 iron, stone button (r_5). Revolver: 2 nuggets, hook, 2 iron, button, pla ; Pistol Ammo: 5 iron nuggets + gunpowder + stone button make 5 (r_1) ; Magazines from the ReloadProcedure blocks: Pistol 15, Revolver 6, SMG 32 (check below 32, loop 32, cap 32.0), 
+   cost: All craftable from iron, nuggets, tripwire hooks and stone buttons.
+   reward: a stack of Pistol Ammo ; iron nuggets
+   mp: Personal weapons. Item tasks complete for the whole party, so teammates skip the lesson. Lootr prize rolls are per player (structure_loot_progression.js:7-8).
+* Shotguns and Shotgun Ammo [weapon|mid] cov=partial :: quest=Arsenal (arsenal.snbt:108-179, 420-443): magazine sizes correct. 'Shot
+   hook: Shells cost Shrapnel, so the shotgun is fed by the fighting it does.
+   detect: Item tasks (existing) || Gun-kill custom task, as for the pistols
+   nums: Shotgun: 2 iron, tripwire hook, stone button, plank (r_8). Double-Barrel: nugget, 3 iron, hook, button, plank  ; Shotgun Ammo: 4 iron nuggets, Shrapnel (replacing gravel), gunpowder, 2 gold nuggets, stone button make 5 (r_3 ; Magazines 5, 2 and 9 (ReloadProcedure)
+   cost: Craftable. The ammo is gated by Shrapnel.
+   reward: Shotgun Ammo ; gold nuggets
+   mp: Personal weapons.
+* Rifles: DMR, Sniper, Heavy Sniper (Rifle and Sniper Ammo) [weapon|mid] cov=good :: quest=Arsenal (arsenal.snbt:180-251, 396-419, 444-467): ammo pairings and ma
+   hook: The Sniper takes Rifle Ammo despite its name, and G zooms.
+   detect: Item tasks (existing) || Gun-kill custom task
+   nums: DMR: nugget, 4 iron, tripwire hook, 2 planks (r_14). Sniper: nugget, hook, 3 iron, 2 planks (r_11). Heavy Snip ; Rifle Ammo: 2 gold nuggets, 2 gunpowder, 4 iron nuggets, button make 5 (r_2). Sniper Ammo: 4 iron nuggets, dia ; Magazines: DMR 8, Sniper 5, Heavy Sniper 5 (ReloadProcedure)
+   cost: Craftable; Sniper Ammo costs a diamond per 4 rounds.
+   reward: Rifle Ammo ; gold nuggets
+   mp: Personal weapons.
+* Bazooka and Rocket [weapon|mid] cov=good :: quest=Arsenal (arsenal.snbt:276-299, 492-515): correct, but it doesn't say t
+   hook: Your rockets cannot hurt you or wreck your base, so fire into the crowd at the gate.
+   detect: Item tasks (existing)
+   nums: Bazooka: redstone, 2 iron blocks, plank, nugget, iron (r_16). Rocket: TNT over an iron ingot makes 1 (r_15) ; Impact explosion power 3.0 (BazookaProjectileHitsBlockProcedure): up to 43 damage, 6-block reach by the vanill ; TNT comes from Rare bags (weight 10/193, 1-2) and gas stations
+   cost: Craftable; each shot costs a TNT.
+   reward: TNT ; 2 Rockets
+   mp: Personal weapon.
+* Flame Thrower and Fuel Tank [weapon|mid] cov=good :: quest=Arsenal (arsenal.snbt:300-323, 516-539): correct.
+   hook: It is a lighter, not a gun. Spray, then back off while they burn.
+   detect: Item tasks (existing) || Death by on_fire damage after a flame-thrower hit (bounty_kills.js counts fire)
+   nums: Flame Thrower: copper, 2 iron, iron block, empty fuel tank, torch (rlanzallamas). Empty tank: 4 iron + copper  ; Fuel Tank refill: empty tank + 2 gunpowder + 2 coal (tier3_loot_aligned_recipes.js:136-144) ; 30 charges per tank (ReloadProcedure 30.0)
+   cost: Craftable.
+   reward: a full Fuel Tank ; coal and gunpowder
+   mp: Personal weapon.
+* Loot-only exotics: Laser Gun and Energized Dust, Minigun, Potato Cannon and Charged Potato [weapon|late (loot)] cov=partial :: quest=Arsenal (arsenal.snbt:252-275, 324-371, 468-491, 540-563): mechanics d
+   hook: Some guns are only earned by surviving to the 5th, 10th, 15th wave... and claiming the crate.
+   detect: Item tasks (existing). Mark them optional or use a different shape so the unreachable recipe doesn't read as a crafting goal
+   nums: Laser Gun recipe: 2 shulker shells + amethyst + 3 iron (rlsar). The pack assumes no End visits (tier3_loot_ali ; Energized Dust: amethyst + glowstone + redstone make 4 (rdut). Glowstone has no source in the pack's loot tabl ; Minigun: no recipe in the jar. Legendary bag weight 10/100 (legendary.json:9); airdrop 2/92 (wave_airdrop.json
+   cost: Airdrop every 5th wave, Legendary bags, or far stashes (for blaze powder).
+   reward: ammo for whichever exotic the team found (Energized Dust is not craftable here) ; blaze powder (scarce)
+   mp: Each airdrop is one shared crate, and only one gun package rolls per crate (wave_airdrop.json pool 4), so the party must decide who gets the gun.
+* Throwables: Grenade (Simple Guns) and Bomb (Supplementaries) [weapon|early to mid] cov=partial :: quest=Arsenal 'Grenade' (arsenal.snbt:564-587): correct. The Supplementaries
+   hook: Throw into the crowd at the wall; your own grenade can't hurt you.
+   detect: Item tasks
+   nums: Grenade: 4 iron nuggets + gunpowder make 1 (rgrneade). Power 2.0, no block interaction: up to 29 damage, 4-blo ; Grenade sources: scav_armory 8/110, 1-2 (scav_armory.json:51); airdrop 2-4 (wave_airdrop.json:68); prize pool  ; Bomb: TNT + 4 iron + string make 4 (bomb.json). The cannon is disabled (supplementaries-common.toml:7-14); bom
+   cost: Cheap and craftable.
+   reward: 2-4 grenades ; gunpowder
+   mp: Friendly to teammates as well.
+* Airdrop supply crate (the exotic-weapon source) [weapon_source|every 5th wave] cov=partial :: quest=No campaign quest. Arsenal mentions the airdrop only for Energized Dus
+   hook: The crate is the only source of some guns, and there is one per drop for the whole team.
+   detect: Shared custom task from wave_airdrop.js's crate-looted check (airdropCrateLooted, line 340)
+   nums: Interval 5 waves (wave_airdrop.js:22,92) ; Contents: Legendary bag (wave_airdrop.json:7), 2-4 netherite scrap (:15), 2-4 diamond blocks (:27), 20% nether ; A plain container, not Lootr: one shared roll (structure_loot_progression.js:12-15,112-113)
+   cost: Survive and clear each 5th wave.
+   reward: n/a (it is a reward source)
+   mp: One crate per drop, shared and first-come. Plan who opens it.
+* Tier tooltip lines [ui|all] cov=none :: quest=None.
+   hook: The tooltip is a free cheat sheet for comparing defences.
+   detect: A tips-chapter checkmark: 'Hover any defence for its tier and damage'
+   nums: Labels: 'Tier 1 - Starting Defense', 'Tier 2 - Automated Defense', 'Tier 3 - Energetic Defense', 'Tier 4 - Eli ; Tiered items list (:13-32). The Lure Block and the guns are not in it ; Damage lines (:43-57). The Chemthrower Turret's '~12/s' is not backed by the creosote effect (0 direct damage 
+   cost: Always on.
+   reward: 1 XP level
+   mp: Client-side, so every player sees it.
+* Starter defences (pre-placed Sentry, Tesla Coil, electrified gate) and their removal [story_beat|starter] cov=none [SPOILER] :: quest=No quest, which keeps the surprise.
+   hook: Learn on the borrowed defences, then rebuild them yourself. The beat is the motivation for the Tier 2 branch.
+   detect: A hidden quest (hide_until_deps_complete) with a custom task completed by a quest_milestones.js-style poll of td_starterTrapsRemoved: 'Rebuild the gat || Early observation quests ('look at the Tesla Coil on the gate') that teach what these defences do without hinting at their loss
+   nums: Placement: coil at doorX+5 with lever and Flux Point, Sentry at doorX-5, fences doorX-2..+2 for the full wall  ; Removal on wave 5's clear: STARTER_TRAPS_REMOVAL_WAVE = 5 (wave_status.js:34-36,83-117). The Sentry's item dro ; Auto-lever radius 9 blocks, checked every 20 ticks, only until removal (tesla_coil_auto_power.js:11-26)
+   cost: Free until wave 5.
+   reward: for the post-beat 'Rebuild the gate' quest: Shrapnel and an iron block toward a Sentry, or
+   mp: Shared world state. The fences are owned by the first player to log in.
+  NOTE Multiplayer reward inflation: data.snbt:6 sets default_reward_team: false, so every party member claims their own copy of each reward (FTB Quests Reward.isTeamReward falls back to BaseQuestFile.isDefaultPerTeamReward). Item rewards such as 'Better Th
+  NOTE FTB Quests 2001.4.22 task types (TaskTypes.class): item, checkmark, kill, location, dimension, structure, biome, observation, stat, advancement, xp, custom, fluid, gamestage (needs Game Stages, which is not installed), plus forge_energy (ForgeEnergyT
+  NOTE Detection hooks already in code, with no new tick cost: sentry_combat_feedback.js:67-82 (Sentry hits), tesla_coil_cinematics.js:25-44 (Tesla zaps), tier4_turret_fx.js:38-51 (grenade and rocket launches), mine_player_safety.js:76-118 (Claymore and Bet
+  NOTE Quest-text inaccuracies found: 'Point and Shoot' never mentions that the Gun Turret needs ammo (TurretGunBlockEntity.canActivate requires a BulletItem in slot 0). 'The Grid' claims every chest joins the network. 'Open It' says every bag can carry Shr
+  NOTE Craftable but not in the book or the tier tooltips: SecurityCraft Mine, block mines, Track Mine, Taser, Speed and Allowlist modules, Universal Block Modifier and remote tools (securitycraft_traps.js removes none of them). OMT Machine Gun, Potato Cann
+  NOTE Inputs with no source in this world, per the pack's loot tables: slime ball / sticky piston (Sophisticated pickup and magnet upgrades, Supplementaries slingshot and spring launcher), reinforced stone (SecurityCraft keypad, and so the Sentry's alterna
+##### inventory_exploration-loot-mobs.json
+* Loot bag drops from wave kills [loot economy|Wave 1 onward] cov=good :: quest='Spoils of War' (campaign.snbt:207-241) quotes 20/3.5/3/2 and says tou
+   hook: Bags come from killing a lot, not from killing big things. Every wave mob has the same odds, and kills by your traps and turrets can still drop bags.
+   detect: FTB item task per bag id with consume_items false. The current quest uses the Uncommon bag. || FTB item task on bountybags:rare_loot_bag or epic_loot_bag as 'first better bag' milestones.
+   nums: Uncommon 20%, Rare 3.5%, Epic 3%, Legendary 2% per kill, four independent rolls (loot_bag_drops.js:22, 34-37). ; Only mobs tagged td_wave_mob drop bags (loot_bag_drops.js:25-32). No killer condition in the modifier (loot_ba ; BountyBags' own mob drops are off: enableDrops = false (bountybags-common.toml:15).
+   cost: None. Starts with the first kill of wave 1.
+   reward: Uncommon or Rare bags as small early rewards ; XP levels, the pedestal-upgrade currency (6/12/18 levels per tier, pedestal_upgrades.js:15
+   mp: Bags are ground items at the kill, so the first player to walk over them gets them. The kill counter is world-wide. With default_reward_team false (data.snbt:6)
+* Opening bags: contents by tier, pickup popups and the sneak preview [loot economy|Wave 1 onward] cov=inaccurate :: quest='Open It' (campaign.snbt:242-279) completes on the first non-sneak ope
+   hook: Sneak + right-click a bag to see everything it can roll before you open it. Open bags as soon as you get them, because the gold for the amulet and the Shrapnel for the Sentry come out of them.
+   detect: Existing custom task driven by ItemEvents.rightClicked (quest_milestones.js:38-44). || 'First Rare/Epic opened' custom tasks from the same event, keyed on event.item.id.
+   nums: Uncommon: 3 rolls from 17 entries, total weight 391. Examples: oak logs 4-8 (w70), iron ingots 3-5 (w30), iron ; Rare: 3 rolls, total weight 193: gold ingots 6-9 (w45, about 23% per roll), iron 3-6 (w25), quartz 3-5 (w20),  ; Epic: 4 rolls, total weight 137: diamond 1-3 (w30), emerald 2-4 (w25), gold block 1-2 (w22), ender pearl 2-3 (
+   cost: None.
+   reward: A bag one tier above the player's current stage ; A few iron ingots or gold nuggets early on
+   mp: Popups go only to the player who opened the bag (loot_bag_notification.js:68-79). 'Open It' is flagged per player, but FTB applies the completion to the whole p
+* Legendary jackpot bag and its orange beam [loot economy|Wave 1 onward (2%), plus every airdrop] cov=partial :: quest=Given as a reward by 'The Reaper' and 'No Ceiling' (campaign.snbt:325-
+   hook: An orange beam on the battlefield is a Legendary bag, so go and get it. A nether star from one is a full pedestal heal, not a trophy.
+   detect: FTB item task on bountybags:legendary_loot_bag with consume_items false ('Hit the jackpot'). || Custom task on opening one: ItemEvents.rightClicked with an item-id check.
+   nums: 2% per wave-mob kill, same for every mob type (loot_bag_drops.js:37). ; One guaranteed in every airdrop crate (wave_airdrop.json:5-8). ; One item, weights out of 100: nether star 25, Minigun 10, totem 8, Grenade Turret 8, netherite sword (Sharpnes
+   cost: None.
+   reward: Keep Legendary bags for milestone quests (boss, wave 15, the repeatable bounty), as now
+   mp: One bag, and the first player to pick it up gets it. The beam is drawn client-side and every player sees it (Loot Beams is side both, pack/mods/loot-beams-refor
+* Loot Beams and dropped-item name tags [QoL / loot visibility|Always] cov=none :: quest=None.
+   hook: A beam means the item is worth the detour.
+   detect: Nothing to detect. Teach it with a Tips checkmark, or attach the explanation to an item task such as the first diamond.
+   nums: Filter: all_item false, only_rare false, only_equipment true; whitelist of totem, end crystal, nether star, wi ; The beam appears only once the item is on the ground (light_config.toml:14, require_on_ground = true). ; Equipment means TieredItem, ArmorItem, ShieldItem, BowItem, CrossbowItem or TridentItem, plus the #minecraft:s
+   cost: None. Passive.
+   mp: Client-side visuals that every player sees. Items go to whoever picks them up first.
+* Shrapnel (Tier 2 material that only comes from fighting) [progression material|Bridge from Tier 1 to Tier 2] cov=partial :: quest='Open It' calls it 'the turret material' and wrongly says every bag ca
+   hook: Shrapnel only comes from fighting. You can't loot your way to a Sentry or shotgun shells; you have to hold the line.
+   detect: FTB item task on kubejs:shrapnel, count N, consume_items false. || Avoid a consuming turn-in, which would compete with the Sentry and shotgun shells for Shrapnel.
+   nums: Uncommon 2-4 (w20 of 391, 3 rolls), Rare 4-8 (w25 of 193, 3 rolls), Epic 6-10 (w20 of 137, 4 rolls) (uncommon. ; 12 per boss kill (boss_wave.js:184). ; Not in the Legendary bag (legendary.json), and in no structure or airdrop table (it appears nowhere else under
+   cost: No recipe. Bags and bosses only.
+   reward: Shrapnel suits combat and bounty milestones. Keep it out of exploration rewards so it stay
+   mp: It comes in bags, so whoever picks up the bag gets it. A boss's Shrapnel drops as one invulnerable stack where the boss died (boss_wave.js:181-185).
+* Where progression materials come from (exploration-only vs home-craftable) [loot economy / progression|All tiers] cov=partial :: quest=Only scattered one-liners, accurate where they exist: 'Waste Not' (pea
+   hook: Each material has a home: kill for metal and Shrapnel, scavenge for gems and pearls, look up for netherite.
+   detect: FTB item tasks per material with consume_items false, as a ledger of first finds. || Have each tier quest's subtitle name where an input comes from, not just the recipe.
+   nums: Fight-only: Shrapnel (bags, bosses); nether star (Legendary 25/100, airdrop 20%, wave_airdrop.json:34-42); tot ; Removed from every plain container: diamond, emerald, ender pearl, golden apple, enchanted golden apple (struc ; Lootr HIGH band only (over 270 blocks): blaze powder, magma block, netherite upgrade smithing template (struct
+   cost: Varies by material.
+   reward: Under the no-shortcut rule, never reward steel, ferronite ingots or anything else a home f ; Small amounts of loot-tier inputs (ender pearls, emeralds, obsidian) fit exploration quest
+   mp: Lootr rolls are per player, so a party exploring together multiplies gem and pearl income. The airdrop and plain containers are single shared rolls.
+* Supply airdrop every 5th wave [loot economy / exploration event|Waves 5, 10, 15, ...] cov=none :: quest=No quest. It is only mentioned in 'Sparks in the Dark' ('supply crates
+   hook: Your first supply drop lands past the wall on purpose. Put the amulet on the pedestal, click [Add] on the chat line, and follow the beam. It's one crate for the whole team.
+   detect: Shared milestone when a crate lands: wave_airdrop.js sets td_airdropCrateWatch and td_airdropLandedUntilTick on the marker (443-447). Poll them the wa || Per-player custom task from BlockEvents.rightClicked('dyairdrop:airdroplarge'). A handler already exists at wave_airdrop.js:324-333.
+   nums: Every 5th wave (wave_airdrop.js:22), triggered on the clear (wave_status.js:282). Launch is 240 ticks (12 s) l ; Landing burst is visible up to 512 blocks (316-321). The beacon and its base are unbreakable and removed with  ; Chat waypoint line '<Supply Drop> xaero-waypoint:Supply Crate:S:x:y:z:6:false:0', gold (287-293). The title an
+   cost: Free. Reaching it early needs the amulet on the pedestal.
+   reward: Small rewards (XP levels or an Uncommon bag); the crate itself is the prize. ; Ammo for gun types the party doesn't have yet. Ammo is crafted at a crafting table, not pr
+   mp: One shared container: the first player to open it can take everything. Titles, the waypoint line and the sounds go to every player (@a). Only one beacon exists 
+* The world border and the amulet gate (stay or explore) [exploration gating|From the first clear; the amulet is available after 'Open It'] cov=good :: quest='Wave One, Cleared' states the growth rule accurately (campaign.snbt:1
+   hook: The amulet is the key to the map. Wear it and you're tougher but fenced in. Leave it on the pedestal and the world opens up, but you're unbuffed out there and the horde still heads for the pedestal.
+   detect: Existing shared custom task amuletOnPedestal (quest_milestones.js:105). || Per-player 'first step past the line' custom task. amulet_border.js already tracks td_wasInsideBorderForAmulet per player (amulet_border.js:25-40).
+   nums: Starting width 50, no border damage (playtest_starter_kit.js:362, 497-504). ; Growth per clear: 5 + 5*floor((wave-1)/3) blocks of width, over 10 s (base_expansion.js:8-14, 36). Width is 65 ; Amulet on the pedestal adds 10,000,000 to the border (amulet_pedestal.js:16, 20-43). Lifting it closes the bor
+   cost: Amulet: hand in 8 gold ingots ('Not Just Jewelry').
+   reward: Ender pearls or Waystone parts for crossing ('Leave It Behind' already gives 4 pearls) ; Never a second amulet, or anything that stands in for one
+   mp: This is world state. One amulet on the pedestal opens the border for the whole party, and whoever lifts it pulls everyone outside back to the edge (amulet_borde
+* Starter ruin ring (6 ruins, 100-130 blocks out) [structures / exploration|First expedition] cov=inaccurate :: quest='Past the Line' (campaign.snbt:473-503) uses an FTB structure task on 
+   hook: There are ruins in every direction just past the wall, so your first trip doesn't have to be far.
+   detect: Store each ring ruin's position on the marker when it is placed, and add a KubeJS proximity custom task. || First Lootr open, via advancement lootr:1chest or lootr:1barrel. The ring's stashes are converted like natural ones (playtest_starter_kit.js:1286-1287
+   nums: 6 ruins at 100-130 blocks, picked without repeats from 12 candidates (playtest_starter_kit.js:1288-1304). ; Placed once, when the base is built on a fresh world (playtest_starter_kit.js:1255-1275, 1306-1323). Their pos ; All in the NEAR band (210 blocks or less) for Lootr bonus loot and guard tier (structure_loot_progression.js:1
+   cost: Needs the border open (amulet on the pedestal) until about waves 10-15.
+   reward: Rare bag (the current 'Past the Line' reward) ; Ender pearls toward a Waystone
+   mp: One ring per world. Each player still gets their own Lootr roll in each ruin.
+* Ruins pool and the #kubejs:ruins structures [structures / exploration|After the amulet goes on the pedestal] cov=partial :: quest=The 'Past the Line' structure task on #kubejs:ruins works at these nat
+   hook: Bigger buildings hold more stashes, and more guards.
+   detect: FTB structure task per id (e.g. abandoned_urban:observatory, abandoned_urban:plane_crash, watchtower_building:abandoned_watchtower, u_desert:pillager_ || /locate works for these, so a hint quest can name a landmark.
+   nums: random_spread with spacing 4 and separation 2 chunks, exclusion 11 chunks from kubejs:base_anchor (ruins_pool. ; 39 members, total weight 298. Landmarks and the train have weight 3; props 1-2 (ruins_pool.json:2-159). ; About 38 structures in the 150-300 block ring (docs/FEATURES.md:3830-3832).
+   cost: Needs the border open.
+   reward: Landmark-flavoured rewards: watchtower -> spyglass; bank -> gold ingots; gas station -> gr
+   mp: Structure completion is shared by the team.
+* Lost City towns (expedition landmarks about 1 km out) [structures / exploration|Late exploration] cov=none :: quest=None explicit. Towns are in #kubejs:ruins, so 'Past the Line' might co
+   hook: A town is a 1 km expedition, so plan it: a waystone, food, the amulet on the pedestal. Go for the cars and towers, which always roll the best tier.
+   detect: FTB structure task on the_lost_city:city and the other town ids. Berezka does build PoolElementStructurePieces (berezka_api jar, BerezkaDeferredStruct || Fallback: a custom task when a player opens a Lootr container whose roll comes from berezka_api:chests/car or tower_chest (LootJS context.getLootTable
+   nums: Members: the_lost_city:city 3, abandoned_urban:city 3, villages_city 2, big_city_structure 2. random_spread 64 ; About 45% of sites hold a town; the nearest is about 1 km out (docs/FEATURES.md:3816-3817, 3926-3928). ; The Lost City city is full size (193x111x233). Skyscrapers are trimmed to 56-71 barrels each (docs/FEATURES.md
+   cost: Needs the border open and a long trip.
+   reward: Epic bag ; A Waystone for the trip home
+   mp: This sets up a natural split: someone holds the base while the others make the run.
+* Gold-trimmed Lootr stashes (per player, tiered by distance) [loot economy / exploration|Exploration; NEAR, MID and HIGH distance bands] cov=partial :: quest='Past the Line' (campaign.snbt:476) says the gold-trimmed chests and b
+   hook: Gold trim means it's yours to take; dull means you've already had your share, though your friends haven't. Further out pays better. Never break one.
+   detect: FTB advancement tasks: lootr:1chest, lootr:1barrel, lootr:10loot, lootr:25loot, lootr:50loot, lootr:100loot (Lootr jar data/lootr/advancements). These || FTB stat task on lootr:looted_stat ('Chests Looted', registered in Lootr ModStats).
+   nums: Per-player rolls: randomise_seed = true (lootr-common.toml:2). No decay or refresh (lootr-common.toml:69-90). ; Bands by distance from the pedestal: NEAR up to 210 blocks, MID 210-270, HIGH beyond 270 (structure_loot_progr ; NEAR pool (total weight 100): iron 3-6 (w25), gold 2-4 (w15), redstone 6-12, gunpowder 4-8, copper 4-8, clay, 
+   cost: Needs the border open, and a guard spawner usually stands nearby.
+   reward: XP levels (pedestal upgrade currency) ; Rare bags
+   mp: Loot is per player, so every player should open every stash, and a party's haul multiplies. The opened texture is per player too. Quest progress is still team-w
+* Plain containers and one-time scavenging [loot economy / exploration|Exploration] cov=none :: quest=None.
+   hook: Plain containers are shared and basic; gold-trimmed ones are personal and valuable. Ruins also supply cobblestone for walls, and some ammo.
+   detect: KubeJS: count calls where sclfMaybeAssign returns 'assigned' (structure_chest_loot_fix.js:103-137) to drive a 'scavenge N containers' custom task. || FTB stat task on minecraft:open_chest or open_barrel, though these count every chest, including ones at home.
+   nums: Scavenge fill only 45 or more blocks from the pedestal (structure_chest_loot_fix.js:29), on chests, trapped ch ; scavenge_storage rolls hardware 0-1, building 0-2, food 0-1, ammo 15% and filler 0-1 (scavenge_storage.json). ; Plain tables lose diamonds, emeralds, ender pearls and golden apples (structure_loot_progression.js:148-154) a
+   cost: None.
+   reward: Small XP rewards only
+   mp: Shared and first-come. Each container rolls once, ever.
+* Stash guard spawners (tiered by distance) [mobs / exploration|Exploration; NEAR, MID and FAR tiers] cov=partial :: quest='Past the Line' has one sentence: a nearby spawner guards the stashes,
+   hook: Break the spawner first, then loot. Further out, the guards are nastier.
+   detect: KubeJS BlockEvents.broken('minecraft:spawner') where the spawner's SpawnData contains td_structure_guard (pattern in structure_guard_tiers.js:199-200) || EntityEvents.death of a td_guard_tiered mob, tiered with stgTierAt (structure_guard_tiers.js:99-109), for 'put down a far-tier guard'.
+   nums: NEAR (210 blocks or less): husk w3, zombie villager w1 (unbreakable leather helmet); SpawnCount 2, MaxNearby 4 ; MID (210-270): mutant zombie w2, blister w1, split-head w1; count 3, max 5, range 16, delay 200-400; cap 8 (66 ; FAR (beyond 270): elite (40 HP, iron chestplate and helmet) w1, horde zombie (30 HP, iron helmet) w2, rotten m
+   cost: Encountered at stashes.
+   reward: An Uncommon bag or ammo ; Hold off on XP-heavy rewards that encourage farming guards until the guard-XP question is 
+   mp: The spawners are shared world blocks, and the guard cap applies per area.
+* Vanilla villages and way signs [structures / exploration|Late exploration] cov=none :: quest=None. Villages aren't in #kubejs:ruins.
+   hook: Way signs point you to villages, which have traders for your emeralds and often a waystone.
+   detect: FTB structure task on #minecraft:village. || FTB observation task on the Supplementaries sign post block (exact block id unverified).
+   nums: Villages: spacing 64, separation 16 chunks, exclusion 9 chunks from the base anchor (villages.json). ; Villagers are deliberately not removed (no_passive_mobs.js:10-12). ; Way signs: spacing 19, separation 10, exclusion 9 (way_signs.json). They point only to #minecraft:village (Sup
+   cost: Needs the border open.
+   reward: Emeralds, carefully (they also go into Warp Stones)
+   mp: Shared world structures.
+* Waystones [travel|Mid exploration] cov=partial :: quest='A Stone That Remembers' (campaign.snbt:504-536) is an item task for c
+   hook: Plant a waystone at the edge of what you've cleared. It's free to hop home when the horn is about to sound.
+   detect: FTB item task on waystones:waystone or waystones:warp_stone. || KubeJS BlockEvents.rightClicked('waystones:waystone') plus distance from the pedestal, for 'activate a waystone away from base'.
+   nums: The courtyard waystone is placed by the base build (playtest_starter_kit.js:1040-1047). ; Recipes (mod default, no KubeJS override): Waystone = 4 stone bricks + 1 Warp Stone + 3 obsidian; Warp Stone = ; Waystone-to-waystone travel costs 0 XP (waystoneXpCostMultiplier = 0.0, waystones-common.toml:95; allowWayston
+   cost: Crafted. Pearls and emeralds come from loot.
+   reward: Warp Dust or a Warp Stone (both crafting-table outputs, not machine outputs) ; A Waystone at an expedition milestone
+   mp: Each friend has to right-click each waystone themselves before they can travel to it. Placed waystones are shared world blocks.
+* Xaero map: waypoints, deathpoints and the border line [QoL / navigation|Always] cov=partial :: quest=Tips 'Open the World Map' (M) checkmark (tips_and_tricks.snbt:122-143)
+   hook: Press K to drop a waypoint on ruins and towns you find. After a death, your deathpoint leads back to your corpse. The blue line on the map is the border.
+   detect: Checkmark only: these are client-side actions. || Clicking [Add] on the airdrop waypoint is client-side and can't be detected.
+   nums: options.txt: new waypoint on K (line 3); Xaero's enlarge-map key unbound so Z is zoom only (line 5). ; Jar defaults: waypoint list U (key code 85), new waypoint B (66, rebound to K), enlarge map Z (90) (MinimapKey ; Radar: players hidden (default_radar_categories_client.json:57); hostiles shown in colour 12, red (line 120).
+   cost: None.
+   reward: Small XP rewards only
+   mp: Waypoints live on each player's own client. The airdrop waypoint line goes to everyone. Teammates don't show on the radar (the players category is hidden); whet
+* Wave-mob targeting rules (they want the pedestal) [mobs|Wave 1 onward] cov=good :: quest='Find the Pedestal' says mobs path for the pedestal, not you (campaign
+   hook: Stay out of the lane unless you mean to fight. Hitting a mob pulls it off the pedestal for 8 seconds, which is how you kite. You can't drag wave mobs far: past 90 blocks they snap back.
+   detect: These are rules rather than actions. Teach them in a wave-1 info quest (checkmark) or in existing quest text.
+   nums: Blocking range 3.5 blocks (mob_aggro.js:172). Retaliation 160 ticks, 8 s (mob_aggro.js:133). ; Lure pull radius 40 blocks for 60 s (lure_block.js:17, 20; mob_aggro.js:235). ; Stray leash: 90 blocks from the pedestal, checked every 100 ticks (mob_aggro.js:129-131).
+   cost: None.
+   mp: The blocker is the nearest living player. A grudge is held against whoever hit the mob.
+* Wave roster progression (written waves and Hordes) [mobs|Waves 1-8 written; Hordes from wave 9] cov=partial [SPOILER] :: quest='Thin the Horde' gives wave 1's composition accurately (campaign.snbt:
+   hook: The ramp: mutants are just tougher zombies, elites arrive at wave 5, the demolition zombie at wave 8, brutes at wave 20.
+   detect: The existing wave milestones (quest_milestones.js:75-116). More thresholds (waves 5, 10, 20, 30) can use the same td_q_lastClearedWave poll. || FTB observation task, observe_type 5 (ENTITY_TYPE), per mob type, for first sightings.
+   nums: Written waves (wave_spawner.js:19-28): W1 3 zombies, 2 husks, 1 zombie villager; W2 adds drowned and 3 mutants ; Ambushers on top (509-512) give totals of 6, 10, 11, 9, 6, 10, 8 and 13 for waves 1-8 (derived). ; Endless phase: tier 2 (elite, horde, demolition, rotten, and crawler three times) from wave 13 (wave_spawner.j
+   cost: Wave count.
+   reward: A bag at each wave milestone
+   mp: Wave size doesn't scale with player count (player-count scaling was binned in docs/IDEAS.md).
+* Crawler [mobs|Wave 8; 3 of 7 tier-2 Horde picks; far-tier guard] cov=none [SPOILER] :: quest=None, since the Know Your Enemy kill quests were removed.
+   hook: Walls don't stop crawlers; they climb. But one hit kills them, so cover the wall tops with turrets or a Tesla Coil.
+   detect: FTB observation task, observe_type 5 (ENTITY_TYPE), mutantszombies:crawler. || KubeJS EntityEvents.death with td_wave_mob. An FTB kill task would be ambiguous because crawlers are also guards.
+   nums: 6 HP, 3 attack, speed 0.3 (a vanilla zombie is 0.23), follow range 35 (CrawlerEntity attributes). It implement ; 4 in wave 8 (wave_spawner.js:27). Listed three times out of seven in the tier-2 Horde list (64-66). ; Far-tier guard roster (structure_guard_tiers.js:80).
+   cost: Wave 8.
+   reward: A small reward after the first sighting
+   mp: Nothing special.
+* Brutes (Zombie Brute and Mutant Brute) [mobs|Wave 20 onward] cov=none [SPOILER] :: quest=None.
+   hook: Armour 16-18 shrugs off weak hits. Armour-ignoring damage (spikes, fence, Tesla) is what brings brutes down.
+   detect: FTB kill task on mutantszombies:zombie_brute or mutant_brute. This is unambiguous: brutes are never guards and don't spawn naturally. || FTB observation task, ENTITY_TYPE.
+   nums: Zombie Brute: 100 HP, 16 attack, 16 armour, attack knockback 1.5, base speed 0.21 (jar). ; Mutant Brute: 120 HP in the jar, halved to 60 by the pack (wave_spawner.js:86-92); 18 attack, 18 armour, base  ; Both are knockback-immune (wave_spawner.js:79-81), and the pack raises both to speed 0.28 (83-84). Horde-spawn
+   cost: Wave 20.
+   reward: A Rare or Epic bag for the first brute kill
+   mp: Nothing special.
+* Demolition Zombie [mobs|Wave 8 onward; also 'The Demolisher' boss] cov=none [SPOILER] :: quest=None.
+   hook: Kill it well away from your wall, and never set one on fire near the base: hitting a burning demolition zombie makes it blow up.
+   detect: FTB kill task on undeadnights:demolition_zombie. It isn't in the guard roster, so the task is unambiguous. || Detonations have no death event; poll for removal the way boss_wave.js:193-214 does.
+   nums: Summoned holding 3 TNT (wave_spawner.js:94-96, 727-729). ; DemolitionZombieEntity.hurt: if it is on fire, it removes itself (reason KILLED) and explodes with power 5.0,  ; Its blast counts as an enemy explosion, so it hurts players and breaks blocks (explosion_player_safety.js:1-8)
+   cost: Wave 8.
+   reward: Bouncing Betties or Claymores for killing it at range
+   mp: The blast can hit teammates.
+* Digging through walls [mobs / siege AI|Wave 1 onward] cov=none :: quest=None.
+   hook: Anything you place can be dug in about 2.5 seconds a block. Thick walls buy time; traps do the killing. Only the starter base's reinforced blocks are dig-proof.
+   detect: No reliable detection. Epic Siege Mod breaks blocks directly, and whether KubeJS BlockEvents.broken fires for those breaks is unverified. Teach it in 
+   nums: diggerMobs is the whole roster (epicsiegemod-common.toml:48). diggingRequiresTools = false, so stone can be du ; Hidden Haste XV gives 4x dig speed: about 10 s per cobblestone block bare-handed becomes about 2.5 s (wave_mob ; Reinforced blocks (hardness -1) are undiggable (wave_mob_dig_haste.js:7-8).
+   cost: None.
+   reward: Cobblestone stacks (ruins already supply it)
+   mp: Nothing special.
+* Getting over walls: pillaring, horde stacking and leaping [mobs / siege AI|Wave 1 onward] cov=none :: quest=None.
+   hook: Height alone won't stop them: vanilla zombies pile up and anything stuck by your wall starts building a cobblestone pillar. Kill zones beat tall walls.
+   detect: No detection; teach it in text.
+   nums: buildingMobs is the whole roster and pillarBlocks = cobblestone (epicsiegemod-common.toml:84, 94). The pillar  ; jumping = true, jumpHeight 0.4 for the whole roster (epicsiegemod-common.toml:96-102). ; Horde stacking is on for forge:hordes: zombie, zombie villager, husk, drowned (plus zombified piglin and slime
+   cost: None.
+   reward: Spike Traps or Stake Walls
+   mp: Nothing special.
+* Ladders are routes for zombies too [mobs / siege AI|Wave 1 onward] cov=none :: quest=None.
+   hook: A ladder up the outside of your wall is a ladder for them. Keep ladders on the inside.
+   detect: Item task on minecraft:ladder (found in scav_building) as part of a 'fortify' quest, with the warning in the text.
+   nums: Helps when the target is 1.5 or more blocks above the mob (ladder_climb_assist.js:14). ; Searches 6 blocks horizontally and 1 down to 3 up (15-17), every 40 ticks (18). Follows ladder columns up to 6 ; Pass every 5 ticks (13). Upward nudge 0.25 blocks per tick when the mob isn't rising (25-26). Stash guards are
+   cost: None.
+   mp: Nothing special.
+* Stalled-mob nudge (trenches and doorway jams) [mobs / siege AI|Wave 1 onward] cov=none :: quest=None.
+   hook: Trenches and doorway jams only hold them for about 3 seconds. Solid walls are what actually stop them.
+   detect: No detection; teach it in text.
+   nums: Checked every 10 ticks. Less than 0.05 blocks of horizontal movement for 6 checks in a row (3 s) counts as stu
+   cost: None.
+   mp: Nothing special.
+* Underground ambushers [mobs|Wave 2 onward] cov=none [SPOILER] :: quest=None.
+   hook: The wall isn't the only front. Something always comes up just outside it.
+   detect: KubeJS EntityEvents.spawned or death on a td_undergroundAmbush mob, for a shared milestone revealed after the fact ('they came up from below').
+   nums: Count per wave: 1 for waves 2-4, 2 for waves 5-6, 3 for waves 7-8. In the Hordes, 2 plus 1 per 5 Undead Nights ; They surface 4-7 blocks outside a wall (401-402, 407-437). ; 70 ground-block particles and a rooted-dirt break sound (747-755).
+   cost: Wave 2.
+   reward: A small reward, unlocked after the first ambush
+   mp: Nothing special.
+* Battlefield cues: spawn rumble, hostile counter, red-glow stragglers, death cry [mobs / readability|Wave 1 onward] cov=partial :: quest='Sound the Horn' mentions the countdown timer (campaign.snbt:118). Not
+   hook: Listen for the cave rumble to learn where they spawn. The red glow shows you the last two.
+   detect: A shared milestone the first time stragglers glow (hook into tdStragglerMark, wave_status.js:172-184). || EntityEvents.death of a mob tagged td_straggler, for 'finish off a straggler'.
+   nums: Cave rumble at the spawn point 12 ticks before each mob, volume 5 (heard about 80 blocks away) (wave_spawner.j ; Hostile counter in the action bar counts wave mobs within 96 blocks (wave_status.js:19, 330-334). ; The last 2 mobs glow red, but only once nothing is left to spawn (wave_status.js:154-184, 246).
+   cost: None.
+   mp: The rumble and the glow are visible and audible to everyone.
+* Boss waves [mobs|Every 10th wave] cov=good [SPOILER] :: quest='The Reaper' (campaign.snbt:319-350) is a custom task that completes o
+   hook: Be ready before wave 10. The boss heads for the pedestal like everything else, and its drops are a Tier 2 starter pack.
+   detect: The existing custom task. || A separate hidden 'Demolisher' quest keyed on the boss's entity type at death (the td_boss tag plus undeadnights:demolition_zombie).
+   nums: Every 10th wave (boss_wave.js:13). Waves 10, 30, ... bring The Reaper: elite zombie, 200 HP, 24 attack, speed  ; Boss bar for everyone, plus a music disc track and titles (114-127). ; Drops a Sentry, 12 Shrapnel and a Totem as invulnerable items (183-185), plus the normal bag rolls (90-92).
+   cost: Wave 10.
+   reward: A Legendary bag (current)
+   mp: Shared bar and music. Drops lie on the ground for the first player to reach them.
+* Death, corpse recovery and respawn [death / QoL|Always] cov=none [SPOILER] :: quest=None for corpses or deathpoints. Tips 'Go Hardcore' (tips_and_tricks.s
+   hook: Dying doesn't lose your gear: follow your deathpoint back and open your corpse. You get 10 seconds of immunity after respawning. If a zombie killed you, expect your own zombie standing over the body.
+   detect: FTB stat task on minecraft:deaths of 1 or more, for a first-death quest. || FTB advancement task on minecraft:adventure/totem_of_undying (in the vanilla 1.20.1 jar), for a totem save.
+   nums: Corpse settings: only_owner = false (corpse-server.toml:22); turns into a skeleton after 72000 ticks, 1 hour ( ; Death history key defaults to U (Corpse Main KEY_DEATH_HISTORY, key code 85), the same key as Xaero's waypoint ; Xaero deathpoints are on and removed once reached (default.cfg:29, 31).
+   cost: None.
+   reward: Food (bread, cooked beef) and a few XP levels ; Not totems: they are the Tier 2 capstone reward and a boss drop
+   mp: Teammates can recover your corpse, or loot it. In hardcore, the run ends only when everyone online is down.
+* No passive mobs: food comes from loot [survival / exploration|Always] cov=partial :: quest=Only indirect: 'Wired Different' mentions eggs (campaign.snbt:999) and
+   hook: There are no animals. Live off bags or farm seeds from farm chests, and every zombie's rotten flesh feeds the generator.
+   detect: Item task on minecraft:wheat_seeds or bread. || Checkmark.
+   nums: Cancelled on join: cows, pigs, sheep, chickens, rabbits, horses and 28 other types (no_passive_mobs.js:13-23,  ; doMobSpawning is false (playtest_starter_kit.js:511-512). ; Uncommon bags carry bread 3-6 (w25), cooked beef 2-4, apples, carrots (uncommon.json). scav_food has 14 entrie
+   cost: None.
+   reward: Bread or cooked beef: good early rewards
+   mp: Food chests are shared.
+* Bounty kill counter (team-wide) [mobs / progression|Wave 1 onward] cov=good :: quest=The Bounties chapter (bounties.snbt:12-173) is accurate.
+   hook: Every kill the team or its defences make adds up to one shared bounty.
+   detect: The existing setup.
+   nums: Excluded damage types: drown, starve, freeze, fall, out_of_world, cramming, in_wall, generic_kill (bounty_kill ; Tiers at 25, 100, 300 and 750 kills, then a repeat every 1500 (31-42). Completions go to everyone online throu ; Progress bars sync, and quests missed while offline are completed for that team (82 onward).
+   cost: None.
+   reward: Bags and XP, as now. The 'Reaper' name clashes with the boss 'The Reaper'.
+   mp: One world counter; rewards are claimed per player.
+* QoL keybinds and HUD helpers (Tips chapter) [QoL|Always] cov=partial :: quest=Tips has 12 checkmark quests, all accurate where they exist (tips_and_
+   hook: A one-screen cheat sheet. Rebind U for one of Xaero's waypoint list or the corpse death history.
+   detect: Checkmark only: these are client-side actions. || Jade could be shown with an observation task on any block.
+   nums: Quest book on Tab (options.txt:2). Vanilla's player list is also Tab and is not rebound; how the two interact  ; JEI: R (82) recipe, U (85) uses, A (65) bookmark (InternalKeyMappings). ; Z zoom (options.txt:4; Just Zoom is client-only, pack/mods/just-zoom.pw.toml).
+   cost: None.
+   reward: 1 XP level each, as now
+   mp: Tab also opens the player list, which matters on the server.
+  NOTE Detection gap: the 6 ruin-ring ruins are placed with /place structure. Vanilla PlaceCommand only calls StructureStart.placeInChunk and never registers the start (client-1.20.1 SRG jar, PlaceCommand.m_289073_), and FTB's structure task uses getStructu
+  NOTE Inaccurate quest text: 'Open It' (campaign.snbt:245) says every bag can carry Shrapnel; the Legendary bag cannot (legendary.json). Tips 'Go Hardcore' (tips_and_tricks.snbt:277) implies one death ends the run; in multiplayer the run ends only when eve
+  NOTE Keybind clashes: U opens both Xaero's waypoint list (MinimapKeyMappings, 85) and Corpse's death history (Corpse Main, 85). Tab is bound to the quest book (options.txt:2) while vanilla's player list is also Tab by default.
+  NOTE Multiplayer reward economics: default_reward_team is false (data.snbt:6), and FTB QuestKey.forReward keys claims by player UUID. So every reward pays out once per party member, regardless of who did the task. Quest progress itself is team-shared. One
+  NOTE Existing reward that may break the no-shortcut rule: 'Fragmentation' rewards 4 IE steel ingots (campaign.snbt:1211-1215), and steel is the vanilla blast furnace's output (tier3_loot_aligned_recipes.js:66-70). Flag it for the user's decision.
+  NOTE The 14 per-mob 'Kill one' quests (Know Your Enemy) and 'Three Down' were removed on 2026-09-30 by the user's choice (commit c94f019; docs/FEATURES.md:9987-10005). Any mob-teaching chain is a re-introduction and should be offered as a choice, for exam

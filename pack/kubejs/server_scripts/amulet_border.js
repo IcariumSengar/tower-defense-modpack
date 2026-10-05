@@ -1,8 +1,9 @@
-// Keeps players inside the world border while the amulet is off the pedestal
-// (td_amuletOnPedestal, set by amulet_pedestal.js). Vanilla's border stops
-// players walking out, but it deals no damage in this pack, so a player who is
-// already outside, for example still out there when the amulet is lifted and
-// the border closes in, would otherwise stay out. Such a player is moved back
+// Keeps players inside the world border unless their own amulet is at the
+// pedestal (amuletLeftBy in amulet_pedestal.js). Vanilla's border stops
+// players walking out while it is closed, but it deals no damage in this pack,
+// so a player who is already outside, for example still out there when their
+// amulet is lifted, would otherwise stay out. While the border is open for
+// someone else, this push is the only thing holding the rest at the line. Such a player is moved back
 // inside: a short push keeps their Y, and a longer one in the overworld lands
 // them on the surface at the edge, since the Y they had far out can be inside
 // rock or high in the air there. Spectators are left alone, as vanilla's
@@ -27,10 +28,23 @@ PlayerEvents.tick((event) => {
   var data = player.persistentData
   var world = worldData(level)
   var border = level.getWorldBorder()
-  var minX = border.getMinX()
-  var maxX = border.getMaxX()
-  var minZ = border.getMinZ()
-  var maxZ = border.getMaxZ()
+
+  // Co-op rule: while an amulet is on the stand the vanilla border is open,
+  // but only players whose own amulet is at the pedestal may use it
+  // (amuletLeftBy, amulet_pedestal.js). Everyone else, including players who
+  // haven't earned an amulet, is held at the closed border's line: the open
+  // border minus BORDER_EXPAND_DELTA, around the same centre.
+  var open = !!(world && world.getBoolean('td_amuletOnPedestal'))
+  if (open && amuletLeftBy(world, player)) {
+    data.putBoolean('td_wasInsideBorderForAmulet', true)
+    return
+  }
+  var half = border.getSize() / 2
+  if (open) half = Math.max(1, half - BORDER_EXPAND_DELTA / 2)
+  var minX = border.getCenterX() - half
+  var maxX = border.getCenterX() + half
+  var minZ = border.getCenterZ() - half
+  var maxZ = border.getCenterZ() + half
 
   var x = player.getX()
   var z = player.getZ()
@@ -40,7 +54,6 @@ PlayerEvents.tick((event) => {
   data.putBoolean('td_wasInsideBorderForAmulet', isInside)
 
   if (isInside) return
-  if (world && world.getBoolean('td_amuletOnPedestal')) return
 
   var clampedX = Math.min(Math.max(x, minX + AMULET_BORDER_MARGIN), maxX - AMULET_BORDER_MARGIN)
   var clampedZ = Math.min(Math.max(z, minZ + AMULET_BORDER_MARGIN), maxZ - AMULET_BORDER_MARGIN)

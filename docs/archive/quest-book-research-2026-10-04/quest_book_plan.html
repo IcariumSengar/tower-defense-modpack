@@ -1,0 +1,571 @@
+<title>Tower Defense Quest Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@600;800&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Pixelify+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column (~70ch) with wide figures (map, mockups) breaking out to 1100px. Palette from the pack's own menu art: dusk violet-black, bone, ember. */
+:root{
+  --bg:#F2EADC; --surface:#FBF6EC; --ink:#22171F; --muted:#6A5852; --line:#D8C8B0;
+  --ember:#B4441C; --ember-soft:#F2D3C0; --gold:#8C6008; --ok:#3B7436; --dusk:#3A2440;
+  --mc-bg:#1B1420; --mc-panel:#251B2C; --mc-edge:#5E4B6B; --mc-text:#ECE0C8; --mc-dim:#A79CB0;
+  --mc-yellow:#FFE36E; --mc-red:#FF7A66; --mc-green:#86E07E; --mc-aqua:#7FD8E8; --mc-orange:#FFB25C;
+  --display:"Big Shoulders Stencil Display","Impact","Arial Narrow",sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --pixel:"Pixelify Sans","Courier New",monospace;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#160F1A; --surface:#20162A; --ink:#ECE0C8; --muted:#B4A192; --line:#3B2D44;
+  --ember:#E77543; --ember-soft:#4A2418; --gold:#E2B24E; --ok:#82C373; --dusk:#E9DCC4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#160F1A; --surface:#20162A; --ink:#ECE0C8; --muted:#B4A192; --line:#3B2D44;
+  --ember:#E77543; --ember-soft:#4A2418; --gold:#E2B24E; --ok:#82C373; --dusk:#E9DCC4; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+.col{max-width:72ch}
+h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:.02em;text-wrap:balance;line-height:1.05;margin:0}
+h1{font-size:clamp(44px,8vw,84px);text-transform:uppercase}
+h2{font-size:clamp(30px,4.5vw,42px);text-transform:uppercase;margin-top:64px;padding-top:18px;border-top:3px solid var(--ink)}
+h3{font-size:24px;text-transform:uppercase;margin-top:28px}
+p{margin:.6em 0}
+.eyebrow{font-family:var(--body);font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember)}
+.lede{font-size:20px;max-width:62ch}
+.muted{color:var(--muted)}
+small,.small{font-size:14px}
+a{color:var(--ember)}
+code{font-family:var(--mono);font-size:.88em;background:var(--ember-soft);padding:0 .3em;border-radius:3px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+.stat{border-left:4px solid var(--ember);padding:4px 12px}
+.stat b{display:block;font-family:var(--display);font-size:38px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:14px;color:var(--muted)}
+.moves{counter-reset:m;display:grid;gap:14px;margin:18px 0;padding:0;list-style:none}
+.moves li{counter-increment:m;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+.moves li::before{content:counter(m);font-family:var(--display);font-size:34px;line-height:1;color:var(--ember)}
+.moves b{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin:18px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;min-width:0}
+.card h4{margin:0 0 4px;font-size:17px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.chip{font-size:12px;font-weight:600;letter-spacing:.03em;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted)}
+.chip.fit{border-color:var(--ember);color:var(--ember)}
+blockquote{margin:10px 0 0;padding:6px 10px;border-left:3px solid var(--line);font-size:14px;color:var(--muted);font-style:italic}
+.tablewrap{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:560px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.k{white-space:nowrap;font-weight:600}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:0 5px;vertical-align:1px}
+.tag.new{background:var(--ember);color:var(--bg)}
+.tag.chg{border:1px solid var(--ember);color:var(--ember)}
+.tag.keep{border:1px solid var(--line);color:var(--muted)}
+.tag.hid{border:1px dashed var(--ink);color:var(--ink)}
+.tag.opt{border:1px dotted var(--gold);color:var(--gold)}
+/* map */
+.mapbox{background:var(--mc-bg);border-radius:8px;padding:12px;margin:18px 0;color:var(--mc-text)}
+.mapctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;font-family:var(--pixel)}
+.mapctl button{font-family:var(--pixel);font-size:15px;background:var(--mc-panel);color:var(--mc-text);border:2px solid var(--mc-edge);padding:4px 10px;cursor:pointer}
+.mapctl button[aria-pressed="true"]{border-color:var(--mc-orange);color:var(--mc-orange)}
+.mapctl button:focus-visible,.mapbox svg :focus-visible{outline:2px solid var(--mc-yellow);outline-offset:2px}
+.mapscroll{overflow-x:auto}
+.mapscroll svg{display:block;min-width:900px;width:100%;height:auto}
+.mapcap{font-family:var(--pixel);font-size:15px;min-height:2.6em;margin-top:6px;color:var(--mc-dim)}
+.mapcap b{color:var(--mc-yellow);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;margin:8px 0 0;font-family:var(--pixel);color:var(--mc-dim)}
+.legend svg{vertical-align:middle;margin-right:4px}
+/* in-game mockups */
+.mc{font-family:var(--pixel);background:var(--mc-panel);color:var(--mc-text);border:3px solid var(--mc-edge);box-shadow:inset 0 0 0 2px #120d16;border-radius:2px;padding:12px 14px;font-size:15px;line-height:1.45;min-width:0}
+.mc .t{font-size:19px;color:var(--mc-text);font-weight:600}
+.mc .st{color:var(--mc-dim);font-size:14px}
+.mc .y{color:var(--mc-yellow)} .mc .r{color:var(--mc-red)} .mc .g{color:var(--mc-green)} .mc .a{color:var(--mc-aqua)} .mc .o{color:var(--mc-orange)} .mc .d{color:var(--mc-dim)}
+.mc hr{border:0;border-top:2px solid var(--mc-edge);margin:8px 0}
+.mc .row{display:flex;gap:10px;flex-wrap:wrap}
+.mc .slot{display:inline-flex;align-items:center;gap:6px;background:#140f18;border:2px solid #3d3146;padding:3px 8px}
+.mc .slot i{display:inline-block;width:18px;height:18px;border:2px solid #000;font-style:normal}
+.mc .pages{float:right;color:var(--mc-dim);font-size:13px}
+.mc .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mc-dim)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;margin:16px 0}
+.pair .cap{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:600}
+.toasts{display:grid;gap:8px;max-width:360px}
+.toast{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;background:#0f0b12;border:2px solid #4a3a55;padding:8px 10px;font-family:var(--pixel);color:var(--mc-text);font-size:14px}
+.toast i{width:30px;height:30px;display:block;border:2px solid #000}
+.toast .h{color:var(--mc-yellow)}
+.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:18px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.ladder div{padding:12px;min-width:0;border-right:1px solid var(--line)}
+.ladder div:last-child{border-right:0}
+.ladder b{display:block;font-family:var(--display);font-size:22px;text-transform:uppercase}
+.ladder .bag{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+@media (max-width:640px){.ladder{grid-template-columns:repeat(2,minmax(0,1fr))}.ladder div:nth-child(2){border-right:0}.ladder div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+.choice{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+@media (max-width:520px){.choice{grid-template-columns:1fr}}
+.choice div{background:#140f18;border:2px solid #3d3146;padding:8px;min-width:0}
+.choice div:first-child{border-color:var(--mc-orange)}
+.note{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);padding:10px 14px;border-radius:4px;margin:14px 0}
+details{border-top:1px solid var(--line);padding:8px 0}
+summary{cursor:pointer;font-weight:600}
+ol.fix{padding-left:22px;font-size:15px} ol.fix li{margin:4px 0}
+.phases{display:grid;gap:12px;margin:16px 0}
+.phase{display:grid;grid-template-columns:120px 1fr;gap:14px;border-top:1px solid var(--line);padding-top:12px}
+.phase .p{font-family:var(--display);font-size:28px;text-transform:uppercase;line-height:1}
+.phase .p span{display:block;font-family:var(--body);font-size:13px;color:var(--muted);letter-spacing:.05em;text-transform:none;margin-top:4px}
+@media (max-width:560px){.phase{grid-template-columns:1fr}}
+ul.tight{padding-left:20px;margin:6px 0} ul.tight li{margin:3px 0}
+@media (prefers-reduced-motion:no-preference){.node-new{animation:pulse 2.4s ease-in-out infinite}@keyframes pulse{50%{opacity:.7}}}
+</style>
+
+<div class="wrap">
+
+<header class="col">
+  <div class="eyebrow">Quest book plan · Tower Defense Modpack · spoiler-light, written for the pack author</div>
+  <h1>Tower Defense Quest Book</h1>
+  <p class="lede">How the best modpack quest books make players feel they're getting somewhere while teaching them the game, and a plan to do the same with your traps, turrets, pedestal and hordes.</p>
+</header>
+
+<div class="strip" aria-label="Where the book is today">
+  <div class="stat"><b>81</b><span>quests today in 4 chapters (Campaign 39)</span></div>
+  <div class="stat"><b>76/116</b><span>rewards that are XP levels, against 40 item rewards</span></div>
+  <div class="stat"><b>~30</b><span>mechanics with no quest (airdrop, stragglers, ambushers, stashes…)</span></div>
+  <div class="stat"><b>18</b><span>quest texts that disagree with the code</span></div>
+</div>
+
+<section class="col">
+  <h2>What the best books do</h2>
+  <p>We read the real quest files of the 7 packs installed on this PC: DeceasedCraft, Craft to Exile 2, Suspect's Journey, Cuboid Outpost, Ozone Skyblock Reborn 2, Mechanical Mastery+ and Forever Factory. Craft to Exile 2 runs your exact FTB Quests build. We also pulled the committed books of ATM10, the FTB flagships, FTB Academy, Create: Above and Beyond, Enigmatica, GTNH, Divine Journey 2 and Prominence II from GitHub, and looked at how zombie and tower-defense games teach (Plants vs. Zombies, Kingdom Rush, 7 Days to Die, Fallout). The same eight habits came up again and again.</p>
+</section>
+
+<div class="cards">
+  <div class="card"><h4>1 · A road you can read at a glance</h4>One spine of bigger milestone nodes running left to right, with side branches hanging off it where they become relevant. Create: Above and Beyond even keeps a separate overview chapter whose milestones tick themselves off.
+    <div class="chips"><span class="chip">DeceasedCraft</span><span class="chip">CTE2</span><span class="chip">CAB</span><span class="chip">FTB packs</span><span class="chip fit">you already have this</span></div></div>
+  <div class="card"><h4>2 · A legend the book teaches</h4>Shape and size always mean the same thing (milestone, craft, optional, gate), and an early info page explains it once. After that every chapter reads at a glance.
+    <div class="chips"><span class="chip">CTE2</span><span class="chip">Cuboid Outpost</span><span class="chip">FTB University</span><span class="chip">MMP</span></div>
+    <blockquote>Cuboid's "Step and Tasks Info" explains its own shapes, in character, on page one.</blockquote></div>
+  <div class="card"><h4>3 · The map lights up as you go</h4>Chapter art carries a <code>dependency</code>: a banner or frame only draws once your team completes a quest, so the map itself becomes the progress bar.
+    <div class="chips"><span class="chip">DeceasedCraft</span><span class="chip">Prominence II</span><span class="chip">Architect's Exodus</span><span class="chip fit">fixes the 09-10 panel complaint</span></div></div>
+  <div class="card"><h4>4 · Learn it by doing it</h4>Tasks prove something real happened, such as looking at the built machine or the event firing, instead of a tick box. Instructions arrive at the moment of need, and a study of complex games (Andersen et al.) found that beats an up-front manual.
+    <div class="chips"><span class="chip">Forever Factory</span><span class="chip">7 Days to Die</span><span class="chip">Fallout 4</span></div></div>
+  <div class="card"><h4>5 · The reward is the next tool</h4>Finishing a page hands you the thing it taught, or exactly what the next quest needs, so the chain teaches itself.
+    <div class="chips"><span class="chip">CTE2</span><span class="chip">MMP</span><span class="chip">Plants vs. Zombies</span><span class="chip">Bloons TD 6</span><span class="chip fit">your 09-30 swaps</span></div>
+    <blockquote>CTE2's prologue: each page rewards the tool it describes, and the tool's tooltip repeats the instructions.</blockquote></div>
+  <div class="card"><h4>6 · Named caches, rarity by colour</h4>Random rewards get a name, an icon and a colour that matches their rarity ("Common / Rare / Legendary Loot Crate"), so you know what you've got before you open it.
+    <div class="chips"><span class="chip">OceanBlock 2</span><span class="chip">ATM10</span><span class="chip">Enigmatica 9</span><span class="chip fit">your bags already do this</span></div></div>
+  <div class="card"><h4>7 · Joke title, plain subtitle</h4>The title carries the personality and the subtitle says exactly what to do. Lore goes above the line and instructions below; deeper detail goes on page 2.
+    <div class="chips"><span class="chip">FTB Academy</span><span class="chip">Enigmatica 9</span><span class="chip">DeceasedCraft</span></div></div>
+  <div class="card"><h4>8 · Unlock moments and signposts</h4>When a new section opens, something tells you: a toast, a title, a sound. Quests end with "Unlocks: …" so players can see where they're heading.
+    <div class="chips"><span class="chip">Suspect's Journey</span><span class="chip">Cuboid Outpost</span><span class="chip">SevTech</span></div></div>
+</div>
+
+<div class="col">
+  <h3>And what they get wrong</h3>
+  <ul class="tight">
+    <li><b>Catalogue bloat.</b> About 375 of DeceasedCraft's 801 quests are untitled "get item X" tiles.</li>
+    <li><b>Rewards that never change.</b> 905 of Ozone's 967 quests pay exactly one chance cube and one coin.</li>
+    <li><b>Filler XP.</b> OceanBlock 2 has 869 small XP rewards, and players call them noise.</li>
+    <li><b>Walls of text.</b> One Divine Journey 2 quest runs to 7,647 characters.</li>
+    <li><b>Multiplayer duplication.</b> On ATM10's GitHub (issue #3293) a 3-player server complains: "Progression is shared and duplicates can be op."</li>
+    <li><b>Tick-box onboarding.</b> CTE2's 26-page prologue is almost all "Click Once Read".</li>
+  </ul>
+</div>
+
+<section class="col">
+  <h2>The plan in five moves</h2>
+  <ol class="moves">
+    <li><span><b>Keep the one campaign map, and split it into four acts that appear as you hold out.</b>The fishbone stays (your 09-03 and 09-09 calls). Each act gets a banner image that draws only once your team reaches it: Arrival, Dig In, Power, Hordes.</span></li>
+    <li><span><b>Teach by doing: craft it, then see it work.</b>Every distinct item keeps its own quest. About 35 new quests cover the mechanics the book never mentions, and most of them complete from what actually happens in the world: the first airdrop lands, the first stragglers glow, the first pedestal upgrade is bought.</span></li>
+    <li><span><b>One page layout for every quest.</b>A characterful title, then a plain subtitle (action, cost and who gets the reward). Page 1 says what it does and how to use it, with every number taken from the code. Page 2 has field notes. Pages end with "Unlocks: …".</span></li>
+    <li><span><b>Rewards that equip you.</b>A quest pays out the thing you just learned, or the next step's ingredient. Bags climb a tier with each act. Act gates offer a choice of kit, and XP is sized to buy pedestal upgrades.</span></li>
+    <li><span><b>Multiplayer rules written into the book.</b>Every player claims every reward (your call). Every teaching quest makes each player open it to claim, so nobody skips the lesson. Nothing needs two players. Each player leaves their own amulet to explore.</span></li>
+  </ol>
+</section>
+
+<section>
+  <div class="col">
+    <h2>The campaign map</h2>
+    <p>This is the proposed Campaign chapter, simplified. Step through a run to see the book grow the way it would in game: act banners appear, new branches unlock, and finished quests fill in. Hover or tab onto a node to read it.</p>
+  </div>
+  <div class="mapbox">
+    <div class="mapctl" role="group" aria-label="Show the book at">
+      <span>Show the book at:</span>
+      <button type="button" data-stage="1" aria-pressed="true">Wave 1</button>
+      <button type="button" data-stage="2" aria-pressed="false">Wave 5</button>
+      <button type="button" data-stage="3" aria-pressed="false">Wave 10</button>
+      <button type="button" data-stage="4" aria-pressed="false">Horde 20</button>
+    </div>
+    <div class="mapscroll"><svg id="map" viewBox="0 0 1000 620" role="img" aria-label="Campaign chapter map"></svg></div>
+    <div class="mapcap" id="mapcap" aria-live="polite">Hover a node.</div>
+    <div class="legend" id="legend"></div>
+  </div>
+</section>
+
+<section class="col">
+  <h3>What changes, branch by branch</h3>
+  <p class="small muted"><span class="tag new">new</span> new quest · <span class="tag chg">changed</span> task, text or reward reworked · <span class="tag hid">hidden</span> appears only after it happens · <span class="tag opt">optional</span> a field test, never blocks anything. Existing quests not listed stay, with fixed text and the new reward rules.</p>
+</section>
+<div class="tablewrap"><table>
+  <thead><tr><th>Branch</th><th>Quest</th><th>Completes when</th><th>Teaches</th></tr></thead>
+  <tbody>
+    <tr><td class="k">Spine</td><td><span class="tag chg">changed</span> Open It</td><td>first bag opened (as now)</td><td>Becomes the gear-shaped gate for Act II. Its reward is a toast that announces the new act.</td></tr>
+    <tr><td></td><td><span class="tag hid">hidden</span> Wave-five page</td><td>after the wave-5 clear</td><td>Explains what just happened and what to rebuild. It stays invisible until then, so the surprise holds.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Special Delivery</td><td>first supply crate lands (team)</td><td>Crates come every 5th wave and land 90-110 blocks out, past the wall: put the amulet on the pedestal to reach one.</td></tr>
+    <tr><td></td><td><span class="tag chg">changed</span> Every Tenth Wave</td><td>a boss dies (as now)</td><td>Renamed from "The Reaper", because the bosses alternate. A hint only, no specifics.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Horde 20 / 30 / 40</td><td>those clears</td><td>Long-haul goals for the endless phase, each with a guaranteed Legendary bag.</td></tr>
+    <tr><td class="k">Pedestal &amp; walls</td><td><span class="tag new">new</span> Read the Bar</td><td>info page with a diagram</td><td>Red ⚔ means fight, blue ⏱ means build time, red capitals mean the pedestal is being hit.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> The Walls Are a Funnel</td><td>info page with a diagram</td><td>The gate, the flank holes and the breaches. Kill zones beat tall walls, because mobs dig and pillar.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> First Aid</td><td>first pedestal heal (event)</td><td>A golden carrot heals 10%. A nether star is a full heal, or the core of a Totem: your call.</td></tr>
+    <tr><td></td><td><span class="tag chg">changed</span> Shore It Up</td><td>first upgrade bought (event, not a checkmark)</td><td>Upgrade tiers cost 6/12/18 levels. One player pays the whole cost, and everyone benefits.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Last Two Standing</td><td>first straggler glow (event)</td><td>The last two mobs glow through walls, so you don't hunt blind.</td></tr>
+    <tr><td class="k">Tier 1</td><td><span class="tag new">new</span> Stake Wall</td><td>craft one</td><td>It doesn't block anything: mobs walk through it, bleeding and slowed.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Wear and Tear</td><td>first trap worn out (event)</td><td>Traps have HP (stake 20, spike 60) and big hitters drain them faster. Rebuild between waves.</td></tr>
+    <tr><td></td><td><span class="tag opt">optional</span> Spike Strip</td><td>wave mobs die while slowed by spikes</td><td>The slow outlasts the trap by about 3 s, so put spikes inside your turrets' reach.</td></tr>
+    <tr><td class="k">Amulet &amp; beyond</td><td><span class="tag chg">changed</span> Past the Line</td><td>near any ruin, including the starter ring</td><td>Today's structure task can't see the 6 ruins the base build places, so it needs a custom check.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Gold Trim</td><td>first Lootr stash (Lootr's own advancement)</td><td>Gold trim means the stash is yours to take; your friends get their own.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Silence the Spawner</td><td>break a stash-guard spawner (event)</td><td>Break the spawner first, then loot. The guards get nastier further out.</td></tr>
+    <tr><td></td><td><span class="tag new">new</span> Big City</td><td>reach a Lost City town (structure)</td><td>A town is roughly a 1 km expedition: plan the waystone, the food and the amulet.</td></tr>
+    <tr><td></td><td><span class="tag hid">hidden</span> Corpse Run</td><td>first death (stat)</td><td>Your gear waits in your corpse. Follow the death marker back to it.</td></tr>
+    <tr><td class="k">Tier 2</td><td><span class="tag new">new</span> Mines · Wire Cutters · Speed Module</td><td>craft each</td><td>Sand Mine looks like the desert floor. Wire Cutters defuse a Claymore. The Speed Module doubles a Sentry's or I.M.S.'s output for 7 iron.</td></tr>
+    <tr><td></td><td><span class="tag chg">changed</span> Sentry · I.M.S. · Fence</td><td>craft, then look at it placed</td><td>Fixes "never runs out of arrows" (it fires 8-damage bullets) and the targeting text.</td></tr>
+    <tr><td></td><td><span class="tag opt">optional</span> Sentry Duty · Live Wire</td><td>your Sentry or fence kills wave mobs</td><td>The book notices when your defences work.</td></tr>
+    <tr><td class="k">Tier 3</td><td><span class="tag new">new</span> Flux Point · Steel · RS parts</td><td>craft each</td><td>Splits "No Cables Needed" and "The Grid", which each describe several items. Steel comes from a vanilla blast furnace.</td></tr>
+    <tr><td></td><td><span class="tag opt">optional</span> Coil Whine</td><td>Tesla Coil kills</td><td>It picks a random target and burns power while the lever is on.</td></tr>
+    <tr><td class="k">Tier 4</td><td><span class="tag new">new</span> Raw Ferronite · Turret Base II · III</td><td>craft each</td><td>Match the base tier to the head, or the head pops off. Ammo goes in the base.</td></tr>
+  </tbody>
+</table></div>
+
+<section>
+  <div class="col">
+    <h2>A quest page, rebuilt</h2>
+    <p>Same quest, before and after. The new layout gives a joke title, a subtitle that says exactly what to do and who gets the reward, short practical text with real numbers, field notes on page 2, a task that proves the Sentry is built and placed, and a reward you'll actually use.</p>
+  </div>
+  <div class="pair">
+    <div><div class="cap">Today</div>
+      <div class="mc">
+        <div class="t">Sentry</div>
+        <div class="st">Shrapnel, a Dispenser, redstone, a Portable Radar, 4 iron, an iron block</div>
+        <hr>
+        <p>Place it on top of a block and the <span class="y">Sentry</span> starts shooting on its own - no wiring, no workbench. Right-click it to cycle Idle/Camouflage/Aggressive and pick what it targets. <span class="r">It never runs out of arrows unless you load something else into a locked chest underneath it.</span> First thing in the pack that guards the pedestal while you're somewhere else.</p>
+        <hr>
+        <div class="lbl">Tasks</div><div class="row"><span class="slot"><i style="background:#7f8a93"></i>Sentry</span></div>
+        <div class="lbl" style="margin-top:8px">Rewards</div><div class="row"><span class="slot g">+3 levels</span></div>
+      </div>
+      <p class="small muted">The highlighted line is wrong: it fires 8-damage bullets, not arrows. The mode text is out of date too, because the pack sets new Sentries to hostiles-only.</p>
+    </div>
+    <div><div class="cap">Proposed</div>
+      <div class="mc">
+        <span class="pages">1 / 2 ▸</span>
+        <div class="t">Sentry</div>
+        <div class="st">Craft · Shrapnel + Dispenser + Radar + iron · Each player</div>
+        <hr>
+        <p>Set it on a solid block and it shoots by itself: <span class="y">8 damage</span> a bullet, two shots a second, out to <span class="y">20 blocks</span>. No ammo, no power.</p>
+        <p>It's already set to hostiles only, whatever the placement message says. <span class="r">Only the player who placed it can change it.</span></p>
+        <p class="d">Unlocks: Speed Module · Sentry Duty · No Turning Back (1/3)</p>
+        <hr>
+        <div class="lbl">Tasks</div>
+        <div class="row"><span class="slot"><i style="background:#7f8a93"></i>Craft a Sentry</span><span class="slot"><i style="background:#2e2a33;border-color:#86e07e"></i>Look at one placed</span></div>
+        <div class="lbl" style="margin-top:8px">Rewards</div>
+        <div class="row"><span class="slot"><i style="background:#8a7a6a"></i>2× Shrapnel</span></div>
+      </div>
+      <div class="mc" style="margin-top:8px"><span class="pages">◂ 2 / 2</span><div class="lbl">Field notes</div>
+        <p>A <span class="y">Speed Module</span> (7 iron, paper, sugar) doubles its fire rate. Put spikes inside its reach: slowed mobs stay in its fire longer. Break the block under it and the Sentry goes with it.</p></div>
+      <p class="small muted">The 2 Shrapnel go toward your next Sentry. Shrapnel only comes from fighting, so it's a fitting reward here.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>Rewards: what the player sees</h2>
+    <p>Your earlier calls set the direction: bags are the reward currency, later quests pay higher tiers, and a trap quest pays out the trap. The plan adds rules for how much XP to give, what a party gets, and the moments that should feel big.</p>
+  </div>
+
+  <div class="ladder" aria-label="Bag tier by act">
+    <div><span class="eyebrow">Act I · Arrival</span><b><span class="bag" style="background:#6fbf5a"></span>Uncommon</b><span class="small">spine milestones · each player</span></div>
+    <div><span class="eyebrow">Act II · Dig In</span><b><span class="bag" style="background:#4f8fd8"></span>Rare</b><span class="small">spine milestones · each player</span></div>
+    <div><span class="eyebrow">Act III · Power</span><b><span class="bag" style="background:#b06ad8"></span>Epic</b><span class="small">spine milestones · each player</span></div>
+    <div><span class="eyebrow">Act IV · Hordes</span><b><span class="bag" style="background:#ff9a3c"></span>Legendary</b><span class="small">bosses, Horde 20/30/40 · each player</span></div>
+  </div>
+
+  <div class="pair">
+    <div><div class="cap">Finishing a craft quest</div>
+      <div class="toasts">
+        <div class="toast"><i style="background:#9aa3ab"></i><div><span class="h">Quest completed!</span><br>Better Than Nothing</div></div>
+        <div class="toast"><i style="background:#9aa3ab"></i><div><span class="h">Reward Collected!</span><br>4x Spike Trap</div></div>
+      </div>
+      <p class="small muted">These are FTB Quests' own toasts. The reward is the trap the quest just taught, ready to place.</p>
+    </div>
+    <div><div class="cap">Reaching an act gate</div>
+      <div class="mc">
+        <div class="t">Choose one kit</div><div class="st">The Last Written Wave · each player picks their own</div>
+        <div class="choice">
+          <div><span class="o">Demolitions</span><br><span class="d">4 Bouncing Betty<br>2 Claymore</span></div>
+          <div><span class="a">Gunner</span><br><span class="d">32 Pistol Ammo<br>4 Grenades</span></div>
+          <div><span class="g">Field Medic</span><br><span class="d">4 Golden Carrots<br>8 Bread</span></div>
+        </div>
+      </div>
+      <p class="small muted">An FTB choice reward. In a party each friend picks differently, which naturally splits roles. Exact counts get a balance pass during the build.</p>
+    </div>
+  </div>
+
+  <div class="pair">
+    <div><div class="cap">A milestone in a party</div>
+      <div class="mc">
+        <div class="lbl">Rewards</div>
+        <div class="row"><span class="slot"><i style="background:#4f8fd8"></i>Rare Loot Bag</span><span class="slot"><i style="background:#3a7"></i>+6 levels</span></div>
+        <hr><span class="o">!</span> <span class="d">Unclaimed reward. Each player opens the quest and claims their own copy.</span>
+      </div>
+      <p class="small muted">Every friend gets the bag and the 6 levels (your 10-05 call). The "!" in the chapter list is what draws each of them to the page.</p>
+    </div>
+    <div><div class="cap">A new act opens</div>
+      <div class="toasts">
+        <div class="toast"><i style="background:#c46a2d"></i><div><span class="h">New pages: Act II</span><br>Dig In · press Tab</div></div>
+      </div>
+      <p class="small muted">FTB Quests has no "new quest unlocked" alert in your version, so the gate quest carries a toast reward that pops for every player. At the same moment the act's banner appears on the map.</p>
+    </div>
+  </div>
+</section>
+
+<section class="col">
+  <h3>Reward rules</h3>
+</section>
+<div class="tablewrap"><table>
+  <thead><tr><th>Quest type</th><th>Pays</th><th>In a party</th></tr></thead>
+  <tbody>
+    <tr><td class="k">Craft (teach)</td><td>More of the item (6 stakes, 4 spikes), or the next step's ingredient (Shrapnel for a Sentry, Betties for an I.M.S.)</td><td>Each player</td></tr>
+    <tr><td class="k">Field test</td><td>An upgrade for that defence: Speed Module, refills, ammo</td><td>Each player</td></tr>
+    <tr><td class="k">Spine milestone</td><td>A bag of the act's tier (above)</td><td>Each player</td></tr>
+    <tr><td class="k">Act gate</td><td>Choice of kit plus the act toast</td><td>Each player picks</td></tr>
+    <tr><td class="k">Exploration</td><td>XP levels as the pedestal fund (6 = one Tier I upgrade), or maps and waystone parts</td><td>Each player</td></tr>
+    <tr><td class="k">Capstone</td><td>The book's only Totem of Undying (No Turning Back)</td><td>Each player, one totem each</td></tr>
+    <tr><td class="k">Bounties</td><td>Shrapnel plus escalating bags. The repeatable becomes fixed rungs (1500, 3000, 4500…) because FTB resets a repeatable on the first claim</td><td>Each player</td></tr>
+    <tr><td class="k">Tips</td><td>A token level, or nothing</td><td>Each player</td></tr>
+  </tbody>
+</table></div>
+<div class="col">
+  <p><b>Never as a reward:</b> amulets (still one hand-in, one each), extra totems, or anything a home machine already makes, such as steel or ferronite. That keeps the stay-home vs. go-explore choice intact.</p>
+  <div class="note"><b>Why XP changes.</b> Each player can claim 185 levels from the book today. Maxing every pedestal upgrade costs 108 levels, and one player has to hold the levels for each tier. With 3 friends claiming separately that's about 555 levels, five times what the pedestal can absorb. The plan cuts the book's XP to about 60 levels per player, in chunks sized to upgrade tiers and labelled as pedestal fund. Kills keep paying the rest.</div>
+</div>
+
+<section class="col">
+  <h2>Multiplayer</h2>
+  <p>These facts come from FTB Quests 2001.4.22's own code. Agents read the jar's bytecode for them, and each was confirmed independently by two or three of them.</p>
+  <ul class="tight">
+    <li><b>A party shares one book.</b> Any member doing a task completes it for everyone, and everyone online gets the completion toast.</li>
+    <li><b>Rewards are claimed per player by default.</b> A reward marked "team" is claimed once for the whole party, by whoever clicks first.</li>
+    <li><b>Hand-ins take items from whoever clicks.</b> One player's 8 gold completes "Not Just Jewelry" for the party, and then each player claims their own amulet. That's the behaviour you chose on 09-25.</li>
+    <li><b>"Have the item" tasks check one inventory at a time.</b> They count the best single inventory, not the party's combined total.</li>
+    <li><b>Repeatables are first come, first served.</b> One claim of Zombie Masher resets it for the whole party, though its text promises everyone a claim.</li>
+    <li><b>A friend who joins mid-run sees the party's book.</b> They can claim every per-player reward from quests already done, which works as a free catch-up kit.</li>
+  </ul>
+  <h3>Rules the plan adds</h3>
+  <ol>
+    <li><b>Every player claims every reward</b> (decided 10-05). Waves don't scale with player count, so the extra loot in a party is accepted.</li>
+    <li><b>Every teaching quest stays manual-claim.</b> The "!" alert pulls each player into the page to claim, so a friend who didn't craft the item still reads how it works.</li>
+    <li><b>The repeatable bounty becomes fixed rungs,</b> so the first claim no longer locks the others out of that cycle.</li>
+    <li><b>Nothing requires two players.</b> Everything works solo, which is a party of one.</li>
+    <li><b>A Field Notes page called "Playing Together".</b> It covers joining one party, who owns placed SecurityCraft defences (only the placer can change them), and how claims work.</li>
+  </ol>
+  <div class="note"><b>Found along the way, not a book issue:</b> no FTB Teams party exists in any current save. The dedicated server's party folder is empty, so right now everyone has separate progress. Invites also need chat clicks, which some of your accounts can't use. The plan works either way, but a party gets the most out of it.<br><br><b>Amulets in co-op (decided 10-05, a game rule outside the book):</b> each player has to leave their own amulet to explore. The stand still shows one amulet, the first one left, which opens the border as now. Everyone else leaves theirs through the pedestal screen, which lists whose amulets are in, and Take only returns your own. The existing per-player push-back then checks your own amulet: anyone whose amulet isn't left there, including players who haven't earned one yet, is held at the real border line.</div>
+</section>
+
+<section class="col">
+  <h2>The other chapters</h2>
+  <ul class="tight">
+    <li><b>Field Notes</b> (renamed from Tips and Tricks). Keep the key tips and fix three texts: there's no furnace by the crafting table, middle-click sort is still unreliable, and hardcore only ends the run once everyone is dead. Add Playing Together, Who Owns the Defences, Your Own Blasts Are Safe, Beams Mean Loot, Waypoints (K) and Tier Tooltips.</li>
+    <li><b>The Arsenal.</b> Group the guns under their ammo, so each ammo is the parent of the guns it feeds. Give airdrop-only guns their own shape so they don't read as craftable. Each gun quest pays a stack of its ammo. Fix the SMG (32 rounds, not 60) and the Energized Dust text.</li>
+    <li><b>Bounties.</b> Keep the 25/100/300/750 ladder and the repeatable. Rename the "Reaper" tier, which clashes with the boss. Pay Shrapnel plus escalating bags, and replace the repeatable with fixed rungs every 1500 kills so every player can claim each one.</li>
+    <li><b>Challenges</b> (optional, your call). About six spoiler-safe mastery goals for veterans replaying the book on a new world: hold a wave with zero pedestal damage, kill a boss before it reaches the pedestal, max every upgrade, reach Horde 20 in hardcore.</li>
+  </ul>
+</section>
+
+<section class="col">
+  <h2>Build plan</h2>
+  <p>Each phase is sized to fit one session, so a usage limit can't strand one half-built.</p>
+  <div class="phases">
+    <div class="phase"><div class="p">Phase 1<span>restructure + rewrite</span></div><div>Acts on the spine and a legend quest. One quest per item: split Flux, RS, IE parts and OMT bases. Fix all 18 text mismatches, apply the reward rules and team flags, and add the new Field Notes pages and the regrouped Arsenal. Build the chapter files with a new spec-driven generator that keeps every surviving quest id, because the old generator is stale. Verify with a dedicated-server sandbox boot (0 parse errors) and an empty grep for ids starting 8-F.</div></div>
+    <div class="phase"><div class="p">Phase 2<span>the book reacts</span></div><div>New event hooks in <code>quest_milestones.js</code>: airdrop landed, stragglers glowing, first upgrade bought, first heal, trap worn out, spawner broken. Plus a Lootr advancement task, a first-death stat task, the hidden discovery pages, the Horde milestones and the act toasts.</div></div>
+    <div class="phase"><div class="p">Phase 3<span>field tests + look</span></div><div>Credit kills to the defence that made them, for the optional field tests. Act banners that reveal as you progress. Two or three inline diagrams (HUD, compound). Optionally, a dusk-palette theme for the whole book through FTB's theme file, as Architect's Exodus does on this same FTB Quests build.</div></div>
+    <div class="phase"><div class="p">Phase 4<span>optional</span></div><div>The Challenges chapter.</div></div>
+  </div>
+  <p class="small muted">Nothing gets built until you say so. The co-op amulet rule is a separate item that can be built alongside Phase 1.</p>
+</section>
+
+<section class="col">
+  <h2>Decided 2026-10-05</h2>
+  <ol>
+    <li>Party rewards: everyone gets everything, the totem capstone included (one each).</li>
+    <li>XP: pedestal fund, about 60 levels per player in tier-sized chunks.</li>
+    <li>Hidden discovery quests: yes, a handful.</li>
+    <li>Optional field tests: yes, never blocking.</li>
+    <li>Act banners that reveal as you progress, plus diagrams: yes.</li>
+    <li>Dusk-palette book theme: yes, in Phase 3.</li>
+    <li>Challenges chapter: yes, as Phase 4.</li>
+    <li>Co-op amulets: each player leaves their own (see Multiplayer). Players with no amulet are blocked at the border.</li>
+  </ol>
+</section>
+
+<section class="col">
+  <details><summary>The 18 places today's text disagrees with the code</summary>
+  <ol class="fix">
+    <li>Open It: "every bag can carry Shrapnel". Legendary bags carry none.</li>
+    <li>Past the Line: the structure task never sees the 6 ruins the base build places itself.</li>
+    <li>Sentry: "never runs out of arrows". It fires 8-damage bullets.</li>
+    <li>I.M.S. and Sentry: the targeting text predates the pack's hostiles/mobs-only defaults.</li>
+    <li>Bouncing Betty: "doesn't care who trips it". Players trigger it, but its blast can't hurt them.</li>
+    <li>Submachine Gun: holds 32 rounds, not 60 (the Tommy Gun holds 60).</li>
+    <li>Energized Dust: the recipe still shows in JEI. It's only uncraftable because glowstone can't be found.</li>
+    <li>Reach Further: the base has no furnace.</li>
+    <li>Auto-Sort: middle-click sorting was reported broken and never re-checked.</li>
+    <li>Go Hardcore: the run only ends once every online player is dead.</li>
+    <li>Zombie Masher: in a party only the first claimer gets each cycle.</li>
+    <li>Shore It Up: levels can't be pooled, and the chat link only goes to players who can afford a tier.</li>
+    <li>Fragmentation and Fire for Effect: the subtitles list a Turret Base as an ingredient; it's a separate block.</li>
+    <li>The Reaper: the bosses alternate (Reaper, then Demolisher), and the name clashes with a Bounty tier.</li>
+    <li>Find the Pedestal: mining the pedestal also ends the run, and nothing protects it from that.</li>
+    <li>Borrowed Time: the gear isn't actually worn. That's the hint you asked for, so it stays.</li>
+    <li>First Blood: deaths by drowning, falling and similar causes don't count.</li>
+    <li>Spoils of War: pays 2 emeralds, which nothing in the pack uses.</li>
+  </ol></details>
+  <p class="small muted">Sources: 12 research agents, 2026-10-04. They read the quest files of 7 local packs and 16 online ones, the FTB Quests 2001.4.22 jar, every KubeJS script, and your feedback history going back to 08-19. Three follow-up checks didn't run because of the usage limit. The multiplayer and image-reveal facts above were each confirmed by at least two separate bytecode reads.</p>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  // [key,x,y,shape,stage,kind,label,tip]  kind: k keep, c changed, n new, h hidden, o optional
+  var N=[
+    ['s1',45,300,'rsq',1,'k',"You're On Your Own",'Opening diary page.'],
+    ['s2',80,300,'rsq',1,'k','Borrowed Time','A hint about the borrowed gear, nothing more.'],
+    ['s3',115,300,'rsq',1,'c','Find the Pedestal','Look at the pedestal. Adds: mining it also ends the run.'],
+    ['s4',150,300,'rsq',1,'k','Sound the Horn','Completes when anyone blows the horn.'],
+    ['s5',185,300,'rsq',1,'k','Thin the Horde','Three zombies by your own hand.'],
+    ['s6',220,300,'rsq',1,'k','Wave One, Cleared','Completes on the clear. Border growth explained.'],
+    ['s7',255,300,'rsq',1,'c','Spoils of War','Pick up a bag. Odds text fixed, emeralds dropped.'],
+    ['s8',290,300,'gear',1,'c','Open It','Gate to Act II: opens every branch, fires the act toast.'],
+    ['s9',400,300,'rsq',2,'h','(hidden page)','Appears only after the wave-5 clear and explains what just happened.'],
+    ['s10',470,300,'circ',2,'n','Special Delivery','First supply crate lands. Teaches the amulet-on-pedestal trip.'],
+    ['s11',590,300,'gear',2,'k','The Last Written Wave','Gate to Act III. Choice-of-kit reward.'],
+    ['s12',690,300,'rsq',3,'c','Every Tenth Wave','A boss dies. Hint only.'],
+    ['s13',790,300,'gear',3,'k','No Ceiling','Wave 15. Gate to Act IV.'],
+    ['s14',850,300,'rsq',4,'n','Horde 20','Guaranteed Legendary bag, once per team.'],
+    ['s15',905,300,'rsq',4,'n','Horde 30','Long-haul milestone.'],
+    ['s16',960,300,'rsq',4,'n','Horde 40','Long-haul milestone.'],
+    ['p1',80,225,'circ',1,'n','Read the Bar','The HUD, with a diagram.'],
+    ['p2',120,225,'circ',1,'n','The Walls Are a Funnel','Weak points of the compound, with a diagram.'],
+    ['p3',160,225,'circ',1,'n','First Aid','First pedestal heal.'],
+    ['p4',200,225,'circ',1,'c','Shore It Up','First upgrade bought (event).'],
+    ['p5',240,225,'circ',1,'n','The Clock Runs','The countdown starts a wave on its own.'],
+    ['p6',280,225,'circ',1,'n','Last Two Standing','First straggler glow.'],
+    ['x0',45,165,'circ',2,'h','(hidden page)','Corpse Run: appears after your first death.'],
+    ['a1',330,225,'pent',2,'k','Not Just Jewelry','Hand in 8 gold, each player claims an amulet.'],
+    ['a2',370,225,'pent',2,'k','Wear It','Amulet in the Curios slot.'],
+    ['a3',410,225,'pent',2,'k','Leave It Behind','Amulet on the pedestal opens the border.'],
+    ['a4',450,225,'pent',2,'c','Past the Line','Near any ruin, starter ring included.'],
+    ['a5',490,225,'pent',2,'n','Gold Trim','First Lootr stash.'],
+    ['a6',530,225,'pent',2,'n','Silence the Spawner','Break a stash-guard spawner.'],
+    ['a7',570,225,'pent',2,'k','A Stone That Remembers','Craft a waystone.'],
+    ['a8',605,180,'pent',2,'n','Big City','Reach a Lost City town.'],
+    ['t1',330,375,'hex',2,'c','Cheap and Cheerful','Wooden Stake. Pays 6 stakes.'],
+    ['t2',370,375,'hex',2,'n','Stake Wall','Doesn’t block: slows and bleeds.'],
+    ['t3',410,375,'hex',2,'c','Better Than Nothing','Spike Trap. Pays 4 spikes.'],
+    ['t4',450,375,'hex',2,'k','Dinner Bell','Lure Block.'],
+    ['t5',490,375,'circ',2,'n','Wear and Tear','First trap worn out.'],
+    ['to1',410,420,'dia',2,'o','Spike Strip','Optional: mobs die while slowed by spikes.'],
+    ['b1',330,475,'hex',2,'k','Bouncing Betty','Mine, I.M.S. refill, Claymore core.'],
+    ['b2',370,475,'hex',2,'k','Claymore','Directional mine.'],
+    ['b3',410,475,'hex',2,'n','Mines','Sand Mine and friends.'],
+    ['b4',450,475,'hex',2,'n','Wire Cutters','Defuse before moving.'],
+    ['b5',490,475,'hex',2,'c','Sentry','Craft + look at it placed.'],
+    ['b6',530,475,'hex',2,'n','Speed Module','Doubles a Sentry or I.M.S.'],
+    ['b7',570,475,'hex',2,'c','Electrified Fence','Funnels and shocks.'],
+    ['b8',370,525,'hex',2,'c','I.M.S.','Chest of Betties underneath = self-reload.'],
+    ['bc',615,505,'gear',2,'k','No Turning Back','Capstone: every Tier 2 trap. The book’s only totem.'],
+    ['bo1',490,525,'dia',2,'o','Sentry Duty','Optional: your Sentry gets kills.'],
+    ['bo2',570,525,'dia',2,'o','Live Wire','Optional: the fence kills.'],
+    ['r1',330,580,'hex',2,'k','Room to Grow','Sophisticated barrel.'],
+    ['r2',370,580,'hex',2,'k','Iron Sides','Basic-to-iron tier upgrade.'],
+    ['r3',410,580,'hex',2,'k','Bigger on the Inside','Stack upgrade.'],
+    ['r4',450,580,'hex',2,'k','Pack Mule','Backpack.'],
+    ['r5',490,580,'hex',2,'k','Waste Not','Item Collector.'],
+    ['e1',630,375,'circ',3,'k','Wired Different','Look at the bio generator.'],
+    ['e2',670,375,'hex',3,'c','Flux Plug','Power in.'],
+    ['e3',710,375,'hex',3,'n','Flux Point','Power out: one per machine.'],
+    ['e4',750,375,'hex',3,'n','Steel','Vanilla blast furnace.'],
+    ['e5',790,375,'hex',3,'k','Sparks in the Dark','Tesla Coil.'],
+    ['e6',690,430,'hex',3,'c','Point and Shoot','IE Gun Turret: load Casull rounds.'],
+    ['e7',730,430,'hex',3,'c','Liquid Fire','IE Chemthrower Turret: creosote.'],
+    ['eo',790,430,'dia',3,'o','Coil Whine','Optional: Tesla kills.'],
+    ['g1',630,530,'hex',3,'c','Controller','Refined Storage, split one per item.'],
+    ['g2',670,530,'hex',3,'n','Disk Drive',''],
+    ['g3',710,530,'hex',3,'n','Grid',''],
+    ['g4',750,530,'hex',3,'n','Storage Disk',''],
+    ['g5',790,530,'hex',3,'n','External Storage','Pull a chest into the Grid.'],
+    ['f1',840,375,'hex',4,'n','Raw Ferronite','Steel + redstone, no mining.'],
+    ['f2',880,375,'hex',4,'n','Turret Base II','Grenade head needs Tier 2+.'],
+    ['f3',920,375,'hex',4,'c','Fragmentation','Grenade Turret.'],
+    ['f4',880,430,'hex',4,'n','Turret Base III','Rocket head needs Tier 3+.'],
+    ['f5',920,430,'hex',4,'c','Fire for Effect','Rocket Turret.']
+  ];
+  var E=[['s1','s2'],['s2','s3'],['s3','s4'],['s4','s5'],['s5','s6'],['s6','s7'],['s7','s8'],['s8','s9'],['s9','s10'],['s10','s11'],['s11','s12'],['s12','s13'],['s13','s14'],['s14','s15'],['s15','s16'],
+    ['s3','p1'],['p1','p2'],['p2','p3'],['p3','p4'],['p4','p5'],['p5','p6'],['s1','x0'],
+    ['s8','a1'],['a1','a2'],['a2','a3'],['a3','a4'],['a4','a5'],['a5','a6'],['a6','a7'],['a7','a8'],
+    ['s8','t1'],['t1','t2'],['t2','t3'],['t3','t4'],['t4','t5'],['t3','to1'],
+    ['t1','b1'],['b1','b2'],['b2','b3'],['b3','b4'],['b4','b5'],['b5','b6'],['b6','b7'],['b1','b8'],['b7','bc'],['b5','bo1'],['b7','bo2'],
+    ['b8','r1'],['r1','r2'],['r2','r3'],['r3','r4'],['r4','r5'],
+    ['s11','e1'],['e1','e2'],['e2','e3'],['e3','e4'],['e4','e5'],['e3','e6'],['e6','e7'],['e5','eo'],['e5','g1'],['g1','g2'],['g2','g3'],['g3','g4'],['g4','g5'],
+    ['s13','f1'],['f1','f2'],['f2','f3'],['f3','f4'],['f4','f5']];
+  var ACTS=[[20,305,1,'ACT I · ARRIVAL','waves 1–4'],[305,615,2,'ACT II · DIG IN','waves 5–8'],[615,815,3,'ACT III · POWER','waves 9–15'],[815,990,4,'ACT IV · HORDES','16 and on']];
+  var svg=document.getElementById('map'), cap=document.getElementById('mapcap');
+  var byKey={}; N.forEach(function(n){byKey[n[0]]=n});
+  function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
+  function shape(s,x,y,r){
+    if(s==='circ')return['circle',{cx:x,cy:y,r:r}];
+    if(s==='rsq')return['rect',{x:x-r,y:y-r,width:2*r,height:2*r,rx:r*0.35}];
+    var pts=[],i,n,a0,rr;
+    if(s==='hex'){n=6;a0=0}else if(s==='pent'){n=5;a0=-Math.PI/2}else if(s==='dia'){n=4;a0=-Math.PI/2}
+    if(s==='gear'){for(i=0;i<16;i++){rr=i%2?r*0.78:r;var a=i*Math.PI/8;pts.push((x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1))}return['polygon',{points:pts.join(' ')}]}
+    for(i=0;i<n;i++){var b=a0+i*2*Math.PI/n;pts.push((x+r*Math.cos(b)).toFixed(1)+','+(y+r*Math.sin(b)).toFixed(1))}
+    return['polygon',{points:pts.join(' ')}];
+  }
+  var COL={k:'#cbbfd3',c:'#ffb25c',n:'#ff7a4a',h:'#e8dcc4',o:'#e2b24e'};
+  function draw(stage){
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    ACTS.forEach(function(a){
+      var on=stage>=a[2];
+      var g=el('g',{});
+      if(on){el('rect',{x:a[0]+4,y:14,width:a[1]-a[0]-8,height:52,fill:'#2b1f33',stroke:'#c46a2d','stroke-width':2},g);
+        el('text',{x:(a[0]+a[1])/2,y:40,'text-anchor':'middle',fill:'#ffb25c','font-family':'Big Shoulders Stencil Display, Impact, sans-serif','font-size':20,'font-weight':800},g).textContent=a[3];
+        el('text',{x:(a[0]+a[1])/2,y:58,'text-anchor':'middle',fill:'#a79cb0','font-family':'Pixelify Sans, monospace','font-size':12},g).textContent=a[4];}
+      else{el('rect',{x:a[0]+4,y:14,width:a[1]-a[0]-8,height:52,fill:'none',stroke:'#4a3d55','stroke-width':1.5,'stroke-dasharray':'5 5'},g);
+        el('text',{x:(a[0]+a[1])/2,y:45,'text-anchor':'middle',fill:'#5e4b6b','font-family':'Pixelify Sans, monospace','font-size':14},g).textContent='banner appears when reached';}
+      if(a[0]>20)el('line',{x1:a[0],y1:80,x2:a[0],y2:610,stroke:'#33283b','stroke-width':1,'stroke-dasharray':'2 6'});
+    });
+    E.forEach(function(e){var A=byKey[e[0]],B=byKey[e[1]];if(!A||!B)return;var vis=A[4]<=stage&&B[4]<=stage;if(!vis)return;
+      el('line',{x1:A[1],y1:A[2],x2:B[1],y2:B[2],stroke:(B[4]<stage?'#6f5a3c':'#8a7898'),'stroke-width':2,'stroke-dasharray':(B[5]==='o'||B[5]==='h')?'4 4':'none'})});
+    N.forEach(function(n){
+      if(n[4]>stage)return;
+      var big=n[3]==='gear'?15:(n[0][0]==='s'?11:9);
+      var done=n[4]<stage, d=shape(n[3],n[1],n[2],big);
+      var g=el('g',{tabindex:0,role:'img','aria-label':n[6]+'. '+n[7]});
+      var fill=done?'#4a3a2a':'#1f1726', stroke=COL[n[5]];
+      var s=el(d[0],d[1],g); s.setAttribute('fill',fill); s.setAttribute('stroke',stroke); s.setAttribute('stroke-width',n[5]==='n'?2.6:1.8);
+      if(n[5]==='h'||n[5]==='o')s.setAttribute('stroke-dasharray','3 2');
+      if(n[5]==='n'&&!done)s.setAttribute('class','node-new');
+      if(done)el('path',{d:'M'+(n[1]-4)+' '+n[2]+' l3 3 l6 -6',stroke:'#86e07e','stroke-width':2.2,fill:'none'},g);
+      if(n[0][0]==='s'||n[3]==='gear'){var t=el('text',{x:n[1],y:n[2]+(n[3]==='gear'?30:24),'text-anchor':'middle',fill:'#a79cb0','font-family':'Pixelify Sans, monospace','font-size':10},g);t.textContent=n[6].length>16?n[6].slice(0,15)+'…':n[6];}
+      var ttl=el('title',{},g); ttl.textContent=n[6]+' — '+n[7];
+      function show(){cap.innerHTML='<b>'+n[6].replace(/</g,'&lt;')+'</b> · '+({k:'kept',c:'changed',n:'new',h:'hidden until it happens',o:'optional field test'})[n[5]]+(n[7]?' — '+n[7].replace(/</g,'&lt;'):'');}
+      g.addEventListener('mouseenter',show); g.addEventListener('focus',show);
+    });
+  }
+  var btns=document.querySelectorAll('.mapctl button');
+  btns.forEach(function(b){b.addEventListener('click',function(){btns.forEach(function(x){x.setAttribute('aria-pressed','false')});b.setAttribute('aria-pressed','true');draw(+b.dataset.stage);cap.textContent='Hover a node.';})});
+  draw(1);
+  // legend
+  var lg=document.getElementById('legend');
+  [['rsq','Story / milestone'],['gear','Act gate or capstone'],['hex','Craft'],['pent','Amulet / exploration'],['circ','Event or info'],['dia','Optional field test']].forEach(function(l){
+    var span=document.createElement('span'); var s=document.createElementNS(NS,'svg'); s.setAttribute('width',22);s.setAttribute('height',22);s.setAttribute('viewBox','0 0 22 22');s.setAttribute('aria-hidden','true');
+    var d=shape(l[0],11,11,8); var e=document.createElementNS(NS,d[0]); for(var k in d[1])e.setAttribute(k,d[1][k]); e.setAttribute('fill','#1f1726'); e.setAttribute('stroke','#cbbfd3'); e.setAttribute('stroke-width','1.6'); s.appendChild(e);
+    span.appendChild(s); span.appendChild(document.createTextNode(l[1])); lg.appendChild(span);
+  });
+  var k2=document.createElement('span'); k2.innerHTML='<span style="color:#ff7a4a">■</span> new &nbsp;<span style="color:#ffb25c">■</span> changed &nbsp;<span style="color:#86e07e">✓</span> done'; lg.appendChild(k2);
+})();
+</script>

@@ -1,0 +1,690 @@
+{
+ "task_types": [
+  {
+   "type": "ftbquests:item",
+   "detects": "Items matching `item`. Non-consuming (default): on any inventory change (deferred by data.snbt detection_delay ticks) it counts matching stacks in ONE player's own inventory and raises the team's progress to that count if higher. Consuming (consume_items true, or chapter consume_items, or data.snbt default_consume_items): the player clicks the task in the book and the items are removed from THAT player's inventory and added to team progress, so several members can pool deliveries. only_from_crafting: progress comes only from crafted or smelted output. Clicking a non-consuming single-item task while JEI is present opens that item's JEI recipes, which works as a built-in recipe lesson.",
+   "evidence": "Disassembly of mods/ftb-quests-forge-2001.4.22.jar (javap dumps in scratchpad/javap/ftbquests/). TaskTypes static init registers 'item'. ItemTask.readData/writeData keys item,count,consume_items,only_from_crafting,match_nbt,weak_nbt_match,task_screen_only. ItemTask.submitTask: the consumesResources branch removes stacks from player.getInventory(); otherwise countMatchingItems feeds TeamData.setProgress only when greater. ItemTask.onButtonClicked calls RecipeModHelper.showRecipes. FTBQuestsInventoryListener calls ServerQuestFile.getDetectionDelay. FTBQuestsEventHandler registers itemCrafted/itemSmelted on PlayerEvent.CRAFT_ITEM/SMELT_ITEM. The CtE2 book (same version) has 616 item tasks (local_pack_stats.json).",
+   "snbt_fields": "item (string id or {id,Count,tag}), count (long), consume_items (bool; absent = inherit), only_from_crafting (bool; absent = false), match_nbt (bool; absent = true only if the item is in tag itemfilters:check_nbt), weak_nbt_match (bool), task_screen_only (bool). Base Task fields: optional_task, title, icon, tags, disable_toast.",
+   "caveats": "Party members' inventories are NOT pooled for non-consuming tasks: progress is the best single inventory. Each task checks one item predicate. A bare \"#tag\" item string crashes on load because MissingItem.readItem builds a ResourceLocation (memory project_ftb_quests.md). Neither Item Filters nor FTB Filter System is installed, so there is no 'any of' matching. Items that only exist as formed multiblocks or creative items can never be completed this way; use observation instead (memory project_quest_book_v3_fishbone.md). Our data.snbt:7 sets detection_delay: 60, so detection lags about 3 s."
+  },
+  {
+   "type": "ftbquests:custom",
+   "detects": "Whatever a KubeJS script decides. The task does nothing by itself. FTBQuestsEvents.customTask(<task hex id>, e => …) can call setCheck((data, player) => data.addProgress/setProgress), setCheckTimer(n), setMaxProgress(n) and setEnableButton(bool). The check then runs every checkTimer ticks for each online player. With enableButton, clicking the task sends a submit that runs the check. Progress can also be pushed through player.data.ftbquests.addProgress or /ftbquests change_progress.",
+   "evidence": "CustomTask fields check/checkTimer(default 1)/maxProgress(default 1)/enableButton(default false), set in its constructor. CustomTask has no readData/writeData override; only writeNetData syncs max. BaseQuestFile.readDataFull ends by posting CustomTaskEvent for every CustomTask, so it fires on every load or /ftbquests reload. Task.onCreated also posts it when a task is made in the editor. CustomTask.autoSubmitOnPlayerTick returns checkTimer when a check is set. XMod CustomTaskEventJS exposes setCheck/setCheckTimer/setMaxProgress/setEnableButton.",
+   "snbt_fields": "None of its own beyond the base Task fields. The `max_progress` lines in our bounties.snbt:34,67,100,137,166 are silently ignored.",
+   "caveats": "Max progress is always 1 unless a script sets it; any setProgress of 1 or more completes the task (memory reference_ftbquests_customtask_max_progress.md, which documents the Bounties all completing at once). The supported place to set it is the customTask event, which fires during file load. The pack currently sets it by reflection on the first tick, and /ftbquests reload recreates the task objects."
+  },
+  {
+   "type": "ftbquests:xp",
+   "detects": "The player clicks the task. That player's XP levels (or XP points when points:true) are REMOVED and added to team progress, up to `value`.",
+   "evidence": "XPTask.readData keys value (long) and points (bool). XPTask.consumesResources returns true. XPTask.submitTask calls addPlayerXP(-n) or giveExperienceLevels(-n), then TeamData.addProgress. Task.onButtonClicked sends SubmitTaskMessage for tasks that do not auto-tick.",
+   "snbt_fields": "value (long), points (bool; false = levels)",
+   "caveats": "It spends the same XP-level currency the pedestal upgrades use. Whoever clicks pays."
+  },
+  {
+   "type": "ftbquests:dimension",
+   "detects": "A team member is in the dimension. Checked every 100 ticks and on the dimension-change event.",
+   "evidence": "DimensionTask.readData key 'dimension'. autoSubmitOnPlayerTick returns 100. FTBQuestsEventHandler.changedDimension calls DimensionTask.submitTask.",
+   "snbt_fields": "dimension (ResourceLocation of the level)",
+   "caveats": "Little use in an overworld-only pack."
+  },
+  {
+   "type": "ftbquests:stat",
+   "detects": "The submitting player's value of a vanilla CUSTOM stat (Stats.CUSTOM; e.g. minecraft:mob_kills, minecraft:play_time, or any mod/KubeJS-registered custom stat), polled every 3 ticks. Team progress becomes that value if it is higher.",
+   "evidence": "StatTask.readData keys stat and value (int). StatTask.submitTask looks the stat up in BuiltInRegistries.CUSTOM_STAT (and retries with a minecraft: namespace), reads ServerStatsCounter.getValue(Stats.CUSTOM.get(stat)), and calls setProgress only if greater. autoSubmitOnPlayerTick returns 3. CtE2 chapters/act_v.snbt:1048-1050 uses a mod stat (`stat: \"mmorpg:dungeons_completed\"`, value 10). KubeJS 2001.6.5 has RegistryInfo.CUSTOM_STAT with a 'basic' CustomStatBuilder, and PlayerStatsJS.add/set.",
+   "snbt_fields": "stat (ResourceLocation), value (int)",
+   "caveats": "Stats are per player, so a party sees its best single member, not a sum. This is the native way to get a real progress bar with the max set in SNBT, e.g. a KubeJS stat for waves cleared or pedestal repairs, instead of the custom-task max hack. Display names need lang keys (unverified)."
+  },
+  {
+   "type": "ftbquests:kill",
+   "detects": "A LivingEntity dies, the DamageSource's causing entity (getEntity(), so projectile owners count) is a ServerPlayer that is not a fake player, and the victim's type id equals `entity` exactly. It adds 1 to the killer's team.",
+   "evidence": "KillTask.readData keys entity and value (long); default entity minecraft:zombie. FTBQuestsEventHandler.playerKill registers on EntityEvent.LIVING_DEATH, checks `instanceof ServerPlayer` and !PlayerHooks.isFake, then KillTask.kill compares EntityType ids. Our campaign.snbt:165-168 has entity minecraft:zombie, value 3L.",
+   "snbt_fields": "entity (single entity type id), value (long)",
+   "caveats": "Turret, trap, Tesla coil and fake-player kills never count. There is no entity tag and no custom-name filter in 2001.4.22, so one task covers one mob type. Scripts can top it up: player.data.ftbquests.addProgress(killTaskId, n) works on any task type, so turret kills can be credited while keeping the native bar and the SNBT max."
+  },
+  {
+   "type": "ftbquests:location",
+   "detects": "The player's block position is inside the box [position, position+size) in the given dimension (or any dimension when ignore_dimension is set). Polled every 3 ticks.",
+   "evidence": "LocationTask.readData keys dimension, ignore_dimension (bool), position (int array), size (int array). LocationTask.canSubmit does the floor-of-position range test. autoSubmitOnPlayerTick returns 3.",
+   "snbt_fields": "dimension, ignore_dimension, position [I; x,y,z], size [I; w,h,d]",
+   "caveats": "Coordinates are absolute and written into the quest file. The base is placed on an anchor grid per world (memory project_anchor_grid_base_placement.md), so 'go to the wall top' style tasks only work if the fort's coordinates are identical in every world (unverified)."
+  },
+  {
+   "type": "ftbquests:checkmark",
+   "detects": "A manual tick: the player clicks the task in the book.",
+   "evidence": "CheckmarkTask extends AbstractBooleanTask; canSubmit returns true. Task.onButtonClicked sends SubmitTaskMessage. CtE2 has 76 checkmarks; act_0.snbt:27 says 'Complete each \"page\" ... by clicking the checkmark'.",
+   "snbt_fields": "none (base fields only)",
+   "caveats": "In a party, whoever clicks first completes it for everybody, and the toast goes to all online members."
+  },
+  {
+   "type": "ftbquests:advancement",
+   "detects": "The submitting player has the advancement (empty criterion) or one specific criterion. Polled every 5 ticks.",
+   "evidence": "AdvancementTask.readData keys advancement and criterion. canSubmit reads PlayerAdvancements.getOrStartProgress(...).isDone() or getCriterion(criterion).isDone(). autoSubmitOnPlayerTick returns 5.",
+   "snbt_fields": "advancement (ResourceLocation), criterion (string)",
+   "caveats": "Pairs with datapack advancements in pack/kubejs/data, which already loads data (our book's #kubejs:ruins structure tag comes from there). Vanilla triggers such as minecraft:placed_block or item_used_on_block can detect things FTB has no task for, such as 'place a Simply Traps spike' or 'place a Lure Block'. Advancements are per player; any member satisfies the team task."
+  },
+  {
+   "type": "ftbquests:observation",
+   "detects": "The client watches the crosshair target. When the player looks at the target for `timer` ticks (the count only advances while the game is unpaused), the client sends a submit. Targets can be a block id, block tag (#), block state (block-input syntax with properties), block entity (block input with NBT), block-entity type, entity type, or entity-type tag.",
+   "evidence": "ObservationTask.readData keys timer (long), observe_type (int ordinal), to_observe. ObservationTask$ObserveType order: 0 BLOCK, 1 BLOCK_TAG, 2 BLOCK_STATE, 3 BLOCK_ENTITY, 4 BLOCK_ENTITY_TYPE, 5 ENTITY_TYPE, 6 ENTITY_TYPE_TAG. FTBQuestsClientEventHandler.onClientTick uses Minecraft.hitResult and !isPaused, then sends SubmitTaskMessage. ObservationTask.canSubmit returns true, so the server trusts the client. Our campaign.snbt:105-107 has observe_type 0, to_observe supplementaries:pedestal; campaign.snbt:1021-1023 observes a generator.",
+   "snbt_fields": "to_observe (string), observe_type (int 0-6), timer (long ticks)",
+   "caveats": "The best fit for 'go and look at X' teaching quests: the pedestal, the horn note block, a placed trap, a turret, or a wave mob type (ENTITY_TYPE, e.g. look at a brute for 40 ticks). Target the block the world actually contains, not one that is merely registered (memory: the pedestal observation silently failed on a retired id)."
+  },
+  {
+   "type": "ftbquests:biome",
+   "detects": "The player stands in the biome or biome tag. Polled every 20 ticks; spectators are excluded.",
+   "evidence": "BiomeTask.readData key biome, held as Either<ResourceKey, TagKey> ('#' prefix makes a tag). canSubmit uses level.getBiome(pos) and !isSpectator. autoSubmitOnPlayerTick returns 20.",
+   "snbt_fields": "biome (id or #tag)",
+   "caveats": "—"
+  },
+  {
+   "type": "ftbquests:structure",
+   "detects": "The player is inside a structure PIECE bounding box of the structure or structure tag. Polled every 20 ticks; spectators are excluded.",
+   "evidence": "StructureTask.readData key structure, held as Either<ResourceKey, TagKey>. canSubmit calls StructureManager.getStructureWithPieceAt(pos, key|tag).isValid(). Our campaign.snbt:496 uses `structure: \"#kubejs:ruins\"`. CtE2 act_iii.snbt:869 uses `#blue_skies:gatekeeper_houses`.",
+   "snbt_fields": "structure (id or #tag)",
+   "caveats": "The player must be in an actual piece, not just inside the overall bounds."
+  },
+  {
+   "type": "ftbquests:gamestage",
+   "detects": "The player has the stage. Polled every 20 ticks, and also checked IMMEDIATELY whenever a KubeJS stage is added or removed.",
+   "evidence": "StageTask.readData key stage. autoSubmitOnPlayerTick returns 20. XMod KubeJSIntegration.init registers Stages.added/removed → StageTask.checkStages(player). FTBXModConfig stage_selector default prefers KubeJS → Game Stages → vanilla; the instance config/ftbxmodcompat.snbt has stage_selector \"default\" and Game Stages is not installed.",
+   "snbt_fields": "stage (string)",
+   "caveats": "The cleanest event bridge: a script calls player.stages.add('td_wave5') and the quest completes at once with the normal toasts. Stages are per player, so any member holding the stage completes the team task. There is no team_stage option in 2001.4.22."
+  },
+  {
+   "type": "ftbquests:fluid",
+   "detects": "Fluid delivered into an FTB Task Screen block, through its fluid capability.",
+   "evidence": "FluidTask.readData keys fluid, amount (long), nbt. FluidTask has no submitTask override. ForgeTaskScreenBlockEntity$TaskFluidHandler handles input.",
+   "snbt_fields": "fluid, amount (long mB), nbt",
+   "caveats": "Only works through a Task Screen block."
+  },
+  {
+   "type": "ftbquests:forge_energy",
+   "detects": "Forge Energy piped into an FTB Task Screen block.",
+   "evidence": "Registered in FTBQuestsForge as 'forge_energy' (ForgeEnergyTask.TYPE). EnergyTask.readData keys value and max_input. Input goes through ForgeTaskScreenBlockEntity$TaskForgeEnergyHandler.",
+   "snbt_fields": "value (long FE), max_input (long FE/t)",
+   "caveats": "Could teach Tier 3 power (e.g. 'feed 50k FE into the screen') if a Task Screen is placed. That needs a screen block in the world bound to the team (unverified in this pack)."
+  }
+ ],
+ "reward_types": [
+  {
+   "type": "ftbquests:item",
+   "player_sees": "The item goes into the inventory with the ITEM_PICKUP sound. Overflow drops at the player's feet and only that player can pick it up. A toast titled 'Reward Collected!' shows 'Nx <item name>' in the item's rarity colour with the item icon. If the RewardNotificationsScreen is open (after Claim All or a crate opening), the reward is added to that list instead of toasting.",
+   "evidence": "ItemReward.claim: Inventory.contains check for only_one; count + random.nextInt(random_bonus+1); gives max-stack chunks via Architectury ItemStackHooks.giveItem (Inventory.add, else drop with owner set and SoundEvents.ITEM_PICKUP); sends DisplayItemRewardToastMessage when notify. FTBQuestsNetClient.displayItemRewardToast builds RewardToast or adds to IRewardListenerScreen. Lang ftbquests.reward.collected = 'Reward Collected!'.",
+   "snbt_fields": "item (id or {id,Count,tag}), count (int), random_bonus (int, adds 0..N), only_one (bool: skipped if the player already holds the item). Base fields: team_reward, auto, exclude_from_claim_all, ignore_reward_blocking, title, icon, tags.",
+   "team_behavior": "Default is per player: each member claims their own copy. team_reward:true means one claim for the whole team, taken by whoever claims first; the tooltip then says 'Team Reward'.",
+   "caveats": "Also appears as a JEI 'Quests' recipe output unless auto is invisible."
+  },
+  {
+   "type": "ftbquests:xp",
+   "player_sees": "XP points are added, with a toast 'XP: +N' (N in green).",
+   "evidence": "XPReward.claim calls giveExperiencePoints, then DisplayRewardToastMessage(translatable ftbquests.reward.ftbquests.xp + ': ' + N GREEN). Lang value 'XP'.",
+   "snbt_fields": "xp (int)",
+   "team_behavior": "Per player unless team_reward is set.",
+   "caveats": "—"
+  },
+  {
+   "type": "ftbquests:xp_levels",
+   "player_sees": "Levels are added, with a toast 'XP Levels: +N'.",
+   "evidence": "XPLevelsReward.claim calls giveExperienceLevels, then DisplayRewardToastMessage(ftbquests.reward.ftbquests.xp_levels). Our book has 76 xp_levels rewards (local_pack_stats.json).",
+   "snbt_fields": "xp_levels (int)",
+   "team_behavior": "Per player unless team_reward is set.",
+   "caveats": "XP levels are the pedestal-upgrade currency, so these rewards feed that system directly."
+  },
+  {
+   "type": "ftbquests:command",
+   "player_sees": "Nothing from FTB itself (no toast). The player sees whatever the command does, such as a /title, /playsound, /particle, firework or /tellraw.",
+   "evidence": "CommandReward.claim builds placeholders {p} (player name), {x} {y} {z} (block position), {chapter} {quest} (hex ids via toString), {team} {team_id} {long_team_id} {member_count} {online_member_count} (pattern [{](\\w+)}), runs Commands.performPrefixedCommand from player.createCommandSourceStack(), withPermission(2) if elevate_perms, withSuppressedOutput if silent. Default command '/say Hi, @p!'. CtE2 campaign_talent_rewards.snbt:861-863 uses auto invisible + elevate_perms + '/ftbquests change_progress @p reset <id>'.",
+   "snbt_fields": "command (string), elevate_perms (bool → level 2), silent (bool)",
+   "team_behavior": "Runs once per claim: once for a team reward, or once per member who claims a per-player reward.",
+   "caveats": "The command runs with the claimer as source, at the claimer's position. elevate_perms gives level 2, which is enough for /ftbquests change_progress, /title, /playsound and /summon."
+  },
+  {
+   "type": "ftbquests:random",
+   "player_sees": "loot_size weighted picks from a reward table, never 'nothing'. Each picked sub-reward shows its own toast.",
+   "evidence": "RandomReward.readData keys table_id (getLong, a numeric id) and table_data (inline table, titled 'Internal'). RandomReward.claim calls RewardTable.generateWeightedRandomRewards(rand, 1, false), which rolls 1 × loot_size and always adds weight-0 entries.",
+   "snbt_fields": "table_id (decimal long, e.g. CtE2 act_0.snbt:230 `table_id: 405550839613976496L`) or table_data {…}",
+   "team_behavior": "Per player unless team_reward is set.",
+   "caveats": "The table's use_title and hide_tooltip settings control how the reward looks and whether its contents show on hover."
+  },
+  {
+   "type": "ftbquests:loot",
+   "player_sees": "The same as random, but the table's empty_weight can produce nothing.",
+   "evidence": "LootReward extends RandomReward; claim calls generateWeightedRandomRewards(rand, 1, true).",
+   "snbt_fields": "table_id / table_data",
+   "team_behavior": "Per player unless team_reward is set.",
+   "caveats": "It does not hand out a crate item; it rolls the table directly."
+  },
+  {
+   "type": "ftbquests:all_table",
+   "player_sees": "Every entry of the table at once.",
+   "evidence": "AllTableReward.claim iterates getWeightedRewards() and claims each.",
+   "snbt_fields": "table_id / table_data",
+   "team_behavior": "Per player unless team_reward is set.",
+   "caveats": "—"
+  },
+  {
+   "type": "ftbquests:choice",
+   "player_sees": "A selection screen (SelectChoiceRewardScreen). The player picks exactly one entry of the table, which is then given with its own toast.",
+   "evidence": "ChoiceReward.claim is a no-op; getExcludeFromClaimAll returns true; automatedClaimPre returns false. ClaimChoiceRewardMessage.handle claims table entry [index] with notify, then calls TeamData.claimReward. CtE2 act_0.snbt:228-231 has exclude_from_claim_all + table_id + type choice.",
+   "snbt_fields": "table_id / table_data",
+   "team_behavior": "Per player by default, so each member picks their own. With team_reward, one pick for the team.",
+   "caveats": "Never auto-claimed and always skipped by Claim All."
+  },
+  {
+   "type": "ftbquests:custom",
+   "player_sees": "Whatever the script does. FTB shows nothing.",
+   "evidence": "CustomReward.claim fires CustomRewardEvent. XMod posts FTBQuestsEvents.customReward(<reward hex id>) with getEntity()/player, getReward(), getNotify().",
+   "snbt_fields": "none (base fields)",
+   "team_behavior": "Per claim.",
+   "caveats": "Hooks such as pedestal heal, a pedestal-upgrade voucher or a scripted airdrop can live here."
+  },
+  {
+   "type": "ftbquests:advancement",
+   "player_sees": "Grants vanilla advancement criteria to the claimer. If the advancement has a display, vanilla shows its toast: a 'challenge' frame plays UI_TOAST_CHALLENGE_COMPLETE, and announce_to_chat broadcasts to everyone.",
+   "evidence": "AdvancementReward.readData keys advancement and criterion. claim calls PlayerAdvancements.award for each criterion, or the one named. Vanilla AdvancementToast checks FrameType.CHALLENGE and plays SoundEvents.f_12496_ (UI_TOAST_CHALLENGE_COMPLETE) in client-1.20.1-srg.jar. DisplayInfo keys frame/show_toast/announce_to_chat/hidden.",
+   "snbt_fields": "advancement, criterion (empty = all)",
+   "team_behavior": "Only the claimer gets the advancement.",
+   "caveats": "The cheapest 'big moment' presentation: custom challenge-frame advancements in pack/kubejs/data with minecraft:impossible criteria, granted as rewards."
+  },
+  {
+   "type": "ftbquests:toast",
+   "player_sees": "A custom FTB toast. The title is the reward's title (rich text), the subtitle is the literal `description` string, and the icon is the reward's icon.",
+   "evidence": "ToastReward.readData key description. claim sends CustomToastMessage to the claiming player only. FTBQuestsNetClient.displayCustomToast builds RewardToast(getTitle(), Component.literal(description), getIcon()).",
+   "snbt_fields": "description (string), plus title and icon",
+   "team_behavior": "Only the claimer sees it.",
+   "caveats": "The description is not run through the & parser. The tool for 'New chapter unlocked' style notices, since FTB has no unlock notification of its own."
+  },
+  {
+   "type": "ftbquests:gamestage",
+   "player_sees": "Adds or removes a KubeJS stage on the claimer. When notified, an action-bar message using lang key commands.gamestage.add.target or commands.gamestage.remove.target.",
+   "evidence": "StageReward.readData keys stage and remove (bool). claim calls StageHelper.getProvider().add/remove, then if notify sendSystemMessage(translatable(...), true). Those keys do not exist in the FTB Quests or KubeJS en_us.json (they belong to the Game Stages mod, which is not installed).",
+   "snbt_fields": "stage, remove (bool)",
+   "team_behavior": "Only the claimer gets the stage.",
+   "caveats": "Probably renders the raw key (unverified in-game). Use auto no_toast or invisible, or define the keys in kubejs/assets lang."
+  }
+ ],
+ "quest_properties": [
+  {
+   "key": "title / icon / tags (all objects)",
+   "effect": "title is a rich-text string. icon is an item id or {id,Count,tag}; for a texture, use {id:\"ftbquests:custom_icon\",Count:1b,tag:{Icon:\"ns:textures/…png\"}}. tags is a string list used by KubeJS '#tag' events, '#tag' command arguments and theme [#tag] selectors. A legacy custom_id becomes a tag.",
+   "evidence": "QuestObjectBase.readData keys title, icon (NBTUtils.read: string or compound), tags, custom_id. getIcon falls back from rawIcon to the theme 'icon' property to the alternate icon. CustomIconItem reads NBT 'Icon'. DeceasedCraft basic_needs.snbt:146-148 uses custom_icon with a texture."
+  },
+  {
+   "key": "disable_toast",
+   "effect": "Suppresses that object's completion toast (quest, chapter or task).",
+   "evidence": "QuestObject.readData key disable_toast. Quest.onCompleted and Task.onCompleted skip notifyPlayers when it is set."
+  },
+  {
+   "key": "x / y",
+   "effect": "Grid position (double). The node is centred on x,y.",
+   "evidence": "Quest.readData keys x and y (getDouble)."
+  },
+  {
+   "key": "shape",
+   "effect": "Built-in shapes: circle, square, rsquare, diamond, pentagon, hexagon, octagon, heart, gear, none. \"\" or \"default\" uses the chapter's default_quest_shape, then data.snbt default_quest_shape (circle). Theme extra_quest_shapes can add more from textures/shapes/<name>/.",
+   "evidence": "Quest.getShape falls back to the chapter default. QuestShape.reload is fed by ThemeLoader. The jar ships assets/ftbquests/textures/shapes/{circle,diamond,gear,heart,hexagon,none,octagon,pentagon,rsquare,square}. ftb_quests_theme.txt has 'extra_quest_shapes: diamond, pentagon, hexagon, octagon, heart, gear'."
+  },
+  {
+   "key": "size",
+   "effect": "Node size (double). 0 or absent uses the chapter's default_quest_size.",
+   "evidence": "Quest.getSize falls back to Chapter.getDefaultQuestSize. Our campaign spine uses size 1.5d (campaign.snbt:33)."
+  },
+  {
+   "key": "icon_scale",
+   "effect": "Scales the icon inside the node (default 1.0).",
+   "evidence": "Quest.readData 'icon_scale' (getDouble when present, else 1.0)."
+  },
+  {
+   "key": "min_width",
+   "effect": "Minimum width of the quest view panel (int).",
+   "evidence": "Quest.readData 'min_width'. ViewQuestPanel uses getMinWidth."
+  },
+  {
+   "key": "subtitle",
+   "effect": "Single rich-text line shown under the title and in the hover tooltip.",
+   "evidence": "Quest.readData 'subtitle' (string). QuestButton.addMouseOverText adds getSubtitle."
+  },
+  {
+   "key": "description",
+   "effect": "List of rich-text lines. {@pagebreak} lines split it into pages.",
+   "evidence": "Quest.readData 'description' (list of strings). Quest.PAGEBREAK_CODE = \"{@pagebreak}\"."
+  },
+  {
+   "key": "dependencies",
+   "effect": "Hex ids of any QuestObject except the quest's own chapter or the file: quests, OTHER chapters (the whole chapter must be complete), tasks, or chapter groups.",
+   "evidence": "Quest.readData 'dependencies' (int array or string list). The fillConfigGroup predicate lambda$fillConfigGroup$19 allows any QuestObject except chapter.file and its own chapter."
+  },
+  {
+   "key": "dependency_requirement",
+   "effect": "all_completed (default), one_completed, all_started, one_started.",
+   "evidence": "DependencyRequirement NAME_MAP. The Quest constructor defaults to ALL_COMPLETED."
+  },
+  {
+   "key": "min_required_dependencies",
+   "effect": "Completing N of the dependencies is enough.",
+   "evidence": "Quest.readData 'min_required_dependencies'; used in Quest.checkDependencies."
+  },
+  {
+   "key": "hide_dependency_lines / hide_dependent_lines",
+   "effect": "Hide the lines to parents (tristate; inherits chapter default_hide_dependency_lines) or to children (bool).",
+   "evidence": "Quest.readData keys. shouldHideDependencyLines uses chapter.defaultHideDependencyLines."
+  },
+  {
+   "key": "hide_until_deps_complete / hide_until_deps_visible",
+   "effect": "Visibility tristates (inherit chapter hide_quest_until_deps_*). Without either, a quest with dependencies is visible whenever ANY dependency is visible. The legacy key 'hide' maps to hide_until_deps_visible.",
+   "evidence": "Quest.isVisible bytecode (Tristate.get(chapter default), then areDependenciesComplete/Visible, else anyMatch(dep.isVisible)). Our book uses hide_until_deps_complete 42 times (local_pack_stats.json)."
+  },
+  {
+   "key": "invisible / invisible_until_tasks",
+   "effect": "invisible:true hides the quest until it is COMPLETED. invisible_until_tasks:N reveals it once N of its tasks are done. Dependents of an invisible, incomplete quest are hidden too.",
+   "evidence": "Quest.readData 'invisible' (field invisibleUntilCompleted) and 'invisible_until_tasks'; Quest.isVisible; memory reference_ftbquests_uuid_selector_and_visibility.md."
+  },
+  {
+   "key": "hide_text_until_complete",
+   "effect": "The description is hidden until the quest is completed (spoiler or lore reveal).",
+   "evidence": "ViewQuestPanel.addWidgets checks Quest.getHideTextUntilComplete().get(false) and selfTeamData.isCompleted before adding the description."
+  },
+  {
+   "key": "hide_details_until_startable",
+   "effect": "The quest's view panel will not open until the quest can be started (tristate; inherits chapter hide_quest_details_until_startable).",
+   "evidence": "Quest.hideDetailsUntilStartable; used in QuestScreen, QuestButton and FTBQuestsCommands.playerCanSeeQuestObject."
+  },
+  {
+   "key": "hide_lock_icon",
+   "effect": "Suppresses the lock overlay on a not-yet-startable quest (data.snbt show_lock_icons and the client show_lock_icon also apply).",
+   "evidence": "Quest.readData 'hide_lock_icon'."
+  },
+  {
+   "key": "optional",
+   "effect": "Marked [Optional] in the tooltip and not needed for chapter completion.",
+   "evidence": "Quest.readData 'optional'. isOptionalForProgression. QuestButton tooltip key ftbquests.quest.misc.optional."
+  },
+  {
+   "key": "can_repeat / repeat_cooldown",
+   "effect": "After the claiming player has claimed ALL of the quest's rewards, the quest resets for the whole team, completion_count goes up, and the next cycle is blocked for repeat_cooldown SECONDS.",
+   "evidence": "Quest.readData 'can_repeat' (tristate; chapter default_repeatable_quest) and 'repeat_cooldown' (int). TeamData.markRewardAsClaimed calls Quest.checkRepeatable (forceProgress reset with the claimer's UUID) and adds currentTimeMillis + cooldown*1000. Our bounties.snbt:146,152."
+  },
+  {
+   "key": "progression_mode",
+   "effect": "linear: tasks only progress once dependencies are complete. flexible: tasks progress before that, but completion (toasts and rewards) still waits for the dependencies and then fires automatically. default inherits chapter, then file. Our data.snbt:24 is 'flexible'.",
+   "evidence": "TeamData.canStartTasks short-circuits on FLEXIBLE. TeamData.setProgress only calls markTaskCompleted if areDependenciesComplete. Quest.checkForDependantCompletion completes waiting FLEXIBLE dependents."
+  },
+  {
+   "key": "require_sequential_tasks",
+   "effect": "Tasks must complete in list order (tristate; chapter default).",
+   "evidence": "Task.checkTaskSequence requires the previous task in getTasksAsList to be completed."
+  },
+  {
+   "key": "max_completable_dependents",
+   "effect": "Exclusive branches: once N of this quest's dependents are done, the rest are excluded (and hidden if data.snbt hide_excluded_quests). The tooltip shows 'Exclusive Quest Branch'. Applies team-wide.",
+   "evidence": "Quest.readData 'max_completable_dependents'. Quest.isQuestObjectExcluded. TeamData.isExcludedByOtherQuestline. Lang ftbquests.quest.misc.exclusive."
+  },
+  {
+   "key": "ignore_reward_blocking",
+   "effect": "The quest's rewards stay claimable while the team is under /ftbquests block_rewards. It also exists per reward.",
+   "evidence": "Quest.readData and Reward.readData 'ignore_reward_blocking'."
+  },
+  {
+   "key": "guide_page",
+   "effect": "Links to FTB Guides. Inert here because ftbguides is not installed.",
+   "evidence": "Quest.readData 'guide_page'. OtherButtonsPanelTop adds OpenGuidesButton only if Platform.isModLoaded(\"ftbguides\")."
+  },
+  {
+   "key": "disable_jei",
+   "effect": "Editable in the GUI but NOT persisted: it is absent from Quest.readData/writeData, so it always stays DEFAULT. Only data.snbt default_quest_disable_jei hides quests from JEI.",
+   "evidence": "'disable_jei' appears only in Quest.fillConfigGroup. Quest.showInRecipeMod uses disableJEI.get(!file.isDefaultQuestDisableJEI())."
+  },
+  {
+   "key": "task.optional_task",
+   "effect": "A task that is not required for its quest to complete.",
+   "evidence": "Task.readData 'optional_task'."
+  },
+  {
+   "key": "quest_links (chapter list)",
+   "effect": "Shows a quest from another chapter as a clickable node in this chapter. Fields: linked_quest (hex id), x, y, shape, size.",
+   "evidence": "QuestLink.readData keys linked_quest, x, y, shape, size. Read from the chapter's quest_links in BaseQuestFile.readDataFull. ViewQuestPanel$GotoLinkedQuestButton."
+  },
+  {
+   "key": "ids",
+   "effect": "16-hex ids must start with 0-7. Long.parseLong(s,16) overflows on 8-F, the id is treated as missing, and FTB re-mints and rewrites it.",
+   "evidence": "QuestObjectBase.parseHexId (Long.parseLong radix 16, catch NumberFormatException → empty); memory reference_ftbquests_ids_must_be_positive.md."
+  }
+ ],
+ "chapter_and_file_properties": [
+  {
+   "key": "chapter: id, group, order_index, filename",
+   "effect": "Chapter files are config/ftbquests/quests/chapters/<filename>.snbt. group is a chapter-group id (\"\" = default); order_index orders the list.",
+   "evidence": "BaseQuestFile.readDataFull/writeDataFull keys id, group, order_index, quests, quest_links; Chapter.readData 'filename'. Our campaign.snbt:1-12."
+  },
+  {
+   "key": "chapter: title / icon / subtitle",
+   "effect": "subtitle is a LIST of rich-text lines shown as the chapter button's hover tooltip. The chapter title is coloured by state: completed uses theme quest_completed_color (green), started uses quest_started_color (cyan), otherwise white. A '!' alert icon appears when the viewer has unclaimed rewards in the chapter.",
+   "evidence": "Chapter.readData 'subtitle' (getList). ChapterPanel$ChapterButton.addMouseOverText; draw uses Chapter.getProgressColor and TeamData.hasUnclaimedRewards → ThemeProperties.ALERT_ICON."
+  },
+  {
+   "key": "chapter: always_invisible",
+   "effect": "Hidden from the chapter list. Completions there send NO toasts, and rewards with auto default or disabled are auto-claimed. Suits silent bookkeeping or KubeJS-trigger quests.",
+   "evidence": "Chapter.isVisible returns false. TeamData.markTaskCompleted gives an empty notified list when the chapter isAlwaysInvisible. Reward.getAutoClaimType forces ENABLED."
+  },
+  {
+   "key": "chapter visibility rule",
+   "effect": "A chapter only appears in the list once at least one of its quests (or quest links) is visible, so a chapter can 'unlock' when its first quest's dependencies complete.",
+   "evidence": "Chapter.isVisible: an empty chapter is visible, otherwise anyMatch(quest.isVisible) or anyMatch(link)."
+  },
+  {
+   "key": "chapter: default_quest_shape / default_quest_size / default_min_width / default_hide_dependency_lines",
+   "effect": "Per-chapter defaults for its quests.",
+   "evidence": "Chapter.readData keys. Quest.getShape/getSize fall back to them."
+  },
+  {
+   "key": "chapter: progression_mode, consume_items, hide_quest_details_until_startable, hide_quest_until_deps_visible, hide_quest_until_deps_complete, default_repeatable_quest, require_sequential_tasks",
+   "effect": "Chapter-wide defaults that quest tristates inherit.",
+   "evidence": "Chapter.readData/writeData keys; Quest getters call Tristate.get(chapter value)."
+  },
+  {
+   "key": "chapter: autofocus_id",
+   "effect": "The quest the view centres on when the chapter opens.",
+   "evidence": "Chapter.readData 'autofocus_id'."
+  },
+  {
+   "key": "chapter_groups.snbt",
+   "effect": "{chapter_groups:[{id,title,icon}]} gives collapsible groups in the chapter list.",
+   "evidence": "BaseQuestFile.readDataFull 'chapter_groups.snbt'/'chapter_groups'; ChapterPanel arrow_collapsed/expanded textures. Our chapter_groups.snbt is empty. CtE2 uses 4 groups."
+  },
+  {
+   "key": "image: x, y, width, height, rotation",
+   "effect": "Positioned by its CENTRE in quest-grid units unless corner:true. rotation is in degrees.",
+   "evidence": "ChapterImage.readData keys (doubles). QuestPanel.alignWidgets subtracts w/2 and h/2. Memory project_quest_book_v3_fishbone.md: 'Chapter image x/y is the CENTRE'. CtE2 act_0.snbt:8-16."
+  },
+  {
+   "key": "image: image",
+   "effect": "An FTB Library icon string: texture path 'ns:textures/…png', an atlas sprite 'ns:item/x', 'item:<id>', http(s) URL, file:, a colour '#AARRGGBB'.",
+   "evidence": "ChapterImage.readData calls Icon.getIcon. FTB Library Icon.getIcon0 branches color/item/bullet/http/https/file/hollow_rectangle/part/.png/.jpg/AtlasSpriteIcon. DeceasedCraft questguidehordebuilding.snbt:17-26 uses large texture images as illustrated guide pages."
+  },
+  {
+   "key": "image: color, alpha",
+   "effect": "RGB tint int (default white) and alpha 0-255 (default 255).",
+   "evidence": "ChapterImage.readData: Color4I.rgb(color), alpha default sipush 255."
+  },
+  {
+   "key": "image: order",
+   "effect": "Z-order among images. Images are added to the panel before quests and links, so they draw underneath.",
+   "evidence": "ChapterImageButton.compareTo compares getOrder. QuestPanel.addWidgets adds getImages() sorted, then getQuests(), then getQuestLinks()."
+  },
+  {
+   "key": "image: hover",
+   "effect": "Tooltip lines, each treated as a TRANSLATION KEY (falls back to the literal text). & codes are not parsed.",
+   "evidence": "ChapterImage.addHoverText → TooltipList.translate(line). DeceasedCraft questguidehordebuilding.snbt:19 `hover: [\"quest.guide.hordebuilding.desc_1\"]`."
+  },
+  {
+   "key": "image: click",
+   "effect": "FTB click string. '#<hex id>' opens that quest or chapter. 'http(s)://…' opens a URL (with confirm). 'command:/…' sends the command as the player (player permissions apply; /ftbquests open_book and /kubejs custom_command need none). 'custom:<ns:path>' fires CustomClickEvent. 'file:', 'static_method:'.",
+   "evidence": "ChapterImageButton.mousePressed → handleClick(click). Widget.handleClick splits at ':'. QuestScreen.handleClick handles '#'. FTB Library ClientUtils.handleClick switch on http/https/file/command/static_method/custom; execClientCommand → sendCommand."
+  },
+  {
+   "key": "image: dev, corner, dependency",
+   "effect": "dev = visible only in editing mode. corner = anchor at the corner instead of the centre. dependency = quest id; the image only shows after the viewer's team completes that quest, so the map can 'reveal' as you progress.",
+   "evidence": "ChapterImage.readData keys dev (editorsOnly), corner (alignToCorner), dependency. shouldShowImage returns !editorsOnly && (dependency == null || teamData.isCompleted(dependency))."
+  },
+  {
+   "key": "data.snbt: title / icon / version",
+   "effect": "Book title and icon (the modpack button), plus the format version.",
+   "evidence": "BaseQuestFile write/read (QuestObjectBase title/icon). Our data.snbt has icon supplementaries:pedestal and version 13."
+  },
+  {
+   "key": "data.snbt: default_reward_team",
+   "effect": "Default for each reward's team_reward tristate (false = per-player claims).",
+   "evidence": "BaseQuestFile.readData; Reward.isTeamReward uses team.get(file.isDefaultPerTeamReward()). Ours is false (data.snbt:6)."
+  },
+  {
+   "key": "data.snbt: default_autoclaim_rewards",
+   "effect": "Default for reward 'auto': disabled / enabled / no_toast / invisible. Ours is 'disabled' (data.snbt:2).",
+   "evidence": "BaseQuestFile.readData (RewardAutoClaim.NAME_MAP_NO_DEFAULT); constructor default DISABLED."
+  },
+  {
+   "key": "data.snbt: default_consume_items / default_quest_shape / default_quest_disable_jei",
+   "effect": "Book-wide defaults. default_quest_disable_jei is the ONLY working way to keep quest rewards out of JEI.",
+   "evidence": "BaseQuestFile.readData keys; constructor defaults false / 'circle' / false."
+  },
+  {
+   "key": "data.snbt: progression_mode",
+   "effect": "linear (code default) or flexible (ours, data.snbt:24).",
+   "evidence": "BaseQuestFile constructor ProgressionMode.LINEAR; readData 'progression_mode'."
+  },
+  {
+   "key": "data.snbt: detection_delay",
+   "effect": "Ticks between an inventory change and item-task detection (default 20; ours 60).",
+   "evidence": "BaseQuestFile constructor bipush 20; FTBQuestsInventoryListener → DeferredInventoryDetection.scheduleInventoryCheck."
+  },
+  {
+   "key": "data.snbt: emergency_items / emergency_items_cooldown",
+   "effect": "An item list handed out by an 'Emergency Items' button in the book, with a per-player cooldown in seconds (default 300). The cooldown is held in server memory and resets on restart.",
+   "evidence": "BaseQuestFile.readData keys. GetEmergencyItemsMessage.handle uses the static lastItemsGot map keyed by player UUID. OtherButtonsPanelTop shows EmergencyItemsButton when the list is non-empty."
+  },
+  {
+   "key": "data.snbt: drop_loot_crates / loot_crate_no_drop",
+   "effect": "Mob loot-crate drops on or off (default false; ours false at data.snbt:10). loot_crate_no_drop {passive 4000, monster 600, boss 0} is the 'no crate' weight per category.",
+   "evidence": "BaseQuestFile constructor (EntityWeight 4000/600/0); FTBQuestsForge.livingDrops."
+  },
+  {
+   "key": "data.snbt: disable_gui / pause_game / grid_scale / lock_message",
+   "effect": "disable_gui blocks the book for non-editors (toast 'Quest Book GUI is disabled!'). pause_game makes the book pause single-player. grid_scale is the editor snap (0.5). lock_message is the rich text shown when a locked team opens the book (default 'Quests locked!').",
+   "evidence": "BaseQuestFile.readData keys. ClientQuestFile.openQuestGui (isDisableGui; isLocked → CustomToast lockMessage parsed by TextUtils)."
+  },
+  {
+   "key": "data.snbt: drop_book_on_death / show_lock_icons / hide_excluded_quests",
+   "effect": "Book kept through death unless drop_book_on_death. Lock overlay on or off (default true). Hide quests excluded by exclusive branches.",
+   "evidence": "BaseQuestFile.readData keys; FTBQuestsEventHandler.cloned and FTBQuestsForge.livingDrops move the book; Quest.isVisible checks isHideExcludedQuests."
+  },
+  {
+   "key": "theme file assets/ftbquests/ftb_quests_theme.txt",
+   "effect": "Every resource-pack copy is parsed (it could ship in pack/kubejs/assets/ftbquests/). Selectors: [*], [!x], [quest]/[chapter]/[task]/[reward]…, [#tag], [<hex id>], [a & b], with '|' separating several. Properties include background, text colours, quest_completed/started/not_started/locked colours, dependency line texture, colours, thickness and speed, quest_spacing, full_screen_quest, pinned_quest_size, per-object 'icon', extra_quest_shapes, lock/alert/check icons, and wiki_url (shows a Wiki button when not '-').",
+   "evidence": "ThemeLoader.loadTheme uses ResourceManager.getResourceStack(ftbquests:ftb_quests_theme.txt) and parses each. ThemeLoader.parse(selector) handles '*', '!', type names, '#', hex id, '&', '|'. ThemeProperties key list. OtherButtonsPanelTop adds WikiButton when WIKI_URL != '-'. Whether our copy overrides the built-in one in-game is unverified."
+  }
+ ],
+ "description_rich_text": [
+  {
+   "feature": "Formatting codes",
+   "syntax": "&0-&9 &a-&f colours; &k-&o styles; &r resets (§ also works). Write \\& for a literal &, and escape '&' before a space.",
+   "evidence": "FTB Library TextComponentParser.parse: chars 38 (&) or 167 (§) → CODE_TO_FORMATTING; errors 'Can't end string with &!' and 'You must escape whitespace after & with \\&!'. Our campaign.snbt:82 uses '&ePedestal&r'; CtE2 has 4519 colour codes."
+  },
+  {
+   "feature": "Hex colours",
+   "syntax": "&#RRGGBB",
+   "evidence": "TextComponentParser '#' (35) branch reads 6 chars → TextColor.parseColor."
+  },
+  {
+   "feature": "Line breaks / escapes",
+   "syntax": "Each list entry is a line; \"\" gives a blank line; a literal \\n inside a string becomes a newline; \\ escapes the next char.",
+   "evidence": "TextComponentParser replaceAll(\"\\\\\\\\n\", \"\\n\") and the backslash (92) escape branch."
+  },
+  {
+   "feature": "Translation-key substitution",
+   "syntax": "{some.lang.key}, no ':' inside. It is looked up client-side with I18n, then parsed again. Nested braces are not allowed.",
+   "evidence": "ClientTextComponentUtils.defaultStringToComponent: no ':' → I18n.get(key) → parse; 'Can't nest multiple substitutes!'. Keys must come from a client resource lang JSON (e.g. pack/kubejs/assets/<ns>/lang/en_us.json); there is no quest-lang system in 2001.4.22."
+  },
+  {
+   "feature": "Inline images",
+   "syntax": "{image:<icon> width:<px> height:<px> align:left|center|right (or 0|1|2) fit:true text:<hover%20text>}. Defaults are 100x100, centred, fit false. <icon> is any FTB icon string: texture .png path, atlas sprite, item:<id>, http(s) URL. Write spaces in values as %20.",
+   "evidence": "ClientTextComponentUtils keys image/width/height/align/fit/text; StringUtils.splitProperties (space-separated, ':' limit 2, %20→space); ImageComponent defaults bipush 100/100/CENTER; ImageAlign.fromString accepts left/0, right/2, otherwise centre. CtE2 act_0.snbt:98 `{image:cte2:textures/character_stats.png width:160 height:128 align:1}`."
+  },
+  {
+   "feature": "Inline URL link",
+   "syntax": "{open_url:https://… text:Label%20text}",
+   "evidence": "ClientTextComponentUtils 'open_url' → Style.withClickEvent(OPEN_URL)."
+  },
+  {
+   "feature": "Pages",
+   "syntax": "A line containing exactly {@pagebreak} starts a new page; the view panel shows prev/next arrows.",
+   "evidence": "Quest.PAGEBREAK_CODE; Quest.buildDescriptionIndex; ViewQuestPanel makeNextPageButton/makePrevPageButton and textures/gui/pagebreak.png; the editor action 'Add page break' inserts \"\\n{@pagebreak}\"."
+  },
+  {
+   "feature": "JSON text components",
+   "syntax": "Any title/subtitle/description line starting with {\" or [\" is parsed as vanilla JSON text (color, bold, translate, extra…). & codes are NOT processed inside JSON. Invalid JSON renders as red error text.",
+   "evidence": "TextUtils.parseRawText regex ^[{\\[]\\s*\" → Component.Serializer.fromJson, else ClientTextComponentUtils.parse; deserializeRawJsonText shows the error in RED."
+  },
+  {
+   "feature": "Clickable quest/chapter links",
+   "syntax": "{\"text\":\"Bounty Hunting\",\"color\":\"yellow\",\"underlined\":true,\"clickEvent\":{\"action\":\"change_page\",\"value\":\"<16-hex id>\"}}",
+   "evidence": "ViewQuestPanel$QuestDescriptionField.handleCustomClickEvent: CHANGE_PAGE → QuestObjectBase.parseHexId → QuestScreen.open, else toast 'Unknown/Invalid quest object id'. CtE2 act_i.snbt:2235 and ascendancy.snbt:16-159."
+  },
+  {
+   "feature": "URL links in JSON",
+   "syntax": "clickEvent {action:'open_url', value:'https://…'} (http/https only; confirm screen when chat-link prompt is on)",
+   "evidence": "QuestDescriptionField.handleCustomClickEvent OPEN_URL branch checks the scheme and opens ConfirmLinkScreen."
+  },
+  {
+   "feature": "Run/suggest/copy clicks",
+   "syntax": "clickEvent run_command '/ftbquests open_book <id>' or '/kubejs custom_command <id>' (both need no permission); suggest_command; copy_to_clipboard",
+   "evidence": "Non-change_page/open_url styles fall through to Screen.handleComponentClicked (vanilla) in QuestDescriptionField.mousePressed. FTBQuestsCommands open_book has no requires(); KubeJSCommands custom_command has no requires(). In-book behaviour of run_command is unverified in-game."
+  },
+  {
+   "feature": "Hover text / item tooltips",
+   "syntax": "hoverEvent {action:'show_text',contents:…} / {action:'show_item',contents:{id:'…',count:1}} renders the item's full tooltip / show_entity",
+   "evidence": "QuestDescriptionField.addMouseOverText handles HoverEvent SHOW_ITEM (ItemStack.getTooltipLines), SHOW_ENTITY, SHOW_TEXT."
+  },
+  {
+   "feature": "Where the parser applies",
+   "syntax": "Quest title/subtitle/description, chapter title/subtitle lines, reward/task titles, data.snbt lock_message. NOT image hover lines (translation keys only) and NOT the toast reward description (literal).",
+   "evidence": "QuestObjectBase.getTitle, Quest.getSubtitle/getDescription and ClientQuestFile lock toast use TextUtils.parseRawText; ChapterImage.addHoverText uses TooltipList.translate; displayCustomToast uses Component.literal(description)."
+  },
+  {
+   "feature": "Spoiler control",
+   "syntax": "hide_text_until_complete:true (description hidden until done); hide_details_until_startable:true (panel will not open early); invisible:true (node hidden until completed)",
+   "evidence": "ViewQuestPanel.addWidgets getHideTextUntilComplete; Quest.isVisible."
+  },
+  {
+   "feature": "Quest-text translation files",
+   "syntax": "NOT available: no config/ftbquests/quests/lang/*.snbt in 2001.4.22. Use {key} substitution or JSON {\"translate\":…} with client lang JSON instead.",
+   "evidence": "There is no translation package in ftb-quests-forge-2001.4.22 and no 'lang'/'locale' string constants. ftb-quests-neoforge-2101.1.24 has quest/translation/TranslationManager and data key fallback_locale, and Ozone Skyblock Reborn 2 (2101.1.24) ships quests/lang/en_us.snbt."
+  }
+ ],
+ "loot_crates_and_reward_tables": "REWARD TABLES live at config/ftbquests/quests/reward_tables/<filename>.snbt. BaseQuestFile.readDataFull reads the 'reward_tables' folder; each file has id + order_index plus QuestObjectBase title/icon/tags plus RewardTable.writeData keys:\n- empty_weight (float)\n- loot_size (int: picks per draw)\n- hide_tooltip (bool: hides the contents list when hovering the reward, so the loot stays a mystery)\n- use_title (bool: the reward shows the table's title, e.g. 'Scavenger's Cache', instead of the generic name)\n- rewards: [ {<any reward's fields>, type (omitted = item; RewardType.createReward maps \\\"\\\" to ftbquests:item and prefixes a bare name with ftbquests:), weight (float, default 1.0; weight 0 = guaranteed on every draw)} ]\n- loot_crate {…}\n- loot_table_id (read and written but not used anywhere else in the jar)\nCtE2 reward_tables/first_weapon.snbt and archer_package.snbt:2,11 use hide_tooltip and loot_size.\n\nQuest rewards point at a table by its NUMERIC long id, `table_id: <decimal>L` (RandomReward.readData uses getLong; CtE2 act_0.snbt:230 `table_id: 405550839613976496L`), or embed it inline as `table_data:{…}` (an internal table titled 'Internal').\n\nDrawing (RewardTable.generateWeightedRandomRewards): total = Σweights, plus empty_weight when empty results are allowed; rolls = count × loot_size; weight-0 entries are always added.\n- random: picks without the empty slot.\n- loot: the empty slot can yield nothing.\n- all_table: every entry.\n- choice: the player picks exactly one in a GUI; it is excluded from Claim All and never auto-claimed.\nAuthoring helpers: /ftbquests import_reward_table_from_chest <name> [pos] and export_reward_table_to_chest (editor permission).\n\nLOOT CRATES: a table with a loot_crate compound {string_id, item_name, color (int RGB), glow (bool), drops {passive, monster, boss}} becomes the item ftbquests:lootcrate{type:\\\"<string_id>\\\"} (LootCrate.createStack). It can be given by command or script, e.g. /give @p ftbquests:lootcrate{type:\\\"scav_crate\\\"}.\n- Look: name = Component.translatable(item_name), so it can be a lang key or literal text; the item is tinted with `color` by the client ItemColor handler; enchant glint when glow; rarity always UNCOMMON (yellow name) (LootCrateItem.isFoil/getName/getRarity).\n- Tooltip: 'Right-click to open' / 'Sneak-right-click to open all in hand'.\n- Opening (LootCrateItem.use): the server rolls stack-count × loot_size with empty allowed, claims each sub-reward with notify, and plays SoundEvents.ITEM_BREAK. The client opens the RewardNotificationsScreen (a list of everything received) and spawns item-break particles.\n- JEI (FTB XMod Compat 2.1.2) adds a 'Loot Crates' category listing contents with per-entry chance (jei.ftbquests.lootcrates.chance), so players can preview odds.\n- The ftbquests:loot_crate_opener block automates opening.\n- Editor presets (LootCrate$Defaults): common 0x929A9A (passive/monster/boss 350/10/0), uncommon 0x37AA69 (200/90/0), rare 0x0094FF (50/200/0), epic 0x8000FF (9/10/10), legendary 0xFFC147 glow (1/1/190).\n\nMOB DROPS: only when data.snbt drop_loot_crates:true (ours false, data.snbt:10). FTBQuestsForge.livingDrops runs on LivingDropsEvent for any non-player entity not in tag ftbquests:no_loot_crates (empty by default).\n- The killer is NOT checked, so turret and trap kills also drop crates.\n- Category: boss if !canChangeDimensions() (Wither/Dragon style), monster if instanceof Enemy, otherwise passive.\n- A crate is picked by weight against data.snbt loot_crate_no_drop for that category (default 4000/600/0).\nPack note: BountyBags already gives mob-drop loot bags, so FTB crates as mob drops would overlap. As quest or airdrop rewards, though, crates give a branded, tinted, glowing reward item with JEI-visible odds.",
+ "team_semantics": "STORAGE: progress is per FTB Teams team. ServerQuestFile.teamDataMap is keyed by team UUID. TeamData holds task_progress / started / completed / completion_count / repeatable (cooldowns) / claimed_rewards / lock / rewards_blocked, plus player_data, which is per player: can_edit, auto_pin, chapter_pinned, pinned_quests. It is saved per team at <world>/ftbquests/<team-uuid>.snbt (TeamData.serializeNBT keys; ServerQuestFile FTBQUESTS_DATA). KubeJS player.data.ftbquests and FTBQuests.getData(player) resolve the player's TEAM.\n\nWHO ADVANCES SHARED TASKS:\n- Kills credit the killer's team.\n- Non-consuming item tasks read ONE member's inventory, so progress is the best single inventory, not a pooled sum (ItemTask.submitTask countMatchingItems → setProgress only if greater).\n- Consumed items and XP come from whoever clicks the task, because SubmitTaskMessage runs task.submitTask(team, thatPlayer).\n- Observation, structure, biome, location, advancement, stage and stat tasks complete on any member; stat uses the best member's value.\n- A checkmark is ticked for everyone by whoever clicks first.\n\nREWARD CLAIMS are keyed by QuestKey(uuid, rewardId). uuid is the claiming player's UUID for normal rewards, and Util.NIL_UUID when the reward's team_reward resolves true (QuestKey.forReward; Reward.isTeamReward = team tristate → data.snbt default_reward_team, default false; ours false at data.snbt:6).\n- By default every member claims their OWN copy of every reward.\n- A team reward is claimed once by whoever claims first; its tooltip says 'Team Reward' (RewardButton).\n- Claimability and the '!' unclaimed alerts are per player (getClaimType / hasUnclaimedRewards take the viewer's UUID).\n\nAUTO-CLAIM (TeamData.checkAutoCompletion):\n- A team reward goes to the player whose action completed the quest (ServerQuestFile.withPlayerContext; kill completions have no context), otherwise to the first online member.\n- A per-player reward is claimed for every ONLINE member at completion. Offline members get theirs at next login (ServerQuestFile.playerLoggedIn → checkAutoCompletion).\n\nNOTIFICATIONS:\n- Completion toasts go to ALL online members (TeamData.markTaskCompleted builds notifiedPlayers = onlineMembers unless the chapter is always_invisible or notifications are suppressed).\n- Task-progress packets go to all online members (UpdateTaskProgressMessage).\n- Reward toasts go only to the claimer.\n- Claim updates go to all members (ClaimRewardResponseMessage).\n- Completing a quest auto-unpins it for everyone (TogglePinnedResponseMessage).\n\nPARTY LIFECYCLE (ServerQuestFile.teamCreated / playerChangedTeam; TeamData.copyData / mergeData / mergeClaimedRewards):\n- Creating a party COPIES the creator's solo progress and claims into it.\n- A non-owner JOINING merges their solo data in. Party values win, and the joiner fills gaps, including their own per-player claim records, so they cannot re-claim what they claimed solo. Then checkAutoCompletion runs on every quest. The newcomer can therefore immediately claim (or is auto-given) every per-player reward of quests the party already finished; already-claimed team rewards stay claimed.\n- LEAVING returns the player to their old solo team data (their pre-join progress) and copies only claim records keyed to their own UUID. Party progress does not travel with them.\n\nREPEATABLES: when a player has claimed ALL of a repeatable quest's rewards, Quest.checkRepeatable(team, CLAIMER uuid) resets the quest for the whole team. Reward.forceProgress → resetReward clears only the claimer's records.\n- With manual per-player rewards in a party, the first member to claim triggers the reset and the others lose that cycle's reward.\n- Our bounties.snbt:146-170 'Zombie Masher' (can_repeat, per-player manual legendary bag) is exactly this case. Use team_reward:true or an auto mode for repeatables.\n\nTEAM-WIDE SWITCHES: /ftbquests locked (no progress, no claims; book shows lock_message), /ftbquests block_rewards, exclusive branches (max_completable_dependents) and FLEXIBLE pre-progress all apply to the whole team.\n\nAUTHORING NOTE: /ftbquests change_progress takes a players-only selector and rejects raw UUIDs, so the pack runs `execute as <uuid> run … @s` (quest_milestones.js:65; memory reference_ftbquests_uuid_selector_and_visibility.md).",
+ "kubejs_hooks": [
+  {
+   "hook": "FTBQuestsEvents.completed(extraId, event)",
+   "usage": "Server event. extraId is an object's 16-hex id or '#<tag>'; every tag of the completed object is posted separately. Fires for tasks, quests, chapters, chapter groups and the file. event.getData() is the team wrapper. event.getObject(), event.getNotifiedPlayers(), event.getOnlineMembers(). event.getPlayer() is the player in context, null for kill or command completions. Use it for unlock announcements, titles or sounds, spawning airdrops, granting stages, opening the next quest.",
+   "evidence": "XMod FTBQuestsKubeJSEvents: EventGroup 'FTBQuestsEvents', server('completed') with Extra.STRING. KubeJSIntegration.onCompleted posts with the object, then '#'+tag (bootstrap recipe \"#\\u0001\"). QuestObjectCompletedEventJS getters; getPlayer → ServerQuestFile.getCurrentPlayer."
+  },
+  {
+   "hook": "FTBQuestsEvents.started(extraId, event)",
+   "usage": "Same shape, fired when an object is first started (first progress).",
+   "evidence": "FTBQuestsKubeJSEvents server('started'); KubeJSIntegration.onStarted; QuestObjectStartedEventJS."
+  },
+  {
+   "hook": "FTBQuestsEvents.customTask(taskId, event)",
+   "usage": "e.setCheck((data, player) => { data.addProgress(1) / data.setProgress(n) }), e.setCheckTimer(ticks), e.setMaxProgress(n) (the only way to give a custom task a max), e.setEnableButton(true) (the book shows a clickable submit). Fires at every quest-file load or /ftbquests reload and on editor creation. hasResult.",
+   "evidence": "FTBQuestsKubeJSEvents server('customTask').hasResult(); CustomTaskEventJS setters → CustomTask; BaseQuestFile.readDataFull posts CustomTaskEvent for each CustomTask."
+  },
+  {
+   "hook": "FTBQuestsEvents.customReward(rewardId, event)",
+   "usage": "Runs when a player claims a 'custom' reward: e.player / e.getEntity(), e.getReward(), e.getNotify(). Use it for pedestal heals, upgrade vouchers, scripted airdrops, title/sound fanfare.",
+   "evidence": "FTBQuestsKubeJSEvents server('customReward').hasResult(); CustomReward.claim → CustomRewardEvent; CustomRewardEventJS."
+  },
+  {
+   "hook": "FTBQuestsEvents.customFilterItem",
+   "usage": "Client event supplying display items for custom item filters (not relevant without a filter mod).",
+   "evidence": "FTBQuestsKubeJSEvents client('customFilterItem')."
+  },
+  {
+   "hook": "Global binding FTBQuests",
+   "usage": "FTBQuests.getFile(level); getData(level, uuid) and getData(player) return the raw TeamData; getObject(level, idOrHashTag); getServerDataFromPlayer(player) and getServerDataFromSource(source) return the wrapper below; getQuestShapes(); getQuestObjectTypes().",
+   "evidence": "KubeJSIntegration.registerBindings adds 'FTBQuests' → FTBQuestsKubeJSWrapper. Ids accept a number, a hex string or '#tag' (BaseQuestFile.getID: '#' at charAt(0) → first object with hasTag)."
+  },
+  {
+   "hook": "player.data.ftbquests (team-data wrapper)",
+   "usage": "addProgress(taskId, n): any task type, respects canStartTasks, normal toasts; good for crediting turret kills into a native kill-task bar. complete(id) / reset(id): forceProgressRaw with notifications OFF, so SILENT, no toast. changeProgress(id, pc => { pc.setReset(false); pc.withNotifications() }) completes WITH toasts. Also isCompleted(id), isStarted(id), canStartQuest(id), getRelativeProgress(id) (0-100), getTaskProgress(id), locked (get/set), getOnlineMembers().",
+   "evidence": "KubeJSIntegration.attachPlayerData adds 'ftbquests' → FTBQuestsKubeJSPlayerData extends FTBQuestsKubeJSTeamData. lambda$complete$1 only calls setReset(false); the ProgressChange constructor sets notifications=false; QuestObjectBase.forceProgressRaw sets sendNotifications from shouldNotify()."
+  },
+  {
+   "hook": "KubeJS stages ↔ gamestage tasks/rewards",
+   "usage": "player.stages.add('td_wave_5') immediately re-checks gamestage tasks for that player. FTB gamestage rewards write KubeJS stages. This gives event-driven milestones with native toasts and no reflection.",
+   "evidence": "KubeJSIntegration.init: Stages.added/removed → StageTask.checkStages(player). KubeJSStageProvider uses dev.latvian.mods.kubejs.stages.Stages. config/ftbxmodcompat.snbt stage_selector \"default\" prefers KubeJS."
+  },
+  {
+   "hook": "FTBTeamsEvents.playerJoinedParty / playerLeftParty",
+   "usage": "e.player, e.getCurrentTeam()/e.getPrevTeam() (getId, getName, isPartyTeam). Use to greet a newcomer, explain the catch-up rewards, or re-sync script flags.",
+   "evidence": "XMod FTBTeamsKubeJSEvents strings 'FTBTeamsEvents','playerJoinedParty','playerLeftParty'; PlayerTeamEventJS; KJSTeamWrapper."
+  },
+  {
+   "hook": "ServerEvents.customCommand(id) via /kubejs custom_command <id>",
+   "usage": "Any player may run it (no permission requirement). It can be wired to a description JSON run_command or a chapter image click 'command:/kubejs custom_command td_ping_pedestal' to run per-player scripted helpers such as particles toward the pedestal, a replayed tutorial title or an opened chest GUI. Handlers must be abuse-safe.",
+   "evidence": "KubeJSCommands builds 'custom_command' with no .requires(); customCommand posts ServerEvents.CUSTOM_COMMAND with level/entity/pos/id (CustomCommandEventJS)."
+  },
+  {
+   "hook": "Commands from scripts",
+   "usage": "server.runCommandSilent('execute as <uuid> run ftbquests change_progress @s complete <hexIdOr#tag>') (shows toasts; the existing pattern). player.runCommandSilent('ftbquests open_book <id>') jumps the book to a quest. '/ftbquests locked true <player>' (e.g. hardcore game over). '/ftbquests block_rewards'.",
+   "evidence": "quest_milestones.js:65 and bounty_kills.js:73 use change_progress. FTBQuestsCommands: change_progress requires hasEditorPermission (op 2 / FTB Ranks / LuckPerms) and calls forceProgress, which keeps notifications on; open_book has no requires."
+  },
+  {
+   "hook": "Custom stats for stat tasks",
+   "usage": "StartupEvents.registry('custom_stat', e => e.create('waves_cleared')) and player.stats.add(stat, 1). A ftbquests:stat task with value N then shows a native progress bar with the max set in SNBT.",
+   "evidence": "KubeJS RegistryInfo.CUSTOM_STAT (Registries.CUSTOM_STAT) with BuiltinKubeJSPlugin addType 'basic' CustomStatBuilder; PlayerStatsJS.add/set; StatTask reads BuiltInRegistries.CUSTOM_STAT. Exact JS registry-type spelling unverified."
+  },
+  {
+   "hook": "Datapack advancements (pack/kubejs/data)",
+   "usage": "Custom advancements with vanilla triggers (placed_block, item_used_on_block, inventory_changed…) feed ftbquests:advancement tasks, e.g. 'place a trap'. Challenge-frame advancements granted by the advancement reward give the gold toast and jingle.",
+   "evidence": "AdvancementTask / AdvancementReward bytecode. pack/kubejs/data already supplies the #kubejs:ruins structure tag used by campaign.snbt:496."
+  },
+  {
+   "hook": "Chat deep-links",
+   "usage": "player.tell(Text.of('[Open quest]').clickRunCommand('/ftbquests open_book <id>').hover(Text.of('…'))). Also clickChangePage, clickOpenUrl, clickSuggestCommand, clickCopy.",
+   "evidence": "KubeJS ComponentKJS kjs$clickRunCommand / kjs$clickChangePage / kjs$clickOpenUrl / kjs$hover; open_book is permission-free."
+  },
+  {
+   "hook": "Raw TeamData via FTBQuests.getData(player)",
+   "usage": "Server-side methods such as setQuestPinned(player, questId, true) or setLocked exist, but pin changes are only sent to the client by TogglePinnedMessage's handler, so a script pin may not show until a resync (unverified).",
+   "evidence": "TeamData.setQuestPinned (no network); TogglePinnedMessage.handle sends TogglePinnedResponseMessage."
+  }
+ ],
+ "client_ui_features": [
+  "Opening the book. Keybind 'Open Quests' (key.ftbquests.quests) is UNBOUND by default (KeyMapping keycode -1 in FTBQuestsClient), but pack/options.txt:2 binds Tab. There is also an FTB Library sidebar button with click 'ftbquests:open_gui' (assets/ftbquests/sidebar_buttons.json) and the ftbquests:book item (QuestBookItem.use → openGui; recipe book + #forge:stone). The book survives death unless data.snbt drop_book_on_death. The jar has NO first-join book grant: the only FTBQuestsItems.BOOK references are FTBQuestsEventHandler.cloned and FTBQuestsForge.livingDrops.",
+  "Deep-link: /ftbquests open_book [hexId|#tag] needs no permission and opens the book at that quest or chapter if the player can see it (FTBQuestsCommands.openQuest/playerCanSeeQuestObject).",
+  "Completion toasts (ToastQuestObject): 'Quest completed!', 'Task completed!' (only for quests with more than one task), 'Chapter completed!', 'All chapters completed!', each with the object's title and icon. Every toast plays vanilla UI_TOAST_IN/OUT (Toast$Visibility). Chapter completion also plays UI_TOAST_CHALLENGE_COMPLETE (ToastQuestObject.playSound → SoundEvents.f_12496_). disable_toast suppresses one object's toast.",
+  "Reward feedback: RewardToast 'Reward Collected!' + 'Nx <name>' in rarity colour, 'XP: +N', 'XP Levels: +N', custom toast rewards. Claim All and loot-crate opening show the RewardNotificationsScreen, a summary list of every reward received.",
+  "There is no 'new quest available' or unlock notification. Lang has only completion/autopin/pin strings, and ObjectStartedMessage only refreshes the screen. Unlock fanfare has to come from toast/command/advancement rewards or KubeJS.",
+  "Chapter list: the title is coloured by state (completed green, started cyan, else white; theme colours), a '!' alert icon shows when the viewer has unclaimed rewards there, subtitle lines show on hover, chapter groups collapse, and a chapter only appears once one of its quests is visible. There is NO numeric chapter progress percentage.",
+  "Quest nodes: shape, size, icon and icon_scale. Colours come from the theme by state (completed, started, not started, locked). Lock icon when not startable (show_lock_icons / hide_lock_icon / client show_lock_icon). Animated dependency lines (theme speed and colour; requires / required-for highlights). Hover tooltip shows title + 'NN%' when started, subtitle, [Optional], the repeat completion count, and 'Exclusive Quest Branch'.",
+  "Quest view panel: title, subtitle, paged description ({@pagebreak} with arrow buttons), Tasks panel (theme tasks_text_color blue) and Rewards panel (orange), pin button, view-dependencies and view-dependants buttons, and a linked-quest button. Clicking a non-consuming item task opens its JEI recipes; clicking a non-ticking task (checkmark, XP, consume item, custom with button) submits it.",
+  "Pinned-quests HUD: per-player pins. The panel position comes from client config pinned_quests_pos (top_left/top/top_right/right/bottom_right/bottom/bottom_left/left) plus pinned_quests_inset_x/y (local/ftbquests/client-config.snbt). It lists each quest title (bold) + NN% and every incomplete task line. The Auto-pin toggle pins every visible, incomplete quest the team canStartTasks; with our FLEXIBLE data.snbt that is ALL visible incomplete quests (FTBQuestsClientEventHandler.collectPinnedQuests).",
+  "Top-bar buttons: Claim-all-rewards (when the viewer has unclaimed rewards; skips choice and exclude_from_claim_all), Auto-pin, key reference, Emergency Items (when data.snbt emergency_items is non-empty), Wiki (only when theme wiki_url is not '-'; the click accepts a URL, #questId or command:), Guides (needs ftbguides, absent), Shop (needs ftbmoney, absent) (OtherButtonsPanelTop.addWidgets).",
+  "Theme override through a resource pack: assets/ftbquests/ftb_quests_theme.txt, which can ship in pack/kubejs/assets. It can restyle the whole book or single quests/chapters by [#tag] or [id] (colours, background, icons, dependency lines, extra quest shapes from textures/shapes/<name>/). Override precedence in-game is unverified.",
+  "JEI integration (FTB XMod Compat): a 'Quests' category showing task items → reward items for quests the team canStartTasks (FLEXIBLE, so all of them, including hidden ones; a spoiler risk), excluding auto:invisible rewards, plus a 'Loot Crates' category with drop chances. The only global off switch is data.snbt default_quest_disable_jei (WrappedQuestCache filters; Quest.showInRecipeMod).",
+  "Locked or disabled states: a locked team's book refuses to open and shows a toast with data.snbt lock_message (rich text) or 'Quests locked!'. disable_gui shows 'Quest Book GUI is disabled!' to non-editors (ClientQuestFile.openQuestGui).",
+  "In-world quest blocks. ftbquests:barrier (passable for players whose team completed the linked object), stage_barrier, detector (redstone-powered: completes its object for every real player within Radius, with toasts), task screens screen_1/3/5/7 + aux_task_screen (show one task's team progress in the world; accept items/fluids/FE from hoppers and pipes; skin, indestructible, input-only), loot_crate_opener (FTBQuestsBlocks; DetectorBlockEntity.onPowered; QuestBarrierBlockEntity.isOpen; ForgeTaskScreenBlockEntity capabilities).",
+  "Observation tasks are detected client-side: the crosshair must stay on the target for `timer` ticks while the game is unpaused (FTBQuestsClientEventHandler.onClientTick).",
+  "Client config keys (FTBQuestsClientConfig): ui.old_scroll_wheel, pinned_quests_inset_x, pinned_quests_inset_y, pinned_quests_pos, show_lock_icon."
+ ],
+ "commands": [
+  "/ftbquests open_book [quest_object]: no permission required; opens the book at a hex id or '#tag' object if the player can see it (FTBQuestsCommands.openQuest, playerCanSeeQuestObject).",
+  "/ftbquests change_progress <players> complete|reset <quest_object>: editor permission (op level 2, or the FTB Ranks/LuckPerms editor node via PermissionsHelper). quest_object is a hex id or '#tag' (first object with that tag). Calls forceProgress, so completion toasts do show. A reset also clears the repeat cooldown. <players> is players-only, so raw UUIDs fail; use execute as <uuid> … @s (memory).",
+  "/ftbquests locked <true|false> [player]: editor; freezes the team's progress and claims and blocks the book with lock_message.",
+  "/ftbquests block_rewards <true|false> [player]: editor; the team cannot claim rewards except those with ignore_reward_blocking.",
+  "/ftbquests editing_mode [true|false] [player]: single-player or editor; toggles the in-book editor.",
+  "/ftbquests reload: editor; reloads quest files. customTask events fire again and cached task objects go stale (memory).",
+  "/ftbquests export_reward_table_to_chest <table> [pos] and /ftbquests import_reward_table_from_chest <name> [pos]: editor; author reward tables from chest contents.",
+  "/ftbquests delete_empty_reward_tables, /ftbquests generate_chapter_with_all_items_in_game, /ftbquests clear_item_display_cache: editor utilities.",
+  "/kubejs custom_command <id>: no permission required; fires ServerEvents.customCommand(id) with the running player, which makes it a safe clickable hook from book text or images (KubeJSCommands.customCommand).",
+  "Command reward placeholders (CommandReward.claim): {p} {x} {y} {z} {chapter} {quest} {team} {team_id} {long_team_id} {member_count} {online_member_count}; elevate_perms gives permission level 2; silent suppresses output."
+ ],
+ "not_available_in_this_version": [
+  "Quest-text translation files (config/ftbquests/quests/lang/<locale>.snbt, TranslationManager, data.snbt fallback_locale): 2101.x only. Present in ftb-quests-neoforge-2101.1.24 (quest/translation/*) and in Ozone Skyblock Reborn 2's quests/lang/en_us.snbt. Absent from 2001.4.22.",
+  "data.snbt verify_on_load: 2101.x only (keydiff of BaseQuestFile).",
+  "Kill task filters by entity TAG or custom NAME (KillTask entityTypeTag / custom_name): 2101.x only. 2001.4.22 KillTask has only entity + value.",
+  "Item task match_components (1.21 data components): 2101.x. 2001.4.22 uses match_nbt / weak_nbt_match.",
+  "Gamestage task team_stage option: 2101.x only.",
+  "Command reward permission_level and feedback_message: 2101.x. 2001.4.22 has only elevate_perms (fixed level 2) and silent.",
+  "Reward disable_reward_screen_blur and the 'currency' reward type (CurrencyReward): 2101.x only.",
+  "Chapter-level hide_text_until_complete default and a persisted per-quest recipe-mod toggle (disable_recipe_mod): 2101.x. In 2001.4.22 the per-quest disable_jei is GUI-only and never saved.",
+  "/ftbquests change_progress complete-all / reset-all, team_progress, and generate_chapter from_inventory / from_player_inventory: strings found only in the 2101.1.24 command class.",
+  "Plain-string '#tag' items in item tasks, or any 'any of N items' task without Item Filters / FTB Filter System (neither installed). A '#tag' item string crashes loading (memory project_ftb_quests.md).",
+  "max_progress in SNBT for custom tasks: ignored. Only setMaxProgress from KubeJS works.",
+  "Any 'new quest unlocked / available' notification or sound, and any numeric chapter-progress display: no such code or lang strings in 2001.4.22.",
+  "guide_page and the Guides button (need FTB Guides) and the Shop button (needs FTB Money): neither mod is installed.",
+  "Reward-table loot_table_id: read and written, but no consumer anywhere in 2001.4.22.",
+  "Addon task types seen in other local books, e.g. 'questsadditions:time' (Quests Additions mod, Mechanical Mastery Plus / Suspect's Journey), and the 'secret' quest flag used by 1902.x books: not read by 2001.4.22 Quest.readData.",
+  "A first-join quest-book grant: not found in the 2001.4.22 classes (contradicts memory project_ftb_quests.md; unverified elsewhere)."
+ ]
+}

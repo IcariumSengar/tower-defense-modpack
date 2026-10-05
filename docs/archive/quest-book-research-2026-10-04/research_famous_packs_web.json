@@ -1,0 +1,1112 @@
+{
+ "packs": [
+  {
+   "name": "All the Mods 10 (ATM10)",
+   "source": "GitHub AllTheMods/ATM-10 @ e5e3d1d (2026-09-22): config/ftbquests/quests/{data.snbt,chapter_groups.snbt,chapters/*.snbt,reward_tables/*.snbt,lang/en_us/**}. Quests are All Rights Reserved (README); read for research only. Parsed with snbt_stats.py + a scratch dumper (scratchpad/quest_dump.py, output in scratchpad/dump/atm10).",
+   "version_info": "MC 1.21.1 NeoForge, FTB Quests 2101.x. Text lives in lang/en_us/chapters/*.snbt and item icons use 1.21 `components`. Neither syntax applies to 2001.4.22; the mechanisms themselves (random/loot tables, change_page links, image dependency, kill ladders) all exist in 2001.4.22.",
+   "scale": "66 chapters in 10 groups, 4,790 quests, 61 reward tables, 1,201 chapter images. 3,535 quests have descriptions (median 248 chars, p90 599), with 661 inline images and 90 pagebreaks.",
+   "progression_presentation": "The 'Main Questline' group is a numbered spine: '&aChapter 1&r: &bThe Beginning', 'Chapter 2: Allthemodium', 'Chapter 3: The ATM Star', 'Chapter 4: Creative'. Nine other groups (Tech, Magic, Storage, Logistics, Power, Resources, Tools and Gear, Exploration, Modern Industrialization) are optional mod guides, and the Welcome chapter says so outright. Everything runs in flexible mode. Gating uses hide_until_deps_visible (199 quests), hide_until_deps_complete (55), optional (581) and invisible (62). Visual grammar: each chapter has its own default shape (Create uses 'gear', Bumblezone uses 'hexagon'), and milestones are drawn larger (127 quests at size 2, 17 at size 3). Title banners are PNG chapter images. 29 images appear only after a quest is completed (image `dependency`), e.g. 'bumble_title_progression.png'. The endgame is a single hub: the ATM Star quest (pentagon, size 5, 13 dependencies) sits at the centre, ringed by 12 octagon size-2.5 component quests. Each component is fed by size-1.25 ingredient quests that use hide_dependent_lines to avoid line clutter. A player judges progress by the numbered chapter they are in and by how many star components are complete.",
+   "teaching": "Tasks: item 5,384, kill 213, checkmark 190, structure 81, biome 54, advancement 54, dimension 28, observation 16. Descriptions are chatty second-person text with heavy &-colour codes (28k), inline screenshots (e.g. '{image:atm:textures/questpics/gettingstarted/example_netherportal.png width:175 height:201 align:1}') and pagebreaks for multiblocks. Main-line quests end with a clickable JSON link (change_page) that jumps to the full mod chapter. ftbfiltersystem smart_filter item tasks accept 'any log / any furnace' style inputs. The Tips and Tricks chapter is a flat cluster of one-item tips, each with a joke subtitle, plus a capstone quest.",
+   "rewards": "item 2,955, xp 1,960, random 1,046, xp_levels 910, loot 262, choice 95. A shared rarity ladder of tables titled 'Reward: Common / Uncommon / Rare / Epic / Legendary / Mythic', plus mod-themed tables ('Powah: Nitro', 'MA: Tier 3 Seed Bag'). They are used via `random` (direct roll) and `loot` (roll, then a received-rewards screen), always with exclude_from_claim_all so each one is opened by hand. Early rewards are next-step materials (iron/copper dust after the Ore Hammer quest). Bounty tiers climb Common, Uncommon, Rare. Epic and Legendary tables include 30 and 100 xp_levels entries. Mythic includes allthemodium blocks.",
+   "multiplayer": "data.snbt sets default_reward_team false and no reward overrides it, so every party member claims every reward. A 3-player server complained about exactly this in issue #3293. Welcome has a 'Creating a Team' checkmark quest ('/ftbteams party create (name of team)'). No co-op-specific quests found.",
+   "standout_examples": [
+    {
+     "where": "chapters/chapter_2_the_star.snbt + lang/en_us/chapters/chapter_2_the_star.snbt, quest 05850541675B2493 (https://github.com/AllTheMods/ATM-10/blob/main/config/ftbquests/quests/chapters/chapter_2_the_star.snbt)",
+     "what": "The win condition drawn as a hub that every component feeds into",
+     "excerpt": "title \"&6&lATM Star\" | subtitle \"Does this mean you win?\" | shape: \"pentagon\", size: 5.0d, icon_scale: 1.25d, 13 dependencies | desc: \"It does. You have created the &6&lATM Star&r, that means you have beat the modpack! So what's next?\"",
+     "why_it_works": "The whole endgame is one picture. Each completed component visibly closes the ring, and the joke subtitle turns the final reward into a payoff."
+    },
+    {
+     "where": "chapters/bounty_board.snbt (Overworld Bounty: Zombies chain)",
+     "what": "Kill ladder of 5 / 10 / 50 / 100 with escalating rarity and a distinct final node",
+     "excerpt": "kill minecraft:zombie value 5 -> rotten_flesh x5 + xp 10; value 10 -> random 'Reward: Common' + xp 25; value 50 -> iron_ingot x10 (random_bonus 10) + random 'Reward: Uncommon' + xp 50; value 100L -> random table 'Reward: Rare' + xp 100, shape: \"pentagon\", size: 1.5d",
+     "why_it_works": "Each step is short. The reward tier, not just the count, goes up, and the last rung looks special. Tiers 2+ use hide_until_deps_visible, so the ladder reveals itself one rung at a time."
+    },
+    {
+     "where": "lang/en_us/chapters/allthemodium.snbt (main questline -> mod chapter link)",
+     "what": "Main-line quest ends with a clickable jump into the deep-dive chapter",
+     "excerpt": "{ \"text\": \"INDUSTRIAL FOREGOING QUESTLINE\", \"color\": \"#55FF55\", \"underlined\": true, \"clickEvent\": { \"action\": \"change_page\", \"value\": \"193F91842D2ED7D9\" } }",
+     "why_it_works": "The spine stays short and readable, and players who want depth are one click from the guide chapter. Supported in 2001.4.22 (ViewQuestPanel handles CHANGE_PAGE)."
+    },
+    {
+     "where": "reward_tables/common.snbt ... mythic.snbt (titles from lang/en_us/reward_table.snbt)",
+     "what": "One shared rarity ladder of reward tables reused across the whole book",
+     "excerpt": "reward_table.06C4634E81851A6C.title: \"Reward: Common\" ... \"Reward: Uncommon\" ... \"Reward: Rare\" ... \"Reward: Epic\" ... \"Reward: Legendary\" ... \"Reward: Mythic\" (common.snbt icon: ftbquests:lootcrate)",
+     "why_it_works": "Players learn the rarity words once and then read every reward instantly. Changing a table rebalances every quest that uses it."
+    },
+    {
+     "where": "lang/en_us/chapters/welcome.snbt, quest 3708A4780ACEB34E",
+     "what": "Upfront statement of what the book is for",
+     "excerpt": "\"In this modpack, quests are optional. Mods are not gated behind completing any quests! A lot of the individual questlines outside of the Main questline are meant to serve as mod guides. If you want to follow the progression, make sure to check out the Main Questline!\"",
+     "why_it_works": "It tells the player how to read the book (spine vs guides) before they open 66 chapters."
+    },
+    {
+     "where": "chapters/tips_and_tricks.snbt + lang (quest 0F8F37D7E12078F5)",
+     "what": "Collection capstone for a loose tips chapter",
+     "excerpt": "subtitle \"Complete all the tips!\", task title \"Tipped Out\", 19 dependencies, hide_dependency_lines true, reward xp 100. Sibling tip: \"Personal Shrinking Device\", subtitle \"Honey I Shrunk Myself\"",
+     "why_it_works": "It turns an unordered info dump into something you can complete, and the joke subtitles make one-line tips memorable."
+    }
+   ],
+   "weaknesses": [
+    "Reward inflation and duplication. GitHub issue #3293 (Aug 2025, 3-player server): 'Progression is shared and duplicates can be op', 'Dragon Egg / Ender Chests rewards even though we would not be even close to legitimeltaly get one'. The member replied that people like such rewards.",
+    "Scale: 4,790 quests and 5,384 item tasks make the mod chapters read like checklists.",
+    "Generic small XP (10-25) on hundreds of info quests is noise.",
+    "Accuracy: issue #3544 'Quest book tells you incorrect info' (wrong chemistry recipe)."
+   ]
+  },
+  {
+   "name": "FTB StoneBlock 4",
+   "source": "FTB App API manifest https://api.feed-the-beast.com/v1/modpacks/public/modpack/130/100515 (pack v1.22.0). Downloaded config/ftbquests/quests/** (chapters, reward_tables, lang/en_us).",
+   "version_info": "MC 1.21.1 NeoForge 21.1.250, FTB Quests 2101.x. Uses the 1.21-only `currency` reward type (Magic Coins) 794 times and also uses team stages. The other mechanisms used (repeat_cooldown, gamestage tasks, toast rewards, location/structure tasks, image dependency) exist in 2001.4.22.",
+   "scale": "22 chapters in 3 groups, 942 quests, 31 reward tables, 278 chapter images. Descriptions median 251 chars (15% empty), 131 pagebreaks, 71 links, 21 quest links.",
+   "progression_presentation": "Group '&6Echoes of History' is the spine: Getting Started, then 'Tier 1: Foundation', 'Tier 2: Horizon', 'Tier 3: Solaris', 'Tier 4: Oblivion', 'Tier 5: Hyperion' and '&zTier 6: Ascension'. These are restoration tiers of a central machine, the World Engine, and each has 12 chapter images. Groups '&6Forgotten Knowledge' and '&6Forgotten Technology' hold the topic guides (Bounty Board, Exploration, Gearing Up, Power, Storage, Mekanism, ...). Tier chapters are laid out as three framed columns: translucent rounded background PNGs (alpha 155), one per NPC 'Echo' (Quartermaster, Magician, Machinist). Each column starts with a gear-shaped size-1.25 'Meet the Echo' quest and builds to gear size-1.5 milestones subtitled 'Major World Engine Upgrade' or 'Minor World Engine Upgrade'. Tier chapters set hide_quest_until_deps_visible; 74 quests use hide_until_deps_complete; 65 images appear only after their quest completes. An always-invisible 'Backstage' chapter (77 quests) does the plumbing.",
+   "teaching": "Location tasks teach the hub layout ('&eLocate&f: &dQuartermaster'). Gamestage tasks confirm NPC conversations ('Speak to the &dEcho of Guidance'). Boss bounties pair a kill task with structure tasks, so the quest itself says where the boss lives. '&eNote&r:' lines carry gotchas. JSON keybind components show the player's real key binding. Descriptions are short, story-framed instructions with pagebreaks for detail.",
+   "rewards": "currency 794, gamestage 248 (mostly invisible autoclaim unlocks), item 209, command 66, loot 30 (named tables 'Gift of Pebbles', 'Gifts of Stone', 'Grandma's Treat'), toast 21, custom 21, all_table 9. Shop crates are titled, coloured and glowing ('Lesser / Greater / Supreme Combat Relic', 'Wyvern / Chaotic / Awakened Draconic Gear'). Bounties pay currency with auto=enabled and repeat on a 23-hour cooldown.",
+   "multiplayer": "default_reward_team is false. 171 rewards are forced to team_reward true, mostly stage unlocks plus a shared tool; currency stays per-player. Many stage rewards are granted twice (once with team_reward true, once default), so the team stage and each player's own stage are both set. The first quest warns about party-join order, and Welcome has a 'Creating and Joining a team' how-to.",
+   "standout_examples": [
+    {
+     "where": "chapters/world_engine__tier_1.snbt + lang (quest 0448DC5884C8ED55)",
+     "what": "Teaching the hub with a location task attached to an NPC",
+     "excerpt": "title \"&fMeet &dThe Quartermaster\"; task location [-26,-16,-28] titled \"&eLocate&f: &dQuartermaster\"; desc \"With more &6Archives&r unlocked, it is time to explore the lobby and find the &dEcho of The Quartermaster&r. Work with this &dEcho&r to discover your first &3Major Upgrade&r.\"",
+     "why_it_works": "The player walks somewhere real and the quest ticks itself. The text says what this unlocks, and the gear shape marks the 'meet' nodes."
+    },
+    {
+     "where": "chapters/bounty_board.snbt (quest 67D1E0D81B2C5D8D) + lang",
+     "what": "Boss bounty that teaches where and how to fight, and repeats daily",
+     "excerpt": "\"Kill The &dLeviathan&r\" tasks: gate_pearl, abyssal_sacrifice, kill cataclysm:the_leviathan, structure ftb:water_orb; can_repeat true; repeat_cooldown: 82800 (45 bounty quests); desc \"The &dLeviathan&r can be found within the &bWater Orb&r structure. This is found scattered throughout the &bOcean&r ring.\"",
+     "why_it_works": "The quest card doubles as a dossier: location, prerequisite item and proof of kill. The cooldown turns bounties into a recurring loop instead of a one-off checklist."
+    },
+    {
+     "where": "chapters/thebackrooms.snbt (always_invisible 'Backstage', quest 4C52D3DE2F7701D0)",
+     "what": "Invisible plumbing quest that turns a script event into player feedback",
+     "excerpt": "T: gamestage stage=echo_guidance_stage1_task1_check | R: toast (icon ftblibrary:icons/money_bag, title {\"translate\": \"ftb.shop.notification\"}) | R: command \"/execute as @s run playsound minecraft:block.note_block.bell master @s ~ ~ ~\" auto=invisible",
+     "why_it_works": "Systems outside the quest book raise a stage; a hidden quest converts it into a toast plus a sound. The visible book stays clean."
+    },
+    {
+     "where": "chapters/getting_started.snbt (quest 1F9D3474C8A655A9) + lang",
+     "what": "Multiplayer ordering warning on the first quest",
+     "excerpt": "\"Welcome to the &6Archive of Guidance&r. Speak with the &dEcho&r to begin your journey... &eNote&f: If you're playing with friends, complete this quest first and reach your home base &nbefore&r inviting others to your team.\"",
+     "why_it_works": "It addresses a real party-merge pitfall at the exact moment it matters."
+    },
+    {
+     "where": "chapters/getting_started.snbt (quest 6089F3DC28FB69C0)",
+     "what": "Live keybind in quest text",
+     "excerpt": "[\"This can be toggled with the keybind \", { \"keybind\": \"key.squatgrow.toggle\", \"color\": \"green\" }, \".\"]",
+     "why_it_works": "The text shows the player's actual binding even if they rebound it. This is a vanilla JSON component, which 2001.4.22 parses via TextUtils."
+    },
+    {
+     "where": "chapters/world_engine__tier_1.snbt (quest 79EB0239FE299185)",
+     "what": "Milestone labelling with subtitle and shape",
+     "excerpt": "\"&aThe First Big Upgrade\", subtitle \"Major World Engine Upgrade\", shape gear, size 1.5, task 64x ftb:world_engine_machine_block",
+     "why_it_works": "Players can tell main upgrades from side upgrades at a glance on the map."
+    }
+   ],
+   "weaknesses": [
+    "Depends on FTB-internal systems (Echo NPCs, FTB Shop, Magic Coins `currency` type). None of this is portable to a 1.20.1 pack without those mods.",
+    "Currency on 794 of 942 quests flattens individual rewards into 'more coins'.",
+    "The 23-hour real-time cooldown (82800 s) is my own read as a poor fit for short or irregular sessions. No player feedback was found on this."
+   ]
+  },
+  {
+   "name": "FTB Skies 2 (plus FTB Skies 2: Aero)",
+   "source": "FTB App API manifests https://api.feed-the-beast.com/v1/modpacks/public/modpack/129/100520 (Skies 2 v1.23.0) and .../134/100527 (Aero v1.13.0). Downloaded config/ftbquests/**.",
+   "version_info": "MC 1.21.1 NeoForge, FTB Quests 2101.x. Skies 2 pays Magic Coins as items, a mechanism that ports to 2001.4.22. Aero uses the 1.21-only `currency` reward type (1,511).",
+   "scale": "Skies 2: 41 chapters in 6 groups, 2,197 quests, 73 reward tables, 965 chapter images. Descriptions median 202 chars, 214 pagebreaks, 176 links, 54 quest links. Aero: 31 chapters, 1,598 quests.",
+   "progression_presentation": "Groups: Main Questline ('&aGetting Started&r' then '&3FEED &2THE &cBEAST'), Resource Automation, Tech Mods, Magic Mods, Logistics, Exploration. Ungrouped: Welcome, Useful Items & Tips, FTB Shop. Getting Started has a title PNG ('getting_started_title.png') and 7 quest_links that surface quests from other chapters. 790 quests are optional, and these skew to the diamond shape. 39 chapters set autofocus_id so the view centres on the start quest when a chapter is opened.",
+   "teaching": "Tasks: item 2,879, checkmark 125, advancement 70, observation 43, kill 41, fluid 38. 'Your First Diamonds' lists several acquisition routes. Main-line quests link into mod chapters with change_page JSON ('To learn more about what you can do in the mod, check out the Ars Nouveau quest chapter.').",
+   "rewards": "item 3,103 (silver/gold/crystal Magic Coin items on most quests), command 197, random 166, loot 150, choice 89, xp 98, xp_levels 57. The FTB Shop chapter is a quest-based store. The chapter sets consume_items: true and default_repeatable_quest: true; each entry is an item task costing N coins that pays an item, choice or loot reward. Entries depend on main-line quests, so stock grows with progress, and each new tier is announced by a command reward (on-screen popup plus a bell playsound).",
+   "multiplayer": "data.snbt sets default_reward_team TRUE (one reward set per team). XP-level rewards are overridden to team_reward false (54 of 57), as are 46 command rewards. Net effect: shared items, personal XP. Aero is the reverse: default false, currency explicitly per-player (1,269), and 237 item rewards forced to team true.",
+   "standout_examples": [
+    {
+     "where": "chapters/ftb_shop.snbt (chapter header) + quest 325567B88BAFAD0D",
+     "what": "A whole chapter turned into a repeatable shop with chapter-level defaults",
+     "excerpt": "consume_items: true / default_repeatable_quest: true / default_quest_shape: \"rsquare\" | quest \"&fWelcome to the &6FTB Shop&f!\" subtitle \"Coins In, Rarities Out\"",
+     "why_it_works": "Two chapter flags turn every entry into 'pay N coins, get X, buy again'. 2001.4.22 has both keys (Chapter.java tristate consume_items, default_repeatable_quest)."
+    },
+    {
+     "where": "lang text of quest 325567B88BAFAD0D",
+     "what": "Shopkeeper voice explains the economy",
+     "excerpt": "\"Greetings, fellow adventurer, and welcome to the humble &6FTB Shop&r! ... As for the currency I require? Those shiny, &ojingling&r little coins in your pockets will suffice. \"&aWhere do I get these coins?&r\" You ask? Why, from quests, of course!\"",
+     "why_it_works": "Explains the coin loop in character, in one place."
+    },
+    {
+     "where": "chapters/ftb_shop.snbt (quest 4AB10BE58B13DBDD)",
+     "what": "Purchase that ends in a choice",
+     "excerpt": "\"&eAE2 1k Disks\": task magic_coins:silver_coin x8 -> choice reward; desc \"&7&n&oChoose one of the following: &7&o- 1k ME DISK Drive &7&o- 1k ME Item Cell ...\"",
+     "why_it_works": "The price is the task. The description spells out the options, so the picker holds no surprise."
+    },
+    {
+     "where": "chapters/the_beginning.snbt (quest 09CAF99BCBEB8276 'The Metal Tool Age')",
+     "what": "Progress unlock announced with popup and sound",
+     "excerpt": "R: command \"/execute as @s run pop create @s MIDDLE_LEFT 5 {\\\"text\\\": \\\"New loot bag available in the Shop!\\\", \\\"color\\\": \\\"gold\\\", \\\"bold\\\": true}\" auto=invisible | R: command \"...playsound minecraft:block.note_block.bell master @s ~ ~ ~\"",
+     "why_it_works": "Progress in one place is announced as a new option somewhere else, so players notice the unlock."
+    },
+    {
+     "where": "chapters/the_wild_hunt.snbt",
+     "what": "Kill quests paying coins, a crate choice and personal XP",
+     "excerpt": "\"&fKill 20 &cZombies\": kill minecraft:zombie 20 -> magic_coins:silver_coin x3 + choice 'Loot Crate Of Choice' + xp_levels 1 team_reward=False",
+     "why_it_works": "Combat is folded into the same coin economy as everything else, while the XP stays personal."
+    }
+   ],
+   "weaknesses": [
+    "Clutter: 2,197 quests, plus a 112-quest shop chapter.",
+    "A coin on almost every quest makes individual rewards forgettable.",
+    "The popup relies on a `pop` command from an extra mod; which mod provides it was not verified."
+   ]
+  },
+  {
+   "name": "FTB OceanBlock 2",
+   "source": "FTB App API manifest https://api.feed-the-beast.com/v1/modpacks/public/modpack/128/100482 (pack version named '1.21.1'). Downloaded config/ftbquests/**.",
+   "version_info": "MC 1.21.1 NeoForge 21.1.248, FTB Quests 2101.x (lang files, `components` item syntax). Loot crate fields (color, glow, item_name, string_id) are identical in 2001.4.22.",
+   "scale": "28 chapters in 6 groups, 1,041 quests, 17 reward tables, 317 chapter images. Descriptions median 264 chars, 179 pagebreaks.",
+   "progression_presentation": "Main Questline runs Getting Started, 'Steaming Ahead', 'Under Pressure', 'The Rift Below' (themed names, not mod names). Exploration, Logistics, Magic, Resource Automation and Tech groups hold the guides. An ungrouped 'The Abyssal Archives' story chapter has 20 log-entry quests, each unlocked by a main-line milestone.",
+   "teaching": "Tasks: item 1,306, checkmark 94, advancement 64, observation 21, dimension 3 ('Visit The &cLava Dimension&r').",
+   "rewards": "xp 869, loot 345, item 222. Crate tiers: '&bCommon Loot Crate&r' (icon ftbquests:lootcrate), '&dRare Loot Crate&r' (icon ironchest:obsidian_chest), '&6Legendary Loot Crate&r' (icon ironchest:crystal_chest). The chest-tier icon signals rarity. Themed boxes include 'Box of Rations', 'Bounty of the Sea', 'Chaos Box' (loot_crate colour 11141290, glow) and 'Adventurer Loot Crate'. Physical crate items (ftbquests:lootcrate with type 'chaos_bundle') are handed out as item rewards.",
+   "multiplayer": "default_reward_team false, with only a few overrides. Nothing co-op-specific.",
+   "standout_examples": [
+    {
+     "where": "chapters/the_story_of_ob2.snbt + lang (quest 5CA6809074DCA551)",
+     "what": "Lore as collectible log entries unlocked by progress",
+     "excerpt": "\"&fLog Entry 001\" subtitle \"The Crash\", checkmark, reward ftb:abyssal_archives_log1; desc \"This day didn't exactly go as planned. One moment, the Continuum was gliding through the void, systems stable, trajectory locked. The next; alarms screaming, hull integrity failing...\"",
+     "why_it_works": "Story lives in its own chapter, paced by real progress. It never blocks progression, and the item reward makes each log a keepsake."
+    },
+    {
+     "where": "reward_tables/0AE7EABE9FF1C7FD, 0EA01888FEABBD21, 013E6D24561C55E0",
+     "what": "Rarity told by colour plus icon tier",
+     "excerpt": "title \"&bCommon Loot Crate&r\" icon ftbquests:lootcrate | \"&dRare Loot Crate&r\" icon ironchest:obsidian_chest | \"&6Legendary Loot Crate&r\" icon ironchest:crystal_chest",
+     "why_it_works": "Rarity is readable from the reward slot without hovering."
+    },
+    {
+     "where": "chapters/getting_started.snbt (quest 7771C7CE9A9C6872 'Passage Through The Portal')",
+     "what": "Milestone reward bundle: consumable, crate roll, physical crate and silent unlocks",
+     "excerpt": "T: dimension minecraft:the_nether \"Visit The &cLava Dimension&r\" | R: potion; loot '&bCommon Loot Crate&r'; xp 25; gamestage after_cobble/after_nether (auto=invisible); item ftbquests:lootcrate {\"ftbquests:loot_crate\": \"chaos_bundle\"}",
+     "why_it_works": "A big moment pays several kinds of reward at once, and the crate item is something to open later."
+    }
+   ],
+   "weaknesses": [
+    "869 small XP rewards are noise.",
+    "The story chapter is entirely checkmark quests. Fine for lore, but nothing to do."
+   ]
+  },
+  {
+   "name": "FTB Academy 1.16 (FTB's teaching pack)",
+   "source": "FTB App API manifest https://api.feed-the-beast.com/v1/modpacks/public/modpack/88/2338 (v1.4.0). Text resolved from kubejs/assets/ftbacademy/lang/en_us.json, because quests use {academy.*} keys.",
+   "version_info": "MC 1.16.5 Forge 36.2.34, FTB Quests 1605.3.7. Older syntax, but every technique used still exists in 2001.4.22.",
+   "scale": "13 chapters in 4 groups, 332 quests, 13 reward tables. Descriptions are short (median 64 chars, p90 126) and 316 quests have subtitles.",
+   "progression_presentation": "Getting Started, then groups Storage (Basic Storage; Refined Storage Basics, Autocrafting, Wireless), Technology (Beginner, Intermediate, Advanced), Magic, and Misc. Difficulty is spelled out in chapter names. Every quest is size 1 or 0.5 on hexagon defaults. A hidden 'Background Quests' chapter does the logic.",
+   "teaching": "Pattern: playful title plus a literal-instruction subtitle ('Timberrrr' / 'Punch a tree'; 'Press [M]' / 'Claim a chunk with FTB Chunks'). 1-3 short paragraphs with a fixed colour scheme: &b for things, &e for mod names, &6 for actions and benefits. UI actions are verified by custom tasks ('Claim a chunk!'). The welcome quest teaches the quest GUI itself.",
+   "rewards": "item 117, mostly small and related to the quest (golden axe for punching a tree; a joke dirt_chest after the iron chests quest), xp_levels 12, loot 6 ('Saplings'), gamestage 9. Hidden easter-egg quests pay 5 xp_levels for finding spots in the spawn build.",
+   "multiplayer": "Nothing specific.",
+   "standout_examples": [
+    {
+     "where": "chapters/academygettingstartedname.snbt (quest 0000000000000003)",
+     "what": "Title joke plus subtitle instruction",
+     "excerpt": "\"Timberrrr\" subtitle \"Punch a tree\"; desc \"To begin with, simply &bpunch some wood&r, just like normal.\"; reward minecraft:golden_axe",
+     "why_it_works": "The node reads at a glance on the map (the subtitle shows on hover), and the reward is the next tool."
+    },
+    {
+     "where": "chapters/academygettingstartedname.snbt (quest 0000000000000057)",
+     "what": "Teaching a UI action with a custom task",
+     "excerpt": "\"Press [M]\" subtitle \"Claim a chunk with FTB Chunks\"; task custom title \"Claim a chunk!\"; desc \"...In the &6Claimed Chunks&r menu, you can click on a chunk to &bclaim it&r, making it so &6only you and your allies can do things in it&r.\"",
+     "why_it_works": "The player does the action rather than ticking a box."
+    },
+    {
+     "where": "quest 000000000000004E 'Welcome to FTB Academy 1.16!'",
+     "what": "Explains how to read the book",
+     "excerpt": "\"We use quests to walk you through things. Complete the &bTasks&r in the top left to complete a quest, giving you the &6Rewards&r in the top right. When a quest is completed, it will unlock more quests.\"",
+     "why_it_works": "Zero assumed knowledge, and it completes via a stat task (play time) on join."
+    },
+    {
+     "where": "chapters/background.snbt (always_invisible), quest 0000000000000127",
+     "what": "Hidden OR-gate helper",
+     "excerpt": "\"Any Generator\" min_required_dependencies=1, deps on 9 generator quests, task stat minecraft:play_one_minute value 1",
+     "why_it_works": "Lets a visible quest depend on 'any one of these', which FTB tasks cannot express directly."
+    }
+   ],
+   "weaknesses": [
+    "Very terse text. Fine for a sampler pack; thin for complex systems.",
+    "The {key} lang indirection makes the SNBT harder to edit by hand."
+   ]
+  },
+  {
+   "name": "FTB University 1.19 (Academy successor)",
+   "source": "FTB App API manifest https://api.feed-the-beast.com/v1/modpacks/public/modpack/108/100356 (v1.5.2). Text from kubejs/assets/ftbuniversity/lang/en_us.json; scripts kubejs/server_scripts/quests/{reading_rainbow,schools,sound,quest_script_utils}.js.",
+   "version_info": "MC 1.19.2 Forge 43.4.5, FTB Quests 1902.5.10. Uses FTB XMod Compat KubeJS events (FTBQuestsEvents.customTask / customReward / completed), the same event family the 1.20.1 XMod Compat exposes. Assumes the TD pack's existing custom tasks already use this API.",
+   "scale": "29 chapters in 5 groups, 942 quests. 919 subtitles, 240 size-0.5 nodes, 37 custom tasks. Descriptions median 88 chars, 190 inline images, 249 pagebreaks, 105 links, 48 quest links.",
+   "progression_presentation": "Getting Started, then a 'Mod Introductions' chapter (one checkmark overview per mod under banner images 'Storage & Automation / Gear / Technology / Magic'), then mod chapters grouped Gear, Storage & Automation, Tech, Magic, Misc. Main items are normal size; variants hang off them as 0.5-size satellite nodes.",
+   "teaching": "'Reading Rainbow' teaches the book's colour code and multi-page navigation; it completes when the player clicks a link on page 2. 'Schools' are prebuilt working example setups entered by clicking `/school enter ...`, with a custom task that completes on entry. Satellite nodes get one sentence each ('&bFunnels&r allow you &6push into and pull from inventories&r.').",
+   "rewards": "item 316, custom 18, choice 12. The first quest offers a choice of 3 prefab houses to skip the early game. sound.js plays a custom 'quest_completed' sound on every completion (spam-guarded). reading_rainbow.js has a hidden 25-minute quest that nudges idle players via chat.",
+   "multiplayer": "The prefab quest asks players to 'be neighborly' on servers. Otherwise nothing specific.",
+   "standout_examples": [
+    {
+     "where": "chapters/getting_started.snbt (quest 3D783F2EC10EA6F8) + lang",
+     "what": "Teaching the book's own legend, completed by interacting",
+     "excerpt": "\"Reading Rainbow\" subtitle \"Learn how text is color-coded\"; task custom \"Read the second page\"; desc \"&bBlue text&r is to highlight the task. &6Gold text&r is important information. &eYellow text&r is for mod names... Some quests have &6multiple pages&r!\" {@pagebreak} \"Click me!\" (run_command /university reading_rainbow)",
+     "why_it_works": "Once the legend is learned, every later quest is faster to skim. The click proves the player found page 2."
+    },
+    {
+     "where": "chapters/applied_energistics_2.snbt (Plane School) + kubejs/server_scripts/quests/schools.js",
+     "what": "Visit a working example",
+     "excerpt": "desc \"This School shows an &bexample setup that uses both Planes&r to &6automate the Pure Daisy&r.\" + clickable \"/school enter ftbuniversity:ae2/planes\"; task custom \"Visit the Plane School\"; schools.js: FTBSchools.enterSchool -> setQuestProgress(player, quest, 1)",
+     "why_it_works": "Showing a working build beats describing it. The quest completes when the player looks at the example."
+    },
+    {
+     "where": "chapters/getting_started.snbt (quest 097181BB3C0BBCBA)",
+     "what": "Respecting player time with an early choice",
+     "excerpt": "\"Base%% Speedrun\" subtitle \"Skip the early game completely\"; desc \"This pack is about &6learning the hard stuff&r, so let's just skip the easy stuff.\" (first quest: choice table 'Prefab Houses')",
+     "why_it_works": "The book states its purpose and lets the player choose how much early game to skip."
+    },
+    {
+     "where": "kubejs/server_scripts/quests/sound.js",
+     "what": "Audio feedback on every quest completion",
+     "excerpt": "FTBQuestsEvents.completed(event => { ... player.server.runCommandSilent(`/playsound ftbuniversity:quest_completed master ${playerName} ...`) }) with a per-tick soundSpamProtector",
+     "why_it_works": "By default FTB Quests plays a fanfare only for chapter completion; this makes every quest audible."
+    }
+   ],
+   "weaknesses": [
+    "Relies on a custom 'schools' system and lots of KubeJS, so it is heavy to build and maintain.",
+    "Most quests are 'make item X'. Clear, but a list."
+   ]
+  },
+  {
+   "name": "FTB Presents Architect's Exodus (bonus: same FTB Quests build as the TD pack)",
+   "source": "FTB App API manifest https://api.feed-the-beast.com/v1/modpacks/public/modpack/127/100519 (v1.16.1): config/ftbquests/**, kubejs/assets/ftbquests/lang/en_us.json, kubejs/assets/ftbquests/ftb_quests_theme.txt, kubejs/assets/ftbquests/textures/shapes/fancy*/.",
+   "version_info": "MC 1.20.1 Forge 47.4.20 with ftb-quests-forge-2001.4.22.jar. This is the exact build the TD pack uses, so every mechanism here is proven on 2001.4.22. Exceptions: /ftb_scroll, /delay and ftbteambases come from FTB-internal mods, and the JSON colour 'rainbow' was not verified.",
+   "scale": "13 chapters in 2 groups, 477 quests, 13 reward tables, 119 chapter images (56 revealed by quest completion). Descriptions median 208 chars, 25 pagebreaks, 74 links.",
+   "progression_presentation": "Welcome, then 'A Path Once Walked': a 16-quest vertical outline from 'Reach Helheim' up to 'Reach Asgard'. Boss quests act as gates, and small info diamonds list what each realm unlocks. Then the story group 'The Familiar Road' (Rise from Hel, The First Realms, Muspelheim, Midgard, Asgard) and the guide group 'Völundr's Legacy', whose chapters carry in-world names (Muninn's Cache = storage, Fafnir's Hoard = resources, Forged by Brokkr = gear, Ertri's Embers = tech, Mimir's Wisdom = magic). Plus 'The All-Father's Wisdom' tips chapter. A custom theme gives per-chapter background PNGs, rune textures on dependency lines, a gold completed colour and 7 custom 'fancy*' quest shapes. In Asgard, an image appears at each node as it completes, so the path lights up as the player climbs.",
+   "teaching": "First-person italic narration, then an explicit '&e&nTask&r:' line, then a {@pagebreak} 'How to use X ->' mechanics page. Boss quests say where the arena is. All text sits in a resource-pack lang JSON, referenced from the SNBT with {ftbquests.chapter...} keys.",
+   "rewards": "command 259, of which 202 grant Puffish Skills points. Each carries a reward title such as '&b+1 &6Helheim&f Skill Points' and a spell icon. Also item 252, gamestage 42, choice 11 (S/A/B/C Tier Weapons, 'A Wicked Choice'), all_table 4. 'Bountiful Blessing' sets hide_tooltip (contents are a mystery). Story scrolls arrive via command reward (/delay 3 sec /ftb_scroll ...).",
+   "multiplayer": "default_reward_team true, but 369 rewards are explicitly team_reward false (skill points, stages, weapon choices): shared items, personal progression. Welcome has a team how-to ('/ftbteams party leave ... party leader can invite'). The exclusive realm choice is stored on team progress, so it binds the whole party.",
+   "standout_examples": [
+    {
+     "where": "kubejs/assets/ftbquests/ftb_quests_theme.txt",
+     "what": "Per-chapter theming on 2001.4.22",
+     "excerpt": "#Muspelheim [023AA7FE2BF4B64A] background: ftb:textures/quests/bgs/muspbg.png / dependency_line_texture: ftb:textures/quests/theme_assets/dependency_line_rune_fire.png / quest_completed_color: #D4AF37 | [*] extra_quest_shapes: ..., fancycircle, fancysquare, fancygildedsquare, ...",
+     "why_it_works": "Each chapter feels like a place, and completed quests turn gold. These are client assets only, with no runtime cost. 2001.4.22 ThemeLoader supports [*], [hexId], type and #tag selectors."
+    },
+    {
+     "where": "chapters/outline.snbt + lang ('A Path Once Walked')",
+     "what": "One-screen progression map with unlock summaries",
+     "excerpt": "\"Reach &6Niflheim\" desc \"&7&oSo this is &6Niflheim&7. The mist swallows me the moment I cross over...\" | info diamond: \"The following extras are unlocked in &6Niflheim&f. - Enchanted - Blood Magic Tier 3 - Occultism Golden Chalk ...\"",
+     "why_it_works": "Shows 'where am I / what's next / what does it unlock' in one place, without the detail of the story chapters."
+    },
+    {
+     "where": "chapters/first_realms.snbt (quest 40F5167720FAEEC3) + lang",
+     "what": "Exclusive branch choice",
+     "excerpt": "max_completable_dependents: 1 | \"I must now make a decision on which Realm to go to. Whichever path I choose will lock me out of the other path until I reach Muspelheim... Will I choose magic, or technology?\" -> two checkmarks, each granting gamestage ftb:jotunheim_unlocked / ftb:niflheim_unlocked",
+     "why_it_works": "A real fork, presented in the fiction, built with a native 2001.4.13+ property."
+    },
+    {
+     "where": "chapters/rise_from_hel.snbt (quest 03823BE35D27C255) + lang",
+     "what": "Narration, task line, then a mechanics page, with a reward that is the needed tool",
+     "excerpt": "\"&oAs one of the few beings that knows the crafting method for the &6Philosopher's Stone&f...\" \"&e&nTask&r: Craft a &6Philosopher's Stone&f.\" \"&o&7How to use the Philosopher's Stone ->\" {@pagebreak} \"To transmute monsters ... you will need to provide it with &bEMC&f.\" | R: projecte:klein_star_ein; R: command \"/puffish_skills points add @p puffish_skills:hel 1\" (title +1 Helheim Skill Points)",
+     "why_it_works": "Flavour never hides the instruction, and the deeper how-to is one page away. The reward is exactly what the next step needs."
+    },
+    {
+     "where": "chapters/asgard.snbt (images with `dependency`)",
+     "what": "Path lights up node by node",
+     "excerpt": "IMG quark:block/red_crystal_lamp_on at (0,4.5) dependency 2F17949A1AA2BBE7 (quest at (0,2.5)); IMG ars_nouveau:block/warp_portal at (0,6.5) dependency 3BD2004072A4DA2B; IMG ftb:textures/skills/frames/available/available_frame_2.png dependency 4AD3E7AFEBE71D50",
+     "why_it_works": "Completing step N switches on a light or frame at step N+1: a progress meter drawn into the map (ChapterImage.shouldShowImage in 2001.4.22)."
+    },
+    {
+     "where": "chapters/welcome.snbt (quest 2F15D918EF183051)",
+     "what": "Kickoff quest that runs on join",
+     "excerpt": "T: stat minecraft:play_time value 1 | R: gamestage pack_start_stage auto=invisible | R: command \"/delay 3 sec /ftb_scroll allfather_intro @p\" auto=invisible silent",
+     "why_it_works": "The intro plays itself without the player having to find the book first."
+    }
+   ],
+   "weaknesses": [
+    "Uses FTB-only commands and mods (/ftb_scroll, /delay, ftbteambases, Puffish Skills) not available to the TD pack.",
+    "JSON plus lang-key indirection makes hand-editing the SNBT painful."
+   ]
+  },
+  {
+   "name": "Create: Above and Beyond (CAB)",
+   "source": "GitHub simibubi/Above-and-Beyond @ f551e98 (2022-05-13): config/ftbquests/quests/** and kubejs/assets/kubejs/lang/en_us.json (https://github.com/simibubi/Above-and-Beyond). The 1.18.2 'Community Refresh' repo was checked but its en_us text is Chinese, so not used.",
+   "version_info": "MC 1.16.5 Forge 36.2.20, FTB Quests 1605.3.5 (manifest file 3498398). No can_repeat in that era; a custom 'Repeatable' reward was used instead (the script that handles it was not inspected). 2001.4.22 has native can_repeat and repeat_cooldown.",
+   "scale": "13 chapters in 2 groups, 454 quests, 0 images. 305 subtitles. Descriptions median 69 chars, 44% empty.",
+   "progression_presentation": "Factory Guide group: ' Overview', '1 High Aspirations', '2 Alluring Expedience', '3 The Catharsis', '4 Into the Box', '4a Chaotic Alchemy', '5 Divide by Digital', Metallurgy, Lifesavers. Remote Trading group: Bulletin Board, The Market, Shipments. The Overview is a left-to-right timeline, 'From a Tree Puncher...' through milestone quests to '..to a Spacefarer'. Milestones auto-complete through a trivially-true stat task once the chapter-end quests are done, and are subtitled 'Milestone' or 'Utility'. Each chapter is drawn as the production flowgraph, bookended by 'Chapter N Start!' and 'Chapter N Complete!'.",
+   "teaching": "Teaches by objective, not by recipe. Each node is 'Contraption N' (subtitle): an item task (consume_items false) plus a checkmark titled 'Automated', with a one-line hint naming the right machine ('Mechanical Saws are a powerful way to achieve this.').",
+   "rewards": "Sparse. Items 274 (mostly coins and permits), custom 140 (mostly the 'Repeatable' label), xp_levels 1. The economy runs on coins earned by trading (Shipments) and spent in The Market (price in the subtitle) or on Profession permits (Bulletin Board).",
+   "multiplayer": "data.snbt: default_reward_team true and default_consume_items true (one shared economy per team).",
+   "standout_examples": [
+    {
+     "where": "chapters/overview.snbt (quests 75FB28B253B14876, 0E98B4D2BBF55308)",
+     "what": "Dedicated 'where am I' timeline with auto-completing milestones",
+     "excerpt": "\"From a Tree Puncher...\": \"Welcome to the Overview. You can always come back here to catch up on your current position in the Progression of Technology. If you look closely, your Journey to the Moon completes the final step of the way on the right side.\" | \"Andesite Machinery\" subtitle \"Milestone\", task stat minecraft:play_one_minute value 1 titled \"Complete Chapter 1\"",
+     "why_it_works": "One screen answers 'how far along am I'. The milestones need no player action; they light up when the real chapter ends."
+    },
+    {
+     "where": "chapters/stage_1.snbt (quests 5799D55BB26BA52C, 2CB570195DA7E106)",
+     "what": "Chapter as a flowchart of objectives",
+     "excerpt": "\"Chapter 1 Start!\": \"These Quests are an Automation Plan for your upcoming Assembly Line. Always view them as recommendations on what you should construct a passive supply for. The flowgraph depicts the connections between relevant recipes/processing.\" | \"Automatic Forest\" subtitle \"Contraption 1\": tasks 'Any Wooden Log' + checkmark 'Automated'",
+     "why_it_works": "The layout itself teaches the dependency chain, and the text gives just enough to start."
+    },
+    {
+     "where": "chapters/market.snbt (quests 5D17CB247942013A, 252B9DD5BFB8184A)",
+     "what": "Price tag in the subtitle",
+     "excerpt": "\"Sleepless\" subtitle \"10 Silver\" desc \"Your last resort in case the sundown beat you to it.\" | \"Fortress Locator\" subtitle \"2 Gold\" -> structurescompass",
+     "why_it_works": "Hovering shows the cost without opening the quest."
+    },
+    {
+     "where": "chapters/professions.snbt (quest 1E26046FA8177616)",
+     "what": "Buying permits that unlock income options",
+     "excerpt": "\"Miner\": task thermal:silver_coin x30 -> kubejs:profession_card_mining + custom reward titled \"Repeatable\" (icon thermal:machine_cycle_augment); desc \"Sell &6Igneous Rocks&f, &6Metal Ores&f, &6Gems&f and more with the Mining permit.\"",
+     "why_it_works": "Turns specialisation into a visible purchase. The 'Repeatable' reward chip tells players the quest can be redone."
+    }
+   ],
+   "weaknesses": [
+    "Honour-system 'Automated' checkmarks.",
+    "44% of quests have no description.",
+    "Shipments is 125 near-identical trade quests (list feel).",
+    "The CAB wiki even advises: 'Don't let the quests distract you from the game- find your own narrative'. This quote came via a summarizing fetch; wording may be approximate."
+   ]
+  },
+  {
+   "name": "Enigmatica 9 Expert (E9 / E9E)",
+   "source": "GitHub EnigmaticaModpacks/Enigmatica9 @ b633d20 (2026-05-28): config/ftbquests/quests/** and kubejs/server_scripts/expert/loot_tables/chests/enigmatica/*_loot_boxes.js (https://github.com/EnigmaticaModpacks/Enigmatica9).",
+   "version_info": "MC 1.19.2 Forge 43.4.23, FTB Quests 1902.5.10. Command reward with title and icon works the same in 2001.4.22, though the old `player_command` key no longer exists there.",
+   "scale": "40 chapters, 1,328 quests. Normal and *_expert twin chapters. Descriptions median 291 chars.",
+   "progression_presentation": "Getting Started explains the two quest kinds, Discovery and Learning Mods. Groups: Discovery, Learning - Magic, Learning - Technology, Expert (Chapter One, Two, Three). Mode-specific chapters are hidden by a quest whose task is gamestage 'impossible' ('Hidden quest that hides the Expert Mode quest').",
+   "teaching": "Expert quests: a lore paragraph about the vanished Wilden Grove druids, a '=================================' rule, then plain instructions. Observation tasks confirm placed blocks (look at the Mixing Cauldron). Boss quests include tactics.",
+   "rewards": "command 1,128, nearly all '/execute at @p run loot spawn ~ ~1 ~ loot enigmatica:loot_boxes/<name>', each with a reward title ('Miner's Delight', 'Farmer's Delight', 'Epic Applied Energistics Loot Box') and a KubeJS item icon. The loot tables are built in KubeJS (ServerEvents.genericLootTables) with roll ranges and enchant functions. Also item 499, xp 33.",
+   "multiplayer": "Nothing specific. default_reward_team false.",
+   "standout_examples": [
+    {
+     "where": "chapters/chapter_one.snbt (quest 1075F3BAA03841EF 'Basic Metallurgy')",
+     "what": "Lore above the line, instructions below; reward is a themed loot box",
+     "excerpt": "\"The Wilden Grove practiced a particular form of druidic magic that would slowly draw materials from deep in the earth up into mounds... ================================= Metal processing has been heavily customized... Be certain to examine EMI carefully!\" | R: command \"/execute at @p run loot spawn ~ ~1 ~ loot enigmatica:loot_boxes/farmers_delight\" title=Farmer's Delight icon=kubejs:farmers_delight",
+     "why_it_works": "Flavour and function are visibly separated, so skimmers can jump to the line. The command reward reads as a named box, not a raw command."
+    },
+    {
+     "where": "chapters/chapter_one.snbt (quest 73CDA6ED2393DE42)",
+     "what": "Boss quest with tactics",
+     "excerpt": "subtitle \"Fear is the Mind-Killer\"; task twilightforest:naga_trophy; \"...Locate and kill the Naga. It should be located somewhere nearby in a large stone courtyard... Keep some distance and aim for the head. Once the deed is done, a chest will appear in the center of the arena.\"",
+     "why_it_works": "Tells the player where to go, how to fight and what to grab, without spoiling the fight."
+    },
+    {
+     "where": "chapters/chapter_one.snbt (quest 66585A158F41DE44)",
+     "what": "Observation task to confirm a placed machine",
+     "excerpt": "task observation observe_type 0 to_observe hexerei:mixing_cauldron title \"Mixing Cauldron\" -> R: loot box 'Alchemist's Delight'",
+     "why_it_works": "Completes when the player looks at the thing they built. No checkbox."
+    },
+    {
+     "where": "kubejs/server_scripts/expert/loot_tables/chests/enigmatica/delight_loot_boxes.js",
+     "what": "Quest loot boxes as script-defined loot tables",
+     "excerpt": "event.addGeneric('enigmatica:loot_boxes/miners_delight', (table) => { table.addPool((pool) => { pool.rolls = [3, 5]; pool.addItem(...'forge:gems/diamond'), 1, [2, 8]); ...",
+     "why_it_works": "Rewards are balanced in one script and can use full loot-table functions (enchants, chances)."
+    }
+   ],
+   "weaknesses": [
+    "Twin chapters per mode double the maintenance.",
+    "Long text (median 291 chars).",
+    "'/loot spawn' drops items on the ground at the player. Risk of loss mid-fight is my inference, not verified."
+   ]
+  },
+  {
+   "name": "Enigmatica 6 (including its Expert chapters)",
+   "source": "GitHub EnigmaticaModpacks/Enigmatica6 @ edf25e0: config/ftbquests/quests/** (https://github.com/EnigmaticaModpacks/Enigmatica6).",
+   "version_info": "MC 1.16.5 Forge 36.2.39, FTB Quests 1605.3.7.",
+   "scale": "38 chapters, 1,413 quests. Descriptions median 218 chars.",
+   "progression_presentation": "Ungrouped Getting Started, Building, Adventure, Challenges. Groups Equipment, Expert (Gates; Tech - Mechanical Mayhem / Computer Science / Nuclear Physics; Magic - Apprentice / Adept / Master; Bragging Rights), Logistics, Magic, Technology. Tier names carry the difficulty. The Challenges chapter opens only after the Ender Dragon kill.",
+   "teaching": "Tasks: item 1,778, checkmark 119, advancement 43.",
+   "rewards": "command 761: E9-style loot box spawns plus novelty rewards ('Show off your progress!' /say broadcast, tutorial links via tellraw, 'Clear Radiation', a tamed cat called 'Furball'). Also item 531, xp 119. Decorative trophies (trofers:large_trophy) for Challenges and Bragging Rights.",
+   "multiplayer": "Broadcast rewards (/say) are inherently social, since everyone on the server sees the brag.",
+   "standout_examples": [
+    {
+     "where": "chapters/expert__bragging_rights.snbt (quest 6D3FE88DB30DEE00)",
+     "what": "Endgame trophy wall",
+     "excerpt": "task create:handheld_worldshaper -> trofers:large_trophy; desc \"Obtaining the Creative Worldshaper is the ultimate goal - Complete this quest and you complete the modpack!\" (siblings: excavation/alchemy/automation/engineering/botanical/battle mastery tokens -> trophies)",
+     "why_it_works": "The reward is a placeable display of achievement, and the 'restore the outposts' narrative frames the endgame."
+    },
+    {
+     "where": "chapters/powah.snbt (command reward)",
+     "what": "Social brag reward",
+     "excerpt": "command \"/say @p has completed Powah's final crafting challenge! I bet you can't!\" title \"Show off your progress!\" icon powah:ender_core",
+     "why_it_works": "Cheap, funny, and visible to everyone on a server."
+    },
+    {
+     "where": "chapters/challenges.snbt (quest 1C6E46EA96373E74)",
+     "what": "Gated challenge chapter",
+     "excerpt": "\"Challenger\" advancement minecraft:end/kill_dragon; desc \"Slaying the Ender Dragon has given you access to the Challenges chapter!\" -> trofers:trophy",
+     "why_it_works": "Post-game goals are hidden until they mean something."
+    },
+    {
+     "where": "chapters/hidden_quests.snbt",
+     "what": "Openly named plumbing chapter",
+     "excerpt": "chapter subtitle \"It does not exist, you are not seeing anything here\"; quests: item bloodmagic:masterbloodorb -> gamestage master_blood_orb (auto=invisible)",
+     "why_it_works": "Item and advancement milestones become stages that other systems read, without cluttering the book."
+    }
+   ],
+   "weaknesses": [
+    "Unfinished chapters ship visible (filenames *_wip; 'Apotheosis [WIP]' has 0 quests)."
+   ]
+  },
+  {
+   "name": "Monifactory",
+   "source": "GitHub Omicron-Industries/Monifactory @ b56c14b (2026-10-02): config/ftbquests/quests/** plus kubejs/assets/ftbquests/lang/en_us.json (https://github.com/Omicron-Industries/Monifactory).",
+   "version_info": "MC 1.20.1 Forge 47.4.13, FTB Quests 2001.4.17 (manifest file 7260736). Very close to the TD pack's 2001.4.22, so everything used here works.",
+   "scale": "Normal book: 14 chapters in 2 groups, 853 quests. Separate expert and hardmode books live in config-overrides. 141 quest links. Descriptions median 86 chars, 63 pagebreaks.",
+   "progression_presentation": "'Main Progression' group: The Factory, Groundwork, Into the Microverse, Scaling Up, Some Assembly Required, Feeding the Machine, Home Stretch. 'Guides & Help' group: Matter-Energy, Renewable Production, The Elements, Power Generation, Progression. Machines are hexagons, key machines size 1.5-2, and 141 quest links cross-reference between chapters.",
+   "teaching": "Flavour subtitles ('The factory begins', 'Automatic magnetizers'). A strict colour code: &6 items, &3 machines, &e advice, &2 side notes, &9 UI positions and currency. Pagebreaks hold the 'why' and habit-building advice (batch crafting).",
+   "rewards": "Mostly the pack's own coins (kubejs:moni_nickel 271, moni_quarter 202, moni_dollar 34), used to buy ores the player can't find, plus a global Bounty Board of time-limited turn-ins paying Monicoins.",
+   "multiplayer": "The Bounty Board inventory is global (shared).",
+   "standout_examples": [
+    {
+     "where": "chapters/the_factory.snbt (quest 62BBD1F6767A4D90) + lang",
+     "what": "Machine quest that teaches the habit, not just the item",
+     "excerpt": "\"&2Wiremill\" subtitle \"The factory begins\" | \"...After you make the Wiremill, &econsider making a few stacks&r of LV motors... &ebatch crafting&r in this manner is an important habit to pick up.\" | R: kubejs:moni_nickel x2",
+     "why_it_works": "Teaches play patterns that pay off later. The coin reward feeds a catch-up shop."
+    },
+    {
+     "where": "lang moni.quest.3E69E1949316BD0C",
+     "what": "Time-limited global bounties",
+     "excerpt": "\"The &6Bounty Board&f has a global inventory containing quests to turn in specific items in exchange for &9Monicoins&f. These quests have a fairly short duration, so make sure to &estockpile the items&f... or else they'll &cexpire before you can complete them&f.\" ... \"&aSpend your coins!\"",
+     "why_it_works": "A rotating, renewable goal loop that keeps the economy moving."
+    },
+    {
+     "where": "chapters/dependency_chain.snbt (always_invisible)",
+     "what": "Mode toggles via invisible stage quests",
+     "excerpt": "T: gamestage stage=doBoilers -> R: command \"/ftbquests change_progress @p reset 69336E3C51A54E5D\" auto=invisible elevate_perms | T: gamestage stage=dontBoilers -> reset 7423181A27FC773B",
+     "why_it_works": "Lets one book adapt to options, and shows how to reset quests by command (the same technique would make per-wave repeatables)."
+    }
+   ],
+   "weaknesses": [
+    "Three books, one per difficulty mode, means triple maintenance (issue #2678: hard and expert quests bugged).",
+    "Recurring factual-error reports: #2667 'Quest book factually incorrect about cables', #2410 'Quest Book incorrectly describes LV converters'."
+   ]
+  },
+  {
+   "name": "GregTech: New Horizons (GTNH)",
+   "source": "GitHub GTNewHorizons/GT-New-Horizons-Modpack (master): config/betterquesting/Readme.md, DefaultQuests/QuestLinesOrder.txt, sample quests DefaultQuests/Quests/AndSoItBegins-*/{YourFirstNight,Goals,MonsterTrap,IngameGuide}.json and KillAlltheThings-*/{TimetoKillCreepe,SecretANice,KillingEvolved}.json.",
+   "version_info": "MC 1.7.10, Better Questing (GTNH fork), not FTB Quests. Properties like isMain, globalShare, partySingleReward, SECRET visibility, completion sounds and confetti have no 1:1 FTB Quests equivalent.",
+   "scale": "Over three thousand quests (the 'Goals' quest says so) across 46 quest lines. Only samples were read.",
+   "progression_presentation": "Tabs ordered 'And So, It Begins', 'Tips and Tricks', 'Tier 0 - Stone Age', 'Tier 0.5 - Steam', 'Tier 1 - LV' ... 'Tier 12 - UMV', 'Endgame Goals', then topic tabs ('Feeding Yourself', 'Getting Around...', '...Without Dying', 'Kill All the Things'). The tier number in the tab name works as the progress meter.",
+   "teaching": "Written contributor guidelines: crafting quests only early; secret quests only for surprises and riddles; one quest per line except Tips and transition quests; standard [warn]/[note]/[url] tags rendered with theme-aware colours. The opener frames survival stakes. 'Monster Trap' teaches a defensive quicksand ditch.",
+   "rewards": "Themed coins (CoinDarkWizard, CoinSurvivor, CoinAdventure, CoinTechnician), extra_life, choice rewards and fireworks. Repeatable kill bounties (repeatTime 432000 ticks).",
+   "multiplayer": "Better Questing per-quest party flags: globalShare (shared completion) and partySingleReward (one claim per party).",
+   "standout_examples": [
+    {
+     "where": "https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/master/config/betterquesting/Readme.md",
+     "what": "House rules for quest writers",
+     "excerpt": "\"1. Secret quests should only see very limited use for surprise bonuses or riddles. 2. Crafting quests at the start of the game will stay ... But crafting quests should not be used elsewhere. ... 6. ... red for warnings `[warn]`, aqua for notes `[note]` and blue for hyperlinks `[url]`.\"",
+     "why_it_works": "A written style guide keeps 3,000 quests consistent: when to hide, when to craft, how to colour."
+    },
+    {
+     "where": "Quests/AndSoItBegins-*/YourFirstNight-*.json",
+     "what": "Opener that frames survival stakes",
+     "excerpt": "\"Hello, friend, and welcome to GTNH! Don't get used to things being nice and comfy, because in about ten minutes the sun will set, and unlike Vanilla Minecraft, there's no light whatsoever at night but plenty of Infernal mobs coming to get you. So your first task is to find food and shelter for the night.\"",
+     "why_it_works": "Sets the pack's threat and the immediate goal in one breath. It is close to the TD pack's wave framing."
+    },
+    {
+     "where": "Quests/AndSoItBegins-*/MonsterTrap-*.json",
+     "what": "Teaching a defence with a concrete build",
+     "excerpt": "\"Monster Trap\": \"Collect a stack of it, dig a small ditch, and fill it with the quicksand to protect your 'dirt base' home. Just don't fall in!\" task 64 quicksand; choice reward torch x2 or cooked beef",
+     "why_it_works": "Teaches a defensive pattern, not just an item."
+    },
+    {
+     "where": "Quests/KillAlltheThings-*/TimetoKillCreepe-*.json",
+     "what": "Repeatable kill bounty with flavour",
+     "excerpt": "\"Time to Kill (Creeper)\" repeatTime 432000; hunt Creeper x10; \"Who hasn't experienced this...? You're just minding your own business, mining a few diamonds, and suddenly, you wake up in your bed, all your items gone. Time to strike back!\" -> extra_life + 25 each of 4 coin types",
+     "why_it_works": "Recurring combat goals with a joke and a multi-currency payout."
+    }
+   ],
+   "weaknesses": [
+    "Overwhelming scale.",
+    "BQ-specific mechanics don't map to FTB Quests."
+   ]
+  },
+  {
+   "name": "Divine Journey 2 (DJ2)",
+   "source": "GitHub Divine-Journey-2/Divine-Journey-2 (main): overrides/config/betterquesting/DefaultQuests.json and overrides/resources/betterquesting/lang/en_us.lang.",
+   "version_info": "MC 1.12.2, Better Questing. Not FTB Quests.",
+   "scale": "30 quest lines, 1,736 quests. Descriptions median 178 chars, p90 596, max 7,647.",
+   "progression_presentation": "Numbered quest-line titles act as the progress meter: '1. The Journey begins!', '2. Dancing on a Totem Pole', '3. The Root of the Problem', ... '6. Mechanized!', ... '29. Getting Creative!', '30. Mysteries'.",
+   "teaching": "1,730 retrieval tasks. Onboarding quests 'What is BQ?', 'What is JEI?', 'Multiplayer?', 'Shortcuts'. Long tutorials link to videos.",
+   "rewards": "item 1,509 plus choice 243: next-step materials (Thermal materials, alloy ingots, solidified experience), no XP rewards.",
+   "multiplayer": "'Multiplayer?' quest walks through Better Questing party setup step by step.",
+   "standout_examples": [
+    {
+     "where": "bq_en_us.lang dj2.quest.ql.*.title",
+     "what": "Numbered chapter titles as progress meter",
+     "excerpt": "dj2.quest.ql.0.title=1. The Journey begins! / dj2.quest.ql.3.title=6. Mechanized! / dj2.quest.ql.7.title=10. Machines go Brr / dj2.quest.ql.27.title=29. Getting Creative! / dj2.quest.ql.24.title=30. Mysteries",
+     "why_it_works": "Players always know roughly where they are out of 30."
+    },
+    {
+     "where": "bq_en_us.lang dj2.quest.db.473 'Multiplayer?'",
+     "what": "Explicit co-op onboarding",
+     "excerpt": "\"Note: This is not for setting up servers... This is only for players when playing as a team. Want to play with a team? There are only a few steps you need to do. ... Step 1: Go to the home page of the questbook ... Step 2: Click on Party, and invite the person you want with you.\"",
+     "why_it_works": "Removes the most common multiplayer confusion up front."
+    },
+    {
+     "where": "'30. Mysteries' quest line (dj2.quest.db.791 ff.)",
+     "what": "Cipher chapter",
+     "excerpt": "titles and descriptions written in a runic substitution alphabet, e.g. \"§lᚨᚢᚼ ᛋᛞᚥᚼ\"",
+     "why_it_works": "An optional puzzle for players who want it. I did not decode it."
+    }
+   ],
+   "weaknesses": [
+    "Walls of text: the Blood Magic will-automation quest 'Will you do this for me?' is 7,647 characters.",
+    "The 'lore-heavy' reputation is not borne out by the files: only about 10 descriptions read as lore, and the Mysteries line is a cipher."
+   ]
+  },
+  {
+   "name": "SevTech: Ages",
+   "source": "GitHub DarkPacks/SevTech-Ages (branch master/original): src/config/triumph/script/triumph/stage0..5/*.txt, src/config/triumph/functions/*.txt, src/config/togetherforever.cfg.",
+   "version_info": "MC 1.12.2. Uses Triumph (scripted advancements) plus Game Stages and Together Forever, not a quest-book mod. Not FTB Quests.",
+   "scale": "Advancement trees for 6 Ages (stage0..stage5), about 40 advancements per Age root, counted from stage0 and stage1 directory listings.",
+   "progression_presentation": "One advancement tab per Age, each with a themed background ('setBackground(\"minecraft:textures/blocks/cobblestone.png\")'). An Age's root unlocks only when the previous Age's final advancement completes ('triumph:completed_advancement' 'triumph:stage0/melter'). Completing it runs a function that adds the next game stage, so new items and mobs appear.",
+   "teaching": "Advancement title and description only. Icons and titles are recoloured on completion. 'Goal' frames mark key steps, and visibleIf(root) hides future steps.",
+   "rewards": "XP (setRewardExperience 4 or 16), prestige points via function (prestige_add_100, spendable on perks), and stage-unlock functions that fire celebration effects.",
+   "multiplayer": "togetherforever.cfg: 'B:advancementSync=true' (teams share the advancements that drive Age progression) while 'B:gamestagesSync=false'.",
+   "standout_examples": [
+    {
+     "where": "src/config/triumph/functions/stage-1_trigger.txt",
+     "what": "Celebration bundled with an age unlock",
+     "excerpt": "gamestage silentremove @p zero_mob / gamestage silentadd @p one_mob / gamestage add @p one / summon minecraft:fireworks_rocket ~ ~ ~ / mpa notify @p stage_one",
+     "why_it_works": "A tier unlock is a moment: new content, fireworks and a popup."
+    },
+    {
+     "where": "src/config/triumph/script/triumph/stage0/baykok.txt",
+     "what": "Optional boss with currency reward",
+     "excerpt": "addCriteria player_killed_entity totemic:baykok OR inventory_changed totemic:baykok_bow; setRequirements(\"any\"); setRewardExperience(16); setRewardFunction(\"triumph:prestige_add_100\")",
+     "why_it_works": "An optional fight pays a meta-currency instead of loot."
+    },
+    {
+     "where": "src/config/togetherforever.cfg",
+     "what": "Team sync of progression",
+     "excerpt": "# If enabled, players in the same team will sync the advancements / B:advancementSync=true / B:gamestagesSync=false",
+     "why_it_works": "Group progression stays aligned without sharing every unlock."
+    }
+   ],
+   "weaknesses": [
+    "Advancement UI has no long-form text, so teaching depends on external guides.",
+    "Gating by hiding content can feel opaque. This is general knowledge of the design, not from a sourced complaint."
+   ]
+  },
+  {
+   "name": "Prominence II: Hasturian Era (RPG)",
+   "source": "Modrinth .mrpack v4.1.2 (https://cdn.modrinth.com/data/EGs3lC8D/versions/3uZ1MN34/...v4.1.2.mrpack), read with HTTP range requests: overrides/config/ftbquests/**.",
+   "version_info": "MC 1.20.1 Fabric. The FTB Quests jar is not in the mrpack, so its version is unverified. data.snbt has show_lock_icons and hide_excluded_quests, keys from the 2001.4.13-4.17 era (an inference).",
+   "scale": "31 chapters in 7 groups, 1,778 quests, 602 chapter images (518 revealed by quest completion), 1,052 subtitles. 62% of quests have no description.",
+   "progression_presentation": "Groups: Tutorials, Campaign (S'kellak's Forge, Trophy Collection, Void's Invasion, Hasturian Era), Exploration, Combat & Gear, Magic, Tech, 'Quest To Eternal Knowledge'. Boss quests are size-1.5 pentagons with custom boss-face icons. Image reveals around completed quests make the map fill in with scenery tiles.",
+   "teaching": "Boss cards: '&eRecommended Level: 15', '&cBetter suitable for Ranged', italic lore, '&eTip:'. Subtitle '&8[Click to read lore and indications]'. Multi-task bosses (collect 4 Soul Stars to locate the tower, then kill). English and Spanish on separate pages.",
+   "rewards": "xp 1,087, item 697, xp_levels 309, custom 46, advancement 15 (grants the mod's own boss advancement, auto=invisible). Boss quests give Cinderstone Trophies (a currency) plus prominent:loot_box items. The Trophy Collection chapter spends trophies on utility items and ranks them by how strongly it recommends them.",
+   "multiplayer": "default_reward_team false. Nothing co-op-specific.",
+   "standout_examples": [
+    {
+     "where": "chapters/main_story.snbt (quest 1B76F8D3B54F3FE6)",
+     "what": "Boss quest card",
+     "excerpt": "\"&cGauntlet, First Herald of the Nether\" subtitle \"&8[Click to read lore and indications]\" | \"&eRecommended Level: 15 ... &7&oThou may find the Gauntlet locked within a monolithic prison... &eTip: &7This boss has strong hits and may one shot you if playing on Normal or Hard difficulty!\" | R: xp_levels 5, cinderstone_trophy, loot_box x2, advancement",
+     "why_it_works": "A readiness check, location, tactic and payoff in one card."
+    },
+    {
+     "where": "chapters/main_story.snbt (quest 49C9DC2F3D131A14)",
+     "what": "Two-step boss quest: locate, then kill",
+     "excerpt": "T: bosses_of_mass_destruction:soul_star x4 \"&dObtain at least 4 Soul Stars and use them to find the Night Lich's Tower, then use them on the Pedestals\" | T: kill bosses_of_mass_destruction:lich \"&9Defeat The Night Lich\"; \"&cBetter suitable for Ranged\"",
+     "why_it_works": "The task list is itself the walkthrough."
+    },
+    {
+     "where": "chapters/4trophy_collection.snbt",
+     "what": "Currency sink with honest advice",
+     "excerpt": "\"&7These Trophies can be obtained from completing Quests in the storyline...\" | explorerscompass: \"&7This is the Best item to make with Trophies ... Massively Recommended as soon as you can craft it. It will save you hours of searching.\"",
+     "why_it_works": "Boss rewards turn into a choice of upgrades, with guidance on which to pick."
+    },
+    {
+     "where": "chapters/elhasturian_era.snbt (145 images)",
+     "what": "Scenery that fills in as quests complete",
+     "excerpt": "IMG prominent:block/volcanic_cinderstone x6 around quest 3B4199AF98C58326, each with dependency 3B4199AF98C58326; IMG decorative_blocks:block/bonfire dependency 7BFDABFDF6FB2206",
+     "why_it_works": "The map visibly changes as the player progresses."
+    }
+   ],
+   "weaknesses": [
+    "62% of quests have no description.",
+    "Over 1,000 small XP rewards."
+   ]
+  },
+  {
+   "name": "DawnCraft: Echoes of Legends (RPG)",
+   "source": "CurseForge file 7243862 'DawnCraft - 2.0.16_hf.zip' (https://mediafilez.forgecdn.net/files/7243/862/...), read with HTTP range requests: overrides/config/ftbquests/** and manifest.json.",
+   "version_info": "MC 1.18.2 Forge 40.2.17, FTB Quests 1802.3.15. The 'Unique Questing System' in the CurseForge summary is a separate NPC quest-giver datapack, not FTB Quests.",
+   "scale": "13 chapters in 3 groups, 360 quests. 53% have no description.",
+   "progression_presentation": "Groups: 'Main Information' (Getting Started, Storage, Magic, Witchcraft, Exploration, Enchanting, Reforging and Socketing), 'Rewards & Bounties' (Notorious Creatures in this Realm..., Rewards, A Little... Help) and 'Miscellaneous & Technical issues' (Lost and Found, Useful Info). Progression mode is linear. The main story runs through NPCs instead of the book.",
+   "teaching": "Info checkmarks. 57 kill tasks for bosses.",
+   "rewards": "Boss kills pay 1-3 'netherite coins' (libraryferret) plus a 'Patron Exclusive Pet'. The Rewards chapter sells 'Sapphire Grade' for 5 coins and 'Ruby Grade' for 15 coins: repeatable, consumes the coins, gives a choice from a table.",
+   "multiplayer": "Has a 'Useful commands for servers' chapter. default_reward_team false.",
+   "standout_examples": [
+    {
+     "where": "chapters/a_little_help.snbt + chapters/test.snbt (hidden quest 39AE937D10D1E511)",
+     "what": "Pity kit that unlocks after repeated deaths",
+     "excerpt": "hidden \"keep dying\": advancement custom:death -> tellraw \"If you need a little help, click on the Quests tab...\" | visible size-6 quest: \"It seems you have been dying quite a bit. Avoid unnecessary battles at all cost until you've gathered enough resources! ... take these supplies and try again if you need it!\"",
+     "why_it_works": "Struggling players get a kit and a nudge without making the game easier for everyone."
+    },
+    {
+     "where": "chapters/monster_coins.snbt",
+     "what": "Coin to crate-grade exchange",
+     "excerpt": "\"Sapphire Grade\": item libraryferret:netherite_coins_jtl x5 consume_items=True, can_repeat=True -> choice 'Sapphire Grade' | \"Ruby Grade\": x15 -> choice 'Ruby Grade'",
+     "why_it_works": "Boss kills feed a simple two-tier store."
+    },
+    {
+     "where": "chapters/lost__found_quest_map_replacements.snbt",
+     "what": "Repeatable anti-softlock replacements",
+     "excerpt": "\"Replace Lost Map\" can_repeat; T: gamestage guildmaster2; R: command \"/loot give @p loot minecraft:guildmaster0\" title \"Get Map\"; R: command \"/dc addWaypoint @p goblinsanddungeons:ruined_keep ...\" title \"Waypoint\"",
+     "why_it_works": "Lost key items never block the story."
+    },
+    {
+     "where": "chapters/bossesminibosses_in_this_realm.snbt",
+     "what": "Boss roster as a bounty wall",
+     "excerpt": "chapter subtitle \"Defeat these creatures to prove your worth...\"; \"Fire Giant\": kill simple_mobs:fire_giant 1 -> netherite_coins_jtl + item titled \"Patron Exclusive Pet\"",
+     "why_it_works": "Every boss in the world is listed in one place to hunt."
+    }
+   ],
+   "weaknesses": [
+    "Payouts barely track difficulty: most bosses pay 1 coin, a few 2-3.",
+    "Patron pets are mixed into the rewards.",
+    "Half the quests have no text."
+   ]
+  },
+  {
+   "name": "Player and community commentary (not a pack)",
+   "source": "FTB forum thread 'Survey - Future Quest Based Modpacks' (Feb 2018), pages 1-2 (https://forum.feed-the-beast.com/threads/survey-future-quest-based-modpacks.270903/), read through a summarizing fetch, so quotes may be lightly paraphrased. ATM-10 issue #3293 and discussion #3539 (exact text, via gh). GTNH Readme (exact). Issue trackers searched with gh. Reddit (r/feedthebeast, r/ModdedMinecraft) is blocked for my web tools, so Reddit opinion is NOT covered.",
+   "version_info": "n/a",
+   "scale": "n/a",
+   "progression_presentation": "Players ask for a guided start that branches into free choice. Drbretto: 'A beginner quest chain to get started, opens up 3-5 chains that the player can choose between freely while you gear up for the next tier'. Nedrith: 'A core central line of required quests along with optional quests along the way that suggest improvements'. Drbretto: 'I would so much rather end a world with still more to do than having a blast until there's nothing left.'",
+   "teaching": "mathwiz617: 'Give instructions early, an ultimate objective, then let me connect dots'. Piripács wants packs to say when mods lack tutorials. GTNH's rules restrict crafting quests to the early game and secret quests to surprises.",
+   "rewards": "ATM-10 #3293: rewards should fit the stage ('Ultimate Universal Cable being given even though i barely crafted a dozen of basic ones'). The pack member's reply: 'people seem to like these sort of rewards'. Forum: grinding should be about 'building/purchasing/upgrading things ... that allow you to progress faster' (GamerwithnoGame).",
+   "multiplayer": "ATM-10 #3293: 'We are on a small server of 3 people ... Progression is shared and duplicates can be op'. Forum (Nuclear_Creeper0): server quests shouldn't demand huge resource counts because machines run while players are offline.",
+   "standout_examples": [
+    {
+     "where": "https://github.com/AllTheMods/ATM-10/issues/3293",
+     "what": "Multiplayer reward duplication complaint",
+     "excerpt": "\"We are on a small server of 3 people and the rewards doesn't make any sense. ... - Progression is shared and duplicates can be op - Dragon Egg / Ender Chests rewards even though we would not be even close to legitimeltaly get one\"",
+     "why_it_works": "Direct evidence that per-player claims on shared progress triple the rewards for a 3-person party."
+    },
+    {
+     "where": "FTB forum survey thread, page 2",
+     "what": "Anti-grind sentiment",
+     "excerpt": "Piripács: \"Making 100 billion of the same item just to progress is wrong...complexity isn't grinding\"",
+     "why_it_works": "Big counts read as padding."
+    },
+    {
+     "where": "Issue trackers (gh search)",
+     "what": "Inaccurate text is the most common quest bug class",
+     "excerpt": "ATM-10 #3544 'Quest book tells you incorrect info.'; Monifactory #2667 'Quest book factually incorrect about cables'; Enigmatica9 #427 'In-Game Quest Book detailing mod that does not exist'; FTB-Modpack-Issues #12853 'Create new age coil output is way lower than indicated on the quest book'",
+     "why_it_works": "Players trust the book. Stale numbers cost more trust than missing text."
+    },
+    {
+     "where": "https://github.com/FTBTeam/FTB-Modpack-Issues/issues/13396",
+     "what": "Players notice missing completion feedback",
+     "excerpt": "'[Bug] Chapter completion toast does not appear even though all quests are completed'",
+     "why_it_works": "Completion feedback is part of the experience."
+    }
+   ],
+   "weaknesses": [
+    "Commentary is thin and partly old (2018). Reddit could not be read."
+   ]
+  }
+ ],
+ "patterns": [
+  {
+   "name": "Spine plus field manuals",
+   "description": "One short main line holds the progression arc. Topic and system chapters sit beside it as optional guides. Spine quests link into the guide chapters, so the spine stays short.",
+   "evidence": [
+    "ATM10: 'Main Questline' group (Chapter 1-4) plus 9 mod-guide groups; Welcome: 'quests are optional... Main Questline'",
+    "SB4: 'Echoes of History' (Tier 1-6) vs 'Forgotten Knowledge' / 'Forgotten Technology'",
+    "Architect's Exodus: 'The Familiar Road' vs 'Völundr's Legacy' (themed guide names)",
+    "Prominence II: 'Tutorials' vs 'Campaign' groups",
+    "CAB: 'Factory Guide' vs 'Remote Trading'",
+    "GTNH: tier tabs first, topic tabs after"
+   ],
+   "ftbq_mechanism": "chapter_groups.snbt plus chapter `group` and `order_index`. Spine quests get a JSON link line ({\"text\":..., \"clickEvent\":{\"action\":\"change_page\",\"value\":\"<chapterOrQuestHex>\"}}). Chapter `quest_links` can surface a guide quest on the spine map. All verified in 2001.4.22.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The TD Campaign already has a spine plus tier branches. Moving T1-T4 traps, power, turrets and the Arsenal into themed 'field manual' chapters, linked from the spine, keeps the Campaign readable without new mods."
+  },
+  {
+   "name": "Progress-map chapter with auto-completing milestones",
+   "description": "A dedicated overview shows the whole road on one screen. Its milestone nodes complete themselves when the real chapter ends, so a player can always see 'you are here'.",
+   "evidence": [
+    "CAB Overview: 'From a Tree Puncher...' -> milestones (stat play_one_minute 1, titled 'Complete Chapter 1', subtitle 'Milestone' or 'Utility') -> '..to a Spacefarer'",
+    "Architect's Exodus 'A Path Once Walked': Reach Helheim -> Slay Hel -> ... -> Reach Asgard, plus info diamonds listing each realm's unlocks",
+    "GTNH tab names 'Tier 0 - Stone Age' ... 'Tier 12 - UMV'",
+    "DJ2 numbered lines '1.' to '30.'",
+    "SevTech Age roots gated on the previous Age"
+   ],
+   "ftbq_mechanism": "Milestone quests whose only task is trivially true (stat minecraft:play_time value 1, or a checkmark), depending on the chapter-end quests (dependency_requirement all_completed; flexible mode completes them on the next check). Subtitles carry labels. Use hide_until_deps_complete or `invisible` to keep future nodes secret.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "A 'Siege Log' map of wave 1-8, the switch to Hordes, boss waves and world-border growth answers 'how far along am I'. Per the pack's keep-surprises rule, future nodes must stay hidden until reached (hide_until_deps_complete or invisible)."
+  },
+  {
+   "name": "Path lights up: image reveals",
+   "description": "Chapter art appears only when a given quest is complete. The map itself becomes a progress meter: lamps turn on, frames turn 'available', scenery fills in.",
+   "evidence": [
+    "Architect's Exodus Asgard: red_crystal_lamp_on, warp_portal and available_frame images at the next node, each with `dependency`",
+    "Prominence II: 518 images use `dependency` (Hasturian Era scenery tiles around completed quests)",
+    "SB4: 65 such images; ATM10: 29 (e.g. 'bumble_title_progression.png')"
+   ],
+   "ftbq_mechanism": "chapter `images[]` entries with `dependency: \"<questHex>\"` (2001.4.22 ChapterImage.shouldShowImage: hidden until the team completes the quest), plus `order`, `alpha`, `rotation`, `corner`, `hover`. `click: \"#<hexId>\"` jumps to an object.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Zero runtime cost, purely client-side. Example: a desert map whose border rings, walls or ruins appear as border-growth milestones are cleared, or pedestal art that gains parts as each XP upgrade is bought."
+  },
+  {
+   "name": "Converging capstone hub",
+   "description": "The final goal is a big central node fed by distinct component quests. Feeder lines are hidden to avoid spaghetti.",
+   "evidence": [
+    "ATM10 ATM Star: pentagon size 5, 13 dependencies, 12 octagon size-2.5 components; subtitle 'Does this mean you win?'",
+    "ATM10 Tips 'Tipped Out' capstone (19 dependencies)",
+    "E6 Bragging Rights: mastery tokens -> trophies; 'Complete this quest and you complete the modpack!'",
+    "CAB '..to a Spacefarer'"
+   ],
+   "ftbq_mechanism": "`size` 2-5, a distinctive `shape`, `icon_scale`, many `dependencies`, and `hide_dependent_lines` on feeder quests.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD has natural pillars to converge on a 'last stand' capstone: max pedestal upgrades, a T4 turret online, a boss wave survived, and endless Hordes reached."
+  },
+  {
+   "name": "Fixed milestone visual grammar",
+   "description": "Shape and size mean something consistent: bigger and rarer shapes for gates, bosses and tier ends. Subtitles label the node type.",
+   "evidence": [
+    "ATM10 bounty final tier: pentagon size 1.5",
+    "Prominence II bosses: pentagon size 1.5 with custom boss-face icons",
+    "SB4: gear size 1.5 'Major World Engine Upgrade' vs 'Minor World Engine Upgrade'; gear size 1.25 'Meet' quests",
+    "CAB: hexagon size 2 for 'Chapter N Start!' and 'Complete!'",
+    "Skies 2: optional quests mostly diamond (258 of 790)"
+   ],
+   "ftbq_mechanism": "quest `shape` (including the 2001.4.13 'none' shape), `size`, `icon_scale`, chapter `default_quest_shape` and `default_quest_size`, `subtitle`, and `hide_lock_icon` (2001.4.13+).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "One vocabulary across the book, for example: circle = step, hexagon = defence unlock, pentagon = boss wave, gear = pedestal upgrade, diamond = info or optional, large = tier gate. Cheap, and makes the map legible."
+  },
+  {
+   "name": "Joke title, job subtitle",
+   "description": "The title carries personality; the subtitle states the literal action. FTB Quests shows the subtitle in the hover tooltip, so the map is skimmable.",
+   "evidence": [
+    "FTB Academy: 'Timberrrr' / 'Punch a tree'; 'Press [M]' / 'Claim a chunk with FTB Chunks'",
+    "FTB University: 'Hoppern't' / 'Make a Chute'",
+    "ATM10 tips: 'Personal Shrinking Device' / 'Honey I Shrunk Myself'",
+    "CAB: 'Automatic Forest' / 'Contraption 1'"
+   ],
+   "ftbq_mechanism": "quest `title` + `subtitle`. In 2001.4.22, QuestButton.addMouseOverText appends the subtitle under the title, and started quests show a progress %.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Answers the user's ask for 'more of a guide experience rather than a tick box exercise'. TD already uses subtitles on 35 quests."
+  },
+  {
+   "name": "Lore line, then task line",
+   "description": "In-world voice comes first, visibly separated from a plain instruction line. Deeper mechanics go on a second page.",
+   "evidence": [
+    "E9 Expert: druid lore + '=================================' + 'Metal processing has been heavily customized... examine EMI'",
+    "Architect's Exodus: italic first-person narration + '&e&nTask&r: Craft a &6Philosopher's Stone' + {@pagebreak} 'How to use ... ->'",
+    "Prominence II: '&eRecommended Level' + italic lore + '&eTip:'",
+    "SB4: '&eNote&r:' gotcha lines"
+   ],
+   "ftbq_mechanism": "Description lines: &o/&7 for voice, &e plus underline for the task line, {@pagebreak} (Quest.PAGEBREAK_CODE in 2001.4.22), {image:...} components.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "A Fallout-style radio, holotape or survivor-note voice suits the setting, while the task line keeps traps and turrets teachable for skimmers."
+  },
+  {
+   "name": "Teach the book's legend in the book",
+   "description": "An early quest explains the colour code, pages and clickable text. Every later quest is then faster to read.",
+   "evidence": [
+    "FTB University 'Reading Rainbow': blue = task, gold = important, yellow = mod names, purple = clickable; completes when the player clicks on page 2",
+    "Monifactory consistent codes (&6 items, &3 machines, &e advice, &2 notes, &9 UI)",
+    "GTNH [warn]/[note]/[url] tags with theme-aware colours"
+   ],
+   "ftbq_mechanism": "Info quest with a checkmark, or a custom task completed by a run_command click (FTBQuestsEvents.customTask via FTB XMod Compat 1.20.1). Consistent &-codes. Vanilla JSON keybind components show the player's real keys.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Cheap and helpful, but it adds an onboarding step. Best placed in Tips, with the colour code applied consistently even if the quest is skipped."
+  },
+  {
+   "name": "Do the thing, don't tick the box",
+   "description": "Tasks verify real actions: look at a placed block, stand somewhere, find a structure, kill something, or a script event fires. Checkmarks are kept for pure info.",
+   "evidence": [
+    "SB4: location '&eLocate&f: &dQuartermaster'; gamestage 'Speak to the &dEcho of Guidance'; boss bounty = kill + structure tasks",
+    "E9 Expert: observation 'Mixing Cauldron'",
+    "FTB Academy: custom 'Claim a chunk!'",
+    "OB2: dimension 'Visit The &cLava Dimension&r'",
+    "Prominence II: collect 4 Soul Stars, then kill the Lich",
+    "GTNH rule: crafting quests only at the start"
+   ],
+   "ftbq_mechanism": "observation (observe_type, to_observe, timer), location, structure, biome, dimension, stat, advancement, kill, custom, gamestage (KubeJSStageProvider in FTB XMod Compat 1.20.1), require_sequential_tasks (2001.2.0+) and optional_task (present in 2001.4.22). Note: KillTask in 2001.4.22 matches an exact entity id only (no tag, NBT or name).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Fits trap teaching directly: an observation task on a placed trap, Sentry or Tesla Coil; a structure task for ruins; custom tasks for 'trap killed N wave mobs' and 'survive wave N'. Matches the user's ask that bounties complete on the event, not by checkmark. Wave mobs must stay on custom tasks because kill tasks can't filter td_wave_mob."
+  },
+  {
+   "name": "Visit a working example",
+   "description": "Show a working setup instead of describing it. The quest teleports or points the player to a demo and completes on arrival, or embeds a diagram.",
+   "evidence": [
+    "FTB University Schools: clickable '/school enter ftbuniversity:ae2/planes' + custom task 'Visit the Plane School' (schools.js)",
+    "CAB: each chapter is drawn as the production flowgraph",
+    "ATM10: 661 inline screenshots"
+   ],
+   "ftbq_mechanism": "{image:ns:path width:N height:N align:center} in descriptions. JSON clickEvent run_command (vanilla handling, needs a player-permitted command). Custom task completed by KubeJS. Alternatively a Detector block: a redstone pulse completes a quest for players within radius, default 8 (2001.4.22 DetectorBlockEntity).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "A trap 'proving ground' beside the base would be the strongest teacher for T2 SecurityCraft traps. But it is a structure build and maintenance cost on a pre-built base, so screenshots via {image:} are the lightweight version."
+  },
+  {
+   "name": "Kill ladder with rising rarity",
+   "description": "Short kill-count rungs, each paying a higher reward tier. Later rungs are hidden until reached and the last rung looks special.",
+   "evidence": [
+    "ATM10 Bounty Board: zombie 5/10/50/100 -> xp, then 'Reward: Common', 'Uncommon', 'Rare'; final rung pentagon 1.5; hide_until_deps_visible on later rungs",
+    "Skies 2 Wild Hunt: kill N -> coins + 'Loot Crate Of Choice' + personal xp_levels"
+   ],
+   "ftbq_mechanism": "Chained quests with kill tasks (exact entity id) or custom tasks (KubeJS counts), random/loot/choice rewards from tiered reward_tables, hide_until_deps_visible or hide_until_deps_complete, and a bigger shape on the final rung.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD bounties already exist as custom tasks. Paying rungs in the pack's own loot-bag tiers matches the user's request: 'a loot bag is a fun reward... later quests in the chapter can be a higher tier loot bag'."
+  },
+  {
+   "name": "Repeatable bounties for the endless phase",
+   "description": "Contracts that refresh, so the book stays relevant after the authored content ends.",
+   "evidence": [
+    "SB4: 45 bounty quests with can_repeat + repeat_cooldown 82800 (23 h) + currency autoclaim",
+    "GTNH 'Time to Kill (Creeper)': repeatTime 432000 ticks",
+    "DawnCraft grade crates (can_repeat, consume_items)",
+    "Monifactory time-limited global Bounty Board",
+    "Monifactory dependency_chain: command '/ftbquests change_progress @p reset <id>'"
+   ],
+   "ftbq_mechanism": "can_repeat (or chapter `default_repeatable_quest`) + `repeat_cooldown` in seconds (2001.4.18+; starts when the first team member claims). Payout via autoclaim 'enabled'. For per-wave rather than wall-clock refresh, reset the quest from KubeJS with /ftbquests change_progress.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Endless Hordes needs recurring goals (e.g. 'Night Shift: hold a wave with no pedestal damage'). The cooldown is real-time, so tying refresh to waves needs the reset-by-command approach, which should run only on wave events, not per tick."
+  },
+  {
+   "name": "Boss quest card",
+   "description": "Each boss gets a dossier: readiness hint, where or when, a tactic, and a distinct reward. Big shape and custom icon.",
+   "evidence": [
+    "Prominence II Gauntlet: '&eRecommended Level: 15', '&cBetter suitable for Ranged', '&eTip: ... may one shot you'; reward trophy + loot boxes + advancement",
+    "SB4 'Kill The Leviathan': location text + activation item + structure tasks",
+    "E9 Expert Naga: 'Keep some distance and aim for the head'",
+    "DawnCraft 'Notorious Creatures in this Realm...'"
+   ],
+   "ftbq_mechanism": "Pentagon/large `shape`, custom_icon (tag {Icon:\"ns:path\"} in 1.20.1), description lines, kill or custom task, higher-tier reward table plus a trophy-style item, `hide_until_deps_complete`.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Boss every 10th wave: 'Recommended defences: T2 traps + Sentry; Tip: ...' is ideal teaching at a tension point. To keep surprises, reveal the card after the first boss wave starts or ends rather than pre-announcing it."
+  },
+  {
+   "name": "Tiered, named reward tables and crates",
+   "description": "A small, reusable rarity ladder with colour-coded titles, tier-signalling icons and glowing crates, used consistently across the book.",
+   "evidence": [
+    "ATM10 'Reward: Common' ... 'Reward: Mythic'",
+    "OB2: '&bCommon Loot Crate&r' (lootcrate icon), '&dRare...' (obsidian chest icon), '&6Legendary...' (crystal chest icon)",
+    "SB4: 'Lesser / Greater / Supreme Combat Relic' crates with colour + glow",
+    "DawnCraft 'Sapphire / Ruby Grade'",
+    "Architect's Exodus 'S / A / B / C Tier Weapons' choice tables"
+   ],
+   "ftbq_mechanism": "reward_tables/*.snbt: title, icon, use_title, hide_tooltip, loot_size, weights, empty_weight; loot_crate {string_id, item_name, color, glow, drops 0/0/0}. Reward types `random` (direct), `loot` (roll + RewardNotificationsScreen), `choice`, `all_table` (2001.4.10+). Physical crate = item reward ftbquests:lootcrate with tag {type:\"<string_id>\"}. Without a crate, the table icon cycles through its contents and the tooltip lists drop chances.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD already has tiered loot bags (basic to legendary, 2% jackpot, loot beams). The cleanest version gives the bag items themselves as item rewards, consistent with the balanced bags, and uses tables only for choice moments. Per the 'loot shortcuts' rule, tables must not contain home-machine outputs."
+  },
+  {
+   "name": "Command rewards dressed as real rewards",
+   "description": "Non-item payouts (loot-table rolls, skill points, waypoints) get a custom reward title and icon, so the slot reads like a prize, not a command.",
+   "evidence": [
+    "E9 Expert: '/execute at @p run loot spawn ~ ~1 ~ loot enigmatica:loot_boxes/miners_delight' title 'Miner's Delight' icon kubejs:miners_delight",
+    "Architect's Exodus: '/puffish_skills points add @p puffish_skills:hel 1' titled '&b+1 &6Helheim&f Skill Points' with a spell icon",
+    "DawnCraft: '/loot give @p loot minecraft:guildmaster0' title 'Get Map'; '/dc addWaypoint ...' title 'Waypoint'"
+   ],
+   "ftbq_mechanism": "command reward (`command`, `elevate_perms`, `silent`) plus reward `title` and `icon`. Substitutions {p} {x} {y} {z} {chapter} {quest} {team} {team_id} {long_team_id} {member_count} {online_member_count} (2001.4.22 CommandReward.claim). Without a title, 2001.4.22 shows 'Command: <raw command>' in red with a command-block icon. Titles and icons also work on xp_levels rewards.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Lets the 76 XP-level rewards read as pack currency (e.g. '+5 Pedestal Power' with a pedestal icon) and lets quests roll the existing LootJS bag tables. Use /loot give rather than /loot spawn, so loot can't drop on the ground mid-wave."
+  },
+  {
+   "name": "Pack currency with a quest shop",
+   "description": "Quests pay a currency, and a store chapter turns it into choices. Stock widens as the main line advances.",
+   "evidence": [
+    "Skies 2 FTB Shop chapter: consume_items true + default_repeatable_quest true; 'Coins In, Rarities Out'; entries depend on main-line quests; popup 'New items available in the Shop!'",
+    "CAB Market: price in subtitle ('10 Silver', '2 Gold'); Bulletin Board permits",
+    "Monifactory Monicoins to buy unfindable ores",
+    "Prominence II Trophy Collection",
+    "DawnCraft coin to Sapphire/Ruby Grade"
+   ],
+   "ftbq_mechanism": "Coin items as rewards. A shop chapter with chapter-level `consume_items: true` and `default_repeatable_quest: true` (both present in 2001.4.22 Chapter.java). Item task for the price, item, choice or loot reward, price in `subtitle`. Optional `repeat_cooldown`.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Useful as a catch-up sink for unlucky loot. But TD already uses XP levels as currency for pedestal upgrades, and a second economy adds a system against the keep-it-lightweight preference. Selling defence parts could also undercut the stay-vs-explore choice."
+  },
+  {
+   "name": "Choice rewards at decision moments",
+   "description": "Let each player pick a reward that matches their role.",
+   "evidence": [
+    "FTB University first quest: choice of 3 Prefab houses ('Base%% Speedrun')",
+    "Architect's Exodus: C/B/A/S Tier Weapons choice tables",
+    "Skies 2: shop entries ending in 'Choose one of the following:'",
+    "GTNH 'Monster Trap': torch or cooked beef"
+   ],
+   "ftbq_mechanism": "`choice` reward pointing at a reward table, with the options listed in the description. Claims are per player unless team_reward is set.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "In a 2-3 player party, per-player choices (e.g. a mine bundle vs electrified-fence spool vs I.M.S. charges after T2 unlocks) let friends specialise and make the reward a decision."
+  },
+  {
+   "name": "Exclusive branch",
+   "description": "A fork where completing one dependent locks the others.",
+   "evidence": [
+    "Architect's Exodus: 'Will I choose magic, or technology?' with max_completable_dependents: 1; two checkmarks each grant a realm gamestage",
+    "Skies 2: used once in the backstage chapter"
+   ],
+   "ftbq_mechanism": "quest `max_completable_dependents` (2001.4.13+) and file setting `hide_excluded_quests` (2001.4.17+).",
+   "fit_for_td_pack": "low",
+   "fit_reason": "Exclusion is stored on team progress, so one friend's click locks the path for the whole party. TD's real dilemma, the amulet worn vs placed on the pedestal, is a reversible world mechanic; mirroring it with a permanent exclusive branch would misrepresent it."
+  },
+  {
+   "name": "Invisible plumbing chapter for event feedback",
+   "description": "An always-invisible chapter converts script or world events into toasts, sounds, stage unlocks and OR-gates, keeping the visible book clean.",
+   "evidence": [
+    "SB4 Backstage: gamestage task -> toast + bell playsound + stage",
+    "FTB Academy Background: 'Any Generator' OR-gate (min_required_dependencies 1 + trivial stat task)",
+    "E6 and E9 Hidden_Quests: item or advancement -> stage",
+    "Monifactory dependency_chain: mode toggles via stage + change_progress reset",
+    "DawnCraft hidden 'keep dying' -> tellraw nudge"
+   ],
+   "ftbq_mechanism": "chapter `always_invisible: true` (its rewards autoclaim even if set to default). Stage tasks fed by KubeJS stages through FTB XMod Compat. Toast reward (title, description, icon). Command rewards. `auto: \"invisible\"` or `\"no_toast\"`.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's scripts already know about waves, airdrops, border growth and GAME OVER. Setting a stage on those events lets hidden quests unlock visible milestone nodes and fire toasts. Two caveats: an invisible quest also hides its dependents unless hide flags are set (a known TD pitfall), and the event handlers need to be throttled."
+  },
+  {
+   "name": "Completion feedback and celebration",
+   "description": "Every completion is heard, and milestones get a spectacle.",
+   "evidence": [
+    "2001.4.22: chapter completion plays UI_TOAST_CHALLENGE_COMPLETE (ToastQuestObject); quest toasts are silent",
+    "FTB University sound.js: a custom sound on every quest completion, spam-guarded",
+    "SevTech stage trigger: gamestage add + fireworks rocket + 'mpa notify'",
+    "Skies 2 and SB4: bell playsound on unlocks; GTNH 'Goals' rewards fireworks"
+   ],
+   "ftbq_mechanism": "Command rewards (playsound, title/actionbar, summon firework_rocket), toast reward, FTBQuestsEvents.completed in KubeJS, chapter-completion toast.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Cheap and very visible. It should be coordinated with TD's existing wave alerts so the two don't stack, and stay event-driven rather than polled."
+  },
+  {
+   "name": "Lore collectibles journal",
+   "description": "A separate story chapter of log or holotape entries, each unlocked by a main-line milestone, each paying a keepsake item. It never blocks progress.",
+   "evidence": [
+    "OB2 'The Abyssal Archives': 'Log Entry 001' subtitle 'The Crash' ... reward ftb:abyssal_archives_log1",
+    "Architect's Exodus story scrolls (/ftb_scroll) and arrival narration",
+    "DJ2 '30. Mysteries' cipher chapter"
+   ],
+   "ftbq_mechanism": "Checkmark quests depending on milestone quests with hide_until_deps_complete. Item reward (for example a written_book or renamed paper via `tag`). {@pagebreak} for longer entries.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Holotapes and radio logs fit a Fallout-style desert at zero runtime cost. Unlocking each entry after its beat respects the rule against pre-announcing surprises (e.g. wave 5)."
+  },
+  {
+   "name": "Pity and comeback lifeline",
+   "description": "Struggling or stuck players get a nudge, a kit, or a replacement key item.",
+   "evidence": [
+    "DawnCraft 'A Little... Help': hidden 'keep dying' advancement -> supply kit",
+    "DawnCraft Lost and Found: repeatable map replacements",
+    "Skies 2 data.snbt emergency_items (grass block, sapling, ice) with cooldown",
+    "FTB University: 25-minute idle nudge (reading_rainbow.js)"
+   ],
+   "ftbq_mechanism": "Advancement or stat (deaths) task in a hidden quest, which unlocks a visible kit quest. `emergency_items` plus `emergency_items_cooldown` in data.snbt (screen improved in 2001.4.22). can_repeat replacements.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Helps new players who lose early waves. It must not soften hardcore mode or the GAME OVER loop; a one-time 'scrounged supplies' kit after N deaths is the safe form."
+  },
+  {
+   "name": "Shared loot, personal progression",
+   "description": "Physical rewards are claimed once per team; XP, skill points and currency go to each player.",
+   "evidence": [
+    "Skies 2: default_reward_team true, but xp_levels team_reward false (54 of 57)",
+    "Architect's Exodus: default true, 369 rewards explicitly false (skill points, stages, choices)",
+    "CAB: default_reward_team true + default_consume_items true",
+    "Skies 2 Aero: currency per-player, 237 items team",
+    "ATM10: everything per-player, which led to the #3293 duplication complaint"
+   ],
+   "ftbq_mechanism": "data.snbt `default_reward_team` plus per-reward `team_reward`. In 2001.4.22 a team reward is one claim for the whole team; autoclaim team rewards go only to the submitting player; non-team autoclaim goes to every online member and is re-checked at login.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "A 2-3 friend party in one FTB Teams party gets triple loot today (TD default_reward_team is false). Deciding per reward fixes it without any player-count scaling, which TD rejects: materials and trap kits once per team, XP and personal gear per player."
+  },
+  {
+   "name": "Team onboarding quest",
+   "description": "An early info quest explains party setup and its pitfalls.",
+   "evidence": [
+    "SB4 and Architect's Exodus Welcome: 'Creating and Joining a team' (/ftbteams party leave, then the leader invites)",
+    "SB4 first quest: '...complete this quest first and reach your home base before inviting others to your team.'",
+    "ATM10: '/ftbteams party create'",
+    "DJ2: 'Multiplayer?'"
+   ],
+   "ftbq_mechanism": "Checkmark info quest in Welcome. Note: in 2001.4.22, joining a party merges the joiner's progress into the party, and leaving restores the old progress while keeping claimed rewards claimed (ServerQuestFile.playerChangedTeam).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD previously hit FTB Teams invite trouble (chat-privacy settings). The quest can carry the exact steps and the merge caveat."
+  },
+  {
+   "name": "Pack-identity theme",
+   "description": "A resource-pack theme file gives the book its own look: backgrounds per chapter, custom quest frames, textured dependency lines, recoloured state colours.",
+   "evidence": [
+    "Architect's Exodus ftb_quests_theme.txt: [chapterHex] backgrounds, dependency_line_texture runes, quest_completed_color #D4AF37, 7 custom 'fancy*' shapes via extra_quest_shapes",
+    "ATM10, SB4, Skies 2: title-banner PNGs as chapter images; Skies 2 shop 'shelves' drawn with candle images"
+   ],
+   "ftbq_mechanism": "kubejs/assets/ftbquests/ftb_quests_theme.txt with [*], [<chapterHex>], type and #tag selectors (quest `tags`). Properties include background, quest_*_color, dependency_line_* (texture, colours, speed, thickness) and extra_quest_shapes (still required in 2001.4.22), plus textures/shapes/<name>/{background,outline,shape}.png.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "A rust, sand and amber-terminal skin with 'barbed wire' dependency lines, and a #boss tag that turns boss quests red. Client assets only, no performance cost."
+  },
+  {
+   "name": "Cross-links and quest links",
+   "description": "Related quests are connected across chapters so the player doesn't hunt.",
+   "evidence": [
+    "ATM10: 'INDUSTRIAL FOREGOING QUESTLINE' change_page link",
+    "Skies 2: Ars Nouveau link and 54 quest links",
+    "Monifactory: 141 quest links",
+    "FTB University: 48 quest links"
+   ],
+   "ftbq_mechanism": "JSON clickEvent change_page with a hex id (handled in 2001.4.22 ViewQuestPanel). Chapter `quest_links` (linked_quest). Image `click` set to \"#<hex>\".",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Link Campaign beats to the defence guides, each gun to its ammo, and each turret to its power source."
+  },
+  {
+   "name": "Satellite micro-nodes for variants",
+   "description": "Minor variants hang off a main node as small optional quests with one sentence each.",
+   "evidence": [
+    "FTB University: 240 size-0.5 quests ('&bFunnels&r allow you &6push into and pull from inventories&r.')",
+    "FTB Academy: 56 size-0.5 nodes"
+   ],
+   "ftbq_mechanism": "`size: 0.5`, `optional: true`, `hide_dependency_lines`, `subtitle` 'Make an X'.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Fits ammo types, trap variants and gun attachments in the Arsenal without bloating the main tree."
+  },
+  {
+   "name": "Accuracy and spoiler hygiene",
+   "description": "The biggest player complaints about quest books are stale numbers and spoilers, plus walls of text or empty quests.",
+   "evidence": [
+    "ATM-10 #3544, Monifactory #2667 and #2410, Enigmatica9 #427, FTB-Modpack-Issues #12853 (quest text wrong)",
+    "GTNH guideline: 'Not every quest ticket on github is actually correct. Check things yourself'",
+    "DJ2: 7,647-char description",
+    "Empty descriptions: DawnCraft 53%, Prominence II 62%, CAB 44%"
+   ],
+   "ftbq_mechanism": "Process, not a feature: keep exact numbers out of text where scripts change them, add {@pagebreak} instead of long blocks, and reveal spoilery cards only after the beat (hide_until_deps_complete or invisible).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD tunes waves and loot often. A short writing guide in the GTNH style keeps the book trustworthy and matches the user's prior complaints about spoilers in quest text."
+  }
+ ],
+ "multiplayer_notes": [
+  "Progress is per FTB Teams team in 2001.4.22. KillTask.kill(TeamData, ...) and item submissions advance the shared team task, so a friend's kills count toward the party bounty. Turret kills are not player kills and need TD's existing KubeJS custom tasks.",
+  "Rewards are claimed per player unless `team_reward` is true; the default comes from data.snbt `default_reward_team`, which is false in TD today. A team reward is one claim for the whole team.",
+  "Autoclaim in 2001.4.22 (TeamData.checkAutoCompletion): a team reward goes only to the submitting player, while a non-team reward goes to every online member and is re-checked when a player logs in.",
+  "Party join and leave: joining a party merges the joiner's quest progress into the party. Leaving restores the player's old progress, but claimed rewards stay claimed (changelog 2001.3.3; code ServerQuestFile.playerChangedTeam). This is why SB4 tells friends to finish the first quest before inviting.",
+  "Evidence of the problem: ATM-10 #3293, from a 3-player server: 'Progression is shared and duplicates can be op'.",
+  "Counter-examples: Skies 2 defaults to team rewards but keeps xp_levels personal (54 of 57 overridden); Architect's Exodus does the same for skill points and stages; CAB defaults to team rewards and team consume_items.",
+  "Team-scoped mechanics: exclusive branches (max_completable_dependents) and repeat cooldowns are team-scoped; the cooldown starts when the first team member claims (2001.4.18 changelog). One player's action affects the whole party.",
+  "Command substitutions in 2001.4.22 include {team}, {team_id}, {long_team_id}, {member_count} and {online_member_count}. They are good for broadcasts ('{team} held wave 10'). TD's design rule is that nothing scales by player count, so they should not scale rewards.",
+  "Stage rewards on 1.20.1 are per player; team stages are 1.21-only (2101.1.20). SB4 (1.21) grants each unlock twice, as a team stage and a player stage. On 1.20.1, give stage rewards with team_reward false so every member gets them, or set stages for all members from KubeJS.",
+  "Social rewards worth borrowing: E6's '/say @p has completed ... I bet you can't!' brag reward, Monifactory's shared global Bounty Board, and SevTech's Together Forever (advancementSync=true) keeping the team's tier unlocks aligned.",
+  "Per-player choice rewards let friends specialise: Architect's Exodus weapon-tier choice tables and the FTB University prefab-house choice.",
+  "Server stability: Monifactory issue #2678 and others show mode-specific books breaking. One book with a small number of invisible plumbing quests is easier to keep correct on a dedicated server than several variants."
+ ],
+ "reward_presentation_notes": [
+  "What each reward slot shows in 2001.4.22 by default (RewardTypes.java): item = the item and its tooltip; xp and xp_levels = an experience-bottle icon and 'XP Levels: +N' (plus a toast); command = a command-block icon and 'Command: <raw command>' in red unless a title and icon are set; random = a dice icon or the table's icon; loot = a money-bag icon or the table's icon; choice = an RGB-wheel icon; custom = an HSB colour icon (likely the 'colourful circle' placeholder TD saw); gamestage = a controller icon. Every reward accepts a custom `title` and `icon`.",
+  "Reward-table display: with use_title the slot shows the table's name ('Reward: Rare', '&6Legendary Loot Crate&r'). With no icon and no crate, the icon cycles through the table's contents (RewardTable.getAltIcon). The hover tooltip lists every possible item with its drop chance unless hide_tooltip is set (Architect's Exodus 'Bountiful Blessing' and OB2 crates hide them for mystery; ATM10 shows them).",
+  "Opening moments: the `loot` reward opens a 'rewards received' screen when clicked (LootReward.onButtonClicked). Physical crate items (ftbquests:lootcrate with a type tag) open on right-click with an item-break sound, particles and the same screen; sneak-click opens the whole stack (LootCrateItem). random, loot and choice are excluded from 'claim all' by default, so each box gets opened by hand (ATM10 sets exclude_from_claim_all everywhere).",
+  "Rarity signalling seen in practice: colour words in table titles (&b common, &d rare, &6 legendary in OB2); icon tiering (OB2 uses iron-chest tiers: plain crate, obsidian chest, crystal chest); crate glow and colour (loot_crate.color, glow); three-word tier names (SB4 'Lesser / Greater / Supreme').",
+  "Non-item payouts presented as prizes: E9E \"Miner's Delight\" loot boxes (command + title + KubeJS item icon), Architect's Exodus '&b+1 &6Helheim&f Skill Points', DawnCraft 'Get Map' and 'Waypoint'. TD's 76 xp_levels rewards could carry a title and icon tying them to pedestal upgrades.",
+  "Relevance beats size. Packs that reward the next tool or ingredient read as meaningful: FTB Academy's golden axe after punching a tree, ATM10's ore dust after the Ore Hammer quest, Architect's Exodus' Klein Star needed to power the Philosopher's Stone. Floods of small XP read as noise (OB2 869 xp rewards, ATM10 1,960). This matches the TD user's comments ('the xp is not useful'; 'a loot bag is a fun reward... later quests... higher tier loot bag'; 'traps give iron for example').",
+  "Price and cost in the subtitle (CAB '10 Silver', '2 Gold'). Shop entries that list choices in the description ('Choose one of the following: ...') remove picker surprise.",
+  "Celebration: in 2001.4.22 only chapter completion plays a fanfare by default; quest toasts are silent. Packs add sound per quest (FTB University sound.js) or per reward (Skies 2 and SB4 bell playsound), and fireworks on big unlocks (SevTech).",
+  "Autoclaim modes: `invisible` for plumbing (stages, sounds), `no_toast` for quiet extras, `enabled` for bounty payouts (SB4 currency). Keep manual claims for the rewards you want players to savour.",
+  "Bragging and keepsakes: trophies as rewards (E6 trofers large_trophy; Prominence II Cinderstone Trophies as a currency), lore items (OB2 'abyssal_archives_log' items), and broadcast brags (E6 /say). TD could use mob heads or banners, or a written holotape, without adding a mod.",
+  "Lifelines in data.snbt: emergency_items with a cooldown (Skies 2). The emergency-items screen counts down while the player is away as of 2001.4.22."
+ ],
+ "version_caveats": [
+  "TD pack target is FTB Quests 2001.4.22 (MC 1.20.1 Forge). Verified against the FTB-Quests branch 1.20.1/main (mod_version=2001.4.22, commit a74ee04) source and CHANGELOG, cloned into the scratchpad.",
+  "Exact-build reference: FTB Architect's Exodus v1.16.1 ships ftb-quests-forge-2001.4.22.jar on 1.20.1 Forge 47.4.20, so its theme, exclusive branch, image reveals and command-reward titles are proven on the TD version. Monifactory uses 2001.4.17, which is also safe.",
+  "Syntax differences: the 1.21.x books (ATM10, SB4, Skies 2, Skies 2 Aero, OB2) keep text in lang/<locale>/*.snbt (added in 2100.1.0) and use item `components`. 2001.4.22 keeps title, subtitle and description inline in chapter SNBT and uses `tag` for item NBT and custom_icon {Icon:...}. Inline {translation.key} references to a resource-pack lang JSON work on 2001.4.22, as Architect's Exodus does via kubejs/assets/ftbquests/lang/en_us.json.",
+  "1.21-only features seen in researched books, all absent from the 2001.4.22 changelog and source: currency reward type (2101.1.15; SB4 and Aero); team stages (2101.1.20); visual presets, Bézier dependency lines, undo/redo, image 'Text on Image' and 'Lock Position', reworked image click actions (2101.1.28); entity-face icons (2101.1.16); notification style preferences (2101.1.13); claim-all GUI rework (2101.1.23); &z rainbow text and &#RRGGBB colour picker (2101.1.17; ATM10 '&zRainbow', SB4 '&zTier 6'); fuzzy NBT for kill and observation tasks (2101.1.26); barrier teleport and GUI config (2101.1.14-15); quest shapes autodetected (2101.1.28; 2001.4.22 still needs extra_quest_shapes).",
+  "Present in 2001.4.22 (verified in source or changelog): max_completable_dependents (4.13), 'none' shape and hide_lock_icon (4.13), repeat_cooldown (4.18), all_table reward (4.10), hide_until_deps_complete (4.9), command substitutions {team} {team_id} {long_team_id} {member_count} {online_member_count} (4.8-4.9) plus {p} {x} {y} {z} {chapter} {quest}, drop_book_on_death (4.12), hide_excluded_quests (4.17), require_sequential_tasks, in-text quest links and Task Screen configurator (2.0), autofocus_id (2.1), icon_scale (3.4), optional_task, invisible_until_tasks, guide_page, quest `tags`, chapter consume_items and default_repeatable_quest, image dependency, click, hover, alpha and rotation, theme [hex], #tag and type selectors, loot crate color, glow and item_name, toast reward, {@pagebreak}, {image:...}, JSON change_page, open_url, run_command and keybind components.",
+  "Task limits in 2001.4.22: KillTask matches an exact entity id only (no entity tag, NBT or name), so filtering TD's td_wave_mob tag needs custom tasks. Task Screens accept only resource-consuming tasks (item, fluid, energy). Stage tasks and rewards need FTB XMod Compat plus a provider; XMod Compat 1.20.1 has KubeJSStageProvider, and the TD pack ships ftb-xmod-compat and kubejs.",
+  "Not FTB Quests: GTNH and DJ2 (Better Questing), SevTech (Triumph advancements + Game Stages + Together Forever). Features like isMain, globalShare, partySingleReward, SECRET visibility, completion sound and confetti fields, and advancement frames have only approximate FTB equivalents (size and shape, team_reward, invisible, command rewards).",
+  "Source versions: ATM10 1.21.1 (repo @ e5e3d1d, 2026-09-22); SB4 v1.22.0, Skies 2 v1.23.0, Skies 2 Aero v1.13.0 and OB2 (version named 1.21.1), all MC 1.21.1 NeoForge; FTB Academy 1.16 v1.4.0 (FTB Quests 1605.3.7); FTB University 1.19 v1.5.2 (1902.5.10); CAB 1.16.5 (1605.3.5, repo @ f551e98, 2022); E9 1.19.2 (1902.5.10, @ b633d20); E6 1.16.5 (1605.3.7, @ edf25e0); Monifactory 1.20.1 (2001.4.17, @ b56c14b); DawnCraft 2.0.16_hf 1.18.2 (1802.3.15); Prominence II v4.1.2 1.20.1 Fabric (FTB Quests version unverified, jar not in the mrpack).",
+  "Unverified or not portable: the Skies 2 `pop create ...` popup command's source mod was not identified; the JSON colour \"rainbow\" used by Architect's Exodus may not render on 2001.4.22 (untested); SB4 and Architect's Exodus systems such as Echo NPCs (ftbechoes), FTB Shop or Magic Coins, /ftb_scroll, /delay, ftbteambases and FTB Schools are FTB-internal and not available to TD; CAB's 'Repeatable' custom reward handler was not inspected.",
+  "Commentary coverage: Reddit (r/feedthebeast, r/ModdedMinecraft) is blocked for my web tools, so community opinion comes from the 2018 FTB forum survey (read via a summarizing fetch, so quotes may be approximate), GitHub issues and discussions (exact), and the GTNH quest-dev Readme (exact). Treat the 'player sentiment' as indicative, not representative.",
+  "ARR note: ATM10's quests are All Rights Reserved (README). The excerpts above are short research quotes. Any TD implementation should re-create the techniques, not copy SNBT."
+ ]
+}

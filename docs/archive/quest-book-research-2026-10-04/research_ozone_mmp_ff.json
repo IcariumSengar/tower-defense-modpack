@@ -1,0 +1,527 @@
+{
+ "packs": [
+  {
+   "name": "Ozone Skyblock Reborn 2",
+   "source": "C:/Users/mattf/curseforge/minecraft/Instances/Ozone Skyblock Reborn 2/config/ftbquests/quests (chapter SNBT in chapters/, all text in lang/en_us.snbt, tables in reward_tables/)",
+   "version_info": "MC 1.21.1 NeoForge 21.1.228, pack 1.5.4, FTB Quests neoforge 2101.1.24, which is newer than our 2001.4.22. Ozone uses these 2101-only features: text moved into lang/en_us.snbt (quest_desc, quest_subtitle and chapter title keys), the 1.21 item `components` syntax, an `ftbquests:entity_face` icon, FTB Filter System `smart_filter` task items, and the data.snbt keys fallback_locale and verify_on_load. Everything else it uses also exists in 2001.4.22, checked against string constants and bytecode in the 2001 jar.",
+   "scale": "23 chapters, no chapter groups, 967 quests. Tasks: item 1177, checkmark 29, dimension 4, kill 1. Rewards: item 1892, random 7. 8 reward tables, 1 of them a loot crate. 25 chapter images. Default shape is octagon (only 1 heart). 90 quests use size 1.25. 21 quests use hide_until_deps_complete and 9 are repeatable. Description median is 102 chars (p90 406); 0.1% are empty.",
+   "progression_presentation": "The book is a flat list of 23 alliteratively named chapters in order_index order: Starting Stuff, Mob Mashing, Storage Solutions, Mechanical Methods, Culinary Creations, Power Production, Factory Fanatics, Delightful Decor, Dimension Diving, Magical Mayhem, Resources Required, Incredible Industry, Crazy Crafting, Miscellaneous Marvels, Space Scouting, Applied Automation, EMC Extravaganza, Draconically Dangerous, Endgame Experience, Overpowered Opulence, Simple Achievements, Coin Shop, FAQ. Each chapter has an item icon and the pack logo (kubejs:textures/ftblogo.png at 3x1.5) as a header image. Starting Stuff also has a Discord image with click and hover text, and Space Scouting has a JEI 'info' icon linking to the Stellaris wiki. Nothing is numbered or grouped.\n\nGating is hub-and-spoke. Only Starting Stuff (Read Me) and FAQ have root quests. Every other chapter's entry quests depend on the Read Me (731CFBA9CEF27A6A) or on early quests in other chapters, so the whole book opens after one click. progression_mode is flexible and show_lock_icons is true.\n\nVisually every quest is an octagon. The only hierarchy cue is size 1.25 on 'mod header' nodes whose subtitle is the mod name (\"Spiky Spikes\", \"Mekanism\", \"Farmer's Delight\"). Size-1.0 chains hang below them, often as vertical tier ladders (swords from wooden to emerald, compressed torcherinos).\n\nThe late game uses CHAPTER IDs as dependencies. Each creative item needs Creative Essence plus completion of the related chapter. 'Simple Achievements' depends on 20 chapter IDs and reveals 21 hidden challenge checkmarks. 'How far along' is read from FTBQ chapter completion and the coin count. The FAQ says chapters needn't be done in order.",
+   "teaching": "Teaching is almost entirely item tasks (craft or hold the item and the quest completes). Each one has a 1-3 sentence how-to; the Read Me admits much of it is adapted from mod pages and wikis. JEI is mentioned 65 times.\n\n- **Multiblocks** are taught two ways. One is a bill of materials: the Industrial Fermenter task is fluid_pipe x2, light_engineering x2, rs_engineering, sheetmetal_iron x4, steel_scaffolding x6, cauldron x4. The other is an assembly-order chain of 'Part of the multiblock' quests (controller, tank, drain, tap, casting table, casting basin).\n- **Exploration** uses dimension tasks: \"Complete this quest by successfully landing on the moon. Note: the moon contains Desh.\"\n- **Onboarding:**\n  - A size-1.25 Read Me with subtitle \"Click the checkmark after reading!\" (rewards: 2 saplings, torch, candy). It covers multiplayer island and team setup.\n  - A heart-shaped 'Pack Mode / Pick your poison!' quest documenting the /packmode commands.\n  - 'Helpful Tips / Important Info Here!', which explains how the book works: automatic item detection, coins, JEI R/U keys, twerk-growing, the FTB Ultimine key, and extra hearts from food variety.\n- **Colour codes:** &b for commands, &4 for warnings, &2 for notes, &n for headings in long text.\n- **FAQ chapter:** a Q&A checkmark plus a long, multi-paragraph Chaos Guardian boss-tips page.\n- There are no description images, pagebreaks or advancement tasks. There are 6 change_page links, all on coin-shop unlock notes.",
+   "rewards": "Rewards are uniform: currency plus a lottery item. 905 of 967 quests give exactly 1 chancecubes:chance_cube and 1 kubejs:coin. Bigger quests give 5, 10 or 15 coins; each creative item gives 15.\n\nCoins are spent in the Coin Shop chapter on repeatable, optional, toast-less quests. Each one consumes 3, 5, 10, 15 or 20 coins and rolls a 'random' reward from a tiered table: Common (62 entries), Uncommon (58), Rare (53), Epic (62), Legendary (60), Artifact (48), Random (84). All entries are weight 1 with loot_size 1, use_title true and hide_tooltip true. Higher tiers unlock through dependencies on progress quests in other chapters, linked with change_page. Shop icons are ProjectE alchemy bags colour-coded by tier.\n\nTwo other repeatables have cooldowns. 'Bounty' (kill the Ender Dragon, get 1 coin) uses repeat_cooldown 3600. 'Need Animals?' (10 coins for an animal seed base) uses repeat_cooldown 1600.\n\nMob loot crates are on (drop_loot_crates: true). The 'Loot Crate' table holds 48 basic materials, with loot_crate {string_id loot_crate, color 203, glow 1b, drops passive/monster/boss 1000}. data.snbt sets loot_crate_no_drop to 3000 each, so each mob death has a 1000/(3000+1000) = 25% crate chance; I checked this formula in FTBQ's makeRandomLootCrate bytecode. A Mob Mashing quest then teaches the Loot Crate Opener.\n\nThere are no team_reward, auto-claim, command, XP or choice rewards. Emergency items give an oak sapling every 120 s.",
+   "multiplayer": "The Read Me tells multiplayer players to run \"/skyblock gui\" to make islands and to use the Teams icon in the inventory for quest and chunk teams. The pack-mode quest warns: \"If on a server, this will change the difficulty for everyone.\" No reward sets team_reward (default_reward_team false), so each party member claims their own coin and chance cube per quest, and coin income scales with party size. Coin Shop and Bounty repeatables follow FTBQ's team logic: one member claiming resets the quest for the team and starts a per-team cooldown. There are no co-op quests or shared goals.",
+   "standout_examples": [
+    {
+     "where": "Ozone: chapters/coin_shop.snbt, quests 445C1394C2925EE2 (Coin Shop) and 7F24945B6C1F2800 (Common Reward Bag); text in lang/en_us.snbt; table reward_tables/386F90497293500B.snbt",
+     "what": "A shop inside the quest book. Repeatable, optional, toast-less quests consume coins and roll a tiered random bag; higher tiers unlock through progress elsewhere.",
+     "excerpt": "\"Here you can trade your hard-earned coins for reward bags. Rewards can range from useless to amazing. Good luck!\" / can_repeat: true ... consume_items: true, count: 3L, item: { id: \"kubejs:coin\" } ... type: \"random\" / Uncommon: \"Must complete the quest Ender Inhibitor Active to unlock.\"",
+     "why_it_works": "It turns a flat per-quest coin into a savings goal the player chooses how to spend. Tier is readable from the coloured bag icon and the table title (use_title), while hide_tooltip keeps the contents a surprise. Gating tiers on progress makes advancement pay off in the shop too."
+    },
+    {
+     "where": "Ozone: reward_tables/18391202155E43DC.snbt ('Loot Crate'), data.snbt, and chapters/mob_mashing.snbt quest 2F631C8EE15BA50F",
+     "what": "Mob-drop loot crates as a reward stream fed by combat, plus a quest that teaches automating them.",
+     "excerpt": "loot_crate: { color: 203, drops: { boss: 1000, monster: 1000, passive: 1000 }, glow: 1b, string_id: \"loot_crate\" } / data.snbt: drop_loot_crates: true, loot_crate_no_drop: { boss: 3000, monster: 3000, passive: 3000 } / \"Automatically open those loot crates that keep dropping from your mob farm!\"",
+     "why_it_works": "Every kill has a visible 25% chance of a glowing, tinted crate. The book then turns crate handling into a small automation lesson (the Loot Crate Opener block)."
+    },
+    {
+     "where": "Ozone: chapters/simple_achievements.snbt, quest 329254403D3AE4CC (deps = 20 chapter IDs) and 21 dependents with hide_until_deps_complete",
+     "what": "A post-game challenge board that appears only once every other chapter is complete.",
+     "excerpt": "\"The Simple Achievements are not avaliable until all other quest chapters are complete. These quests are designed to be completed using no EMC and no creative items.\" / \"Kill a wither using Endest Pearls.\" / \"Build a house out of bedrock.\"",
+     "why_it_works": "A hidden second act shows up exactly when the book is otherwise finished. It gives self-directed long-tail goals without cluttering the book earlier on."
+    },
+    {
+     "where": "Ozone: chapters/overpowered_opulence.snbt, quest 6B205B114E270C9F and 9 creative-item dependents (e.g. deps [\"6B205B114E270C9F\", \"574290CF213AD0B2\"], where 574290CF213AD0B2 is the Incredible Industry chapter id)",
+     "what": "Chapter-completion gates: a reward unlocks only after the whole related chapter is finished.",
+     "excerpt": "\"Creative Essense is the base material for all creative items. Before you can craft creative items, you must finish the quest chapter associated with the mod that the item belongs to.\"",
+     "why_it_works": "'Finish the chapter' becomes a concrete objective with a visible prize. Chapter IDs are also valid dependencies in 2001.4.22: Quest.dependencies is List<QuestObject> and Chapter extends QuestObject."
+    },
+    {
+     "where": "Ozone: chapters/starting_stuff.snbt, quests 731CFBA9CEF27A6A (Read Me, size 1.25) and 1B5C8B86CFDBB051 (Helpful Tips)",
+     "what": "A single onboarding root that also teaches how the quest book itself works.",
+     "excerpt": "Read Me subtitle: \"Click the checkmark after reading!\" / Helpful Tips: \"For quest completions, items are automatically detected when they are in your inventory. Make sure to hold completed items in your inventory until FTB Quests detects it -> no quest complete = no rewards!\"",
+     "why_it_works": "The UI rules (detection, currency, JEI keys) are explained once, up front. One root quest makes every chapter reachable right away."
+    },
+    {
+     "where": "Ozone: chapters/coin_shop.snbt, quest 03EB4D6A471B02DF (Bounty)",
+     "what": "A repeatable kill bounty with a wall-clock cooldown, used as a renewable income source.",
+     "excerpt": "\"Defeat the Ender Dragon in exchange for a coin. Repeatable every hour.\" / can_repeat: true, repeat_cooldown: 3600, tasks: [{ entity: \"minecraft:ender_dragon\" ... type: \"kill\" }]",
+     "why_it_works": "It keeps late-game combat rewarded without being farmable. repeat_cooldown is in seconds of real time in 2001 too (the bytecode multiplies it by 1000 against System.currentTimeMillis)."
+    },
+    {
+     "where": "Ozone: chapters/mob_mashing.snbt, sword ladder 1F40FE21EC2AEF22 (wooden_sword) to 3FE0809FC18DD36F (emerald_sword)",
+     "what": "A vertical tier ladder where each node is one upgrade and its description states the stat gain.",
+     "excerpt": "\"A sword with 4 attack damage.\" -> \"A sword with 5 attack damage.\" -> \"A sword with 5.75 attack damage.\" -> ... -> \"A sword with 8 attack damage.\"",
+     "why_it_works": "The column reads like a progress bar, and the one-line stat deltas say exactly what each step buys."
+    },
+    {
+     "where": "Ozone: chapters/faq.snbt, quest 39140A5AC01843D2 (Frequently Asked Questions)",
+     "what": "An FAQ chapter written as a Q&A checkmark.",
+     "excerpt": "\"Do I need to do the quest pages in order?\" - No. ... \"Could all of these questions have been answered if I read the quest descriptions?\" - Yes.",
+     "why_it_works": "Real support questions sit in one place that's easy to find, and the self-aware last line admits that players skim."
+    }
+   ],
+   "weaknesses": [
+    "Rewards are uniform: 905 of 967 quests give exactly 1 chance cube and 1 coin. The reward panel never changes, and rewards never relate to what was just taught.",
+    "23 flat chapters with no groups or numbers, plus an FAQ answer saying order doesn't matter, give a weak sense of progression. The only visual hierarchy is size 1.25 mod headers, since every quest is an octagon.",
+    "Teaching is an item checklist: 1177 of 1211 tasks are item tasks. Only 4 dimension tasks and 1 kill task check that the player did something in the world.",
+    "Text is encyclopedic and often adapted from mod pages (the Read Me says so). Some is duplicated word for word: the hammer description appears twice and the propeller-hat text four times. The Chaos Guardian FAQ is a long wall of paragraphs.",
+    "Chance cubes as the universal reward add lottery noise. Reward tables hold 48-84 equal-weight entries that mix junk (bone, paper) with treasure.",
+    "There is no co-op content beyond setup instructions."
+   ]
+  },
+  {
+   "name": "Mechanical Mastery Plus",
+   "source": "C:/Users/mattf/curseforge/minecraft/Instances/Mechanical Mastery Plus/config/ftbquests/quests (images also at config/openloader/resources/mechanical_mastery_plus/assets/ftbquests/textures/gui/)",
+   "version_info": "MC 1.19.2 Forge 43.2.23, pack 1.1.12. FTB Quests forge 1902.5.7 plus Quests Additions 1.4.2, which adds the questsadditions:time task and the 'secret' flag; neither is part of FTBQ. Every FTBQ key it uses exists in 2001.4.22. The itemfilters:* task items need the Item Filters mod, which the TD pack doesn't have.",
+   "scale": "12 chapters in 2 groups. 'Intro' holds Topic, Configuration Panel, All the other mods & stuff, Overhauled Ore Processing, Automation and Experience & you; 'Main questline' holds Chapter 0-5. 660 quests. Tasks: item 810, checkmark 67, fluid 5, questsadditions:time 3, forge_energy 1. Rewards: item 297, xp 69, command 14, choice 5, xp_levels 3. 17 reward tables, 6 chapter images, 6 description images. 71 quests are optional and 48 use hide_dependent_lines. 62.9% of quests have no description (p90 244 chars).",
+   "progression_presentation": "The main line is numbered: Chapter 0: Primitive beginnings, Chapter 1: Thermal Series, Chapter 2: Create & Industrial Foregoing, Chapter 3: Mekanism, Chapter 4: Advanced Mekanism, Chapter 5: Endgame. Chapter icons are each tier's product (kubejs:ore_hammer, cube1, cube2, cube3, cube4, dragon_dna), and the custom cube textures make the tier visible in the chapter list.\n\nChapters chain together. Tier chapters have no root quests: their square opener ('Incipit vita nova / Thus begins a new life') depends on the previous chapter's gear milestone and announces the unlock. Tier chapters set hide_quest_details_until_startable, so the tree's shape is visible but contents stay hidden until reachable. They're laid out as long horizontal strips read left to right like a timeline; Chapter 1 has 25 quests across 14.5 x 2.0 grid units.\n\nShape legend:\n- square: chapter start\n- gear: tier milestone, with a Latin title ('Amor est vitae essentia / Love is the essence of life')\n- diamond: optional (60 of them)\n- pentagon: alternative routes ('MobGrinding Route' vs 'Peaceful route')\n- heart: the storage route ('Refined storage! / My beloved', 'AE2 Route / My Other Beloved')\n- hexagon: required infrastructure ('Fission Reactor / !!! Obligatory, needed for future quests')\n\nChapter images are mod textures used as badges, with click to CurseForge and hover 'visit ...'; one is a layered tint plus helmet image. The book ends at a gear 'COD / Certificate of Doneness!' and a post-credits 'TO BE CONTINUED...'.",
+   "teaching": "- **Forced-read intro:** Chapter 0's first real quest ('All good things / have a beginning') depends on 4 Topic checkmarks (pack history, AdminShop, Discord, OOP) plus 2 Chapter 0 quests.\n- **Voice:** Latin titles with English subtitles, italic first-person lines (\"&oSo it begins...&r\"), and math jokes ('1.3 * 1.2 = 1.56 ?!?!!!!').\n- **Description images:** some come from the mods' own guidebooks ({image:ae2:textures/patchouli/images/inscriber_setup.png ...}, the Powah reactor manual image); others are custom art shipped via OpenLoader.\n- **Links and labels:** JSON clickEvent links (12 open_url to CurseForge or Discord, 2 change_page to the OOP chapter), plus '&bHint:&r' and '&6Disclaimer&r' labels.\n- **Two diagram chapters:**\n  - 'Automation' has 189 quests drawn as production lines (raw ore, pipes with modules, pulverizer x3, furnace x3, press x3, crafter, cube) with a 'Pipes/filters omitted' note.\n  - 'Overhauled Ore Processing' has 98 quests whose subtitles are yield labels ('1x', '1.25x', '0.66x', 'x2.5').\n- **FAQ and safety nets:** a myth-busting quest ('ThE cActUs AUgmENT dOEs NoT wORk!!!!!!') and safety-net quests ('I have to stop gambling, I'm broke...'; 'Energy transport, please?').\n- **Timed hints:** escalating hints at 30, 60 and 90 minutes via Quests Additions time tasks.\n- **Big goals:** fluid and forge_energy tasks.\n\nThe weak spot is that most quests have no text at all.",
+   "rewards": "- **Mirrors and refunds:** the reward is often the item just made, e.g. thermal:gold_gear for gold_gear, or cube2 x6 for cube2.\n- **Manuals at openers:** chapter openers give mod guidebooks (the Thermal guidebook via Patchouli).\n- **Choice tables** give agency: 'Press dies', 'dusts', 'alloy ingots', 'Ingots', each pick-one.\n- **XP:** 69 flat 'xp 100' tokens, plus xp_levels 1-5 on three quests.\n- **Hint quests** pay in cookies (cookie, sweet_berry_cookie, honey_cookie).\n- **Finale (COD):** a cod plus creative item and fluid cells, a creative crate and a creative vending upgrade.\n- **Configuration Panel:** 12 repeatable checkmark quests with command rewards (gamerules, randomTickSpeed, trader spawning). They use auto 'enabled', some with exclude_from_claim_all, in on/off pairs (circle = do it, square = revert). The chapter sets disable_toast.\n- **Emergency items:** water bucket, oak sapling, lava bucket and andesite every 180 s.\n- No team_reward is set anywhere.",
+   "multiplayer": "Co-op is only mentioned through AdminShop: \"It uses a custom 'bank account' system, in which you can create shared accounts with other players, allowing Co-Op play in servers...\" No reward uses team_reward. Config Panel commands depend on the claiming player's permissions. There are no co-op quests.",
+   "standout_examples": [
+    {
+     "where": "MMP: chapters/overview.snbt (Topic) feeding chapters/chapter_0_manual_stuff.snbt quest 14BDC4B45EB6CBE9",
+     "what": "A short forced-read intro: the first real progression quest depends on the intro checkmarks.",
+     "excerpt": "title \"All good things\" / subtitle \"have a beginning\" / deps: [\"5A7A38C8FA72C931\", \"11218A6DB4F045CE\", \"333AD01B70C4D1DC\", \"6574C2772D94CB68\", \"4FD2F442421FE4CE\", \"258878D4F87E9F1E\"] (the first four are Topic checkmarks)",
+     "why_it_works": "New players can't skip the 'what is this pack' pages, yet the gate is only a few clicks."
+    },
+    {
+     "where": "MMP: chapters/chapter_0_manual_stuff.snbt, quest 19499868D936A165 'HAMM... INSCRIBAH!'",
+     "what": "A picture of the correct setup in the description, with exactly the parts to build it as the reward.",
+     "excerpt": "\"&bHint:&r use the wrench to rotate the Inscriber to insert from the top and extract from the bottom... with the provided hoppers...\" \"{image:ae2:textures/patchouli/images/inscriber_setup.png width:100 height:100 align:1}\" / rewards: minecraft:hopper x2, ae2:certus_quartz_wrench",
+     "why_it_works": "Show, then equip: the player sees the layout and gets the hoppers and wrench needed to copy it right away."
+    },
+    {
+     "where": "MMP: chapters/automation_tips.snbt, quest 464AD5024525CC94 ('Chapter 1 automation') and its chain; also chapters/overhauled_ore_processing.snbt",
+     "what": "A diagram chapter: the quest graph is the factory blueprint, with machine counts and yield subtitles.",
+     "excerpt": "\"AdminShop T1 buyers output 4 items per second, yet redstone furnaces and pulverizers take longer than that to process one item. Because of this, you will most likely need one pulverizer and redstone furnace per each raw material\" -> nodes thermal:machine_pulverizer x3, thermal:machine_furnace x3; OOP subtitles \"0.66x\", \"1.25x\", \"x2.5\"",
+     "why_it_works": "Dependency lines trace the physical item flow, the counts teach throughput, and the subtitles compare routes at a glance."
+    },
+    {
+     "where": "MMP: chapters/tier_5_endgame.snbt, quests 0411623715D35216, 1933F4C458289C5F and 63A85FCB13B32F24",
+     "what": "Escalating hints that only release if the player is stuck (Quests Additions time task plus secret flag).",
+     "excerpt": "secret: true, tasks: [{ elapsedTime: 1800L, secret: true, title: \"Ok, here's one for free...\", type: \"questsadditions:time\" }] -> 3600 \"...and another...\" -> 5400 \"...good things come in three!\" (rewards: cookie, sweet_berry_cookie, honey_cookie)",
+     "why_it_works": "Help arrives in doses at 30, 60 and 90 minutes after the quest unlocks, so skilled players aren't spoiled. Bytecode shows elapsedTime in seconds times 20."
+    },
+    {
+     "where": "MMP: chapters/tier_5_endgame.snbt, quest 79B1FCD79D650A18 (gear)",
+     "what": "A named, illustrated finish line.",
+     "excerpt": "title \"COD\", subtitle \"Certificate of Doneness!\" / \"{image:ftbquests:textures/gui/congratulations.png width:180 height:180 align:1}\" \"Congratulations, you are now a &6Mechanical Master&r!\"",
+     "why_it_works": "Completion gets a title and a picture. The art is shipped by the pack itself (OpenLoader resources), not by FTBQ."
+    },
+    {
+     "where": "MMP: chapters/tier_1.snbt, quest 619D1281059B0F35 (optional diamond)",
+     "what": "A myth-busting FAQ placed right next to the item it's about.",
+     "excerpt": "title \"ThE cActUs AUgmENT dOEs NoT wORk!!!!!!\" / subtitle \"Yes it does. Read this description if you don't understand\" / \"TLDR: the machines WILL still produce secondary outputs but WONT stop if they fill with them\"",
+     "why_it_works": "It answers the most common complaint in the player's own words, where they'll look, and rewards reading with 4 more augments."
+    },
+    {
+     "where": "MMP: chapters/tier_1.snbt, quests 185C525CF2B473D4 and 57FC68E7348A690A",
+     "what": "Safety-net quests for known soft-locks.",
+     "excerpt": "\"I have to stop gambling, I'm broke, what am I gonna do?\" ... \"There's a solution... craft a special trade permit to get some money back... It's not fast though...\" / \"Energy transport, please?\" checkmark -> pipez:energy_pipe x12",
+     "why_it_works": "The book expects failure states and offers a slow, honest recovery path instead of a dead end."
+    },
+    {
+     "where": "MMP: chapters/tier_2.snbt, quest 167C9AF69BB16B8B (square); chapter icons kubejs:cube1..cube4",
+     "what": "A chapter transition staged as an event, with tier-product icons.",
+     "excerpt": "\"Incipit vita nova\" / \"Thus begins a new life\" / \"&oSuddenly, the basic mechanical essence whispers to me... the factory must grow!&r\" \"Having created your first mechanical essence you have now acces to chapter 2 which features Create and Industrial Foregoing.\"",
+     "why_it_works": "Unlocking a chapter is announced in-fiction, and the chapter list shows tiers 1-4 as different cubes."
+    }
+   ],
+   "weaknesses": [
+    "62.9% of quests have no description. There's a placeholder checkmark titled 't', and truncated text ('Some of the features of this mod include:' followed by nothing).",
+    "69 flat 'xp 100' rewards read as filler tokens.",
+    "The Automation chapter has 189 quests across 41.5 x 22.5 grid units; its subtitle literally says 'zoom out to see all quests :)'.",
+    "Some teaching is outsourced: the Fission Reactor quest says 'How do you build it? Idk, google it or look up a youtube tutorial.' Discord links stand in for explanations.",
+    "The COD final quest needs 2,147,483,647,000 mB of each of five fluids and 64,738 of each cube (consumed). It's a joke goal and effectively impossible.",
+    "The secret flag and timed hints need an extra mod (Quests Additions).",
+    "Mirror rewards (gold gear for gold gear) feel like refunds when no text explains them."
+   ]
+  },
+  {
+   "name": "Forever Factory",
+   "source": "C:/Users/mattf/curseforge/minecraft/Instances/Forever Factory/config/ftbquests/quests (coin values in kubejs/server_scripts/AdminShop.js)",
+   "version_info": "MC 1.19.2 Forge 43.3.9, pack 2.0.3. FTB Quests forge 1902.5.10; Quests Additions 1.4.2 is installed but unused (no secret or questsadditions keys). Every FTBQ feature it uses exists in 2001.4.22. The 31 itemfilters:* task items need the Item Filters mod, which the TD pack doesn't have.",
+   "scale": "10 chapters in 2 groups. 'Fun Stuff' holds Configuration Panel, Energy Generation and Challenges!; 'Main Pack Progression' holds Ch.I-Ch.VI. 255 quests. Tasks: item 317, checkmark 32, observation 7, advancement 5. Rewards: item 175, command 18, random 1. 1 reward table. No chapter or description images and no clickable links. 35 optional, 16 repeatable. Description median 121 chars (p90 364); 9% empty.",
+   "progression_presentation": "Main chapters are named as eras with Roman numerals: Ch.I: Mechanical Age, Ch.II: Pneumatic Age, Ch.III: Electrical Age, Ch.IV-A: Digital Age, Ch. IV-B: Living Age, Ch,V: Industrial Age, Ch. VI: Endgame. The name alone tells the player where they are.\n\nChapters chain through cross-chapter dependencies. Ch.II has no roots and starts from Ch.I's Basic Mechanisms. Ch.III starts from Ch.II's plastic. Ch.V has bridge quests that repeat an item 'Obtained from Ch. IV-B'.\n\nShape legend:\n- gear: milestone; products carry the subtitle 'Sellable for Profit!' and the chapter end says 'End of Chapter 1'\n- diamond: optional\n- hexagon: 'Obtaining X' resource side-quests\n- square and pentagon: mod introductions\n- heart: personal (the author's own mod, and the final thanks)\n\nChapters are compact, 9-13 grid units wide. Permit tags [T1], [T2], [T3] mark economic gates. All sizes are 1.0. The 'Fun Stuff' group sorts above the main progression.",
+   "teaching": "- **Narrator:** a first-person voice that jokes and corrects itself (\"Okay I lied, getting fluid logistics may be a little difficult.\"). It gives short practical how-tos and points to JEI and Ponder.\n- **In-world proof:** 7 observation tasks check formed Immersive Engineering multiblocks (crusher, mixer, refinery, arc furnace, squeezer, auto workbench) and a lightning rod, e.g. \"This quest completes once you look at an assembled Crusher.\" 5 advancement tasks reuse mod advancements: create:hose_pulley_lava 'Tapping the Mantle', create:train, create:train_portal 'Dimensional Commuter', pneumaticcraft:pressure_chamber, story/enter_the_nether.\n- **Problem-to-solution chains:** 'Wait, lava?', 'We need to go deeper!', 'Tapping the Mantle', 'Trains!', 'Dimensional Commuter'.\n- **Trade permits:** taught in-fiction (\"PS2: Get used to the Shop, permits are how a lot of items are gated behind\").\n- **Info chapter:** 'Energy Generation' uses checkmark category headers and converter nodes subtitled 'Create->FE' and 'FE->Create'.\n- **UI tips:** it teaches the quest-book interface too (\"click the left arrow in this menu\" to jump to a requirement).\n- **Onboarding:** a gear 'Beginnings' checkmark with the story premise, then 'Basic Resources', an optional 'Skyblock/Superflat Resources' quest, and a 'Faster Crop Growth!' tip.",
+   "rewards": "- **Currency:** Thermal coins worth money in the AdminShop: copper 1, tin 8, iron 64, lead 512, nickel 4096, silver 32768, gold 262144, per AdminShop.js. The coin metal escalates by chapter: Ch.I and II iron (32 and 40 coins), Ch.III lead (33), Ch.IV-A nickel (58), Ch.IV-B silver (58), Ch.V gold (62), Ch.VI gold (170).\n- **Mirrors:** product quests often hand back more of what was made (craft 1 compressed mechanism, get 4; Thermal Mobs gives the four rods x4).\n- **Manuals:** econ handbook, IE manual, Lexica Botania, Ars worn notebook.\n- **Lottery:** one flavour roll, 'Ritual of the Forest', draws from the 'Random Basic Token' table (4 Nature's Aura tokens).\n- **Trophies:** challenges award kubejs:trophy_* items, and 'The Omni Challenge' consumes all four.\n- **Finale:** a poppy named 'Thanks for Playing! -Ammonium'.\n- **Configuration Panel:** 16 repeatable checkmark quests with command rewards (auto 'no_toast'); the chapter sets disable_toast.\n- No team_reward is set anywhere.",
+   "multiplayer": "Nothing is designed for teams. The Configuration Panel warns \"You need to have admin (/op) permissions to run these commands.\" The Soul Overclockers quest notes that soul power is per player and invites server admins to change the config. No team_reward or co-op quests.",
+   "standout_examples": [
+    {
+     "where": "FF: chapters/chiii_immersive_engineering.snbt, quest 1B2BC6797722B44F 'Crusher' (same pattern for Mixer, Refinery, Arc Furnace, Industrial Squeezer, Auto Engineer's Workbench)",
+     "what": "An observation task that checks the player actually built the multiblock.",
+     "excerpt": "tasks: [{ icon: \"immersiveengineering:crusher\", observe_type: 0, timer: 0L, to_observe: \"immersiveengineering:crusher\", type: \"observation\" }] / \"This quest completes once you look at an assembled Crusher.\"",
+     "why_it_works": "A formed IE multiblock becomes its own block id, so the quest can only complete after the structure exists in the world. The book checks the build, not the inventory."
+    },
+    {
+     "where": "FF: chapters/ch_i_starting_into_create.snbt, quest 11DDC2F84E22B04D 'Beginnings' (gear, checkmark)",
+     "what": "A narrative premise as the first quest, rewarding the core system's block and its manual.",
+     "excerpt": "\"What's up with this world? Wherever this place is, there's absolutely no ores in the terrain! If I want to thrive here, I'm gonna need some help. If I can get a couple basic materials, I think I can connect to the galactic marketplace...\" / rewards: adminshop:shop, econ_handbook",
+     "why_it_works": "Lore explains the pack's rule (no ores, so trade), and the reward is the tool and textbook for that rule."
+    },
+    {
+     "where": "FF: chapters/chii_we_need_to_go_deeper.snbt, quests 7AEBD7F34B4740C7 through 5575DF3D80CA700E",
+     "what": "A problem-to-solution chain verified with mod advancements.",
+     "excerpt": "\"Wait, lava?\" -> \"We need to go deeper!\" (adv minecraft:story/enter_the_nether) -> \"Tapping the Mantle\" (adv create:hose_pulley_lava) -> \"Trains!\" (adv create:train) -> gear \"Dimensional Commuter\" (adv create:train_portal)",
+     "why_it_works": "Each quest poses the next problem and the following one solves it. Advancements prove the in-world action (draining lava, running a train) rather than just holding an item."
+    },
+    {
+     "where": "FF: chapters/chii_we_need_to_go_deeper.snbt, quest 6CDB99BBE0125820 '[T1] Explosives Permit'",
+     "what": "A pack-specific gating mechanic taught in-fiction, with a note that it repeats.",
+     "excerpt": "\"...you just need some basic mechanisms to prove you're competent, add a small bribe in, and you should have an explosives permit! Now, just shift-click your permit while inside the Shop...\" \"PS2: Get used to the Shop, permits are how a lot of items are gated behind\"",
+     "why_it_works": "The first instance teaches the general rule, and the [T1]/[T2]/[T3] prefixes tie it to tiers."
+    },
+    {
+     "where": "FF: rewards across Ch.I-VI and kubejs/server_scripts/AdminShop.js",
+     "what": "The reward currency visibly escalates by chapter.",
+     "excerpt": "sellItem('thermal:iron_coin', 1, 64) ... sellItem('thermal:gold_coin', 1, 262144) / Ch.I rewards thermal:iron_coin x4..x12, Ch.III lead_coin, Ch.IV-A nickel_coin, Ch.IV-B silver_coin, Ch.V-VI gold_coin (final mainframe: gold_coin x48)",
+     "why_it_works": "The reward icon itself changes metal as the player advances, so progression is visible before reading any number."
+    },
+    {
+     "where": "FF: chapters/challenges.snbt, quests 257F165A12748DF2 (intro) and 6924F72D7B7B8DF4 'The Omni Challenge'",
+     "what": "Optional self-imposed challenges that award collectible trophies, plus a meta-challenge that consumes them.",
+     "excerpt": "\"Challenges are &lentirely optional&r challenges for your playthrough, that make the game harder to play... so it's entirely based on the honor system.\" / Omni tasks: kubejs:trophy_caffeinated, trophy_cheapskate, trophy_purist, trophy_lazy -> reward kubejs:trophy_omni",
+     "why_it_works": "Replay goals for experienced players with cosmetic rewards that don't touch balance."
+    },
+    {
+     "where": "FF: chapters/ch_vi.snbt, quest 6FF75AB967CDD562 (heart)",
+     "what": "An explicit end of the campaign with a framing for post-game play.",
+     "excerpt": "reward: poppy named \"Thanks for Playing! -Ammonium\" / \"While you may have beaten the main progression of the pack, you could also think of it as having unlocked \"freeplay\" mode.\"",
+     "why_it_works": "The player knows they're done and what 'done' means, and the personal touch makes the ending memorable."
+    },
+    {
+     "where": "FF: chapters/power_generation.snbt, quest 2084A0F551D7FCB3 and the category headers",
+     "what": "A reference chapter, separate from the progression.",
+     "excerpt": "\"Do not consider this chapter as a \"quest\" chapter, it's more of an \"information\" chapter. You don't need to \"complete\" every quest in this chapter\" / headers 'Create Stress Units', 'Forge Energy', 'Botania Mana'; converters subtitled 'Create->FE', 'FE->Create'",
+     "why_it_works": "Lookup material lives outside the progression spine, so it doesn't block or clutter the main chapters."
+    }
+   ],
+   "weaknesses": [
+    "Many quests are one-liners or untitled ('Rolls stuff!', 'Mills stuff!', 'Fills stuff!'), so the item name is the whole lesson.",
+    "Challenges are honor-system checkmarks and can't be verified.",
+    "Configuration Panel commands need OP, and the 'Fun Stuff' group sorts above the main progression, so a config chapter is listed first.",
+    "There are no chapter images, description images or clickable links.",
+    "Typos in titles and text ('Ch,V: Industrial Age', 'extermely', 'cheapes').",
+    "The info chapter uses checkmark quests as category headers, which clutters chapter completion.",
+    "Bridge quests ('Obtained from Ch. IV-B') duplicate tasks across chapters."
+   ]
+  }
+ ],
+ "patterns": [
+  {
+   "name": "Numbered era/tier chapters with tier-product icons",
+   "description": "The main questline is a numbered sequence of era- or tier-named chapters whose icon is the tier's signature product. Support and reference chapters sit in a separate chapter group.",
+   "evidence": [
+    "FF: 'Ch.I: Mechanical Age' through 'Ch. VI: Endgame' in group 'Main Pack Progression'; config, energy and challenges in 'Fun Stuff'",
+    "MMP: 'Chapter 0: Primitive beginnings' through 'Chapter 5: Endgame' with icons kubejs:ore_hammer, cube1, cube2, cube3, cube4, dragon_dna in group 'Main questline'; the 'Intro' group is listed first"
+   ],
+   "ftbq_mechanism": "Chapter title, icon and order_index; chapter_groups.snbt (groups display in file order); cross-chapter dependencies so chapter N+1's opener needs chapter N's milestone.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's T1-T4 defences map onto numbered chapters with a signature-trap icon each, with the Campaign spine as the hub. TD currently has no chapter groups, and Tips/Bounties/Arsenal could become a support group."
+  },
+  {
+   "name": "Chapter opener that states the goal and hands over the manual",
+   "description": "Each chapter starts with a distinct quest (square in MMP) that says what the chapter builds toward, lists what's needed, and rewards the relevant guidebook.",
+   "evidence": [
+    "MMP tier_1.snbt 7899043495724E2A: task thermal:wrench, reward Thermal guidebook, 'In this chapter you will craft a Basic Mechanical Essence ... To do this you need:'",
+    "MMP tier_2.snbt 167C9AF69BB16B8B 'Incipit vita nova': 'you have now acces to chapter 2'",
+    "FF 7612646AD2CF33B1 'Welcome to Immersive Engineering!' rewards the IE manual; FF 459F283BB2AD2A69 rewards the Nature's Aura book"
+   ],
+   "ftbq_mechanism": "shape square (or any reserved shape); checkmark or item task; item reward (manual with NBT); description bullet list; dependency on the previous chapter's milestone.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The TD tier openers could state each tier's goal (e.g. Tier 2: 'build a kill lane with mines, a Sentry and the electrified fence') and give securitycraft:sc_manual (id checked in the SecurityCraft 1.10.2.1 lang file)."
+  },
+  {
+   "name": "Shape and size legend",
+   "description": "A consistent visual grammar: specific shapes mean milestone, optional, route choice, required, or personal/finale, and larger size marks section headers.",
+   "evidence": [
+    "FF: gear = sellable product or chapter end ('End of Chapter 1'), diamond = optional, hexagon = 'Obtaining X', heart = finale",
+    "MMP: square = chapter start, gear = tier milestone, pentagon = alternative routes, heart = storage route, hexagon = '!!! Obligatory, needed for future quests', diamond = 60 optional",
+    "Ozone: size 1.25 on 90 mod-header nodes; otherwise all octagons"
+   ],
+   "ftbq_mechanism": "Quest shape (2001 shapes, checked against the jar textures: circle, square, rsquare, diamond, pentagon, hexagon, octagon, heart, gear, none), size, icon_scale (2001), chapter default_quest_shape, default_quest_size (2001).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD already mixes hexagon, rsquare, pentagon and sizes 1.0-2.0 without a stated meaning. Fixing a legend (e.g. gear = wave milestone, hexagon = defence, diamond = optional tip, heart = co-op) and explaining it once costs nothing."
+  },
+  {
+   "name": "Single onboarding root and a short forced read",
+   "description": "One root quest (the 'Read Me') opens the book, and a tips quest explains how the quest book itself works (item detection, keys, currency).",
+   "evidence": [
+    "Ozone 731CFBA9CEF27A6A Read Me (size 1.25, 'Click the checkmark after reading!') is the root of every chapter; 1B5C8B86CFDBB051 Helpful Tips",
+    "MMP: Chapter 0's 'All good things' depends on 4 Topic checkmarks",
+    "FF 11DDC2F84E22B04D 'Beginnings' gear checkmark with the story premise"
+   ],
+   "ftbq_mechanism": "Checkmark task, size, cross-chapter dependencies, small starter item rewards.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The horn and pedestal are a natural root ('find the pedestal, sound the horn'). Keep it to one checkmark plus one tips quest; MMP's four-checkbox gate is checkbox spam."
+  },
+  {
+   "name": "Prove it in the world: observation tasks",
+   "description": "The quest completes when the player looks at a placed block or an entity, so it checks something real in the world rather than an item in the inventory.",
+   "evidence": [
+    "FF chiii_immersive_engineering.snbt: Crusher, Mixer, Refinery, Arc Furnace, Squeezer, Auto Workbench (observe_type 0 on the formed multiblock block)",
+    "FF power_generation.snbt 'Stare at: Lightning Rod'"
+   ],
+   "ftbq_mechanism": "Task type 'observation' with to_observe, timer and observe_type. In 2001 the observe_type values are 0 BLOCK, 1 BLOCK_TAG, 2 BLOCK_STATE, 3 BLOCK_ENTITY, 4 BLOCK_ENTITY_TYPE, 5 ENTITY_TYPE, 6 ENTITY_TYPE_TAG (from the ObserveType enum in the 2001 jar).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Good targets: securitycraft:sentry (an entity, observe_type 5), securitycraft:ims, securitycraft:electrified_iron_fence, securitycraft:mine, the pre-built pedestal, the boss, an airdrop crate. It proves the player saw it, not that they placed it; use TD's existing KubeJS custom tasks (BlockEvents.placed) when ownership matters. Entity observation hasn't been tested in-game."
+  },
+  {
+   "name": "Mod advancements as proof of an in-world action",
+   "description": "Use a mod's own advancement as the quest task for actions that leave no item behind.",
+   "evidence": [
+    "FF: create:hose_pulley_lava 'Tapping the Mantle', create:train, create:train_portal 'Dimensional Commuter', pneumaticcraft:pressure_chamber, minecraft:story/enter_the_nether"
+   ],
+   "ftbq_mechanism": "Task type 'advancement' (advancement id plus optional criterion).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Only useful if SecurityCraft, IE or Flux Networks ship advancements for the right actions; I didn't check which exist. Otherwise TD's KubeJS custom tasks are lighter than authoring advancements."
+  },
+  {
+   "name": "Problem-to-solution story chains",
+   "description": "A linear chain where each quest title poses the next problem and its successor solves it, ending on a gear payoff.",
+   "evidence": [
+    "FF Ch.II: 'Wait, lava?' -> 'We need to go deeper!' -> 'Tapping the Mantle' -> 'Trains!' -> 'Dimensional Commuter'",
+    "FF Ch.I resin -> rubber -> copper casing ('Okay I lied, getting fluid logistics may be a little difficult.')"
+   ],
+   "ftbq_mechanism": "Linear dependencies, question-style titles, a gear on the payoff node, a narrator voice in the descriptions.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's problems are concrete and sequential: zombies dig through stone, mobs crowd the gate (lure block), the Tesla needs power (culinary generator and Flux). Each link teaches one fix."
+  },
+  {
+   "name": "Bill of materials and assembly-order chain",
+   "description": "A multiblock is taught by listing its exact parts as item tasks, then chaining the parts in build order.",
+   "evidence": [
+    "Ozone mechanical_methods.snbt Industrial Fermenter: fluid_pipe x2, light_engineering x2, rs_engineering, sheetmetal_iron x4, steel_scaffolding x6, cauldron x4",
+    "Ozone Productive Metalworks 'Part of the multiblock' chain: controller -> tank -> drain -> tap -> casting table -> casting basin"
+   ],
+   "ftbq_mechanism": "Several item tasks with counts (consume_items false); a dependency chain in assembly order.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Fits Tier 3 and 4 setups with several parts (Tesla Coil plus power, IE turrets plus supply, a Flux network). It only proves the parts are in the inventory, so pair it with an observation or custom 'placed' task."
+  },
+  {
+   "name": "Diagram chapter: the quest graph is the layout",
+   "description": "Quest positions and dependency lines mirror the physical chain (machines or defences), and subtitles carry data labels (counts, yields, conversions).",
+   "evidence": [
+    "MMP automation_tips.snbt: 189 quests, pulverizer x3 / furnace x3 nodes, 'Pipes/filters omitted' note",
+    "MMP overhauled_ore_processing.snbt: subtitles '0.66x', '1.25x', 'x2.5'",
+    "FF power_generation.snbt: converters subtitled 'Create->FE', 'FE->Create'"
+   ],
+   "ftbq_mechanism": "x/y placement, dependency lines, subtitle as a label, hide_dependent_lines and hide_dependency_lines to declutter, an optional hexagon 'note' node.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "A compact 'kill zone blueprint' (lure -> funnel -> slow -> damage -> finisher) with stat subtitles would teach layout. Keep it to about 20 nodes; MMP's 189-node version needed 'zoom out'."
+  },
+  {
+   "name": "Show, don't tell: images in descriptions",
+   "description": "Embed screenshots or guidebook art of the correct setup directly in the quest description.",
+   "evidence": [
+    "MMP chapter_0: {image:ae2:textures/patchouli/images/inscriber_setup.png width:100 height:100 align:1}",
+    "MMP tier_4: {image:powah:textures/gui/book/images/reactor.png width:200 height:100 align:1}",
+    "MMP tier_5: congratulations.png, cat.png and cod.png shipped through config/openloader/resources/.../assets/ftbquests/textures/gui/"
+   ],
+   "ftbq_mechanism": "A description line '{image:<ns>:<path> width:W height:H align:1}'. The 2001 editor has an image-insert button ('{image' in MultilineTextEditorScreen). Custom textures need a resource source; TD has kubejs/assets.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Screenshots of a correct trap lane, mine spacing, the fence contact rule or the pedestal upgrade GUI replace paragraphs. A few small PNGs are cheap, which suits the lightweight goal."
+  },
+  {
+   "name": "Chapter images as banners, badges and progress reveals",
+   "description": "Images on the chapter canvas give each chapter an identity (logo or banner), act as clickable badges, and can appear only after a quest is completed.",
+   "evidence": [
+    "Ozone: kubejs:textures/ftblogo.png (3x1.5) on every chapter; Discord icon with click and hover 'Join the Discord!'",
+    "MMP: mod textures with click to CurseForge and hover 'visit ...'; a tint image layered under the helmet image"
+   ],
+   "ftbq_mechanism": "Chapter images keys {image, x, y, width, height, rotation, color, alpha, order, hover, click, dev, corner, dependency}, read from ChapterImage.readData in 2001. dependency is a quest id; none of the three packs use it, so its reveal behaviour should be checked in-game.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Fallout-style tier banners, plus a fort blueprint that gains pieces as tiers complete (images with dependency), make progress visible on the canvas at no runtime cost."
+  },
+  {
+   "name": "Reward currency that visibly escalates",
+   "description": "Quests pay a currency whose look (metal or colour) or amount climbs with progress, so the reward icon itself signals where the player is.",
+   "evidence": [
+    "FF: Thermal coin metal per chapter, iron -> lead -> nickel -> silver -> gold (AdminShop.js values 64 to 262144)",
+    "Ozone: coin x1 per quest, x5/x10/x15 for big quests, spent in the Coin Shop"
+   ],
+   "ftbq_mechanism": "Item rewards of a currency item, with spending through a shop mod or consume_items quests.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "TD's currency already exists: XP levels buy pedestal upgrades. Rather than a second currency, scale XP-level amounts by tier and pair milestones with tier-coloured BountyBags (uncommon to legendary) so the icon shows the escalation."
+  },
+  {
+   "name": "A shop inside the quest book",
+   "description": "Repeatable optional quests consume currency and roll tiered random reward tables; higher tiers unlock through progress elsewhere.",
+   "evidence": [
+    "Ozone coin_shop.snbt: Common 3 coins to Legendary 20 coins, colour-coded alchemy-bag icons, tiers gated by quests in other chapters, disable_toast, Bounty with repeat_cooldown 3600"
+   ],
+   "ftbq_mechanism": "can_repeat, a consume_items item task, reward type random (or loot) plus reward_tables (loot_size, empty_weight, use_title, hide_tooltip), custom_icon, disable_toast, repeat_cooldown (seconds, per team).",
+   "fit_for_td_pack": "low",
+   "fit_reason": "Could turn surplus bags or XP into supply rolls, but in a party one member's claim resets the repeatable for the whole team. It also risks the loot-shortcut problem. If used at all, sell only consumables (ammo, repairs), never home-machine outputs."
+  },
+  {
+   "name": "Mob-drop loot crates",
+   "description": "FTB Quests reward tables flagged as crates drop as tinted, glowing items when mobs die, weighted against a no-drop weight.",
+   "evidence": [
+    "Ozone reward_tables/18391202155E43DC.snbt plus data.snbt (25% per death); Mob Mashing Loot Crate Opener quest"
+   ],
+   "ftbq_mechanism": "data.snbt drop_loot_crates and loot_crate_no_drop{passive,monster,boss}; a reward table loot_crate {string_id, color, glow, drops}. Drops happen on LivingDropsEvent regardless of killer and can only be excluded by the entity-type tag ftbquests:no_loot_crates. A mob counts as 'boss' when it can't change dimensions.",
+   "fit_for_td_pack": "low",
+   "fit_reason": "TD already drops BountyBags only from td_wave_mob mobs via LootJS. FTBQ crates can't filter by entity tag or NBT, so they would also drop from structure guards and spawner mobs of the same types."
+  },
+  {
+   "name": "Timed escalating hints",
+   "description": "A secret hint chain unlocks in steps only after the player has been stuck on a hard step for a while.",
+   "evidence": [
+    "MMP tier_5_endgame.snbt: questsadditions:time at 1800, 3600 and 5400 s with secret: true ('Ok, here's one for free...', '...and another...', '...good things come in three!')"
+   ],
+   "ftbq_mechanism": "Not FTBQ: Quests Additions' questsadditions:time task (elapsedTime in seconds) plus its 'secret' flag. In TD the equivalent is a KubeJS custom task counting minutes or waves since unlock, completed via change_progress.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Useful for the amulet stay-or-leave decision, boss waves and stash guard spawners without spoiling skilled players. Build it on KubeJS rather than adding Quests Additions; a 1.20.1 build (1.4.7) exists but is untested with FTBQ 2001.4.22, and the pack aims to stay lightweight."
+  },
+  {
+   "name": "FAQ and myth-busting quests",
+   "description": "Short optional quests that answer common confusion in the player's words, placed next to the related item or gathered in an FAQ chapter.",
+   "evidence": [
+    "MMP tier_1.snbt 619D1281059B0F35 'ThE cActUs AUgmENT dOEs NoT wORk!!!!!!' / 'Yes it does...'",
+    "Ozone faq.snbt Q&A checkmark",
+    "FF power_generation.snbt 'Small note'"
+   ],
+   "ftbq_mechanism": "An optional checkmark quest (diamond) with the myth in the subtitle; optional quests don't block chapter completion.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD has many playtest-learned gotchas: the fence only hurts on contact, the amulet keeps the border shut unless it's on the pedestal, mines and explosions spare players, zombies dig. Put each one next to the trap it concerns."
+  },
+  {
+   "name": "Safety nets and emergency items",
+   "description": "Pity quests and the emergency-items button that rescue soft-locked players without trivialising progress.",
+   "evidence": [
+    "MMP tier_1.snbt 'I have to stop gambling, I'm broke...' (permit to sell iron blocks); 'Energy transport, please?' gives energy pipe x12",
+    "MMP data.snbt emergency_items water, sapling, lava, andesite every 180 s; Ozone sapling every 120 s",
+    "FF optional 'Skyblock/Superflat Resources'"
+   ],
+   "ftbq_mechanism": "Optional checkmark plus item reward; data.snbt emergency_items and emergency_items_cooldown.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Could cover a restart after GAME OVER or hardcore death, or a broke-player starter-trap kit. TD's data.snbt sets emergency_items_cooldown 300 with no items. Don't hand out anything that skips a trap tier."
+  },
+  {
+   "name": "Optional challenges, trophies and a post-game board",
+   "description": "Self-imposed or hidden end-game goals that reward cosmetic trophies, revealed once the main book is done.",
+   "evidence": [
+    "FF challenges.snbt: Caffeinated, Purist, Cheapskate, Lazy award kubejs:trophy_*; 'The Omni Challenge' consumes all four",
+    "Ozone simple_achievements.snbt: revealed after 20 chapters; 21 hidden checkmarks"
+   ],
+   "ftbq_mechanism": "Checkmark or item tasks, custom trophy items, hide_until_deps_complete, chapter-ID dependencies.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Endless Hordes needs long-tail goals (hold to wave 30 without the amulet, no Tier 4, hardcore). TD can verify many with KubeJS custom tasks instead of the honor system, and cosmetic trophies carry no balance risk."
+  },
+  {
+   "name": "Chapter-completion gates",
+   "description": "A quest depends on a whole chapter being complete, making 'finish the chapter' an explicit goal with a prize.",
+   "evidence": [
+    "Ozone overpowered_opulence.snbt: creative items depend on chapter IDs (e.g. 574290CF213AD0B2)",
+    "Ozone simple_achievements.snbt: 20 chapter-ID dependencies"
+   ],
+   "ftbq_mechanism": "Chapter IDs inside a quest's dependencies (2001: Quest.dependencies is List<QuestObject> and Chapter extends QuestObject, checked in bytecode). Chapter completion raises a 'Chapter completed!' toast.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "For example, completing the Tier 2 chapter opens a Tier 3 bonus, or finishing Tips grants a small kit. Optional quests don't block it."
+  },
+  {
+   "name": "Choice rewards",
+   "description": "The player picks one reward from a table instead of receiving a fixed item.",
+   "evidence": [
+    "MMP: 5 choice rewards using tables 'Press dies', 'dusts', 'alloy ingots', 'Ingots'"
+   ],
+   "ftbq_mechanism": "Reward type 'choice' plus a reward table; automatically excluded from claim-all.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Claims are per player, so each party member can pick a different kit (spikes, stakes or lure; mines or Sentry ammo). That creates co-op roles with no extra code."
+  },
+  {
+   "name": "Mirror rewards: more of what you just made",
+   "description": "The reward is extra copies of the item the task asked for, so the player can deploy the lesson straight away.",
+   "evidence": [
+    "FF 362EBC86C94B16E5: craft 1 compressed mechanism, reward 4; FF Thermal Mobs: rods x4",
+    "MMP: gold gear for gold gear; 'Mixing it all up' cube2 for cube2 x6"
+   ],
+   "ftbq_mechanism": "An item reward matching the task item, with a larger count.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "After the first spike, stake or mine, give enough to build a first lane. Keep it to T1/T2 consumables so it doesn't shortcut later choices (the loot-shortcut rule)."
+  },
+  {
+   "name": "Route choices that merge",
+   "description": "Alternative branches, any of which unlocks the next step; exclusive branches are possible in 2001.",
+   "evidence": [
+    "MMP pentagons 'MobGrinding Route' and 'Peaceful route'; hearts 'Refined storage!' and 'AE2 Route'; 'Mekanism / Still need more power...' with dependency_requirement one_completed",
+    "MMP quests with min_required_dependencies 1"
+   ],
+   "ftbq_mechanism": "dependency_requirement (all_completed, one_completed, all_started, one_started), min_required_dependencies; 2001 adds max_completable_dependents ('Useful to have exclusive branches in a questline').",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Any Tier 2 trap could open the Tier 3 opener, and 'Defend' and 'Explore' branches fit the amulet decision. Don't use max_completable_dependents there, because the in-game choice is reversible."
+  },
+  {
+   "name": "Progressive reveal without spoilers",
+   "description": "Show the tree's shape but hide details until a quest is reachable, or hide quests entirely until their prerequisites are done.",
+   "evidence": [
+    "MMP tier chapters set hide_quest_details_until_startable: true",
+    "Ozone uses hide_until_deps_complete for the post-game board",
+    "MMP has 48 hide_dependent_lines in dense areas"
+   ],
+   "ftbq_mechanism": "Chapter keys hide_quest_details_until_startable, hide_quest_until_deps_visible, hide_quest_until_deps_complete; quest keys hide_until_deps_complete, hide_text_until_complete, invisible plus invisible_until_tasks, hide_dependent_lines, hide_lock_icon (2001).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD already hides 42 quests completely. Showing locked shapes instead builds anticipation while still keeping story beats (boss, airdrops) unannounced."
+  },
+  {
+   "name": "Narrator voice, humour and a finale",
+   "description": "A consistent in-character voice in titles and descriptions, and a named, celebratory final quest.",
+   "evidence": [
+    "FF first-person narrator ('Okay I lied...'); heart finale with a poppy named 'Thanks for Playing! -Ammonium'",
+    "MMP Latin titles with translations, italic voice lines, '1.3 * 1.2 = 1.56 ?!?!!!!', COD 'Certificate of Doneness!' with art"
+   ],
+   "ftbq_mechanism": "title, subtitle and description text, &o italics, a named item reward (display Name NBT), a description image.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "A Fallout-TV public-service or overseer narrator fits the pack. Endless mode can award certificates at boss milestones without pre-announcing the boss."
+  },
+  {
+   "name": "Config panel of repeatable command toggles",
+   "description": "A chapter of repeatable checkmark quests whose command rewards flip gamerules (day/night, weather, keepInventory).",
+   "evidence": [
+    "FF configuration_panel.snbt: 16 can_repeat quests, command rewards with auto no_toast, chapter disable_toast, 'You need to have admin (/op) permissions'",
+    "MMP configuration_panel.snbt: 12 quests in on/off pairs (circle and square)"
+   ],
+   "ftbq_mechanism": "can_repeat plus a command reward (2001: elevate_perms, silent) plus auto (enabled, no_toast, invisible) plus disable_toast.",
+   "fit_for_td_pack": "low",
+   "fit_reason": "TD locks game state during waves (gamerule lock and restore), and player-flippable gamerules would fight that. At most, use it for safe opt-ins that already exist as scripts."
+  }
+ ],
+ "multiplayer_notes": [
+  "Quest progress belongs to the whole team in FTBQ 2001.4.22 (TeamData). A task done by any party member completes the quest for everyone, and markTaskCompleted sends the completion toast to every online member (DisplayCompletionToastMessage). In a 3-player party only one person actually does each lesson, unless the quest asks for something every player must do.",
+  "Rewards are claimed per player by default. QuestKey.forReward keys a claim on the player's UUID, or on NIL_UUID when team_reward is true. The 2001 tooltip says: 'When true, this is one reward for the whole team; only the submitting player receives it. When false, all online players receive the reward.' None of the three packs set team_reward, and all have default_reward_team false, so every coin, bag or XP reward is multiplied by party size.",
+  "Repeatable quests are first-come in a party. In TeamData.markRewardAsClaimed, once a player has claimed all rewards of a repeatable quest, Quest.checkRepeatable resets it for the whole team and starts the team's repeat_cooldown (seconds of real time). Ozone's coin shop and Bounty would behave this way in a team. This is from bytecode and wasn't tested live.",
+  "None of the three books has co-op quests, shared goals or role splits. Multiplayer is only covered in setup text: Ozone (/skyblock gui, the Teams icon), MMP (AdminShop shared bank accounts), FF (server-admin config notes).",
+  "Command rewards run with the claiming player's permissions. FF's Configuration Panel says 'You need to have admin (/op) permissions', so on a dedicated server non-ops can't use it. 2001 has elevate_perms for this.",
+  "2001 CommandReward contains the placeholder strings {p}, {x}, {y}, {z}, {quest}, {chapter}, {team}, {team_id}, {long_team_id}, {member_count} and {online_member_count}; 1902 lacks the team ones. That allows team broadcasts such as '{team} held wave 15'. TD's no-player-count-scaling rule means rewards shouldn't scale by member count. These are string constants only and weren't tested live.",
+  "Choice rewards plus per-player claims let each party member pick a different kit. It's the cheapest built-in way to create co-op roles; MMP uses choice tables, but not for co-op.",
+  "FTBQ loot crates drop on LivingDropsEvent regardless of who killed the mob, and go to whoever picks them up. There's no per-player split.",
+  "2001 has in-world quest blocks that none of the three packs use (MMP only gives a screen_1 as a reward): Task Screens 1x1 to 7x7, Progress Screen, Quest Detector, Progress Detector, Quest Barrier, Stage Barrier, Loot Crate Opener. A screen at the base could show a shared objective to every party member.",
+  "In TD, ftb-xmod-compat 2.1.2 exposes KubeJS FTBQuestsEvents (customTask, customReward, completed, started). TD's quest_milestones.js already completes custom tasks with /ftbquests change_progress, which applies to the player's team. That's enough for team-wide celebrations, such as an effect at the pedestal on a shared milestone, or per-player nudges via tell or title, without new mods."
+ ],
+ "reward_presentation_notes": [
+  "Ozone shows the same two icons (chance cube and gold coin) on 905 of 967 quests. It reads clearly as an economy but is never exciting. The Coin Shop uses rarity-coloured ProjectE alchemy-bag icons (light_gray, green, blue, purple, orange, cyan, red) with subtitles '3 Coins' to '20 Coins'. Tables show their title ('Common Reward' to 'Legendary Reward') via use_title and hide their contents via hide_tooltip.",
+  "Loot crate items (2001 and 2101) are named after their table, tinted by `color`, and get an enchant glint from `glow`. Right-click opens one with item particles; sneak-right-click opens the whole stack (2001 lang: 'Sneak-right-click to open all in hand'). JEI gets a 'Loot Crates' category with drop chance and 'Dropped by'.",
+  "FF's reward icon changes metal as you advance (iron, lead, nickel, silver, gold coins), so escalation is readable at a glance. Challenges award trophy items, and the finale is a named item ('Thanks for Playing! -Ammonium').",
+  "MMP's choice rewards open a pick-one dialog. Hint quests pay in escalating cookies (cookie, sweet berry cookie, honey cookie), small rewards that match the tone. The finale is creative storage plus a custom 'congratulations' illustration in the description.",
+  "Reward types in 2001.4.22: item, choice, all_table (new since 1902), random, loot (rolls loot_size items and opens a reward notification screen), command, custom (KubeJS), xp, xp_levels, advancement, toast (custom toast text), gamestage. Reward tables have loot_size, empty_weight, hide_tooltip, use_title and an optional loot_crate block.",
+  "Utility and repeatable quests suppress toasts: chapter-level disable_toast (FF and MMP config panels, Ozone Coin Shop) and reward auto 'no_toast' or 'invisible'. Otherwise every online party member sees 'Quest completed!', 'Chapter completed!' or 'All chapters completed!'.",
+  "None of the three books uses sound or title feedback: no /title or /playsound command rewards, no toast rewards, no custom rewards. TD can use command rewards (2001 placeholders {p}, {team}) or KubeJS custom rewards for things like a horn sound or a 'WAVE 8 HELD' title.",
+  "Flat XP is the weakest reward: MMP's 69 'xp 100' entries read as filler. In TD, XP levels buy pedestal upgrades, so they matter, but the 76 rewards of 1-3 levels all look the same. Scaling them by tier and labelling what they buy (e.g. 'enough for one pedestal upgrade') would make them meaningful.",
+  "Manuals as rewards (MMP's Thermal guidebook; FF's IE manual, Lexica Botania and Ars notebook) make the reward the textbook for the next lesson.",
+  "For multiplayer, unless team_reward is set every party member sees and claims their own copy. A 'loot'-type reward also opens the reward reveal screen separately for each claimer."
+ ],
+ "version_caveats": [
+  "How I checked: I extracted string constants and ran javap on ftb-quests-forge-2001.4.22.jar (the TD instance), ftb-quests-neoforge-2101.1.24.jar (Ozone), ftb-quests-forge-1902.5.7 and 1902.5.10 (MMP, FF), and questsadditions-1.19.2-1.4.2. Nothing was tested in-game.",
+  "Ozone (2101) features not in 2001.4.22: lang/en_us.snbt text externalisation (the quest_desc, quest_subtitle and chapter_subtitle keys exist only in 2101), so Ozone's text would have to be inlined into chapter SNBT; 1.21 item `components` syntax instead of 1.20 NBT; the ftbquests:entity_face custom icon (2001's custom_icon only takes a texture path in NBT 'Icon'); FTB Filter System smart_filter task items; and data.snbt fallback_locale and verify_on_load.",
+  "Present in 2101 but missing in 2001: a 'currency' reward type; kill-task entity_type_tag and custom_name (2001 kill tasks take one entity id plus value, so 'kill N wave mobs of any type' needs TD's KubeJS custom tasks); team stages; Quest Barrier teleport and invisible-when-open; command reward permission_level and feedback_message (2001 has elevate_perms and silent); client notification styles (toast, chat, action bar, none) and completion sounds; the reward selector GUI; disable_reward_screen_blur; chapter-level hide_text_until_complete (2001 has it per quest only); item match_components.",
+  "Ozone features that do exist in 2001: drop_loot_crates, loot_crate_no_drop, the reward-table loot_crate block, hide_tooltip, use_title, loot_size, empty_weight, can_repeat, repeat_cooldown (seconds), hide_until_deps_complete, chapter-ID dependencies, size, disable_toast, chapter images with click and hover, emergency_items, show_lock_icons, drop_book_on_death, hide_excluded_quests. The crate-drop formula and the LivingDropsEvent handler match between 2001 and 2101.",
+  "Present in 2001 but not 1902, and unused by all three packs: max_completable_dependents (exclusive branches), require_sequential_tasks (quest or chapter), icon_scale, hide_lock_icon, autofocus_id (opens the chapter centred on a quest), default_quest_size, chapter-image dependency, shape 'none', the all_table reward, and pinned-quest HUD position options. ChapterImage.dependency is read by 2001, but I haven't verified in-game how it gates visibility.",
+  "MMP's 'secret' quests and questsadditions:time tasks come from Quests Additions, not FTB Quests. Its mixins add secret, repeatable, min_required_tasks and incompatible_quests; tasks break, place, use, killnbt, interaction, playernbt, structure, time and days; rewards repeat, repeat_random and repeat_choice. api.cfwidget.com/580129 lists a 1.20.1 Forge build (questsadditions-1.4.7.jar, 2024-12-19), but its compatibility with FTBQ 2001.4.22 is untested.",
+  "FF (31 uses) and MMP (20 uses) build 'any of' task items with Item Filters (itemfilters:or, tag, id_regex, mod). The TD instance has no Item Filters jar. FTBQ 2001's ItemTask only integrates with it when present.",
+  "In 1902, the command reward key 'player_command' became elevate_perms and elevate in 2001. The legacy 'hide' quest key appears in both 1902 and 2001 Quest classes.",
+  "RewardTable.loot_table_id is read, written and synced in 2001, but I found nothing else in the jar that uses it. Don't rely on it to pull from vanilla or LootJS loot tables.",
+  "MMP's description images under ftbquests:textures/gui/ (congratulations.png, cat.png, cod.png) aren't in any FTBQ jar; MMP ships them through OpenLoader. TD would ship custom quest art through kubejs/assets.",
+  "2001 timing: repeat_cooldown is seconds of real time, stored per team (multiplied by 1000 against System.currentTimeMillis). In Quests Additions, elapsedTime is seconds (multiplied by 20 to ticks)."
+ ]
+}

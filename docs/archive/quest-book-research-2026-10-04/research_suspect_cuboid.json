@@ -1,0 +1,437 @@
+{
+ "packs": [
+  {
+   "name": "The Suspect's Journey (v3.12.0 by TileEntity)",
+   "source": "Local instance C:/Users/mattf/curseforge/minecraft/Instances/The Suspect's Journey (1): config/ftbquests/quests/{data.snbt, chapter_groups.snbt, chapters/*.snbt, reward_tables/*.snbt}; banners and screenshots in kubejs/assets/suspect/textures/ftbquests/*.png (23 PNGs: 12 banner files used in 14 placements, plus 11 screenshots); GUI theme resourcepacks/HavenQuestingTheme-1.20.1-1.0.0.zip (enabled in options.txt); scripted structures config/worldedit/schematics/{spacestation,skeld}.schem; spawn set by config/dimensionspawn.toml (ad_astra:earth_orbit 0,100,0); the MineColonies chapter and all 9 reward tables come from mods/minecolonies-questline-1.20.1-1.1.0.jar (the 'Minecolonies Quest Installer' mod by hogbits).",
+   "version_info": "MC 1.20.1, Forge 47.4.10. FTB Quests 2001.4.20, FTB Library 2001.2.12, FTB Teams 2001.3.2, FTB XMod Compat 2.1.3, Item Filters 2001.1.0-build.59, Quests Additions 1.4.7 (provides questsadditions:time), WorldEdit 7.2.15 (the //schematic and //paste rewards need it). GameStages 15.0.2 is installed but the book doesn't use it. data.snbt: version 13, progression_mode linear, default_autoclaim_rewards disabled, default_reward_team false, show_lock_icons true, grid_scale 0.5.",
+   "scale": "267 quests in 15 chapters: 3 chapter groups plus 1 ungrouped always_invisible 'Utils' chapter that holds 25 hidden scripting quests. 76 of the quests are the imported MineColonies chapter, which contains all 23 invisible quests, all 52 advancement tasks, and all 23 choice, 4 random and 1 loot rewards. That leaves about 166 visible quests written by the pack author. 14 chapter banner placements and 11 description screenshots. The task's '28 reward tables' figure counts rewards that reference a table. There are only 9 table files.",
+   "progression_presentation": "Yes, the book is narrative-driven, in three acts. Group titles: '&bStage 1: &6Back to Earth', '&bStage 2: &6Ad Venerem', '&bStage 3: &6The Imposter'. The story: you were wrongly ejected from a spaceship, wake on an abandoned space station in Earth orbit, rebuild Mekanism tech (Meka Suit plus Paraglider) to survive re-entry, land on a post-viral, dinosaur-ridden Earth, climb rocket tiers (Moon, Mars, Venus), then find the crashed ship 'The Skeld' and kill the Imposter ('To be continued ...'). Every stage has a chapter called 'Main Quest Line' with the same blue banner, so the critical path is always easy to find.\n\nHOW CONTENT IS REVEALED (checked against the 2001.4.22 bytecode). A quest with dependencies is visible only if at least one dependency is visible. A chapter is visible only if one of its quests is, and a group only if one of its chapters is. So each chapter has exactly ONE gate quest, flagged hide_until_deps_complete (10 quests) and usually also hide_until_deps_visible. The gate depends on a milestone in another chapter (sometimes a task id, e.g. the isotopic centrifuge task), or on a quest in the hidden Utils chapter. Everything behind the gate inherits the invisibility. Whole Stage 2 and Stage 3 groups stay out of the chapter list until earned. The welcome page announces this up front.\n\nTHE UTILS CHAPTER is always_invisible: true and works as a 'director'. A dimension task (entering the Overworld) fires /title 'Welcome back to Earth' plus the subtitle 'The Stage 2 Questline is now active'. Obtaining a key item (isotopic centrifuge, polonium pellet, tier 1 rocket, raw desh, NASA workbench) fires the chat line 'There is a new Questline available!'. The same hidden quest is the dependency of the new chapter's gate quest. Reaching Venus prints 'The Stage 3 Questline is available!'. The 3 stages also map to dimensions (Earth Orbit, Earth/planets, Venus).\n\nVISUAL GRAMMAR (consistent, but never explained to the player):\n- gear = end goal of a production line (Polonium Pellet; Fissile Fuel; 'Another step done!' for the HDPE Sheet; Lithium Dust; Kerosene; Tier 1 Rocket; Visit the Venus; M4A4; 'Kill the Imposter')\n- square = setup or concept checkmark pages\n- diamond = tool quests (Configurator, Gauge Dropper, Wrench, Goggles)\n- rsquare = story intros\n- octagon at size 2.0 = story milestone ('The Earth now')\n- pentagon = special or opt-in (Flux Network repair, '&cDisable KeepInventory?')\n\nBANNERS: each visible chapter has a custom title banner on its canvas, colour-ranked. The red pack logo 'THE SUSPECT'S JOURNEY by TileEntity', big blue 'MAIN QUEST LINE' and big yellow 'A LOST WORLD' sit above smaller green and teal banners for production lines. The Guns, Storage and Minecolonies banners have the word 'optional' drawn into the art. No optional flags are used anywhere.\n\nTHEME: the GUI is reskinned with the Haven Questing Theme resource pack.\n\nLAYOUT: horizontal spines (the rocket ladder runs at y=-11 from x=-11.5 to 5.5). Production chains read left to right, with leaf inputs below them and hide_dependency_lines on those inputs (33 uses). 'A Lost World' is a hub with 8 spokes.\n\nHOW FAR ALONG: the stage group name, the chapters revealed so far, full-screen titles at stage changes, and a gear at each chain's end. The finale prints the title 'You defeat the Imposter' with the subtitle 'Questlines Complete'.",
+   "teaching": "TASKS: item tasks dominate, usually as a 2–4 item checklist (the machine plus what it makes, e.g. Bio Fuel = Crusher + 5 bio_fuel). 32 checkmark tasks serve as concept or setup pages. Dimension tasks mark travel (Moon, Mars, Venus). Observation tasks (look at a block) trigger story beats. questsadditions:time tasks appear only in the hidden scripts. The 52 advancement tasks are all in the imported MineColonies chapter, which uses MineColonies' own advancements to detect 'building built', something item tasks can't detect. A 'pick up any gun' task uses an itemfilters:or list of 19 TaCZ guns with a custom Glock task icon.\n\nDESCRIPTIONS are short: median 80 chars, p90 449, max 786, and 26.6% are empty. Colour convention:\n- &e item or machine names\n- &6 key goals or concepts\n- &c warnings ('&cDo not break the barrels!')\n- '&2Note:' for asides\nThe Input/Output page colours each line to match the coloured port dots on the in-game machine. There are 11 inline screenshots via {image:suspect:textures/ftbquests/X.png width:.. height:.. align:center}. They show the FTB Chunks forceload clicks, the Mekanism pipe pull mode, Flux Plug vs Point, the Thermal Evaporation plant, a Create sequenced assembly, the seismic survey readout, well and pumpjack placement, distillation tanks and the storage network. Two JSON open_url links point to CurseForge and the forum.\n\nCHUNKING:\n- One chapter per production chain (Fission Reactor 21 quests, HDPE 7, Lithium 6, Fuel 15, Thorianite 37). Each quest is one machine plus one product, with the recipe written as a formula ('&eHydrofluoric Acid&r + &eUranium Oxide&r = Uranium Hexafluorid').\n- Multiblocks are taught as bill-of-materials task lists. The Derrick lists 7 block types with counts, backed by placement screenshots and a Projector tip.\n- Concept first: 'Basic Electrical Concepts in Electrodynamics' explains V, A and W and rewards a Multimeter. Transformers are explained before the transformer task.\n- A 'world briefing' hub after landing introduces each non-tech system: crowbars for locked chests, TaCZ keybinds X and R plus weekly airdrops and flares, MCA villagers, Spore facilities and gas masks, Croptopia, and radiation rules.\n- Safety warnings are inline ('Never connect Mekanism and Electrodynamic Machines/Pipes etc. together. This can crash your game').",
+   "rewards": "The pack author's own chapters reward nearly every quest. Rewards are mostly the next step's materials or the thing just taught:\n- the Configurator quest gives 8–16 each of mechanical pipes, universal cables and pressurized tubes\n- the Flux Network page gives 16 Flux Plugs and 4 Flux Points\n- the TaCZ guns spoke gives 36 9mm and 60 5.56 ammo (NBT AmmoId) plus a dyairdrop flare gun\n- Spore gives a gas mask; Electrodynamics gives its guidebook; the Volt concepts page gives a Multimeter\n\nNBT-loaded rewards come ready to use: an ad_astra large_gas_tank holding 3000 mB oxygen, and a Mekanism elite energy cube storing 64,000,000.\n\nMost item rewards use random_bonus. FTBQ shows a count + random_bonus reward as a range, e.g. '16-32'.\n\nXP: 36 small 'xp' rewards of 100 points each sit on checkmark info pages. These are filler. 17 'xp_levels: 5' rewards go on gears and milestones.\n\nMilestones get extra: 'Time to go Home' gives 5 levels, 10 diamonds and 20 emeralds. The finale 'Kill the Imposter' pays a jackpot of creative items (creative motor, creative crate, creative energy, creative filling tank, creative blaze cake) plus nether stars and polonium.\n\nThe book has no loot crates (drop_loot_crates false). The only reward tables are the imported MineColonies ones. 8 are 'choice' tables, e.g. 'Choice Logs' with 64 of each log type and 'Choice Stone'. 'MineColonies Common' is a weighted random table with weights from 0.25 to 1. They have plain titles and no icons.\n\nThe 38 command rewards fall into these groups:\n- 9 tellraw and 6 title (announcements)\n- 5 gamemode switches, 2 //schematic load, 2 //paste, 2 /clearclipboard and 1 '//cyl minecraft:barrier 4' (WorldEdit pastes of the start station and of the Skeld)\n- 3 gamerule: doMobSpawning and doWeatherCycle on landing, plus the opt-in keepInventory false\n- 2 spawnpoint\n- 2 '/ftbquests change_progress' (quest-state flags)\n- 1 levitation effect\n- 1 '/kill @p' sequence-break guard: players spawn in ad_astra:earth_orbit, and dropping to the Overworld before owning the Paraglider, Meka Suit and Modification Station kills you, which enforces the story rule 'you will burn up'\n- 1 playsound (wither spawn) and 1 summon of the 128-HP 'The Imposter' boss\n\nAuto-claim: 15 rewards are explicitly enabled, 11 are no_toast (silent background), 1 is invisible. FTBQ also force-auto-claims every reward in an always_invisible chapter (checked in 2001.4.22), so the Utils scripts fire without clicks.\n\nWhat the player sees: normal completion toasts, item icons with count ranges, full-screen titles at act boundaries, green chat lines when content unlocks, and a sound cue before the boss.",
+   "multiplayer": "There are no co-op-specific quests. FTB Quests progress is shared by the whole party, and rewards are claimed per player by default (default_reward_team false). Each teammate gets their own diamonds, ammo, etc.\n\nteam_reward: true is set on 6 command rewards, all world-altering one-shots: //schematic load spacestation, //paste, /clearclipboard, the quest-state flag (/ftbquests change_progress @s complete ...) and /spawnpoint @p (twice). The likely intent is to paste the start station once per party rather than once per member.\n\nHazards, inferred from the FTBQ 2001.4.22 code and not playtested:\n- Auto-claimed non-team command rewards run for every online member when a party quest completes, and again for any member who logs in later. That means the gamemode creative/survival switches, levitation and titles hit everyone.\n- The team-flagged '/spawnpoint @p' sets the spawn only for the player who triggered it.\n- The repeatable '/kill @p' guard is non-team. If one teammate drops to Earth early, the party's quest completes and every online member is killed.\n- '&cDisable KeepInventory?' lets any one player flip a world gamerule for everyone.\n- The Imposter summon and one tellraw lack elevate_perms, so they run at the claimer's own permission level and would fail for non-op players on a server.\n- Players start in their own solo FTB team, so a friend who hasn't joined the party yet would run the start-station paste again for their own team.",
+   "standout_examples": [
+    {
+     "where": "chapters/start.snbt (hidden 'Utils' chapter, quest 19F1B4DC9ABBA89E 'Stage 2') together with chapters/a_lost_world.snbt quest 7DA942CCBB2DD81F 'The Earth now' (octagon, size 2.0)",
+     "what": "An act transition. A hidden dimension task fires two auto-claimed /title commands when the player first enters the Overworld. The same hidden quest is the dependency of every Stage 2 gate quest, so the Stage 2 group, its chapters and the big story octagon appear at the same moment the title plays. The octagon reads: 'After years of traveling through space, you are now back on earth. A &6viral epidemic&r has wiped out most of the world.'",
+     "why_it_works": "The reveal, the fanfare and the new content arrive in the same second, so the player feels they have earned a new act. Hiding a whole act takes one flag per chapter.",
+     "excerpt": "/title @p title [{\"text\":\"Welcome back to Earth\",\"color\":\"green\"}]  +  /title @p subtitle {\"text\":\"The Stage 2 Questline is now active\", \"color\":\"yellow\", \"bold\":true}"
+    },
+    {
+     "where": "chapters/a_lost_world.snbt, spoke 'TaCZ Weapons' (429D4032C37BBF23) off the 'The Earth now' hub",
+     "what": "A world-briefing hub: one story node with 8 spokes, each introducing a system and paying a starter reward. The guns spoke completes with any of 19 found TaCZ guns (an itemfilters:or task with a custom Glock icon). It teaches the keybinds and the airdrop and flare system, and rewards ammo plus a flare gun.",
+     "why_it_works": "It teaches exactly what a new arrival needs, and the reward is the consumable for that system. It maps almost one-to-one onto TD's guns and 5th-wave airdrops.",
+     "excerpt": "You can change the &efire mode&r by pressing &ekey X&r ... &eReload&r with &ekey R&r ... Once a week (7 ingame days), an airplane flies by and drops a supply crate. These supply drops can also be called in manually using a &6Flare&r."
+    },
+    {
+     "where": "chapters/volt_energy.snbt: 'Basic Electrical Concepts in Electrodynamics' (598094A60F5293AA, square checkmark) and 'Input and Output' (601DB42109A7ABD3)",
+     "what": "A concept page explains volts, amps and watts and rewards a Multimeter, the instrument for reading those values. The next page is a colour legend whose formatting codes match the coloured dots on the real machines. Its rewards are the wires, fluid pipes and gas pipes for each colour.",
+     "why_it_works": "The text looks like what is on screen, and the reward is the tool or material for the concept just read. Reading and doing become one step.",
+     "excerpt": "&4Red&r – Energy Input using &6Wires&r / &7Gray&r – Energy Output / &9Blue&r – Fluid Input using &6Fluid Pipes&r / &eYellow&r – Fluid Output / &2Green&r – Gas Input using &6Gas Pipes&r / &6Orange&r – Gas Output"
+    },
+    {
+     "where": "chapters/the_fission_reactor.snbt, 'Flux Network' (59E4654FA2FD0225, pentagon)",
+     "what": "A screenshot-led setup page for Flux Networks, which is also a TD Tier 3 mod. Two inline images show where Plugs go (power sources) and where Points go (machines and storage). The reward is 16 Flux Plugs and 4 Flux Points, enough to try it right away.",
+     "why_it_works": "Pictures answer 'which block goes where' far better than prose, and the generous reward removes the cost barrier to experimenting.",
+     "excerpt": "&eFlux Plug&r ... Attach this one to &6Power Sources&r like Solar Panels ... {image:suspect:textures/ftbquests/flux_plug.png width:180 height:118 align:center} ... &eFlux Point&r ... Attach this one to &6Machines&r to provide Power to them"
+    },
+    {
+     "where": "chapters/start.snbt hidden quests 5CF74CEC68AF4B0C (boss trigger) and 62B3C4C990416561 (lore), plus chapters/main_quest_line_2.snbt 'Kill the Imposter' (5FC5CFFCDD9E3534, gear)",
+     "what": "A boss beat triggered by observation. Looking at the Skeld's interior blocks plays a wither-spawn sound and summons a named 128-HP zombie that carries kubejs:imposter_trophy (100% drop chance). The visible gear quest asks for the trophy and pays creative items. Looking at a hazmat corpse prints a lore line ('The Yellow Crewmate! But where is the rest of the Crew?').",
+     "why_it_works": "Environmental storytelling plus a boss drop used as the quest item lets the book frame a fight and a discovery without any extra mod.",
+     "excerpt": "/playsound minecraft:entity.wither.spawn hostile @p | summon zombie ~-4 ~2 ~4 {CanBreakDoors:1,CustomName:'[{\"text\":\"The Imposter\",\"color\":\"dark_red\"}]',Health:128,...} | Congratulations. You have &6completed&r the Suspect's Journey ... &cTo be continued ...&r"
+    },
+    {
+     "where": "chapters/main_quest_line.snbt, '&cDisable KeepInventory?' (6C6CB3D5DFB90542, pentagon)",
+     "what": "An opt-in difficulty switch written as a quest: a red title, a checkmark task, and an auto-claimed command reward, with the safety net (the Corpse mod) explained in the text.",
+     "why_it_works": "Players choose the difficulty inside the book, with the consequence spelled out. The red title and pentagon shape flag it as a decision rather than a task.",
+     "excerpt": "For a more vanilla experience, you can turn off keepInvventory. The modpack uses the mod &eCorpse&r. At the place of your death you will find your corpse containing your Inventory  ->  command: /gamerule keepInventory false (auto: enabled)"
+    },
+    {
+     "where": "Chapter images in every visible chapter (kubejs/assets/suspect/textures/ftbquests/{journey,mainquest,lostwolrd,reactor,volt,fuel,guns,storage_img,minecolonies}.png) and resourcepacks/HavenQuestingTheme-1.20.1-1.0.0.zip",
+     "what": "Title banners with a visual hierarchy: a big red logo, a big blue 'MAIN QUEST LINE', a big yellow 'A LOST WORLD', and smaller outlined green or teal banners for production lines. The optional chapters' banners have the word 'optional' drawn under the name. The quest GUI is re-coloured by a theme resource pack.",
+     "why_it_works": "The player knows at a glance where they are and what can be skipped, with no optional flags needed. It's cheap to make and gives the book a strong identity.",
+     "excerpt": "images: [{ height: 2.0d image: \"suspect:textures/ftbquests/guns.png\" width: 4.0d x: -9.0d y: -5.5d }]   theme: widget_border: #82031a / text_color: #9db055 / dependency_line_completed_color: #910091"
+    },
+    {
+     "where": "chapters/welcome_suspect.snbt, 'Information' (50EEFFAE6FAE1609, square)",
+     "what": "Up front, the book tells players that later content is hidden and how it unlocks.",
+     "why_it_works": "Hidden chapters read as a promise rather than as missing content, and the mystery stays intact because nothing is shown early.",
+     "excerpt": "This Modpack contains &e3 Stages&r - with completing a Stage, the next Stage will be visible / Each Stage contains several Questlines - some of these are hidden until you reach  a certain point of a visible Questline"
+    }
+   ],
+   "weaknesses": [
+    "It uses filler XP. 36 rewards of 100 XP points sit on read-me checkmark pages and feel weightless.",
+    "Thorianite Dust (37 quests) is checklist-heavy. 8 quests have no reward, many have no description, and one task is an honour-system checkmark: 'Click Me if you have Sulfric Acid'.",
+    "Untitled quests (195 of 267) fall back to item names, and there are many typos ('Oxigen', 'Metalluric', 'procude', 'Stell').",
+    "The imported MineColonies chapter (76 quests) clashes in tone and contains unfinished text, e.g. the subtitle 'TODO: Improve Language' and a quest 'IDK': 'I do not know how this is obtained, but you got it. Maybe you can let me know in the mod comments.'",
+    "The reveal and setup depend on hidden WorldEdit and gamemode command chains run on timers ('Don't move and wait - setup in progress'). This is fragile; the text even says 'If Pipes and Cables are messed up there, break and place these again'.",
+    "There are multiplayer hazards in the command scripting (see the multiplayer section): non-team gamemode, kill and title commands hit every online member, the team-only spawnpoint applies to one player, and the boss summon lacks elevate_perms.",
+    "Dead keys: 'secret: true' (on one quest and three tasks) and 'repeatable: true' are not read by FTB Quests 2001.4.x, so the '1 secret quest' does nothing.",
+    "Stage 3 is just 2 quests and ends on 'To be continued'. The final act feels thin.",
+    "The shape grammar is never explained to the player, and no optional flags are used. 'Optional' exists only in banner art."
+   ]
+  },
+  {
+   "name": "Cuboid Outpost (Luxury Edition), manifest name 'Cuboid Outpost 1.20.1' v0.5.5",
+   "source": "Local instance C:/Users/mattf/curseforge/minecraft/Instances/Cuboid Outpost (Luxury Edition): config/ftbquests/quests/{data.snbt, chapter_groups.snbt, chapters/*.snbt, reward_tables/end_game_rewards.snbt and rewards.snbt}; images in kubejs/assets/kubejs/textures/quests/**.png (33 on chapter canvases plus 6 in descriptions); the gamestage consumer is mods/cuboidmod-1.20.1-0.3.2.jar (the CryogenicDimensionalTeleporterTileEntity class references nether_access, end_access and cuboid_overworld_access). The old-chapters/, 'old - *.snbt' and quests.bak/ leftovers are not loaded.",
+   "version_info": "MC 1.20.1, Forge 47.2.20. FTB Quests 2001.3.2, FTB Library 2001.1.5, FTB Teams 2001.1.4, FTB XMod Compat 2.1.1, Item Filters 2001.1.0-build.59, GameStages 15.0.1, Quests Additions 1.4.3a (installed but unused), cuboidmod 0.3.2, nonetherportal 1.0. data.snbt: version 13, progression_mode linear, default_autoclaim_rewards disabled, default_reward_team false, grid_scale 0.5.",
+   "scale": "1429 quests in 43 chapters, organised as 10 groups (5 numbered acts plus 5 lettered appendices) and 1 ungrouped intro chapter ('Farewell'). 288 quests are flagged optional. Shapes: 285 square, 92 gear, 40 hexagon, 13 pentagon, 6 octagon, the rest default circle. Only 269 quests (19%) carry any reward. 33 canvas images sit in 5 chapters and 6 images appear in descriptions. 145 quests have disable_toast and 114 have hide_dependency_lines.",
+   "progression_presentation": "CHAPTER GROUPS form an outline:\n- '1 - A New Life': Getting Started, Getting Going, Getting Creative, Getting No Tinks Done, Getting Immersed, Getting Mekanised, Getting Digital\n- '2 - A New Focus': food and farming chapters\n- '3 - A New Appreciation': furnaces, alloys, Thermal, Industrial Foreboding, Powah\n- '4 - A New Mission': Slaughterhouse, backpacks, jetpacks, End, Nether\n- '5 - A New World': Extending Reality, 'A New Beginning?'\n- then 'Appendix A - From A to B' (transport and XNet), 'Appendix B - Squared Away' (storage), 'Appendix C - For Reference' (sieve tables, trees), 'Appendix D - For The Completionists', 'Appendix E - Helping Hand' (Emergency Items)\nThe ungrouped 'Farewell' chapter (a memo from 'The Cuboid Corp (tm)') heads the list.\n\nNOTHING IS HIDDEN: there are no invisible or hide_until_* flags. The whole map is visible and simply locked, so navigation comes from structure rather than concealment.\n\nTHE SHAPE LEGEND is explained in the intro ('Step and Tasks Info'): gear = start of a chapter or a link to another chapter; square = main survival path; circle = optional or not critical. The data matches: all 285 squares are required, 281 of the 288 optional quests are circles, and 90 of 92 gears are required. Other shapes:\n- hexagon = 'Checkpoint' material steps in guided builds, and the 'Mesh + input' nodes of the sieve chart\n- pentagon = 'pick N of these' sets (11 food quests feed a 5-of-12 gate)\n- octagon = emergency items\nSizes: all 35 size-1.5 quests are gears, i.e. chapter-unlocking milestones such as 'Wooden it be nice?', 'Irn Bru' and 'Unlock Chapter: Dishing up the Meat'. Size 3.0 marks the sieve-mesh hubs; 1.2 marks sub-hubs.\n\nCHAINING: every chapter opens with a gear named after the chapter, which depends on a gear in an earlier chapter (180 cross-chapter dependency edges, 41 of them landing on gears). The unlocking gear ends with lines like '&aUnlocks: Getting Mekanised (1/2)&f' (17 such lines in the early chapters), so players see what opens and how many keys are still missing.\n\nDIMENSION KEYS: 3 square key quests grant GameStages stages (manual claim, custom reward title 'Let's go!', key icon). cuboidmod's teleporter checks those stages, and nonetherportal removes the vanilla route.\n\nTHE FINALE draws 8 capstone gears from different chapters in an arc into 'The Key to Everything'.\n\nCLUTTER CONTROL:\n- hide_dependency_lines on fan-in nodes (69 in Dirtying the Dishes)\n- disable_toast on bulk reference quests (101 in the sieve chart)\n- optional quests are left out of chapter progress (FTBQ excludes optional and repeatable quests from a chapter's progress %; checked in 2001.4.22)\n- completionist fans sit to the left of the main path behind a header checkmark\n\nHOW FAR ALONG: the act number in the group name, gears opened so far, the 'Unlocks (n/m)' counters, and 'Chapter completed!' fires once the required path is done.",
+   "teaching": "TASKS: 1526 item tasks, often bill-of-materials lists, and 69 checkmarks (letters, headers and build steps). 11 advancement tasks reuse vanilla and Outer End advancements for exploration (find a fortress, bastion or end city; return a ghast fireball; kill the dragon). There are 3 dimension tasks and 1 biome task. Task titles label tag filters, e.g. '8x Iron Dust' via itemfilters:tag forge:dusts/iron.\n\nVOICE: every quest reads as a dispatch from 'The Cuboid Corp (tm)' and its 'Science Division', in a sardonic, guilty-corporate tone. 627 quests have pun titles and 93 have subtitles ('Kentucky Fried Spider Eye' / 'Not recommended for red and blue superheroes.'). Colour convention: &a green for key instructions, &f to reset, and &c&l for warnings ('&c&lWARNING:&r ... &c&ldon't recycle technology you can't yet make yourself unless told to!&r').\n\nGUIDED BUILDS: 'Deliciously Creative' is a vertical build-along. Hexagon 'Checkpoint N' quests (item tasks for exactly the parts the next step needs) alternate with 'Step N' checkmarks (placement text). A screenshot of each step sits on the canvas beside it, and players are told to 'scroll in for a closer look at the example images'.\n\nREFERENCE DIAGRAMS on the canvas carry hover tooltips: AE2 crafting-CPU shapes and furnace automation, XNet generator channel configs, the Create water wheel and bulk washing, and a wither stasis ether-gas rig. Description images include a UI tutorial showing the dependency arrow in the quest panel.\n\nREFERENCE CHARTS built from quests:\n- 'This is Meshed Up' (115 quests): mesh hub, then mesh + input hexagon, then output drops\n- 'All Powah-ful': a tier matrix of 7 tiers x cables, cells and capacitors, with stats ('transfer at a rate of 1.4k FE/t')\n\nCOMPLETIONIST HEADERS explain stat deltas between tiers.\n\nMost text is short (median 121 chars), but 111 descriptions run over 600 chars. The longest is 2645 chars: 'Lithium Dust - From Water to Lithium Dust - what a palaver!'.",
+   "rewards": "Rewards are sparse on purpose: only 269 of 1429 quests have one. In total there are 284 item rewards, 6 gamestage rewards and 2 choice rewards. There is no XP, no command reward and no loot crate.\n\n156 of the 284 item rewards duplicate the task item ('make one, get one': dielectric paste 32 + up to 32 more, control circuits 1 + up to 15). This softens grind and is immediately useful. Other patterns:\n- each backpack-upgrade quest pays an upgrade_base, the raw material for the next upgrade\n- chapter openers pay the mod's manual (powah:book, a Patchouli guide for Industrial Foregoing, a Mekanism configurator)\n- exploration milestones pay waystones\n- some rewards arrive just in time: 32–64 glass bottles are auto-claimed on arrival in the End, for dragon's breath\n\nRewards are framed as Corp 'care packages' with jokes: Builder's Tea with 'p.s. You're doing great! Have a cuppa on us!', or 'we had a spare one lying around that you can have'.\n\nSpecial rewards are dressed up. The gamestage keys show as 'Let's go!' with a storagedrawers:shroud_key icon, or as 'Let me in to the End!' with an energized end stone icon. The finale's choice reward uses a firework-rocket icon and exclude_from_claim_all. Its table 'End Game Rewards' (IE balloon icon) offers a creative energy cube, creative fluid tank, creative motor, RS creative disk or AE2 creative cell. The plain 'Rewards' table (64k cells, a netherite backpack, an ultimate pipe upgrade and more) pays the 5-of-10 'Challenge Bonus'.\n\nAuto-claim: the default is disabled. The key rewards are explicitly manual, and only the End bottles are 'enabled'.",
+   "multiplayer": "There are no co-op-specific quests, and rewards are per player (default_reward_team false), so refund rewards are duplicated for every party member.\n\nGameStages stages are per player, while quest completion is shared by the party. The original 'Let's go!' key rewards are therefore non-team manual claims, and each teammate claims their own dimension access.\n\nAppendix E 'Emergency Items' adds 'Replacement Key' quests ('If you have completed the 'Key to the End', but still can't get there, try ticking this checkbox and try again!'). These are team_reward: true, which means only one teammate can ever claim each one. That is probably the wrong setting for the multiplayer case it targets (inferred, not tested).\n\n'Missing: Dragon' is written explicitly for servers. It hands out 4 end crystals because 'someone beat you to it'.",
+   "standout_examples": [
+    {
+     "where": "chapters/farewell.snbt: 'Step and Tasks Info' (28877C7DC0FB478C) and 'Making the most of this Survival Guide' (108D30AC48535DA5, with the screenshot kubejs:textures/quests/farewell_ftb_dependencies.png)",
+     "what": "The book explains its own visual grammar and its UI (the little dependency arrow) on page one, in character.",
+     "why_it_works": "A 1429-quest map stays readable because players can skim for squares and gears. The legend is honest: it matches the data almost perfectly.",
+     "excerpt": "Steps / tasks with a &eGear&f shape are typically either the &astart of a particular chapter, or a link to another chapter&f. ... &eSquare&f shape are part of the &amain survival guide requirements&f ... &eCircle&f shape are usually either &atotally optional, or just not critical&f"
+    },
+    {
+     "where": "chapters/getting_creative.snbt, 'Irn Bru' (2A3A34A47D8AF234, gear, size 1.5)",
+     "what": "A chapter-exit gear whose description ends by listing every chapter it unlocks and how many of each chapter's keys it supplies.",
+     "why_it_works": "It answers 'what's next?' and 'how close am I?' right where the player is reading, at zero cost.",
+     "excerpt": "&aUnlocks: Getting Immersed (2/2)&f / &aUnlocks: Getting Mekanised (1/2)&f / &aUnlocks: Digging up the Dirt (1/2)&f / &aUnlocks: Powah to the Person!&f"
+    },
+    {
+     "where": "chapters/deliciously_creative.snbt (26 quests, 16 chapter images of create_sweet_roll_step_*.png)",
+     "what": "A build-along. Hexagon 'Checkpoint N' item tasks (exactly the parts for the next step) alternate with 'Step N' checkmarks (placement instructions). Each step's screenshot sits next to it on the canvas. Small treat rewards and spare parts keep momentum.",
+     "why_it_works": "A fiddly multi-machine build becomes small verified steps with pictures. Materials are checked before the instructions, so the player is never stuck mid-build.",
+     "excerpt": "Checkpoint 5: 'Now that we should be able to automatically make dough, the next stage is to bake it into bread. ... p.s. You're doing great! Have a cuppa on us!' (reward create:builders_tea) | Checkpoint 1: 'Remember to scroll in for a closer look at the example images'"
+    },
+    {
+     "where": "chapters/dirtying_the_dishes.snbt 'Unlock Chapter: Dishing up the Meat' (060D9DD7789DB5C5) and chapters/meeting_the_underlings.snbt 'Challenge Bonus' (51AED40724C46C09)",
+     "what": "N-of-M gates. The next chapter unlocks after any 5 of 12 pentagon food quests (min_required_dependencies: 5, hide_dependency_lines). A separate 5-of-10 spawn-egg 'Challenge Bonus' pays a choice from the 'Rewards' table (exclude_from_claim_all).",
+     "why_it_works": "Players choose which sub-goals to do, and extra breadth earns a visible bonus. One thing to avoid copying: the gate text says 'at least 4' while the data and FTBQ's own '5 required' header say 5.",
+     "excerpt": "'You will be able to unlock the next chapter when &aat least 4&f steps with a &aPentagon shape&f have been completed.' | 'Create a minimum of 5 of these additional spawn eggs and the Department of Fur Babies and Zoology at Cuboid Corp have decided to reward you...'"
+    },
+    {
+     "where": "chapters/a_new_beginning.snbt: 'The Key to Everything' (51C4DAB656980D21) and 'More to explore...' (7CC0A39D2D7EE62D)",
+     "what": "A converging finale. 8 capstone gears from different chapters (thatldu block, AE2 singularity, ultimate singularity, nitro capacitor, ether gas, blaze lantern and others) arc into one square. Its reward is a dimension-unlock gamestage dressed as a key, plus a waystone. A sign-off letter follows, with a firework-icon choice of creative items.",
+     "why_it_works": "The whole journey visibly feeds the climax, and the climax reward is an unlock rather than more loot.",
+     "excerpt": "reward {auto: \"disabled\", icon: \"storagedrawers:shroud_key\", stage: \"cuboid_overworld_access\", title: \"Let's go!\", type: \"gamestage\"} | 'From here on out, you're on your own... Explore your new world... and try not to mess this one up as badly as we did our own!'"
+    },
+    {
+     "where": "chapters/emergency_items.snbt (group 'Appendix E - Helping Hand'; 5 octagons)",
+     "what": "Safety-valve quests: ration packs for starvation, end crystals to respawn a dragon someone else killed, and replacement gamestage keys.",
+     "why_it_works": "It anticipates one-shot world events and server play instead of leaving players stuck, and the octagon shape plus 'Helping Hand' name keep it out of the main path.",
+     "excerpt": "If the dragon is missing (which probably means you're playing on a server and someone beat you to it), you can get a new one to spawn in by placing these on the rim of the central area in the end in the 4 cardinal directions from the central spike."
+    },
+    {
+     "where": "chapters/getting_started.snbt completionist columns, e.g. 'Kudbebedda Upgrades' (239BDF86B0F52664) and 'Kudbebedda Furnace' (50C37093F2F68D79)",
+     "what": "Optional tier-upgrade fans to the left of the main path, each behind a checkmark header, with per-item stat changes in the descriptions.",
+     "why_it_works": "The required path stays clean while min-maxers get real numbers.",
+     "excerpt": "Optional tasks for Completionists. The tasks to the left of this one are all optional, but each explains the improvement (if any) over the previous Kudbebedda tier of the same item. | This Kudbebedda Furnace takes 8 seconds (160 ticks)."
+    },
+    {
+     "where": "Chapter images with hover text in chapters/digital_applied_energistics.snbt (ae2-furnace-automation.png, ae2-molecular-assemblers.png, ae2-crafting-cpus.png), networks_for_xmen.snbt (10 XNet images) and getting_creative.snbt (3 Create images)",
+     "what": "Example-build screenshots placed on the quest canvas next to the relevant quests, each with a multi-line hover explanation.",
+     "why_it_works": "The player sees a working example in context, and the hover text keeps the canvas uncluttered.",
+     "excerpt": "hover: 'A typical example of simple automation for a furnace.' 'On top is an ME Interface with Encoded Patterns for processing recipes.' 'On the side is an ME Export Bus which is exporting Coal from the ME System into the furnace as fuel.'"
+    }
+   ],
+   "weaknesses": [
+    "81% of quests (1160 of 1429) have no reward. Long stretches are pure checklist with only progress as the payoff.",
+    "The appendix charts are checkbox spam even though they're optional: 115 sieve nodes, 65 singularities, 54 trees, 48 drawers.",
+    "There are walls of text: 111 descriptions run over 600 chars, the longest 2645.",
+    "Text and data drift apart. The 5-of-12 gate's text says 'at least 4' while min_required_dependencies is 5, and FTBQ itself shows '5 required'.",
+    "The full 1429-node map is visible and locked from day one. There are no reveals or surprises, and the sheer size can intimidate.",
+    "802 quests have no title and fall back to item names.",
+    "The legend admits it isn't strict: 'While this is the intent, it may be possible that this does not always hold true...'",
+    "The Replacement Key fallbacks are team_reward: true, which works against the multiplayer case they exist for. Backup chapter folders are also left in config/ftbquests.",
+    "Canvas images depend on players knowing to zoom and scroll the map."
+   ]
+  }
+ ],
+ "patterns": [
+  {
+   "name": "Earned reveal: one hidden gate quest per chapter",
+   "description": "Give each chapter exactly one entry quest flagged hide_until_deps_complete, depending on a milestone elsewhere or a hidden trigger. Because FTBQ hides any quest whose dependencies are all invisible, and hides chapters and groups that have nothing visible, a whole chapter or a whole act stays out of the list until earned, then appears at once. An early info page promises that more will unlock.",
+   "evidence": [
+    "Suspect's Journey: 10 gate quests ('Welcome to Earth', 'The Earth now', 'Some Dust', 'HDPE Sheets', 'A useful Weapon', 'Crude Oil', 'Thorianite', 'Simple Network Storage', 'Basic Electrical Concepts', 'The Skeld') hide the Stage 2 group (8 chapters) and the Stage 3 group",
+    "Suspect's 'Information': 'with completing a Stage, the next Stage will be visible'",
+    "Checked in ftb-quests-forge-2001.4.22.jar bytecode: Quest.isVisible (default rule: visible if any dependency is visible), Chapter.isVisible, ChapterGroup.isVisible"
+   ],
+   "ftbq_mechanism": "hide_until_deps_complete: true on the entry quest (or the chapter default hide_quest_until_deps_complete); dependencies may be quest, task or chapter ids from other chapters; chapter_groups.snbt. Dependency lists show a '%d hidden' footer.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Maps directly onto TD's tiers and events. The T2 SecurityCraft, T3 power and T4 explosives chapters, plus the boss, airdrop, Hordes, ruins and stash material, can appear when first earned or triggered. That respects the 'keep story surprises' rule while the intro promises more. TD already uses hide_until_deps_complete on 42 quests, so this is a small extension."
+  },
+  {
+   "name": "Milestone fanfare: title, chat and sound on unlock",
+   "description": "When an act or chapter unlocks, show a big on-screen title, then a chat line, then optionally a sound, at the same moment the new content appears.",
+   "evidence": [
+    "Suspect's Utils: '/title @p title [{\"text\":\"Welcome back to Earth\"...}]' plus subtitle 'The Stage 2 Questline is now active'",
+    "Suspect's: tellraw 'There is a new Questline available!' (5 triggers), 'The Stage 3 Questline is available!'",
+    "Suspect's: '/playsound minecraft:entity.wither.spawn hostile @p' before the boss; final title 'You defeat the Imposter' / 'Questlines Complete'"
+   ],
+   "ftbq_mechanism": "Command rewards (elevate_perms: true, silent: true, auto: enabled/no_toast). Better for TD: a KubeJS handler on quest completion. TD's FTB XMod Compat 2.1.2 ships QuestObjectCompletedEventJS and can message every party member.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD already has KubeJS alerts for waves, GAME OVER and airdrops. Tying 'New defences unlocked: Tier 2' to the same alert style makes progression felt. Do it in KubeJS so all three friends see it: '/title @p' reaches only the claimer, and non-team rewards replay when a player logs in."
+  },
+  {
+   "name": "Hidden director chapter (always_invisible) for scripted beats",
+   "description": "An always-invisible chapter of trigger quests (item, dimension or observation tasks) whose command rewards drive announcements and story beats, including environmental lore lines and boss summons. Rewards in such a chapter are force-auto-claimed.",
+   "evidence": [
+    "Suspect's start.snbt 'Utils': 25 quests, 36 command rewards, 10 questsadditions:time tasks, observation tasks on Skeld blocks",
+    "Suspect's lore trigger: looking at horror_element_mod:hazzmat_body prints 'The Yellow Crewmate! But where is the rest of the Crew?'",
+    "Reward.getAutoClaimType() returns ENABLED in always_invisible chapters (2001.4.22 bytecode)"
+   ],
+   "ftbq_mechanism": "chapter always_invisible: true; command rewards; observation, dimension and item tasks; questsadditions:time (needs the Quests Additions mod, which TD doesn't have)",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Useful as a tidy place for invisible trigger quests, e.g. 'first stash looted' or 'first airdrop opened', that feed reveals. TD's world logic, though, already lives in KubeJS, so keep quest-side commands cosmetic. Avoid Suspect's world-altering chains (WorldEdit pastes, gamemode flips, '/kill @p'), which misfire in multiplayer."
+  },
+  {
+   "name": "Explained shape and size legend",
+   "description": "Use a small, consistent shape vocabulary and explain it in an early info quest, e.g. gear = chapter start or unlock, square = required path, circle = optional, with size 1.5 for unlocking milestones.",
+   "evidence": [
+    "Cuboid 'Step and Tasks Info': gear, square and circle defined; the data matches (285/285 squares required, 281/288 optional quests are circles, all 35 size-1.5 quests are gears)",
+    "Suspect's implicit grammar: gear = chain goal, square = setup page, diamond = tool, rsquare = story intro, octagon size 2 = story milestone, pentagon = opt-in"
+   ],
+   "ftbq_mechanism": "quest shape (circle, square, rsquare, diamond, pentagon, hexagon, octagon, heart, gear), size, optional: true; the theme's extra_quest_shapes for custom shapes",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's book already mixes 31 circles, 21 hexagons, 17 rsquares, 5 pentagons, 4 diamonds and 1 gear with no stated meaning. One legend quest fixes that. A suggestion: gear = tier or chapter unlock, hexagon = defence or trap, octagon = boss or airdrop event, square = how-to page, diamond = tool, circle = optional."
+  },
+  {
+   "name": "Acts and appendices via numbered chapter groups",
+   "description": "Name chapter groups as an ordered outline for the main path ('1 - ...', '2 - ...') and move reference, completionist and helper material into lettered appendices. Put a short framing chapter ungrouped at the top.",
+   "evidence": [
+    "Cuboid: '1 - A New Life' through '5 - A New World', then 'Appendix A - From A to B' through 'Appendix E - Helping Hand'; the ungrouped 'Farewell' memo comes first",
+    "Suspect's: '&bStage 1: &6Back to Earth' / '&bStage 2: &6Ad Venerem' / '&bStage 3: &6The Imposter', each act with its own 'Main Quest Line' chapter"
+   ],
+   "ftbq_mechanism": "chapter_groups.snbt titles (colour codes allowed), chapter order_index; ungrouped chapters list first",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD has 4 ungrouped chapters. Acts per defence tier or wave band, plus appendices (Arsenal, Bounties, Bestiary and Loot, Helping Hand), give an at-a-glance 'how far along am I'. Combined with hidden gates, future acts can stay hidden."
+  },
+  {
+   "name": "'Unlocks:' signposts with key counts",
+   "description": "End each unlocking quest's description with what it opens and how many of the target's prerequisites it provides, e.g. '(1/2)'.",
+   "evidence": [
+    "Cuboid 'Irn Bru': '&aUnlocks: Getting Immersed (2/2)&f', '&aUnlocks: Getting Mekanised (1/2)&f'",
+    "17 such lines across Getting Started, Getting Going, Getting Creative, Getting No Tinks Done, Getting Immersed and Dishing up the Meat"
+   ],
+   "ftbq_mechanism": "Plain description lines (green &a); the target chapter's entry gear depends on the listed gears",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Zero cost. It makes the tier ladder legible, e.g. 'Unlocks: Tier 2 - Traps (1/2)' or 'Unlocks: The Ruins'. Keep the text in sync with the data: Cuboid's '4 vs 5' drift shows the risk."
+  },
+  {
+   "name": "Chapter title banners with an importance hierarchy",
+   "description": "Custom PNG banners on each chapter canvas, with size and colour showing importance, and 'optional' drawn into side chapters' banners.",
+   "evidence": [
+    "Suspect's: journey.png (1036x103 red logo), mainquest.png (blue), lostwolrd.png (yellow), reactor, volt and fuel banners (smaller green/teal), and guns, storage_img and minecolonies banners carrying an 'optional' tag",
+    "14 banner placements via each chapter's images list"
+   ],
+   "ftbq_mechanism": "chapter images {image: '<ns>:textures/...png', x, y, width, height, hover, click}; assets under kubejs/assets/<namespace>/textures/",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Cheap and atmospheric, e.g. stencil or wasteland signage per tier. TD already generates menu art with Python scripts (the FancyMenu art generators), so banner PNGs can be scripted the same way. No runtime cost."
+  },
+  {
+   "name": "Themed quest GUI and custom shapes via resource pack",
+   "description": "A resource pack overrides ftb_quests_theme.txt (background, text colours, borders, dependency-line colours and thickness, completed and started colours) and can add new quest shapes.",
+   "evidence": [
+    "Suspect's ships and enables HavenQuestingTheme-1.20.1-1.0.0.zip (text #9db055, border #82031a, purple dependency lines, custom shape 'flamingoblood')",
+    "TD's FTBQ 2001.4.22 jar contains the same theme keys, theme selectors (ID, tag, type, parent, AND, NOT) and QuestShape loading from textures/shapes/<name>/"
+   ],
+   "ftbq_mechanism": "assets/ftbquests/ftb_quests_theme.txt; assets/ftbquests/textures/shapes/<name>/{shape,outline,background}.png plus extra_quest_shapes",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "A green-terminal or rusted-metal palette and a skull or shield shape for boss and defence quests would suit the Fallout-TV tone at no runtime cost. It's polish rather than progression, though, and needs readability testing in the client sandbox. The selector syntax is unverified."
+  },
+  {
+   "name": "Guided build: Checkpoint, then Step, with screenshots",
+   "description": "Alternate a materials checkpoint (an item-task bill of materials) and an instruction step (a checkmark) down a column, with a screenshot of each step placed beside it. Small treat rewards keep momentum. Multiblocks get a complete parts list.",
+   "evidence": [
+    "Cuboid 'Deliciously Creative': Checkpoints 1–10 and Steps 1–11, 16 step screenshots, Builder's Tea rewards",
+    "Suspect's Fuel Production: the 'Derrick' task lists 4 grate slabs, 9 fluid pipes, 8 light engineering, 2 heavy engineering, 1 redstone engineering, 19 scaffolding and 16 fences, plus well and pumpjack screenshots"
+   ],
+   "ftbq_mechanism": "item tasks, checkmark tasks, chapter images with hover text, a vertical layout, hexagon shape for checkpoints",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's 'cool contraptions' are exactly this kind of build: a first kill corridor (stakes, spikes and lure block), a fenced perimeter with Sentry and I.M.S., or a culinary generator powering a Tesla Coil or IE turret through Flux Networks. The client sandbox and its screenshot tooling make the images feasible."
+  },
+  {
+   "name": "Picture-first explanations (description images and canvas images with hover)",
+   "description": "Use inline screenshots for 'which block goes where' and UI how-tos, and canvas images with hover tooltips for example setups.",
+   "evidence": [
+    "Suspect's: 11 screenshots, e.g. '{image:suspect:textures/ftbquests/flux_plug.png width:180 height:118 align:center}' and the forceload map, pipe pull mode and survey readout",
+    "Cuboid: farewell_ftb_dependencies.png (UI arrow tutorial); 33 canvas images, e.g. AE2 hover 'A typical example of simple automation for a furnace...'"
+   ],
+   "ftbq_mechanism": "description '{image:<ns>:textures/..png width:N height:N align:center|1 fit:true}' (fit is supported by FTB Library 2001.2.13); chapter images with hover",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD mechanics with spatial rules benefit most: fence shock range, pedestal placement and pathing, the amulet slot on the pedestal, Tesla targeting, and Flux plugs vs points (Suspect's exact Flux page is directly reusable as a model)."
+  },
+  {
+   "name": "Concept page that pays out the tool",
+   "description": "A square info checkmark explains a concept, and its reward is the instrument or material you need to act on it. The next page uses colour codes that mirror what's on screen.",
+   "evidence": [
+    "Suspect's 'Basic Electrical Concepts in Electrodynamics' rewards a Multimeter; 'Input and Output' colour legend ('&4Red&r – Energy Input using &6Wires&r')",
+    "Cuboid chapter openers reward the mod manual (powah:book, a Patchouli guide) or a Mekanism configurator"
+   ],
+   "ftbq_mechanism": "checkmark task plus item reward; colour codes in the description",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Fits TD's custom systems. 'How waves work' can reward the horn (note block). 'Your pedestal' can explain HP, game over and upgrades. 'The amulet choice' explains stay vs explore. 'Border growth' explains how the map expands. Each page gives the next step's parts, never a shortcut past a choice."
+  },
+  {
+   "name": "Reward is what was just taught, or the next step's input (refunds included)",
+   "description": "Tie rewards to the lesson: ammo for the gun you just found, components for the next tier, or a refund copy of what you crafted. Avoid uniform XP.",
+   "evidence": [
+    "Suspect's: Configurator gives pipes, cables and tubes; the Flux page gives 16 plugs and 4 points; the TaCZ spoke gives 36 9mm and 60 5.56 ammo plus a flare gun",
+    "Cuboid: 156 of 284 item rewards duplicate the task item; each backpack upgrade pays an upgrade_base; End arrival auto-gives bottles for dragon's breath"
+   ],
+   "ftbq_mechanism": "item rewards (count + random_bonus, NBT), auto: enabled for just-in-time provisions",
+   "fit_for_td_pack": "high",
+   "fit_reason": "76 of TD's 116 rewards are XP levels. XP is real currency in TD (it buys pedestal upgrades), so keep it as the backbone, but pair tier quests with thematic items: trap kits, ammo, fence segments, batteries. Respect the rule that loot shortcuts undermine the choice: never reward what loot bags or stashes are meant to supply."
+  },
+  {
+   "name": "Ready-to-use NBT rewards",
+   "description": "Hand out items pre-filled or pre-charged so the reward works the moment it's claimed.",
+   "evidence": [
+    "Suspect's: ad_astra:large_gas_tank with BotariumData 3000 mB oxygen; mekanism:elite_energy_cube with stored '64000000'; tacz:ammo with AmmoId NBT"
+   ],
+   "ftbq_mechanism": "item reward with full NBT (item: {id, Count, tag:{...}})",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Nice for a loaded magazine, a charged battery for the Tesla Coil or a fuelled generator. NBT formats differ per mod and break across updates, so each one needs an in-game check (only a live claim proves it)."
+  },
+  {
+   "name": "Choice reward tables for personal variants",
+   "description": "Let players pick one item from a table ('Choice Logs', end-game creative items). Mark the reward exclude_from_claim_all, and give the reward its own icon and title.",
+   "evidence": [
+    "Suspect's (imported MineColonies module): 8 choice tables, e.g. 'Choice Logs' (64 of each log) and 'Choice Stone'",
+    "Cuboid: 'Challenge Bonus' choice from the 'Rewards' table; 'More to explore...' choice from 'End Game Rewards' with a firework_rocket icon and exclude_from_claim_all"
+   ],
+   "ftbq_mechanism": "reward_tables/*.snbt (title, icon, loot_size, weights); reward type 'choice' (or random, loot, all_table); exclude_from_claim_all",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Choice rewards are per player, so in a 3-friend party each can pick a different sidearm, trap kit or backpack upgrade. That splits roles naturally and avoids triple duplicates. TD has no reward_tables folder yet."
+  },
+  {
+   "name": "N-of-M gates and breadth bonuses",
+   "description": "Unlock a chapter after any N of M side quests, and pay a bonus for doing N of a set. Players choose their route.",
+   "evidence": [
+    "Cuboid 'Unlock Chapter: Dishing up the Meat': min_required_dependencies 5 of 12 pentagons",
+    "Cuboid 'Challenge Bonus': 5 of 10 spawn eggs, choice reward"
+   ],
+   "ftbq_mechanism": "min_required_dependencies (FTBQ shows a '%d required' header), dependency_requirement: one_completed, hide_dependency_lines on the fan-in",
+   "fit_for_td_pack": "high",
+   "fit_reason": "For example: build any 3 of the 5 T1 defences to unlock T2; kill 3 of 5 special zombie types for a bounty bonus; loot 2 of 4 ruin stashes. This suits different playstyles in a party."
+  },
+  {
+   "name": "Hidden feats (invisible until completed)",
+   "description": "Achievement-like quests that appear only when earned, as a surprise toast.",
+   "evidence": [
+    "Suspect's (imported MineColonies): 23 invisible quests such as 'Hire 80 Guards!', 'Have a Baby' and 'Burry Your First Citizen', mostly using MineColonies advancements as triggers"
+   ],
+   "ftbq_mechanism": "invisible: true (or invisible_until_tasks: N) plus advancement, kill, stat or KubeJS custom tasks",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Ideas: a wave cleared with no pedestal damage, a boss killed by a trap, three waves held with the amulet on the pedestal, wave 30 survived. TD already has 13 KubeJS custom tasks, and hidden feats suit the 'keep story surprises' rule."
+  },
+  {
+   "name": "World-briefing hub",
+   "description": "One big story node (octagon, size 2) with spokes, each introducing one world system plus its starter consumable.",
+   "evidence": [
+    "Suspect's 'A Lost World': 'The Earth now' with 8 spokes (crowbar, TaCZ weapons and airdrops, Electrodynamics, MineColonies, MCA, Spore and gas mask, Croptopia, Radiation)"
+   ],
+   "ftbq_mechanism": "one central quest with fan-out dependencies; checkmark or item tasks; item rewards",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's non-tech systems (pedestal, horn, waves, border, airdrops, loot bags, ruins and stashes, amulet, backpacks) are exactly this kind of briefing material. Reveal spokes as each system first triggers so surprises survive."
+  },
+  {
+   "name": "Converging capstone arc",
+   "description": "Several capstone milestones from different chapters, drawn in an arc and feeding one climax quest whose reward is an unlock, followed by an epilogue with a jackpot choice.",
+   "evidence": [
+    "Cuboid 'The Key to Everything': 8 gear capstones lead to a gamestage key and a waystone, then 'More to explore...' with a creative-item choice",
+    "Suspect's 'Kill the Imposter' pays a creative-item jackpot"
+   ],
+   "ftbq_mechanism": "multiple dependencies arranged visually; gamestage, command or choice rewards",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "TD is endless (Hordes), so the climax should be a milestone rather than an end, e.g. 'Fortress complete': all four tiers built and boss wave 20 cleared, opening the Hordes act."
+  },
+  {
+   "name": "Narrative voice framing",
+   "description": "Write all quest text in one in-world voice (memos, letters, briefings) with humour, and frame rewards in that voice ('care packages').",
+   "evidence": [
+    "Cuboid 'Farewell' memos from 'The Cuboid Corp (tm)'; 627 pun titles; 'Have a cuppa on us!'",
+    "Suspect's ejected-crewmate story intro, octagon lore and 'To be continued ...'"
+   ],
+   "ftbq_mechanism": "titles, subtitles, descriptions; ungrouped intro chapter",
+   "fit_for_td_pack": "high",
+   "fit_reason": "The Fallout-TV wasteland suits a deadpan radio-broadcast or field-manual voice. Use pack-original names, not real franchise brands. Don't pre-announce scripted beats."
+  },
+  {
+   "name": "Noise control: disable_toast, hidden lines, optional",
+   "description": "Silence toasts on bulk or reference quests, hide dependency lines on fan-in and fan-out nodes, and flag side content optional so chapter progress reflects only the required path.",
+   "evidence": [
+    "Cuboid: 145 disable_toast (101 in the sieve chart), 114 hide_dependency_lines (69 in one fan-in), 288 optional",
+    "Suspect's: 33 hide_dependency_lines on leaf inputs of production chains",
+    "Chapter progress excludes optional and repeatable quests (Quest.isOptionalForProgression, 2001.4.22)"
+   ],
+   "ftbq_mechanism": "disable_toast, hide_dependency_lines, optional: true, can_repeat",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's Bounties kill ladder and Arsenal checklist will spam toasts in a party. Silence the bulk steps and keep toasts for milestones."
+  },
+  {
+   "name": "Helping Hand appendix (safety valves)",
+   "description": "An out-of-the-way chapter of optional fallback quests for stuck or multiplayer edge cases.",
+   "evidence": [
+    "Cuboid 'Emergency Items': 'Missing: Dragon' (end crystals because 'someone beat you to it'), 'Stave off Starvation', replacement keys"
+   ],
+   "ftbq_mechanism": "optional octagon quests, checkmark tasks, item or gamestage rewards; FTBQ also has a built-in emergency-items button (data.snbt emergency_items_cooldown 300 in all three packs)",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Useful for genuine dead ends, e.g. starter food or ammo on a cooldown, or 'border didn't grow?' or 'teammate already killed the boss' explainers. It must not hand out amulets, loot-bag contents or home-machine outputs, which would undermine the pack's choices."
+  },
+  {
+   "name": "Reference charts and tier matrices as optional appendices",
+   "description": "Build lookup diagrams out of quest nodes (input, then process, then outputs) or tier matrices with stat lines, toast-silenced and placed in an appendix.",
+   "evidence": [
+    "Cuboid 'This is Meshed Up': 115 quests, size-3.0 mesh hubs, then 'Mesh + input' hexagons, then drops",
+    "Cuboid 'All Powah-ful': 7 tiers x cables, cells and capacitors, with stats like '1.4k FE/t'"
+   ],
+   "ftbq_mechanism": "many item tasks, size and shape hierarchy, disable_toast, optional",
+   "fit_for_td_pack": "low",
+   "fit_reason": "A small bestiary (wave mob to loot-bag tier) or a defence stat table could help, but big charts become checkbox spam. An info page with an image does the same job with less clutter."
+  },
+  {
+   "name": "Gamestage keys for gated content",
+   "description": "A quest reward grants a stage that a mod or script checks, e.g. to allow dimension travel. The reward is dressed as a key.",
+   "evidence": [
+    "Cuboid: 'Let's go!' gamestage rewards (nether_access, end_access, cuboid_overworld_access) checked by cuboidmod's CryogenicDimensionalTeleporterTileEntity"
+   ],
+   "ftbq_mechanism": "reward type gamestage (stage, remove), with title and icon on the reward; needs a stage provider (GameStages, or KubeJS stages through FTB XMod Compat)",
+   "fit_for_td_pack": "low",
+   "fit_reason": "TD gates through recipes, loot and the border. A stage system would be a second gate to maintain. TD's xmod-compat 2.1.2 has a KubeJS stage provider (untested), so keep this for a hard lock if one is ever needed. Stages are per player, while quests are per party."
+  },
+  {
+   "name": "Opt-in rule toggles as quests",
+   "description": "A checkmark quest whose auto command flips a world rule, with the consequence explained.",
+   "evidence": [
+    "Suspect's '&cDisable KeepInventory?' rewards '/gamerule keepInventory false'"
+   ],
+   "ftbq_mechanism": "checkmark task plus command reward (auto: enabled, elevate_perms)",
+   "fit_for_td_pack": "low",
+   "fit_reason": "In a shared party, any single member's click changes the world for everyone. TD's hardcore-mode decision belongs in a deliberate host-side setting, not a quest button."
+  }
+ ],
+ "multiplayer_notes": [
+  "Checked in the FTB Quests 2001.4.22 jar (TeamData): progress belongs to the FTB Teams party. When one friend completes a task or quest it completes for everyone, and task progress such as kills and items is pooled.",
+  "Checked: non-team rewards are personal. Auto-claimed ones go to every online member at completion and to offline members on their next login, because ServerQuestFile.playerLoggedIn re-runs TeamData.checkAutoCompletion. Manual rewards are claimed by each member separately.",
+  "Checked: team_reward: true allows one claim per party. With auto-claim it goes to the player whose action completed the quest (ServerQuestFile.getCurrentPlayer); otherwise the first player to click gets it. The default comes from data.snbt default_reward_team, which is false in Suspect's, Cuboid and TD.",
+  "This affects TD's 'no player-count scaling' rule: per-player item rewards are an implicit x3 for a 3-friend party. Base-economy rewards (trap kits, building blocks, pedestal-upgrade materials) should be team_reward: true. Personal gear (sidearm, armour, backpack upgrade) can stay per player.",
+  "Command rewards run as the claiming player at that player's own permission level unless elevate_perms: true (CommandReward.claim only raises to level 2 when the flag is set). TD's dedicated server has non-op friends, so set elevate_perms on every command reward. Suspect's Imposter summon and one tellraw lack it.",
+  "'@p' in a command reward targets only the claimer, and non-team auto commands run once per online member and again for late joiners. Party-wide announcements are cleaner from a KubeJS quest-completion handler (TD's FTB XMod Compat 2.1.2 includes QuestObjectCompletedEventJS) than from /title @p. CommandReward also exposes placeholders; the class contains the strings p, x, y, z, chapter, quest, team_id, long_team_id, member_count and online_member_count. I did not test the exact brace syntax.",
+  "Suspect's uses team_reward only for world-altering one-shots: the start-station schematic load and paste, clipboard clear, a quest-state flag, and spawnpoint. Its non-team gamemode, levitation, title and '/kill @p' guard rewards would still fire for every online member. I infer this from the code and did not reproduce it. Lesson for TD: any quest-driven world change must be team_reward or KubeJS-guarded.",
+  "Shared completion affects teaching: the friend who didn't do the action never 'does' the lesson. Keep how-to text useful after completion, encourage pinning, and prefer team-action tasks (build, hold, kill) over solo 'read me' checkmarks for anything important.",
+  "Choice rewards are per player unless marked team_reward, so each friend can pick a different variant. That gives role specialisation at no extra cost.",
+  "Gamestages are per player but quest completion is per party. Cuboid keeps its stage-key rewards non-team so each teammate claims their own, but its 'Replacement Key' fallbacks are team_reward, so only one teammate can ever use them. Avoid that combination.",
+  "Plan wording for one-shot world events. Cuboid's 'Missing: Dragon' exists because 'someone beat you to it' on a server. TD equivalents are the boss kill, airdrop pickup and first stash looted. Word these so a teammate's success still counts for the party (kill and stat progress is already pooled), and keep per-player content (stashes) per-player.",
+  "Players start in a solo FTB team. Progress made before joining the party is tracked on that solo team (Suspect's start-station script would run again for a friend who hasn't joined yet). Have friends join the party before questing, and check carry-over behaviour before relying on it.",
+  "Neither pack has co-op-specific quests or in-world displays. FTBQ 2001.4.22 does provide blocks, listed in its lang file and unused by both packs: Task Screens (1x1 to 7x7) that show task progress and accept item input, Quest and Stage Barriers, a Quest Detector, and a Quest Chest. A Task Screen could serve as a party 'war board' in the fort. Untested."
+ ],
+ "version_caveats": [
+  "Versions: Suspect's runs FTB Quests 2001.4.20 and Cuboid runs 2001.3.2; TD runs 2001.4.22. Both studied packs are older than TD, and every FTBQ feature they use exists in 2001.4.22. I checked quest, reward and task keys, theme keys and chapter-image fields against TD's jar. Nothing they use is newer-only.",
+  "Some features depend on other mods that TD lacks: questsadditions:time needs Quests Additions; itemfilters:or and itemfilters:tag tasks need Item Filters (TD has neither Item Filters nor FTB Filter System, so 'any gun' or tag tasks need a KubeJS custom task or separate quests); //schematic and //paste need WorldEdit. Gamestage rewards need a stage provider: GameStages in Cuboid, and in TD only FTB XMod Compat 2.1.2's KubeJS stage provider (class present, untested).",
+  "Dead keys: Suspect's 'secret: true' (on one quest and three tasks) and 'repeatable: true' do not appear anywhere in the FTBQ 2001.4.20 or 2001.4.22 jars; can_repeat is the real key. The task brief's '1 secret quest' therefore does nothing.",
+  "The brief's '28 reward tables' counts rewards that reference a table (23 choice, 4 random, 1 loot). Suspect's has only 9 table files, and all of them, with the whole 76-quest MineColonies chapter, come from minecolonies-questline-1.20.1-1.1.0.jar (questinstaller by hogbits). Its 23 invisible quests, 52 advancement tasks and the 'TODO: Improve Language' text are not the pack author's design.",
+  "Several behaviours were checked from 2001.4.22 bytecode, not by playtesting: auto-claim, team rewards, visibility, chapter progress and command permissions (Reward.getAutoClaimType, TeamData.checkAutoCompletion, ServerQuestFile.playerLoggedIn, Quest.isVisible, Chapter.isVisible, Quest.isOptionalForProgression, CommandReward.claim). I assumed Suspect's 2001.4.20 behaves the same. The multiplayer hazards listed for Suspect's are inferences.",
+  "In 2001.4.22 ChapterImage also has dependency, order, color and alpha fields. 'dependency' probably shows an image only after a quest is done, but I did not verify the semantics; neither pack uses it. Theme selectors (ID, tag, type, parent, AND, NOT) and custom shape loading exist in the 2001.4.22 classes, but I did not verify the exact selector text format or test adding a new shape.",
+  "FTB Library 2001.2.13 (TD's version) supports the description image parameters image, width, height, align and fit, so Cuboid's 'fit:true' works for TD. Description lines also support {@pagebreak} and change_page click events (2001.4.22).",
+  "2001.4.22 has quest fields neither pack uses that could suit TD: max_completable_dependents (mutually exclusive branches, with hide_excluded_quests), invisible_until_tasks, hide_details_until_startable, repeat_cooldown, quest_links (show a quest inside another chapter) and autofocus_id (Suspect's MineColonies chapter uses this one).",
+  "Suspect's spawn rule (ad_astra:earth_orbit at 0,100,0 via dimensionspawn) and the iron-paxel starter-kit trigger come from config files, not the save. I did not open any world save.",
+  "No web sources were used. Every quote comes from the local SNBT, PNG assets, configs or jars listed in each pack's source field."
+ ]
+}

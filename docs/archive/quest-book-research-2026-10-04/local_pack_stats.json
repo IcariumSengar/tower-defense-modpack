@@ -1,0 +1,3349 @@
+[
+ {
+  "dir": "Craft to Exile 2 - 2.0 Atlas Update/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_book_on_death": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 30,
+   "grid_scale": 0.5,
+   "hide_excluded_quests": false,
+   "icon": "mmorpg:skill_gems/support/dex",
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "flexible",
+   "show_lock_icons": true,
+   "title": "&dCraft to Exile 2&r",
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [
+   "&eCampaign&r",
+   "&eDevelopment&r",
+   "&eLogbook&r",
+   "&eMultiplayer&r"
+  ],
+  "chapters": [
+   {
+    "file": "act_0.snbt",
+    "title": "Prologue",
+    "quests": 26,
+    "images": 1,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": "linear",
+    "default_quest_shape": "rsquare",
+    "subtitle": null
+   },
+   {
+    "file": "act_i.snbt",
+    "title": "Act I",
+    "quests": 50,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Lv. 1-15"
+    ]
+   },
+   {
+    "file": "act_ii.snbt",
+    "title": "Act II",
+    "quests": 30,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Lv. 10-30"
+    ]
+   },
+   {
+    "file": "act_iii.snbt",
+    "title": "Act III",
+    "quests": 31,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Lv. 25-40"
+    ]
+   },
+   {
+    "file": "act_iv.snbt",
+    "title": "Act IV",
+    "quests": 33,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Lv. 35-55"
+    ]
+   },
+   {
+    "file": "act_v.snbt",
+    "title": "Act V",
+    "quests": 29,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Lv. 50-65",
+     "Lv. 60-75"
+    ]
+   },
+   {
+    "file": "ascendancy.snbt",
+    "title": "Ascendancy",
+    "quests": 4,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "campaign_talent_rewards.snbt",
+    "title": "Rewards",
+    "quests": 30,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "completionist.snbt",
+    "title": "Completionist",
+    "quests": 1,
+    "images": 0,
+    "group": "37C10F4BE9E00A26",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "culinary_delights.snbt",
+    "title": "Culinary Delights",
+    "quests": 33,
+    "images": 0,
+    "group": "5F2CCE8075FCC994",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "epilogue.snbt",
+    "title": "Epilogue",
+    "quests": 43,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Lv. 90"
+    ]
+   },
+   {
+    "file": "exploration.snbt",
+    "title": "Exploration",
+    "quests": 42,
+    "images": 0,
+    "group": "37C10F4BE9E00A26",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "fishing.snbt",
+    "title": "Fishing",
+    "quests": 66,
+    "images": 0,
+    "group": "37C10F4BE9E00A26",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "gem_shop.snbt",
+    "title": "Campaign Shop",
+    "quests": 13,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "homestead.snbt",
+    "title": "Homestead",
+    "quests": 31,
+    "images": 0,
+    "group": "5F2CCE8075FCC994",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "jolly_cooperation.snbt",
+    "title": "Jolly Cooperation",
+    "quests": 21,
+    "images": 0,
+    "group": "5C56FC6157E20EBE",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "magical_flora.snbt",
+    "title": "Magical Flora",
+    "quests": 61,
+    "images": 0,
+    "group": "5F2CCE8075FCC994",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "other_hobbies.snbt",
+    "title": "Other Hobbies",
+    "quests": 29,
+    "images": 0,
+    "group": "37C10F4BE9E00A26",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "professions.snbt",
+    "title": "&aM\\&S Professions&r",
+    "quests": 24,
+    "images": 0,
+    "group": "5F2CCE8075FCC994",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "repeatables.snbt",
+    "title": "Repeatables",
+    "quests": 10,
+    "images": 0,
+    "group": "1E3C4B5FFAE48A39",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "storage_solutions.snbt",
+    "title": "Storage Solutions",
+    "quests": 17,
+    "images": 0,
+    "group": "5F2CCE8075FCC994",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   }
+  ],
+  "n_chapters": 21,
+  "n_quests": 624,
+  "task_types": [
+   [
+    "item",
+    616
+   ],
+   [
+    "kill",
+    118
+   ],
+   [
+    "checkmark",
+    76
+   ],
+   [
+    "structure",
+    50
+   ],
+   [
+    "stat",
+    47
+   ],
+   [
+    "advancement",
+    31
+   ],
+   [
+    "dimension",
+    6
+   ],
+   [
+    "biome",
+    3
+   ]
+  ],
+  "reward_types": [
+   [
+    "command",
+    533
+   ],
+   [
+    "item",
+    426
+   ],
+   [
+    "choice",
+    41
+   ],
+   [
+    "custom",
+    35
+   ],
+   [
+    "advancement",
+    2
+   ],
+   [
+    "loot",
+    2
+   ],
+   [
+    "all_table",
+    2
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    463
+   ],
+   [
+    "rsquare",
+    66
+   ],
+   [
+    "diamond",
+    39
+   ],
+   [
+    "circle",
+    16
+   ],
+   [
+    "hexagon",
+    15
+   ],
+   [
+    "octagon",
+    15
+   ],
+   [
+    "gear",
+    9
+   ],
+   [
+    "square",
+    1
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    564
+   ],
+   [
+    "1.5",
+    28
+   ],
+   [
+    "1.25",
+    21
+   ],
+   [
+    "2.0",
+    7
+   ],
+   [
+    "1.0",
+    2
+   ],
+   [
+    "3.0",
+    1
+   ],
+   [
+    "1.255",
+    1
+   ]
+  ],
+  "flags": [
+   [
+    "subtitle",
+    505
+   ],
+   [
+    "can_repeat",
+    27
+   ],
+   [
+    "hide_dependency_lines",
+    22
+   ],
+   [
+    "dependency_requirement",
+    13
+   ],
+   [
+    "hide_until_deps_complete",
+    11
+   ],
+   [
+    "min_required_dependencies",
+    2
+   ],
+   [
+    "hide_text_until_complete",
+    1
+   ]
+  ],
+  "reward_team_field": [],
+  "reward_auto_field": [
+   [
+    "enabled",
+    515
+   ],
+   [
+    "invisible",
+    20
+   ]
+  ],
+  "dependency_count_hist": [
+   [
+    0,
+    149
+   ],
+   [
+    1,
+    441
+   ],
+   [
+    2,
+    17
+   ],
+   [
+    3,
+    4
+   ],
+   [
+    5,
+    4
+   ],
+   [
+    7,
+    1
+   ],
+   [
+    9,
+    2
+   ],
+   [
+    13,
+    1
+   ],
+   [
+    25,
+    1
+   ],
+   [
+    29,
+    2
+   ],
+   [
+    32,
+    1
+   ],
+   [
+    64,
+    1
+   ]
+  ],
+  "desc_len_median": 230,
+  "desc_len_p90": 712,
+  "desc_empty_pct": 19.9,
+  "desc_images": 17,
+  "desc_pagebreaks": 0,
+  "desc_links": 51,
+  "desc_color_codes": 4519,
+  "chapter_images_total": 1,
+  "reward_tables": [
+   "archer_package.snbt",
+   "aura_gem_shop_i.snbt",
+   "aura_gem_shop_ii.snbt",
+   "aura_gem_shop_iii.snbt",
+   "aura_gem_shop_iv.snbt",
+   "aura_gems_1.snbt",
+   "aura_gems_2.snbt",
+   "aura_gems_3.snbt",
+   "aura_gems_4.snbt",
+   "big_bitch.snbt",
+   "cooking_starter_kit.snbt",
+   "elytra.snbt",
+   "first_aura_gem.snbt",
+   "first_boots.snbt",
+   "first_chest.snbt",
+   "first_helmet.snbt",
+   "first_offhand.snbt",
+   "first_pants.snbt",
+   "first_skill_gem.snbt",
+   "first_support_gem.snbt",
+   "first_weapon.snbt",
+   "flugel_tiara.snbt",
+   "gear_crafting_starter_pack.snbt",
+   "randomized_unique_shop.snbt",
+   "reset_potion_package.snbt",
+   "runes_2.snbt",
+   "runes_2_2.snbt",
+   "runes_2_3.snbt",
+   "runes_4.snbt",
+   "runes_5.snbt",
+   "skill_gem_4.snbt",
+   "skill_gem_shop_i.snbt",
+   "skill_gems_1.snbt",
+   "skill_gems_2.snbt",
+   "skill_gems_3.snbt",
+   "skill_gems_5.snbt",
+   "support_gem_2.snbt",
+   "support_gem_6.snbt",
+   "support_gem_shop_i.snbt",
+   "support_gem_shop_ii.snbt",
+   "support_gem_shop_iii.snbt",
+   "support_gem_shop_iv.snbt",
+   "support_gems_1.snbt",
+   "support_gems_3.snbt",
+   "support_gems_4.snbt",
+   "support_gems_5.snbt",
+   "support_gems_7.snbt",
+   "support_gems_flat.snbt",
+   "test.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "Cuboid Outpost (Luxury Edition)/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 300,
+   "grid_scale": 0.5,
+   "icon": "cuboidmod:thatldu_singularity_resource_generator",
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "linear",
+   "title": "Cuboid Outpost Luxury Edition",
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [
+   "1 - A New Life",
+   "2 - A New Focus",
+   "3 - A New Appreciation",
+   "4 - A New Mission",
+   "5 - A New World",
+   "Appendix A - From A to B",
+   "Appendix B - Squared Away",
+   "Appendix C - For Reference",
+   "Appendix D - For The Completionists",
+   "Appendix E - Helping Hand"
+  ],
+  "chapters": [
+   {
+    "file": "a_new_beginning.snbt",
+    "title": "A New Beginning?",
+    "quests": 9,
+    "images": 0,
+    "group": "298C586EA6E5A561",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "all_powah_full.snbt",
+    "title": "All Powah-ful!",
+    "quests": 90,
+    "images": 0,
+    "group": "4785B5C7E26FA669",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "allo_allo_alloy.snbt",
+    "title": "Allo? Allo? Alloy!",
+    "quests": 16,
+    "images": 0,
+    "group": "4F582DBBFACF1F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "backpacking.snbt",
+    "title": "Pack Yer Bags",
+    "quests": 36,
+    "images": 0,
+    "group": "53EA7D6C6A1B0F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "deliciously_creative.snbt",
+    "title": "Deliciously Creative",
+    "quests": 26,
+    "images": 16,
+    "group": "6E3D5CD175F7344D",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "digging_up_the_dirt.snbt",
+    "title": "Digging up the Dirt",
+    "quests": 93,
+    "images": 0,
+    "group": "6E3D5CD175F7344D",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "digital_applied_energistics.snbt",
+    "title": "Digital: Applied Energistics",
+    "quests": 23,
+    "images": 3,
+    "group": "24F09E0B1AD125E9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "digital_refined_storage.snbt",
+    "title": "Digital: Refined Storage",
+    "quests": 32,
+    "images": 0,
+    "group": "24F09E0B1AD125E9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "dirtying_the_dishes.snbt",
+    "title": "Dirtying the Dishes",
+    "quests": 70,
+    "images": 0,
+    "group": "6E3D5CD175F7344D",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "dishing_up_the_meat.snbt",
+    "title": "Dishing up the Meat",
+    "quests": 21,
+    "images": 0,
+    "group": "6E3D5CD175F7344D",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "dont_trust_the_trees.snbt",
+    "title": "Tree pun? I'm stumped.",
+    "quests": 54,
+    "images": 0,
+    "group": "0B5EDAD5D67C6935",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "emergency_items.snbt",
+    "title": "Emergency Items",
+    "quests": 5,
+    "images": 0,
+    "group": "73C2C2D59F8E4DE2",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "energy_storage.snbt",
+    "title": "Energy Storage",
+    "quests": 20,
+    "images": 0,
+    "group": "24F09E0B1AD125E9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "energy_transfer.snbt",
+    "title": "Energy Transfer",
+    "quests": 17,
+    "images": 0,
+    "group": "033EC740B2EF1FC1",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "exploring_the_nether_regions.snbt",
+    "title": "Exploring Nether Regions",
+    "quests": 14,
+    "images": 0,
+    "group": "53EA7D6C6A1B0F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "extending_reality.snbt",
+    "title": "Extending Reality",
+    "quests": 21,
+    "images": 0,
+    "group": "298C586EA6E5A561",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "farewell.snbt",
+    "title": "Farewell",
+    "quests": 7,
+    "images": 0,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Priority Message from The Cuboid Corp (tm) HQ"
+    ]
+   },
+   {
+    "file": "fluid_transport.snbt",
+    "title": "Fluid Transport",
+    "quests": 17,
+    "images": 0,
+    "group": "033EC740B2EF1FC1",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "furnii.snbt",
+    "title": "Baste the Rainbow",
+    "quests": 20,
+    "images": 0,
+    "group": "4F582DBBFACF1F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "gas_storage.snbt",
+    "title": "Gas Storage",
+    "quests": 5,
+    "images": 0,
+    "group": "24F09E0B1AD125E9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "gas_transport.snbt",
+    "title": "Gas Transport",
+    "quests": 8,
+    "images": 0,
+    "group": "033EC740B2EF1FC1",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_creative.snbt",
+    "title": "Getting Creative",
+    "quests": 22,
+    "images": 3,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_digital.snbt",
+    "title": "Getting Digital",
+    "quests": 39,
+    "images": 0,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_going.snbt",
+    "title": "Getting Going",
+    "quests": 54,
+    "images": 0,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_immersed.snbt",
+    "title": "Getting Immersed",
+    "quests": 17,
+    "images": 0,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_mekanised.snbt",
+    "title": "Getting Mekanised",
+    "quests": 27,
+    "images": 0,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_meshed_up.snbt",
+    "title": "This is Meshed Up",
+    "quests": 115,
+    "images": 0,
+    "group": "0B5EDAD5D67C6935",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "getting_started.snbt",
+    "title": "Getting Started",
+    "quests": 74,
+    "images": 0,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Sometimes you need to start over"
+    ]
+   },
+   {
+    "file": "getting_tinks_done.snbt",
+    "title": "Getting No Tinks Done",
+    "quests": 23,
+    "images": 0,
+    "group": "719DAED049159F2E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "industrial_forbidding.snbt",
+    "title": "Industrial Forbidding",
+    "quests": 53,
+    "images": 0,
+    "group": "4785B5C7E26FA669",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "industrial_foreboding.snbt",
+    "title": "Industrial Foreboding",
+    "quests": 11,
+    "images": 0,
+    "group": "4F582DBBFACF1F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "item_transport.snbt",
+    "title": "Chests and Drawers",
+    "quests": 48,
+    "images": 0,
+    "group": "24F09E0B1AD125E9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "meeting_the_underlings.snbt",
+    "title": "Meeting the Udders",
+    "quests": 15,
+    "images": 0,
+    "group": "6E3D5CD175F7344D",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "mekanism.snbt",
+    "title": "Fluid Storage",
+    "quests": 14,
+    "images": 0,
+    "group": "24F09E0B1AD125E9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "moving_items.snbt",
+    "title": "Moving Items",
+    "quests": 24,
+    "images": 0,
+    "group": "033EC740B2EF1FC1",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "networks_for_xmen.snbt",
+    "title": "Networks for X-Men",
+    "quests": 13,
+    "images": 10,
+    "group": "033EC740B2EF1FC1",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "powah_to_the_person.snbt",
+    "title": "Powah to the Person!",
+    "quests": 29,
+    "images": 0,
+    "group": "4F582DBBFACF1F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "quantum_singularities.snbt",
+    "title": "Quantum Singularities",
+    "quests": 65,
+    "images": 0,
+    "group": "4785B5C7E26FA669",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "the_slaughter_house.snbt",
+    "title": "The Slaughterhouse",
+    "quests": 54,
+    "images": 1,
+    "group": "53EA7D6C6A1B0F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "thermal_content.snbt",
+    "title": "Ther-malcontents",
+    "quests": 30,
+    "images": 0,
+    "group": "4F582DBBFACF1F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "up_up_and_away.snbt",
+    "title": "Up, up and away",
+    "quests": 35,
+    "images": 0,
+    "group": "53EA7D6C6A1B0F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "utterly_scrumptious.snbt",
+    "title": "Utterly Delicious",
+    "quests": 32,
+    "images": 0,
+    "group": "6E3D5CD175F7344D",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "whats_left_in_the_end.snbt",
+    "title": "What's left in the End?",
+    "quests": 31,
+    "images": 0,
+    "group": "53EA7D6C6A1B0F69",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   }
+  ],
+  "n_chapters": 43,
+  "n_quests": 1429,
+  "task_types": [
+   [
+    "item",
+    1526
+   ],
+   [
+    "checkmark",
+    69
+   ],
+   [
+    "advancement",
+    11
+   ],
+   [
+    "dimension",
+    3
+   ],
+   [
+    "biome",
+    1
+   ]
+  ],
+  "reward_types": [
+   [
+    "item",
+    284
+   ],
+   [
+    "gamestage",
+    6
+   ],
+   [
+    "choice",
+    2
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    988
+   ],
+   [
+    "square",
+    285
+   ],
+   [
+    "gear",
+    92
+   ],
+   [
+    "hexagon",
+    40
+   ],
+   [
+    "pentagon",
+    13
+   ],
+   [
+    "octagon",
+    6
+   ],
+   [
+    "rsquare",
+    2
+   ],
+   [
+    "diamond",
+    2
+   ],
+   [
+    "circle",
+    1
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    1347
+   ],
+   [
+    "1.2",
+    40
+   ],
+   [
+    "1.5",
+    35
+   ],
+   [
+    "3.0",
+    7
+   ]
+  ],
+  "flags": [
+   [
+    "optional",
+    288
+   ],
+   [
+    "disable_toast",
+    145
+   ],
+   [
+    "hide_dependency_lines",
+    114
+   ],
+   [
+    "subtitle",
+    93
+   ],
+   [
+    "dependency_requirement",
+    7
+   ],
+   [
+    "min_required_dependencies",
+    4
+   ],
+   [
+    "hide_text_until_complete",
+    1
+   ]
+  ],
+  "reward_team_field": [
+   [
+    "True",
+    3
+   ]
+  ],
+  "reward_auto_field": [
+   [
+    "disabled",
+    6
+   ],
+   [
+    "enabled",
+    1
+   ]
+  ],
+  "dependency_count_hist": [
+   [
+    0,
+    182
+   ],
+   [
+    1,
+    898
+   ],
+   [
+    2,
+    310
+   ],
+   [
+    3,
+    33
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    8,
+    1
+   ],
+   [
+    10,
+    2
+   ],
+   [
+    12,
+    1
+   ]
+  ],
+  "desc_len_median": 121,
+  "desc_len_p90": 524,
+  "desc_empty_pct": 34.4,
+  "desc_images": 6,
+  "desc_pagebreaks": 0,
+  "desc_links": 0,
+  "desc_color_codes": 330,
+  "chapter_images_total": 33,
+  "reward_tables": [
+   "end_game_rewards.snbt",
+   "rewards.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "DeceasedCraft - Urban Zombie Apocalypse/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_book_on_death": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 300,
+   "grid_scale": 0.5,
+   "hide_excluded_quests": false,
+   "icon": "minecraft:zombie_head",
+   "lock_message": "",
+   "pause_game": true,
+   "progression_mode": "flexible",
+   "show_lock_icons": true,
+   "title": "DeceasedCraft",
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [
+   "{quest.main}",
+   "{quest.guide}",
+   "{quest.combat}",
+   "{quest.technology}",
+   "{quest.transport}",
+   "{quest.collection}",
+   "{quest.credits}"
+  ],
+  "chapters": [
+   {
+    "file": "basic_needs.snbt",
+    "title": "{quest.guide.survival}",
+    "quests": 23,
+    "images": 9,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.survival.subtitle}"
+    ]
+   },
+   {
+    "file": "bullet_automation.snbt",
+    "title": "{quest.tech.bullet_automation}",
+    "quests": 27,
+    "images": 3,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.tech.bullet_automation.subtitle}"
+    ]
+   },
+   {
+    "file": "cannons.snbt",
+    "title": "{quest.tech.cannons}",
+    "quests": 45,
+    "images": 5,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "cars.snbt",
+    "title": "{quest.transport.car}",
+    "quests": 11,
+    "images": 5,
+    "group": "0D77BDD69DA6720E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.transport.car.subtitle}"
+    ]
+   },
+   {
+    "file": "chapter_2_combat.snbt",
+    "title": "{quest.combat.melee}",
+    "quests": 141,
+    "images": 65,
+    "group": "0CEF75605D0E77B3",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "chapter_defensive.snbt",
+    "title": "{quest.combat.armor}",
+    "quests": 38,
+    "images": 20,
+    "group": "0CEF75605D0E77B3",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "chapter_transport.snbt",
+    "title": "{quest.transport.train}",
+    "quests": 9,
+    "images": 2,
+    "group": "0D77BDD69DA6720E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "guides.snbt",
+    "title": "{quest.guide.tutorial}",
+    "quests": 30,
+    "images": 24,
+    "group": "410F2D717CE3690A",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.tutorial.subtitle}"
+    ]
+   },
+   {
+    "file": "guns.snbt",
+    "title": "{quest.combat.guns}",
+    "quests": 19,
+    "images": 2,
+    "group": "0CEF75605D0E77B3",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "machinery.snbt",
+    "title": "WIP",
+    "quests": 35,
+    "images": 0,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "pest_control.snbt",
+    "title": "{quest.main.boss}",
+    "quests": 17,
+    "images": 18,
+    "group": "0CEF75605D0E77B3",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "planes.snbt",
+    "title": "{quest.transport.planes}",
+    "quests": 41,
+    "images": 7,
+    "group": "0D77BDD69DA6720E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "power_generation.snbt",
+    "title": "{quest.tech.power}",
+    "quests": 35,
+    "images": 7,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "questcollectionbadges.snbt",
+    "title": "{quest.collection.badges}",
+    "quests": 8,
+    "images": 1,
+    "group": "0D855F9E07C00598",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "questcollectiondiscs.snbt",
+    "title": "{quest.collection.discs}",
+    "quests": 50,
+    "images": 1,
+    "group": "0D855F9E07C00598",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "questcollectionplushie.snbt",
+    "title": "{quest.collection.plushies}",
+    "quests": 76,
+    "images": 3,
+    "group": "0D855F9E07C00598",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "questcredits.snbt",
+    "title": "{quest.credits.credits}",
+    "quests": 1,
+    "images": 10,
+    "group": "612BBFEAEFB1F328",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "questguidehordebuilding.snbt",
+    "title": "{quest.guide.hordebuilding}",
+    "quests": 1,
+    "images": 20,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.hordebuilding.subtitle}"
+    ]
+   },
+   {
+    "file": "questguidehordewave.snbt",
+    "title": "{quest.guide.hordewave}",
+    "quests": 1,
+    "images": 12,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.hordewave.subtitle}"
+    ]
+   },
+   {
+    "file": "questguideparkour.snbt",
+    "title": "{quest.guide.parkour}",
+    "quests": 3,
+    "images": 12,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.parkour.subtitle}"
+    ]
+   },
+   {
+    "file": "questguidescrapping.snbt",
+    "title": "{quest.guide.scrapping}",
+    "quests": 1,
+    "images": 3,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.scrapping.subtitle_2}"
+    ]
+   },
+   {
+    "file": "questintro.snbt",
+    "title": "{quest.intro}",
+    "quests": 1,
+    "images": 3,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.intro.subtitle}"
+    ]
+   },
+   {
+    "file": "questmainabyss.snbt",
+    "title": "quest.main.abyss",
+    "quests": 2,
+    "images": 0,
+    "group": "410F2D717CE3690A",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "questmainbuildings.snbt",
+    "title": "{quest.main.district}",
+    "quests": 77,
+    "images": 125,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "refined_storage.snbt",
+    "title": "{quest.storage}",
+    "quests": 15,
+    "images": 0,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "steels.snbt",
+    "title": "{quest.tech.steel}",
+    "quests": 24,
+    "images": 5,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "temperature.snbt",
+    "title": "{quest.guide.temperature}",
+    "quests": 14,
+    "images": 10,
+    "group": "4DDD3BC5FBA9AF8E",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "{quest.guide.temperature.subtitle}"
+    ]
+   },
+   {
+    "file": "the_first_cure.snbt",
+    "title": "{quest.main.cure.beginning.title}",
+    "quests": 13,
+    "images": 9,
+    "group": "410F2D717CE3690A",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "torches.snbt",
+    "title": "{quest.tech.treated}",
+    "quests": 24,
+    "images": 6,
+    "group": "06797646CDBF2AAC",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "traps.snbt",
+    "title": "WIP",
+    "quests": 19,
+    "images": 0,
+    "group": "0CEF75605D0E77B3",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   }
+  ],
+  "n_chapters": 30,
+  "n_quests": 801,
+  "task_types": [
+   [
+    "item",
+    627
+   ],
+   [
+    "advancement",
+    89
+   ],
+   [
+    "checkmark",
+    75
+   ],
+   [
+    "kill",
+    17
+   ],
+   [
+    "biome",
+    7
+   ],
+   [
+    "dimension",
+    1
+   ]
+  ],
+  "reward_types": [
+   [
+    "item",
+    386
+   ],
+   [
+    "xp",
+    344
+   ],
+   [
+    "random",
+    6
+   ],
+   [
+    "xp_levels",
+    5
+   ],
+   [
+    "choice",
+    2
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    397
+   ],
+   [
+    "square",
+    331
+   ],
+   [
+    "hexagon",
+    39
+   ],
+   [
+    "circle",
+    24
+   ],
+   [
+    "gear",
+    7
+   ],
+   [
+    "pentagon",
+    3
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    413
+   ],
+   [
+    "1.5",
+    143
+   ],
+   [
+    "2.5",
+    138
+   ],
+   [
+    "2.0",
+    53
+   ],
+   [
+    "3.0",
+    28
+   ],
+   [
+    "1.0",
+    15
+   ],
+   [
+    "5.0",
+    6
+   ],
+   [
+    "3.5",
+    2
+   ],
+   [
+    "4.0",
+    2
+   ],
+   [
+    "1.2",
+    1
+   ]
+  ],
+  "flags": [
+   [
+    "subtitle",
+    236
+   ],
+   [
+    "progression_mode",
+    158
+   ],
+   [
+    "dependency_requirement",
+    122
+   ],
+   [
+    "hide_until_deps_visible",
+    21
+   ],
+   [
+    "hide_details_until_startable",
+    13
+   ],
+   [
+    "hide_until_deps_complete",
+    8
+   ],
+   [
+    "hide_text_until_complete",
+    7
+   ],
+   [
+    "hide_dependency_lines",
+    4
+   ],
+   [
+    "optional",
+    3
+   ],
+   [
+    "can_repeat",
+    3
+   ],
+   [
+    "min_required_dependencies",
+    2
+   ]
+  ],
+  "reward_team_field": [],
+  "reward_auto_field": [],
+  "dependency_count_hist": [
+   [
+    0,
+    481
+   ],
+   [
+    1,
+    271
+   ],
+   [
+    2,
+    31
+   ],
+   [
+    3,
+    13
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    5,
+    2
+   ],
+   [
+    6,
+    1
+   ]
+  ],
+  "desc_len_median": 35,
+  "desc_len_p90": 106,
+  "desc_empty_pct": 49.6,
+  "desc_images": 0,
+  "desc_pagebreaks": 0,
+  "desc_links": 0,
+  "desc_color_codes": 0,
+  "chapter_images_total": 387,
+  "reward_tables": [
+   "lunchbox.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "Forever Factory/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 300,
+   "grid_scale": 0.5,
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "linear",
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [
+   "Fun Stuff",
+   "Main Pack Progression"
+  ],
+  "chapters": [
+   {
+    "file": "ch_i_starting_into_create.snbt",
+    "title": "Ch.I: Mechanical Age",
+    "quests": 27,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "ch_ivb_living_age.snbt",
+    "title": "Ch. IV-B: Living Age",
+    "quests": 21,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "ch_vi.snbt",
+    "title": "Ch. VI: Endgame",
+    "quests": 39,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "challenges.snbt",
+    "title": "Challenges!",
+    "quests": 6,
+    "images": 0,
+    "group": "1A13CCEB71BED4A8",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Want to spice up your game? Challenge yourself!"
+    ]
+   },
+   {
+    "file": "chii_we_need_to_go_deeper.snbt",
+    "title": "Ch.II: Pneumatic Age",
+    "quests": 27,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "chiii_immersive_engineering.snbt",
+    "title": "Ch.III: Electrical Age",
+    "quests": 32,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "chiv_digital_age.snbt",
+    "title": "Ch.IV-A: Digital Age",
+    "quests": 17,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "chv_industrial_age.snbt",
+    "title": "Ch,V: Industrial Age",
+    "quests": 31,
+    "images": 0,
+    "group": "07EF82DE5E014AA9",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "configuration_panel.snbt",
+    "title": "Configuration Panel",
+    "quests": 17,
+    "images": 0,
+    "group": "1A13CCEB71BED4A8",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Customize your game experience"
+    ]
+   },
+   {
+    "file": "power_generation.snbt",
+    "title": "Energy Generation",
+    "quests": 38,
+    "images": 0,
+    "group": "1A13CCEB71BED4A8",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Generators for Forge Energy as well as other Tech and Magic mods"
+    ]
+   }
+  ],
+  "n_chapters": 10,
+  "n_quests": 255,
+  "task_types": [
+   [
+    "item",
+    317
+   ],
+   [
+    "checkmark",
+    32
+   ],
+   [
+    "observation",
+    7
+   ],
+   [
+    "advancement",
+    5
+   ]
+  ],
+  "reward_types": [
+   [
+    "item",
+    175
+   ],
+   [
+    "command",
+    18
+   ],
+   [
+    "random",
+    1
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    187
+   ],
+   [
+    "square",
+    23
+   ],
+   [
+    "gear",
+    15
+   ],
+   [
+    "diamond",
+    13
+   ],
+   [
+    "hexagon",
+    5
+   ],
+   [
+    "pentagon",
+    5
+   ],
+   [
+    "rsquare",
+    5
+   ],
+   [
+    "heart",
+    2
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    255
+   ]
+  ],
+  "flags": [
+   [
+    "subtitle",
+    76
+   ],
+   [
+    "optional",
+    35
+   ],
+   [
+    "can_repeat",
+    16
+   ]
+  ],
+  "reward_team_field": [],
+  "reward_auto_field": [
+   [
+    "no_toast",
+    18
+   ]
+  ],
+  "dependency_count_hist": [
+   [
+    0,
+    45
+   ],
+   [
+    1,
+    180
+   ],
+   [
+    2,
+    20
+   ],
+   [
+    3,
+    7
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    5,
+    1
+   ]
+  ],
+  "desc_len_median": 121,
+  "desc_len_p90": 364,
+  "desc_empty_pct": 9.0,
+  "desc_images": 0,
+  "desc_pagebreaks": 0,
+  "desc_links": 1,
+  "desc_color_codes": 54,
+  "chapter_images_total": 0,
+  "reward_tables": [
+   "random_basic_token.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "Mechanical Mastery Plus/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 180,
+   "grid_scale": 0.5,
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "linear",
+   "title": "Mechanical Mastery Plus",
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [
+   "Intro",
+   "Main questline"
+  ],
+  "chapters": [
+   {
+    "file": "all_the_mob_farms.snbt",
+    "title": "Experience \\& you",
+    "quests": 43,
+    "images": 0,
+    "group": "56617BF3F24DD586",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "automation_tips.snbt",
+    "title": "Automation",
+    "quests": 189,
+    "images": 0,
+    "group": "56617BF3F24DD586",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "zoom out to see all quests :)"
+    ]
+   },
+   {
+    "file": "chapter_0_manual_stuff.snbt",
+    "title": "Chapter 0: Primitive beginnings",
+    "quests": 33,
+    "images": 0,
+    "group": "2D94E5A1412E2495",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "configuration_panel.snbt",
+    "title": "Configuration Panel",
+    "quests": 12,
+    "images": 0,
+    "group": "56617BF3F24DD586",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": [
+     "Create your ideal experience here"
+    ]
+   },
+   {
+    "file": "overhauled_ore_processing.snbt",
+    "title": "Overhauled Ore Processing",
+    "quests": 98,
+    "images": 0,
+    "group": "56617BF3F24DD586",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "overview.snbt",
+    "title": "Topic",
+    "quests": 5,
+    "images": 0,
+    "group": "56617BF3F24DD586",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "tier_1.snbt",
+    "title": "Chapter 1: Thermal Series",
+    "quests": 25,
+    "images": 1,
+    "group": "2D94E5A1412E2495",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "tier_2.snbt",
+    "title": "Chapter 2: Create \\& Industrial Foregoing",
+    "quests": 36,
+    "images": 2,
+    "group": "2D94E5A1412E2495",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "tier_3.snbt",
+    "title": "Chapter 3: Mekanism",
+    "quests": 48,
+    "images": 2,
+    "group": "2D94E5A1412E2495",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "tier_4.snbt",
+    "title": "Chapter 4: Advanced Mekanism",
+    "quests": 30,
+    "images": 1,
+    "group": "2D94E5A1412E2495",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "tier_5_endgame.snbt",
+    "title": "Chapter 5: Endgame",
+    "quests": 65,
+    "images": 0,
+    "group": "2D94E5A1412E2495",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "useful_mods.snbt",
+    "title": "All the other mods \\& stuff",
+    "quests": 76,
+    "images": 0,
+    "group": "56617BF3F24DD586",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   }
+  ],
+  "n_chapters": 12,
+  "n_quests": 660,
+  "task_types": [
+   [
+    "item",
+    810
+   ],
+   [
+    "checkmark",
+    67
+   ],
+   [
+    "fluid",
+    5
+   ],
+   [
+    "questsadditions:time",
+    3
+   ],
+   [
+    "forge_energy",
+    1
+   ]
+  ],
+  "reward_types": [
+   [
+    "item",
+    297
+   ],
+   [
+    "xp",
+    69
+   ],
+   [
+    "command",
+    14
+   ],
+   [
+    "choice",
+    5
+   ],
+   [
+    "xp_levels",
+    3
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    574
+   ],
+   [
+    "diamond",
+    60
+   ],
+   [
+    "square",
+    10
+   ],
+   [
+    "gear",
+    6
+   ],
+   [
+    "pentagon",
+    4
+   ],
+   [
+    "hexagon",
+    3
+   ],
+   [
+    "heart",
+    3
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    660
+   ]
+  ],
+  "flags": [
+   [
+    "optional",
+    71
+   ],
+   [
+    "subtitle",
+    61
+   ],
+   [
+    "hide_dependent_lines",
+    48
+   ],
+   [
+    "hide_dependency_lines",
+    18
+   ],
+   [
+    "can_repeat",
+    12
+   ],
+   [
+    "dependency_requirement",
+    4
+   ],
+   [
+    "min_required_dependencies",
+    3
+   ],
+   [
+    "hide_details_until_startable",
+    3
+   ],
+   [
+    "secret",
+    3
+   ]
+  ],
+  "reward_team_field": [],
+  "reward_auto_field": [
+   [
+    "enabled",
+    14
+   ]
+  ],
+  "dependency_count_hist": [
+   [
+    0,
+    33
+   ],
+   [
+    1,
+    541
+   ],
+   [
+    2,
+    63
+   ],
+   [
+    3,
+    17
+   ],
+   [
+    4,
+    1
+   ],
+   [
+    5,
+    4
+   ],
+   [
+    6,
+    1
+   ]
+  ],
+  "desc_len_median": 0,
+  "desc_len_p90": 244,
+  "desc_empty_pct": 62.9,
+  "desc_images": 6,
+  "desc_pagebreaks": 0,
+  "desc_links": 28,
+  "desc_color_codes": 118,
+  "chapter_images_total": 6,
+  "reward_tables": [
+   "activate_daylight_cycle.snbt",
+   "activate_keepinventory.snbt",
+   "advanced_mekanism_pipes.snbt",
+   "alloy_dusts.snbt",
+   "bring_back_phantoms.snbt",
+   "clear_weather.snbt",
+   "deactivate_keepinventory.snbt",
+   "dusts.snbt",
+   "inscriber_presses.snbt",
+   "make_noon.snbt",
+   "metal_plates.snbt",
+   "no_daylight_cycle.snbt",
+   "press_dies.snbt",
+   "reactivate_weather_cycle.snbt",
+   "remove_phantoms.snbt",
+   "silicons.snbt",
+   "stop_weather_cycle.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "Ozone Skyblock Reborn 2/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "octagon",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_book_on_death": false,
+   "drop_loot_crates": true,
+   "emergency_items_cooldown": 120,
+   "fallback_locale": "",
+   "grid_scale": 0.5,
+   "hide_excluded_quests": false,
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "flexible",
+   "show_lock_icons": true,
+   "verify_on_load": false,
+   "version": 13
+  },
+  "has_lang_file": true,
+  "chapter_groups": [],
+  "chapters": [
+   {
+    "file": "applied_automation.snbt",
+    "title": "Applied Automation",
+    "quests": 65,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "coin_shop.snbt",
+    "title": "Coin Shop",
+    "quests": 10,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "crazy_crafting.snbt",
+    "title": "Crazy Crafting",
+    "quests": 28,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "culinary_creations.snbt",
+    "title": "Culinary Creations",
+    "quests": 31,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "delightful_decor.snbt",
+    "title": "Delightful Decor",
+    "quests": 42,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "dimension_diving.snbt",
+    "title": "Dimension Diving",
+    "quests": 50,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "draconically_dangerous.snbt",
+    "title": "Draconically Dangerous",
+    "quests": 26,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "emc_extravaganza.snbt",
+    "title": "EMC Extravaganza ",
+    "quests": 57,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "endgame_experience.snbt",
+    "title": "Endgame Experience",
+    "quests": 57,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "factory_fanatics.snbt",
+    "title": "Factory Fanatics",
+    "quests": 56,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "faq.snbt",
+    "title": "FAQ",
+    "quests": 2,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "incredible_industry.snbt",
+    "title": "Incredible Industry",
+    "quests": 63,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "magical_mayhem.snbt",
+    "title": "Magical Mayhem",
+    "quests": 48,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "mechanical_methods.snbt",
+    "title": "Mechanical Methods",
+    "quests": 53,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "miscellaneous_marvels.snbt",
+    "title": "Miscellaneous Marvels",
+    "quests": 78,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "mob_mashing.snbt",
+    "title": "Mob Mashing",
+    "quests": 34,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "overpowered_opulence.snbt",
+    "title": "Overpowered Opulence",
+    "quests": 17,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "power_production.snbt",
+    "title": "Power Production",
+    "quests": 49,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "resources_required.snbt",
+    "title": "Resources Required",
+    "quests": 62,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "simple_achievements.snbt",
+    "title": "Simple Achievements",
+    "quests": 22,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "space_scouting.snbt",
+    "title": "Space Scouting",
+    "quests": 26,
+    "images": 2,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "starting_stuff.snbt",
+    "title": "Starting Stuff",
+    "quests": 47,
+    "images": 2,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "storage_solutions.snbt",
+    "title": "Storage Solutions",
+    "quests": 44,
+    "images": 1,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   }
+  ],
+  "n_chapters": 23,
+  "n_quests": 967,
+  "task_types": [
+   [
+    "item",
+    1177
+   ],
+   [
+    "checkmark",
+    29
+   ],
+   [
+    "dimension",
+    4
+   ],
+   [
+    "kill",
+    1
+   ]
+  ],
+  "reward_types": [
+   [
+    "item",
+    1892
+   ],
+   [
+    "random",
+    7
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    966
+   ],
+   [
+    "heart",
+    1
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    876
+   ],
+   [
+    "1.25",
+    90
+   ],
+   [
+    "1.0",
+    1
+   ]
+  ],
+  "flags": [
+   [
+    "hide_until_deps_complete",
+    21
+   ],
+   [
+    "optional",
+    10
+   ],
+   [
+    "can_repeat",
+    9
+   ],
+   [
+    "disable_toast",
+    8
+   ],
+   [
+    "hide_dependency_lines",
+    1
+   ],
+   [
+    "hide_dependent_lines",
+    1
+   ]
+  ],
+  "reward_team_field": [],
+  "reward_auto_field": [],
+  "dependency_count_hist": [
+   [
+    0,
+    3
+   ],
+   [
+    1,
+    904
+   ],
+   [
+    2,
+    57
+   ],
+   [
+    3,
+    1
+   ],
+   [
+    4,
+    1
+   ],
+   [
+    20,
+    1
+   ]
+  ],
+  "desc_len_median": 102,
+  "desc_len_p90": 406,
+  "desc_empty_pct": 0.1,
+  "desc_images": 0,
+  "desc_pagebreaks": 0,
+  "desc_links": 12,
+  "desc_color_codes": 66,
+  "chapter_images_total": 25,
+  "reward_tables": [
+   "18391202155E43DC.snbt",
+   "31D1469D74D2DE9B.snbt",
+   "386F90497293500B.snbt",
+   "3D615535F00424DD.snbt",
+   "4AC6B1253BF1671D.snbt",
+   "5F292F7F7DE2F1B1.snbt",
+   "67B79C569FD5FB4F.snbt",
+   "6E0B4B9793B92F74.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "The Suspect's Journey (1)/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 20,
+   "disable_gui": false,
+   "drop_book_on_death": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 300,
+   "grid_scale": 0.5,
+   "hide_excluded_quests": false,
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "linear",
+   "show_lock_icons": true,
+   "title": "&cThe Suspect's Journey",
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [
+   "&bStage 1: &6Back to Earth",
+   "&bStage 2: &6Ad Venerem",
+   "&bStage 3: &6The Imposter"
+  ],
+  "chapters": [
+   {
+    "file": "a_lost_world.snbt",
+    "title": "A Lost World",
+    "quests": 9,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "fuel_production.snbt",
+    "title": "Fuel Production",
+    "quests": 15,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "guns.snbt",
+    "title": "Guns",
+    "quests": 20,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "hdpe_sheets.snbt",
+    "title": "HDPE Sheets",
+    "quests": 7,
+    "images": 1,
+    "group": "32FF4C5F4AA83C95",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "lithium_dust.snbt",
+    "title": "Lithium Dust",
+    "quests": 6,
+    "images": 1,
+    "group": "32FF4C5F4AA83C95",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "main_quest_line.snbt",
+    "title": "Main Quest Line",
+    "quests": 19,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "main_quest_line_2.snbt",
+    "title": "Main Quest Line",
+    "quests": 2,
+    "images": 1,
+    "group": "7299BE3E22526E34",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "minecolonies.snbt",
+    "title": "MineColonies",
+    "quests": 76,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "start.snbt",
+    "title": "Utils",
+    "quests": 25,
+    "images": 0,
+    "group": "",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "start_2.snbt",
+    "title": "Main Quest Line",
+    "quests": 11,
+    "images": 1,
+    "group": "32FF4C5F4AA83C95",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "storage.snbt",
+    "title": "Storage",
+    "quests": 7,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "the_fission_reactor.snbt",
+    "title": "The Fission Reactor",
+    "quests": 21,
+    "images": 1,
+    "group": "32FF4C5F4AA83C95",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "thorianite_dust.snbt",
+    "title": "Thorianite Dust",
+    "quests": 37,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "volt_energy.snbt",
+    "title": "Volt Energy",
+    "quests": 8,
+    "images": 1,
+    "group": "5771C1617EE2E352",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   },
+   {
+    "file": "welcome_suspect.snbt",
+    "title": "Welcome, Suspect!",
+    "quests": 4,
+    "images": 1,
+    "group": "32FF4C5F4AA83C95",
+    "progression_mode": null,
+    "default_quest_shape": "",
+    "subtitle": null
+   }
+  ],
+  "n_chapters": 15,
+  "n_quests": 267,
+  "task_types": [
+   [
+    "item",
+    261
+   ],
+   [
+    "advancement",
+    52
+   ],
+   [
+    "checkmark",
+    32
+   ],
+   [
+    "questsadditions:time",
+    10
+   ],
+   [
+    "observation",
+    7
+   ],
+   [
+    "dimension",
+    6
+   ]
+  ],
+  "reward_types": [
+   [
+    "item",
+    208
+   ],
+   [
+    "xp",
+    100
+   ],
+   [
+    "command",
+    38
+   ],
+   [
+    "choice",
+    23
+   ],
+   [
+    "xp_levels",
+    20
+   ],
+   [
+    "random",
+    4
+   ],
+   [
+    "loot",
+    1
+   ]
+  ],
+  "shapes": [
+   [
+    "(default)",
+    236
+   ],
+   [
+    "gear",
+    12
+   ],
+   [
+    "square",
+    8
+   ],
+   [
+    "diamond",
+    5
+   ],
+   [
+    "octagon",
+    2
+   ],
+   [
+    "rsquare",
+    2
+   ],
+   [
+    "pentagon",
+    2
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    259
+   ],
+   [
+    "2.0",
+    6
+   ],
+   [
+    "1.5",
+    1
+   ],
+   [
+    "1.0",
+    1
+   ]
+  ],
+  "flags": [
+   [
+    "subtitle",
+    60
+   ],
+   [
+    "hide_dependency_lines",
+    33
+   ],
+   [
+    "invisible",
+    23
+   ],
+   [
+    "hide_until_deps_visible",
+    20
+   ],
+   [
+    "hide_until_deps_complete",
+    10
+   ],
+   [
+    "dependency_requirement",
+    1
+   ],
+   [
+    "can_repeat",
+    1
+   ],
+   [
+    "disable_toast",
+    1
+   ],
+   [
+    "progression_mode",
+    1
+   ],
+   [
+    "secret",
+    1
+   ]
+  ],
+  "reward_team_field": [
+   [
+    "True",
+    6
+   ]
+  ],
+  "reward_auto_field": [
+   [
+    "enabled",
+    15
+   ],
+   [
+    "no_toast",
+    11
+   ],
+   [
+    "invisible",
+    1
+   ],
+   [
+    "disabled",
+    1
+   ]
+  ],
+  "dependency_count_hist": [
+   [
+    0,
+    30
+   ],
+   [
+    1,
+    217
+   ],
+   [
+    2,
+    19
+   ],
+   [
+    5,
+    1
+   ]
+  ],
+  "desc_len_median": 80,
+  "desc_len_p90": 449,
+  "desc_empty_pct": 26.6,
+  "desc_images": 12,
+  "desc_pagebreaks": 0,
+  "desc_links": 4,
+  "desc_color_codes": 541,
+  "chapter_images_total": 14,
+  "reward_tables": [
+   "choice_compost.snbt",
+   "choice_crush.snbt",
+   "choice_flowers.snbt",
+   "choice_food.snbt",
+   "choice_hospital.snbt",
+   "choice_logs.snbt",
+   "choice_sapling.snbt",
+   "choice_stone.snbt",
+   "minecolonies_common.snbt"
+  ],
+  "parse_errors": []
+ },
+ {
+  "dir": "Tower Defense Modpack/config/ftbquests/quests",
+  "data_defaults": {
+   "default_autoclaim_rewards": "disabled",
+   "default_consume_items": false,
+   "default_quest_disable_jei": false,
+   "default_quest_shape": "circle",
+   "default_reward_team": false,
+   "detection_delay": 60,
+   "disable_gui": false,
+   "drop_book_on_death": false,
+   "drop_loot_crates": false,
+   "emergency_items_cooldown": 300,
+   "grid_scale": 0.5,
+   "hide_excluded_quests": false,
+   "lock_message": "",
+   "pause_game": false,
+   "progression_mode": "flexible",
+   "show_lock_icons": true,
+   "version": 13
+  },
+  "has_lang_file": false,
+  "chapter_groups": [],
+  "chapters": [
+   {
+    "file": "arsenal.snbt",
+    "title": "The Arsenal",
+    "quests": 24,
+    "images": 0,
+    "group": "",
+    "progression_mode": "flexible",
+    "default_quest_shape": "",
+    "subtitle": [
+     "Simple Guns: reworked - what each piece does, and what it needs to fire"
+    ]
+   },
+   {
+    "file": "bounties.snbt",
+    "title": "Bounties",
+    "quests": 5,
+    "images": 0,
+    "group": "",
+    "progression_mode": "flexible",
+    "default_quest_shape": "",
+    "subtitle": [
+     "Every wave kill counts - yours, your friends' and your turrets'"
+    ]
+   },
+   {
+    "file": "campaign.snbt",
+    "title": "Campaign",
+    "quests": 39,
+    "images": 0,
+    "group": "",
+    "progression_mode": "flexible",
+    "default_quest_shape": "",
+    "subtitle": [
+     "Hold the pedestal. The waves don't stop."
+    ]
+   },
+   {
+    "file": "tips_and_tricks.snbt",
+    "title": "Tips and Tricks",
+    "quests": 13,
+    "images": 0,
+    "group": "",
+    "progression_mode": "flexible",
+    "default_quest_shape": "",
+    "subtitle": [
+     "Keys and habits worth knowing"
+    ]
+   }
+  ],
+  "n_chapters": 4,
+  "n_quests": 81,
+  "task_types": [
+   [
+    "item",
+    47
+   ],
+   [
+    "checkmark",
+    17
+   ],
+   [
+    "custom",
+    13
+   ],
+   [
+    "observation",
+    2
+   ],
+   [
+    "kill",
+    1
+   ],
+   [
+    "structure",
+    1
+   ]
+  ],
+  "reward_types": [
+   [
+    "xp_levels",
+    76
+   ],
+   [
+    "item",
+    40
+   ]
+  ],
+  "shapes": [
+   [
+    "circle",
+    31
+   ],
+   [
+    "hexagon",
+    21
+   ],
+   [
+    "rsquare",
+    17
+   ],
+   [
+    "pentagon",
+    5
+   ],
+   [
+    "diamond",
+    4
+   ],
+   [
+    "(default)",
+    2
+   ],
+   [
+    "gear",
+    1
+   ]
+  ],
+  "sizes": [
+   [
+    "(1.0)",
+    64
+   ],
+   [
+    "1.5",
+    13
+   ],
+   [
+    "1.0",
+    1
+   ],
+   [
+    "1.25",
+    1
+   ],
+   [
+    "1.75",
+    1
+   ],
+   [
+    "2.0",
+    1
+   ]
+  ],
+  "flags": [
+   [
+    "hide_until_deps_complete",
+    42
+   ],
+   [
+    "subtitle",
+    35
+   ],
+   [
+    "can_repeat",
+    1
+   ]
+  ],
+  "reward_team_field": [],
+  "reward_auto_field": [],
+  "dependency_count_hist": [
+   [
+    0,
+    39
+   ],
+   [
+    1,
+    40
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    3,
+    1
+   ]
+  ],
+  "desc_len_median": 163,
+  "desc_len_p90": 399,
+  "desc_empty_pct": 0.0,
+  "desc_images": 0,
+  "desc_pagebreaks": 0,
+  "desc_links": 0,
+  "desc_color_codes": 62,
+  "chapter_images_total": 0,
+  "reward_tables": [],
+  "parse_errors": []
+ }
+]

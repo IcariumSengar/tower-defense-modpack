@@ -5,7 +5,7 @@
 	group: ""
 	icon: "minecraft:book"
 	id: "1178FD42CF9984A2"
-	images: []
+	images: [ ]
 	order_index: 0
 	progression_mode: "flexible"
 	quest_links: [ ]
@@ -21,11 +21,6 @@
 			}
 			id: "46AB9754465218CF"
 			rewards: [
-				{
-					id: "63AE16AB9867B80D"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					count: 16
 					id: "1C15FECB9B54C301"
@@ -46,17 +41,31 @@
 			y: 0.0d
 		}
 		{
+			description: [
+				"Every shape here means something. &eRounded squares&r are the story: most of them finish on their own as the run goes on. &eGears&r open a new act of the book. &eHexagons&r are things to craft, &epentagons&r are the amulet and the world past the border, and &ecircles&r are field notes."
+				"The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own."
+			]
+			icon: "minecraft:compass"
+			id: "7474EBC3AA3D4B9E"
+			shape: "circle"
+			subtitle: "How to read the shapes on this map"
+			tasks: [
+				{
+					id: "4801DE640412DC63"
+					type: "checkmark"
+				}
+			]
+			title: "Reading This Book"
+			x: 0.0d
+			y: -3.0d
+		}
+		{
 			dependencies: ["46AB9754465218CF"]
-			hide_until_deps_complete: true
 			description: ["The sword and armour you're wearing were theirs. Look close and the wear's already showing - this gear isn't built to last forever. Use it hard while you can; whatever you've found by the time it gives out is what carries you the rest of the way."]
+			hide_until_deps_complete: true
 			icon: "minecraft:clock"
 			id: "70DA454A61DDC3A1"
 			rewards: [
-				{
-					id: "5B4213658A2A99F8"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					id: "427E01BD0F0F4892"
 					item: "bountybags:uncommon_loot_bag"
@@ -77,11 +86,11 @@
 		}
 		{
 			dependencies: ["70DA454A61DDC3A1"]
-			hide_until_deps_complete: true
 			description: [
-				"Walk up to the stone pedestal in the courtyard and look at it. That's the &ePedestal&r, and it's the only thing the horde wants: every wave mob paths straight for it, not for you. It has 300 health, shown on a bar whenever you're within 64 blocks, and a mob within reach hits it for its own attack damage. &cIf it reaches zero the waves stop and the run is over.&r"
+				"Walk up to the stone pedestal in the courtyard and look at it. That's the &ePedestal&r, and it's the only thing the horde wants: every wave mob paths straight for it, not for you. It has 300 health, shown on a bar whenever you're within 64 blocks, and a mob within reach hits it for its own attack damage. &cIf it reaches zero the waves stop and the run is over. Mining or breaking the pedestal block ends the run too.&r"
 				"It can be healed: right-click it holding a golden carrot for 10% back, or a nether star for a full heal. The item is used up on the spot and never sits on the stand, whether or not the amulet is there."
 			]
+			hide_until_deps_complete: true
 			icon: "supplementaries:pedestal"
 			id: "1FCDA02A8AF6F019"
 			rewards: [
@@ -89,11 +98,6 @@
 					id: "37352A7AD2CAFA58"
 					item: "bountybags:uncommon_loot_bag"
 					type: "item"
-				}
-				{
-					id: "52D6205BB957746D"
-					type: "xp_levels"
-					xp_levels: 2
 				}
 			]
 			shape: "rsquare"
@@ -114,15 +118,15 @@
 		}
 		{
 			dependencies: ["1FCDA02A8AF6F019"]
-			hide_until_deps_complete: true
 			description: ["Right-click the note block upstairs to call the next wave. Nothing comes until you do, with one catch: after each clear a timer starts (10 minutes minimum), and when it runs out the wave comes on its own. Use the gap to repair, restock and build. Then sound it."]
+			hide_until_deps_complete: true
 			icon: "minecraft:note_block"
 			id: "2965C45D5F6A0991"
 			rewards: [
 				{
-					id: "035C228778FC17F0"
-					type: "xp_levels"
-					xp_levels: 2
+					id: "38D289600AF93228"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
 				}
 			]
 			shape: "rsquare"
@@ -141,16 +145,11 @@
 		}
 		{
 			dependencies: ["2965C45D5F6A0991"]
-			hide_until_deps_complete: true
 			description: ["Three plain zombies by your own hand; turret and trap kills don't count here (they do for the Bounties tab). Wave 1 is six mobs: three zombies, two husks, one zombie villager. Enough to find out whether your gear holds."]
+			hide_until_deps_complete: true
 			icon: "minecraft:zombie_head"
 			id: "7F675AEBC7301832"
 			rewards: [
-				{
-					id: "351F6384CED5BB12"
-					type: "xp_levels"
-					xp_levels: 3
-				}
 				{
 					count: 3
 					id: "17DBC0F53999DDAC"
@@ -174,8 +173,8 @@
 		}
 		{
 			dependencies: ["7F675AEBC7301832"]
-			hide_until_deps_complete: true
 			description: ["Every mob down means the wave is cleared, the timer to the next one starts, and the border grows: 5 blocks a wave for waves 1 to 3, then 10, then 15, another 5 every three waves. More ground to hold and more ground to loot."]
+			hide_until_deps_complete: true
 			icon: "minecraft:iron_bars"
 			id: "0CBAE9737A4869E9"
 			rewards: [
@@ -185,9 +184,9 @@
 					type: "item"
 				}
 				{
-					id: "295D83DBFA4DD2DA"
+					id: "39F73777700EEE46"
 					type: "xp_levels"
-					xp_levels: 3
+					xp_levels: 6
 				}
 			]
 			shape: "rsquare"
@@ -206,17 +205,11 @@
 		}
 		{
 			dependencies: ["0CBAE9737A4869E9"]
-			hide_until_deps_complete: true
 			description: ["Any wave mob can drop a loot bag when it dies, and every one of them rolls the same odds: 20% for an &eUncommon&r bag, 3.5% Rare, 3% Epic, 2% Legendary. Tougher mobs don't carry better bags; they're just harder to kill. Kill count is what pays."]
+			hide_until_deps_complete: true
 			icon: "bountybags:uncommon_loot_bag"
 			id: "3BFCD0E4AA8C5B36"
 			rewards: [
-				{
-					count: 2
-					id: "44891F4D84D4A6AE"
-					item: "minecraft:emerald"
-					type: "item"
-				}
 				{
 					count: 2
 					id: "0F27AEF7E1CA72EA"
@@ -241,16 +234,14 @@
 		}
 		{
 			dependencies: ["3BFCD0E4AA8C5B36"]
+			description: [
+				"Right-click a bag to open it - it does nothing sitting in your inventory. Better tiers carry better hauls, and Uncommon, Rare and Epic bags can carry &eShrapnel&r, the material the Sentry and shotgun shells need. Open them as you get them."
+				"Unlocks: the amulet, every trap branch, storage and the rest of the book."
+			]
 			hide_until_deps_complete: true
-			description: ["Right-click a bag to open it - it does nothing sitting in your inventory. Better tiers carry better hauls, and every bag can carry &eShrapnel&r, the turret material. Open them as you get them."]
 			icon: "minecraft:chest"
 			id: "538A1BBC9A1B8EAC"
 			rewards: [
-				{
-					id: "0532F9400886F2D7"
-					type: "xp_levels"
-					xp_levels: 3
-				}
 				{
 					count: 2
 					id: "62F6B788A2B81D16"
@@ -263,9 +254,23 @@
 					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
+				{
+					id: "73D6E236567213CE"
+					table_id: 582217002826646159L
+					type: "choice"
+				}
+				{
+					auto: "enabled"
+					description: "Dig In - press Tab"
+					icon: "minecraft:map"
+					id: "207E89D7964478F9"
+					title: "New pages: Act II"
+					type: "toast"
+				}
 			]
-			shape: "rsquare"
-			size: 1.5d
+			shape: "gear"
+			size: 2.0d
+			subtitle: "Open a loot bag. Opens Act II: Dig In"
 			tasks: [
 				{
 					icon: "minecraft:chest"
@@ -274,114 +279,94 @@
 				}
 			]
 			title: "Open It"
-			x: 14.0d
+			x: 14.5d
 			y: 0.0d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
-			hide_until_deps_complete: true
+			dependencies: ["1FCDA02A8AF6F019"]
 			description: [
-				"That was the last page of the diary. Whoever kept it wrote down eight waves, then stopped writing. From here on they're Hordes: each one bigger than the last, with things in them you haven't met yet. There's no final wave coming, so build like you're staying."
+				"Your walls don't stop the horde, they steer it. Mobs dig through anything you place, pile up against walls and build cobblestone pillars to climb them. Only the command post's own reinforced blocks can't be dug."
+				"So build kill zones where the paths meet - the gate and the gaps in the walls - and put the traps and turrets there. A ladder up the outside of a wall is a ladder for them too: keep ladders on the inside."
 			]
-			icon: "minecraft:map"
-			id: "42EDC7E6DB5ABFAA"
+			hide_until_deps_complete: true
+			icon: "minecraft:cobblestone_wall"
+			id: "23B0A3A85C660061"
 			rewards: [
 				{
-					id: "6099752CC711A228"
-					item: "bountybags:epic_loot_bag"
+					count: 6
+					id: "1A45AEE546DF298E"
+					item: "simply_traps:stake"
 					type: "item"
-				}
-				{
-					id: "3216F1BC6F4F8CC4"
-					item: "waystones:waystone"
-					type: "item"
-				}
-				{
-					id: "7F90A3AE03FEFCD1"
-					type: "xp_levels"
-					xp_levels: 5
 				}
 			]
-			shape: "rsquare"
-			size: 1.5d
-			subtitle: "Completes on its own when wave 8 is cleared"
+			shape: "circle"
+			subtitle: "Field notes on the compound"
 			tasks: [
 				{
-					icon: "minecraft:map"
-					id: "1E5042BFD718365A"
-					type: "custom"
+					id: "5BCA13DCDDD98F2E"
+					type: "checkmark"
 				}
 			]
-			title: "The Last Written Wave"
-			x: 16.0d
-			y: 0.0d
+			title: "The Walls Are a Funnel"
+			x: 4.0d
+			y: -3.0d
 		}
 		{
-			dependencies: ["42EDC7E6DB5ABFAA"]
-			hide_until_deps_complete: true
-			description: ["Every tenth horde brings something with it that the rest make way for. Whoever kept this diary wrote its name and nothing else. You'll know it when it arrives; be ready before then."]
-			icon: "undeadnights:elite_zombie_spawn_egg"
-			id: "3E279D8E8116478F"
-			rewards: [
-				{
-					id: "5067FD3DB1AD8107"
-					item: "bountybags:legendary_loot_bag"
-					type: "item"
-				}
-				{
-					id: "5CA335D33C57D026"
-					type: "xp_levels"
-					xp_levels: 8
-				}
+			dependencies: ["2965C45D5F6A0991"]
+			description: [
+				"The line above your hotbar tells you what the base needs. &c⚔ Wave N - Hostiles remaining&r means a wave is on: that many are still alive near the pedestal. &b⏱ Next wave in&r is your build time."
+				"If a pedestal alert replaces the line, the pedestal is being hit right now, wherever you are. Go home."
 			]
-			shape: "rsquare"
-			size: 1.5d
-			subtitle: "Completes when a boss dies"
+			hide_until_deps_complete: true
+			icon: "minecraft:clock"
+			id: "3BF6AC6BEA0899C6"
+			shape: "circle"
+			subtitle: "Field notes on the action bar"
 			tasks: [
 				{
-					icon: "undeadnights:elite_zombie_spawn_egg"
-					id: "2F6153C0E829476B"
-					type: "custom"
+					id: "2B46519021E7D41A"
+					type: "checkmark"
 				}
 			]
-			title: "The Reaper"
-			x: 18.0d
-			y: 0.0d
+			title: "Read the Bar"
+			x: 6.0d
+			y: -3.0d
 		}
 		{
-			dependencies: ["3E279D8E8116478F"]
+			dependencies: ["0CBAE9737A4869E9"]
+			description: [
+				"The pedestal can be made tougher, and you pay in &eXP levels&r. Right-click the pedestal with an empty hand to open its upgrade screen (&e/pedestal&r opens it too). Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 6, 12 and 18 levels."
+				"One player pays a tier's whole cost from their own levels - levels can't be pooled - but the upgrade belongs to the pedestal, so everyone benefits. After a wave clears, players who can afford a tier get an &a[Upgrades]&r link in chat."
+			]
 			hide_until_deps_complete: true
-			description: ["Fifteen. Nobody's diary goes this far. There's no finale waiting and no ending to reach, just the next wave, bigger than the last. Whatever you've built by now is what you're taking into it."]
-			icon: "minecraft:nether_star"
-			id: "10969EB1485216B4"
+			icon: "minecraft:experience_bottle"
+			id: "2E93FD4CE7F6AE87"
 			rewards: [
 				{
-					id: "23FF921409BFCDF7"
-					item: "bountybags:legendary_loot_bag"
-					type: "item"
+					id: "34E2DCF0D48C8AEA"
+					type: "xp_levels"
+					xp_levels: 6
 				}
 			]
-			shape: "rsquare"
-			size: 1.5d
-			subtitle: "Completes on its own when wave 15 is cleared"
+			shape: "circle"
+			subtitle: "Right-click the pedestal with an empty hand"
 			tasks: [
 				{
-					icon: "minecraft:nether_star"
-					id: "307264D1F93A587C"
-					type: "custom"
+					id: "1F6B4412FE03E2CD"
+					type: "checkmark"
 				}
 			]
-			title: "No Ceiling"
-			x: 20.0d
-			y: 0.0d
+			title: "Shore It Up"
+			x: 10.0d
+			y: -3.0d
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			hide_until_deps_complete: true
 			description: [
 				"The &eAmulet&r can't be crafted. Carry eight gold ingots, open this quest and click the task to hand them in, and the amulet is your reward. Each player claims their own. Gold comes as ingots from Rare bags or nuggets from Uncommon ones, nine to an ingot."
 				"It goes in the Curios necklace slot in your inventory, not an armour slot. Fire and lava won't destroy it, but &cit's the only one you'll get&r, so don't lose it."
 			]
+			hide_until_deps_complete: true
 			icon: "kubejs:amulet"
 			id: "7D3A5F912E6C0B48"
 			rewards: [
@@ -389,11 +374,6 @@
 					id: "00ABE60DFE08DB17"
 					item: "kubejs:amulet"
 					type: "item"
-				}
-				{
-					id: "1F84B26D9A5E307C"
-					type: "xp_levels"
-					xp_levels: 2
 				}
 				{
 					count: 4
@@ -419,15 +399,16 @@
 		}
 		{
 			dependencies: ["7D3A5F912E6C0B48"]
-			hide_until_deps_complete: true
 			description: ["While it's on you: Regeneration, and Resistance, which takes 20% off every hit. And as long as the amulet is anywhere but the pedestal, the border is a wall: step over the line and it shoves you back."]
+			hide_until_deps_complete: true
 			icon: "minecraft:golden_apple"
 			id: "46EBB02979D3B684"
 			rewards: [
 				{
-					id: "7D3ECFAF89767E22"
-					type: "xp_levels"
-					xp_levels: 2
+					count: 4
+					id: "4077342237D1161F"
+					item: "minecraft:bread"
+					type: "item"
 				}
 			]
 			shape: "pentagon"
@@ -445,8 +426,11 @@
 		}
 		{
 			dependencies: ["46EBB02979D3B684"]
+			description: [
+				"Right-click the pedestal holding your amulet to leave it there. You lose its buffs and the border opens - but only for players whose own amulet is at the pedestal. Anyone still wearing theirs, or without one, is held at the line. The horde targets the pedestal either way."
+				"To take yours back, right-click the pedestal with an empty hand and press &eTake your amulet&r. The stand shows one amulet however many are left there, and each player can only take their own."
+			]
 			hide_until_deps_complete: true
-			description: ["Right-click the pedestal holding the amulet to set it down. You lose the buffs and the border opens: you can walk out. To take it back, right-click the pedestal with an empty hand and press &eTake the amulet&r. The horde targets the pedestal either way; what changes is whether you're inside the wall with it. Nothing else goes on the stand; if something ends up there, the same screen hands it back."]
 			icon: "supplementaries:pedestal"
 			id: "4B8F2D6A93E7C051"
 			rewards: [
@@ -472,8 +456,8 @@
 		}
 		{
 			dependencies: ["4B8F2D6A93E7C051"]
-			hide_until_deps_complete: true
 			description: ["Stand inside any ruin, house or tower past the border. The &6gold-trimmed&r chests and barrels are the real stashes: each player gets their own roll, and the further out, the better the haul. A nearby spawner guards them; break it with a pickaxe to shut it off."]
+			hide_until_deps_complete: true
 			icon: "minecraft:cracked_stone_bricks"
 			id: "4F1477C0746CED34"
 			rewards: [
@@ -483,9 +467,9 @@
 					type: "item"
 				}
 				{
-					id: "0F99737CE8C1B242"
+					id: "028F7B72C375CEC0"
 					type: "xp_levels"
-					xp_levels: 3
+					xp_levels: 6
 				}
 			]
 			shape: "pentagon"
@@ -503,16 +487,42 @@
 		}
 		{
 			dependencies: ["4F1477C0746CED34"]
+			description: [
+				"The &6gold-trimmed&r chests and barrels out in the ruins are personal: each player gets their own roll from the same container, so a stash your friend emptied is still full for you. Once you've looted one it loses its trim for you."
+				"Further out pays better. Never break one - break the guard spawner instead."
+			]
 			hide_until_deps_complete: true
+			icon: "lootr:lootr_chest"
+			id: "380C9CEEF11FC4E4"
+			rewards: [
+				{
+					id: "71276E3BF837EC7E"
+					type: "xp_levels"
+					xp_levels: 6
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Open a gold-trimmed stash chest"
+			tasks: [
+				{
+					advancement: "lootr:1chest"
+					criterion: ""
+					icon: "lootr:lootr_chest"
+					id: "3D4CBACADBD22F3F"
+					type: "advancement"
+				}
+			]
+			title: "Gold Trim"
+			x: 24.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["380C9CEEF11FC4E4"]
 			description: ["There's a Waystone in the courtyard. Craft another (recipe in JEI, press R on it), place it wherever you're looting, and right-click either one to jump between them."]
+			hide_until_deps_complete: true
 			icon: "waystones:waystone"
 			id: "216966530DE6E3DB"
 			rewards: [
-				{
-					id: "4B2522E0A3B82AA9"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					count: 2
 					id: "3FF89D8BED4DE65A"
@@ -531,21 +541,20 @@
 				}
 			]
 			title: "A Stone That Remembers"
-			x: 24.0d
+			x: 26.0d
 			y: -3.0d
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike, and horde mobs are slowed a little while they're on it. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."
+				"{@pagebreak}"
+				"Field notes: every placed stake has 20 points of wear, and each mob that hits it takes its own attack damage off that. Big hitters break them fastest. Rebuild the line between waves."
+			]
 			hide_until_deps_complete: true
-			description: ["Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike, and horde mobs are slowed a little while they're on it. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."]
 			icon: "simply_traps:stake"
 			id: "159356F3DD573B5A"
 			rewards: [
-				{
-					id: "3038C036C7C69387"
-					type: "xp_levels"
-					xp_levels: 1
-				}
 				{
 					count: 6
 					id: "2C305A9C3CBF6035"
@@ -564,21 +573,51 @@
 				}
 			]
 			title: "Cheap and Cheerful"
-			x: 13.0d
-			y: 1.5d
+			x: 16.0d
+			y: 2.5d
 		}
 		{
 			dependencies: ["159356F3DD573B5A"]
+			description: [
+				"A &eStake Wall&r doesn't block anything, whatever the name says: zombies walk straight through it and take 1 damage a step. Use it to bleed a lane you want them to use, not to close one."
+				"Like stakes, the ones you place wear out after 20 points of damage from the mobs in them."
+			]
 			hide_until_deps_complete: true
-			description: ["Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."]
+			icon: "simply_traps:stake_wall"
+			id: "7D5A79577782AB50"
+			rewards: [
+				{
+					count: 4
+					id: "26F1F97B3DDD952C"
+					item: "simply_traps:stake_wall"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "4 logs make 4 Stake Walls"
+			tasks: [
+				{
+					consume_items: false
+					id: "337C628DA2E1F22A"
+					item: "simply_traps:stake_wall"
+					type: "item"
+				}
+			]
+			title: "Picket Line"
+			x: 16.0d
+			y: 4.0d
+		}
+		{
+			dependencies: ["159356F3DD573B5A"]
+			description: [
+				"Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."
+				"{@pagebreak}"
+				"Field notes: a placed spike has 60 points of wear against a stake's 20. The slow lasts about 3 seconds after a mob steps off, so lay spikes inside your Sentry's or Tesla Coil's reach, not out on their own."
+			]
+			hide_until_deps_complete: true
 			icon: "simply_traps:spike_trap"
 			id: "67A7BF98D2C077DE"
 			rewards: [
-				{
-					id: "5594A3487B739F3D"
-					type: "xp_levels"
-					xp_levels: 1
-				}
 				{
 					count: 4
 					id: "6FCD715A4DB932C5"
@@ -597,25 +636,19 @@
 				}
 			]
 			title: "Better Than Nothing"
-			x: 13.0d
-			y: 3.0d
+			x: 18.0d
+			y: 2.5d
 		}
 		{
 			dependencies: ["67A7BF98D2C077DE"]
-			hide_until_deps_complete: true
 			description: ["Place a &eLure Block&r and every wave mob within 40 blocks turns off the pedestal and heads for it instead. It lasts 60 seconds, with the time left floating above it and a bell ringing every few seconds while it works, then breaks itself. Break it sooner and it's gone for good. Set it past your spikes so the horde has to walk the line to reach it. A mob you just hit, or one you're standing in front of, still comes for you first."]
+			hide_until_deps_complete: true
 			icon: "kubejs:lure_block"
 			id: "45F3123A81BC11C5"
 			rewards: [
 				{
-					id: "17A877DBC5F1ED9A"
-					type: "xp_levels"
-					xp_levels: 1
-				}
-				{
-					count: 2
-					id: "1CB5A8B2EAD24938"
-					item: "minecraft:redstone"
+					id: "436FDE1F6B879337"
+					item: "kubejs:lure_block"
 					type: "item"
 				}
 			]
@@ -630,103 +663,24 @@
 				}
 			]
 			title: "Dinner Bell"
-			x: 13.0d
-			y: 4.5d
-		}
-		{
-			dependencies: ["0CBAE9737A4869E9"]
-			hide_until_deps_complete: true
-			description: ["The pedestal can be made tougher, and you pay in &eXP levels&r. Right-click the pedestal with an empty hand to open its upgrade screen (&e/pedestal&r, or &a[Upgrades]&r in chat after a wave clears, opens it too). Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 6, 12 and 18 levels. Upgrades belong to the pedestal, so anyone can chip in."]
-			icon: "minecraft:experience_bottle"
-			id: "2E93FD4CE7F6AE87"
-			rewards: [
-				{
-					id: "38166B947C8C13E6"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			subtitle: "Right-click the pedestal with an empty hand"
-			tasks: [
-				{
-					id: "1F6B4412FE03E2CD"
-					type: "checkmark"
-				}
-			]
-			title: "Shore It Up"
-			x: 10.0d
-			y: -3.0d
-		}
-		{
-			dependencies: ["5C44D121F112749F"]
-			hide_until_deps_complete: true
-			description: ["A &eBackpack&r takes four leather, four string and a chest. Leather and string both turn up in Uncommon loot bags and scavenged containers. Press &eB&r to open it while it's in your inventory or worn on your back. Ring it with copper, then iron, gold and diamond ingots to upgrade it, and it keeps everything inside."]
-			icon: "sophisticatedbackpacks:backpack"
-			id: "72D1A1DBC5CC74B4"
-			rewards: [
-				{
-					id: "1D6556382481538D"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			subtitle: "Leather, string and a chest"
-			tasks: [
-				{
-					consume_items: false
-					id: "22847E3EAE003933"
-					item: "sophisticatedbackpacks:backpack"
-					type: "item"
-				}
-			]
-			title: "Pack Mule"
-			x: 18.0d
-			y: 10.5d
+			x: 20.0d
+			y: 2.5d
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			hide_until_deps_complete: true
-			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. The quartz and redstone come out of Rare bags; ender pearls turn up in Rare and Epic bags and in gold-trimmed chests out in the ruins."]
-			icon: "itemcollectors:basic_collector"
-			id: "573EEB3757B78B97"
-			rewards: [
-				{
-					id: "50CA0E4584F66F83"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-				{
-					count: 4
-					id: "7093654BA542DD9B"
-					item: "minecraft:iron_ingot"
-					type: "item"
-				}
+			description: [
+				"Step on it, it launches into the air, then explodes. Simple and cheap. Players set it off too, but its blast can't hurt a player or break blocks - stepping on your own just wastes the mine."
+				"Keep a stack: it's a mine, the I.M.S.'s ammunition and the core of a Claymore."
 			]
-			shape: "hexagon"
-			subtitle: "1 quartz + 1 redstone block + 3 ender pearls"
-			tasks: [
-				{
-					consume_items: false
-					id: "26CCD7A04ABD1646"
-					item: "itemcollectors:basic_collector"
-					type: "item"
-				}
-			]
-			title: "Waste Not"
-			x: 16.0d
-			y: 6.0d
-		}
-		{
-			dependencies: ["538A1BBC9A1B8EAC"]
 			hide_until_deps_complete: true
-			description: ["Step on it, it launches into the air, then explodes. Simple, cheap, and it doesn't care who trips it - keep it off your own patrol routes."]
 			icon: "securitycraft:bouncing_betty"
 			id: "0779CC4FD2E4B480"
 			rewards: [
 				{
-					id: "5DF778D6C059C299"
-					type: "xp_levels"
-					xp_levels: 2
+					count: 2
+					id: "521CD10BBC7D16F3"
+					item: "securitycraft:bouncing_betty"
+					type: "item"
 				}
 			]
 			shape: "hexagon"
@@ -740,20 +694,20 @@
 				}
 			]
 			title: "Bouncing Betty"
-			x: 18.0d
-			y: 6.0d
+			x: 16.0d
+			y: 5.5d
 		}
 		{
 			dependencies: ["0779CC4FD2E4B480"]
-			hide_until_deps_complete: true
 			description: ["A directional mine: trips when anything walks within 5 blocks in front of it, explodes a second later. Right-click with Wire Cutters to defuse it if you need to move it, flint and steel to re-arm."]
+			hide_until_deps_complete: true
 			icon: "securitycraft:claymore"
 			id: "1F577A9343223A6D"
 			rewards: [
 				{
-					id: "653851D50DDFA35B"
-					type: "xp_levels"
-					xp_levels: 2
+					id: "55B9BA840D25644A"
+					item: "securitycraft:claymore"
+					type: "item"
 				}
 			]
 			shape: "hexagon"
@@ -767,20 +721,27 @@
 				}
 			]
 			title: "Claymore"
-			x: 20.0d
-			y: 6.0d
+			x: 18.0d
+			y: 5.5d
 		}
 		{
 			dependencies: ["1F577A9343223A6D"]
+			description: [
+				"Set it on a solid block and it shoots by itself: &e8 damage&r a bullet, two shots a second, out to &e20 blocks&r. No ammo, no power, no wiring."
+				"It's already set to shoot hostile mobs only, whatever the placement message says. &cOnly the player who placed it can change its mode.&r"
+				"Unlocks: Trigger Happy, and with the fence and the I.M.S., No Turning Back."
+				"{@pagebreak}"
+				"Field notes: a Speed Module doubles its fire rate. Put spikes inside its reach - slowed mobs stay in its fire longer. Break the block under it and the Sentry goes with it."
+			]
 			hide_until_deps_complete: true
-			description: ["Place it on top of a block and the &eSentry&r starts shooting on its own - no wiring, no workbench. Right-click it to cycle Idle/Camouflage/Aggressive and pick what it targets. It never runs out of arrows unless you load something else into a locked chest underneath it. First thing in the pack that guards the pedestal while you're somewhere else."]
 			icon: "securitycraft:sentry"
 			id: "5034B45EB70EE642"
 			rewards: [
 				{
-					id: "66D07EFF5BBA2A44"
-					type: "xp_levels"
-					xp_levels: 3
+					count: 2
+					id: "4452112588FB8346"
+					item: "kubejs:shrapnel"
+					type: "item"
 				}
 			]
 			shape: "hexagon"
@@ -794,47 +755,86 @@
 				}
 			]
 			title: "Sentry"
-			x: 22.0d
-			y: 6.0d
+			x: 20.0d
+			y: 5.5d
 		}
 		{
-			dependencies: ["1F577A9343223A6D"]
+			dependencies: ["5034B45EB70EE642"]
+			description: [
+				"A &eSpeed Module&r is the cheapest damage upgrade in Tier 2. Right-click your Sentry with it and the Sentry fires twice as fast: every 5 ticks instead of 10. It speeds up an I.M.S. reload too."
+				"Only the player who placed the Sentry can fit it."
+			]
 			hide_until_deps_complete: true
-			description: ["Looks like a normal fence, but it's unbreakable and shocks any mob that touches it. It never hurts a player. Line a chokepoint with it and mobs pay for every step."]
-			icon: "securitycraft:electrified_iron_fence"
-			id: "659544B22656B3CD"
+			icon: "securitycraft:speed_module"
+			id: "3FE38256A5FC436A"
 			rewards: [
 				{
-					id: "77DEA6274E01CA7C"
-					type: "xp_levels"
-					xp_levels: 2
-				}
-			]
-			shape: "hexagon"
-			subtitle: "4 iron, an Oak Fence"
-			tasks: [
-				{
-					consume_items: false
-					id: "3C09DC92729EDA8F"
-					item: "securitycraft:electrified_iron_fence"
+					id: "51B727060678DE86"
+					item: "securitycraft:speed_module"
 					type: "item"
 				}
 			]
-			title: "Electrified Fence"
-			x: 26.0d
-			y: 6.0d
+			shape: "hexagon"
+			subtitle: "7 iron, paper, sugar"
+			tasks: [
+				{
+					consume_items: false
+					id: "366D1E786AE8C492"
+					item: "securitycraft:speed_module"
+					type: "item"
+				}
+			]
+			title: "Trigger Happy"
+			x: 22.0d
+			y: 5.5d
 		}
 		{
 			dependencies: ["0779CC4FD2E4B480"]
+			description: [
+				"A &eMine&r stays put and goes off when something steps on it. Craft one together with a block of sand, dirt or stone and you get a block mine that looks exactly like that block - a Sand Mine is invisible in the desert."
+				"Like every trap explosion here, it can't hurt players or break blocks."
+			]
 			hide_until_deps_complete: true
-			description: ["Holds up to 4 Bouncing Betties and fires them at anything that gets close - each one tracks its target down before it goes off. Refill it by right-clicking with more Bouncing Betties. Breaking it returns at most 2 Bouncing Betties."]
+			icon: "securitycraft:mine"
+			id: "758342F941ADEB3E"
+			rewards: [
+				{
+					count: 3
+					id: "1A1FC5E244CD90B2"
+					item: "securitycraft:mine"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "3 iron, 1 gunpowder make 3 Mines"
+			tasks: [
+				{
+					consume_items: false
+					id: "3C335F2DE7DE4B6B"
+					item: "securitycraft:mine"
+					type: "item"
+				}
+			]
+			title: "Watch Your Step"
+			x: 16.0d
+			y: 7.0d
+		}
+		{
+			dependencies: ["0779CC4FD2E4B480"]
+			description: [
+				"Holds up to 4 Bouncing Betties and fires them at mobs that come close - the pack sets every new I.M.S. to mobs only. Each one tracks its target down before it goes off. Refill it by right-clicking with more Bouncing Betties. Breaking it returns at most 2 Bouncing Betties."
+				"{@pagebreak}"
+				"Field notes: put a chest of Bouncing Betties directly underneath it and it reloads itself, which is also how a teammate can keep your I.M.S. fed."
+			]
+			hide_until_deps_complete: true
 			icon: "securitycraft:ims"
 			id: "17860922A24C885A"
 			rewards: [
 				{
-					id: "15B94DCA3F4F89F3"
-					type: "xp_levels"
-					xp_levels: 3
+					count: 4
+					id: "691A92AA3674233C"
+					item: "securitycraft:bouncing_betty"
+					type: "item"
 				}
 			]
 			shape: "hexagon"
@@ -848,13 +848,78 @@
 				}
 			]
 			title: "I.M.S."
-			x: 20.0d
-			y: 7.5d
+			x: 18.0d
+			y: 7.0d
 		}
 		{
-			dependencies: ["5034B45EB70EE642", "659544B22656B3CD", "17860922A24C885A"]
+			dependencies: ["1F577A9343223A6D"]
+			description: ["Right-click a Claymore or a mine with &eWire Cutters&r to defuse it before you move it. Flint and steel arms it again."]
 			hide_until_deps_complete: true
+			icon: "securitycraft:wire_cutters"
+			id: "1574407BBB54A6F7"
+			rewards: [
+				{
+					count: 4
+					id: "6BB1F9A8A2CC8E36"
+					item: "minecraft:gunpowder"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Shears and 4 iron"
+			tasks: [
+				{
+					consume_items: false
+					id: "74B0AAD58541402A"
+					item: "securitycraft:wire_cutters"
+					type: "item"
+				}
+			]
+			title: "Defuser"
+			x: 20.0d
+			y: 7.0d
+		}
+		{
+			dependencies: ["1F577A9343223A6D"]
+			description: [
+				"Looks like a normal fence, but it's unbreakable and shocks any mob that touches it. It never hurts a player. Line a chokepoint with it and mobs pay for every step."
+				"{@pagebreak}"
+				"Field notes: zombies won't path through fences, so use them to build funnels. Anything standing beside one takes 6 damage a second, and that shock ignores armour. Build a spare: the Chemthrower Turret needs one."
+			]
+			hide_until_deps_complete: true
+			icon: "securitycraft:electrified_iron_fence"
+			id: "659544B22656B3CD"
+			rewards: [
+				{
+					count: 2
+					id: "04A456874C96717D"
+					item: "securitycraft:electrified_iron_fence"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "4 iron, an Oak Fence"
+			tasks: [
+				{
+					consume_items: false
+					id: "3C09DC92729EDA8F"
+					item: "securitycraft:electrified_iron_fence"
+					type: "item"
+				}
+			]
+			title: "Electrified Fence"
+			x: 22.0d
+			y: 7.0d
+		}
+		{
+			dependencies: [
+				"5034B45EB70EE642"
+				"659544B22656B3CD"
+				"17860922A24C885A"
+			]
 			description: ["Every trap on this branch is built: Bouncing Betty, Claymore, Sentry, Electrified Fence and the I.M.S. That's the whole Tier 2 kit, and from here it's about where you put it. Keep the totem on you for the night the line breaks anyway."]
+			hide_dependency_lines: true
+			hide_until_deps_complete: true
 			icon: "minecraft:totem_of_undying"
 			id: "55E57DB98E2E5206"
 			rewards: [
@@ -864,7 +929,7 @@
 					type: "item"
 				}
 			]
-			shape: "hexagon"
+			shape: "gear"
 			size: 1.5d
 			subtitle: "Build every Tier 2 trap"
 			tasks: [
@@ -874,16 +939,16 @@
 				}
 			]
 			title: "No Turning Back"
-			x: 28.0d
-			y: 8.0d
+			x: 24.5d
+			y: 6.25d
 		}
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
-			hide_until_deps_complete: true
 			description: [
 				"Loot bags and wave drops pile up fast. A Sophisticated &eBarrel&r holds far more than a chest and takes upgrades in its own slots - no crafting station, no power needed. Build the storage before the power chain, because that one's long."
 				"Right-click it open like a chest. Any upgrade you own drops straight into a slot on the right side of its screen and applies instantly."
 			]
+			hide_until_deps_complete: true
 			icon: "sophisticatedstorage:barrel"
 			id: "5C44D121F112749F"
 			rewards: [
@@ -921,19 +986,14 @@
 		}
 		{
 			dependencies: ["5C44D121F112749F"]
-			hide_until_deps_complete: true
 			description: [
 				"A Stack Upgrade multiplies how much fits in every slot of the barrel it's placed in - Tier 1 alone is a real jump. Each higher tier eats the one below it plus a loot-tier material, so it scales with whatever bags you're already opening: iron, then gold, then diamond."
 				"This is the actual fix for a full inventory - stop hauling everything on your back and dump it in the barrel instead."
 			]
+			hide_until_deps_complete: true
 			icon: "sophisticatedstorage:stack_upgrade_tier_1"
 			id: "2F51A8D6B4C0E793"
 			rewards: [
-				{
-					id: "4B73CAF8D6E20915"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					count: 4
 					id: "5C84DB09E7F31A26"
@@ -952,24 +1012,19 @@
 				}
 			]
 			title: "Bigger on the Inside"
-			x: 16.0d
-			y: 10.5d
+			x: 18.0d
+			y: 9.0d
 		}
 		{
 			dependencies: ["5C44D121F112749F"]
-			hide_until_deps_complete: true
 			description: [
 				"A &eBasic to Iron Tier Upgrade&r turns a barrel or chest you've already placed into its Iron version: 54 slots instead of 27, and a second upgrade slot. Everything inside stays put."
 				"Hold it and right-click the placed barrel or chest - no crafting grid, no emptying it first. Gold, Diamond and Netherite tiers work the same way once you can afford them."
 			]
+			hide_until_deps_complete: true
 			icon: "sophisticatedstorage:basic_to_iron_tier_upgrade"
 			id: "6D18BCDF3F5E9D9D"
 			rewards: [
-				{
-					id: "44D158692CD43A97"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					count: 4
 					id: "6C3108DE0DBEB520"
@@ -988,24 +1043,196 @@
 				}
 			]
 			title: "Iron Sides"
-			x: 14.0d
+			x: 16.0d
 			y: 10.5d
 		}
 		{
 			dependencies: ["5C44D121F112749F"]
+			description: ["A &eBackpack&r takes four leather, four string and a chest. Leather and string both turn up in Uncommon loot bags and scavenged containers. Press &eB&r to open it while it's in your inventory or worn on your back. Ring it with copper, then iron, gold and diamond ingots to upgrade it, and it keeps everything inside."]
 			hide_until_deps_complete: true
+			icon: "sophisticatedbackpacks:backpack"
+			id: "72D1A1DBC5CC74B4"
+			rewards: [
+				{
+					count: 4
+					id: "718E0599486B3C76"
+					item: "minecraft:copper_ingot"
+					type: "item"
+				}
+			]
+			subtitle: "Leather, string and a chest"
+			tasks: [
+				{
+					consume_items: false
+					id: "22847E3EAE003933"
+					item: "sophisticatedbackpacks:backpack"
+					type: "item"
+				}
+			]
+			title: "Pack Mule"
+			x: 18.0d
+			y: 10.5d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. The quartz and redstone come out of Rare bags; ender pearls turn up in Rare and Epic bags and in gold-trimmed chests out in the ruins."]
+			hide_until_deps_complete: true
+			icon: "itemcollectors:basic_collector"
+			id: "573EEB3757B78B97"
+			rewards: [
+				{
+					count: 4
+					id: "7093654BA542DD9B"
+					item: "minecraft:iron_ingot"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "1 quartz + 1 redstone block + 3 ender pearls"
+			tasks: [
+				{
+					consume_items: false
+					id: "26CCD7A04ABD1646"
+					item: "itemcollectors:basic_collector"
+					type: "item"
+				}
+			]
+			title: "Waste Not"
+			x: 14.0d
+			y: 9.0d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: ["That was the last page of the diary. Whoever kept it wrote down eight waves, then stopped writing. From here on they're Hordes: each one bigger than the last, with things in them you haven't met yet. There's no final wave coming, so build like you're staying."]
+			hide_until_deps_complete: true
+			icon: "minecraft:map"
+			id: "42EDC7E6DB5ABFAA"
+			rewards: [
+				{
+					id: "6099752CC711A228"
+					item: "bountybags:epic_loot_bag"
+					type: "item"
+				}
+				{
+					id: "3216F1BC6F4F8CC4"
+					item: "waystones:waystone"
+					type: "item"
+				}
+				{
+					id: "44CEE56AD54FF8F7"
+					type: "xp_levels"
+					xp_levels: 12
+				}
+				{
+					id: "30460324B7CE17DE"
+					table_id: 6765604842309764713L
+					type: "choice"
+				}
+				{
+					auto: "enabled"
+					description: "Power - press Tab"
+					icon: "minecraft:map"
+					id: "492B254514C60CD7"
+					title: "New pages: Act III"
+					type: "toast"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "Completes on its own when wave 8 is cleared. Opens Act III: Power"
+			tasks: [
+				{
+					icon: "minecraft:map"
+					id: "1E5042BFD718365A"
+					type: "custom"
+				}
+			]
+			title: "The Last Written Wave"
+			x: 28.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["42EDC7E6DB5ABFAA"]
+			description: ["Every tenth wave brings something with it that the rest make way for. The diary only ever names one of them. You'll know it when it arrives; be ready before then."]
+			hide_until_deps_complete: true
+			icon: "undeadnights:elite_zombie_spawn_egg"
+			id: "3E279D8E8116478F"
+			rewards: [
+				{
+					id: "5067FD3DB1AD8107"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+				{
+					id: "73EB25B1C5ADF59F"
+					type: "xp_levels"
+					xp_levels: 12
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes when a boss dies"
+			tasks: [
+				{
+					icon: "undeadnights:elite_zombie_spawn_egg"
+					id: "2F6153C0E829476B"
+					type: "custom"
+				}
+			]
+			title: "Every Tenth Wave"
+			x: 34.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["3E279D8E8116478F"]
+			description: ["Fifteen. Nobody's diary goes this far. There's no finale waiting and no ending to reach, just the next wave, bigger than the last. Whatever you've built by now is what you're taking into it."]
+			hide_until_deps_complete: true
+			icon: "minecraft:nether_star"
+			id: "10969EB1485216B4"
+			rewards: [
+				{
+					id: "23FF921409BFCDF7"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+				{
+					id: "5FA6478A22E5E26D"
+					type: "xp_levels"
+					xp_levels: 12
+				}
+				{
+					auto: "enabled"
+					description: "Hordes - press Tab"
+					icon: "minecraft:map"
+					id: "0958E0E2FCF5FD93"
+					title: "New pages: Act IV"
+					type: "toast"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "Completes on its own when wave 15 is cleared. Opens Act IV: Hordes"
+			tasks: [
+				{
+					icon: "minecraft:nether_star"
+					id: "307264D1F93A587C"
+					type: "custom"
+				}
+			]
+			title: "No Ceiling"
+			x: 40.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["42EDC7E6DB5ABFAA"]
 			description: [
 				"The &eCulinary Generator&r against the back wall downstairs burns any food for Flux - rotten flesh included, so every zombie you drop feeds it. Look at it to finish this. It already powers the house grid through the Flux Plug on top, and any Flux Point you join to that network draws from it."
 				"Want another? Craft a Copper Generator and upgrade it through Iron and Gold; a Gold Generator plus Bread, 4 crops, 2 eggs and a redstone block makes the Culinary one. The eggs are a loot find - stores and farms out in the ruins carry them."
 			]
+			hide_until_deps_complete: true
 			icon: "generatorgalore:culinary_generator"
 			id: "4B07331734543EB4"
 			rewards: [
-				{
-					id: "109E721603F25681"
-					type: "xp_levels"
-					xp_levels: 3
-				}
 				{
 					count: 4
 					id: "0628C5E05ED48FF7"
@@ -1025,21 +1252,16 @@
 				}
 			]
 			title: "Wired Different"
-			x: 20.0d
-			y: 9.0d
+			x: 28.0d
+			y: 2.5d
 		}
 		{
 			dependencies: ["4B07331734543EB4"]
+			description: ["A &eFlux Plug&r takes power in from whatever it touches and shares it over a named network, with no cable in between. The generator downstairs already has one, on the House Grid network."]
 			hide_until_deps_complete: true
-			description: ["A &eFlux Plug&r takes power in, a Flux Point puts it out, and they share it over a named network with no cable between them. Plug at the generator, Point at the machine."]
 			icon: "fluxnetworks:flux_plug"
 			id: "4F7597CFC2BED87F"
 			rewards: [
-				{
-					id: "01E9B18BD388FAC7"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					count: 8
 					id: "29A52298F11180E8"
@@ -1058,16 +1280,45 @@
 				}
 			]
 			title: "No Cables Needed"
-			x: 22.0d
-			y: 9.0d
+			x: 30.0d
+			y: 2.5d
 		}
 		{
 			dependencies: ["4F7597CFC2BED87F"]
+			description: ["A &eFlux Point&r puts the network's power back out. Set one next to a machine, right-click it and join House Grid, and the machine runs. Every machine needs its own Point."]
 			hide_until_deps_complete: true
+			icon: "fluxnetworks:flux_point"
+			id: "14A5143438CA55C2"
+			rewards: [
+				{
+					id: "020D6F6BE795181A"
+					item: "minecraft:lapis_block"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Recipe in JEI (press R on it)"
+			tasks: [
+				{
+					consume_items: false
+					id: "6536F19BE7073976"
+					item: "fluxnetworks:flux_point"
+					type: "item"
+				}
+			]
+			title: "Point of Use"
+			x: 32.0d
+			y: 2.5d
+		}
+		{
+			dependencies: ["14A5143438CA55C2"]
 			description: [
 				"The &eTesla Coil&r needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Then it picks one target within 6 blocks about every second and a half, hits it for 6 and stuns it, and stays quiet while nothing's in range. Put it where the horde bunches up."
 				"The netherite ingot is 4 netherite scrap and 4 gold ingots. Scrap turns up in supply crates and Epic bags."
+				"{@pagebreak}"
+				"Field notes: it picks a random target in range, not the nearest, and draws power whenever its lever is on. Switch it off between waves."
 			]
+			hide_until_deps_complete: true
 			icon: "immersiveengineering:tesla_coil"
 			id: "04DC756B047A09D4"
 			rewards: [
@@ -1093,58 +1344,51 @@
 				}
 			]
 			title: "Sparks in the Dark"
-			x: 24.0d
-			y: 9.0d
+			x: 34.0d
+			y: 2.5d
 		}
 		{
-			dependencies: ["04DC756B047A09D4"]
+			dependencies: ["4B07331734543EB4"]
+			description: ["Smelt iron ingots in a vanilla &eBlast Furnace&r and they come out as &eSteel&r - no Immersive Engineering machine needed. Steel goes into the turrets and into Raw Ferronite."]
 			hide_until_deps_complete: true
-			description: ["Refined Storage: a &eController&r, a Disk Drive and a Grid on one power line, and every chest becomes one searchable inventory. Quartz Enriched Iron is the base material."]
-			icon: "refinedstorage:controller"
-			id: "216C05D4AB41FC1C"
+			icon: "immersiveengineering:ingot_steel"
+			id: "64BD6276ED6278C9"
 			rewards: [
 				{
-					id: "4B4C22EF7409EFF4"
-					type: "xp_levels"
-					xp_levels: 3
-				}
-				{
-					count: 4
-					id: "4C6F2A7BFB0E2D46"
+					count: 8
+					id: "647CD37DCDC3DB71"
 					item: "minecraft:iron_ingot"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Quartz Enriched Iron, processors, a machine casing"
+			subtitle: "Iron ingots in a vanilla Blast Furnace"
 			tasks: [
 				{
 					consume_items: false
-					id: "3D83B08BEB5C675D"
-					item: "refinedstorage:controller"
+					id: "21169879B0A601B1"
+					item: "immersiveengineering:ingot_steel"
 					type: "item"
 				}
 			]
-			title: "The Grid"
-			x: 26.0d
-			y: 9.0d
+			title: "Steel Yourself"
+			x: 30.0d
+			y: 4.0d
 		}
 		{
-			dependencies: ["4F7597CFC2BED87F"]
+			dependencies: ["14A5143438CA55C2"]
+			description: [
+				"Auto-aims at anything hostile within 16 blocks. It needs Flux (a Flux Point next to it), a redstone signal (a lever or a redstone block) and real ammunition: load &eCasull Cartridges&r into its screen, 10 damage a shot, two shots a second. No rounds, no shots."
+				"Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."
+			]
 			hide_until_deps_complete: true
-			description: ["Auto-aims and fires on its own at anything hostile in range, no redstone clock needed. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."]
 			icon: "immersiveengineering:turret_gun"
 			id: "54BAD02969997982"
 			rewards: [
 				{
-					id: "50FA12E0581897E2"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-				{
-					count: 4
-					id: "6C8A1F3D0B4E7295"
-					item: "minecraft:iron_ingot"
+					count: 8
+					id: "431BEBE20111A04B"
+					item: "immersiveengineering:casull"
 					type: "item"
 				}
 			]
@@ -1159,21 +1403,16 @@
 				}
 			]
 			title: "Point and Shoot"
-			x: 22.0d
-			y: 10.5d
+			x: 32.0d
+			y: 4.0d
 		}
 		{
-			dependencies: ["4F7597CFC2BED87F"]
-			hide_until_deps_complete: true
+			dependencies: ["14A5143438CA55C2"]
 			description: ["Sprays whatever fluid it's fed at anything hostile in range. Its pilot light is on when you place it, so creosote or any other flammable fluid sets mobs burning; switch Ignite Fluid off in its screen for a cold spray. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."]
+			hide_until_deps_complete: true
 			icon: "immersiveengineering:turret_chem"
 			id: "63884A2BC335FF75"
 			rewards: [
-				{
-					id: "2ACCFFF12C5158CC"
-					type: "xp_levels"
-					xp_levels: 4
-				}
 				{
 					count: 4
 					id: "1A5D9C3E7B2F0684"
@@ -1192,30 +1431,227 @@
 				}
 			]
 			title: "Liquid Fire"
-			x: 24.0d
-			y: 10.5d
+			x: 34.0d
+			y: 4.0d
 		}
 		{
-			dependencies: ["54BAD02969997982", "63884A2BC335FF75"]
+			dependencies: ["04DC756B047A09D4"]
+			description: ["The &eController&r is the heart of a Refined Storage network: put a Flux Point next to it for power. Every Refined Storage block touching it, or touching another one that does, joins the network."]
 			hide_until_deps_complete: true
-			description: ["Mount one on a &eTurret Base&r and it lobs real area-damage grenades at anything hostile in range - the first Tier 4 piece, one rung above the Gun/Chem Turret. Ammo is cheap and renewable: iron nuggets, redstone, gunpowder, no mining required. The Sensor/Chamber/Barrel themselves need &eFerronite&r, a new metal - smelt it from Raw Ferronite if you find the ore, or refine it straight from Steel and Redstone if you don't."]
-			icon: "omtreborn:grenade_turret"
-			id: "7BBD29C5816827E4"
+			icon: "refinedstorage:controller"
+			id: "216C05D4AB41FC1C"
 			rewards: [
 				{
-					id: "50B325791437DCE8"
-					type: "xp_levels"
-					xp_levels: 5
-				}
-				{
 					count: 4
-					id: "2E531BE87754EE97"
-					item: "immersiveengineering:ingot_steel"
+					id: "0A44197F873C8905"
+					item: "minecraft:quartz"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Turret Base, Sensor/Chamber/Barrel Tier II, a Cauldron. Draws RF from the same Flux Network as everything else."
+			subtitle: "4 Quartz Enriched Iron, an Advanced Processor, 2 silicon, a Machine Casing"
+			tasks: [
+				{
+					consume_items: false
+					id: "3D83B08BEB5C675D"
+					item: "refinedstorage:controller"
+					type: "item"
+				}
+			]
+			title: "The Grid"
+			x: 36.0d
+			y: 2.5d
+		}
+		{
+			dependencies: ["216C05D4AB41FC1C"]
+			description: ["The &eDisk Drive&r holds up to 8 storage disks, and the disks are where the items actually live. No disks, no storage."]
+			hide_until_deps_complete: true
+			icon: "refinedstorage:disk_drive"
+			id: "6AD5AD6FAED53AC2"
+			rewards: [
+				{
+					count: 2
+					id: "490B6711FE432DFB"
+					item: "minecraft:quartz"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "5086D92DFC2113C2"
+					item: "refinedstorage:disk_drive"
+					type: "item"
+				}
+			]
+			title: "Spin Up"
+			x: 38.0d
+			y: 2.5d
+		}
+		{
+			dependencies: ["6AD5AD6FAED53AC2"]
+			description: ["A &e1k Storage Disk&r holds 1,000 items of any mix. Put it in the Disk Drive."]
+			hide_until_deps_complete: true
+			icon: "refinedstorage:1k_storage_disk"
+			id: "48F3EE1C1780B71A"
+			rewards: [
+				{
+					count: 2
+					id: "639ED977CC5D6378"
+					item: "minecraft:quartz"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "29336B97DD215298"
+					item: "refinedstorage:1k_storage_disk"
+					type: "item"
+				}
+			]
+			title: "A Thousand Things"
+			x: 40.0d
+			y: 2.5d
+		}
+		{
+			dependencies: ["48F3EE1C1780B71A"]
+			description: ["The &eGrid&r is the terminal: everything stored in the network, in one searchable screen. Put items in, take them out, from one place."]
+			hide_until_deps_complete: true
+			icon: "refinedstorage:grid"
+			id: "5FB423692F307A9E"
+			rewards: [
+				{
+					count: 2
+					id: "1422268A9891C4BE"
+					item: "minecraft:quartz"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "3F766BC1BB4CBC30"
+					item: "refinedstorage:grid"
+					type: "item"
+				}
+			]
+			title: "Find Anything"
+			x: 42.0d
+			y: 2.5d
+		}
+		{
+			dependencies: ["5FB423692F307A9E"]
+			description: ["Put an &eExternal Storage&r against a chest or barrel, joined to the network, and that container's contents show up in the Grid too. Your old stash stays where it is."]
+			hide_until_deps_complete: true
+			icon: "refinedstorage:external_storage"
+			id: "5B7D6BCCA43886D8"
+			rewards: [
+				{
+					count: 2
+					id: "32B25950A1960BDB"
+					item: "minecraft:quartz"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "62C66BAEF60FA145"
+					item: "refinedstorage:external_storage"
+					type: "item"
+				}
+			]
+			title: "Hooked In"
+			x: 44.0d
+			y: 2.5d
+		}
+		{
+			dependencies: [
+				"54BAD02969997982"
+				"63884A2BC335FF75"
+			]
+			description: ["&eRaw Ferronite&r without the mining: 2 Steel and a redstone. Smelt it into Ferronite ingots for the Tier 4 turret parts. Nothing in Tier 4 needs the Nether or the End."]
+			hide_until_deps_complete: true
+			icon: "omtreborn:raw_ferronite"
+			id: "0E7858268273D986"
+			rewards: [
+				{
+					count: 4
+					id: "03C784BABDE38ED1"
+					item: "minecraft:redstone"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "2 Steel and a redstone"
+			tasks: [
+				{
+					consume_items: false
+					id: "53C714DEC0DFEAF5"
+					item: "omtreborn:raw_ferronite"
+					type: "item"
+				}
+			]
+			title: "Ferronite"
+			x: 36.0d
+			y: 5.5d
+		}
+		{
+			dependencies: ["0E7858268273D986"]
+			description: ["Tier 4 turrets sit on a &eTurret Base&r, and the base tier has to match the head: a Grenade Turret needs a Tier 2 base or better, or the head pops off. Ammo goes in the base, and a Flux Point next to it powers it."]
+			hide_until_deps_complete: true
+			icon: "omtreborn:turret_base_tier_2"
+			id: "1FFD11753AABED49"
+			rewards: [
+				{
+					count: 4
+					id: "2200704201465DF7"
+					item: "minecraft:redstone"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "47C3D35D5A167FBF"
+					item: "omtreborn:turret_base_tier_2"
+					type: "item"
+				}
+			]
+			title: "Foundations"
+			x: 38.0d
+			y: 5.5d
+		}
+		{
+			dependencies: ["1FFD11753AABED49"]
+			description: [
+				"Mount it on a Turret Base Tier 2 or higher and it lobs area-damage grenades at anything hostile from 4 to 18 blocks out. It can't hit what's hugging it, so keep spikes or a fence between the turret and the horde."
+				"Ammo is cheap and renewable: a redstone, 3 iron nuggets and a gunpowder per Grenade Ammo. The Sensor, Chamber and Barrel need &eFerronite&r."
+			]
+			hide_until_deps_complete: true
+			icon: "omtreborn:grenade_turret"
+			id: "7BBD29C5816827E4"
+			rewards: [
+				{
+					count: 8
+					id: "7F48C5A87AD2E1B4"
+					item: "omtreborn:ammo_grenade"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Sensor, Chamber and Barrel Tier II, a Cauldron, 3 stone"
 			tasks: [
 				{
 					consume_items: false
@@ -1225,30 +1661,53 @@
 				}
 			]
 			title: "Fragmentation"
-			x: 26.0d
-			y: 11.5d
+			x: 40.0d
+			y: 5.5d
 		}
 		{
 			dependencies: ["7BBD29C5816827E4"]
+			description: ["A Rocket Turret needs a &eTurret Base Tier 3&r or better under it. Same rules as before: ammo in the base, a Flux Point beside it."]
 			hide_until_deps_complete: true
-			description: ["The elite pick: Tier III internals plus a Ferronite Frame, launching real explosive rockets with proper area damage - the most powerful base defense in the pack. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite), but nothing here needs the Nether or the End to build."]
-			icon: "omtreborn:rocket_turret"
-			id: "3BE0613054FB082E"
+			icon: "omtreborn:turret_base_tier_3"
+			id: "4358FF04A93BD514"
 			rewards: [
 				{
-					id: "3DE8A02125B16B79"
-					type: "xp_levels"
-					xp_levels: 6
-				}
-				{
 					count: 4
-					id: "685EDDAAD994C717"
-					item: "omtreborn:raw_ferronite"
+					id: "3A5B3CE04630B519"
+					item: "minecraft:redstone"
 					type: "item"
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Turret Base, Sensor/Chamber/Barrel Tier III, a Ferronite Frame, TNT, Cobbled Deepslate."
+			subtitle: "Recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "5142A4ED4931D58B"
+					item: "omtreborn:turret_base_tier_3"
+					type: "item"
+				}
+			]
+			title: "Heavy Footing"
+			x: 42.0d
+			y: 5.5d
+		}
+		{
+			dependencies: ["4358FF04A93BD514"]
+			description: ["The elite pick: rockets with real area damage, out to 30 blocks. Mount it on a Turret Base Tier 3 or higher. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite), and every shot costs 5,000 FE, so give it a Flux Point of its own."]
+			hide_until_deps_complete: true
+			icon: "omtreborn:rocket_turret"
+			id: "3BE0613054FB082E"
+			rewards: [
+				{
+					count: 4
+					id: "786A425E2BA79377"
+					item: "omtreborn:ammo_rocket"
+					type: "item"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "2 TNT, Sensor, Chamber and Barrel Tier III, a Ferronite Frame, 2 Cobbled Deepslate"
 			tasks: [
 				{
 					consume_items: false
@@ -1258,8 +1717,8 @@
 				}
 			]
 			title: "Fire for Effect"
-			x: 28.0d
-			y: 11.5d
+			x: 44.0d
+			y: 5.5d
 		}
 	]
 	subtitle: ["Hold the pedestal. The waves don't stop."]

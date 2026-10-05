@@ -40,10 +40,26 @@ sub-decision.
 
 ---
 
+## Ready to build (held until the user says so)
+
+- **Quest book v4, Phases 2-4** (Phase 1 built 2026-10-05). Spec: FEATURES.md
+  "Quest book v4 plan (2026-10-05)". Phase 2 event hooks and discovery
+  quests (plus the Past the Line ring fix); Phase 3 field tests, act banners,
+  diagrams and the book theme; Phase 4 Challenges.
+
 ## Awaiting real-play confirmation
 
 Built and (unless noted) already deployed to the live instance/dedicated
 server — nobody has actually confirmed these work in a real session yet.
+
+- **Quest book v4 Phase 1 + co-op amulet rule** (2026-10-05). In play, check:
+  1. The book opens with the legend quest and the gear-shaped act gates.
+  2. Opening a bag gives a toast "New pages: Act II" and a kit choice screen.
+  3. Reward claims, the new Field Notes pages and the Arsenal ammo rewards.
+  4. With 2 players: one leaves an amulet; the other, still wearing theirs, is
+     held at the border line. Then the second leaves theirs and can cross.
+     Each player's Take returns only their own amulet.
+  5. The bounty marks past 750 kills, if anyone gets that far.
 
 - **Playtest batch, 2026-09-30** (13 items from the first session on the
   bug-sweep build). Bag opens were failing (a sweep regression that also

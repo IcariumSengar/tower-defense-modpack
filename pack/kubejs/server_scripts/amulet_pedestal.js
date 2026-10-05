@@ -15,6 +15,38 @@
 // restoring a saved size, keeps whatever base_expansion.js added in between.
 var BORDER_EXPAND_DELTA = 10000000
 
+// Co-op rule (2026-10-05): each player has to leave their own amulet to go
+// past the border. The stand shows one amulet, the first one left; the others
+// are kept here by owner. td_amuletsLeft is a JSON list of the UUIDs of the
+// players whose amulet is at the pedestal, written by pedestal_upgrades.js
+// when an amulet is left or taken. The vanilla border still opens while the
+// stand holds an amulet (td_amuletOnPedestal); amulet_border.js holds back
+// every player who isn't on the list.
+var AMULETS_LEFT_KEY = 'td_amuletsLeft'
+
+// The list, or null in a world whose amulet went on the stand before the rule
+// existed.
+function amuletsLeftList(data) {
+  if (!data.contains(AMULETS_LEFT_KEY)) return null
+  try {
+    return JSON.parse(`${data.getString(AMULETS_LEFT_KEY)}`)
+  } catch (e) {
+    return []
+  }
+}
+
+function amuletsLeftSave(data, list) {
+  data.putString(AMULETS_LEFT_KEY, JSON.stringify(list))
+}
+
+// Whether this player may cross the open border. A world without the list
+// keeps the old rule: an amulet on the stand lets everyone through.
+function amuletLeftBy(data, player) {
+  var list = amuletsLeftList(data)
+  if (list === null) return data.getBoolean('td_amuletOnPedestal')
+  return list.indexOf(`${player.uuid}`) >= 0
+}
+
 // Records the new state and moves the border. `player` gets the chat line; from
 // the tick poll that is whichever player's tick noticed the change.
 function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
@@ -28,7 +60,7 @@ function toggleAmuletOnPedestal(player, data, level, hasAmulet) {
 
   if (hasAmulet) {
     server.runCommandSilent(`worldborder set ${borderTargetSize + BORDER_EXPAND_DELTA} 0`)
-    player.tell('§d[Amulet] §fThe pendant settles onto the stand. The line at the border loosens - you can walk past it without being pushed back.')
+    player.tell('§d[Amulet] §fA pendant settles onto the stand. The border opens for whoever has left theirs there.')
   } else {
     // The border starts at BORDER_START (50, playtest_starter_kit.js) and
     // only grows, so a result below 50 means the matching expansion never

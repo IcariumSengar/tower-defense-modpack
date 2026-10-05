@@ -1,0 +1,340 @@
+{
+ "packs": [
+  {
+   "name": "Craft to Exile 2 - 2.0 Atlas Update",
+   "source": "Local CurseForge instance C:/Users/mattf/curseforge/minecraft/Instances/Craft to Exile 2 - 2.0 Atlas Update. Read config/ftbquests/quests (data.snbt, chapter_groups.snbt, 21 chapters/*.snbt, 49 reward_tables/*.snbt) and kubejs/ (no FTB Quests scripts). Disassembled these jars with javap: ftb-quests-forge-2001.4.22, ftb-library-forge-2001.2.13, Quest Kill Task 0.2.0, FTB_PlaceHolders 1.0.6a, Mine_and_Slash 6.4.7. Scratch parsers are in the session scratchpad (cte_extract.py, cte_summ.py).",
+   "version_info": "Forge 47.4.22 / MC 1.20.1. ftb-quests-forge-2001.4.22 and ftb-library-forge-2001.2.13 are the same versions as the Tower Defense instance, and kubejs-forge-2001.6.5-build.26 is also the same. ftb-xmod-compat is 2.1.3 here vs 2.1.2 in TD. item-filters-forge-2001.1.0-build.59, FTB_PlaceHolders-1.0.6a and Quest Kill Task-0.2.0 are present here and absent from TD. Book data version: 13. I checked every SNBT key used anywhere in CTE2's book against the string constants in the 2001.4.22 quest classes: 0 unknown keys.",
+   "scale": "624 quests, 21 chapters, 4 chapter groups (Campaign 11 chapters, Development 5, Logbook 4, Multiplayer 1). 49 reward tables, 0 loot crates. Tasks: 616 item, 118 kill, 76 checkmark, 50 structure, 47 stat (33 of these are the walk_one_cm auto-complete trick), 31 advancement, 6 dimension, 3 biome. Rewards: 533 command (478 auto 'enabled', 20 'invisible', 35 manual), 426 item (all manual), 41 choice, 35 custom (display-only labels), 2 loot, 2 all_table, 2 advancement. Shapes: 463 default circle, 66 rsquare, 39 diamond, 16 explicit circle, 15 hexagon, 15 octagon, 9 gear, 1 square. Descriptions: median 230 chars, p90 712, 19.9% empty, 4519 colour codes, 17 inline images, 19 clickable change_page links, 0 pagebreaks.",
+   "progression_presentation": "Groups, all titled in &e yellow, in this order. Campaign: Prologue, Act I-V, Epilogue, then utility chapters Rewards (a talent-point ledger), Ascendancy, Campaign Shop and Repeatables. Development: M&S Professions, Storage Solutions, Magical Flora, Homestead, Culinary Delights. Logbook: Exploration, Fishing, Other Hobbies, Completionist. Multiplayer: Jolly Cooperation.\n\nEach Act is one dimension, with a dimension icon and a level-band chapter subtitle: Act I 'Lv. 1-15', II 'Lv. 10-30', III 'Lv. 25-40', IV 'Lv. 35-55', V 'Lv. 50-65'/'Lv. 60-75', Epilogue 'Lv. 90'.\n\nLayout inside an Act:\n- The main spine of rsquare quests subtitled 'Main Quest' runs left to right along y=0. In Act I: Training Arc x0 ... The Mastermind x9 (size 1.25) ... Realm Unexplored x12.\n- Side arcs sit in rows above and below, labelled by subtitle ('Illager Arc', 'The Underground', 'Fiery Adventure').\n- Act I adds a Bestiary row of kill quests with hidden dependency lines.\n- Each act's achievement hexagon sits bottom-right.\n- The last main quest of each act is the first dependency of the next act: Realm Unexplored → Otherworldly Beings, Travel Catalyst → Foreign Enemies, The Gatekeepers → Wanderlust Ignition, The End → Dragon Quest, Untied Loose Ends → Primal Evils. The campaign therefore reads as one chain across chapters.\n\nGating is light. The book-wide progression_mode is 'flexible': tasks count early, and rewards unlock when the quest is reached (the Prologue's last page tells players this). Only the Prologue is 'linear'. Only 11 quests are hidden (10 shops and 1 key exchange, via hide_until_deps_complete). Later acts are visible but show lock icons.\n\nVisual grammar, explained in the book by the 'Quest Shapes' page: rsquare = main, circle (book default) = side, gear = repeatable, diamond = mini-boss or challenge, octagon = shop, hexagon = achievement, paper icon = 'Lost Page'. Size encodes weight: 1.25 for act bosses, 1.5 for challenges, 2.0 for side-chapter achievements, 3.0 for the single Completionist. There is one chapter image in the whole book, a grey 15x15 book watermark behind the Prologue.\n\nHow far along am I: the act number and level band, per-act completion hexagons ('Read All Act I Lost Pages!', 'Defeat All Act II Mini-Bosses!', 'Complete All Act III/IV/V Quests!'), and the visible Rewards ledger that lists every talent point by act.",
+   "teaching": "Onboarding is the Prologue: 26 numbered pages in a linear chapter. Subtitles run 'Page 1'…'Page 11', with optional branch pages ('Page 2b', 'Page 9c') drawn as circles. Each page is a checkmark task titled 'Click Once Read'. Each page hands over the thing it explains:\n- a wallet on the Money page\n- a gold 'Claiming Hoe' whose lore repeats the instructions\n- the Master Bag, a Warp Stone, and the Patchouli handbook\n- a GUI screenshot via {image:...}\n\nDoing is mixed in with reading. The Combat page gives a zombie spawn egg, and the next page ('First Blood') is the kill. The armour page gives a skeleton egg for 'Easy Kill'.\n\nIn the Acts, players learn by doing:\n- kill tasks (118) for combat and enemy recognition, with mob icons from FTB PlaceHolders\n- structure tasks (50), often paired with a boss kill in one quest ('A New Headquarters' = find the Everbright Blinding Dungeon + kill the Summoner)\n- dimension and biome tasks for travel\n- advancement tasks where a mod already tracks the goal (Nether Fortress, Lootr chest counts)\n- stat tasks for counters (minecraft:deaths, minecraft:mob_kills, gateways:gates_defeated, mmorpg:dungeons_completed)\n- item tasks for crafting milestones (match_nbt for M&S items)\n\nPure information lives in 'Lost Pages' (paper icon, checkmark). Each sits beside the content it explains, and an achievement pays a hat for reading them all.\n\nDescription conventions:\n- &e on every keyword, keybind and place\n- &c for warnings and level floors\n- &b for enemy modifiers\n- &a for drop chances\n- &6 for shop-unlock notices\n- &o&7 for meta notes\n- rarity and tier colours kept the same across the book\n- numbered recipe cards ('3x &7Spiritual Ore&r / 2x &7Common Stone&r ...')\n- a fixed enemy stat card ('The Invoker Has: ...')\n- JSON lines with change_page links back to the quest that unlocks something\n- explicit gating notes ('&eRequires 1 dependency to be completed.&r')\n\nComplex systems are taught as a hub with spokes. Professions goes: overview checkmark → 4 gathering quests → 4 station quests, each rewarding a starter kit → recipe-practice quests. No {@pagebreak} is used, so long pages are single scrolls.",
+   "rewards": "Rewards behave in three ways.\n\n1. Progress currency auto-claims. 478 command rewards use auto 'enabled', silent true and elevate_perms true, with a placeholder icon and a readable title:\n- '/mine_and_slash give exp @p 400' shown as '400 Experience' (ftb_ph:exp)\n- 'give xp_times_lvl @p 100' shown as '100 Experience x Lv.'\n- 'points give @p TALENTS 1' shown as '1 Talent Point' (ftb_ph:talent)\nStory XP scales by act: median 200 in the Prologue, 350 in Act I, 2,000 in Act II, 8,000 in Act III, 17,000 in Act IV, 22,000 in Act V. Side and hobby XP is multiplied by player level, so it never goes stale.\n\n2. Tangible loot waits for a click. There are 426 item rewards, usually with a title override ('Money', 'Zombie Gateway', 'Rare Gear Loot Chest (Lv. 5)'). Loot-chest level and rarity track each act's level band: rare L5/L10 in Act I, rare/epic L40-50 in Act IV, legendary L60 in Act V. The Epilogue drops XP and pays tier-5/6 gems and uber fragments instead.\n\n3. Choices. There are 41 choice rewards, all with exclude_from_claim_all true, on tables of pre-rolled gear and gems. Entries have their own titles ('Sword', 'Spear (2-Handed)'). They cover the class starter kit in the Prologue, a gem pick after each boss, and the shop menus.\n\nOther reward patterns:\n- The reward is often what the next step needs: spawn eggs, gateway pearls, Chemical X potions, map items, and all_table starter kits ('Gear Crafting Starter Kit', with hide_tooltip and an icon).\n- Trophies: every 'Challenge' (diamond) and 'Achievement' (hexagon) gives a themed Simple Hats cosmetic. Achievements add a manual 'Click here to brag' /tellraw @a. All 13 achievements feed 'The Completionist' (hexagon, size 3.0: RGB cowboy hat plus a netherite coin).\n- Shops are repeatable octagon quests that consume one Lightman's coin for a choice of gems or a random unique. They appear as Acts are completed.\n- Permanent points: the 35 custom rewards are display-only labels. The real talent, skill and ascendancy grants sit in mirror quests (Rewards and Ascendancy chapters), so they survive the optional campaign reset.\n\nThere are no FTB loot crates (drop_loot_crates false) and no sound, title or toast rewards.",
+   "multiplayer": "Quest progress is shared only through FTB Teams. The Prologue 'Party Play' page explains the three separate team systems: the Mine and Slash party for XP and buffs, FTB Teams for quests and team chat, and Lightman's teams for shared money. 'Land Claiming' hands out a claiming hoe.\n\nNo reward sets team_reward, and data.snbt has default_reward_team false. Every member therefore claims their own copy of every reward, including their own class choice.\n\nCo-op guidance comes as info pages:\n- 'To Your Stations!': crafting stations are tied to the player who placed them\n- the reset quest: 'if you're in an FTB Team, that the Team Leader resets the quests'\n- FLAN claim limits\n- Lootr (each player gets their own chest loot)\n- Telepass (teleport to a teammate)\n\nThe social layer is the achievements' 'Click here to brag' server-wide tellraw. The Multiplayer group is a single chapter about economy, music, land claims and Lootr. There are no shared-goal or whole-party quests.\n\nThe pack adds Quest Kill Task, which credits a kill task to every team whose members damaged, healed or tanked the kill.",
+   "standout_examples": [
+    {
+     "where": "chapters/act_i.snbt, quest 051DB401E3A08D89 'Quest Shapes' (subtitle 'Lost Page')",
+     "what": "A checkmark info page that teaches the book's own visual grammar.",
+     "excerpt": "In the &eCampaign&r quest line, various quests will have a different background shape which can indicate what type of quest it is. / &aRounded Corner Square: Main Quest&r / &eCircle: Side Quest&r / &3Gear: Repeatable Quest&r / &4Diamond: Mini-Boss&r / &dOctagon: Shop&r / &bHexagon: Achievement&r",
+     "why_it_works": "After this one quest, shapes carry meaning everywhere without extra text. Each legend line is coloured to match its shape, so the chapter map reads at a glance."
+    },
+    {
+     "where": "chapters/act_0.snbt: Prologue (chapter progression_mode 'linear'); 'Welcome to Craft to Exile 2!' and 'Land Claiming' (31B023681AC62535, subtitle 'Page 2c', shape circle)",
+     "what": "Onboarding as numbered pages. Each page rewards the tool it describes, and the tool's lore repeats the instructions.",
+     "excerpt": "&eComplete each \"page\" of the Prologue by clicking the checkmark.&r ... reward minecraft:golden_hoe with Name \"Claiming Hoe\" and Lore \"Right-click to set Claim Point\" / \"Click separate corners of your Base/Home to setup claim\" / \"/flan menu\"",
+     "why_it_works": "Players get an ordered reading list and always know where they are ('Page N'). Optional branch pages look secondary because they are circles. The reward keeps teaching after the book is closed."
+    },
+    {
+     "where": "chapters/act_0.snbt 'Combat' (546A9D082F1A2160) → 'First Blood' (0A39A9996E8D63F4); chapters/act_i.snbt 'Training Arc' (313921A7833269CF) → 'Disturbances in the Air' (4956C0B5633CE91E)",
+     "what": "The reward is the key to the next quest.",
+     "excerpt": "Training Arc reward: {id: \"gateways:gate_pearl\", tag: {gateway: \"gateways:basic/zombie\"}, title: \"Zombie Gateway\"} → next quest: \"You've found a &eZombie Gateway&r from the last creatures you fought... Try using the pearl away from a village. It seems like it might open a portal upon use...\"",
+     "why_it_works": "The chain teaches the next mechanic by putting it in the player's hands at the right moment, so no wiki is needed. The Prologue does the same with zombie and skeleton spawn eggs for its first kill quests."
+    },
+    {
+     "where": "chapters/act_i.snbt 'The Mastermind' (3E1EC6A042CC9310), shape rsquare, size 1.25",
+     "what": "A boss quest with the standard enemy stat card and a stacked reward.",
+     "excerpt": "&cThe Invoker spawns at minimum level 15.&r / The Invoker Has: / &b+20% Elemental Resistance&r / &a10% Chance of Dropping Owd Rune&r. Rewards: '2500 Experience' (auto), choice table 'Support Gems 2', simplehats:crown titled 'Crown', custom '2 Talent Points'.",
+     "why_it_works": "The same colour-coded card appears in about 30 boss and bestiary quests, telling players what they face and why it is worth it. Size 1.25 makes the act's climax stand out on the spine."
+    },
+    {
+     "where": "chapters/campaign_talent_rewards.snbt ('Rewards' chapter), quest 46D59893D2D8CA12, which depends on 'The Mastermind'",
+     "what": "A permanent-unlock ledger. A mirror quest completes the moment the story quest does and grants the real points; the story quest only shows a display label (custom reward '2 Talent Points').",
+     "excerpt": "task {disable_toast: true, stat: \"minecraft:walk_one_cm\", value: 1, title: \"Complete: The Mastermind\", type: \"stat\"}; reward {auto: \"enabled\", command: \"/mine_and_slash points give @p TALENTS 2\", silent: true, elevate_perms: true, icon: \"ftb_ph:talent\", title: \"2 Talent Points\"}",
+     "why_it_works": "It separates permanent account progress from story content that can be reset. Players also get a visible ledger of every point earned per act."
+    },
+    {
+     "where": "chapters/gem_shop.snbt 'Augment Gem Shop I' (55192DBA1B148B8F); the unlock is announced in act_i.snbt 'Acts' (727ADA9C4F420BDC)",
+     "what": "Shops as hidden repeatable quests that appear as the campaign advances.",
+     "excerpt": "{can_repeat: true, hide_until_deps_complete: true, hide_dependency_lines: true, shape: \"octagon\", subtitle: \"Shop\", task {consume_items: true, item: \"lightmanscurrency:coin_gold\"}, reward {type: \"choice\"}} / \"&eThis shop unlocks once you complete \"Acts\" in Act I.&r\" / Acts: \"&6This Quest Unlocks New Shops In the Campaign Shop.\"",
+     "why_it_works": "New shop tiers appear at milestones (Act I → Act IV → Epilogue), which gives coins a purpose and shows tier progress. The unlocking quest announces it in gold text."
+    },
+    {
+     "where": "chapters/other_hobbies.snbt death ladder; jolly_cooperation.snbt 'Team Player' (70DA25C53FFEB49F); completionist.snbt 'The Completionist'",
+     "what": "A trophy ladder: plain quests → Challenge diamond (1.5) → Achievement hexagon (2.0) with a brag button → Completionist hexagon (3.0).",
+     "excerpt": "'Welcome to Craft to Exile 2' (Die Once) → 'This is Craft to Exile 2' (Die 25 times) → '...: Prepare to Mine Edition' (Die 50 times) → Challenge 'Hollowed' (stat minecraft:deaths 100). Brag reward: title \"Click here to brag\", /tellraw @a {...{\"selector\":\"@p\"},{\"text\":\" has achieved Team Player\"}]}",
+     "why_it_works": "It combines humour with rising stakes and a visible cosmetic at every step. The player decides when to announce to the whole server, which makes this the most social part of the book."
+    },
+    {
+     "where": "chapters/repeatables.snbt quest 324C9BEA9C3F0AC3 (shape gear), unlocked by act_i.snbt 'Glow in the Dark Issues'",
+     "what": "A repeatable farm quest unlocked by the story, with a clickable link back to the quest that unlocks it.",
+     "excerpt": "Complete the quest mentioned below to unlock this repeatable quest! / { \"text\": \"Glow in the Dark Issues\", \"color\": \"yellow\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"0D9B68F2990B8E94\" } }. Task: kill 20 monsterplus:glow_skeleton → '150 Experience' (auto).",
+     "why_it_works": "The locked repeatable is visible and names the quest that opens it, one click away. The source quest advertises it too: '&o&7Completion unlocks a Repeatable Quest in the Repeatables Chapter!&r'."
+    }
+   ],
+   "weaknesses": [
+    "The onboarding leans on checkboxes. There are 76 checkmark tasks, and the 26-quest Prologue is almost all 'Click Once Read' pages, so the first hour is mostly reading then clicking. Only the per-page rewards soften this.",
+    "Walls of text: median description 230 chars, p90 712. The Professions station pages are numbered lists of 1,000+ characters, and 'Dimension Runes' is a dense drop table. {@pagebreak} is supported but never used.",
+    "XP noise: there are 478 auto XP commands. Every structure stamp and every fish pays '50 Experience x Lv.', so XP stops feeling like a reward in side chapters.",
+    "Double bookkeeping. Talent points appear as display-only custom rewards on the story quest but are granted by a separate mirror quest, and the labels drift: ledger task 'Complete: Defenders of the Nether' depends on 'Defenders of the Nether II'. Typos also ship ('Reset Camaign Quests', 'Achievment', 'Deafeat').",
+    "Text contradicts the data in places. 'Deterministic Portals' says '&cOnly Requires 1 task to complete.&r', but both item tasks are required (no optional_task is set). The Infested Swarmer repeatable links to 'Creepy Crawlies' (1B6034E8571F3AFA) but actually depends on 'Frozen in Time' (61FABF4C4DB118C8).",
+    "Claim flags and labels are inconsistent. Some Challenge/Achievement XP is manual while similar quests auto-claim, and titles mix 'x Lv.' and 'x Lvl.'.",
+    "Multiplayer content is thin. The Multiplayer group is one chapter of economy, music and land claims, with no team_reward and no shared-goal or whole-party quests.",
+    "Huge visible dependency fans: 'The Adventurer' (32 deps) and 'Gotta Catch 'em All' (64 deps) leave dependency lines on. This is probably cluttered, but I did not render it.",
+    "Spoilers: later acts, boss names and stat cards are visible from the start; only shops are hidden.",
+    "The inline screenshots reference cte2:textures/*.png, which I could not find in any jar, resource pack or kubejs/assets in the local instance. They may render as missing textures (not verified).",
+    "Repeatable shops in a shared team pay out to whichever member claims first, while the coin comes out of whoever submitted it. The book never explains this. (Behaviour confirmed in FTB Quests 2001.4.22 bytecode; not play-tested.)"
+   ]
+  }
+ ],
+ "patterns": [
+  {
+   "name": "Shape legend taught inside the book",
+   "description": "Each quest role gets a fixed shape and colour. An early info quest spells out the legend, so any chapter map can be read at a glance.",
+   "evidence": [
+    "CTE2 act_i.snbt 'Quest Shapes': '&aRounded Corner Square: Main Quest&r / &eCircle: Side Quest&r / &3Gear: Repeatable Quest&r / &4Diamond: Mini-Boss&r / &dOctagon: Shop&r / &bHexagon: Achievement&r'",
+    "CTE2 shape counts: rsquare 66 (main), circle 463 default + 16, diamond 39, hexagon 15, octagon 15, gear 9"
+   ],
+   "ftbq_mechanism": "Quest `shape: \"rsquare\"|\"circle\"|\"gear\"|\"diamond\"|\"octagon\"|\"hexagon\"`; chapter `default_quest_shape` (Prologue uses \"rsquare\"); data.snbt `default_quest_shape: \"circle\"`. The legend is a checkmark quest whose description lines are coloured to match each shape.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD already has distinct roles: spine, tier branches, bounties, tips, arsenal. One legend quest plus consistent shapes costs nothing at runtime and makes the 81-quest book scannable."
+  },
+  {
+   "name": "Size hierarchy for milestones",
+   "description": "Quest size encodes importance, from routine quests up to the final trophy.",
+   "evidence": [
+    "CTE2: size 1.25 on act bosses (The Mastermind, Dark Ritual, Dragon Quest, Dimension Guardian); 1.5 on 24 'Challenge' diamonds; 2.0 on side-chapter Achievements; 3.0 only on The Completionist"
+   ],
+   "ftbq_mechanism": "`size: 1.25d | 1.5d | 2.0d | 3.0d` per quest.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Boss waves (every 10th), the wave-8 → Hordes transition, tier capstones and the pedestal can be visually louder than routine quests at no cost."
+  },
+  {
+   "name": "Act chapters with level-band subtitles and a cross-chapter main spine",
+   "description": "Each campaign chapter is one stage of the game. Its subtitle shows the expected level band, and its main quests run left to right. The last main quest of each chapter unlocks the next chapter's first quest.",
+   "evidence": [
+    "CTE2 chapter subtitles: Act I ['Lv. 1-15'], Act II ['Lv. 10-30'], Act IV ['Lv. 35-55'], Epilogue ['Lv. 90']",
+    "Act I main spine at y=0: Training Arc x0 → ... → The Mastermind x9 → Realm Unexplored x12; Act II 'Otherworldly Beings' depends on 'Realm Unexplored'",
+    "Act I Lost Page 'Acts': 'once you've completed the line of main quests (typically 5-7 quests in length), you will receive the quest to move on to the next act/dimension.'"
+   ],
+   "ftbq_mechanism": "Chapter `subtitle: [\"Lv. 1-15\"]`; quest `subtitle: \"Main Quest\"` with `shape: \"rsquare\"` laid out on y=0; `dependencies` across chapter files; data.snbt `grid_scale: 0.5d`.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD has natural bands in the wave count (e.g. 'Waves 1-8', 'Hordes 9-20', 'Hordes 21+') and in the tiers. Subtitles like these answer 'how far along am I' without extra UI."
+  },
+  {
+   "name": "Subtitle = the goal in plain words (side chapters) or the arc name (campaign)",
+   "description": "The subtitle line under each quest says what to do, or which storyline it belongs to.",
+   "evidence": [
+    "CTE2 subtitles: 'Craft one of each' (14), 'Obtain one of each' (7), 'Kill 500 mobs', 'Die 25 times', 'Read and then click checkmark'",
+    "Campaign subtitles: 'Main Quest' (36), 'Lost Page' (24), 'Illager Arc', 'The Underground', 'Fiery Adventure'"
+   ],
+   "ftbq_mechanism": "Quest `subtitle` string.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Cheap clarity. TD quests can say 'Survive wave 5', 'Place 3 spike traps', 'Ring the horn'."
+  },
+  {
+   "name": "Numbered onboarding pages that hand over the tool they describe",
+   "description": "An ordered intro chapter. Each page explains one system and rewards the item for that system, often with instructions in the item's lore.",
+   "evidence": [
+    "CTE2 act_0.snbt (progression_mode 'linear'): subtitles 'Page 1'…'Page 11', branch pages 'Page 2b', 'Page 9c' drawn as circles; task title 'Click Once Read'",
+    "Money page → gold wallet (AutoConvert); Land Claiming → golden_hoe named 'Claiming Hoe' with lore 'Right-click to set Claim Point' / '/flan menu'; Waystones → warp_stone; Managing Your Inventory → mmorpg:master_bag"
+   ],
+   "ftbq_mechanism": "Chapter `progression_mode: \"linear\"`; `checkmark` tasks; side pages `shape: \"circle\"`; item rewards with full NBT `display: {Name, Lore}`.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD has many first-hour mechanics (horn, pedestal, amulet choice, loot bags, border). Use DO-tasks for the core loop and keep checkmark pages for pure information. Lore on rewarded items keeps teaching after the book closes."
+  },
+  {
+   "name": "Reward = the key to the next quest (incl. starter kits)",
+   "description": "A quest's reward is exactly what the following task needs, so the chain teaches itself.",
+   "evidence": [
+    "CTE2 'Combat' rewards a zombie spawn egg → 'First Blood' kill task; 'Suit Up' rewards a skeleton spawn egg → 'Easy Kill'",
+    "'Training Arc' rewards a Zombie Gateway pearl → 'Disturbances in the Air'; 'A Brewsome Problem' rewards Chemical X splash potions → 'An Experiment Gone Wrong'",
+    "Professions 'Gear Crafting'/'Cooking' give all_table kits 'Gear Crafting Starter Kit' / 'Cooking Starter Kit' (hide_tooltip true, table icon)"
+   ],
+   "ftbq_mechanism": "Item rewards or `all_table` rewards (`table_id`, table `hide_tooltip: true`, `icon`) on quest N, matching an item or kill task on quest N+1.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Give the first stakes or the lure block before 'build a defence', one SecurityCraft mine before 'arm a trap', the materials for the first T2 or T3 build, ammo before the first gun bounty. This aligns with the 'new mechanics need a quest' rule."
+  },
+  {
+   "name": "Enemy stat card",
+   "description": "A fixed, colour-coded block in every boss or special-mob quest: level floor in red, modifiers in aqua, drop chances in green.",
+   "evidence": [
+    "CTE2 'The Mastermind': '&cThe Invoker spawns at minimum level 15.&r / The Invoker Has: / &b+20% Elemental Resistance&r / &a10% Chance of Dropping Owd Rune&r'",
+    "The same block appears in the Act I Bestiary quests (kill tasks, mca:book_supporters icon, hide_dependency_lines true, 'xp_times_lvl' rewards) and in ~30 boss quests"
+   ],
+   "ftbq_mechanism": "Description template; `kill` task with an `icon`; `shape: \"diamond\"` for mini-bosses, `size: 1.25d` for act bosses.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's every-10th-wave bosses and special zombies need counterplay hints. To respect 'keep story surprises', put the card on a quest hidden until first contact (hide_until_deps_complete) rather than pre-announcing it."
+  },
+  {
+   "name": "Lost Pages + read-them-all achievement",
+   "description": "Info-only pages (paper icon) sit next to the content they explain. A hexagon achievement depends on all of them and pays a cosmetic.",
+   "evidence": [
+    "CTE2 act_i.snbt 'Read All Act I Lost Pages!' (hexagon, hide_dependency_lines true, 9 deps): 'Read all of the &eLost Pages&r of Act I to complete this achievement. Then show it off with your new hat!' → simplehats:rabbitears + gold coin"
+   ],
+   "ftbq_mechanism": "Checkmark quests with `icon: \"minecraft:paper\"`, `subtitle: \"Lost Page\"`; an achievement quest with `shape: \"hexagon\"`, `hide_dependency_lines: true`, and dependencies on all pages.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Turns TD's Tips and Tricks chapter into a collectible and gives players a reason to actually read the mechanics pages."
+  },
+  {
+   "name": "Auto-claim currency, manual-claim loot",
+   "description": "Invisible progress currency arrives automatically and quietly. Only tangible items need a click, so the claim button means 'new stuff'.",
+   "evidence": [
+    "CTE2: 478 command rewards with auto 'enabled' + silent true (XP and points) vs 426 manual item rewards; 317 of 624 quests have nothing to click",
+    "Utility plumbing uses auto 'invisible' (reset and advancement-revoke commands), which the 2001.4.22 ViewQuestPanel leaves out of the reward list"
+   ],
+   "ftbq_mechanism": "Reward `auto: \"enabled\"` (toast for xp/xp_levels/items; command rewards never toast), `\"no_toast\"`, `\"invisible\"` (hidden from the panel), `\"disabled\"`; command `silent: true`, `elevate_perms: true`; any reward can carry `title` and `icon`.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "TD's 76 XP-level rewards are real currency, since pedestal upgrades cost levels. Auto-claim them with a clear title such as '+5 Levels (spend at the Pedestal)' and keep manual claims for items. The native `xp_levels` type auto-claims with a toast."
+  },
+  {
+   "name": "Per-player choice of starter kit",
+   "description": "Choice tables of pre-made items with readable entry names. Because team_reward is off, each party member picks their own.",
+   "evidence": [
+    "CTE2 Prologue 'Your First Weapon': choice table 'First Weapon' with 11 entries titled 'Sword', 'Staff', 'Bow', 'Spear (2-Handed)', ...; 'Suit Up' gives four choice tables (helmet, chest, pants, boots)",
+    "All 41 choice rewards set exclude_from_claim_all: true; data.snbt default_reward_team: false; no team_reward anywhere"
+   ],
+   "ftbq_mechanism": "`{type: \"choice\", table_id: <decimal long>, exclude_from_claim_all: true}`. The table holds `rewards: [{item: {...}, title: \"Sword\", icon: ...}]` and an optional table `icon`; with no icon the reward cycles through all entry icons (IconAnimation).",
+   "fit_for_td_pack": "high",
+   "fit_reason": "Each of the 2-3 friends picks their own starter gun, trap kit or backpack, which suits a squad that splits roles."
+  },
+  {
+   "name": "Challenge → Achievement → Completionist trophy ladder with a brag button",
+   "description": "Escalating milestones each give a visible cosmetic. Achievements carry a manual reward that announces the feat to the whole server, and everything rolls up into one final trophy.",
+   "evidence": [
+    "CTE2 Other Hobbies: 'Welcome to Craft to Exile 2' (Die Once) → 'This is Craft to Exile 2' (Die 25) → '...Prepare to Mine Edition' (Die 50) → Challenge 'Hollowed' (deaths ≥ 100)",
+    "Achievement reward: title 'Click here to brag', icon minecraft:cookie, /tellraw @a {...{\"selector\":\"@p\"},{\"text\":\" has achieved Team Player\"}]}",
+    "'The Completionist': hexagon size 3.0, 13 achievement deps, red tellraw ' has completed every achievement!'"
+   ],
+   "ftbq_mechanism": "Challenge quests `shape: \"diamond\"`, `size: 1.5d`, subtitle 'Challenge'; Achievement `shape: \"hexagon\"`, `size: 2.0d`; manual `command` reward (no `auto`) running tellraw with `elevate_perms: true`; the final hexagon depends on every achievement.",
+   "fit_for_td_pack": "high",
+   "fit_reason": "This is the best fit for the multiplayer goal: friends see each other's feats in chat. For trophies, use custom-named vanilla items or KubeJS items rather than adding a hats mod, to keep the pack lightweight."
+  },
+  {
+   "name": "Hidden repeatable shops unlocked by milestones",
+   "description": "Repeatable quests consume currency and give a choice from a table. Each shop is hidden until a campaign milestone, and the unlocking quest announces it.",
+   "evidence": [
+    "CTE2 gem_shop.snbt: 10 octagon shops; 'This \"quest\" consumes the coin and lets you select a reward from the list.' / '&eThis shop unlocks once you complete \"Acts\" in Act I.&r'",
+    "act_i 'Acts': '&6This Quest Unlocks New Shops In the Campaign Shop.'"
+   ],
+   "ftbq_mechanism": "`can_repeat: true`, `hide_until_deps_complete: true`, `hide_dependency_lines: true`, `shape: \"octagon\"`, subtitle 'Shop'; item task `consume_items: true`; `choice` reward. Reward tables can also hold command entries (randomized_unique_shop.snbt).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Useful for spending loot-bag currency or scrap on consumables, ammo or cosmetics. Two cautions: it must never sell home-machine outputs (the loot-shortcut rule), and in one shared party the first member to claim takes that cycle's manual reward."
+  },
+  {
+   "name": "Story-unlocked repeatables with a clickable link back",
+   "description": "Grindable repeatables (gear shape) are visible but locked, and their description links to the quest that opens them. The source quest advertises the unlock.",
+   "evidence": [
+    "CTE2 repeatables.snbt: 'Complete the quest mentioned below to unlock this repeatable quest!' + { \"text\": \"Glow in the Dark Issues\", ..., \"clickEvent\": { \"action\": \"change_page\", \"value\": \"0D9B68F2990B8E94\" } }",
+    "Source quest: '&o&7Completion unlocks a Repeatable Quest in the Repeatables Chapter!&r&r'"
+   ],
+   "ftbq_mechanism": "`can_repeat: true`, `shape: \"gear\"`, a dependency on the story quest, and a description line that is a raw JSON text component with `clickEvent action change_page value <16-hex quest id>`.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "TD's Bounties ladder could become repeatable contracts opened by tiers. However, FTB kill tasks can't single out tagged wave mobs, so counting needs KubeJS custom tasks. Link targets must be stable positive ids."
+  },
+  {
+   "name": "Display-only reward labels + a permanent ledger chapter",
+   "description": "A story quest shows a labelled 'reward' icon for something granted elsewhere. A mirror quest completes the moment the story quest does and performs the real grant.",
+   "evidence": [
+    "CTE2 story quest reward {auto: \"enabled\", icon: \"ftb_ph:talent\", title: \"1 Talent Point\", type: \"custom\"} (no handler exists, so it is a label)",
+    "Rewards chapter: task {stat: \"minecraft:walk_one_cm\", value: 1, disable_toast: true, title: \"Complete: The Mastermind\"} + command 'points give @p TALENTS 2'; Epilogue labels 'Ascendant (1/4)' across four bosses"
+   ],
+   "ftbq_mechanism": "`custom` reward used as a label; a mirror quest depending on the source quest with an always-true `stat` task (it completes when the dependency does, via checkForDependantCompletion); auto `command` reward.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "Lets the book show script-driven rewards (a border ring, pedestal HP, airdrop unlock) as icons. TD has ftb-xmod-compat 2.1.2, whose `FTBQuestsEvents.customReward` can make the label do something real. The ledger half only matters if TD ever resets quests."
+  },
+  {
+   "name": "Lifetime-stat milestone ladders",
+   "description": "Vanilla or mod statistics as counters, with funny titles at each rung.",
+   "evidence": [
+    "CTE2 Other Hobbies: minecraft:deaths 1/25/50/100, minecraft:mob_kills 100/500/1000/5000, gateways:gates_defeated 5/10/25",
+    "Act V: mmorpg:dungeons_completed 10/25, mmorpg:uber_dungeons_completed 5"
+   ],
+   "ftbq_mechanism": "Task `{type: \"stat\", stat: \"minecraft:deaths\", value: 25}`. In 2001.4.22 team progress = the highest single member's stat, capped at the target (StatTask.submitTask), not a team sum.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "A deaths ladder works as-is and adds gallows humour around pedestal losses. Waves cleared or wave-mob kills need KubeJS custom tasks, because minecraft:mob_kills counts every mob and stat tasks don't sum across players."
+  },
+  {
+   "name": "Pick N of M challenges",
+   "description": "A challenge unlocks after any N of several prerequisites, giving freedom of route.",
+   "evidence": [
+    "CTE2 Exploration 'The Wanderer': dependency_requirement one_completed + min_required_dependencies 3 over 5 biome-discovery advancements",
+    "Act II 'A Castle in the Dark': one of two routes, and the description says '&eRequires 1 dependency to be b[e completed]'"
+   ],
+   "ftbq_mechanism": "`dependency_requirement: \"one_completed\"` with `min_required_dependencies: 3`.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "For example, 'master 3 of the 7 SecurityCraft traps' or 'clear 3 of 5 ruin types'. This rewards different defence styles without forcing every branch."
+  },
+  {
+   "name": "Stamp-collection grids",
+   "description": "Many tiny untitled quests (title and icon come from the task) laid out in a grid, each worth a small auto reward, all feeding a challenge.",
+   "evidence": [
+    "CTE2 Exploration: 32 structure quests (ids and #tags such as '#minecraft:shipwreck') → 'The Adventurer' → 'Expert Explorer'",
+    "Fishing: 64 fish → 'Gotta Catch 'em All' (64 deps)"
+   ],
+   "ftbq_mechanism": "Quests with no title or description and a single `structure`/`item` task; tiny auto reward; a challenge depending on all of them (set `hide_dependency_lines: true` on the hub; CTE2 doesn't).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "TD's ruins and stashes beyond the border make a natural stamp grid (structure tasks accept #tags). It also rewards the leave-to-explore side of the amulet choice."
+  },
+  {
+   "name": "Find-the-place + beat-the-guardian in one quest",
+   "description": "Two titled tasks in one quest: discover a structure, then prove the fight with a kill or an item.",
+   "evidence": [
+    "CTE2 Act IV 'A New Headquarters': structure blue_skies:everbright_blinding_dungeon ('Find a Blinding Dungeon (Everbright)') + kill blue_skies:summoner",
+    "'Caught in a Web': structure blue_skies:poison_dungeon + item 'Poisonous Arc (Any Rarity)' via itemfilters:or"
+   ],
+   "ftbq_mechanism": "Multiple tasks per quest with task `title` and `icon`; `structure` task; `kill` or `item` task.",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "'Find a ruin stash' + 'bring back its guarded loot item'. Use an item as proof, since kill tasks can't isolate spawner guards. Item Filters isn't in TD, so stick to plain item ids."
+  },
+  {
+   "name": "Emergency items button",
+   "description": "The book's built-in emergency-items button gives a get-home item on a cooldown.",
+   "evidence": [
+    "CTE2 data.snbt: emergency_items: [{ Count: 1, id: \"waystones:return_scroll\" }], emergency_items_cooldown: 30"
+   ],
+   "ftbq_mechanism": "data.snbt `emergency_items` list + `emergency_items_cooldown` (seconds).",
+   "fit_for_td_pack": "medium",
+   "fit_reason": "A safety valve for players stranded beyond the border. TD's data.snbt already sets emergency_items_cooldown 300 but lists no items. It must not undermine the risk of exploring."
+  },
+  {
+   "name": "Safety-locked destructive or opt-in quest",
+   "description": "An irreversible action behind three confirmation checkmarks plus a deliberately crafted token and a cost.",
+   "evidence": [
+    "CTE2 'Reset Main Campaign Quests': checkmarks 'I am SURE I want to reset Campaign Quests' / 'I confirm that I've read the below!' / 'Final Confirmation' + name_tag named 'Reset My Quests' (match_nbt) + 5 diamond coins; rewards '/ftbquests change_progress @p reset <chapterId>' (auto invisible) + '/advancement revoke @p only ...'"
+   ],
+   "ftbq_mechanism": "`can_repeat: true`; 3 `checkmark` tasks; item task with `match_nbt: true` and `consume_items: true`; command rewards with `auto: \"invisible\"`.",
+   "fit_for_td_pack": "low",
+   "fit_reason": "Only relevant if TD adds an opt-in such as Hardcore mode or a new-run reset. If it does, this confirmation pattern is proven to work in this version."
+  }
+ ],
+ "multiplayer_notes": [
+  "FTB Quests 2001.4.22 stores quest and task progress per FTB Team (TeamData). CTE2 relies on that and tells players so in the Prologue: 'FTB Teams allows you to share quest progression.'",
+  "Reward claims are per player unless team_reward is set. CTE2 never sets it and data.snbt has default_reward_team: false, so each party member claims every reward, including their own choice-table pick.",
+  "Auto-claim, confirmed in TeamData.checkAutoCompletion bytecode: when a quest completes, every non-team reward with auto != disabled is claimed for each online team member. ServerQuestFile.playerLoggedIn re-runs this, so offline members get theirs on next login. Auto rewards with team_reward:true go only to the player whose action completed the quest.",
+  "Repeatables in a shared team (Quest.checkRepeatable, called from TeamData.markRewardAsClaimed): once one player has claimed all of a repeatable's rewards, the quest resets for the whole team and only that player's claim record is cleared. Manual rewards on repeatables (CTE2's shops) are therefore first-claimer-wins, while auto rewards reach every online member. Confirmed in bytecode; not play-tested.",
+  "Stat tasks read each member's own statistic (StatTask.submitTask: min(stat, target), stored only if higher). Team progress is the highest single member's value, not a sum, so 'Die 100 times' or 'Kill 5000 mobs' completes for everyone when one player gets there.",
+  "Command rewards run as the claiming player: elevate_perms raises the permission level and silent suppresses output, so '@p' resolves to the claimer. Placeholders available in 2001.4.22's CommandReward: {p} {x} {y} {z} {chapter} {quest} {team} {team_id} {long_team_id} {member_count} {online_member_count}. Note that TD's memory rule says nothing scales by player count.",
+  "Social broadcast: CTE2 achievements carry a manual reward titled 'Click here to brag' that runs /tellraw @a {\"text\":\"\",\"color\":\"blue\",\"extra\":[{\"selector\":\"@p\"},{\"text\":\" has achieved Team Player\"}]}. The player chooses when to announce.",
+  "CTE2's co-op teaching pages: 'Party Play' (three separate team systems); 'To Your Stations!' ('&eCrafting Stations&r for each of the Professions are &etied to the player that placed them&r. / Each player will need their own set of Crafting Stations!'); the reset quest ('if you're in an FTB Team, that the Team Leader resets the quests!'); FLAN claim limits; Lootr (each player gets their own chest loot); Telepass (teleport to a teammate).",
+  "CTE2 has no shared-goal or 'whole party' quests. Its Multiplayer chapter group is one chapter of economy, music, land claims and Lootr.",
+  "Quest Kill Task 0.2.0 (in CTE2, not in TD) credits a kill task to every team whose member damaged, healed or tanked the kill. Plain FTB Quests credits only the killer's team. With everyone in one party this changes nothing.",
+  "data.snbt in CTE2 has pause_game: false and drop_book_on_death: false, which are safe defaults for multiplayer."
+ ],
+ "reward_presentation_notes": [
+  "CTE2 XP and points are command rewards dressed as readable entries: icon ftb_ph:exp or ftb_ph:talent (from the FTB PlaceHolders icon-only mod), title '400 Experience', '100 Experience x Lv.', '1 Talent Point', 'Ascendant (1/4)'. Command rewards never raise a reward toast in 2001.4.22 (CommandReward.claim sends none), so this XP is visible only in the quest's reward list.",
+  "Item rewards raise an item toast when claimed (ItemReward sends DisplayItemRewardToastMessage). Native xp and xp_levels rewards raise a toast when auto-claimed with 'enabled' (XPLevelsReward sends DisplayRewardToastMessage). ToastReward (type 'toast', key 'description') sends a custom pop-up; it is available but CTE2 doesn't use it.",
+  "Item rewards almost always override the title so the slot reads as a meaningful thing: 'Money', 'Zombie Gateway', 'Splash Potions of Chemical X', 'Rare Gear Loot Chest (Lv. 5)'. Some carry NBT display names and lore that keep teaching (the 'Claiming Hoe').",
+  "A choice reward shows the table title ('First Weapon', 'Support Gems 2') and the table icon. With no table icon, it shows an animated cycle of every option (RewardTable.getAltIcon → IconAnimation.fromList). Entries carry their own titles ('Spear (2-Handed)') and can override icons (Flugel Tiara variants use quartz icons).",
+  "Packages use all_table with hide_tooltip: true and a table icon ('Cooking Starter Kit', 'Gear Crafting Starter Kit'), so a single kit icon replaces a list of 7 entries. One 'loot' reward uses use_title: true ('Reset Potion Package (5 Items)').",
+  "There are no FTB loot crates (drop_loot_crates false, no loot_crate blocks). The loot boxes players open are Mine and Slash's own mmorpg:chest/* items with mmorpg_loot_chest NBT (rarity, level and kind), handed out titled by rarity and level and scaled to each act's level band.",
+  "The signature trophy is a themed wearable cosmetic (Simple Hats) on every Challenge and Achievement: chefshat for cooking, fishing_hat for Gotta Catch 'em All, crown for The Mastermind, rgb cowboy hat for The Completionist. Other players can see them.",
+  "Brag is a manual-claim command reward (cookie icon, 'Click here to brag') that broadcasts a coloured chat line to everyone.",
+  "The book uses no sounds, title-screen text, particles or effect rewards (grep found none). All feedback comes from FTB Quests' default completion and reward toasts plus the brag broadcast.",
+  "Rewards scale visibly: story XP medians run 200 → 350 → 2,000 → 8,000 → 17,000 → 22,000 from the Prologue to Act V; loot-chest level climbs from L5 to L60 and rarity from common/rare to legendary; the Epilogue switches to tier-5/6 gems and fragments.",
+  "Utility rewards are hidden with auto 'invisible' (the reset commands and advancement revokes). The 2001.4.22 ViewQuestPanel skips them, so players never see the plumbing."
+ ],
+ "version_caveats": [
+  "CTE2 and the TD instance run the same ftb-quests-forge-2001.4.22, ftb-library-forge-2001.2.13 and kubejs-forge-2001.6.5-build.26 jars. I cross-checked every SNBT key in CTE2's book against string constants in the 2001.4.22 quest classes: 0 unknown keys.",
+  "Proven quest and chapter constructs: chapter `progression_mode: \"linear\"`; `default_quest_shape: \"rsquare\"`; chapter `subtitle: [\"Lv. 1-15\"]` (a list); chapter `images: [{image: \"watut:textures/particles/book.png\", x: 3.0d, y: 2.5d, width: 15.0d, height: 15.0d, rotation: 0.0d, color: 8026746}]`; quest `shape` values \"rsquare\", \"circle\", \"diamond\", \"hexagon\", \"octagon\", \"gear\", \"square\"; `size: 1.25d|1.5d|2.0d|3.0d`; `hide_dependency_lines: true`; `hide_until_deps_complete: true`; `dependency_requirement: \"one_completed\"` with `min_required_dependencies: 3`; `can_repeat: true`; data.snbt `progression_mode: \"flexible\"`, `show_lock_icons: true`, `grid_scale: 0.5d`, `emergency_items: [{ Count: 1, id: \"waystones:return_scroll\" }]`, `emergency_items_cooldown: 30`.",
+  "Proven task constructs: `{type: \"checkmark\", title: \"Click Once Read\"}`; item `{item: \"lightmanscurrency:coin_gold\", consume_items: true}`, `count: 5L`, `match_nbt: true` with NBT items (a name_tag with display.Name); kill `{entity: \"minecraft:zombie\", value: 5L, icon: ...}`; `{structure: \"blue_skies:nature_dungeon\"}` and the tag form `\"#blue_skies:gatekeeper_houses\"`; `{biome: \"#aquamirae:ice_maze\"}`; `{dimension: \"minecraft:the_nether\"}`; `{advancement: \"lootr:10loot\", criterion: \"\"}`; `{stat: \"minecraft:deaths\", value: 25}`, including mod stats such as `gateways:gates_defeated`; task-level `disable_toast: true`.",
+  "Proven reward constructs: command `{auto: \"enabled\", command: \"/...\", elevate_perms: true, silent: true, icon: \"...\", title: \"...\"}`; `auto: \"invisible\"`; custom `{auto: \"enabled\", icon, title, type: \"custom\"}` (a no-op with no handler); choice `{exclude_from_claim_all: true, table_id: 405550839613976496L, type: \"choice\"}`; `loot` and `all_table` with the same shape; advancement reward `{advancement: \"blue_skies:everbright/kill_summoner\", criterion: \"\", auto: \"enabled\", title: \"Unlock Poison Dungeon\"}`; item rewards with full NBT and a `title` override.",
+  "Proven reward-table constructs: `{id, title, icon, loot_size, order_index, rewards: [{item, count, title, icon, only_one: true}], hide_tooltip: true, use_title: true}`, plus command entries inside a table (randomized_unique_shop.snbt). Quests reference a table by `table_id`, the signed decimal long of the table's hex `id` (e.g. 05A0CE57058D6FB0 ↔ 405550839613976496L). No `weight` or `loot_crate` is used anywhere.",
+  "Proven description markup: colour codes `&e`/`&c`/`&l`/`&o`/`&n`/`&r`; `{image:<texture> width:160 height:128 align:1}` and `align:center`. FTB Library 2001.2.13 also parses `align:left|right|0|2`, `fit:true` and hover `text`. A description line that is a raw JSON text component with `\"clickEvent\": { \"action\": \"change_page\", \"value\": \"<16-hex quest id>\" }` parses; I did not render-test the navigation.",
+  "Present in the 2001.4.22 jar but not used by CTE2, so semantics are not play-tested by me: `{@pagebreak}` (Quest.PAGEBREAK_CODE); quest keys `optional_task` (on tasks), `repeat_cooldown`, `require_sequential_tasks`, `max_completable_dependents`, `hide_lock_icon`, `invisible_until_tasks`, `hide_details_until_startable`, `guide_page`; reward types `toast`, `xp_levels`, `xp`, `random`, `gamestage`; task types `observation`, `location`, `xp`, `gamestage`, `fluid`, `custom`; chapter-image keys `hover`, `click`, `dependency`, `alpha`, `corner`, `order`; loot crates (`loot_crate: {string_id, item_name, color, glow, drops: {passive, monster, boss}}`); task-screen and barrier blocks.",
+  "KillTask in 2001.4.22 stores `entity` as a plain ResourceLocation, and its only keys are `entity` and `value`. There is no entity-tag, custom-name or NBT filter, so kill tasks can't single out TD's td_wave_mob-tagged mobs; use KubeJS custom tasks for those.",
+  "CTE2's `itemfilters:or` and `itemfilters:tag` item tasks depend on Item Filters (item-filters-forge-2001.1.0-build.59), which the TD instance does not have. Don't copy them.",
+  "`ftb_ph:*` icons come from FTB_PlaceHolders 1.0.6a, which TD doesn't have. FTB Quests 2001.4.22 ships `ftbquests:custom_icon`, which reads an `Icon` NBT string as a texture (class confirmed, not render-tested); KubeJS-registered icon items are the other option.",
+  "A `custom` reward does nothing unless something handles CustomRewardEvent. TD's ftb-xmod-compat 2.1.2 exposes the KubeJS events `FTBQuestsEvents.customReward`, `customTask`, `completed`, `started` and `customFilterItem`, so TD can make labelled custom rewards real.",
+  "Every CTE2 quest id starts with hex 0-7 (a positive long), which matches the TD rule that 8-F ids re-mint on load. Any change_page link target must be one of these stable ids.",
+  "CTE2's inline screenshots (cte2:textures/*.png) were not found in any jar, resource pack or kubejs/assets in the local instance, so I could not confirm how they render.",
+  "Flexible progression in 2001.4.22 (TeamData.canStartTasks and the ServerQuestFile login pass): tasks progress before dependencies are done, and the quest completes and pays out when its dependencies complete. This is what makes CTE2's walk_one_cm mirror quests fire immediately."
+ ]
+}

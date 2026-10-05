@@ -1,0 +1,1727 @@
+{
+ "mechanics": [
+  {
+   "name": "Wooden Stake",
+   "category": "trap",
+   "tier": "1",
+   "ids": [
+    "simply_traps:stake"
+   ],
+   "player_facing_summary": "Cheap floor spike made from logs. Anything standing in it, players included, takes 1 armour-ignoring damage per hit, and wave mobs on it get Slowness I. Each stake a player places has 20 HP that nearby wave mobs wear down. At 0 HP it vanishes with no drop.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier1_recipes.js",
+    "pack/config/simplytraps.toml",
+    "pack/kubejs/server_scripts/wave_mob_spike_slow.js",
+    "pack/kubejs/server_scripts/trap_durability.js",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js",
+    "jar:simply_traps-1.7-forge-1.20.1.jar!data/simply_traps/recipes/stake_recipe.json",
+    "jar:simply_traps-1.7-forge-1.20.1.jar!StakeEntityCollidesInTheBlockProcedure.class",
+    "jar:1.20.1.jar!data/minecraft/tags/damage_type/bypasses_armor.json"
+   ],
+   "key_numbers": [
+    "Recipe: 3 logs in a diagonal make 4 stakes (stake_recipe.json in the jar; tier1_recipes.js:1-5 keeps the stock recipe)",
+    "Damage per hit = 1.0 x StakeDamageMultiplier 1.0 (StakeEntityCollidesInTheBlockProcedure: dconst_1 * STAKEDMG; simplytraps.toml:2). It hits on even-dayTime ticks (wave_mob_spike_slow.js:3-5), about 2/s after i-frames (tooltip_tier_colors.js:44)",
+    "Damage type minecraft:generic is in vanilla bypasses_armor (1.20.1 jar tag), so it ignores armour",
+    "Wave-mob slow: Slowness I for 30 ticks, re-applied once it drops below 20 ticks (wave_mob_spike_slow.js:19)",
+    "HP 20 (trap_durability.js:16). Every 20 ticks it loses the summed attack damage of the td_wave_mob mobs within 1.2 blocks, so a plain zombie (3 attack) breaks it in about 7 s (trap_durability.js:12-13,29,31,101-158)"
+   ],
+   "unlock_or_cost": "3 logs for 4 stakes, available from the start. Oak logs come from Uncommon bags (weight 70/391, 4-8 per roll; bountybags/loot_tables/items/uncommon.json) and scav_building chests.",
+   "current_quest_coverage": "'Cheap and Cheerful' (campaign.snbt:537-569): item task with subtitle '3 logs'; rewards 6 stakes and 1 level. The text (1 damage a step, hurts you too, slows a little, wears down fast) matches the code.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Keep the item task (consume_items:false)",
+    "KubeJS BlockEvents.placed('simply_traps:stake') -> 'execute as <uuid> run ftbquests change_progress @s complete <customTaskId>' (the qmCompleteForPlayer pattern in quest_milestones.js:57-66), so the task means 'lay a line', not just 'craft one'",
+    "Observation task, observe_type BLOCK, to_observe simply_traps:stake",
+    "A shared custom task fired from trap_durability.js's worn-out branch (lines 143-156): 'your first trap breaks', which teaches wear"
+   ],
+   "teaching_hook": "It hurts you too, and it is consumable: every wave mob on or beside it drains its 20 HP, so stake lines need rebuilding between waves. Mobs are only slowed while they stand on it.",
+   "multiplayer_notes": "No owner, so anyone can break it. The HP registry is shared world state (td_trapRegistry in worldData; trap_durability.js:9-10). An item task completes for the whole FTB party. Rewards are per player (data.snbt:6 default_reward_team: false), so each member claims the 6 stakes.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "a stack of logs",
+    "a handful of stakes as a restock",
+    "1-2 XP levels (XP buys pedestal upgrades)"
+   ]
+  },
+  {
+   "name": "Stake Wall",
+   "category": "trap",
+   "tier": "1",
+   "ids": [
+    "simply_traps:stake_wall"
+   ],
+   "player_facing_summary": "Upright stake panel with the stake's damage (1 per hit, ignores armour) and Slowness I. It has no collision, so mobs push through it and take damage and slowness on the way. The base's outer walls come lined with Stake Walls that never wear out. Ones a player places have 20 HP.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier1_recipes.js",
+    "pack/config/simplytraps.toml",
+    "pack/kubejs/server_scripts/wave_mob_spike_slow.js",
+    "pack/kubejs/server_scripts/trap_durability.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "jar:simply_traps-1.7-forge-1.20.1.jar!data/simply_traps/recipes/stake_wall_recipe.json",
+    "jar:simply_traps-1.7-forge-1.20.1.jar!StakeWallEntityCollidesInTheBlockProcedure.class"
+   ],
+   "key_numbers": [
+    "Recipe: 4 logs make 4 Stake Walls (stake_wall_recipe.json, stock)",
+    "Damage per hit = 1.0 x StakeWallDamageMultiplier 1.0 (simplytraps.toml:1; StakeWallEntityCollidesInTheBlockProcedure)",
+    "No collision; it hurts any entity whose hitbox overlaps it (wave_mob_spike_slow.js:3-5)",
+    "Slowness I for 30 ticks (wave_mob_spike_slow.js:20)",
+    "HP 20 for player-placed walls (trap_durability.js:17). The walls on the base are placed by setblock and never tracked, so they last (trap_durability.js:5-7; playtest_starter_kit.js:775-776)"
+   ],
+   "unlock_or_cost": "4 logs for 4, available from the start.",
+   "current_quest_coverage": "No quest. The tier tooltip lists it as Tier 1 (tooltip_tier_colors.js:16,46).",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item task for simply_traps:stake_wall",
+    "Observation BLOCK simply_traps:stake_wall. The player is already looking at them on the base walls, which suits an early 'notice the walls' quest",
+    "BlockEvents.placed custom task"
+   ],
+   "teaching_hook": "Despite the name it does not block anything: zombies walk through it bleeding and slowed. The base's own stake walls are permanent, but the ones you add wear out.",
+   "multiplayer_notes": "No owner. Placed walls share the world trap registry.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "logs",
+    "a few Stake Walls"
+   ]
+  },
+  {
+   "name": "Spike Trap",
+   "category": "trap",
+   "tier": "1",
+   "ids": [
+    "simply_traps:spike_trap"
+   ],
+   "player_facing_summary": "Iron floor spikes that deal 4 armour-ignoring damage per hit. Wave mobs on it get Slowness III, which lingers about 3 s after they step off. A placed trap has 60 HP, three times a stake's.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier1_recipes.js",
+    "pack/config/simplytraps.toml",
+    "pack/kubejs/server_scripts/wave_mob_spike_slow.js",
+    "pack/kubejs/server_scripts/trap_durability.js",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js",
+    "jar:simply_traps-1.7-forge-1.20.1.jar!SpikeTrapEntityWalksOnTheBlockProcedure.class"
+   ],
+   "key_numbers": [
+    "Recipe: 5 iron ingots in an X make 1 (tier1_recipes.js:11-18). This replaces the stock 3 iron bars + 3 smooth stone slabs for 4",
+    "Damage = 2.0 (ldc in SpikeTrapEntityWalksOnTheBlockProcedure) x SpikeDamageMultiplier 2.0 (simplytraps.toml:3) = 4 per hit, about 8/s (tooltip_tier_colors.js:45)",
+    "Slowness III (amplifier 2) for 60 ticks, re-applied below 50 (wave_mob_spike_slow.js:18)",
+    "HP 60 (trap_durability.js:18)"
+   ],
+   "unlock_or_cost": "5 iron ingots each. Iron comes from Uncommon bags (3-5 per roll, weight 30/391), Rare bags and scav_hardware.",
+   "current_quest_coverage": "'Better Than Nothing' (campaign.snbt:570-602): item task with subtitle '5 iron ingots'; rewards 4 spike traps and 1 level. The text (4 damage, hard slow that lingers, outlasts a stake) matches the code.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item task (existing)",
+    "BlockEvents.placed('simply_traps:spike_trap') custom task",
+    "KubeJS hurt hook: wave_mob_spike_slow.js already finds the strongest trap under a mob (strongestTrapSlowUnder, lines 40-59). One call could fire a shared 'first mob pinned by spikes' milestone"
+   ],
+   "teaching_hook": "The slowness outlasts the trap by about 3 s, so place spikes inside the reach of your Sentry, I.M.S. or Tesla Coil. A horde caught on spikes stays in the kill zone longer.",
+   "multiplayer_notes": "Shared world registry and no owner. The reward of 4 traps is paid to every party member (default_reward_team: false), which is 20 iron worth per player.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "iron ingots",
+    "2 spike traps instead of 4, so a party of 4 is not flooded",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Trap wear (HP pools on placed traps)",
+   "category": "mechanic",
+   "tier": "1",
+   "ids": [
+    "simply_traps:stake",
+    "simply_traps:stake_wall",
+    "simply_traps:spike_trap",
+    "worldData key td_trapRegistry"
+   ],
+   "player_facing_summary": "Traps a player places are not permanent. Once a second, each one loses HP equal to the combined attack damage of the wave mobs touching it. At 0 HP it breaks with wood or metal particles and a sound, and drops nothing. Structure mobs never wear traps, and the base's pre-built Stake Walls never wear.",
+   "source_files": [
+    "pack/kubejs/server_scripts/trap_durability.js"
+   ],
+   "key_numbers": [
+    "Stake 20 HP, Stake Wall 20 HP, Spike Trap 60 HP (trap_durability.js:16-18)",
+    "Reach 1.2 blocks from the trap centre to the mob's feet (trap_durability.js:29)",
+    "Check every 20 ticks (trap_durability.js:31)",
+    "Only td_wave_mob counts (trap_durability.js:113-115)"
+   ],
+   "unlock_or_cost": "Applies automatically to every placed Simply Traps block.",
+   "current_quest_coverage": "Mentioned qualitatively in 'Cheap and Cheerful' ('worn down fast') and 'Better Than Nothing' ('holds up longer'). No numbers, and nothing says the trap breaks with no drop.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Shared custom task fired from trap_durability.js's break branch (lines 143-156), for example qmCompleteShared(server, data, 'trapWorn') from quest_milestones.js:49-55. No new tick cost: the branch already runs"
+   ],
+   "teaching_hook": "Big hitters wear traps faster, because the drain equals the mob's attack damage. Plan to rebuild your trap lines in the gap between waves.",
+   "multiplayer_notes": "The registry lives on the pedestal marker, so it is shared by the party.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "iron or logs to rebuild",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Lure Block",
+   "category": "trap",
+   "tier": "1",
+   "ids": [
+    "kubejs:lure_block",
+    "minecraft:armor_stand tagged td_lure_target (marker)"
+   ],
+   "player_facing_summary": "A one-use bait crate. While it lasts, every wave mob within 40 blocks turns off the pedestal and heads for the lure. It lasts 60 s and shows a countdown nameplate, with a bell every 5 s, then destroys itself. Breaking it early gives nothing back. A mob that a player is standing right in front of, or that a player just hit, still goes for that player first.",
+   "source_files": [
+    "pack/kubejs/server_scripts/lure_block.js",
+    "pack/kubejs/startup_scripts/lure_block.js",
+    "pack/kubejs/server_scripts/mob_aggro.js"
+   ],
+   "key_numbers": [
+    "Recipe FRF/RTR/FRF: 4 rotten flesh, 4 redstone, 1 target block (lure_block.js:5-15)",
+    "Duration 1200 ticks = 60 s (lure_block.js:17)",
+    "Pull radius 40 blocks, horizontal (lure_block.js:20)",
+    "Last 100 ticks: red nameplate and a smoke puff (lure_block.js:21,130-132)",
+    "Bell every 5 s (lure_block.js:23,126-129)",
+    "Hardness 0.5, no drops (startup_scripts/lure_block.js:9-13)",
+    "Target priority: a blocking player in melee range, then a player who hit the mob (8 s window), then the lure, then the pedestal (mob_aggro.js:4-8,133)"
+   ],
+   "unlock_or_cost": "4 rotten flesh, 4 redstone and a target block (vanilla target = hay bale + 4 redstone).",
+   "current_quest_coverage": "'Dinner Bell' (campaign.snbt:603-635): item task with subtitle 'A Target block, 4 redstone, 4 rotten flesh'; rewards 1 level and 2 redstone. The text (40 blocks, 60 s, bell, breaks itself, the player-priority exception) matches the code.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item task (existing)",
+    "BlockEvents.placed('kubejs:lure_block') custom task: 'Ring the bell'",
+    "Count the wave mobs whose current target is a td_lure_target marker; mob_aggro.js already resolves this every 10 ticks. A 'Lure 10 mobs' custom task would need no extra scan"
+   ],
+   "teaching_hook": "Place it past your spike line so the horde has to walk the traps to reach it. Standing next to mobs, or hitting them, overrides the lure for you.",
+   "multiplayer_notes": "The lure is a world entity, so it pulls mobs away from everyone. Its countdown advances only while a player is online in that dimension (PlayerEvents.tick, lure_block.js:106-114).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "a spare Lure Block",
+    "rotten flesh and redstone",
+    "a target block"
+   ]
+  },
+  {
+   "name": "Bouncing Betty",
+   "category": "trap",
+   "tier": "2",
+   "ids": [
+    "securitycraft:bouncing_betty",
+    "entity securitycraft:bouncingbetty"
+   ],
+   "player_facing_summary": "A buried mine. When something steps on it, it hops up and explodes 16 ticks later. The blast does up to 85 damage and reaches 12 blocks, but it never hurts players, dropped loot or blocks. It is also the I.M.S. ammo and a Claymore ingredient.",
+   "source_files": [
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/mine_player_safety.js",
+    "pack/kubejs/server_scripts/explosion_player_safety.js",
+    "pack/defaultconfigs/securitycraft-server.toml",
+    "pack/config/securitycraft-common.toml",
+    "jar:[1.20.1] SecurityCraft v1.10.2.1.jar!data/securitycraft/recipes/bouncing_betty.json",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/entity/BouncingBetty.class"
+   ],
+   "key_numbers": [
+    "Recipe ' P '/'IGI': heavy weighted pressure plate + 2 iron + 1 gunpowder, kept stock (securitycraft_traps.js:52); 4 iron in total (securitycraft_traps.js:26)",
+    "Explosion power 6.0 (BouncingBetty.explode picks 3.0f/6.0f; smallerMineExplosion=false, securitycraft-server.toml:10): up to 85 damage, 12-block reach (tooltip_tier_colors.js:47)",
+    "Fuse 15, so it explodes on the 16th tick (mine_player_safety.js:11-17)",
+    "No block damage (securitycraft-common.toml:2; securitycraft-server.toml:14) and no fire (securitycraft-server.toml:8)"
+   ],
+   "unlock_or_cost": "4 iron and 1 gunpowder. Gunpowder comes from Uncommon bags (15/391) and scav_hardware.",
+   "current_quest_coverage": "'Bouncing Betty' (campaign.snbt:719-745): item task, subtitle correct. The text 'it doesn't care who trips it - keep it off your own patrol routes' implies it can hurt the player, but players are always stripped from friendly blasts (explosion_player_safety.js:16-47; mine_player_safety.js:76-118). The only real cost of tripping it is a wasted mine. The quest gives no blast numbers.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task",
+    "BlockEvents.placed custom task",
+    "Shared milestone from mine_player_safety.js's Betty blast match (the bettyIdx branch, lines 98-117): 'your first mine goes off'"
+   ],
+   "teaching_hook": "Keep a stack: it is a mine, the I.M.S.'s refill, and the core of a Claymore. Stepping on your own Betty wastes it but cannot hurt you.",
+   "multiplayer_notes": "It belongs to whoever placed it. Non-owners cannot break SecurityCraft blocks (allow_breaking_non_owned_blocks=false, securitycraft-server.toml:107), and FTB Teams co-ownership is off (enable_team_ownership=false, securitycraft-server.toml:30).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "gunpowder",
+    "a heavy weighted pressure plate",
+    "1-2 Bouncing Betties as I.M.S. refills"
+   ]
+  },
+  {
+   "name": "Claymore",
+   "category": "trap",
+   "tier": "2",
+   "ids": [
+    "securitycraft:claymore",
+    "securitycraft:wire_cutters",
+    "minecraft:flint_and_steel"
+   ],
+   "player_facing_summary": "A directional mine. Anything that walks into the zone up to 5 blocks in front of it trips it, and it explodes about a second later for up to 50 damage within 7 blocks. Wire Cutters defuse it so it can be moved, and flint and steel re-arms it.",
+   "source_files": [
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/mine_player_safety.js",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js",
+    "jar:SecurityCraft!data/securitycraft/recipes/claymore.json",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/mines/ClaymoreBlock.class",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blockentities/ClaymoreBlockEntity.class",
+    "jar:SecurityCraft!assets/securitycraft/lang/en_us.json (help.securitycraft.claymore.info)"
+   ],
+   "key_numbers": [
+    "Recipe HSH/SBS/RGR: 2 tripwire hooks, 3 string, 1 Bouncing Betty, 2 redstone, 1 gunpowder (claymore.json, stock per securitycraft_traps.js:52)",
+    "Explosion power 3.5 (ClaymoreBlock.explode picks 1.5f/3.5f): up to 50 damage, 7-block reach (tooltip_tier_colors.js:48)",
+    "Range option: default 5, adjustable 1-10 (ClaymoreBlockEntity IntOption 'range')",
+    "Targeting option defaults to PLAYERS_AND_MOBS (ClaymoreBlockEntity), and no pack script changes it. Players still take no damage (explosion_player_safety.js)",
+    "Placed Claymores are tracked in td_claymoreRegistry (mine_player_safety.js:8-10,34-54)"
+   ],
+   "unlock_or_cost": "Consumes a Bouncing Betty plus string, tripwire hooks, redstone and gunpowder (scav_hardware carries tripwire hooks and string).",
+   "current_quest_coverage": "'Claymore' (campaign.snbt:746-772): item task; the subtitle and text match the code and SecurityCraft's help text. It depends on 'Bouncing Betty', which mirrors the recipe.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item task",
+    "BlockEvents.placed custom task",
+    "Shared milestone from mine_player_safety.js's matchedClaymore branch (lines 86-96)",
+    "Item task for securitycraft:wire_cutters as a 'tool' sub-quest"
+   ],
+   "teaching_hook": "It only fires forward. Aim it down a lane. Defuse it with Wire Cutters (shears + 4 iron) before moving it.",
+   "multiplayer_notes": "Owned by the placer; only the owner can break it (securitycraft-server.toml:107).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Wire Cutters",
+    "string and tripwire hooks",
+    "a Bouncing Betty"
+   ]
+  },
+  {
+   "name": "Sentry",
+   "category": "turret",
+   "tier": "2",
+   "ids": [
+    "securitycraft:sentry (item and entity)",
+    "securitycraft:bullet",
+    "securitycraft:portable_radar",
+    "securitycraft:speed_module"
+   ],
+   "player_facing_summary": "The first automatic gun. Place it on a solid block and it shoots hostile mobs within 20 blocks, twice a second, for 8 damage per bullet, with unlimited ammo. It starts out targeting hostile mobs only, whatever its placement message says. Only the player who placed it can change its mode, add modules or pick it up.",
+   "source_files": [
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/sentry_default_mode.js",
+    "pack/kubejs/server_scripts/sentry_combat_feedback.js",
+    "pack/defaultconfigs/securitycraft-server.toml",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "pack/kubejs/server_scripts/boss_wave.js",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/entity/sentry/Sentry.class",
+    "jar:SecurityCraft!data/securitycraft/recipes/portable_radar.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/keypad_item.json"
+   ],
+   "key_numbers": [
+    "Recipe SDR/IPI/IBI: 1 Shrapnel, Dispenser, redstone, 4 iron, Portable Radar (7 iron + redstone torch + redstone), iron block; 20 iron in total (securitycraft_traps.js:7-22; portable_radar.json)",
+    "Bullet damage 8 (securitycraft-server.toml:77). This is a SERVER config, applied to new worlds only (:70-74)",
+    "Fires every 10 ticks (2/s), or every 5 with a Speed Module (Sentry.getShootingSpeed)",
+    "Target range 20 blocks (Sentry.MAX_TARGET_DISTANCE = 20.0f)",
+    "Spawned or loaded in CAMOUFLAGE_HP, it is switched to mode ordinal 4, AGGRESSIVE_H: always on, hostiles only (sentry_default_mode.js:3,10-18)",
+    "It needs a solid block underneath or it discards itself (playtest_starter_kit.js:465-466)",
+    "Firing feedback: tracer, crit burst and sound (sentry_combat_feedback.js:6-82)"
+   ],
+   "unlock_or_cost": "Needs Shrapnel, which only comes from fighting, plus 20 iron and a dispenser (bow, cobblestone, redstone). The boss also drops one Sentry (boss_wave.js:183).",
+   "current_quest_coverage": "'Sentry' (campaign.snbt:773-799): item task, subtitle correct. The text says it never runs out of 'arrows' (it fires bullets) 'unless you load something else into a locked chest underneath it'. That route needs a passcode-protected chest, made with a Keypad, which takes 8 reinforced stone buttons (keypad_item.json). Reinforced stone needs the Universal Block Reinforcer, which has no recipe (securitycraft_traps.js:54-58), so the route is unreachable in practice. The quest never says only the owner can interact with it, that it needs a solid block, or that it already starts hostile-only. It depends on 'Claymore', a design gate rather than a recipe link.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task",
+    "Observation task, observe_type ENTITY_TYPE, to_observe securitycraft:sentry (proves one was placed)",
+    "KubeJS EntityEvents.hurt: sentry_combat_feedback.js:67-82 already identifies Sentry hits, so a shared 'first Sentry hit' milestone needs no extra scan",
+    "EntityEvents.death of a td_wave_mob with a Sentry as the source owner: 'Sentry kill' custom task"
+   ],
+   "teaching_hook": "Ignore the 'Camouflage' placement message: it is already set to hostiles only. Only the person who placed it can reconfigure it. A Speed Module (7 iron, paper, sugar) doubles its fire rate.",
+   "multiplayer_notes": "Owner-only interaction (Sentry's interact method checks isOwnedBy). Team co-ownership is off (securitycraft-server.toml:28-34), so a teammate cannot change its mode, add modules or move it.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Shrapnel",
+    "Speed Module",
+    "iron block"
+   ]
+  },
+  {
+   "name": "Electrified Iron Fence",
+   "category": "trap",
+   "tier": "2",
+   "ids": [
+    "securitycraft:electrified_iron_fence"
+   ],
+   "player_facing_summary": "A fence that zombies will not path through. Once a second, every hostile mob standing right beside it takes 6 armour-ignoring electric damage. It never hurts players or Sentries. It is also the 'brain' that the Chemthrower Turret recipe consumes.",
+   "source_files": [
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/wave_mob_fence_shock.js",
+    "pack/kubejs/server_scripts/electric_trap_player_safety.js",
+    "pack/kubejs/server_scripts/tier3_turret_recipes.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "pack/defaultconfigs/securitycraft-server.toml",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/ElectrifiedIronFenceBlock.class",
+    "jar:SecurityCraft!data/minecraft/tags/damage_type/bypasses_armor.json"
+   ],
+   "key_numbers": [
+    "Recipe ' I '/'IFI'/' I ': 4 iron + 1 oak fence (securitycraft_traps.js:41-50)",
+    "Pack shock: every 20 ticks, 6 damage of type securitycraft:electricity to MONSTER-category mobs within 0.5 block of their hitbox, at feet level and one block up (wave_mob_fence_shock.js:13-17,21-36,40-55)",
+    "securitycraft:electricity bypasses armour (SecurityCraft's bypasses_armor tag)",
+    "The mod's own contact shock also fires on a 20-tick cadence: 6 to players, a lightning hit to mobs (ElectrifiedIronFenceBlock.hurtOrConvertEntity). Players are always protected (electric_trap_player_safety.js:11-12,26-41)",
+    "Pathfinding treats fences as impassable (wave_mob_fence_shock.js:3-6)"
+   ],
+   "unlock_or_cost": "4 iron and an oak fence.",
+   "current_quest_coverage": "'Electrified Fence' (campaign.snbt:800-826): item task, subtitle correct. 'Shocks any mob that touches it' is narrower than the code, which shocks mobs within 0.5 block. 'Unbreakable' is not true for the owner: vanilla_tool_block_breaking=true (securitycraft-server.toml:101) lets the owner mine it, and only non-owners cannot (:107). The quest gives no damage figure. 'It never hurts a player' is correct.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task",
+    "BlockEvents.placed custom task",
+    "Shared milestone fired the first time wave_mob_fence_shock.js shocks a mob (inside its existing 20-tick loop)",
+    "Death classification by damage type securitycraft:electricity (bountyDamageTypeId in bounty_kills.js) for a 'fence kill' custom task"
+   ],
+   "teaching_hook": "Zombies will not path through fences, so use fences to build funnels, and anything waiting beside one takes 6 damage a second. Build an extra fence: the Chemthrower Turret recipe eats one.",
+   "multiplayer_notes": "Owned by the placer, and only the owner can break it. The starter gate fences are claimed by the first player to log in (playtest_starter_kit.js:1363-1378).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "iron ingots",
+    "an oak fence stack",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "I.M.S. (Intelligent Munitions System)",
+   "category": "turret",
+   "tier": "2",
+   "ids": [
+    "securitycraft:ims",
+    "entity securitycraft:imsbomb",
+    "securitycraft:bouncing_betty",
+    "securitycraft:speed_module",
+    "securitycraft:universal_block_modifier"
+   ],
+   "player_facing_summary": "Holds 4 Bouncing Betties and launches them as homing bombs at hostile mobs within 15 blocks, one every 4 s. Each blast does up to 99 damage. It reloads itself one Betty at a time from any inventory placed directly under it. Refilling by hand only works for the owner. Breaking it returns at most 2 Betties.",
+   "source_files": [
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/sentry_default_mode.js",
+    "pack/kubejs/server_scripts/explosion_player_safety.js",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blockentities/IMSBlockEntity.class",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/mines/IMSBlock.class",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/entity/IMSBomb.class"
+   ],
+   "key_numbers": [
+    "Recipe 'BPB'/' I ': 2 Bouncing Betties, Portable Radar, 1 iron ingot; 16 iron in total (securitycraft_traps.js:24-35)",
+    "Starts with 4 bombs (IMSBlockEntity: bombsRemaining = 4)",
+    "Range option: default 15, adjustable 1-30 (IMSBlockEntity IntOption 'range')",
+    "Attack interval 80 ticks (4 s), or 40 with a Speed Module (IMSBlockEntity.getAttackInterval)",
+    "Bomb explosion power 7.0 (IMSBomb picks 3.5f/7.0f): up to 99 damage, 14-block reach (tooltip_tier_colors.js:51)",
+    "Auto-reload: while it holds fewer than 4, it pulls one securitycraft:bouncing_betty from the item handler of the block below (IMSBlockEntity.tick, lambda$tick$0)",
+    "Breaking it drops at most 2 Betties (securitycraft_traps.js:61-71)",
+    "Switched to MOBS targeting on placement (sentry_default_mode.js:20-45)"
+   ],
+   "unlock_or_cost": "2 Bouncing Betties and a Portable Radar. Running cost: one Betty (4 iron + gunpowder) per shot.",
+   "current_quest_coverage": "'I.M.S.' (campaign.snbt:827-853): item task, subtitle correct. The text (4 Betties, tracking, refill by right-click, at most 2 back) is correct. It does not mention the reload from a container underneath, that hand-refill is owner-only (IMSBlock.use checks isOwnedBy), or the 15-block range and 4 s interval.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task",
+    "KubeJS check (in an existing throttled tick, or on BlockEvents.placed of a chest) that a container with Betties sits directly under an I.M.S.: 'Automate the reload' custom task",
+    "EntityEvents.spawned('securitycraft:imsbomb'): a shared 'first launch' milestone"
+   ],
+   "teaching_hook": "Put a chest of Bouncing Betties directly underneath it and it reloads itself, which is also how a teammate can keep your I.M.S. fed. A Speed Module halves the reload. Modules go in through a Universal Block Modifier (emerald + 2 iron + 2 redstone).",
+   "multiplayer_notes": "Owner-only hand refill and configuration. Feeding it from a chest underneath works for anyone.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "4 Bouncing Betties as a full reload",
+    "Speed Module",
+    "Universal Block Modifier"
+   ]
+  },
+  {
+   "name": "SecurityCraft Mine, block mines and Track Mine (craftable, not in the roster)",
+   "category": "trap",
+   "tier": "2 (unassigned)",
+   "ids": [
+    "securitycraft:mine",
+    "securitycraft:sand_mine",
+    "securitycraft:dirt_mine",
+    "securitycraft:stone_mine (and the other *_mine blocks)",
+    "securitycraft:track_mine"
+   ],
+   "player_facing_summary": "Stock SecurityCraft mines that no script removes, so they show in JEI and can be crafted. Mine: 3 iron + 1 gunpowder makes 3, and it explodes when stepped on. Block mines are a block plus a Mine and look exactly like that block; a sand mine is perfect camouflage in the desert. Track Mine: 7 iron, stick and gunpowder make 6, and it is triggered only by minecarts.",
+   "source_files": [
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/explosion_player_safety.js",
+    "jar:SecurityCraft!data/securitycraft/recipes/mine.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/sand_mine.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/track_mine.json",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/mines/MineBlock.class",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/mines/BaseFullMineBlock.class",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/mines/TrackMineBlock.class"
+   ],
+   "key_numbers": [
+    "Mine: ' I '/'IGI' makes 3 (mine.json). Power 3.0 (MineBlock.explode picks 1.0f/3.0f): up to 43 damage, 6-block reach (vanilla 14*power+1)",
+    "Block mines: shapeless block + Mine (for example sand_mine.json). Power 5.0 (BaseFullMineBlock.explode picks 2.5f/5.0f): up to 71 damage, 10-block reach",
+    "Track Mine: 'I I'/'ISI'/'IGI' makes 6. Power 6.0 (TrackMineBlock)",
+    "No pack recipe removal covers them (securitycraft_traps.js only removes the Sentry, I.M.S., Trophy System, Cage Trap, fence and Reinforcer recipes)",
+    "Friendly-blast handling covers them generically: a null exploder counts as friendly (explosion_player_safety.js:45-47)"
+   ],
+   "unlock_or_cost": "Very cheap. A Mine costs about 1 iron each, against 4 iron for a Bouncing Betty.",
+   "current_quest_coverage": "No quest, and absent from tooltip_tier_colors.js. Whether these were meant to be cut is unverified; nothing in the docs mentions them.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item task",
+    "BlockEvents.placed custom task (for example 'Hide a Sand Mine')"
+   ],
+   "teaching_hook": "A Sand Mine looks exactly like the desert floor.",
+   "multiplayer_notes": "Owned by the placer (SecurityCraft ownership rules).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "gunpowder",
+    "3 Mines"
+   ]
+  },
+  {
+   "name": "SecurityCraft utility kit: Wire Cutters, modules, Universal Block Modifier, Taser, Remote Access Sentry",
+   "category": "weapon/tool",
+   "tier": "2",
+   "ids": [
+    "securitycraft:wire_cutters",
+    "securitycraft:speed_module",
+    "securitycraft:whitelist_module",
+    "securitycraft:universal_block_modifier",
+    "securitycraft:taser",
+    "securitycraft:remote_access_sentry"
+   ],
+   "player_facing_summary": "Support items that upgrade Tier 2. Wire Cutters defuse mines. A Speed Module doubles the fire rate of a Sentry or I.M.S. The Universal Block Modifier opens a block's options and module slots. The Taser is a self-recharging stun gun: on hit, Weakness, Nausea and Slowness III for 10 s. The Remote Access Sentry changes the modes of bound Sentries from a distance.",
+   "source_files": [
+    "jar:SecurityCraft!data/securitycraft/recipes/wire_cutters.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/speed_module.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/universal_block_modifier.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/taser.json",
+    "jar:SecurityCraft!data/securitycraft/recipes/remote_access_sentry.json",
+    "pack/defaultconfigs/securitycraft-server.toml"
+   ],
+   "key_numbers": [
+    "Wire Cutters: shears + 4 iron (wire_cutters.json)",
+    "Speed Module: 7 iron + paper + sugar (speed_module.json). Sentry fire interval 10 -> 5 ticks (Sentry.getShootingSpeed); I.M.S. 80 -> 40 ticks (IMSBlockEntity.getAttackInterval)",
+    "Universal Block Modifier: emerald + 2 iron + 2 redstone (universal_block_modifier.json)",
+    "Taser: bow, 2 gold, iron, redstone, 2 sticks (taser.json). Damage 1.0; Weakness, Nausea and Slowness at amplifier 2 for 200 ticks (securitycraft-server.toml:44-51). Powered taser: 2.0 damage, amplifier 5 for 400 ticks (:47,55)",
+    "Remote Access Sentry: diamond, 6 iron, redstone torch, stick (remote_access_sentry.json)"
+   ],
+   "unlock_or_cost": "Sugar (scav_dairy), paper (scav_filler) and emeralds (Uncommon quest rewards, MID/HIGH stash pools) come from loot.",
+   "current_quest_coverage": "Only the 'Claymore' quest names Wire Cutters and flint and steel. Modules, the Universal Block Modifier, the Taser and the remote have no quest.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item tasks per tool (one quest per item, per the IDEAS.md:278-285 working principle)",
+    "KubeJS entity interaction with a Sentry while holding a speed_module: 'Overclock' custom task"
+   ],
+   "teaching_hook": "The cheapest damage upgrade in Tier 2 is the Speed Module: it doubles a Sentry's or I.M.S.'s output for 7 iron.",
+   "multiplayer_notes": "Modules can only be inserted by the owner of the target block or entity.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Speed Module (fits a Sentry or I.M.S. milestone)",
+    "Wire Cutters (fits the Claymore quest)",
+    "paper and sugar"
+   ]
+  },
+  {
+   "name": "Shrapnel",
+   "category": "crafting_material",
+   "tier": "2 feeder",
+   "ids": [
+    "kubejs:shrapnel"
+   ],
+   "player_facing_summary": "Scrap metal that only drops from fighting: Uncommon, Rare and Epic loot bags, plus 12 from each boss. There is no recipe. It goes into the Sentry and into Shotgun Ammo, which uses it in place of gravel.",
+   "source_files": [
+    "pack/kubejs/startup_scripts/shrapnel.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/uncommon.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/rare.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/epic.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/legendary.json",
+    "pack/kubejs/server_scripts/boss_wave.js",
+    "pack/kubejs/server_scripts/securitycraft_traps.js",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js"
+   ],
+   "key_numbers": [
+    "Uncommon bag: 2-4, weight 20/391 per roll, 3 rolls (uncommon.json:23)",
+    "Rare: 4-8, weight 25/193, 3 rolls (rare.json:17)",
+    "Epic: 6-10, weight 20/137, 4 rolls (epic.json:13)",
+    "Legendary: none (legendary.json lines 7-12 list no shrapnel)",
+    "Boss: 12 (boss_wave.js:184)",
+    "Used by the Sentry (securitycraft_traps.js:16) and by Shotgun Ammo r_3, where it replaces gravel (tier3_loot_aligned_recipes.js:146-148)",
+    "Tooltip: 'Scrap metal salvaged from the fight - fuel for Tier 2 tech.' (shrapnel.js:8)"
+   ],
+   "unlock_or_cost": "Only from kills.",
+   "current_quest_coverage": "'Open It' (campaign.snbt:245) says 'every bag can carry Shrapnel, the turret material'. That is wrong for Legendary bags, which carry none, and the item feeds the Sentry and shotgun shells rather than turrets in general.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Item task for kubejs:shrapnel (consume_items:false)",
+    "Pairs naturally with the 'Spoils of War' and 'Open It' bag quests"
+   ],
+   "teaching_hook": "Every kill is a chance at Tier 2 tech. You cannot mine or craft Shrapnel, only fight for it.",
+   "multiplayer_notes": "Bags drop per kill. A quest item task completes for the whole party.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Shrapnel itself, the thematic reward for kill and bounty milestones",
+    "an Uncommon or Rare bag"
+   ]
+  },
+  {
+   "name": "Friendly-fire and block safety for player defences",
+   "category": "mechanic",
+   "tier": "all",
+   "ids": [
+    "securitycraft:sentry",
+    "securitycraft:imsbomb",
+    "omtreborn:grenade_projectile",
+    "immersiveengineering:tesla_coil",
+    "securitycraft:electrified_iron_fence"
+   ],
+   "player_facing_summary": "Explosions from your mines, I.M.S. bombs, turret shells, grenades and bazooka never hurt players, never destroy dropped items or XP orbs, and never break blocks. The pedestal and the airdrop beacon survive any explosion. The Tesla Coil and electrified fence never shock players or Sentries. Two exceptions: Simply Traps spikes and stakes DO hurt players, and the Demolition Zombie's TNT is an enemy blast.",
+   "source_files": [
+    "pack/kubejs/server_scripts/explosion_player_safety.js",
+    "pack/kubejs/server_scripts/mine_player_safety.js",
+    "pack/kubejs/server_scripts/omtreborn_grenade_safety.js",
+    "pack/kubejs/server_scripts/electric_trap_player_safety.js",
+    "pack/defaultconfigs/omtreborn-common.toml",
+    "pack/config/securitycraft-common.toml",
+    "pack/config/supplementaries-common.toml"
+   ],
+   "key_numbers": [
+    "Friendly blast = exploder is null, a player or a Sentry; it spares players, minecraft:item and minecraft:experience_orb, and removes every affected block (explosion_player_safety.js:16-29,45-47)",
+    "The pedestal block and the airdrop beacon are removed from every explosion's block list (explosion_player_safety.js:33-43)",
+    "OMT turrets cannot target players (omtreborn-common.toml:20), and their projectiles cannot destroy blocks (:11-13)",
+    "Damage types ieTesla, ieTeslaPrimary and securitycraft.electricity are cancelled for players and Sentries (electric_trap_player_safety.js:11-12,26-41)",
+    "The Supplementaries cannon and cannonballs are disabled because they bypass the explosion event (supplementaries-common.toml:1-14)"
+   ],
+   "unlock_or_cost": "Always on.",
+   "current_quest_coverage": "Scattered. 'Electrified Fence' says it never hurts players (correct). 'Bouncing Betty' implies the opposite for mines. Nothing explains it as one rule.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "A tips-chapter checkmark quest",
+    "An item task on the first explosive bought, carrying the rule in its description"
+   ],
+   "teaching_hook": "You can stand in your own minefield and loot bags survive your blasts, but your spikes still bite you.",
+   "multiplayer_notes": "This protects teammates too: no team-kill from mines or turrets.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "none needed: this is a tip, so 1 XP level"
+   ]
+  },
+  {
+   "name": "Ownership of placed defences (multiplayer)",
+   "category": "multiplayer",
+   "tier": "2-4",
+   "ids": [
+    "securitycraft:* placed blocks and the Sentry entity",
+    "immersiveengineering:turret_gun",
+    "immersiveengineering:turret_chem",
+    "fluxnetworks House Grid network"
+   ],
+   "player_facing_summary": "SecurityCraft defences belong to the player who placed them. Teammates cannot change a Sentry's mode, refill an I.M.S. by hand, insert modules, or break or move another player's SecurityCraft blocks. FTB Teams co-ownership is switched off. Immersive Engineering turrets give their owner the screen rights. The starter power network is public, so teammates can attach their own Flux Points.",
+   "source_files": [
+    "pack/defaultconfigs/securitycraft-server.toml",
+    "pack/kubejs/server_scripts/starter_flux_network.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/entity/sentry/Sentry.class",
+    "jar:SecurityCraft!net/geforcemods/securitycraft/blocks/mines/IMSBlock.class",
+    "jar:ImmersiveEngineering-1.20.1-10.2.0-183-tdcoilfilter.jar!blusunrize/immersiveengineering/common/blocks/metal/TurretBlockEntity.class"
+   ],
+   "key_numbers": [
+    "enable_team_ownership = false; team_ownership_precedence = [FTB_TEAMS, VANILLA] is already configured (securitycraft-server.toml:28-34)",
+    "allow_breaking_non_owned_blocks = false (securitycraft-server.toml:105-107)",
+    "Sentry interaction and I.M.S. hand refill both check isOwnedBy (Sentry interact method; IMSBlock.use)",
+    "IE turret GUI rights: owner, creative, or unowned (TurretBlockEntity.hasOwnerRights)",
+    "House Grid is created PUBLIC; others get USER access; edit or delete needs the owner, who is the first player to log in (starter_flux_network.js:23-27,33,63-73)",
+    "Starter fences are claimed by the first player to log in (playtest_starter_kit.js:1363-1378)"
+   ],
+   "unlock_or_cost": "Configuration, not a craftable.",
+   "current_quest_coverage": "No quest mentions it.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "A tips checkmark quest in a multiplayer section",
+    "If the user wants party-wide control: flip enable_team_ownership to true (the FTB Teams precedence is already set). That is a config decision for the user, not taken here"
+   ],
+   "teaching_hook": "Whoever places a SecurityCraft defence is its only operator, so decide who builds what.",
+   "multiplayer_notes": "This is the main friction point for a party of 2-4 sharing one base.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "n/a"
+   ]
+  },
+  {
+   "name": "Item Collector",
+   "category": "storage",
+   "tier": "2 (support)",
+   "ids": [
+    "itemcollectors:basic_collector"
+   ],
+   "player_facing_summary": "Stick it onto a chest, or any block with an inventory, and it pulls dropped items from up to 5 blocks around into that inventory. Right-click it to shrink the area.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier2_recipes.js",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js",
+    "jar:itemcollectors-1.1.10-forge-mc1.20.jar!com/supermartijn642/itemcollectors/ItemCollectorsConfig.class",
+    "jar:itemcollectors!com/supermartijn642/itemcollectors/CollectorBlockEntity.class"
+   ],
+   "key_numbers": [
+    "Recipe ' Q '/' R '/'PPP': quartz, redstone block, 3 ender pearls (tier2_recipes.js:4-16; the stock recipe was an ender pearl over obsidian)",
+    "Basic collector maximum range defaults to 5 (configurable 1-10); no filter (ItemCollectorsConfig basicCollectorMaxRange and basicCollectorFilter)",
+    "Output goes to the item handler on the face it is attached to (CollectorBlockEntity.getOutputItemHandler reads the DIRECTION state)"
+   ],
+   "unlock_or_cost": "Quartz and redstone blocks come from Rare bags. Ender pearls come from Rare and Epic bags and from HIGH-tier stashes.",
+   "current_quest_coverage": "'Waste Not' (campaign.snbt:686-718): item task; the subtitle and text match the code.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item task (existing)",
+    "BlockEvents.placed custom task"
+   ],
+   "teaching_hook": "Put one on a chest at the edge of the kill zone and it vacuums up loot bags while you fight. It feeds whatever it is attached to. Whether that works on the Culinary Generator, to burn rotten flesh automatically, is plausible from the code but unverified in play.",
+   "multiplayer_notes": "No ownership; it serves everyone.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "ender pearls",
+    "a chest",
+    "quartz"
+   ]
+  },
+  {
+   "name": "Culinary Generator and generator upgrade chain",
+   "category": "power",
+   "tier": "3",
+   "ids": [
+    "generatorgalore:culinary_generator",
+    "generatorgalore:copper_generator",
+    "generatorgalore:iron_generator",
+    "generatorgalore:gold_generator",
+    "generatorgalore:gold_to_culinary_upgrade"
+   ],
+   "player_facing_summary": "The base's power source, downstairs in the command post. It burns any food, rotten flesh included, into Flux (FE). The output goes into the Flux Plug on top and on to the House Grid network, and it also pushes power to anything touching it. A second one is built by upgrading Copper to Iron to Gold to Culinary.",
+   "source_files": [
+    "pack/config/generatorgalore/generators/culinary.json",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "jar:generatorgalore-1.20.1-1.2.5.jar!data/generatorgalore/generators/*.json",
+    "jar:generatorgalore!cy/jdkdigital/generatorgalore/util/GeneratorUtil.class",
+    "jar:generatorgalore!cy/jdkdigital/generatorgalore/common/block/entity/GeneratorBlockEntity.class",
+    "jar:generatorgalore!cy/jdkdigital/generatorgalore/registry/GeneratorRegistry.class"
+   ],
+   "key_numbers": [
+    "Pack config: generationRate 4096, transferRate 4096, bufferCapacity 100000, fuelType FOOD (culinary.json:2-7). The stock values were 8 and 256 (jar default culinary.json)",
+    "Recipe ICI/IGI/ERE: 4 crops, bread, Gold Generator, 2 eggs, redstone block (tier3_loot_aligned_recipes.js:16-28); the upgrade swaps the Gold Generator for an item frame (:30-41)",
+    "Copper, Iron and Gold generators burn solid fuel at 8, 16 and 32 FE/t (jar data/generatorgalore/generators/copper/iron/gold.json). Each tier is 7 ingots of its metal + the previous generator + a redstone block (jar recipes)",
+    "Food formula: total energy = nutrition x saturation x 8000; generation rate = nutrition x 4096 FE/t; lit time at least 1 tick (GeneratorUtil.calculateFoodGenerationRate; GeneratorBlockEntity). It processes every 5 ticks (Config tickRate default 5). That implies large per-item yields even from rotten flesh. Derived from bytecode and UNVERIFIED in play: do not quote a per-food number in quest text",
+    "Pre-placed with the Flux Plug on top and Basic Flux Storage beside it (playtest_starter_kit.js:1005-1034)",
+    "The other 14 default generator JSONs are recreated on every boot without overwriting culinary.json (GeneratorRegistry.discoverGeneratorFiles), so the chain exists even though the repo and server ship only culinary.json"
+   ],
+   "unlock_or_cost": "Pre-built. A second one costs a full Copper, Iron and Gold generator chain plus bread, crops and eggs (eggs come from scav_dairy loot).",
+   "current_quest_coverage": "'Wired Different' (campaign.snbt:994-1030): observation task on the generator. The recipe text matches the code. The subtitle's '4096 Flux/t' is the configured base rate: real output depends on the food and is pushed out at up to 4096 FE/t (the transferRate).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Observation BLOCK generatorgalore:culinary_generator (existing)",
+    "Item task for generatorgalore:copper_generator, opening a 'build a second generator' branch",
+    "FTB Quests forge_energy task (ftbquests ForgeEnergyTask) delivered through a Task Screen next to a Flux Point: 'prove the grid works'"
+   ],
+   "teaching_hook": "Zombies are fuel: rotten flesh burns. Anything touching the generator draws power directly, and anything on the network draws through a Flux Point.",
+   "multiplayer_notes": "Shared block; anyone can feed it.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "food stacks (bread, cooked beef)",
+    "eggs (a loot-only ingredient)",
+    "a redstone block"
+   ]
+  },
+  {
+   "name": "Flux Networks: Plug, Point, Basic Flux Storage, House Grid",
+   "category": "power",
+   "tier": "3",
+   "ids": [
+    "fluxnetworks:flux_plug",
+    "fluxnetworks:flux_point",
+    "fluxnetworks:basic_flux_storage",
+    "fluxnetworks:flux_core",
+    "fluxnetworks:flux_dust",
+    "fluxnetworks:flux_block"
+   ],
+   "player_facing_summary": "Wireless power. A Flux Plug takes power in, a Flux Point gives it out, and both join a named network with no cable. The starter base's generator, Plug and storage are already linked as the public network 'House Grid'. Every new Tesla Coil, turret, Refined Storage Controller or OMT Turret Base needs a Flux Point next to it, joined to House Grid from the Point's screen.",
+   "source_files": [
+    "pack/kubejs/server_scripts/starter_flux_network.js",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "jar:FluxNetworks-1.20.1-7.2.1.15.jar!data/fluxnetworks/recipes/*.json",
+    "jar:FluxNetworks!sonar/fluxnetworks/FluxConfig$Server.class"
+   ],
+   "key_numbers": [
+    "Flux Dust: lapis block + 4 redstone makes 4 (tier3_loot_aligned_recipes.js:58-63)",
+    "Flux Core: 4 dust + 4 gold blocks + 1 ender pearl makes 4 (tier3_loot_aligned_recipes.js:44-56)",
+    "Flux Point: 4 cores + redstone block (fluxpoint.json). Derived: about 4 gold blocks (36 gold) and 1 ender pearl per Point",
+    "Flux Plug: 4 cores + Flux Block (5 dust + 4 cores) (fluxplug.json, fluxblock.json). Derived: about 8 gold blocks per Plug",
+    "Basic Flux Storage: 6 Flux Blocks + 2 glass panes (basicfluxstorage.json)",
+    "Defaults: Plug and Point transfer limit 800,000 FE/t; Basic Storage 2,000,000 FE with 20,000 FE/t transfer (FluxConfig$Server)",
+    "House Grid: colour 0x3399ff, PUBLIC, linked on the first login (starter_flux_network.js:33,63-73)"
+   ],
+   "unlock_or_cost": "Gold-heavy. Gold comes as 6-9 ingots per Rare-bag roll (weight 45/193) and as gold blocks from Epic bags and HIGH-tier stashes.",
+   "current_quest_coverage": "'No Cables Needed' (campaign.snbt:1031-1063) asks for a Flux Plug item, subtitled 'Recipe in JEI'. The base already has a Plug: what new machines need is a Flux Point, and no quest covers that. The quest also hides the gold-block cost. The Tesla and turret quests then say 'a Flux Point next to it'.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task for fluxnetworks:flux_point as a separate quest (one quest per item)",
+    "BlockEvents.placed('fluxnetworks:flux_point') custom task",
+    "Reflection check (as in starter_flux_network.js:13-61) that a placed Point's network is House Grid: 'Join the grid'",
+    "forge_energy task through a Task Screen"
+   ],
+   "teaching_hook": "Plug = in, Point = out. Every machine you add needs its own Point, and Points cost gold blocks.",
+   "multiplayer_notes": "House Grid is PUBLIC, so teammates can join their Points. Only the first player to log in can edit or delete it (starter_flux_network.js:23-27).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "lapis block and redstone (Flux Dust inputs)",
+    "an ender pearl",
+    "a gold block (careful: gold also drives the amulet hand-in)"
+   ]
+  },
+  {
+   "name": "Tesla Coil",
+   "category": "turret",
+   "tier": "3",
+   "ids": [
+    "immersiveengineering:tesla_coil",
+    "minecraft:lever"
+   ],
+   "player_facing_summary": "A two-block coil. With Flux and a redstone signal it zaps one random living target within 6 blocks every 1.6 s, for 6 armour-ignoring damage plus a 6.4 s stun, with a lightning-bolt effect. It never targets players or Sentries. While switched on it draws power even with nothing in range.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "pack/kubejs/server_scripts/tesla_coil_auto_power.js",
+    "pack/kubejs/server_scripts/tesla_coil_cinematics.js",
+    "pack/kubejs/server_scripts/electric_trap_player_safety.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/legendary.json",
+    "jar:ImmersiveEngineering-1.20.1-10.2.0-183-tdcoilfilter.jar!blusunrize/immersiveengineering/common/blocks/metal/TeslaCoilBlockEntity.class",
+    "jar:ImmersiveEngineering!blusunrize/immersiveengineering/common/config/IEServerConfig$Machines.class",
+    "jar:ImmersiveEngineering!data/minecraft/tags/damage_type/bypasses_armor.json"
+   ],
+   "key_numbers": [
+    "Recipe ' L '/'DGD'/'sNs': lightning rod, 2 diamond blocks, gold block, 2 steel, netherite ingot (tier3_loot_aligned_recipes.js:102-116)",
+    "Zap cycle every 32 ticks (TeslaCoilBlockEntity.tickServer gameTime % 32)",
+    "Range 6 blocks, 3 in low-power mode (ldc 6.0, divided by 2.0)",
+    "Damage 6.0 (IEServerConfig$Machines teslacoil.damage default), type immersiveengineering:tesla, armour-bypassing",
+    "Stunned for 128 ticks (MobEffectInstance STUNNED 128)",
+    "Power: 256 FE per cycle while running plus 512 FE per zap, halved in low power (teslacoil.consumption and consumption_active defaults); buffer 48,000 FE (ldc 48000)",
+    "Runs only with a redstone signal (isRSPowered). The starter coil's lever is flipped automatically while a wave mob is within 9 blocks (tesla_coil_auto_power.js:11-61)",
+    "The patched jar skips players and Sentries (TeslaCoilBlockEntity td$blocked), with electric_trap_player_safety.js as backup",
+    "Legendary bag weight 6/100 (legendary.json:12)"
+   ],
+   "unlock_or_cost": "Expensive: 2 diamond blocks (Epic bags 12/137; airdrops 2-4) and a netherite ingot (4 scrap + 4 gold).",
+   "current_quest_coverage": "'Sparks in the Dark' (campaign.snbt:1064-1098): item task. The subtitle and text (Flux + redstone, 6 blocks, about 1.5 s, 6 damage + stun) match the code.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item task (existing)",
+    "Shared milestone from tesla_coil_cinematics.js's EntityEvents.hurt branch for 'ieTesla' (lines 25-44): 'first zap'",
+    "Death classified by damage type immersiveengineering:tesla: 'Tesla kill'"
+   ],
+   "teaching_hook": "It picks a random target, not the nearest, and burns power whenever its lever is on. Put it where the horde bunches up and switch it off between waves.",
+   "multiplayer_notes": "Shared block, no owner rules found.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "a lightning rod (existing)",
+    "a netherite ingot's gold half (4 gold)",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Immersive Engineering Gun Turret",
+   "category": "turret",
+   "tier": "3",
+   "ids": [
+    "immersiveengineering:turret_gun",
+    "immersiveengineering:casull",
+    "immersiveengineering:empty_casing"
+   ],
+   "player_facing_summary": "An auto-aiming turret that fires IE revolver cartridges at hostile mobs within 16 blocks, twice a second (a Casull round does 10 damage). It needs Flux, a redstone signal and ammo loaded in its first slot. Spent casings come back in its second slot and can be crafted into new rounds.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier3_turret_recipes.js",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "jar:ImmersiveEngineering!blusunrize/immersiveengineering/common/blocks/metal/TurretGunBlockEntity.class",
+    "jar:ImmersiveEngineering!blusunrize/immersiveengineering/common/blocks/metal/TurretBlockEntity.class",
+    "jar:ImmersiveEngineering!blusunrize/immersiveengineering/common/config/IEServerConfig$Tools.class",
+    "jar:ImmersiveEngineering!data/immersiveengineering/recipes/crafting/empty_casing.json"
+   ],
+   "key_numbers": [
+    "Recipe ' s '/' gc'/'bte': Precision Scope (toolupgrade_railgun_scope), IE Revolver, Sentry, Revolver Magazine, Turntable, Redstone Engineering Block (tier3_turret_recipes.js:11-23)",
+    "Range 16 (TurretGunBlockEntity.getRange)",
+    "Charge-up 5 + active 5 ticks, so 2 shots/s",
+    "Casull damage 10 (IEServerConfig$Tools bullet_damage.casull)",
+    "Standby draw 64 FE/t, plus 32 FE/t while firing (IEServerConfig$Machines turret.consumption and gun_consumption); buffer 16,000 FE (TurretBlockEntity.ENERGY_CAPACITY)",
+    "Needs a redstone signal (isRSPowered XOR redstoneControlInverted) and a BulletItem in slot 0 (canActivate, isStackValid)",
+    "Default targets: hostile mobs only (attackPlayers, attackNeutrals and attackAnimals all false)",
+    "Casings return to slot 1 unless expelCasings is set (activate)",
+    "Casull: 4 empty casings + 2 gunpowder + 2 iron nuggets make 4 (tier3_loot_aligned_recipes.js:93-100). Empty casings: 5 copper plates make 5 (empty_casing.json)"
+   ],
+   "unlock_or_cost": "Consumes a Sentry, the Tier 2 to Tier 3 recipe link, plus a long steel chain (see the IE components entry).",
+   "current_quest_coverage": "'Point and Shoot' (campaign.snbt:1132-1164): item task. The subtitle (parts plus 64/+32 Flux) is correct, but neither text nor subtitle says the turret needs ammunition. A player who builds it, powers it and switches it on gets a turret that never fires.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Item task (existing)",
+    "Item task for immersiveengineering:casull as its own quest",
+    "Death or hurt classified by damage type immersiveengineering:revolver_casull_turret (bounty_kills.js's bountyDamageTypeId approach): 'first turret kill'"
+   ],
+   "teaching_hook": "No bullets, no shots. Load Casull rounds, then craft the casings it hands back into new rounds.",
+   "multiplayer_notes": "The GUI belongs to the owner (TurretBlockEntity.hasOwnerRights). Whether teammates can load ammo by hopper is unverified.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "8 Casull rounds as a starter magazine (crafted ammo, not a machine output)",
+    "gunpowder",
+    "copper ingots for casings"
+   ]
+  },
+  {
+   "name": "Immersive Engineering Chemthrower Turret",
+   "category": "turret",
+   "tier": "3",
+   "ids": [
+    "immersiveengineering:turret_chem",
+    "fluid immersiveengineering:creosote",
+    "immersiveengineering:cokebrick"
+   ],
+   "player_facing_summary": "A turret that sprays whatever fluid is in its 4,000 mB tank at hostile mobs within 8 blocks. Ignite is switched on when it is placed, so creosote sets mobs burning and gives them IE's Flammable effect. Creosote comes from a Coke Oven. It needs Flux and a redstone signal.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier3_turret_recipes.js",
+    "jar:ImmersiveEngineering!blusunrize/immersiveengineering/common/blocks/metal/TurretChemBlockEntity.class",
+    "jar:ImmersiveEngineering!blusunrize/immersiveengineering/common/items/ChemthrowerEffects.class",
+    "jar:ImmersiveEngineering!data/immersiveengineering/recipes/crafting/cokebrick.json",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js"
+   ],
+   "key_numbers": [
+    "Recipe: Precision Scope, Chemthrower, Electrified Iron Fence, Metal Barrel, Turntable, Redstone Engineering Block (tier3_turret_recipes.js:25-37)",
+    "Ignite set on placement only (tier3_turret_recipes.js:40-49)",
+    "Range 8, tank 4000 mB, charge-up 10 ticks (TurretChemBlockEntity)",
+    "Power 64 FE/t standby, plus 32 FE/t while spraying (IEServerConfig$Machines)",
+    "Creosote: 0 direct damage plus Flammable for 140 ticks, and registered flammable so it ignites (ChemthrowerEffects)",
+    "Coke bricks: 4 clay + 4 brick + 1 sandstone make 3 (cokebrick.json). A Coke Oven needs 27",
+    "The tooltip claims '~12/s + fire' (tooltip_tier_colors.js:54); not backed by the creosote effect code (unverified)"
+   ],
+   "unlock_or_cost": "Consumes an Electrified Iron Fence plus the Chemthrower chain: heavy engineering (gold version), wooden grips, fluid pipe, drill waterproof upgrade (blue dye).",
+   "current_quest_coverage": "'Liquid Fire' (campaign.snbt:1165-1197): item task. The text (pre-lit, flammable fluids burn, toggle Ignite, Flux + redstone) is correct, but it never says where creosote comes from (a Coke Oven).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task (existing)",
+    "FTB Quests fluid task for creosote (1000 mB in a tank item or bucket): a 'Fuel it' sub-quest",
+    "Item task for immersiveengineering:cokebrick: 'build the Coke Oven'"
+   ],
+   "teaching_hook": "It needs fluid, not bullets. Build a Coke Oven to turn coal into creosote, and leave Ignite on.",
+   "multiplayer_notes": "Same IE owner-rights rule as the Gun Turret.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "clay balls and sandstone (Coke Oven inputs)",
+    "coal",
+    "a bucket"
+   ]
+  },
+  {
+   "name": "Steel and the Immersive Engineering parts chain",
+   "category": "crafting",
+   "tier": "3",
+   "ids": [
+    "immersiveengineering:ingot_steel",
+    "immersiveengineering:hammer",
+    "immersiveengineering:wirecutter",
+    "immersiveengineering:plate_*",
+    "immersiveengineering:stick_steel",
+    "immersiveengineering:treated_wood_horizontal",
+    "immersiveengineering:component_iron",
+    "immersiveengineering:component_steel",
+    "immersiveengineering:heavy_engineering",
+    "immersiveengineering:rs_engineering",
+    "immersiveengineering:turntable",
+    "immersiveengineering:toolupgrade_railgun_scope",
+    "immersiveengineering:toolupgrade_revolver_magazine",
+    "immersiveengineering:revolver",
+    "immersiveengineering:chemthrower"
+   ],
+   "player_facing_summary": "The Tier 3 turrets and the Tesla Coil all need steel and IE parts. Steel is iron smelted in a vanilla Blast Furnace. The Engineer's Hammer turns ingots into plates and the Wirecutter turns plates into wire, both right in the crafting grid. From plates, rods and wire come the components, the Turntable, the scope, the magazine and the Revolver.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "jar:ImmersiveEngineering!data/immersiveengineering/recipes/crafting/*.json"
+   ],
+   "key_numbers": [
+    "Steel: iron ingot in a Blast Furnace, 200 ticks, 0.7 xp (tier3_loot_aligned_recipes.js:66-70)",
+    "Heavy Engineering uses gold instead of electrum: 4 steel sheetmetal, 4 steel components, 1 gold make 4 (tier3_loot_aligned_recipes.js:72-82)",
+    "Treated wood: plank + coal + plank make 2 (tier3_loot_aligned_recipes.js:84-91)",
+    "Hammer: 2 iron, string, 2 sticks (hammer.json). Plates: ingot + hammer (plate_*_hammering.json). Wirecutter: iron + 2 sticks (wirecutter.json)",
+    "Steel rods: 2 steel make 4 (stick_steel.json). Components: 4 plates + copper ingot (component_iron.json, component_steel.json)",
+    "Turntable: 2 iron, treated wood, 2 redstone, LV coil (turntable.json). Redstone Engineering Block: 4 iron sheetmetal, 4 redstone, copper make 4 (rs_engineering.json)",
+    "Precision Scope: 2 glass panes, spyglass, 2 steel rods (toolupgrade_railgun_scope.json). Revolver Magazine: iron component, 2 steel plates, 4 copper wire (toolupgrade_revolver_magazine.json)",
+    "Revolver: gun barrel, drum, hammer, wooden grip and steel component, by revolver_assembly (revolver.json)",
+    "IE Generator and Radiator recipes removed (tier3_loot_aligned_recipes.js:154-158)"
+   ],
+   "unlock_or_cost": "Iron, copper, coal, string, glass and amethyst (for the spyglass), all from loot or mob drops.",
+   "current_quest_coverage": "No quest. The parts are only listed in the turret subtitles. 'Fragmentation' rewards 4 steel ingots (campaign.snbt:1210-1214), which may conflict with the 'no home-machine output as reward' principle (IDEAS.md:149-159), because steel is the Blast Furnace's output.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item tasks: one quest each for Steel Ingot, Engineer's Hammer and Turntable, mirroring the recipe chain into the Gun/Chem Turret quests",
+    "Advancement tasks are possible if IE's advancements cover these items (unverified)"
+   ],
+   "teaching_hook": "No IE machines are needed. A vanilla Blast Furnace makes steel, and the Hammer and Wirecutter work in the crafting grid.",
+   "multiplayer_notes": "Personal crafting; item tasks complete for the whole team.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "copper ingots",
+    "coal",
+    "string or a spyglass part (amethyst); avoid steel, which is the Blast Furnace's output"
+   ]
+  },
+  {
+   "name": "Refined Storage network",
+   "category": "storage",
+   "tier": "3",
+   "ids": [
+    "refinedstorage:controller",
+    "refinedstorage:disk_drive",
+    "refinedstorage:grid",
+    "refinedstorage:1k_storage_disk",
+    "refinedstorage:external_storage",
+    "refinedstorage:quartz_enriched_iron",
+    "refinedstorage:processor_binding",
+    "refinedstorage:construction_core"
+   ],
+   "player_facing_summary": "A powered digital storage network. A Controller, Disk Drive, Grid and storage disks give one searchable inventory. Existing chests only join through External Storage blocks. It runs on Flux.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "jar:refinedstorage-1.12.4.jar!data/refinedstorage/recipes/*.json",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js"
+   ],
+   "key_numbers": [
+    "Controller: 4 Quartz Enriched Iron, Advanced Processor, 2 silicon, Machine Casing (controller.json)",
+    "Quartz Enriched Iron: 3 iron + quartz make 4 (quartz_enriched_iron.json). Silicon: smelted quartz",
+    "Processor Binding: string + rotten flesh + string make 8, in place of slime (tier3_loot_aligned_recipes.js:118-127)",
+    "Construction Core: basic processor + lapis, in place of glowstone (tier3_loot_aligned_recipes.js:129-134)",
+    "Advanced processor needs a diamond (raw_advanced_processor.json)",
+    "Refined Storage energy use: unverified (no pack config; defaults not read)"
+   ],
+   "unlock_or_cost": "Quartz, iron, diamond, glass and rotten flesh.",
+   "current_quest_coverage": "'The Grid' (campaign.snbt:1099-1131): item task for the Controller. 'Every chest becomes one searchable inventory' is wrong: items live on disks in a Disk Drive, and chests need External Storage. The quest also never says the Controller needs Flux.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Item tasks: Controller, Disk Drive, Grid, 1k disk, External Storage (one per item)",
+    "Observation BLOCK refinedstorage:controller"
+   ],
+   "teaching_hook": "Disks hold the items. External Storage on a chest or barrel pulls that container into the Grid. Put a Flux Point next to the Controller.",
+   "multiplayer_notes": "No security unless a Security Manager is built; everyone shares the Grid.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "quartz",
+    "a diamond",
+    "string and rotten flesh"
+   ]
+  },
+  {
+   "name": "Sophisticated Storage barrels and upgrades",
+   "category": "storage",
+   "tier": "3 per tooltip (built early)",
+   "ids": [
+    "sophisticatedstorage:barrel",
+    "sophisticatedstorage:upgrade_base",
+    "sophisticatedstorage:stack_upgrade_tier_1..4",
+    "sophisticatedstorage:basic_to_iron_tier_upgrade (and gold, diamond, netherite)"
+   ],
+   "player_facing_summary": "Bigger chests that take upgrades in their own slots. Stack Upgrades multiply the stack size in every slot. Tier Upgrades turn a placed barrel into its Iron, Gold, Diamond or Netherite version without emptying it.",
+   "source_files": [
+    "jar:sophisticatedstorage-1.20.1-1.4.86.2131.jar!data/sophisticatedstorage/recipes/*.json",
+    "jar:sophisticatedstorage!net/p3pp3rf1y/sophisticatedstorage/Config$Server.class",
+    "jar:sophisticatedstorage!assets/sophisticatedstorage/lang/en_us.json",
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js"
+   ],
+   "key_numbers": [
+    "Barrel: 6 oak planks, 2 oak slabs, lever (oak_barrel.json)",
+    "Upgrade Base: 4 iron + 5 planks (upgrade_base.json)",
+    "Stack Upgrade T1: base + 8 logs, x2. T2: T1 + 6 iron + 2 iron blocks, x4. T3: T2 + 6 gold + 2 gold blocks, x8. T4: T3 + 6 diamonds + 2 diamond blocks, x16 (stack_upgrade_tier_*.json; lang tooltips)",
+    "Basic to Iron: 8 iron around a lever (basic_to_iron_tier_upgrade.json)",
+    "Slots and upgrade slots: Wood 27/1, Copper 45/1, Iron 54/2, Gold 81/3, Diamond 108/4, Netherite 132/5 (Config$Server)",
+    "Pickup and Magnet upgrades need a sticky piston (pickup_upgrade.json). No slime source exists in the pack's own loot tables (unverified for third-party structure chests)",
+    "The tooltip labels the barrel Tier 3 (tooltip_tier_colors.js:28) although the quest unlocks it early"
+   ],
+   "unlock_or_cost": "Planks and iron early, then gold and diamond.",
+   "current_quest_coverage": "'Room to Grow', 'Bigger on the Inside' and 'Iron Sides' (campaign.snbt:880-993): item tasks; texts match the code. The barrel task requires NBT woodType 'oak' (campaign.snbt:908-914), so whether a non-oak barrel completes it depends on FTB Quests' NBT matching (unverified).",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item tasks (existing)",
+    "Observation BLOCK sophisticatedstorage:barrel"
+   ],
+   "teaching_hook": "Upgrades go in the slots on the right side of the barrel's screen. Tier upgrades are used on the placed barrel.",
+   "multiplayer_notes": "No ownership; shared base storage.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "iron ingots",
+    "logs",
+    "a lever"
+   ]
+  },
+  {
+   "name": "Sophisticated Backpacks",
+   "category": "storage",
+   "tier": "early",
+   "ids": [
+    "sophisticatedbackpacks:backpack",
+    "sophisticatedbackpacks:copper_backpack",
+    "sophisticatedbackpacks:iron_backpack",
+    "sophisticatedbackpacks:gold_backpack",
+    "sophisticatedbackpacks:diamond_backpack",
+    "keybind B (open backpack)"
+   ],
+   "player_facing_summary": "A wearable chest. Press B to open it. Ring it with copper, then iron, gold and diamond to upgrade it, and it keeps its contents.",
+   "source_files": [
+    "pack/defaultconfigs/sophisticatedbackpacks-server.toml",
+    "jar:sophisticatedbackpacks-1.20.1-3.26.3.2157.jar!data/sophisticatedbackpacks/recipes/*.json",
+    "jar:sophisticatedbackpacks!net/p3pp3rf1y/sophisticatedbackpacks/client/KeybindHandler.class"
+   ],
+   "key_numbers": [
+    "Backpack: 4 string, 4 leather, chest (backpack.json)",
+    "Each tier is 8 ingots of its material around the previous backpack (copper_backpack.json, iron_backpack.json, gold_backpack.json, diamond_backpack.json)",
+    "Slots: 27, 45, 54, 81, 108, 120; upgrade slots: 1, 1, 2, 3, 5, 7 (sophisticatedbackpacks-server.toml:28-79)",
+    "At most 3 stack upgrades (sophisticatedbackpacks-server.toml:15)",
+    "Open key keycode 66 = B (KeybindHandler)",
+    "allowOpeningOtherPlayerBackpacks = true (sophisticatedbackpacks-server.toml:19)"
+   ],
+   "unlock_or_cost": "Leather and string come from Uncommon bags and scav_filler.",
+   "current_quest_coverage": "'Pack Mule' (campaign.snbt:660-685): item task; text matches the code.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item task (existing)",
+    "Item tasks for each backpack tier"
+   ],
+   "teaching_hook": "Wear it on your back and press B, so loot runs past the border don't end with a full inventory.",
+   "multiplayer_notes": "Teammates can right-click a backpack you are wearing to open it (allowOpeningOtherPlayerBackpacks). Each player needs their own backpack.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "leather",
+    "string",
+    "copper ingots for the first upgrade"
+   ]
+  },
+  {
+   "name": "Crafting Station",
+   "category": "crafting",
+   "tier": "starter",
+   "ids": [
+    "craftingstation:crafting_station"
+   ],
+   "player_facing_summary": "The base's crafting table. Its grid can pull ingredients from any chest or barrel touching it.",
+   "source_files": [
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "jar:craftingstation-1.20.1-1.4.0.jar!data/craftingstation/recipes/crafting_station.json"
+   ],
+   "key_numbers": [
+    "Recipe: crafting table, shapeless (crafting_station.json)",
+    "Pre-placed in the command post (playtest_starter_kit.js:1017)"
+   ],
+   "unlock_or_cost": "Pre-built; a crafting table makes another.",
+   "current_quest_coverage": "'Reach Further' in Tips (tips_and_tricks.snbt:254-275): checkmark task; text matches the mod's behaviour.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Replace the checkmark with observation BLOCK craftingstation:crafting_station"
+   ],
+   "teaching_hook": "Build your stash around it instead of carrying materials to it.",
+   "multiplayer_notes": "Shared block.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "1 XP level"
+   ]
+  },
+  {
+   "name": "OMT Reborn Turret Bases (tiers, power, ammo)",
+   "category": "turret",
+   "tier": "4",
+   "ids": [
+    "omtreborn:turret_base_tier_1",
+    "omtreborn:turret_base_tier_2",
+    "omtreborn:turret_base_tier_3",
+    "omtreborn:turret_base_tier_4",
+    "omtreborn:turret_base_tier_5"
+   ],
+   "player_facing_summary": "Open Modular Turrets heads sit on a Turret Base that stores FE and ammo. Each head has a minimum base tier. On a lower-tier base the head breaks off and drops. The base takes power from an adjacent Flux Point. The heads need ammo in the base and will not fire at mobs closer than their minimum range.",
+   "source_files": [
+    "jar:omtreborn-1.1.0.jar!data/omtreborn/recipes/turret_base*.json",
+    "jar:omtreborn!omtreborn/config/OMTConfig$ConfigBases.class",
+    "jar:omtreborn!omtreborn/config/OMTConfig$ConfigTurrets.class",
+    "jar:omtreborn!omtreborn/tileentity/turrets/TurretHeadBlockEntity.class",
+    "jar:omtreborn!omtreborn/tileentity/turrets/GrenadeLauncherBlockEntity.class",
+    "jar:omtreborn!omtreborn/tileentity/turrets/RocketTurretBlockEntity.class",
+    "pack/defaultconfigs/omtreborn-common.toml"
+   ],
+   "key_numbers": [
+    "Base capacity / max IO / max heads: T1 500/50/1, T2 35,000/100/1, T3 150,000/1,000/2, T4 500,000/2,500/3, T5 1,000,000/50,000/4 (OMTConfig$ConfigBases)",
+    "Recipes: T1 4 logs + 4 cobblestone + furnace; T2 4 cobblestone + 2 ferronite + 2 iron + IO bus; T3 5 cobbled deepslate + ferronite + 2 gold + IO bus + ferronite coil (turret_base*.json)",
+    "A head whose turretTier is above the base tier is destroyed with drops (TurretHeadBlockEntity.updateChecks calls destroyBlock). Grenade tier 2, Rocket tier 3 (the head block-entity constructors)",
+    "doTurretsNeedAmmo defaults to true (OMTConfig$ConfigTurrets) and the pack's omtreborn-common.toml does not override it",
+    "Cobbled deepslate availability in this world: unverified"
+   ],
+   "unlock_or_cost": "Ferronite and IO Buses (gold + 3 redstone + ferronite).",
+   "current_quest_coverage": "No quest. 'Fragmentation' and 'Fire for Effect' only say 'Mount one on a Turret Base', without the tier rule or ammo, and their subtitles list the Turret Base as if it were an ingredient.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item tasks for turret_base_tier_2 and turret_base_tier_3, each gating its head quest",
+    "Observation BLOCK omtreborn:turret_base_tier_2"
+   ],
+   "teaching_hook": "Match the base tier to the head: Grenade needs Tier 2+, Rocket needs Tier 3+, or the head pops off. Load ammo into the base.",
+   "multiplayer_notes": "Bases have owner and trust settings (unverified detail). Players can never be targeted (omtreborn-common.toml:20).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "IO Bus inputs (gold, redstone)",
+    "cobblestone or deepslate stacks"
+   ]
+  },
+  {
+   "name": "Grenade Turret (OMT)",
+   "category": "turret",
+   "tier": "4",
+   "ids": [
+    "omtreborn:grenade_turret",
+    "omtreborn:ammo_grenade",
+    "entity omtreborn:grenade_projectile"
+   ],
+   "player_facing_summary": "Lobs grenades at hostile mobs between 4 and 18 blocks away. Each burst deals 5 damage to everything in a box 3 blocks out from the hit point, every 2 s, using 500 FE a shot. The ammo is cheap: iron nuggets, redstone and gunpowder.",
+   "source_files": [
+    "jar:omtreborn!data/omtreborn/recipes/grenade_turret.json",
+    "jar:omtreborn!data/omtreborn/recipes/ammo_grenade.json",
+    "jar:omtreborn!omtreborn/config/OMTConfig$ConfigTurrets.class",
+    "jar:omtreborn!omtreborn/entity/projectiles/GrenadeProjectile.class",
+    "pack/kubejs/server_scripts/omtreborn_grenade_safety.js",
+    "pack/kubejs/server_scripts/tier4_turret_fx.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/legendary.json"
+   ],
+   "key_numbers": [
+    "Recipe ' T '/'KCA'/'SSS': Sensor T2, Cauldron, Chamber T2, Barrel T2, 3 stone (grenade_turret.json)",
+    "Range 18, minimum range 4, fire rate 40 ticks, damage 5, 500 FE per shot, accuracy deviation 26.5, max 3 simultaneous (OMTConfig$ConfigTurrets 'Grenade Turret')",
+    "Blast: every living entity within a 3-block box takes damage x0.9 as normal damage plus x0.1 armour-bypassing (GrenadeProjectile.explode)",
+    "Fuse 39 ticks, or 9 after hitting an entity (GrenadeProjectile)",
+    "Ammo: redstone + 3 iron nuggets + gunpowder make 1 (ammo_grenade.json)",
+    "Its 0.1-power vanilla explosion is neutralised (omtreborn_grenade_safety.js:1-45). Launch, trail and impact effects are added (tier4_turret_fx.js:16-93)",
+    "Legendary bag weight 8/100 (legendary.json:10)"
+   ],
+   "unlock_or_cost": "Tier 2 internals with about 3.5 ferronite, plus a Tier 2 base with about 3 more.",
+   "current_quest_coverage": "'Fragmentation' (campaign.snbt:1198-1230): item task. The text is correct about area damage, the cheap ammo and both Ferronite routes. It omits the Tier 2 base requirement and the 4-block dead zone. The subtitle lists 'Turret Base' as an ingredient and leaves out the 3 stone. Its 4 steel reward is a possible home-machine-output conflict.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task (existing)",
+    "EntityEvents.spawned('omtreborn:grenade_projectile') shared milestone; tier4_turret_fx.js:38-51 already hooks it",
+    "Death classified by damage type omtreborn:turret_normal or omtreborn:turret_bypass (from the jar's data/omtreborn/damage_type)",
+    "Item task for omtreborn:ammo_grenade"
+   ],
+   "teaching_hook": "Area denial for bunched hordes, but it cannot hit what is hugging the turret. Keep spikes or a fence between the turret and the mobs.",
+   "multiplayer_notes": "Shared block. Never targets players.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "8 grenade ammo",
+    "iron nuggets and gunpowder",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Rocket Turret (OMT)",
+   "category": "turret",
+   "tier": "4",
+   "ids": [
+    "omtreborn:rocket_turret",
+    "omtreborn:ammo_rocket",
+    "entity omtreborn:rocket_projectile"
+   ],
+   "player_facing_summary": "The longest-range defence. It fires rockets at hostile mobs between 5 and 30 blocks, each dealing 8 damage to everything in a box 5 blocks out, every 2.1 s, at 5,000 FE a shot. It needs a Tier 3 base and rocket ammo made with Ferronite and firework stars.",
+   "source_files": [
+    "jar:omtreborn!data/omtreborn/recipes/rocket_turret.json",
+    "jar:omtreborn!data/omtreborn/recipes/ammo_rocket.json",
+    "jar:omtreborn!omtreborn/config/OMTConfig$ConfigTurrets.class",
+    "jar:omtreborn!omtreborn/entity/projectiles/RocketProjectile.class",
+    "pack/kubejs/server_scripts/tier4_turret_fx.js",
+    "pack/kubejs/data/bountybags/loot_tables/items/legendary.json"
+   ],
+   "key_numbers": [
+    "Recipe 'NT '/'NCA'/'DFD': 2 TNT, Sensor T3, Chamber T3, Barrel T3, 2 cobbled deepslate, Ferronite Frame (rocket_turret.json)",
+    "Range 30, minimum 5, fire rate 42 ticks, damage 8, 5,000 FE per shot, max 3 simultaneous (OMTConfig$ConfigTurrets 'Rocket Turret')",
+    "Blast box 5 blocks (RocketProjectile.explode ldc 5.0)",
+    "Ammo: firework star + ferronite ingot + gunpowder make 4 (ammo_rocket.json)",
+    "Head tier 3 (RocketTurretBlockEntity constructor)",
+    "Legendary bag weight 6/100 (legendary.json:11)"
+   ],
+   "unlock_or_cost": "About 17 ferronite for the head (FEATURES.md:5321-5322; recount: Sensor T3 11, Chamber T3 1.5, Frame 4), plus the Tier 3 base.",
+   "current_quest_coverage": "'Fire for Effect' (campaign.snbt:1231-1263): item task. The text (Ferronite Frame, Sensor T3 eats a block) is correct. It omits the Tier 3 base, the rocket ammo recipe and the 5-block dead zone, and the subtitle lists 'Turret Base' as an ingredient.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item task (existing)",
+    "EntityEvents.spawned('omtreborn:rocket_projectile') shared milestone (tier4_turret_fx.js)",
+    "Item task for omtreborn:ammo_rocket"
+   ],
+   "teaching_hook": "Long range, but rockets need Ferronite too. Budget ammo, not just the turret.",
+   "multiplayer_notes": "Shared block.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "rocket ammo (4)",
+    "gunpowder",
+    "a firework star"
+   ]
+  },
+  {
+   "name": "Ferronite chain",
+   "category": "crafting_material",
+   "tier": "4",
+   "ids": [
+    "omtreborn:raw_ferronite",
+    "omtreborn:ferronite_ingot",
+    "omtreborn:ferronite_nugget",
+    "omtreborn:block_of_ferronite",
+    "omtreborn:io_bus",
+    "omtreborn:ferronite_coil",
+    "omtreborn:ferronite_frame"
+   ],
+   "player_facing_summary": "The Tier 4 metal. Craft Raw Ferronite from 2 steel and a redstone, or mine the ore, then smelt it. It feeds IO Buses, coils, frames and sensors; a Sensor Tier III eats a whole block of 9.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier4_turret_recipes.js",
+    "jar:omtreborn!data/omtreborn/recipes/*.json",
+    "docs/FEATURES.md"
+   ],
+   "key_numbers": [
+    "Raw Ferronite: 2 IE steel + 1 redstone (tier4_turret_recipes.js:7-12)",
+    "Ingot: smelting 200 ticks or blasting 100 (ferronite_ingot_smelting.json, ferronite_ingot_blasting.json)",
+    "IO Bus: gold + 3 redstone + ferronite (io_bus.json). Coil: 4 copper + ferronite make 2 (ferronite_coil.json). Frame: 4 ferronite + 2 iron + 2 iron bars (ferronite_frame.json). Block: 9 ingots",
+    "Sensor T3: 2 glass, IO bus, 2 gold, ferronite, 2 smooth stone, block of ferronite (sensor_tier_three.json)",
+    "Ore band y -24 to 56 (FEATURES.md:5335-5340); in-world availability unverified"
+   ],
+   "unlock_or_cost": "Each ingot costs about 2 iron (as steel) and 1 redstone.",
+   "current_quest_coverage": "Named in 'Fragmentation' and 'Fire for Effect' text; no quest of its own.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item tasks for raw_ferronite, then ferronite_ingot, then io_bus"
+   ],
+   "teaching_hook": "No mining needed: steel and redstone become Ferronite.",
+   "multiplayer_notes": "Personal crafting.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "redstone",
+    "copper ingots (for coils)",
+    "avoid ferronite ingots and steel (furnace or Blast Furnace outputs)"
+   ]
+  },
+  {
+   "name": "Other craftable OMT heads, upgrades and addons (not in the roster)",
+   "category": "turret",
+   "tier": "4 (unassigned)",
+   "ids": [
+    "omtreborn:machine_gun_turret",
+    "omtreborn:potato_cannon_turret",
+    "omtreborn:disposable_item_turret",
+    "omtreborn:incendiary_turret",
+    "omtreborn:upgrade_range",
+    "omtreborn:upgrade_fire_rate",
+    "omtreborn:upgrade_accuracy",
+    "omtreborn:upgrade_scatter_shot",
+    "omtreborn:addon_damage_amp",
+    "omtreborn:ammo_bullet",
+    "omtreborn:ammo_blazing_clay"
+   ],
+   "player_facing_summary": "OMT Reborn's own recipes are untouched, so more heads and upgrades are craftable and visible in JEI. Machine Gun Turret: Tier 2, fast, single-target. Incendiary Turret: Tier 3, needs magma blocks. Potato Cannon and Disposable Item turrets: Tier 1. Range, Fire Rate, Accuracy and Scatter Shot upgrades and a Damage Amp addon also exist.",
+   "source_files": [
+    "pack/kubejs/server_scripts/tier4_turret_recipes.js",
+    "jar:omtreborn!data/omtreborn/recipes/*.json",
+    "jar:omtreborn!omtreborn/config/OMTConfig$ConfigTurrets.class",
+    "jar:omtreborn!omtreborn/tileentity/turrets/GunTurretBlockEntity.class",
+    "jar:omtreborn!omtreborn/tileentity/turrets/IncendiaryTurretBlockEntity.class",
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "docs/FEATURES.md"
+   ],
+   "key_numbers": [
+    "Machine Gun Turret: Sensor T2 + hopper + Chamber T2 + Barrel T2 + 3 stone. Head tier 2. Range 18, fire rate 10 ticks, damage 3, 100 FE per shot. Ammo: iron nugget + ferronite nugget + gunpowder make 4 (machine_gun_turret.json, ammo_bullet.json, OMTConfig, GunTurretBlockEntity)",
+    "Incendiary Turret: 2 magma blocks + T3 parts + frame. Head tier 3. Range 18 (minimum 4), 38 ticks, damage 2, 1,200 FE. Ammo: 4 clay + gunpowder make 8 (incendiary_turret.json, ammo_blazing_clay.json). Magma blocks are in the HIGH stash pool (structure_loot_progression.js:57)",
+    "Potato Cannon Turret: tier 1, range 12, 20 ticks, damage 1, potato ammo. Disposable Item Turret: tier 1, range 10, 25 ticks, damage 1 (OMTConfig)",
+    "Upgrades: quartz plus diamond (range), blaze powder (fire rate), gold (accuracy) or flint (scatter), each with an IO bus (upgrade_*.json)",
+    "tier4_turret_recipes.js only adds a recipe; nothing removes these. FEATURES.md:5313-5333 records them as 'passed over', which does not match the code"
+   ],
+   "unlock_or_cost": "Varies. The Machine Gun Turret is cheaper than the Grenade Turret.",
+   "current_quest_coverage": "No quest, no tooltip tier line.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item tasks, if the user keeps them",
+    "Otherwise remove the recipes with event.remove, keeping the book and JEI in sync (IDEAS.md:278-285)"
+   ],
+   "teaching_hook": "The Range Upgrade (+2 per the config's rangeUpgrade) and Fire Rate Upgrade make Tier 4 scale. This is a user design decision.",
+   "multiplayer_notes": "Same base rules.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "a Range Upgrade as a Tier 4 capstone (quartz, diamond, IO bus)"
+   ]
+  },
+  {
+   "name": "Pistol-ammo guns: Pistol, Revolver, Submachine Gun, Tommy Gun",
+   "category": "weapon",
+   "tier": "early to mid",
+   "ids": [
+    "simple_guns_reworked:pistol",
+    "simple_guns_reworked:revolver",
+    "simple_guns_reworked:submachine_gun",
+    "simple_guns_reworked:tommy_gun",
+    "simple_guns_reworked:pistol_ammo",
+    "keybind R (reload, keycode 82)"
+   ],
+   "player_facing_summary": "Craftable firearms that share Pistol Ammo. Press R to reload from ammo in your inventory. Pistol 15 rounds, Revolver 6, Submachine Gun 32, Tommy Gun 60. Every gun projectile does 1.5x its stock damage in this pack.",
+   "source_files": [
+    "jar:simple_guns_reworked-1.9.9-forge-1.20.1.jar!data/simple_guns_reworked/recipes/r_1.json,r_5.json,r_6.json,r_7.json,r_13.json",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/ReloadProcedure.class",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/PistolAmmoRangedItemUsedProcedure.class",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/init/SimpleGunsReworkedModKeyMappings.class",
+    "pack/kubejs/server_scripts/gun_damage_bump.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/scav_armory.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "pack/kubejs/server_scripts/structure_loot_progression.js"
+   ],
+   "key_numbers": [
+    "Pistol: iron nugget, tripwire hook, 4 iron, stone button (r_5). Revolver: 2 nuggets, hook, 2 iron, button, plank (r_6). SMG: Pistol + 3 nuggets + 2 iron (r_7). Tommy Gun: SMG + 4 iron + plank (r_13)",
+    "Pistol Ammo: 5 iron nuggets + gunpowder + stone button make 5 (r_1)",
+    "Magazines from the ReloadProcedure blocks: Pistol 15, Revolver 6, SMG 32 (check below 32, loop 32, cap 32.0), Tommy Gun 60 (reloads only when below 32)",
+    "Base projectile damage: Pistol 1.5, Revolver 2.0 (getArrow arguments in PistolAmmoRangedItemUsedProcedure). The pack multiplies it by 1.5 (gun_damage_bump.js:14). Hit damage also scales with projectile speed, so real per-hit numbers are unverified",
+    "Loot: scav_armory pistol 6, revolver 4, SMG 3 of 110 (scav_armory.json:89-109); Lootr prize pool (structure_loot_progression.js:72-76; PRIZE_CHANCE 0.5 at :86); airdrop weights pistol 15, revolver 12, SMG 10, Tommy 8 of 92 (wave_airdrop.json:46-49)"
+   ],
+   "unlock_or_cost": "All craftable from iron, nuggets, tripwire hooks and stone buttons.",
+   "current_quest_coverage": "Arsenal (arsenal.snbt:12-107, 372-395): item tasks worth 1 level each. 'Submachine Gun' says a 60-round drum (arsenal.snbt:61), but the code reloads it to 32. 'Tommy Gun' says it uses the same drum as the SMG (:85). The other magazine sizes match.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Item tasks (existing)",
+    "EntityEvents.death of a td_wave_mob whose direct source entity type starts with simple_guns_reworked: (gun_damage_bump.js already filters on that namespace): 'first gun kill', per player",
+    "Kill task for minecraft:zombie (counts player kills only)"
+   ],
+   "teaching_hook": "R reloads from your inventory, and one ammo type feeds four guns. Craft up the chain: Pistol, then SMG, then Tommy Gun.",
+   "multiplayer_notes": "Personal weapons. Item tasks complete for the whole party, so teammates skip the lesson. Lootr prize rolls are per player (structure_loot_progression.js:7-8).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "a stack of Pistol Ammo",
+    "iron nuggets",
+    "stone buttons"
+   ]
+  },
+  {
+   "name": "Shotguns and Shotgun Ammo",
+   "category": "weapon",
+   "tier": "mid",
+   "ids": [
+    "simple_guns_reworked:shotgun",
+    "simple_guns_reworked:double_barrel_shotgun",
+    "simple_guns_reworked:automatic_shotgun",
+    "simple_guns_reworked:shotgun_ammo"
+   ],
+   "player_facing_summary": "Close-range spread guns. Shotgun 5 shells, Double-Barrel 2, Automatic 9 (two pellets per trigger pull). Shotgun Ammo needs Shrapnel, so shells come from fighting.",
+   "source_files": [
+    "jar:simple_guns_reworked!data/simple_guns_reworked/recipes/r_3.json,r_8.json,r_9.json,rspas.json",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/ReloadProcedure.class",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/PistolAmmoRangedItemUsedProcedure.class"
+   ],
+   "key_numbers": [
+    "Shotgun: 2 iron, tripwire hook, stone button, plank (r_8). Double-Barrel: nugget, 3 iron, hook, button, plank (r_9). Automatic: Shotgun + 4 iron + redstone + hook (rspas)",
+    "Shotgun Ammo: 4 iron nuggets, Shrapnel (replacing gravel), gunpowder, 2 gold nuggets, stone button make 5 (r_3; tier3_loot_aligned_recipes.js:146-148)",
+    "Magazines 5, 2 and 9 (ReloadProcedure)",
+    "Base pellet damage: Shotgun 6.0 per pellet (5 projectile builders), Double-Barrel 8.0 (5 builders), Automatic 7.0 (getArrow arguments), all x1.5 (gun_damage_bump.js:14)",
+    "Airdrop weights: Shotgun 8, Double-Barrel 8, Automatic 5 of 92 (wave_airdrop.json:50-52)"
+   ],
+   "unlock_or_cost": "Craftable. The ammo is gated by Shrapnel.",
+   "current_quest_coverage": "Arsenal (arsenal.snbt:108-179, 420-443): magazine sizes correct. 'Shotgun Ammo' never mentions the Shrapnel cost.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item tasks (existing)",
+    "Gun-kill custom task, as for the pistols"
+   ],
+   "teaching_hook": "Shells cost Shrapnel, so the shotgun is fed by the fighting it does.",
+   "multiplayer_notes": "Personal weapons.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Shotgun Ammo",
+    "gold nuggets",
+    "Shrapnel"
+   ]
+  },
+  {
+   "name": "Rifles: DMR, Sniper, Heavy Sniper (Rifle and Sniper Ammo)",
+   "category": "weapon",
+   "tier": "mid",
+   "ids": [
+    "simple_guns_reworked:dmr",
+    "simple_guns_reworked:sniper",
+    "simple_guns_reworked:heavy_sniper",
+    "simple_guns_reworked:rifle_ammo",
+    "simple_guns_reworked:sniper_ammo",
+    "keybind G (sniper zoom, keycode 71)"
+   ],
+   "player_facing_summary": "Long-range guns. The DMR (8 rounds) and Sniper (5) take Rifle Ammo. The Heavy Sniper (5) takes Sniper Ammo, which costs a diamond. G zooms the scope.",
+   "source_files": [
+    "jar:simple_guns_reworked!data/simple_guns_reworked/recipes/r_2.json,r_4.json,r_11.json,r_12.json,r_14.json",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/ReloadProcedure.class",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/PistolAmmoRangedItemUsedProcedure.class",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/init/SimpleGunsReworkedModKeyMappings.class"
+   ],
+   "key_numbers": [
+    "DMR: nugget, 4 iron, tripwire hook, 2 planks (r_14). Sniper: nugget, hook, 3 iron, 2 planks (r_11). Heavy Sniper: Sniper + 4 iron + nugget (r_12)",
+    "Rifle Ammo: 2 gold nuggets, 2 gunpowder, 4 iron nuggets, button make 5 (r_2). Sniper Ammo: 4 iron nuggets, diamond, 3 gunpowder, button make 4 (r_4)",
+    "Magazines: DMR 8, Sniper 5, Heavy Sniper 5 (ReloadProcedure)",
+    "Base damage 2.5, 3.0 and 3.5 (getArrow arguments), x1.5 (gun_damage_bump.js:14)",
+    "Zoom key G (keycode 71)"
+   ],
+   "unlock_or_cost": "Craftable; Sniper Ammo costs a diamond per 4 rounds.",
+   "current_quest_coverage": "Arsenal (arsenal.snbt:180-251, 396-419, 444-467): ammo pairings and magazine sizes correct. The G zoom key is not mentioned anywhere.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item tasks (existing)",
+    "Gun-kill custom task"
+   ],
+   "teaching_hook": "The Sniper takes Rifle Ammo despite its name, and G zooms.",
+   "multiplayer_notes": "Personal weapons.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Rifle Ammo",
+    "gold nuggets"
+   ]
+  },
+  {
+   "name": "Bazooka and Rocket",
+   "category": "weapon",
+   "tier": "mid",
+   "ids": [
+    "simple_guns_reworked:bazooka",
+    "simple_guns_reworked:rocket"
+   ],
+   "player_facing_summary": "A single-shot launcher. Each Rocket (one TNT plus one iron ingot) explodes on impact. Like every friendly blast, it never hurts players or breaks blocks.",
+   "source_files": [
+    "jar:simple_guns_reworked!data/simple_guns_reworked/recipes/r_15.json,r_16.json",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/BazookaProjectileHitsBlockProcedure.class",
+    "pack/kubejs/server_scripts/gun_damage_bump.js",
+    "pack/kubejs/server_scripts/explosion_player_safety.js"
+   ],
+   "key_numbers": [
+    "Bazooka: redstone, 2 iron blocks, plank, nugget, iron (r_16). Rocket: TNT over an iron ingot makes 1 (r_15)",
+    "Impact explosion power 3.0 (BazookaProjectileHitsBlockProcedure): up to 43 damage, 6-block reach by the vanilla formula. The projectile itself has 0 base damage (gun_damage_bump.js:7-12)",
+    "TNT comes from Rare bags (weight 10/193, 1-2) and gas stations",
+    "Airdrop weight 2/92, with 4-8 rockets (wave_airdrop.json:60; airdrop/bazooka.json)"
+   ],
+   "unlock_or_cost": "Craftable; each shot costs a TNT.",
+   "current_quest_coverage": "Arsenal (arsenal.snbt:276-299, 492-515): correct, but it doesn't say the Bazooka is craftable or what a Rocket costs.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item tasks (existing)"
+   ],
+   "teaching_hook": "Your rockets cannot hurt you or wreck your base, so fire into the crowd at the gate.",
+   "multiplayer_notes": "Personal weapon.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "TNT",
+    "2 Rockets"
+   ]
+  },
+  {
+   "name": "Flame Thrower and Fuel Tank",
+   "category": "weapon",
+   "tier": "mid",
+   "ids": [
+    "simple_guns_reworked:flame_thrower",
+    "simple_guns_reworked:fuel_tank",
+    "simple_guns_reworked:empty_fuel_tank"
+   ],
+   "player_facing_summary": "Sets mobs on fire instead of hitting directly. In this pack the burn lasts 7.5 s. A Fuel Tank holds 30 charges and comes back empty, ready to refill with 2 gunpowder and 2 coal.",
+   "source_files": [
+    "jar:simple_guns_reworked!data/simple_guns_reworked/recipes/rlanzallamas.json,rtanke.json",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "pack/kubejs/server_scripts/gun_damage_bump.js",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/ReloadProcedure.class"
+   ],
+   "key_numbers": [
+    "Flame Thrower: copper, 2 iron, iron block, empty fuel tank, torch (rlanzallamas). Empty tank: 4 iron + copper (rtanke)",
+    "Fuel Tank refill: empty tank + 2 gunpowder + 2 coal (tier3_loot_aligned_recipes.js:136-144)",
+    "30 charges per tank (ReloadProcedure 30.0)",
+    "0 direct damage. Burn stretched to 150 ticks from vanilla's 100 (gun_damage_bump.js:17-18,34-47)",
+    "Airdrop weight 3/92 with 3-5 tanks (wave_airdrop.json:57)"
+   ],
+   "unlock_or_cost": "Craftable.",
+   "current_quest_coverage": "Arsenal (arsenal.snbt:300-323, 516-539): correct.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Item tasks (existing)",
+    "Death by on_fire damage after a flame-thrower hit (bounty_kills.js counts fire)"
+   ],
+   "teaching_hook": "It is a lighter, not a gun. Spray, then back off while they burn.",
+   "multiplayer_notes": "Personal weapon.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "a full Fuel Tank",
+    "coal and gunpowder"
+   ]
+  },
+  {
+   "name": "Loot-only exotics: Laser Gun and Energized Dust, Minigun, Potato Cannon and Charged Potato",
+   "category": "weapon",
+   "tier": "late (loot)",
+   "ids": [
+    "simple_guns_reworked:laser_gun",
+    "simple_guns_reworked:energized_dust",
+    "simple_guns_reworked:minguguuggn",
+    "simple_guns_reworked:potato_cannon",
+    "simple_guns_reworked:charged_potato"
+   ],
+   "player_facing_summary": "Guns players cannot realistically craft here. Laser Gun: its recipe needs shulker shells, and its ammo needs glowstone. Minigun and Potato Cannon: no recipe exists. They come from airdrops, and the Minigun also from Legendary bags. The Potato Cannon's Charged Potato is craftable, but blaze powder only turns up in far stashes.",
+   "source_files": [
+    "jar:simple_guns_reworked!data/simple_guns_reworked/recipes/rlsar.json,rdut.json,rpotato.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/airdrop/laser_gun.json",
+    "pack/kubejs/data/bountybags/loot_tables/items/legendary.json",
+    "pack/kubejs/server_scripts/structure_loot_progression.js",
+    "pack/kubejs/server_scripts/tier3_loot_aligned_recipes.js",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/ChargedPotatoProjectileProjectileHitsBlockProcedure.class"
+   ],
+   "key_numbers": [
+    "Laser Gun recipe: 2 shulker shells + amethyst + 3 iron (rlsar). The pack assumes no End visits (tier3_loot_aligned_recipes.js:2-5)",
+    "Energized Dust: amethyst + glowstone + redstone make 4 (rdut). Glowstone has no source in the pack's loot tables. The laser airdrop package gives 40-64 dust (airdrop/laser_gun.json)",
+    "Minigun: no recipe in the jar. Legendary bag weight 10/100 (legendary.json:9); airdrop 2/92 (wave_airdrop.json:59)",
+    "Potato Cannon: no recipe in the jar. Airdrop 4/92 with 8-16 Charged Potatoes (wave_airdrop.json:55)",
+    "Charged Potato: gunpowder + blaze powder + potato (rpotato). Blaze powder is HIGH-tier stash only (structure_loot_progression.js:55). Impact power 4.0, up to 57 damage (ChargedPotatoProjectileProjectileHitsBlockProcedure)",
+    "Laser airdrop weight 3/92 (wave_airdrop.json:56)"
+   ],
+   "unlock_or_cost": "Airdrop every 5th wave, Legendary bags, or far stashes (for blaze powder).",
+   "current_quest_coverage": "Arsenal (arsenal.snbt:252-275, 324-371, 468-491, 540-563): mechanics described correctly. 'Energized Dust' says it comes from the airdrop. The Potato Cannon and Minigun quests don't say they are loot-only, and JEI shows a Laser Gun recipe that is unreachable in practice.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item tasks (existing). Mark them optional or use a different shape so the unreachable recipe doesn't read as a crafting goal"
+   ],
+   "teaching_hook": "Some guns are only earned by surviving to the 5th, 10th, 15th wave... and claiming the crate.",
+   "multiplayer_notes": "Each airdrop is one shared crate, and only one gun package rolls per crate (wave_airdrop.json pool 4), so the party must decide who gets the gun.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "ammo for whichever exotic the team found (Energized Dust is not craftable here)",
+    "blaze powder (scarce)"
+   ]
+  },
+  {
+   "name": "Throwables: Grenade (Simple Guns) and Bomb (Supplementaries)",
+   "category": "weapon",
+   "tier": "early to mid",
+   "ids": [
+    "simple_guns_reworked:grenade",
+    "supplementaries:bomb"
+   ],
+   "player_facing_summary": "Right-click to throw. The Simple Guns grenade explodes on first contact. The Supplementaries bomb is made from TNT, iron and string. Both explosions are friendly: they never hurt players or break blocks.",
+   "source_files": [
+    "jar:simple_guns_reworked!data/simple_guns_reworked/recipes/rgrneade.json",
+    "jar:simple_guns_reworked!net/mcreator/simpleguns/procedures/GrenadeProjectileProjectileHitsBlockProcedure.class",
+    "jar:supplementaries-1.20-3.1.43-forge.jar!data/supplementaries/recipes/bomb.json",
+    "pack/config/supplementaries-common.toml",
+    "pack/kubejs/server_scripts/explosion_player_safety.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/scav_armory.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json"
+   ],
+   "key_numbers": [
+    "Grenade: 4 iron nuggets + gunpowder make 1 (rgrneade). Power 2.0, no block interaction: up to 29 damage, 4-block reach",
+    "Grenade sources: scav_armory 8/110, 1-2 (scav_armory.json:51); airdrop 2-4 (wave_airdrop.json:68); prize pool weight 6 (structure_loot_progression.js:79)",
+    "Bomb: TNT + 4 iron + string make 4 (bomb.json). The cannon is disabled (supplementaries-common.toml:7-14); bomb blasts from a player or Sentry count as friendly (explosion_player_safety.js:9-11)",
+    "The slingshot and spiky bomb need slime or rabbit hide, or another mod, so they are unreachable (slingshot.json, spiky_bomb.json)"
+   ],
+   "unlock_or_cost": "Cheap and craftable.",
+   "current_quest_coverage": "Arsenal 'Grenade' (arsenal.snbt:564-587): correct. The Supplementaries bomb has no quest.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Item tasks"
+   ],
+   "teaching_hook": "Throw into the crowd at the wall; your own grenade can't hurt you.",
+   "multiplayer_notes": "Friendly to teammates as well.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "2-4 grenades",
+    "gunpowder"
+   ]
+  },
+  {
+   "name": "Airdrop supply crate (the exotic-weapon source)",
+   "category": "weapon_source",
+   "tier": "every 5th wave",
+   "ids": [
+    "kubejs:chests/wave_airdrop (loot table)",
+    "kubejs:chests/airdrop/<gun> sub-tables"
+   ],
+   "player_facing_summary": "On every 5th wave a plane drops one crate. It holds a Legendary bag, netherite scrap, diamond blocks, sometimes a nether star, 2-4 grenades, and one weighted gun package with matching ammo.",
+   "source_files": [
+    "pack/kubejs/server_scripts/wave_airdrop.js",
+    "pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "pack/kubejs/data/kubejs/loot_tables/chests/airdrop/*.json",
+    "pack/kubejs/server_scripts/structure_loot_progression.js"
+   ],
+   "key_numbers": [
+    "Interval 5 waves (wave_airdrop.js:22,92)",
+    "Contents: Legendary bag (wave_airdrop.json:7), 2-4 netherite scrap (:15), 2-4 diamond blocks (:27), 20% nether star (:37-40), one gun from weights summing to 92 (:46-60), 2-4 grenades (:68)",
+    "A plain container, not Lootr: one shared roll (structure_loot_progression.js:12-15,112-113)"
+   ],
+   "unlock_or_cost": "Survive and clear each 5th wave.",
+   "current_quest_coverage": "No campaign quest. Arsenal mentions the airdrop only for Energized Dust. This may fall in another agent's scope.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Shared custom task from wave_airdrop.js's crate-looted check (airdropCrateLooted, line 340)"
+   ],
+   "teaching_hook": "The crate is the only source of some guns, and there is one per drop for the whole team.",
+   "multiplayer_notes": "One crate per drop, shared and first-come. Plan who opens it.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "n/a (it is a reward source)"
+   ]
+  },
+  {
+   "name": "Tier tooltip lines",
+   "category": "ui",
+   "tier": "all",
+   "ids": [
+    "client tooltip on 18 items"
+   ],
+   "player_facing_summary": "Hovering a tiered defence shows a coloured tier label (Tier 1 green, Tier 2 yellow, Tier 3 red, Tier 4 purple) and, for damaging items, a grey damage line.",
+   "source_files": [
+    "pack/kubejs/client_scripts/tooltip_tier_colors.js"
+   ],
+   "key_numbers": [
+    "Labels: 'Tier 1 - Starting Defense', 'Tier 2 - Automated Defense', 'Tier 3 - Energetic Defense', 'Tier 4 - Elite Defense' (tooltip_tier_colors.js:6-11)",
+    "Tiered items list (:13-32). The Lure Block and the guns are not in it",
+    "Damage lines (:43-57). The Chemthrower Turret's '~12/s' is not backed by the creosote effect (0 direct damage plus Flammable; ChemthrowerEffects). The Rocket Turret's 'every 2s' is really 42 ticks"
+   ],
+   "unlock_or_cost": "Always on.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "A tips-chapter checkmark: 'Hover any defence for its tier and damage'"
+   ],
+   "teaching_hook": "The tooltip is a free cheat sheet for comparing defences.",
+   "multiplayer_notes": "Client-side, so every player sees it.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "1 XP level"
+   ]
+  },
+  {
+   "name": "Starter defences (pre-placed Sentry, Tesla Coil, electrified gate) and their removal",
+   "category": "story_beat",
+   "tier": "starter",
+   "ids": [
+    "securitycraft:sentry tagged td_starter_trap_sentry",
+    "immersiveengineering:tesla_coil (starter)",
+    "fluxnetworks:flux_point (starter coil)",
+    "securitycraft:electrified_iron_fence (gate and flanks)",
+    "worldData key td_starterTrapsRemoved"
+   ],
+   "player_facing_summary": "The base starts with a Sentry and a Tesla Coil on the gate wall and an electrified fence sealing the gate and flank holes. The coil switches itself on when wave mobs come near. When wave 5 is cleared, all of it is removed with the line 'The scavenged defenses spark, seize up, and fall dark for good.'",
+   "source_files": [
+    "pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "pack/kubejs/server_scripts/wave_status.js",
+    "pack/kubejs/server_scripts/tesla_coil_auto_power.js",
+    "pack/kubejs/server_scripts/starter_flux_network.js"
+   ],
+   "key_numbers": [
+    "Placement: coil at doorX+5 with lever and Flux Point, Sentry at doorX-5, fences doorX-2..+2 for the full wall height plus the flanks (playtest_starter_kit.js:393-482)",
+    "Removal on wave 5's clear: STARTER_TRAPS_REMOVAL_WAVE = 5 (wave_status.js:34-36,83-117). The Sentry's item drop is deleted (:103-114)",
+    "Auto-lever radius 9 blocks, checked every 20 ticks, only until removal (tesla_coil_auto_power.js:11-26)"
+   ],
+   "unlock_or_cost": "Free until wave 5.",
+   "current_quest_coverage": "No quest, which keeps the surprise.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "A hidden quest (hide_until_deps_complete) with a custom task completed by a quest_milestones.js-style poll of td_starterTrapsRemoved: 'Rebuild the gate' appears only after the beat",
+    "Early observation quests ('look at the Tesla Coil on the gate') that teach what these defences do without hinting at their loss"
+   ],
+   "teaching_hook": "Learn on the borrowed defences, then rebuild them yourself. The beat is the motivation for the Tier 2 branch.",
+   "multiplayer_notes": "Shared world state. The fences are owned by the first player to log in.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "for the post-beat 'Rebuild the gate' quest: Shrapnel and an iron block toward a Sentry, or 4 iron and an oak fence toward a fence"
+   ]
+  }
+ ],
+ "notes": [
+  "Multiplayer reward inflation: data.snbt:6 sets default_reward_team: false, so every party member claims their own copy of each reward (FTB Quests Reward.isTeamReward falls back to BaseQuestFile.isDefaultPerTeamReward). Item rewards such as 'Better Than Nothing''s 4 Spike Traps are multiplied by the party size. Consider team_reward: true on bulk item rewards and keep per-player rewards for personal items (guns, ammo) and XP.",
+  "FTB Quests 2001.4.22 task types (TaskTypes.class): item, checkmark, kill, location, dimension, structure, biome, observation, stat, advancement, xp, custom, fluid, gamestage (needs Game Stages, which is not installed), plus forge_energy (ForgeEnergyTask, fed through a Task Screen). Observation types: BLOCK, BLOCK_TAG, BLOCK_STATE, BLOCK_ENTITY, BLOCK_ENTITY_TYPE, ENTITY_TYPE, ENTITY_TYPE_TAG. StatTask reads only minecraft:custom stats, so it cannot detect item use or block placement. Placement detection needs KubeJS BlockEvents.placed plus change_progress on a custom task (the quest_milestones.js:57-66 pattern), or an observation task as a proxy.",
+  "Detection hooks already in code, with no new tick cost: sentry_combat_feedback.js:67-82 (Sentry hits), tesla_coil_cinematics.js:25-44 (Tesla zaps), tier4_turret_fx.js:38-51 (grenade and rocket launches), mine_player_safety.js:76-118 (Claymore and Betty blasts), trap_durability.js:143-156 (trap breaks), wave_mob_fence_shock.js:40-55 (fence shocks), bounty_kills.js (death classification by damage-type id), wave_airdrop.js:340 (crate looted). Each could call qmCompleteShared/qmCompleteForPlayer for 'first X' milestones. New custom task ids must start with hex 0-7 (IDEAS.md working principles).",
+  "Quest-text inaccuracies found: 'Point and Shoot' never mentions that the Gun Turret needs ammo (TurretGunBlockEntity.canActivate requires a BulletItem in slot 0). 'The Grid' claims every chest joins the network. 'Open It' says every bag can carry Shrapnel, but the Legendary bag has none. Arsenal 'Submachine Gun' says 60 rounds, but ReloadProcedure caps it at 32, and 'Tommy Gun' says it shares the SMG's drum. 'Sentry''s locked-chest ammo route is unreachable in practice. 'Bouncing Betty' implies friendly damage. 'Fragmentation' and 'Fire for Effect' omit the base-tier and ammo requirements and list the Turret Base as an ingredient. 'No Cables Needed' targets the Flux Plug when new machines need a Flux Point. 'Electrified Fence' calls it unbreakable, which is not true for its owner.",
+  "Craftable but not in the book or the tier tooltips: SecurityCraft Mine, block mines, Track Mine, Taser, Speed and Allowlist modules, Universal Block Modifier and remote tools (securitycraft_traps.js removes none of them). OMT Machine Gun, Potato Cannon, Disposable Item and Incendiary turrets plus their upgrades and addons (tier4_turret_recipes.js only adds a recipe). The Supplementaries bomb. FEATURES.md:5313-5333 says the extra OMT heads were 'passed over', but their recipes are live. The IDEAS.md:278-285 principle ('one quest per distinct item'; the book stays in sync with what is buildable) means each needs a user decision: a quest, or a recipe removal.",
+  "Inputs with no source in this world, per the pack's loot tables: slime ball / sticky piston (Sophisticated pickup and magnet upgrades, Supplementaries slingshot and spring launcher), reinforced stone (SecurityCraft keypad, and so the Sentry's alternate-ammo chest), shulker shell (Laser Gun), glowstone (Energized Dust). Third-party structure chests were not checked.",
+  "Home-machine reward principle (IDEAS.md:149-159): 'Fragmentation' rewards 4 IE steel ingots (campaign.snbt:1210-1214), and steel is the Blast Furnace's output (tier3_loot_aligned_recipes.js:66-70). This may conflict with the principle and is the user's call. Reward candidates in this inventory avoid steel, ferronite ingots and FE.",
+  "Doc drift: FEATURES.md:1100-1130 describes older Tesla Coil, Flux Core and Flux Dust recipes (LV coils and a Flux Point; obsidian), but tier3_loot_aligned_recipes.js now uses diamond blocks and netherite; gold blocks; and a lapis block. The quest subtitles match the code, not the doc.",
+  "Generator Galore: the repo and the dedicated server ship only culinary.json, but GeneratorRegistry.discoverGeneratorFiles copies the missing default generator JSONs on every boot without overwriting (the live instance shows them recreated). So the Copper, Iron and Gold upgrade chain quoted in 'Wired Different' exists.",
+  "Unverified, because the game was not launched: per-food energy from the Culinary Generator (bytecode implies large yields at the pack's 4096 rate); per-hit gun damage (base damage x1.5 is known, but arrows scale with speed); Refined Storage power use; OMT trust and ownership rules; whether an Item Collector can feed the generator; cobbled deepslate and Ferronite ore availability; FTB Quests NBT matching on the oak-barrel task.",
+  "Spoiler-sensitive: the wave-5 removal of the starter Sentry, Tesla Coil and gate fences (wave_status.js:34-36,83-117), alongside the starter-gear rust beat. The boss drop of a Sentry, 12 Shrapnel and a totem (boss_wave.js:183-185) would hint at the boss beat. Keep both out of visible quest text, and use hide_until_deps_complete for any post-beat quests (the memory note says to keep story surprises)."
+ ]
+}

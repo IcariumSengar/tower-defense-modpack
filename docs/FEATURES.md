@@ -10018,3 +10018,128 @@ Decisions came from one question round.
     (`td_pedestalTakenItems`) and `ServerEvents.tick`, which KubeJS posts
     after the write-back, gives it once the screen is closed. Pickups are
     refused while the screen is open, since they would be wiped too.
+
+## Quest book v4 plan (2026-10-05)
+
+*planned, not built. Hold until the user says "build it".* Full plan with
+mockups and the campaign map: https://claude.ai/artifact/9f8CZn1DNzq53e2fYHo5Ud
+(a copy is `docs/archive/quest-book-research-2026-10-04/quest_book_plan.html`).
+The research behind it is in the same folder: 6 studies of other packs' books
+(7 local installs, 16 online packs, genre games), 3 mechanics inventories
+with file:line numbers, the FTB Quests 2001.4.22 capability matrix read from
+the jar, an audit of the current book, and a digest of every past user ask
+about quests.
+
+**Asked 2026-10-04:** "review how [other packs' quest books] are presented
+in such a way that gives the player a sense of progression as well as acting
+as a teaching guide... come up with a plan... include a view of what the
+rewards should look like to a player. Don't forget to consider the
+multiplayer element."
+
+**The plan:**
+1. Keep the one Campaign fishbone, split into four acts along the spine
+   (Arrival to Open It; Dig In to The Last Written Wave; Power to No Ceiling;
+   Hordes after). Each act has a banner chapter image with `dependency` set to
+   its gate quest, so it draws only once the team gets there. This fixes the
+   09-10 "coloured sections always there" complaint. Gates are gear-shaped,
+   and an early legend quest explains the shapes.
+2. About 35 new quests, one per item or mechanic. Most complete from real
+   events via `quest_milestones.js`: airdrop landed, straggler glow, first
+   upgrade bought, first heal, trap worn out, guard spawner broken, countdown
+   started a wave. Also a Lootr advancement task, a first-death stat task,
+   structure tasks for Lost City towns, and Horde 20/30/40 milestones. The
+   one-item rule splits Flux Plug/Point, the Refined Storage parts, Steel and
+   the OMT turret bases.
+3. Quest anatomy: a characterful title; a plain subtitle (action, cost, who
+   gets the reward); a short page 1 with every number from code; field notes
+   after `{@pagebreak}`; "Unlocks: …" signposts. Fix the 18 text-vs-code
+   mismatches in the archive's `audit_current-book.json`.
+4. Rewards: craft quests pay the item or the next step's ingredient. Spine
+   bags climb a tier per act (Uncommon, Rare, Epic, Legendary). Act gates give
+   an FTB choice reward of three kits, plus a toast reward announcing the
+   act, since 2001.4.22 has no unlock notification. XP is the pedestal fund:
+   about 60 levels per player, in tier-sized chunks (book total today: 185).
+5. Multiplayer: every reward is claimed per player. Teaching quests stay
+   manual-claim, so the "!" pulls each player in to read them. The Zombie
+   Masher repeatable becomes fixed rungs every 1500 kills, because FTB resets
+   a repeatable for the whole team on the first claim. Field Notes gets a
+   "Playing Together" page.
+
+**Decided 2026-10-05 (two question rounds):** everyone gets everything in a
+party, the totem capstone included (one each); XP as pedestal fund; hidden
+discovery quests (invisible until the surprise has happened) yes; optional
+field-test quests that tick on defence kills yes; act banners and 2-3 inline
+diagrams yes; a dusk-palette book theme (`kubejs/assets/ftbquests/
+ftb_quests_theme.txt`) in Phase 3; a Challenges chapter as Phase 4.
+
+**Co-op amulet rule (game rule, decided 2026-10-05):** each player has to
+leave their own amulet to explore. The Supplementaries stand still holds one
+amulet, the first one left, which opens the vanilla border as now. Others
+leave theirs through the pedestal screen (stored per player on the marker
+entity, listed on the screen; Take returns only your own).
+`amulet_border.js` already pushes back per player. Its check changes from the
+world flag `td_amuletOnPedestal` to "this player's amulet is left", measured
+against the closed border (size minus `BORDER_EXPAND_DELTA`). Players who
+haven't earned an amulet are blocked. Needs a 2-player test.
+
+**Phases** (each one session): 1 restructure and rewrite, with a new
+spec-driven generator that keeps surviving ids (`gen_quests.py` is stale);
+2 event hooks and discovery quests; 3 field tests (kill attribution), banners,
+diagrams and the theme; 4 Challenges.
+
+**Facts to rely on** (bytecode, confirmed by 2-3 agents; the planned
+second-opinion check didn't run because of the usage limit): team progress
+is shared; claims are keyed per player unless `team_reward`; auto-claim gives
+per-player rewards to every online member and to offline members at login;
+consumed items come from the clicker; non-consuming item tasks count the best
+single inventory; images support `dependency`, `click`, `hover`; descriptions
+support `{image:…}`, `{@pagebreak}` and JSON click links; `/ftbquests
+open_book <id>` needs no permission; KubeJS has `FTBQuestsEvents.customTask/
+customReward/completed`, custom stats for native `stat` progress bars, and
+datapack advancements for `advancement` tasks. Not in 2001.4.22: lang files,
+kill-task tags, the currency reward, unlock notifications.
+
+**Found along the way:** no FTB Teams party exists in any current save, and
+the dedicated server's party folder is empty. JEI's Quests category shows the
+rewards of hidden quests, so discovery quests must pay generic rewards.
+
+**Phase 1 built 2026-10-05** (live in the repo, the instance and the
+dedicated server; not yet seen in real play). The book is now generated by
+`tools/quest_book/build_v4.py`, which replaces the stale `gen_quests.py`. It
+keeps every existing quest, task and reward id, matching by old title and
+then current title, so re-runs are byte-identical. Edit the spec in it and
+re-run; don't hand-edit the chapter files.
+- 108 quests (from 81): Campaign 56, Field Notes 19 (Tips renamed), Bounties
+  9, Arsenal 24. Act gates (Open It, The Last Written Wave, No Ceiling) are
+  gears with a toast reward and, for the first two, a choice-kit reward
+  (`reward_tables/kit_dig_in.snbt`, `kit_power.snbt`). New: a legend quest,
+  Read the Bar, The Walls Are a Funnel, Picket Line, Watch Your Step,
+  Defuser, Trigger Happy, Gold Trim (`lootr:1chest`), Point of Use, Steel
+  Yourself, 4 Refined Storage parts, Ferronite, 2 turret bases, 6 Field
+  Notes, and 4 bounty marks.
+- Tier 3 now hangs off The Last Written Wave (Act III), as the plan's map
+  shows. Its tasks still count before the quests are visible.
+- Rewards: XP only as a pedestal fund (60 levels per player in the book);
+  craft quests pay the item or the next ingredient; Arsenal quests pay ammo;
+  Bounties pay Shrapnel and bags. The home-machine outputs (steel, raw
+  ferronite) were removed from rewards, and so were the emeralds.
+- The text fixes from the audit are applied (Sentry bullets, I.M.S. targeting,
+  Bouncing Betty, SMG 32 rounds, Energized Dust, Reach Further, Auto-Sort,
+  Go Hardcore, Shore It Up, turret recipes, the boss quest renamed Every
+  Tenth Wave, the pedestal mining warning, First Blood exclusions, the
+  Shrapnel bag tiers). "Past the Line" still can't see the starter ruin
+  ring; that fix is in Phase 2.
+- `bounty_kills.js`: the repeatable Zombie Masher is replaced by fixed marks
+  at 1500/3000/4500/6000/7500; the Reaper tier is renamed Undertaker.
+- Co-op amulet rule: `amulet_pedestal.js` (td_amuletsLeft list and
+  helpers), `pedestal_upgrades.js` (leaving an amulet; Take returns only your
+  own), `amulet_border.js` (per-player hold at the closed line while the
+  border is open). A world whose amulet was on the stand before this keeps
+  the old rule until that amulet is taken back.
+- Verified in the server sandbox: 52/52 scripts with 0 errors; FTB Quests
+  "Loaded 1 chapter groups, 4 chapters, 108 quests, 2 reward tables"; files
+  unchanged after a forced save (no re-minted ids); all 9 bounty marks
+  resolved; every new item id accepted by /give. **Not verifiable there:**
+  anything that needs a real player. That covers the amulet rule (it needs
+  two players), the choice-kit screen, the act toasts, the Lootr advancement
+  task and how the map looks in the book.

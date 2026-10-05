@@ -1,0 +1,27 @@
+{
+	icon: "minecraft:chest"
+	id: "0814734783ACC28F"
+	loot_size: 1
+	order_index: 0
+	rewards: [
+		{
+			item: {
+				Count: 4
+				id: "securitycraft:bouncing_betty"
+			}
+		}
+		{
+			item: {
+				Count: 32
+				id: "simple_guns_reworked:pistol_ammo"
+			}
+		}
+		{
+			item: {
+				Count: 4
+				id: "minecraft:golden_carrot"
+			}
+		}
+	]
+	title: "Pick a kit"
+}

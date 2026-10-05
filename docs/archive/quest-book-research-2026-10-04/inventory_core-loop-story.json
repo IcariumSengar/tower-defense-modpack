@@ -1,0 +1,1230 @@
+{
+ "mechanics": [
+  {
+   "name": "Starter compound (walls, gate, weak points, firing platforms, spawn)",
+   "category": "starter base",
+   "tier": "T0 - pre-built when the world is created",
+   "ids": [
+    "securitycraft:reinforced_cobblestone",
+    "securitycraft:reinforced_mossy_cobblestone",
+    "securitycraft:reinforced_cracked_stone_bricks",
+    "minecraft:cracked_stone_bricks",
+    "minecraft:mossy_cobblestone",
+    "minecraft:cobblestone (weak NW section)",
+    "simply_traps:stake_wall",
+    "minecraft:ladder",
+    "minecraft:scaffolding",
+    "marker keys td_compoundX0/X1/Z0/Z1, td_layoutVersion"
+   ],
+   "player_facing_summary": "The world starts with a walled yard on a levelled sand or red-sand field in desert/badlands. The compound is 19 x 24 blocks with walls 1 thick and 3 tall. There's a 3x3 gate in the south wall, 9 blocks in front of the pedestal, and the command post sits at the back. Wall-top firing platforms (two halves over the gate plus a post on each flank wall) are reached by ladders on the inside. Stake walls line the outer faces every 3 blocks. Each wall has up to 3 random breaches 2-3 wide. Each flank wall has a fixed 3-wide collapsed hole level with the pedestal, and the north-west back corner has a deliberately weak 2-tall cobblestone stretch. Walls are mostly reinforced near the gate and mostly plain old masonry further away. Players spawn on the step outside the command post door, facing south over the pedestal toward the gate. The border starts 50 wide, centred on the site, and does no damage.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_mob_dig_haste.js"
+   ],
+   "key_numbers": [
+    "Border starts 50 wide (BORDER_START, playtest_starter_kit.js:362), centred on the site, border damage 0 (:499-504)",
+    "Levelled field 59x59 (BASE_FIELD_HALF = 50/2+4 = 29, :363, fills :577-593)",
+    "Compound x = site x-9..x+9, z = site z-21..z+2 (layout constants :526-558)",
+    "Walls 3 tall (:515-516). Reinforced chance 0.85 at the gate, minus 0.06 per block of distance, floor 0.08 (:665-673)",
+    "Weak section: 3 blocks of the west wall at the back, 2 tall plain cobblestone (:675-678, :753-754)",
+    "Breaches: up to 3 per wall, 2-3 wide, kept 3 blocks from corners (:685-688). Flank holes 3 wide at the pedestal's z (:717-732)",
+    "Stake walls every 3 blocks, 2 high, on the outer faces, skipping breaches and the gate (:768-798)",
+    "Gate opening 3 wide x 3 tall (:800-806). Pedestal 9 blocks in from the gate (PEDESTAL_GATE_GAP :531)",
+    "Firing platforms at standing height wallY0+3, ladders on the inside face only (:1061-1111)",
+    "World spawn on the step outside the door, facing south (:564-571). spawnRadius 0 (:495). doMobSpawning false (:512)",
+    "+-96 blocks around the pedestal stay force-loaded for the whole game (:1190-1193)",
+    "Wave mobs dig plain blocks: 10 s per cobblestone bare-handed, 2.5 s with the pack's hidden Haste XV. Reinforced blocks (hardness -1) can't be dug (wave_mob_dig_haste.js:1-12)"
+   ],
+   "unlock_or_cost": "Pre-built on a fresh world in ServerEvents.loaded (playtest_starter_kit.js:1325-1332), with a first-login fallback (:1336-1358). Layout changes only reach fresh worlds. Reinforcing blocks is impossible in this pack (the Universal Block Reinforcer is uncraftable, securitycraft_traps.js:2-3).",
+   "current_quest_coverage": "No quest teaches the layout. 'Find the Pedestal' (campaign.snbt:111) only points at the pedestal in the courtyard. 'Cheap and Cheerful' (campaign.snbt:567) teaches the craftable Wooden Stake but not the stake walls already on the outer faces.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "KubeJS PlayerEvents.tick custom task: player standing on a firing-platform plank. The cells can be derived from td_pedestalX/Z and td_compoundX0/X1/Z1 on the marker. Complete with qmCompleteForPlayer(player,'platform').",
+    "Observation task (type BLOCK) on minecraft:ladder or simply_traps:stake_wall. Matches any such block anywhere, so it's imprecise.",
+    "A checkmark 'base tour' quest with a chapter image. No real detection.",
+    "A location task can't work here: LocationTask takes fixed x/y/z, and the base position changes per world."
+   ],
+   "teaching_hook": "The walls are a funnel, not a fortress. The horde gets in through the gate, the two flank holes, the random breaches and the weak NW corner. The reinforced blocks near the gate can't be dug, but plain masonry can. Mobs climb the inside ladders, so the platforms are contested ground, not a safe perch.",
+   "multiplayer_notes": "Built once per world, and everyone shares it. The footprint is stored on the pedestal marker. Any player can repair or extend the walls.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "simply_traps:stake x6-8 (plug a breach)",
+    "Torches",
+    "1-2 XP levels",
+    "AVOID: reinforced blocks. Reinforcing is deliberately unavailable here, so handing them out would bypass that design."
+   ]
+  },
+  {
+   "name": "Command post fittings: Crafting Station, House Grid power, barrels, Waystone",
+   "category": "starter base",
+   "tier": "T0 - pre-placed",
+   "ids": [
+    "the_lost_city:cafe4 (template, reinforced)",
+    "craftingstation:crafting_station",
+    "generatorgalore:culinary_generator",
+    "fluxnetworks:flux_plug",
+    "fluxnetworks:basic_flux_storage",
+    "minecraft:barrel x4",
+    "waystones:waystone",
+    "minecraft:dark_oak_door"
+   ],
+   "player_facing_summary": "The command post is a reinforced Lost City cafe with one dark-oak door facing the yard. Inside the doorway are 4 empty barrels, and between the door and the generator is a Crafting Station. On the back wall a Culinary Generator has a Flux Plug on top and a Basic Flux Storage beside it. At first login these, plus the Flux Point by the starter Tesla Coil, are linked into a public Flux network called 'House Grid'. Upstairs is the Wave Horn at the yard window, which has reinforced glass. A Waystone stands outside, two blocks east of the door, facing the yard. The template's loot chest, campfire, banners, smithing table, cartography table and stonecutter are removed.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/starter_flux_network.js"
+   ],
+   "key_numbers": [
+    "Building 9 wide x 8 deep x 10 tall (playtest_starter_kit.js:526-528), placed with /place template clockwise_90 (:825)",
+    "Reinforced with per-state replace-fills; the door and vines stay vanilla (:970-1000)",
+    "Crafting Station at local (3,1,6) (:1016-1017)",
+    "Generator faces south, Flux Plug on top, Basic Flux Storage beside it (:1030-1034)",
+    "4 barrels at local (6,1..2,5..6) (:1035-1038)",
+    "Waystone two blocks east of the door, both halves set explicitly (:1040-1047)",
+    "House Grid: PUBLIC, colour 0x3399ff, owned by the first player to log in, linked once (starter_flux_network.js:62-72, 102-112)"
+   ],
+   "unlock_or_cost": "Pre-placed. A second Culinary Generator is crafted via the KubeJS overrides in tier3_loot_aligned_recipes.js:17,30 (outside this scope). The Waystone uses the mod's default recipe (grep found no KubeJS override).",
+   "current_quest_coverage": "'Wired Different' (campaign.snbt:1027) observes the generator and explains the house grid, which matches starter_flux_network.js. 'A Stone That Remembers' (campaign.snbt:533) names the courtyard Waystone and says to craft another. However, its item task (waystones:waystone, consume_items false, :526-531) is already met by the Waystone that 'The Last Written Wave' rewards (:293-298), so no crafting is needed. Tips: 'Reach Further' (tips_and_tricks.snbt:272) covers the Crafting Station (its 'reads adjacent chests' claim is unverified here). 'Use a Waystone' (:250) is a checkmark. The barrels aren't covered.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Observation task (BLOCK) on generatorgalore:culinary_generator (already used), craftingstation:crafting_station or waystones:waystone",
+    "KubeJS BlockEvents.rightClicked('waystones:waystone') to a per-player custom task (qmCompleteForPlayer)",
+    "Item task for a crafted Waystone only works if the wave-8 Waystone reward is removed or changed. Alternatively, use PlayerEvents.crafted for waystones:waystone."
+   ],
+   "teaching_hook": "Every zombie's rotten flesh is generator fuel, and the power is wireless: any Flux Point that joins House Grid draws from it, wherever it is. The Waystone pair makes a loot run a round trip instead of a walk home.",
+   "multiplayer_notes": "House Grid belongs to whoever logged in first. On the PUBLIC network the others get USER access, so they can connect their own Flux Points, but editing or deleting it needs the owner (starter_flux_network.js:62-66). The barrels and Crafting Station are shared. Whether Waystone activation is per player is unverified.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Copper ingots (current)",
+    "Bread or other food (generator fuel)",
+    "Redstone",
+    "AVOID: Flux, energy or generator output as a reward"
+   ]
+  },
+  {
+   "name": "Starter defences (Tesla Coil, Sentry, electrified gate fence) and their wave-5 failure",
+   "category": "story beat / starter base",
+   "tier": "T0 - pre-placed, waves 1-5 only",
+   "ids": [
+    "immersiveengineering:tesla_coil (2-block)",
+    "minecraft:lever",
+    "fluxnetworks:flux_point",
+    "securitycraft:sentry (entity, tag td_starter_trap_sentry)",
+    "securitycraft:electrified_iron_fence",
+    "marker keys td_starterTeslaCoilX/Y/Z, td_starterTrapsRemoved"
+   ],
+   "player_facing_summary": "Until wave 5 the base has scavenged defences. An IE Tesla Coil stands on the gate-wall top 5 blocks east of the gate, powered from House Grid. Its lever flips on by itself whenever a wave mob comes within 9 blocks. A SecurityCraft Sentry sits 5 blocks west of the gate, set to target only mobs. Electrified iron fence seals the 5-wide gate and both flank holes at full wall height. None of them hurt players. When wave 5 is cleared, all of it is removed: only cells still holding the original block are cleared, and the Sentry and its dropped item are deleted. Chat shows '[The scavenged defenses spark, seize up, and fall dark for good.]'.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/tesla_coil_auto_power.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/sentry_default_mode.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/electric_trap_player_safety.js"
+   ],
+   "key_numbers": [
+    "Coil at doorX+5 on the wall top, standing upright, with a lever on its west face (playtest_starter_kit.js:443-456). Flux Point beside it (:457-463)",
+    "Sentry at doorX-5, with its own support block (:465-471)",
+    "Fence: doorX-2..doorX+2, 3 tall, plus 3x3 in each flank hole (:402-417, :473-475)",
+    "Auto-power: checks every 20 ticks, lever on when a td_wave_mob is within 9 blocks (tesla_coil_auto_power.js:123-128, :157-173). Coil reach 6 blocks / zap every 32 ticks per the comment at :115-117 (patched IE jar, unverified)",
+    "Sentry switched to mode 4 AGGRESSIVE_H, hostiles only (sentry_default_mode.js:177, :184-192)",
+    "Coil and fence damage cancelled for players and Sentries (electric_trap_player_safety.js:230-260)",
+    "Removed on the wave-5 clear: STARTER_TRAPS_REMOVAL_WAVE 5 (wave_status.js:36, :83-117). The chat line goes only to the polling player (:115)"
+   ],
+   "unlock_or_cost": "Pre-placed. Removed for good at the wave-5 clear (td_starterTrapsRemoved). Fence owner is set to the first player to log in (playtest_starter_kit.js:1363-1380).",
+   "current_quest_coverage": "None. The crafted 'Sentry' quest (campaign.snbt:796) calls it 'First thing in the pack that guards the pedestal while you're somewhere else', which overlooks the starter Sentry that runs until wave 5.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Reveal quest: call qmCompleteShared(server, data, 'starterTrapsGone') inside the FIXED_WAVE_EVENTS action (wave_status.js:83-117). Put it on a quest that stays hidden until it fires (FTB Quests keys invisible / invisible_until_tasks / hide_text_until_complete exist in Quest.class). Note the memory warning that invisible quests also hide their dependents.",
+    "Pre-wave-5 'what's guarding the gate' quest: observation BLOCK immersiveengineering:tesla_coil or ENTITY_TYPE securitycraft:sentry. The text must not hint at the removal."
+   ],
+   "teaching_hook": "The gate is only sealed thanks to borrowed tech. The aha after wave 5: nothing shoots for you unless you built it, and the gate and flank holes are now open. Players who banked shrapnel and iron for their own Sentry or fence before wave 5 feel smart, without having been told why.",
+   "multiplayer_notes": "World-level. One removal for everyone. Fence ownership goes to the first login, but players are never shocked anyway.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "After the reveal: kubejs:shrapnel x4-6 (a Sentry needs one, securitycraft_traps.js:10-22)",
+    "Iron ingots",
+    "A Rare loot bag",
+    "AVOID: a free Sentry or fence before wave 5 (undercuts the beat)",
+    "AVOID: reinforced blocks"
+   ]
+  },
+  {
+   "name": "Starter kit and its wave-5 rusting",
+   "category": "story beat",
+   "tier": "T0 - first login, waves 1-5",
+   "ids": [
+    "minecraft:netherite_sword {Enchantments: sharpness 100, td_starter_gear:1b}",
+    "minecraft:iron_helmet / iron_chestplate / iron_leggings / iron_boots {td_starter_gear:1b}",
+    "player persistentData td_playtestKitGiven",
+    "marker key td_starterGearRemoved"
+   ],
+   "player_facing_summary": "On first login each player gets a netherite sword with Sharpness 100 and a full iron armour set. Each piece has the lore 'Looted from a fallen soul who came before you...'. On the wave-5 clear the gear is cleared from every online player with the title 'IT'S UP TO YOU NOW' / 'The gear is gone. So is whoever wore it first.' plus three chat lines. Starter gear recovered later (from a corpse, chest or the ground) crumbles within 100 ticks of reaching an inventory, and again at every login. Anyone who first joins after wave 5 gets no kit.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js"
+   ],
+   "key_numbers": [
+    "Sharpness 100 (playtest_starter_kit.js:30). Lore line (:20)",
+    "Kit given once per player (:1398-1400). Late joiners after the removal get nothing (:25-27, :1395-1400)",
+    "Removal at the wave-5 clear: GEAR_REMOVAL_WAVE 5 (wave_status.js:25). /clear by NBT tag (:70-74). Titles (:76-77). Chat to the polling player only (:78-80)",
+    "Late-gear sweep every 100 ticks (wave_status.js:304, :336) and at login (playtest_starter_kit.js:1395-1397)"
+   ],
+   "unlock_or_cost": "Free at first login. Removed at the wave-5 clear.",
+   "current_quest_coverage": "'You're On Your Own' (campaign.snbt:44) and 'Borrowed Time' (:74, 'this gear isn't built to last forever') foreshadow the loss without naming the wave, which fits the keep-surprises rule. A dedicated 'It's Up to You Now' quest was removed on purpose in commit 12f1176 (QUEUE.md:127).",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Custom task completed from the wave-5 FIXED_WAVE_EVENTS action (wave_status.js:58-82) on a quest that stays invisible until then. The user cut the previous version, so this needs their sign-off.",
+    "Checkmark foreshadowing quests, as now."
+   ],
+   "teaching_hook": "Don't build your plan around the god-sword. Waves 1-4 are the window to bank loot, XP and traps while the borrowed gear carries you. The reveal itself is the aha.",
+   "multiplayer_notes": "Each player has their own kit flag. /clear @a only reaches online players; offline players lose the gear at their next login. The title reaches everyone, but the story chat lines only reach the player whose poll caught the clear.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "After the reveal: an Uncommon or Rare loot bag",
+    "XP levels",
+    "AVOID: replacement iron or netherite gear (blunts the beat)"
+   ]
+  },
+  {
+   "name": "Wave Horn (calling a wave) and the night lock",
+   "category": "core loop",
+   "tier": "T0",
+   "ids": [
+    "minecraft:note_block at td_waveNoteBlockX/Y/Z (upstairs, yard window)",
+    "sound minecraft:event.raid.horn",
+    "marker keys td_waveNumber, td_inWave, td_lastHornUseTick"
+   ],
+   "player_facing_summary": "Right-click the note block upstairs at the yard window to start the next wave. Only that one block counts; other note blocks do nothing. It refuses with '[Wave Horn] Clear the current wave before summoning the next one.' while a wave is open or still spawning. After a game over it only says 'The horn has nothing left to call to.' A press plays the raid horn, cancels the countdown, sets the time to night and freezes the daylight cycle so zombies don't burn, then shows the wave title. Clearing the wave, or a game over, brings back day and the cycle.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js"
+   ],
+   "key_numbers": [
+    "Click cooldown 20 ticks per player (wave_spawner.js:622-640)",
+    "Refusal while a wave is open or queued (:462-469). Silent after a loss (:449-460)",
+    "Raid-horn sound (:474). Countdown cancelled (:478-482). Night lock (:487-491). Day restored on clear (wave_status.js:284-286)",
+    "Horn at local (6,5,4) upstairs (playtest_starter_kit.js:1049-1056)",
+    "Leftover mobs after a clear don't block the horn (wave_spawner.js:462-465)",
+    "Only the stored cell counts (:629-633): a note block put back on the exact cell works again, but a moved one doesn't (derived)"
+   ],
+   "unlock_or_cost": "Pre-placed. Can't be crafted or moved; any other note block is ignored.",
+   "current_quest_coverage": "'Sound the Horn' (campaign.snbt:138), custom task 5A1C0E7B93D4F216 completed by quest_milestones.js:101 from td_lastHornUseTick. The text is accurate. The night lock isn't mentioned anywhere.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Existing shared custom task (quest_milestones.js:16-17, :101)",
+    "A vanilla note-block stat task would fire on any note block and even without a wave starting, so it's worse"
+   ],
+   "teaching_hook": "The horn is a choice, not a chore. Waves 1-8 never start until someone blows it, and calling early trades away the rest of the build window for faster progress. Every wave is fought in the dark, and daylight only returns with the last kill.",
+   "multiplayer_notes": "Anyone can press it, and the shared td_inWave flag means one wave starts however many people press. The milestone is shared and also reaches late joiners through the 20-tick poll (quest_milestones.js:107-112).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "XP levels (current: 2)",
+    "Torches (night fighting)"
+   ]
+  },
+  {
+   "name": "Countdown between waves (auto-start)",
+   "category": "core loop",
+   "tier": "T0",
+   "ids": [
+    "marker keys td_countdownActive, td_countdownEndTick"
+   ],
+   "player_facing_summary": "Every clear starts a countdown on the action bar: '⏱ Next wave in: m:ss', or 'Next horde in' once the next wave is 9 or later. At zero the next wave starts by itself, wherever the players are; the base stays force-loaded and keeps running. Blowing the horn early cancels the countdown.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js"
+   ],
+   "key_numbers": [
+    "Formula: 1800 + 300*(n-1) ticks before wave 5, 4800 + 300*(n-5) from wave 5 (wave_status.js:30-33, :42-47)",
+    "Floor MIN_WAVE_GAP_TICKS 12000 = 10:00 (wave_status.js:40). In practice every gap is exactly 10:00 through wave 29, then 10:15 after wave 30, 12:45 after wave 40, 15:15 after wave 50 (computed)",
+    "Display refreshes once a second (wave_spawner.js:774, :794-805). At zero it retries every second while a wave is still open (:789-792)",
+    "Base force-loaded +-96 blocks (playtest_starter_kit.js:1190-1193)"
+   ],
+   "unlock_or_cost": "Automatic after every clear.",
+   "current_quest_coverage": "'Sound the Horn' says 'after each clear a timer starts (10 minutes minimum), and when it runs out the wave comes on its own'. That's accurate (wave_status.js:40).",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Custom task fired the first time the countdown branch starts a wave (useWaveHorn called from wave_spawner.js:790). It teaches 'the timer doesn't wait for you'.",
+    "Custom task for 'home in time': a player within 32 blocks of the pedestal when a countdown-started wave begins"
+   ],
+   "teaching_hook": "The timer keeps running while you loot past the border. Plan trips that fit in 10 minutes, or the wave hits a base with nobody home.",
+   "multiplayer_notes": "One shared countdown on the marker, shown to every player in the overworld. The endless-wave toast from an auto-start goes only to whichever player's tick fired it.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Golden carrots (for a 'made it back in time' quest)",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Written waves 1-8 (composition)",
+   "category": "core loop",
+   "tier": "Waves 1-8",
+   "ids": [
+    "minecraft:zombie",
+    "minecraft:husk",
+    "minecraft:drowned",
+    "minecraft:zombie_villager",
+    "mutantszombies:mutant_zombie",
+    "mutantszombies:blister_zombie",
+    "mutantszombies:split_head_zombie",
+    "mutantszombies:crawler",
+    "undeadnights:elite_zombie",
+    "undeadnights:horde_zombie",
+    "undeadnights:demolition_zombie",
+    "tag td_wave_mob"
+   ],
+   "player_facing_summary": "Waves 1-8 are written by hand. The title shows 'WAVE N' and 'X mobs incoming!', with the count including ambushers. Wave 1 is 3 zombies, 2 husks and 1 zombie villager. One new threat arrives every wave or two: Mutant Zombies and Drowned at 2, Blister Zombies at 3, Split Heads at 4, Undead Nights Elite Zombies at 5, Horde Zombies at 6, and at 8 a pack of four Crawlers plus the first Demolition Zombie, which carries 3 TNT. No brutes appear before wave 20.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/explosion_player_safety.js"
+   ],
+   "key_numbers": [
+    "WAVES table (wave_spawner.js:19-28)",
+    "Totals including ambushers: 6/10/11/9/6/10/8/13, cumulative 73 by wave 8 (computed from :19-28 and :507-512)",
+    "Spawn spacing 16, 13, 10, 7, then 4 ticks from wave 5 (:122-130)",
+    "Demolition Zombie TNT stack 3 (:94-96, :727-728)",
+    "No brutes in written waves (:13-18, :71-77)",
+    "Base stats from the mod jars: Blister/Mutant Zombie 24 HP, 5 attack. Split Head 24 HP, 6 attack. Crawler 6 HP, 3 attack, speed 0.3 (MutantsZombies createAttributes). Elite 6 attack, Demolition 5 attack (UndeadNights m_34328_)",
+    "Enemy TNT still breaks walls (explosion_player_safety.js:45-47) but never removes the pedestal (:34-40)"
+   ],
+   "unlock_or_cost": "Each wave is started by the horn or the countdown.",
+   "current_quest_coverage": "'Thin the Horde' (campaign.snbt:171) gives wave 1's makeup accurately (matches wave_spawner.js:20). Waves 2-8 aren't described, which is right for the surprise. The 14 per-mob 'Kill one' quests were removed by the user in c94f019 (FEATURES.md:10004).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Custom tasks per wave clear from td_q_lastClearedWave (quest_milestones.js:68-89, extend QM_TASKS)",
+    "Observation ENTITY_TYPE for first-sighting quests that stay hidden until seen",
+    "Kill tasks only take entity type and count (KillTask has just entity and value), so they also count structure-spawner mobs"
+   ],
+   "teaching_hook": "Each wave adds one new problem: Crawlers climb walls and outrun zombies (speed 0.3 vs 0.23, wave_spawner.js:64-66), and the wave-8 Demolition Zombie throws TNT that blows holes in walls. The pedestal itself can't be blown up.",
+   "multiplayer_notes": "Shared, with no player-count scaling: one wave for the whole party.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "Escalating bags per wave cleared: Uncommon (waves 1-4), Rare (6-7), Epic at 8 (current)",
+    "XP levels sized to pedestal upgrade tiers"
+   ]
+  },
+  {
+   "name": "Spawn ring, arrival cues and underground ambushers",
+   "category": "core loop",
+   "tier": "All waves",
+   "ids": [
+    "sound minecraft:ambient.cave (spawn cue)",
+    "sound minecraft:block.rooted_dirt.break + block particles (ambusher)",
+    "tag td_undergroundAmbush"
+   ],
+   "player_facing_summary": "Wave mobs appear a few ticks apart in a ring 48-64 blocks from the pedestal, always outside the walls. Early on the ring is squeezed to fit inside the small border, so mobs start much closer. A cave-ambience sound plays at each mob's spawn point 12 ticks before it appears, loud enough to hear across the compound. From wave 2, ambushers burst out of the ground 4-7 blocks outside a random wall, with a spray of dirt particles and a digging sound. Big waves don't arrive all at once: once 60 wave mobs are alive, the rest wait in a queue.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js"
+   ],
+   "key_numbers": [
+    "Ring 48-64 blocks (wave_spawner.js:235-236). Shrinks to fit: max = max(15, min(64, half-width - 6)), min = min(48, max - 10) (:244-264). That's 9-19 blocks at the 50-wide start, 46.5-56.5 at wave 9, and the full 48-64 from wave 10 (computed)",
+    "Spawns kept 4+ blocks outside the compound (:238-239)",
+    "Sound cue 12 ticks ahead (:126), volume 5, about 80 blocks (:703-707)",
+    "Ambushers: 0 at wave 1, 1 at waves 2-4, 2 at 5-6, 3 at 7-8. In endless: 2 + floor(level/5), max 6 (:507-512)",
+    "Ambusher gap 4-7 blocks from the wall (:401-402). Burst effects (:747-756)",
+    "MAX_CONCURRENT_WAVE_MOBS 60 (:197-202)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Shared custom task the first time an ambusher spawns (inside the spawn.underground branch, wave_spawner.js:747-756)",
+    "Checkmark explainer quest"
+   ],
+   "teaching_hook": "Listen: the cave sound tells you where each mob is about to appear, and a dirt burst means one just surfaced right outside your wall. Early waves spawn close because the border is small.",
+   "multiplayer_notes": "Shared. The cues play at the spawn point for every player.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Wooden Stakes or Spike Traps to cover the ambush lanes",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Endless phase: Hordes (wave 9 and up)",
+   "category": "core loop / endless",
+   "tier": "Wave 9+",
+   "ids": [
+    "/undeadnights difficulty set <n>",
+    "/undeadnights spawn_horde (run as the marker)",
+    "sound undeadnights:horde_scream",
+    "tag td_un_horde -> td_wave_mob",
+    "marker key td_lastEndlessLevel"
+   ],
+   "player_facing_summary": "From wave 9, waves are titled 'HORDE N' with 'The horde approaches...'. Each one sets Undead Nights' difficulty to wave minus 8 (capped at 40) and spawns one Undead Nights horde 70-75 blocks from the player nearest the pedestal, with a horde scream for everyone. On top of that it queues a growing baseline of plain zombies plus other types that get heavier as the levels climb. Horde mobs that land inside the walls are pushed just outside, and strays beyond 90 blocks are sent back to the spawn ring. There's no final wave.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/undeadnights_difficulty_config.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/undeadnights_horde_mobs_config.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/defaultconfigs/undeadnights-server.toml",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/mob_aggro.js"
+   ],
+   "key_numbers": [
+    "Label 'Horde N' from wave 9 (wave_spawner.js:32-34)",
+    "Difficulty level = min(wave-8, 40) (:516, :529-532)",
+    "spawn_horde targets the player nearest the marker (:517-523, :534). Horde lands 70-75 blocks from that player (undeadnights-server.toml:51-54)",
+    "Baseline zombies = round(12 + wave * 1.09^level), others = round(7 + wave * 1.05^level) (wave_spawner.js:539-544)",
+    "Computed baseline (zombies + others + ambushers): wave 9: 22+16+2. Wave 10: 24+18+2. Wave 15: 39+28+3. Wave 20: 68+43+4. Wave 30: 212+95+6. Wave 40: 643+198+6",
+    "Hordes used: levels 1-8 'trash_horde' (difficulty config L58). 9-11 'mixed_horde_no_brutes' (L482). 12-20 'mixed_horde' with Mutant Brute (L641). 21-40 'elite_horde' (L1118). Always the first listed horde, because setting the difficulty resets Undead Nights' sequential index (wave_spawner.js:525-528)",
+    "Horde size per entry = round(hordeSizeScaleFactor), then each entry rolls its own chance (UndeadNights SpawnProcess bytecode). The factor is 3 at level 1 (L54), rising 0.3 per level to 12 at level 31+ (L1634..L2102). Roughly 3-4 mobs at level 1 up to about 12 at level 40 (derived estimate)",
+    "Undead Nights horde-mob cap 80 (undeadnights-server.toml:56). Pack baseline waits while 60+ wave mobs are alive (wave_spawner.js:202)",
+    "Toast 'Horde N - difficulty L, +B baseline' goes only to the horn user or countdown player (:567)",
+    "Strays beyond 90 blocks return to the ring every 100 ticks (mob_aggro.js:129-131, :196-206). Horde mobs inside the compound are moved out (wave_spawner.js:145-178)"
+   ],
+   "unlock_or_cost": "Automatic once wave 8 is cleared.",
+   "current_quest_coverage": "'The Last Written Wave' (campaign.snbt:315) announces Hordes after wave 8, which is accurate. 'No Ceiling' (:374) completes at wave 15. Nothing covers what changes inside the endless phase.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Custom tasks at more wave clears via td_q_lastClearedWave (e.g. 10, 20, 25, 30, 40): add to QM_TASKS and the poll in quest_milestones.js:100-105",
+    "A 'waves cleared n/10' progress bar using the CustomTask.setMaxProgress + TeamData.setProgress reflection from bounty_kills.js:127-225",
+    "Repeatable 'survive another 5 hordes' quest (can_repeat), completed via change_progress"
+   ],
+   "teaching_hook": "Hordes mostly scale by numbers, and they arrive over the fight because of the 60-alive cap, so the wave keeps coming after the title fades. Automation and choke points beat sword work. There is no final wave (IDEAS.md:82-84).",
+   "multiplayer_notes": "One horde per wave however many players are on; no player-count scaling (dynamicScalingEnabled false, difficulty config L3). If the player nearest the pedestal is out exploring, the horde lands near them and is teleported back by the stray rule. Possible stall (unverified in play): Undead Nights' SpawnLocationFinder and SpawnProcess have no world-border checks. Early hordes can therefore land outside the border, where mob_aggro.js:209-213 leaves them idle while wave_status.js:19 still counts them within 96 blocks.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "Legendary bag at round-number hordes",
+    "XP levels in pedestal-upgrade amounts (6/12/18)",
+    "A Totem of Undying at a deep milestone (e.g. wave 30), at most",
+    "A 'choice' reward: nether star or totem or Epic bag"
+   ]
+  },
+  {
+   "name": "Endless difficulty curve (mob tiers and stat scaling)",
+   "category": "core loop / endless",
+   "tier": "Wave 9+",
+   "ids": [
+    "mutantszombies:zombie_brute",
+    "mutantszombies:mutant_brute",
+    "mutantszombies:rotten_mutant",
+    "mutantszombies:crawler",
+    "undeadnights:elite_zombie",
+    "undeadnights:horde_zombie",
+    "undeadnights:demolition_zombie"
+   ],
+   "player_facing_summary": "The baseline's mix gets heavier with each level. Tier 0 (husk, drowned, zombie villager) fades to a floor. Tier 1 (mutant, blister, split head) stays steady. Tier 2 (elite, horde, demolition, rotten mutant, and Crawler three times over) unlocks at level 5, which is wave 13. Brutes unlock at level 12, wave 20. Brutes are sped up to 0.28 and the Mutant Brute's HP is halved to 60. Undead Nights also raises its horde mobs' health, damage and speed per level.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/undeadnights_difficulty_config.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/undeadnights_horde_mobs_config.json"
+   ],
+   "key_numbers": [
+    "Tier weights: tier 0 max(5, 40-L), tier 1 30, tier 2 min(80, (L-4)*5) from L5, brutes min(80, (L-11)*5) from L12 (wave_spawner.js:98-112)",
+    "TIER2_MIN_LEVEL 5, which is wave 13 (:71-72). BRUTE_TIER_MIN_LEVEL 12, which is wave 20 (:73-77)",
+    "Crawler is 3 of 7 tier-2 picks (:64-66)",
+    "Brute speed 0.28 (:79-84). Mutant Brute 60 HP (:86-92). The horde config applies the same (undeadnights_horde_mobs_config.json:23, :36, :52)",
+    "Brute base stats from the jar: Zombie Brute 100 HP, 16 attack, 16 armor. Mutant Brute 18 attack, 18 armor (MutantsZombies ZombieBruteEntity / MutantBruteEntity attributes)",
+    "Undead Nights scale factors from level 1 to level 40: health 1.08 to 4.2, damage 1.05 to 3.0, speed 1.02 to 1.5, capped at 1.5 from L25 (difficulty config :41-43, :624-626, :1048-1050, :2089-2091). Whether these reach the pack's /summon'ed baseline mobs is unverified; boss_wave.js:16-17 notes that /summon with NBT skips finalizeSpawn",
+    "Undead Nights 'bossHordeEnabled' at levels 5, 10, ..., 40 appears to sit on its horde-night path (HordeSpawner / SpawnProcess isSpawnBossHorde), so it's likely inert here. Unverified"
+   ],
+   "unlock_or_cost": "Automatic, by wave number.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Hidden first-sighting quest: observation ENTITY_TYPE mutantszombies:zombie_brute or mutant_brute, revealed when seen",
+    "Custom tasks at the wave 13 and wave 20 clears (spoiler-sensitive, so keep them hidden)"
+   ],
+   "teaching_hook": "Wave 20 is the step change. Brutes don't flinch from knockback and hit the pedestal for 16-18 a second each, so armor and thorns upgrades and a kill zone in front of the pedestal stop being optional.",
+   "multiplayer_notes": "Shared and deterministic by wave number, with no party-size scaling.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "Totem or Legendary bag at the wave-20 milestone",
+    "Golden carrots"
+   ]
+  },
+  {
+   "name": "Wave mob targeting (the pedestal is the target)",
+   "category": "core loop",
+   "tier": "All waves",
+   "ids": [
+    "minecraft:armor_stand marker, tag td_pedestal_target",
+    "tag td_wave_mob",
+    "tag td_retarget_stripped"
+   ],
+   "player_facing_summary": "Every wave mob heads for the pedestal, not for you. It only turns on a player who is within 3.5 blocks (standing in its way), or one who hit it; it then chases that player for 8 seconds before going back to the pedestal. An active Lure Block nearby beats the pedestal. Mobs that wander more than 90 blocks off are put back in the spawn ring every 5 seconds. Mobs outside the border are left alone. Structure mobs keep their normal AI.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/mob_aggro.js"
+   ],
+   "key_numbers": [
+    "Target priority: blocking player, then retaliation, then Lure Block, then pedestal marker (mob_aggro.js:1-9, :228-261)",
+    "MELEE_BLOCK_RANGE 3.5 blocks (:172)",
+    "AGGRO_RETALIATION_TICKS 160 = 8 s. Later hits don't extend it (:133, :238-256)",
+    "STRAY_DISTANCE 90, checked every 100 ticks (:129-131, :196-206)",
+    "Mobs outside the border are ignored (:209-213). The pass runs every 10 ticks (:155-156)"
+   ],
+   "unlock_or_cost": "Always on.",
+   "current_quest_coverage": "'Find the Pedestal' says 'every wave mob paths straight for it, not for you' (campaign.snbt:82), which is accurate. 'Dinner Bell' (:606) adds 'A mob you just hit, or one you're standing in front of, still comes for you first', also accurate. Neither gives the 8-second window or the 3.5-block range.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Per-player custom task the first time a retaliation window opens for that player (mob_aggro.js:240-246)",
+    "Checkmark explainer, maybe paired with the boss quest"
+   ],
+   "teaching_hook": "You can pull a mob, or the boss, off the pedestal by hitting it: each window buys 8 seconds of its attention. Standing in a doorway makes you the target of anything within 3.5 blocks. Otherwise they walk right past you to the pedestal.",
+   "multiplayer_notes": "Whoever hit it gets the 8 seconds, and any player standing in its path draws it. One shared pass runs per tick.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "One kubejs:lure_block (practice redirecting a horde)",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Hostile counter and wave-clear detection",
+   "category": "HUD / core loop",
+   "tier": "All waves",
+   "ids": [
+    "action bar line",
+    "marker keys td_inWave, td_spawnQueue, td_hordeLandingUntilTick"
+   ],
+   "player_facing_summary": "During a wave the action bar shows '⚔ Wave N — Hostiles remaining: X' (or 'Horde N'). It counts live wave mobs within 96 blocks of the pedestal. The wave clears once nothing is left in range and nothing is still queued or landing; there's a 5-second landing window for Undead Nights hordes.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js"
+   ],
+   "key_numbers": [
+    "RADIUS 96 (wave_status.js:16-19)",
+    "Counter text (:326-334)",
+    "Clear conditions (:250-260). Polled every 4 ticks (:306-317)",
+    "Horde landing window 100 ticks (wave_spawner.js:132-138)"
+   ],
+   "unlock_or_cost": "Always on.",
+   "current_quest_coverage": "'Wave One, Cleared' (campaign.snbt:178): 'Every mob down means the wave is cleared'. Accurate, but it doesn't mention the 96-block range.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Existing td_inWave true-to-false edge (quest_milestones.js:68-89)"
+   ],
+   "teaching_hook": "Only mobs within 96 blocks of the pedestal hold the wave open. When the number stalls, look for the glowing stragglers.",
+   "multiplayer_notes": "One shared count, shown to every player in the overworld.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "None specific"
+   ]
+  },
+  {
+   "name": "Straggler glow",
+   "category": "HUD / core loop",
+   "tier": "All waves",
+   "ids": [
+    "effect minecraft:glowing",
+    "team td_stragglers (red)",
+    "tag td_straggler"
+   ],
+   "player_facing_summary": "Once a wave is down to its last 2 mobs in range and nothing is left to spawn, those mobs glow red through walls until they die or stop qualifying.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js"
+   ],
+   "key_numbers": [
+    "TD_STRAGGLER_MAX 2 (wave_status.js:165)",
+    "Red team colour and infinite Glowing (:172-184)",
+    "Conditions (:246). Team emptied on clear (:262)",
+    "Side effect: their names show red in death messages and Jade (:159-164)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "None. It was added in 12f1176 but never put in the book.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Shared custom task the first time tdStragglerMark runs (wave_status.js:172-184)"
+   ],
+   "teaching_hook": "Don't hunt blind: the last two light up through walls. Unverified edge case: one glowing outside the border can't reach you, so shoot it or open the border.",
+   "multiplayer_notes": "Everyone sees the glow.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "XP levels",
+    "A golden carrot"
+   ]
+  },
+  {
+   "name": "Wave-clear payout",
+   "category": "core loop / rewards",
+   "tier": "All waves",
+   "ids": [
+    "scoreboard objective td_waves_cleared",
+    "command /pedestal (via [Upgrades])"
+   ],
+   "player_facing_summary": "Each clear shows 'WAVE N CLEARED' to everyone and updates the 'Waves Cleared' sidebar. The pedestal heals 5% of its max HP. Players who can afford an upgrade get a clickable [Upgrades] chat prompt. The border grows, daylight returns, and the next countdown starts. Every 5th clear schedules a supply airdrop. Clearing waves 1, 8 and 15 completes campaign milestones.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/quest_milestones.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_upgrades.js"
+   ],
+   "key_numbers": [
+    "Clear branch (wave_status.js:259-299): subtitle :263-266, scoreboard :268, heal 0.05 :270-271, upgrade prompt :273-279, airdrop :281-282, day :284-286, story beats :288-293, countdown :295-298",
+    "The 5% heal is 15 HP at base max, 30 HP at 600 (derived from pedestal_health.js:24, :29)",
+    "Milestones at waves 1, 8 and 15 (quest_milestones.js:102-104)",
+    "[Upgrades] only goes to players with at least the cheapest next tier in levels (pedestal_upgrades.js:448-468)",
+    "No payout after a loss (wave_status.js:240-248; base_expansion.js:27-29)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "'Wave One, Cleared' covers the clear, the timer and the border growth. It leaves out the 5% heal and the upgrade prompt.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Existing td_inWave edge tracking; add more QM keys for more wave numbers"
+   ],
+   "teaching_hook": "A clear is your only free heal, and it's small: 5% won't out-heal a breach, so golden carrots and upgrades matter. Watch chat for the green [Upgrades] link.",
+   "multiplayer_notes": "Shared. The [Upgrades] link only reaches players who can afford a tier.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "XP levels at milestone waves",
+    "Golden carrots",
+    "Escalating loot bags"
+   ]
+  },
+  {
+   "name": "Border growth (Base Expansion)",
+   "category": "core loop / world",
+   "tier": "All waves",
+   "ids": [
+    "/worldborder add",
+    "toast 'Base Expansion'"
+   ],
+   "player_facing_summary": "Each clear pushes the border out over 10 seconds, and one player gets the toast 'Base Expansion - the border grows by N blocks.'. The width grows by 5 for each of waves 1-3, 10 for waves 4-6, 15 for waves 7-9, and so on; each edge moves half that. The border has no damage, but you can't walk past it unless the amulet is on the pedestal.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/base_expansion.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js"
+   ],
+   "key_numbers": [
+    "Width added = 5 + 5*floor((wave-1)/3) (base_expansion.js:10-14). Grows over 10 s (:8, :36)",
+    "Starts at 50 (playtest_starter_kit.js:362). Width after waves 3/5/8/10/15/20/30: 65/85/125/160/275/435/875 (computed)",
+    "Toast only for the player whose tick caught the clear (base_expansion.js:37-38)",
+    "No growth after a loss (:27-29)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "'Wave One, Cleared' (campaign.snbt:178) describes the formula accurately (it's the width).",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Same as wave clears",
+    "Custom task when the border width first passes a threshold"
+   ],
+   "teaching_hook": "The border is both a wall and the limit of the spawn ring. Early waves spawn close because the ring is squeezed inside it; the full 48-64 ring only arrives at wave 10, when the border is 140 wide. A bigger border means more ground to hold.",
+   "multiplayer_notes": "World-level, but only one player sees the toast with the number.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Ender pearls (scouting)",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "The Pedestal (shared HP, damage, boss bar, alerts)",
+   "category": "pedestal",
+   "tier": "T0",
+   "ids": [
+    "supplementaries:pedestal at td_pedestalX/Y/Z",
+    "bossbar kubejs:pedestal_health ('Pedestal')",
+    "marker minecraft:armor_stand tag td_pedestal_target",
+    "marker keys td_pedestalHealth, td_pedestalAlertTier"
+   ],
+   "player_facing_summary": "The pedestal in the yard is the objective. It has a shared HP pool (300 to start), shown as a red 'Pedestal' boss bar to players within 64 blocks. Once a second, every zombie-roster mob within 3 blocks deals its attack damage to that pool; the armor upgrade cuts this, but never below 1. Everyone, wherever they are, is alerted as health drops below full, to half, a quarter and a tenth: an action-bar headline, a chat line and an anvil sound. The four headlines are 'THE PEDESTAL IS UNDER ATTACK', 'IS HALFWAY GONE', 'IS CRITICAL' and 'IS ABOUT TO FALL'. Explosions can never remove the pedestal block.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_health.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/explosion_player_safety.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/world_state.js"
+   ],
+   "key_numbers": [
+    "Melee range 3.0 blocks (pedestal_health.js:13). Boss bar range 64 (:16-20)",
+    "300 HP (:24; playtest_starter_kit.js:1186-1188)",
+    "Damage applied once a second, once per world however many players are on (pedestal_health.js:258-265)",
+    "Damage = the mob's generic.attack_damage, for any roster mob by type, tagged or not (:231-240, :273-287)",
+    "Alert tiers below 100% / at 50% / 25% / 10% (:86-92). Headlines and chat lines (:94-100). 4 s on the action bar (:108)",
+    "Explosion-proof (explosion_player_safety.js:34-40)",
+    "Damage per second at the pedestal: Blister/Mutant Zombie 5, Split Head 6, Rotten Mutant 7, Zombie Brute 16, Mutant Brute 18 (mod jars). The Reaper 24, The Demolisher 15 (boss_wave.js:24, :41). Vanilla zombie 3 (vanilla value, not re-read)",
+    "Example: one Mutant Brute empties 300 HP in about 17 s (derived)"
+   ],
+   "unlock_or_cost": "Pre-placed. If it's lost, the run is lost.",
+   "current_quest_coverage": "'Find the Pedestal' (campaign.snbt:111): 300 HP, a bar within 64 blocks, a mob in reach hits it for its own attack damage, and the run ends at zero. All accurate; the task observes the pedestal block. It doesn't cover the alerts, the explosion immunity, or that mining it ends the run.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Observation BLOCK supplementaries:pedestal (current)",
+    "Shared custom task on the first alert (firePedestalAlert, pedestal_health.js:110-118)"
+   ],
+   "teaching_hook": "It's a damage-per-second race. Each mob hits it for its own attack damage every second, so a single brute that reaches it is a crisis, and the alerts tell you to come home wherever you are.",
+   "multiplayer_notes": "The HP pool lives on the marker and is shared. The bar only shows within 64 blocks; the alerts reach everyone.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Golden carrots",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "Pedestal healing",
+   "category": "pedestal",
+   "tier": "T0",
+   "ids": [
+    "minecraft:golden_carrot",
+    "minecraft:nether_star"
+   ],
+   "player_facing_summary": "Right-click the pedestal holding a golden carrot for +10% of max HP, or a nether star for a full heal. The item is used up (not in creative) and never goes on the stand. At full health, or after the pedestal has fallen, nothing is used. Wave clears heal 5%, and a Max HP upgrade heals the 100 HP it adds.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_health.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_upgrades.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/data/bountybags/loot_tables/items/legendary.json"
+   ],
+   "key_numbers": [
+    "Golden carrot 10%, nether star 100% (pedestal_health.js:164-170)",
+    "Main hand only, only the stored pedestal (:184-210)",
+    "Heal effect: totem particles and beacon sound (:128-132)",
+    "Clear heals 5% (wave_status.js:270-271). Max HP tier heals +100 (pedestal_upgrades.js:138-141)",
+    "Sources: golden carrot is the vanilla recipe (no KubeJS override found), and gold nuggets and carrots are both in Uncommon bags (uncommon.json); also structure loot (structure_loot_progression.js:70). Nether star: 20% per airdrop (wave_airdrop.json:34-42), weight 25/100 in Legendary bags (legendary.json)"
+   ],
+   "unlock_or_cost": "Golden carrot: 8 gold nuggets and a carrot (vanilla). Nether star: loot only.",
+   "current_quest_coverage": "'Find the Pedestal', second paragraph (campaign.snbt:83), is accurate, and the GUI status lore says the same (pedestal_upgrades.js:234-235). 'Not Just Jewelry' rewards 4 golden carrots.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Per-player custom task inside the heal handler after a successful heal (pedestal_health.js:204-207): qmCompleteForPlayer(player,'pedestalHeal')",
+    "A separate custom task for a nether-star heal"
+   ],
+   "teaching_hook": "A nether star is either a full pedestal heal or the core of a Totem of Undying (hardcore_totem_recipe.js:6-12), so it's a real choice. Golden carrots are the cheap per-wave patch.",
+   "multiplayer_notes": "Anyone can heal it, and the HP is shared. The heal message goes to the healer.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Golden carrots x4-8",
+    "One nether star at a big milestone, offered as a choice against a totem (FTB 'choice' reward type)"
+   ]
+  },
+  {
+   "name": "Pedestal upgrades: Max HP, Armor, Thorns (GUI, /pedestal, [Upgrades] link)",
+   "category": "pedestal",
+   "tier": "T0 onward (XP-gated)",
+   "ids": [
+    "/pedestal",
+    "/pedestal upgrade hp|armor|thorns",
+    "3-row chest GUI titled 'Pedestal' (icons golden_apple / iron_chestplate / cactus)",
+    "marker keys td_pedestalUpg_hp, td_pedestalUpg_armor, td_pedestalUpg_thorns"
+   ],
+   "player_facing_summary": "Spend XP levels on the pedestal. Max HP goes to 400/500/600, Armor to 15/30/45% less damage, and Thorns to 1/2/3 damage a second back at every mob hitting it. Each stat's tiers cost 6, then 12, then 18 levels. Open the screen by right-clicking the pedestal with an empty hand, by typing /pedestal anywhere, or with the green [Upgrades] link in chat after a clear. Buying needs you within 32 blocks. The top slot shows health, your levels and how to heal. Every purchase is announced to everyone.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_upgrades.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_health.js"
+   ],
+   "key_numbers": [
+    "Costs [6, 12, 18] levels (pedestal_upgrades.js:15): 36 per stat, 108 to max all nine (derived)",
+    "Range 32 blocks horizontal (:16, :35-42)",
+    "+100 HP, 0.15 armor, 1 thorns per tier, max tier 3 (pedestal_health.js:26-32)",
+    "Armor result never below 1 damage (:293-296). Thorns hit every attacker once a second as minecraft:thorns damage (:297-303)",
+    "GUI layout (pedestal_upgrades.js:154-160, :185-186, :222-287). Double-click guard 10 ticks (:188-191). Stale-price guard (:353-366)",
+    "Broadcast '[Pedestal] <name> raised <stat> to <tier>' (:145-149). Chat-menu fallback (:57-100)",
+    "[Upgrades] link (:445-468). /pedestal command (:470-495)"
+   ],
+   "unlock_or_cost": "XP levels only.",
+   "current_quest_coverage": "'Shore It Up' (campaign.snbt:656) gives the stats, the 6/12/18 costs and all three ways to open the screen, all accurate. Its task is only a checkmark.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Shared custom task on the first successful buy (buyPedestalUpgrade returns 1, pedestal_upgrades.js:136-151)",
+    "Per-player custom task in openPedestalUpgradeGui (:368-394)",
+    "Progress bar 'tiers bought 0/9' via the bounty_kills.js setProgress reflection",
+    "Separate quests per stat at tier III"
+   ],
+   "teaching_hook": "XP levels are the pedestal's currency. Every kill you make yourself and every quest XP reward is pedestal armour. Armor first makes every heal go further; Thorns punishes crowds. By vanilla rules XP only drops from kills with a recent player hit, so turret-only kills give none (vanilla behaviour, not re-verified in this pack).",
+   "multiplayer_notes": "Tiers are shared world state and anyone can pay, so a party can pool levels. The GUI stops anyone paying a price that changed under them. XP is per player.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "XP levels sized to tiers: a 6-level reward lets a player buy tier I on the spot",
+    "Golden carrots"
+   ]
+  },
+  {
+   "name": "Pedestal stand: only the amulet, and the Take button",
+   "category": "pedestal / amulet",
+   "tier": "T0",
+   "ids": [
+    "Supplementaries pedestal stand (item display)",
+    "GUI slot (4,2) 'Take the amulet'",
+    "player persistentData td_pedestalTakenItems"
+   ],
+   "player_facing_summary": "Only the amulet goes on the stand. Right-clicking it with any other item while the stand is empty is refused ('Only the amulet sits on the stand.'); sneaking uses the held item normally instead. To get the amulet back, or anything stuck there, open the pedestal screen and click the Take button on the bottom row. It needs you within 32 blocks, and the item lands in your inventory when you close the screen; pickups are blocked while the screen is open.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_upgrades.js"
+   ],
+   "key_numbers": [
+    "Refusal rules (pedestal_upgrades.js:396-443). Notice limited to once per 60 ticks (:396-400)",
+    "Take button and lore (:262-285). Take logic (:289-311)",
+    "Item delivered after the screen closes (:173-182, :317-347). Pickups cancelled while it's open (:349-351)"
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "'Leave It Behind' (campaign.snbt:449) explains Take, accurately. It doesn't mention the 32-block requirement or that the item arrives when you close the screen; the GUI lore says the latter (:273-274).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Per-player custom task when the amulet is taken (pedestalGuiTakeFromStand, :292-311)"
+   ],
+   "teaching_hook": "Lifting the amulet closes the border on everyone outside, which is why Take only works near the pedestal. Do it from home.",
+   "multiplayer_notes": "Any player can take any amulet off the stand; amulets have no owner. A parked item survives a logout.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "None (teaching only)"
+   ]
+  },
+  {
+   "name": "Game over: the pedestal falls",
+   "category": "pedestal / fail state",
+   "tier": "T0",
+   "ids": [
+    "marker key td_pedestalDestroyed"
+   ],
+   "player_facing_summary": "If the pedestal's HP hits 0 it breaks. If its block is removed any other way except an explosion (mining it, pistons), the result is the same. Everyone sees 'GAME OVER' / 'The pedestal has fallen. Everything it was holding back is loose.', then 'Start a new world to try again.'. The wave ends, queued spawns are dropped, the countdown stops and the horn goes quiet for good. The world stays playable.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_destruction.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_health.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/explosion_player_safety.js"
+   ],
+   "key_numbers": [
+    "0-HP path (pedestal_health.js:317-330)",
+    "Block check once a second (pedestal_destruction.js:54-75)",
+    "Trigger (:12-52): titles :35-37, chat lines to one player :41-42, delayed title :44-47",
+    "The flag is never cleared (:49-51). The horn stays silent (wave_spawner.js:452-455)",
+    "Explosions can't remove the block (explosion_player_safety.js:34-40). No script stops a player breaking it (grep: no BlockEvents.broken for supplementaries:pedestal)"
+   ],
+   "unlock_or_cost": "None.",
+   "current_quest_coverage": "'Find the Pedestal' says 'If it reaches zero the waves stop and the run is over', which is accurate. Nothing warns that breaking the block yourself ends the run.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "n/a"
+   ],
+   "teaching_hook": "Never mine or piston the pedestal: removing the block by hand is an instant loss, even though explosions can't touch it.",
+   "multiplayer_notes": "One loss for the whole server. Titles reach everyone; the chat lines reach only one player.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "None"
+   ]
+  },
+  {
+   "name": "Amulet: getting it and wearing it",
+   "category": "amulet",
+   "tier": "Early (about 8 gold)",
+   "ids": [
+    "kubejs:amulet",
+    "Curios necklace slot (data/kubejs/curios)",
+    "player persistentData td_amuletWorn"
+   ],
+   "player_facing_summary": "The amulet is a Curios necklace with no recipe: hand in 8 gold ingots to the 'Not Just Jewelry' quest and claim it. Worn, it gives hidden Regeneration I and Resistance I (20% less damage). It's fire- and lava-proof and can't be replaced. While the amulet isn't on the pedestal, the border is a hard wall: anyone found outside is pushed back in with 'Something holds you to this ground. Leave the pendant behind if you mean to go further.'.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/startup_scripts/amulet.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/amulet_worn.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/amulet_border.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/ftbquests/quests/chapters/campaign.snbt"
+   ],
+   "key_numbers": [
+    "Item, tooltip and fireResistant (startup_scripts/amulet.js:14-19). Curios equip/unequip hooks (:25-34)",
+    "Buffs re-applied every 50 ticks for 200 ticks, hidden (amulet_worn.js:7, :12, :25-26)",
+    "Border push checked every 5 ticks, 1-block margin; long pushes land on the surface 3 blocks inside (amulet_border.js:11-16, :45-62). Chat once per crossing (:64-66)",
+    "Quest hand-in: 8 gold ingots, consumed (campaign.snbt:407-414)",
+    "Average gold from bag kills: about 0.48 ingots per wave-mob kill, so about 17 kills for 8 gold (derived from the bag JSON seeds; installs read config/bountybags/*.toml, loot_bag_drops.js:5-9)"
+   ],
+   "unlock_or_cost": "Quest reward only: 8 gold ingots handed in (campaign.snbt:378-419).",
+   "current_quest_coverage": "'Not Just Jewelry' (:416), 'Wear It' (:442) and the tip 'Find the Curios Slot' (tips_and_tricks.snbt:228) are all accurate.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Existing: the item hand-in, plus the 'Wear It' custom task from td_amuletWorn (quest_milestones.js:113-114)"
+   ],
+   "teaching_hook": "The amulet is the stay-or-explore lever. Worn, it makes you a tougher fighter at home; on the pedestal, it's the way out. It can't be replaced if lost.",
+   "multiplayer_notes": "Each player has their own item and worn flag. FTB rewards are claimed per player: QuestKey.forReward keys on the player's UUID unless it's a team reward, and data.snbt:6 sets default_reward_team false. So one 8-gold hand-in (a team task, consumed once) lets every party member claim an amulet. 'Wear It' completes for the whole party when anyone equips one.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Golden carrots (current)",
+    "XP levels",
+    "AVOID: a second amulet or any item that opens the border"
+   ]
+  },
+  {
+   "name": "Amulet on the pedestal: opening the border",
+   "category": "amulet / exploration",
+   "tier": "Early",
+   "ids": [
+    "marker key td_amuletOnPedestal",
+    "/worldborder set (+10,000,000)"
+   ],
+   "player_facing_summary": "Set the amulet on the pedestal (right-click while holding it) and the border is pushed out by 10,000,000 blocks, so anyone can walk out; whoever was wearing it loses the buffs. Lifting it with Take shrinks the border back to its earned size. Every player outside is pulled back to the edge, and wave mobs stuck outside are returned to the spawn ring. Waves still target the pedestal either way.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/amulet_pedestal.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/amulet_border.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_airdrop.js"
+   ],
+   "key_numbers": [
+    "BORDER_EXPAND_DELTA 10,000,000 (amulet_pedestal.js:12-16)",
+    "Toggle and chat lines (:18-43). Shrink skipped if the result would be under 50 (:33-40)",
+    "Wave mobs outside are returned (:45-69)",
+    "Stand polled twice a second (:71-104)",
+    "The spawn ring ignores the bonus width (wave_spawner.js:247-251)",
+    "Blocks past the border can't be used (wave_airdrop.js:33-35 comment, ServerLevel#mayInteract)"
+   ],
+   "unlock_or_cost": "Needs the amulet.",
+   "current_quest_coverage": "'Leave It Behind' (campaign.snbt:469) is accurate, and 'Past the Line' (:500) follows it. Neither ties the amulet to reaching the airdrop.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "Existing shared custom task (quest_milestones.js:105)",
+    "Per-player custom task the first time a player is outside the border with the amulet down (amulet_border.js isInside false while td_amuletOnPedestal)"
+   ],
+   "teaching_hook": "The first supply crate (wave 5) always lands outside the border: 90-110 blocks from the pedestal against an 85-wide border. Blocks past the border can't be used, so the amulet is your ticket to the airdrop and the ruins. While it sits on the stand, nobody is wearing it.",
+   "multiplayer_notes": "One amulet on the stand opens the border for the whole server. In a party, one player can park theirs while the others keep their buffs, so the stay-vs-explore cost is much smaller than solo (a design point for the user). The on/off chat line goes to whichever player's tick noticed the change, not necessarily the one who placed it (amulet_pedestal.js:18-19).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Ender pearls (current)",
+    "A Waystone",
+    "AVOID: anything that opens the border without the amulet"
+   ]
+  },
+  {
+   "name": "Boss waves: The Reaper and The Demolisher",
+   "category": "events / boss",
+   "tier": "Waves 10, 20, 30, ...",
+   "ids": [
+    "undeadnights:elite_zombie as 'The Reaper'",
+    "undeadnights:demolition_zombie as 'The Demolisher'",
+    "tag td_boss",
+    "bossbar kubejs:main_boss",
+    "drops: securitycraft:sentry, kubejs:shrapnel x12, minecraft:totem_of_undying"
+   ],
+   "player_facing_summary": "Every 10th wave adds a named boss in the spawn ring, with a red boss bar for everyone, music played at each player, the title 'HORDE N: BOSS' and the chat line '[Boss] <name> is out there somewhere - find it and end it.'. Waves 10, 30, 50 and so on bring The Reaper: 200 HP, 24 attack, speed 0.36, black leather armour, Pigstep, 'has arrived.'. Waves 20, 40, 60 bring The Demolisher: 350 HP, 15 attack, gold armour, no TNT, music disc 11, 'is coming for the pedestal.'. It goes for the pedestal like any wave mob. Killing it shows '<name> FALLS' / 'The base breathes easier - for now.' and drops an invulnerable Sentry, 12 Shrapnel and a Totem of Undying, plus the normal loot-bag rolls.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/boss_wave.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/quest_milestones.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/loot_bag_drops.js"
+   ],
+   "key_numbers": [
+    "Every 10th wave (boss_wave.js:13). Reaper on odd boss numbers, Demolisher on even (:50-55)",
+    "Reaper: 200 HP, 24 attack, speed 0.36 (:19-33). Demolisher: 350 HP, 15 attack, throws no TNT (:34-47)",
+    "Spawn, titles and music (:70-128). Boss bar refreshed every 10 ticks (:188-224)",
+    "Drops (:181-185). A boss removed with reason KILLED, such as a burning Demolisher exploding, still counts (:200-211)",
+    "At the pedestal: about 12.5 s to empty 300 HP for The Reaper (24/s), about 23 s with Armor III (13/s) (derived)",
+    "Bag rolls still apply (loot_bag_drops.js:15-18, :29-38)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "'The Reaper' (campaign.snbt:347): its custom task completes on any boss death (quest_milestones.js:118-126). The title names the first boss and the icon is an Elite Zombie spawn egg. The Demolisher isn't mentioned. Bounties has a different 'Reaper' quest (750 kills, bounties.snbt:141), so the name collides.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Existing shared custom task",
+    "Split into two custom tasks by boss type with bossConfigForEntityType (boss_wave.js:59-61): a hidden Demolisher quest revealed on kill",
+    "Observation ENTITY_TYPE would also match ordinary elites, so it's unsuitable"
+   ],
+   "teaching_hook": "The boss walks to the pedestal, and The Reaper strips it in about 12 seconds. Intercept it out in the ring and hit it to drag it off for 8 seconds at a time (mob_aggro.js:133). The kill pays a totem.",
+   "multiplayer_notes": "A shared fight; everyone gets the boss bar and music. The drops are physical items at the death spot, first come first served. The milestone is shared, and each member claims their own reward.",
+   "spoiler_sensitive": true,
+   "reward_candidates": [
+    "Legendary bag (current)",
+    "XP levels (current: 8)",
+    "A cosmetic trophy, e.g. a renamed zombie head with lore",
+    "AVOID: extra totems here, since the boss already drops one"
+   ]
+  },
+  {
+   "name": "Supply airdrop (every 5th wave)",
+   "category": "events / loot",
+   "tier": "Waves 5, 10, 15, ...",
+   "ids": [
+    "dyairdrop:plane",
+    "dyairdrop:airdroplarge (crate block)",
+    "loot table kubejs:chests/wave_airdrop",
+    "minecraft:beacon on a 3x3 securitycraft:reinforced_iron_block base",
+    "Xaero waypoint chat line 'xaero-waypoint:Supply Crate:S:x:y:z:6'"
+   ],
+   "player_facing_summary": "12 seconds after clearing wave 5, 10, 15 and so on, everyone sees 'LOOK UP': a plane flies in from the west, 40 blocks above the pedestal, and drops a crate 90-110 blocks from the pedestal in a random direction. On landing there's a flash of particles, a beacon beam from a 3x3 base on top of the crate, a gold 'Supply Crate' waypoint line in chat with an [Add] button, and 'Supply crate landed to the <direction>' in the title, chat and action bar. The crate holds 1 Legendary bag, 2-4 netherite scrap, 2-4 diamond blocks, a 20% chance of a nether star, one gun with its own ammo, and 2-4 grenades. An emptied crate vanishes along with its beacon; an unopened one stays forever. The beacon can't be broken.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_airdrop.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/dyairdrop.toml"
+   ],
+   "key_numbers": [
+    "Every 5th wave (wave_airdrop.js:22). Launch 240 ticks after the clear (:61-64)",
+    "Height +40, approach 200 blocks from the west (:25-29). Landing 90-110 blocks out (:36-37)",
+    "Messages (:75-87, :168-171, :433-453). Waypoint format (:287-293). Unbreakable beacon (:295-312). Removed once empty (:335-375)",
+    "Loot (wave_airdrop.json:4-74). Gun weights out of 92: pistol 15, revolver 12, SMG 10, tommy gun 8, shotgun 8, double-barrel 8, auto shotgun 5, DMR 5, sniper 4, potato cannon 4, laser gun 3, flamethrower 3, heavy sniper 3, minigun 2, bazooka 2",
+    "Lands outside the border (computed): always at wave 5 (border 85 wide), about 80% of the time at wave 10, never from wave 15",
+    "Crate isn't password-locked (pin false, :166). The mod's own random drops and enemies are off (dyairdrop.toml:21, :33)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "No quest covers the airdrop. The Arsenal's 'Energized Dust' (arsenal.snbt:541) and 'Sparks in the Dark' (campaign.snbt:1069) mention supply crates in passing.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Shared custom task at landing (wave_airdrop.js:443-453)",
+    "Per-player custom task on BlockEvents.rightClicked('dyairdrop:airdroplarge') (:323-333)",
+    "Shared 'crate looted' custom task from pollAirdropCrateCleanup (:369-374)"
+   ],
+   "teaching_hook": "Wave 5's crate lands past the wall, so you need the amulet on the pedestal to reach it. Follow the beam or click [Add] on the waypoint. Two diamond blocks, a netherite scrap and a nether star (both drop here) plus one gold block craft a Totem of Undying.",
+   "multiplayer_notes": "One shared crate per drop: it's a normal container, not Lootr, so first come first served. Everyone gets the messages and the waypoint.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "For the first crate looted: XP levels, a Rare bag, a few grenades",
+    "AVOID: gun-and-ammo kits outside the crate"
+   ]
+  },
+  {
+   "name": "Hardcore mode",
+   "category": "optional rule",
+   "tier": "Optional",
+   "ids": [
+    "/hardcore enable",
+    "/hardcore disable",
+    "marker keys td_hardcoreEnabled, td_hardcoreGameOver"
+   ],
+   "player_facing_summary": "Optional permadeath, off by default. Any player can turn it on or off. With it on, once every online player is dead at the same moment, it's GAME OVER: everyone becomes a spectator and is disconnected 4 seconds later with the game-over text. Logging back in gives spectator mode and a reminder title. A Totem of Undying save happens before death, as in vanilla, so it never counts.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/hardcore_toggle.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/hardcore_death.js"
+   ],
+   "key_numbers": [
+    "No permission check (hardcore_toggle.js:1-3). Needs the base to exist (:12-15). Only the player who toggles it is told (:17-18, :31)",
+    "Game over only when all online players are dead (hardcore_death.js:25-39)",
+    "Kick after 80 ticks (:41-43). Spectator mode (:93-94)",
+    "Respawn and login handling (:122-153). Totem saves never reach the handler (:11-13)"
+   ],
+   "unlock_or_cost": "A free command.",
+   "current_quest_coverage": "Tip 'Go Hardcore' (tips_and_tricks.snbt:294) says any death without a totem ends the run. In multiplayer the run only ends when every online player is dead (hardcore_death.js:25-28), so the text is wrong for parties. It also doesn't say that any player can toggle it.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Shared custom task in the enable branch (hardcore_toggle.js:16)",
+    "Item task minecraft:totem_of_undying for a 'carry insurance' follow-up"
+   ],
+   "teaching_hook": "In a party it's last one standing: if a friend is still alive, your death is a normal respawn. Keep a totem in your off-hand (vanilla rule).",
+   "multiplayer_notes": "World-level setting. Offline players don't count. Any member can flip it, and only they are told.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "A cosmetic trophy and XP",
+    "At most one totem, and only at a late milestone"
+   ]
+  },
+  {
+   "name": "Totem of Undying recipe",
+   "category": "crafting / hardcore",
+   "tier": "Mid (loot-gated)",
+   "ids": [
+    "minecraft:totem_of_undying"
+   ],
+   "player_facing_summary": "Totems can be crafted here (shapeless): a nether star, 2 diamond blocks, a gold block and a netherite scrap. They also drop from bosses, from Legendary bags, and as the 'No Turning Back' quest reward.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/hardcore_totem_recipe.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/boss_wave.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/data/bountybags/loot_tables/items/legendary.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/lootbeams/light_config.toml"
+   ],
+   "key_numbers": [
+    "Recipe (hardcore_totem_recipe.js:5-13)",
+    "Boss drop (boss_wave.js:185). Legendary bag weight 8/100 (legendary.json). 'No Turning Back' reward (campaign.snbt:858-866)",
+    "Loot Beams whitelist includes totems and nether stars (lootbeams/light_config.toml:30-36)"
+   ],
+   "unlock_or_cost": "KubeJS recipe; ingredients come from loot.",
+   "current_quest_coverage": "No quest teaches the recipe. 'No Turning Back' only says to keep the totem on you.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "Item task minecraft:totem_of_undying (any source)",
+    "KubeJS PlayerEvents.crafted for the crafted case, as a per-player custom task"
+   ],
+   "teaching_hook": "An airdrop is a totem kit minus one gold block. The nether star is shared with the full pedestal heal, so you have to choose.",
+   "multiplayer_notes": "A per-player item.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "A gold block (the missing ingredient)",
+    "XP levels"
+   ]
+  },
+  {
+   "name": "HUD and announcements (action bar, boss bars, sidebar, titles, toasts, sounds)",
+   "category": "HUD",
+   "tier": "All",
+   "ids": [
+    "bossbar kubejs:pedestal_health",
+    "bossbar kubejs:main_boss",
+    "scoreboard objective td_waves_cleared ('Waves Cleared', sidebar)",
+    "team td_stragglers"
+   ],
+   "player_facing_summary": "One action-bar line is shared by priority: a pedestal alert (4 s) beats an airdrop notice, which beats the wave counter during a wave or the countdown between waves. There are two boss bars: 'Pedestal' (red, within 64 blocks) and the boss bar (everyone). The sidebar shows 'Waves Cleared'. Titles mark wave start, wave clear, boss arrival, 'LOOK UP', crate landed, the wave-5 beat and GAME OVER. Toasts show Base Expansion and the horde difficulty. Sounds: the horn, a bell at wave start, a cave cue per spawn, a dirt burst for ambushers, the horde scream in endless, an anvil for pedestal alerts, and boss music.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_spawner.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/pedestal_health.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_airdrop.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/boss_wave.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/base_expansion.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js"
+   ],
+   "key_numbers": [
+    "Action-bar priority (wave_spawner.js:799-805; wave_status.js:326-334; pedestal_health.js:102-126; wave_airdrop.js:75-87)",
+    "Sidebar created (playtest_starter_kit.js:506-509), updated on clear (wave_status.js:268), caught up at login (playtest_starter_kit.js:1382-1388)",
+    "Boss bar for all players (boss_wave.js:111-120)",
+    "One chat line per wave start (wave_spawner.js:570-571, :611)"
+   ],
+   "unlock_or_cost": "Always on.",
+   "current_quest_coverage": "The HUD as a whole isn't covered.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "n/a. Teach it with a checkmark 'reading the HUD' quest, ideally with an image"
+   ],
+   "teaching_hook": "Read the bar: red ⚔ means fight, blue ⏱ means build time, and red capitals mean the pedestal is being hit, wherever you are.",
+   "multiplayer_notes": "Several messages reach only one player: the Base Expansion toast (base_expansion.js:37-38), the 'Horde N - difficulty L' toast (wave_spawner.js:567), the wave-5 story chat lines (wave_status.js:78-80, :115), the amulet on/off chat (amulet_pedestal.js:31, :41), the pedestal game-over chat (pedestal_destruction.js:41-42) and the hardcore toggle confirmation (hardcore_toggle.js:17-18). The quest text can carry this information to everyone else.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "None"
+   ]
+  },
+  {
+   "name": "Quest milestone bridge (quest_milestones.js)",
+   "category": "quest bridge",
+   "tier": "Infrastructure",
+   "ids": [
+    "/ftbquests change_progress @s complete <taskId> (run as the player)",
+    "marker keys td_q_<key>, td_q_lastClearedWave",
+    "player persistentData td_qp_<key>"
+   ],
+   "player_facing_summary": "KubeJS completes the campaign's custom tasks, which players can't tick off by hand. Shared milestones are recorded once per world on the marker and handed to every player, including anyone offline at the time or joining later. Personal milestones complete for that player's quest team.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/quest_milestones.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/boss_wave.js"
+   ],
+   "key_numbers": [
+    "Task ids (quest_milestones.js:16-25): horn 5A1C0E7B93D4F216 = 'Sound the Horn'. wave1 6B2D1F8CA4E50327 = 'Wave One, Cleared'. wave8 1E5042BFD718365A = 'The Last Written Wave'. boss 2F6153C0E829476B = 'The Reaper'. wave15 307264D1F93A587C = 'No Ceiling'. amuletWorn 418375E20A4B698D = 'Wear It'. amuletOnPedestal 529486F31B5C7A9E = 'Leave It Behind'. openIt 4B770968EBD48DB3 = 'Open It'",
+    "Shared keys (:27-28)",
+    "Polled every 20 ticks on ServerEvents.tick, so clears with nobody online still count (:45, :91-116)",
+    "Wave-clear tracking, excluding losses (:68-89)",
+    "Boss from the death event (:118-126) and from boss_wave.js:208-210 for removed bosses",
+    "Sneak-clicking a bag only previews it, so it doesn't count (:38-44)"
+   ],
+   "unlock_or_cost": "n/a",
+   "current_quest_coverage": "Every mapped quest exists in campaign.snbt and matches.",
+   "coverage_quality": "good",
+   "detection_options": [
+    "This is the mechanism for new detections: add a positive-hex id (first character 0-7, IDEAS.md:141-148) to QM_TASKS, then call qmCompleteShared(server, data, key) for world events or qmCompleteForPlayer(player, key) for personal ones"
+   ],
+   "teaching_hook": "n/a",
+   "multiplayer_notes": "With one party, a 'per-player' task completes for everyone in it the first time anyone triggers it. The per-player td_qp_ flags still stop repeats.",
+   "spoiler_sensitive": false,
+   "reward_candidates": []
+  },
+  {
+   "name": "Bounty kill counter (Bounties chapter)",
+   "category": "quest bridge / rewards",
+   "tier": "All",
+   "ids": [
+    "marker key td_bountyKillCount",
+    "tasks 42F2080CC88FFF1F, 23C4C36D29BF9EDF, 57C0DB55E9655079, 1CB86244570F2424, repeatable 1355429CD45AF725"
+   ],
+   "player_facing_summary": "Every wave-mob death adds to one world-wide count, whatever did the killing: players, friends, turrets, traps, fire or lava. Environmental deaths and /kill don't count. At 25, 100, 300 and 750 kills a tier completes for everyone online with '[Bounty] ... complete'. 'Zombie Masher' repeats every 1500 kills. The quest progress bars mirror the world count.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/bounty_kills.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/config/ftbquests/quests/chapters/bounties.snbt"
+   ],
+   "key_numbers": [
+    "Excluded damage types: drown, starve, freeze, fall, out_of_world, cramming, in_wall, generic_kill (bounty_kills.js:17-29)",
+    "Tiers 25/100/300/750 (:37-42). Repeatable every 1500 (:31-32)",
+    "Only td_wave_mob deaths count (:56-60)",
+    "Bars written through reflection, since snbt max_progress is ignored (:82-269)"
+   ],
+   "unlock_or_cost": "Automatic.",
+   "current_quest_coverage": "bounties.snbt: First Blood, Exterminator, Culling, Reaper, Zombie Masher. The text 'whoever or whatever drops it' overstates slightly, since drowning, starving, freezing, falls, the void, cramming, suffocation and /kill don't count (bounty_kills.js:20-29).",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Existing"
+   ],
+   "teaching_hook": "Traps and turrets earn bounties too, so automation pays.",
+   "multiplayer_notes": "One shared world count. Completion is per team, and each member claims their own copy of the rewards (per-player claims). Whether more than one member can claim each repeat of Zombie Masher is unverified.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Existing XP 5/10/15/20 plus bags",
+    "Zombie Masher: Legendary bag"
+   ]
+  },
+  {
+   "name": "Wave loot bags (BountyBags drops)",
+   "category": "loot",
+   "tier": "All",
+   "ids": [
+    "bountybags:uncommon_loot_bag",
+    "bountybags:rare_loot_bag",
+    "bountybags:epic_loot_bag",
+    "bountybags:legendary_loot_bag",
+    "kubejs:shrapnel"
+   ],
+   "player_facing_summary": "Every wave-mob kill, by any killer, makes four separate rolls: 20% for an Uncommon bag, 3.5% Rare, 3% Epic and 2% Legendary. The odds are the same for every mob type, bosses included. Structure mobs never drop bags. Right-click a bag to open it; popups show what came out.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/loot_bag_drops.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/loot_bag_notification.js",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/data/bountybags/loot_tables/items/legendary.json",
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/startup_scripts/shrapnel.js"
+   ],
+   "key_numbers": [
+    "Odds 0.2 / 0.035 / 0.03 / 0.02 (loot_bag_drops.js:22-38). Only td_wave_mob (:25-32)",
+    "Contents are seeded from the JSON; installs read config/bountybags/*.toml (:5-9)",
+    "Shrapnel comes from Uncommon, Rare and Epic bags only (shrapnel.js:1-3; legendary.json has none)",
+    "About 0.31 Shrapnel per kill on average (derived from the seeds)",
+    "Pick Up Notifier popups for bag contents (loot_bag_notification.js:1-12)"
+   ],
+   "unlock_or_cost": "Kill drops.",
+   "current_quest_coverage": "'Spoils of War' (campaign.snbt:238) gives accurate odds. 'Open It' (:276) says every bag can carry Shrapnel, but Legendary bags can't. Both can complete without a single mob drop: the book is in flexible mode (data.snbt:24, and TeamData.canStartTasks in the jar lets tasks progress before their dependencies). The Uncommon bags rewarded by 'Borrowed Time' and 'Find the Pedestal' before wave 1 satisfy 'Spoils of War', and opening one completes 'Open It'.",
+   "coverage_quality": "inaccurate",
+   "detection_options": [
+    "Existing first-open custom task (quest_milestones.js:38-44)",
+    "Set those quests to progression_mode linear (Quest has a per-quest progression_mode key), or stop giving Uncommon bags before wave 1"
+   ],
+   "teaching_hook": "Kill count pays, not how tough the mob is. Bags carry Shrapnel (for Sentries and shotgun shells) and gold (for the amulet).",
+   "multiplayer_notes": "Bags drop on the ground, so the first to pick one up gets it.",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Bags as the main reward currency, in escalating tiers"
+   ]
+  },
+  {
+   "name": "Ruin ring near the base",
+   "category": "exploration",
+   "tier": "Early (beyond the border)",
+   "ids": [
+    "/place structure (12 candidates, e.g. postapocalypse_structures:redhouse, abandoned_urban:gas_station, watchtower_building:abandoned_watchtower)"
+   ],
+   "player_facing_summary": "Six medium ruins, chosen from 12 kinds (houses, gas stations, a motel, a watchtower, desert ruins, a bank and so on), are placed 100-130 blocks from a fresh base at spread-out angles. They come with their normal chests, Lootr conversion and guard spawners.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/playtest_starter_kit.js"
+   ],
+   "key_numbers": [
+    "RUIN_RING_COUNT 6, 100-130 blocks out (playtest_starter_kit.js:1277-1304). Placement (:1306-1323)"
+   ],
+   "unlock_or_cost": "Fresh worlds only.",
+   "current_quest_coverage": "'Past the Line' (campaign.snbt:500) uses a structure task on #kubejs:ruins.",
+   "coverage_quality": "partial",
+   "detection_options": [
+    "Structure task (existing). Location tasks can't work because positions differ per world"
+   ],
+   "teaching_hook": "The first ruins are about 100-130 blocks out, beyond the early border, so they come once the amulet is on the pedestal.",
+   "multiplayer_notes": "The ruins are shared, but Lootr stashes are per player (outside this scope).",
+   "spoiler_sensitive": false,
+   "reward_candidates": [
+    "Rare bag (current)",
+    "Ender pearls"
+   ]
+  },
+  {
+   "name": "/tdforceclear (operator unstick)",
+   "category": "admin",
+   "tier": "Admin",
+   "ids": [
+    "/tdforceclear (permission level 2)"
+   ],
+   "player_facing_summary": "An operator-only command that kills every tagged wave mob in the overworld (structure guards are spared) and drops any spawns still queued. The next poll then runs a normal clear, with the heal, border growth and countdown.",
+   "source_files": [
+    "C:/Users/mattf/IdeaProjects/tower-defense-modpack/pack/kubejs/server_scripts/wave_status.js"
+   ],
+   "key_numbers": [
+    "wave_status.js:339-370"
+   ],
+   "unlock_or_cost": "Op only.",
+   "current_quest_coverage": "None.",
+   "coverage_quality": "none",
+   "detection_options": [
+    "n/a"
+   ],
+   "teaching_hook": "For a stuck wave, such as an unreachable glowing straggler.",
+   "multiplayer_notes": "Op only. On the dedicated server the user has to grant op themselves.",
+   "spoiler_sensitive": false,
+   "reward_candidates": []
+  }
+ ],
+ "notes": [
+  "How to read citations: file:line references point to the absolute paths in each entry's source_files. The repo root is C:/Users/mattf/IdeaProjects/tower-defense-modpack. Jar facts come from javap on the instance jars (extracted under the scratchpad jars/ folder). Numbers labelled 'computed' or 'derived' are arithmetic on cited constants.",
+  "Team progress vs per-player rewards (multiplayer). FTB Quests progress is per team, but rewards are claimed per player: dev.ftb.mods.ftbquests.util.QuestKey.forReward keys on the player's UUID unless Reward.isTeamReward(), and data.snbt:6 sets default_reward_team false with no quest overriding it. In a single party this has three effects. (a) Every member claims every reward, including XP levels, bags and amulets; quest XP feeds the shared pedestal upgrades, so a party upgrades about N times faster. (b) 'Per-player' tasks such as 'Wear It', 'Open It' and 'Thin the Horde' complete for the whole party on the first trigger, so the book can't check that each friend learned something. (c) Item hand-ins are paid once per party: 8 gold for 'Not Just Jewelry' gives N amulets. The user's 'nothing scales by player count' rule makes (a) and (c) decisions to raise. Rewards accept a 'team' setting, which pays once per party.",
+  "Flexible progression completes tasks early. data.snbt:24 and campaign.snbt:10 use flexible mode, and TeamData.canStartTasks returns true for FLEXIBLE regardless of dependencies. Examples: 'Spoils of War' (hold an Uncommon bag) is met by bags handed out before wave 1. 'A Stone That Remembers' (hold a Waystone) is met by the Waystone 'The Last Written Wave' rewards. 'Open It' fires when a reward bag is opened. Quest has a per-quest progression_mode key, so linear can be set where order matters.",
+  "FTB Quests 2001.4.22 capabilities, from the jar. Task types: advancement, biome, checkmark, custom, dimension, fluid, forge energy, gamestage, item, kill, location, observation, stat, structure, xp. Observation types: BLOCK, BLOCK_TAG, BLOCK_STATE, BLOCK_ENTITY, BLOCK_ENTITY_TYPE, ENTITY_TYPE, ENTITY_TYPE_TAG. KillTask only takes entity and count, so it can't tell wave mobs from structure mobs or bosses. LocationTask takes fixed coordinates, so it can't target the per-world base. Reward types: advancement, all_table, choice, command, custom, gamestage, item, loot, random, toast, xp, xp_levels; choice, random and loot need reward tables, and none exist under pack/config/ftbquests/quests. Quest keys for spoiler-safe reveals: hide_text_until_complete, hide_details_until_startable, invisible, invisible_until_tasks, hide_until_deps_visible, optional, guide_page, require_sequential_tasks, min_required_dependencies. Memory: invisible quests also hide their dependents.",
+  "Progress bars on custom tasks: the snbt max_progress is ignored (bounty_kills.js:211-225). A 'waves cleared n/10' or 'upgrades bought n/9' bar needs the same CustomTask.setMaxProgress plus TeamData.setProgress reflection.",
+  "Removed by the user's own choice: the 'It's Up to You Now' quest (12f1176), and 'Three Down' plus the 14 'Kill one' bestiary quests (c94f019, FEATURES.md:9984-10005). Don't re-add per-mob kill quests without a new reason.",
+  "Spoiler ledger, to keep out of quest text or behind reveal quests: the wave-5 loss of the starter gear and starter defences (wave_status.js:58-117), which waves 2-8 introduce which mobs, endless horde contents and the brute jump at wave 20, and the boss names, stats and Reaper/Demolisher alternation. The campaign quest 'The Reaper' already names the first boss in its title, and bounties.snbt:141 reuses 'Reaper' for the 750-kill tier, a naming collision.",
+  "Narrative opportunity: the wave-5 clear removes the gear and starter defences, and 12 s later the first airdrop launches with a gun kit. That crate always lands outside the border, so the amulet on the pedestal is needed to reach it, and the book never makes that link.",
+  "Reward-feel facts. Loot Beams whitelists totems, nether stars and diamonds (lootbeams/light_config.toml:30-36) and colours the Legendary bag orange (:23); whether bags get a beam at all with only_equipment = true is unverified. Pick Up Notifier popups show bag contents (loot_bag_notification.js:1-12). The pedestal upgrades need 108 XP levels in total. Averages from the bag JSON seeds: about 0.48 gold ingots and 0.31 Shrapnel per wave-mob kill.",
+  "Stale docs: FEATURES.md:142-153 still describes skeleton and spider hordes. The current hordes are zombie-only (undeadnights_horde_mobs_config.json). Quote code, not FEATURES.md.",
+  "Adjacent mob-behaviour scripts, not inventoried here: wave_mob_dig_haste.js, ladder_climb_assist.js, stuck_mob_nudge.js, wave_mob_fence_shock.js, lure_block.js, trap and turret scripts, and the Lootr and structure scripts.",
+  "Possible stall, unverified in play: Undead Nights' SpawnLocationFinder and SpawnProcess contain no world-border checks. Early endless hordes, which land 70-75 blocks from the player nearest the pedestal, can therefore end up outside the border. There mob_aggro.js:209-213 leaves them idle while wave_status.js:19 still counts them within 96 blocks. The straggler glow and /tdforceclear are the current outs."
+ ]
+}

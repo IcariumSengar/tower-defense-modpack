@@ -10,28 +10,27 @@
 	quest_links: [ ]
 	quests: [
 		{
-			description: ["Every wave zombie that goes down counts toward this, whoever or whatever drops it - turrets and traps get credit too, and so does every other player's kill. Zombies from a structure's spawner don't count. Twenty-five down. Just the start."]
+			description: ["Every wave mob that goes down counts toward this, whoever or whatever drops it - turrets and traps get credit too, and so does every other player's kill. Mobs from a structure's spawner don't count, and neither do deaths by drowning, falling, freezing, starving or /kill; fire and lava do. Twenty-five down. Just the start."]
 			icon: "minecraft:rotten_flesh"
 			id: "605797091B509B1A"
 			rewards: [
-				{
-					id: "0B03B6486BCDFA0A"
-					type: "xp_levels"
-					xp_levels: 5
-				}
 				{
 					id: "23446B175E11DAF4"
 					item: "bountybags:uncommon_loot_bag"
 					type: "item"
 				}
+				{
+					count: 2
+					id: "63B8ABC102CEA86A"
+					item: "kubejs:shrapnel"
+					type: "item"
+				}
 			]
 			shape: "diamond"
-			size: 1.0d
 			tasks: [
 				{
 					icon: "minecraft:rotten_flesh"
 					id: "42F2080CC88FFF1F"
-					max_progress: 25L
 					type: "custom"
 				}
 			]
@@ -41,20 +40,21 @@
 		}
 		{
 			dependencies: ["605797091B509B1A"]
-			hide_until_deps_complete: true
 			description: ["A hundred kills. The horde doesn't get thinner, but your aim is getting better."]
+			hide_until_deps_complete: true
 			icon: "minecraft:iron_sword"
 			id: "730D290220164ACC"
 			rewards: [
 				{
-					id: "02ED631B6C61EDFA"
-					type: "xp_levels"
-					xp_levels: 10
-				}
-				{
 					count: 2
 					id: "0E510FEF00F269EE"
 					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "360FEA68418413A1"
+					item: "kubejs:shrapnel"
 					type: "item"
 				}
 			]
@@ -64,7 +64,6 @@
 				{
 					icon: "minecraft:iron_sword"
 					id: "23C4C36D29BF9EDF"
-					max_progress: 100L
 					type: "custom"
 				}
 			]
@@ -74,20 +73,21 @@
 		}
 		{
 			dependencies: ["730D290220164ACC"]
-			hide_until_deps_complete: true
 			description: ["Three hundred. This stopped being self-defense a while ago."]
+			hide_until_deps_complete: true
 			icon: "minecraft:diamond_sword"
 			id: "26D4AC6A4759FFDF"
 			rewards: [
 				{
-					id: "4EC74101DA0401D3"
-					type: "xp_levels"
-					xp_levels: 15
-				}
-				{
 					count: 2
 					id: "4F0F9E11439DD724"
 					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+				{
+					count: 6
+					id: "76E84B43C79FEB4E"
+					item: "kubejs:shrapnel"
 					type: "item"
 				}
 			]
@@ -97,7 +97,6 @@
 				{
 					icon: "minecraft:diamond_sword"
 					id: "57C0DB55E9655079"
-					max_progress: 300L
 					type: "custom"
 				}
 			]
@@ -107,16 +106,11 @@
 		}
 		{
 			dependencies: ["26D4AC6A4759FFDF"]
-			hide_until_deps_complete: true
 			description: ["Seven hundred fifty kills. Whatever is still coming at you, you're built for it now."]
+			hide_until_deps_complete: true
 			icon: "minecraft:netherite_sword"
 			id: "716E054554316AE5"
 			rewards: [
-				{
-					id: "7F52A5324A25C675"
-					type: "xp_levels"
-					xp_levels: 20
-				}
 				{
 					id: "26F887BCD4BAF48B"
 					item: "bountybags:epic_loot_bag"
@@ -127,6 +121,12 @@
 					item: "minecraft:golden_apple"
 					type: "item"
 				}
+				{
+					count: 8
+					id: "5AC709302722BC3A"
+					item: "kubejs:shrapnel"
+					type: "item"
+				}
 			]
 			shape: "diamond"
 			size: 1.75d
@@ -134,22 +134,19 @@
 				{
 					icon: "minecraft:netherite_sword"
 					id: "1CB86244570F2424"
-					max_progress: 750L
 					type: "custom"
 				}
 			]
-			title: "Reaper"
+			title: "Undertaker"
 			x: 6.75d
 			y: 0.0d
 		}
 		{
-			can_repeat: true
 			dependencies: ["716E054554316AE5"]
+			description: ["Fifteen hundred kills. The horde doesn't get thinner, but your aim is getting better. There are more marks past this one."]
 			hide_until_deps_complete: true
-			description: ["Fifteen hundred kills, and counting. There's no ceiling on this one - claim it again every fifteen hundred after, for as long as they keep coming."]
 			icon: "bountybags:legendary_loot_bag"
 			id: "6C33E795D76D13CF"
-			repeat_cooldown: 1
 			rewards: [
 				{
 					id: "0FDBC49878804E0D"
@@ -163,12 +160,119 @@
 				{
 					icon: "bountybags:legendary_loot_bag"
 					id: "1355429CD45AF725"
-					max_progress: 1500L
 					type: "custom"
 				}
 			]
 			title: "Zombie Masher"
 			x: 9.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["6C33E795D76D13CF"]
+			description: ["Three thousand. Somebody should be keeping a tally on the wall."]
+			hide_until_deps_complete: true
+			icon: "minecraft:skeleton_skull"
+			id: "1F50B75C1004E11B"
+			rewards: [
+				{
+					id: "11C790B94F406052"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "3,000 wave kills"
+			tasks: [
+				{
+					icon: "minecraft:skeleton_skull"
+					id: "122BAFE3BB5240E9"
+					type: "custom"
+				}
+			]
+			title: "Body Count"
+			x: 12.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1F50B75C1004E11B"]
+			description: ["Four and a half thousand, and they still keep coming."]
+			hide_until_deps_complete: true
+			icon: "minecraft:wither_skeleton_skull"
+			id: "4E004816C3DEA06A"
+			rewards: [
+				{
+					id: "23519E1986CA9B53"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "4,500 wave kills"
+			tasks: [
+				{
+					icon: "minecraft:wither_skeleton_skull"
+					id: "38AA27B19090DB57"
+					type: "custom"
+				}
+			]
+			title: "Thousand-Yard Stare"
+			x: 14.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["4E004816C3DEA06A"]
+			description: ["Six thousand. The ground out there is more bone than sand by now."]
+			hide_until_deps_complete: true
+			icon: "minecraft:bone_block"
+			id: "35D00343D602C893"
+			rewards: [
+				{
+					id: "5CE1231FB876AE3D"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "6,000 wave kills"
+			tasks: [
+				{
+					icon: "minecraft:bone_block"
+					id: "29CE88581D25B6A2"
+					type: "custom"
+				}
+			]
+			title: "Bone Collector"
+			x: 17.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["35D00343D602C893"]
+			description: ["Seven and a half thousand. Whatever comes next, you've already outlasted the diary by a long way."]
+			hide_until_deps_complete: true
+			icon: "minecraft:totem_of_undying"
+			id: "3FDCF85F9D35757C"
+			rewards: [
+				{
+					id: "1E1052CF80281055"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "gear"
+			size: 2.0d
+			subtitle: "7,500 wave kills"
+			tasks: [
+				{
+					icon: "minecraft:totem_of_undying"
+					id: "1FC10A8F16903C01"
+					type: "custom"
+				}
+			]
+			title: "Still Standing"
+			x: 19.5d
 			y: 0.0d
 		}
 	]

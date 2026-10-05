@@ -264,13 +264,21 @@ function fillPedestalGui(gui, player, shownTiers) {
   if (stand) {
     var standId = `${stand.item.id}`
     var isAmulet = standId === 'kubejs:amulet'
-    var takeName = isAmulet ? 'Take the amulet' : `Take the ${stand.item.getHoverName().getString()}`
-    if (!pedestalPlayerInRange(player, data)) {
+    var leftList = amuletsLeftList(data)
+    var leftCount = leftList === null ? 1 : leftList.length
+    var mine = isAmulet && amuletLeftBy(data, player)
+    var takeName = isAmulet ? 'Take your amulet' : `Take the ${stand.item.getHoverName().getString()}`
+    if (isAmulet && !mine) {
+      takeButton = pedestalGuiItem(standId, 'Your amulet isn\'t here', 'gray', [
+        [`Amulets left here: ${leftCount}`, 'gray'],
+        ['Only the player who left one can take it back.', 'gray'],
+      ])
+    } else if (!pedestalPlayerInRange(player, data)) {
       takeButton = pedestalGuiItem(standId, takeName, 'gray', [['Walk back to the pedestal to take it.', 'gray']])
     } else if (isAmulet) {
       takeButton = pedestalGuiItem(standId, takeName, 'light_purple', [
-        ['Lift the pendant off the stand.', 'gray'],
-        ['The border closes back in.', 'gray'],
+        [`Amulets left here: ${leftCount}`, 'gray'],
+        ['Take yours back and the border holds you again.', 'gray'],
         ['It lands in your inventory when you close this.', 'gray'],
       ])
     } else {
@@ -295,13 +303,28 @@ function pedestalGuiTakeFromStand(player) {
   if (!data) return
   var stand = pedestalGuiStand(level, data)
   if (!stand) return
+  var isAmulet = `${stand.item.id}` === 'kubejs:amulet'
+  if (isAmulet && !amuletLeftBy(data, player)) return
   if (!pedestalPlayerInRange(player, data)) {
     player.tell('§c[Pedestal] §fGet back to the pedestal to take it.')
     return
   }
   var stack = stand.item.copy()
-  stand.tile.setDisplayedItem(Item.of('minecraft:air'))
-  stand.tile.setChanged()
+  var clearStand = true
+  if (isAmulet) {
+    // Takes this player's amulet off the list. The stand keeps showing one
+    // while anyone else's is still here, so the border stays open for them.
+    var list = amuletsLeftList(data) || []
+    var at = list.indexOf(`${player.uuid}`)
+    if (at >= 0) list.splice(at, 1)
+    amuletsLeftSave(data, list)
+    clearStand = list.length === 0
+    stack = Item.of('kubejs:amulet')
+  }
+  if (clearStand) {
+    stand.tile.setDisplayedItem(Item.of('minecraft:air'))
+    stand.tile.setChanged()
+  }
   var pdata = player.persistentData
   var parked = pdata.contains(PEDESTAL_TAKEN_KEY) ? JSON.parse(`${pdata.getString(PEDESTAL_TAKEN_KEY)}`) : []
   var nbt = stack.getNbt()
@@ -393,6 +416,42 @@ function openPedestalUpgradeGui(player) {
   })
 }
 
+// Leaves the held amulet at the pedestal for this player. The first one goes
+// on the stand, which opens the border (amulet_pedestal.js's poll); later ones
+// are kept on the list only. Refused if this player's is already here or the
+// stand holds something else.
+function pedestalLeaveAmulet(player, level, data, held) {
+  var list = amuletsLeftList(data)
+  var stand = pedestalGuiStand(level, data)
+  if (list === null) {
+    // An amulet left before the co-op rule has no recorded owner. Anyone can
+    // take it back (amuletLeftBy's old rule); after that the list starts.
+    if (stand && `${stand.item.id}` === 'kubejs:amulet') {
+      player.notify('§d[Amulet] §fTake the amulet on the stand back first, then leave yours.')
+      return
+    }
+    list = []
+  }
+  if (list.indexOf(`${player.uuid}`) >= 0) {
+    player.notify('§d[Amulet] §fYour amulet is already on the stand.')
+    return
+  }
+  if (stand && `${stand.item.id}` !== 'kubejs:amulet') {
+    player.notify('§d[Pedestal] §fTake the other item off the stand first.')
+    return
+  }
+  if (!stand) {
+    var tile = level.getBlockEntity([data.getInt('td_pedestalX'), data.getInt('td_pedestalY'), data.getInt('td_pedestalZ')])
+    if (!tile) return
+    tile.setDisplayedItem(Item.of('kubejs:amulet'))
+    tile.setChanged()
+  }
+  held.shrink(1)
+  list.push(`${player.uuid}`)
+  amuletsLeftSave(data, list)
+  if (stand) player.tell('§d[Amulet] §fYour pendant joins the one on the stand. The line at the border won\'t hold you now.')
+}
+
 // The refusal notice below goes out at most once per
 // PEDESTAL_STAND_REFUSED_NOTICE_TICKS per player: holding right-click repeats
 // the click every 4 ticks.
@@ -413,14 +472,20 @@ BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   if (`${event.getHand()}` !== 'MAIN_HAND') return
   var held = event.item
   var heldId = `${held.id}`
-  if (!held.isEmpty() && (heldId === 'kubejs:amulet' || PEDESTAL_HEAL_ITEMS[heldId])) return
+  if (!held.isEmpty() && PEDESTAL_HEAL_ITEMS[heldId]) return
   var player = event.entity
   var level = player.getLevel()
   var data = worldData(level)
   if (!data || !data.contains('td_pedestalX') || data.getBoolean('td_pedestalDestroyed')) return
   var block = event.getBlock()
   if (block.getX() !== data.getInt('td_pedestalX') || block.getY() !== data.getInt('td_pedestalY') || block.getZ() !== data.getInt('td_pedestalZ')) return
-  if (held.isEmpty()) {
+  if (heldId === 'kubejs:amulet') {
+    // Leaving an amulet is handled here rather than by Supplementaries, so
+    // several players can each leave theirs (see amulet_pedestal.js).
+    if (player.isShiftKeyDown()) return
+    pedestalLeaveAmulet(player, level, data, held)
+    pedestalHealClickResync(player, block)
+  } else if (held.isEmpty()) {
     pedestalHealClickResync(player, block)
     try {
       openPedestalUpgradeGui(player)

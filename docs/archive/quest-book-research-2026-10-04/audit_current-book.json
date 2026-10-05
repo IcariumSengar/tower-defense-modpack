@@ -1,0 +1,267 @@
+{
+ "summary": "I audited the current FTB Quests book against the code, the jars, three saves and the FEATURES.md history. It has 81 quests in 4 chapters: Campaign 39, Tips and Tricks 13, Bounties 5, Arsenal 24. The repo, live instance and dedicated-server copies are byte-identical.\n\n**What already works:** one Campaign chapter with a main line of quests (rsquare shape), side branches typed by shape, and quests that stay hidden until their prerequisites are done. Milestones complete themselves through quest_milestones.js and bounty_kills.js and reach players who were offline. Most numbers in the text check out against the code.\n\n**Main problem: everything happens at once, then nothing happens.**\n- 8 of the 11 main-line quests are done by the end of wave 1. After that, nothing on the main line moves until wave 8, then the boss at wave 10 and wave 15.\n- Since \"Three Down\" was cut, the whole tech tree (Tiers 1-4, storage, power, amulet) unlocks from one quest (\"Open It\") with no pacing by wave or tier.\n- Of the 81 quests, 47 are \"hold this item\" tasks and 17 are checkmarks. Placement, power, targeting and ammo are explained only in text.\n\n**Two quests get completed before the player does anything.** \"Progression mode: flexible\" lets hidden quests record progress (shown in both local saves). The loot bags handed out as rewards by quests 2-3 pre-complete \"Spoils of War\" and \"Open It\" before the first fight.\n\n**\"Thin the Horde\" gates the whole tree.** It needs 3 zombie kills by a player, and the starter Sentry and Tesla Coil steal those kills. In today's \"Matt\" save, wave 1 cleared about 9 minutes before \"Thin the Horde\" finished, so the rest of the book stayed hidden that whole time.\n\n**\"Past the Line\" cannot complete at the six nearest ruins.** The starter ruin ring is placed with the vanilla `/place structure` command, which never registers the structure as existing. The quest's structure task looks for that registration. Both local saves show Lootr chests opened inside ring ruins with zero progress on this quest.\n\n**About 13 text mismatches.** The main ones:\n- Shrapnel is said to be in every bag; Legendary bags have none.\n- The Sentry is said to fire arrows; it fires bullets.\n- The Submachine Gun is said to hold 60 rounds; it holds 32.\n- Energized Dust is said to be uncraftable; a recipe exists.\n- \"The crafting table by the furnace\": the base has no furnace.\n- Multiplayer wording is wrong for the hardcore tip, the repeatable bounty \"Zombie Masher\" and the \"anyone can chip in\" line about pedestal upgrades.\n\n**Rewards:** 185 XP levels per player, against 108 levels to max the shared pedestal. 20 of those levels are free checkboxes before wave 1, enough for all three tier-I upgrades. All rewards are claimed by hand, per player. Items are mostly generic (33 iron ingots, torches, redstone).\n\n**Multiplayer:** with progress shared, every reward multiplies by party size but waves don't scale. The repeatable \"Zombie Masher\" pays only the first player to claim it each cycle. One amulet on the pedestal opens the border for everyone, so the amulet trade-off only applies to one player. No FTB Teams party exists in any current save, so per-player progress is the real case right now.",
+ "structure_findings": [
+  "Spine is front-loaded then silent: the 11 rsquare spine nodes are You're On Your Own -> Borrowed Time -> Find the Pedestal -> Sound the Horn -> Thin the Horde -> Wave One, Cleared -> Spoils of War -> Open It (all done by the end of wave 1) -> The Last Written Wave (wave 8) -> The Reaper (first boss, wave 10) -> No Ceiling (wave 15). Waves 2-7 have no spine beat; the milestone custom tasks have max progress 1, so there is no 'wave 3/8' bar anywhere (campaign.snbt:13-377). The v3 design's mid-spine beats are gone: 'It's Up to You Now' removed 09-28, 'Three Down' removed 09-30 (FEATURES.md 2026-09-30 batch #4).",
+  "Hub overload at 'Open It' (538A1BBC9A1B8EAC): six dependents unlock the moment the first bag is opened - the spine, the amulet row (Not Just Jewelry), the Tier 1 column (Cheap and Cheerful), Waste Not, the Tier 2 traps (Bouncing Betty) and the storage/power/Tier 3/Tier 4 chain (Room to Grow). With Three Down gone (user's pick, 09-30), nothing in the tree is paced by wave or tier, so the book can't say 'this is what you need now'. The netherite-cost Tesla Coil is 3 hops from a wave-1 quest.",
+  "Thin the Horde (kill 3 minecraft:zombie, player kills only: FTBQuestsEventHandler.playerKill:123-124) gates the entire tree. Plain zombies per written wave are 3,2,2,2,1,1,0,0 (wave_spawner.js:19-28), plus ambusher zombies from wave 2. The pre-placed starter Sentry, auto-lever Tesla Coil and fences take kills that don't count. Live: in today's 'Matt' save, Wave One, Cleared progress was set at +139.7 s, but Thin the Horde only completed at +675.5 s, and Open It, Spoils of War and Wave One, Cleared all cascaded at that same instant. The whole tree stayed hidden for about 9 minutes after wave 1 cleared.",
+  "Flexible progression plus hidden dependents means tasks progress while invisible. TeamData.canStartTasks returns true in FLEXIBLE (TeamData.java:593-597). setProgress only marks a task done once its prerequisites are complete (TeamData.java:690-697), and Quest.checkForDependantCompletion then cascades it (Quest.java:590-604). So quests often appear already complete. Live examples: Spoils of War task started at +3.6 s in 'New Worldasd' from the Borrowed Time reward bag; Open It started at +55.8 s in 'Matt'; Fragmentation (Tier 4) has progress 1 in 'Matt' at about wave 7, from a held Legendary-bag grenade turret.",
+  "Odd gating: The Grid (Refined Storage) depends on Sparks in the Dark (Tesla Coil: netherite ingot + 2 diamond blocks). Pack Mule (backpack) depends on Room to Grow (barrel). Wired Different only asks you to look at the pre-placed generator, but it waits on crafting a barrel. Tier 4 Fragmentation needs both IE turrets. Shore It Up (pedestal upgrades) only appears after wave 1, although the upgrade screen and enough XP exist from minute one (campaign.snbt:636-659).",
+  "Chapter mix on first open: Campaign shows 1 node, Bounties shows 1 node, but Tips (13 checkmarks) and Arsenal (24 item checks) are fully visible flat grids with no dependencies. Three of the four chapters look like checklists rather than a journey. Order: Campaign 0, Tips and Tricks 1, Bounties 2, The Arsenal 3. chapter_groups.snbt is empty.",
+  "No 'what next' or 'how far along' device. No quest is pinned or suggested, though FTBQ has per-player pinned quests (TeamData pinnedQuests, TeamData.java:823-828). Only the Bounties bars (reflection, bounty_kills.js:215-259) and the Waves Cleared sidebar show progress. Bounty tiers are really wave milestones in disguise, because every wave-mob death counts and wave sizes are fixed. By the baseline formulas (wave_spawner.js:543-544, horde mobs excluded, so an estimate): 25 kills by wave 3, 100 in wave 9, 300 around wave 13, 750 around wave 19, 1500 around wave 24. Live check: the 'Matt' save has 60 kills, exactly waves 1-7 summed.",
+  "The book ends at wave 15 (No Ceiling) and Fire for Effect. Past that there is only the repeatable Zombie Masher. The Demolisher boss (waves 20, 40...: boss_wave.js:49-55) and the later horde levels (brutes from horde 20) get no milestones.",
+  "Possession-heavy task mix in Campaign: 23 item tasks (22 hold-an-item, 1 hand-in), 8 custom (script-completed), 4 checkmarks, 2 observation, 1 kill, 1 structure. Across the book: 47 hold-an-item quests (incl. 24 Arsenal) and 17 checkmarks (13 Tips, 4 Campaign) of 81."
+ ],
+ "teaching_findings": [
+  {
+   "quest": "Spoils of War (3BFCD0E4AA8C5B36)",
+   "issue": "Pre-completed by quest rewards. 'Pick up a loot bag' never requires killing anything. Holding the Uncommon bag rewarded by Borrowed Time or Find the Pedestal records 1/1 while the quest is hidden, and it auto-completes when Wave One, Cleared does.",
+   "evidence": "Item detection runs for every task the team can start; in FLEXIBLE mode that ignores visibility (FTBQuestsInventoryListener.detect, TeamData.canStartTasks:593-597). Rewards at campaign.snbt:60-63 and 88-92. Live: 'New Worldasd' Spoils of War task started at +3.6 s, right after Borrowed Time was claimed at +2.3 s."
+  },
+  {
+   "quest": "Open It (538A1BBC9A1B8EAC)",
+   "issue": "Completed by opening the reward bag from quest 2, at minute one, before the player has seen a wave. The 'kill, bag drops, open it' loop is never taught in order.",
+   "evidence": "quest_milestones.js:38-44 fires on right-clicking any bag item. Live: 'Matt' Open It task started at +55.8 s, about 10 minutes before the quest became visible."
+  },
+  {
+   "quest": "Thin the Horde (7F675AEBC7301832)",
+   "issue": "The only kill lesson is hostage to the base's own defences, and it gates every branch. It also teaches nothing about gear: the starter sword is a Sharpness 100 netherite sword.",
+   "evidence": "KillTask credits only ServerPlayer sources (FTBQuestsEventHandler.java:123-124). Starter Sentry, Tesla Coil and fences come from playtest_starter_kit.js:432-476. Sword at playtest_starter_kit.js:30. Live 'Matt': wave 1 cleared at +139.7 s, quest done at +675.5 s."
+  },
+  {
+   "quest": "Shore It Up (2E93FD4CE7F6AE87)",
+   "issue": "The pack's only XP sink (pedestal upgrades) is taught by a checkmark. Nothing makes the player open the screen or buy a tier.",
+   "evidence": "campaign.snbt:650-655 is a checkmark task. Purchases set td_pedestalUpg_<stat> (pedestal_upgrades.js:137), an existing hook for a custom 'buy one upgrade' task."
+  },
+  {
+   "quest": "Find the Pedestal (1FCDA02A8AF6F019)",
+   "issue": "Look-at task only. Healing (golden carrot, nether star) is text-only. The automatic 5% heal on each wave clear is never mentioned. Neither is the fact that mining the pedestal also ends the run.",
+   "evidence": "pedestal_health.js:167-169 (heal items); wave_status.js:271 (5% clear heal); pedestal_destruction.js:1-4 ('any removal counts ... mining'). No break protection exists."
+  },
+  {
+   "quest": "Cheap and Cheerful, Better Than Nothing, Dinner Bell, Bouncing Betty, Claymore, Sentry, Electrified Fence, I.M.S., Waste Not, Room to Grow, Bigger on the Inside, Iron Sides, Pack Mule, No Cables Needed, Sparks in the Dark, The Grid, Point and Shoot, Liquid Fire, Fragmentation, Fire for Effect",
+   "issue": "All are hold-the-item tasks (consume_items false). Placing, wiring, powering, targeting modes and ammo are text-only, so a player can finish the tree without ever deploying a defence. Hooks already exist to verify real use.",
+   "evidence": "Existing hooks: trap_durability.js (placed stakes and spikes go into td_trapRegistry), mine_player_safety.js:34 (Claymore placed), sentry_default_mode.js:10 and :27 (Sentry spawned, I.M.S. placed), lure_block.js (lure placement), tesla_coil_auto_power.js. FTBQ ObservationTask also supports looking at a block, a block entity or an entity type (ObservationTask.java:196-203)."
+  },
+  {
+   "quest": "No Cables Needed / Sparks in the Dark / Point and Shoot / Liquid Fire",
+   "issue": "These are the most failure-prone setups, each covered in one sentence. Adding a new Flux Point to the 'House Grid' network through its screen is never explained. The Gun Turret's ammo (Casull rounds) and the Chem Turret's fluid supply are never mentioned. A player-built Tesla Coil draws 256 Flux every tick while its redstone signal is on, not just while zapping.",
+   "evidence": "starter_flux_network.js links only the pre-placed parts. tier3_loot_aligned_recipes.js:93-100 adds the Casull crafting route. Tooltip 'Damage: 10 a Casull round' at tooltip_tier_colors.js:50. IE defaults: teslacoil_consumption 256, turret_consumption 64, gun/chem 32 (class IEServerConfig$Machines)."
+  },
+  {
+   "quest": "Past the Line (4F1477C0746CED34)",
+   "issue": "Asks the player to do exactly what they then do (enter the nearest ruins), but cannot complete there, so the book looks broken. It also blocks A Stone That Remembers.",
+   "evidence": "See accuracy finding. Live: Lootr chests opened inside ring ruins in 'New Worldasd' and 'Matt'; neither save has any task progress for Past the Line."
+  },
+  {
+   "quest": "A Stone That Remembers (216966530DE6E3DB)",
+   "issue": "'Craft another' is satisfied without crafting by the waystone that The Last Written Wave hands out at wave 8.",
+   "evidence": "Reward at campaign.snbt:295-297; possession task at 527-531. Live: 'New Worldasd' has task progress 1."
+  },
+  {
+   "quest": "Wear It / Open It / Find the Pedestal / Thin the Horde / checkmarks (multiplayer)",
+   "issue": "Completion is per team, so the first player to act completes the lesson for everyone. Other members are never prompted to equip the amulet, open a bag and so on; they just see ticked quests and claimable rewards.",
+   "evidence": "quest_milestones.js:6-7 ('FTB Quests applies it to that player's quest team'). FTBQ stores task progress in TeamData."
+  },
+  {
+   "quest": "The Arsenal (24 quests)",
+   "issue": "Flat collection checkboxes (1 level each, all visible from the start). Nothing says how to get each weapon: several are effectively airdrop or Legendary-bag only (Laser Gun needs a shulker shell, Charged Potato needs blaze powder, Minigun and Potato Cannon have no recipe). No gun is linked to its ammo.",
+   "evidence": "simple_guns_reworked recipes rlsar.json and rpotato.json; no recipe outputs potato_cannon or minguguuggn. Airdrop gun kits in kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json (pool 4)."
+  },
+  {
+   "quest": "Tips and Tricks (13 quests)",
+   "issue": "All checkmarks; nothing checks that the key was pressed. Three duplicate Campaign lessons: Open a Loot Bag vs Open It, Use a Waystone vs A Stone That Remembers, Find the Curios Slot vs Wear It. Auto-Sort teaches a feature the user reported broken.",
+   "evidence": "tips_and_tricks.snbt:24-29 and the other checkmark tasks; FEATURES.md:9582; QUEUE.md:430."
+  },
+  {
+   "quest": "The Last Written Wave / The Reaper",
+   "issue": "The big early beats get no support from the book: the wave-5 loss of gear and starter defences, the first airdrop at wave 5 (lands 90-110 blocks out, often past the border, so the amulet must be on the pedestal to reach it) and the alternating Demolisher boss. Keeping the wave-5 surprise secret is a stated rule; an after-the-fact quest is not ruled out.",
+   "evidence": "wave_status.js:58-117; wave_airdrop.js:22, 29-37; boss_wave.js:49-55; memory rule 'Keep story surprises'."
+  },
+  {
+   "quest": "Know Your Enemy (removed 09-30)",
+   "issue": "With the 14 kill quests cut (the user didn't like them), the book now has no enemy information at all: Crawler wall-climbing, Demolition TNT, brutes, ambushers, the red straggler outline. A non-kill 'look at it' (ObservationTask ENTITY_TYPE) could teach these without kill quests.",
+   "evidence": "FEATURES.md 2026-09-30 batch #9 ('dont really like them'); ObservationTask.java:196-203."
+  },
+  {
+   "quest": "Text volume",
+   "issue": "Key early pages are walls of text: Campaign median 49 words, Find the Pedestal 113, Wired Different 100, Dinner Bell and Liquid Fire 85. No page breaks or description images are used, and the user has already called a 3-sentence text 'too verbose'.",
+   "evidence": "Word counts computed from campaign.snbt. Quest.PAGEBREAK_CODE '{@pagebreak}' exists (Quest.java:46). User feedback 09-30 #8."
+  }
+ ],
+ "accuracy_findings": [
+  {
+   "quest": "Open It",
+   "claim": "every bag can carry Shrapnel, the turret material",
+   "code_truth": "Legendary bags carry no Shrapnel (legendary.json; live legendary_bag.toml has 0 entries; shrapnel.js says 'uncommon, rare and epic'). Shrapnel's only uses are the Sentry recipe and shotgun shells; no turret uses it since Advanced Tower Defense was removed.",
+   "file_line": "campaign.snbt:245 vs kubejs/startup_scripts/shrapnel.js:1-5, securitycraft_traps.js:16, tier3_loot_aligned_recipes.js:148"
+  },
+  {
+   "quest": "Past the Line",
+   "claim": "Stand inside any ruin, house or tower past the border",
+   "code_truth": "The six nearest ruins (the starter ring, 100-130 blocks out) are placed with /place structure. Vanilla's PlaceCommand only places the blocks and never registers the structure start. FTBQ's structure task uses getStructureWithPieceAt, which needs that registration, so the task can't fire there. Confirmed in two saves: Lootr chests opened inside overgrown_suburban (-14217,-13290) and abandoned_structures:gas_station (10354,-2021), with zero Past the Line progress.",
+   "file_line": "campaign.snbt:476, 493-498; playtest_starter_kit.js:1306-1323; vanilla PlaceCommand lambda m_289073_ (client-1.20.1 srg jar); FTBQ StructureTask.java:108-115"
+  },
+  {
+   "quest": "Sentry",
+   "claim": "It never runs out of arrows unless you load something else into a locked chest underneath it",
+   "code_truth": "The Sentry fires SecurityCraft Bullet entities, 8 damage each by config. It only uses other projectiles from a container below it (ISentryBulletContainer). Arrows are never its default.",
+   "file_line": "campaign.snbt:776; SecurityCraft Sentry.class (new Bullet, ISentryBulletContainer); defaultconfigs/securitycraft-server.toml sentry_bullet_damage = 8"
+  },
+  {
+   "quest": "I.M.S. (and Sentry modes)",
+   "claim": "fires them at anything that gets close",
+   "code_truth": "The pack switches new I.M.S. placements to mobs-only, and new Sentries to hostiles-only. SecurityCraft's placement chat message still says the Sentry targets players too, and the book never explains the mismatch.",
+   "file_line": "campaign.snbt:830, 776; sentry_default_mode.js:3-18, 20-45"
+  },
+  {
+   "quest": "Bouncing Betty",
+   "claim": "it doesn't care who trips it - keep it off your own patrol routes",
+   "code_truth": "Players do trigger it (mine targeting defaults to players and mobs), but the blast can't hurt them: friendly blasts drop players, items and blocks from the damage list. The real cost of stepping on it is a wasted mine, not damage.",
+   "file_line": "campaign.snbt:722; explosion_player_safety.js:1-30; mine_player_safety.js:1-15; SecurityCraft MineBlockEntity default PLAYERS_AND_MOBS"
+  },
+  {
+   "quest": "Submachine Gun / Tommy Gun (Arsenal)",
+   "claim": "SMG: 'Full-auto off a 60-round Pistol Ammo drum'; Tommy: 'Same 60-round Pistol Ammo drum as the Submachine Gun'",
+   "code_truth": "The SMG reloads to 32 and its own tooltip says 'Capacity: 32' (reload 1.25 s). The Tommy Gun holds 60 (reload 2.5 s). The book contradicts the in-game tooltip.",
+   "file_line": "arsenal.snbt:61, 85; simple_guns_reworked ReloadProcedure SUBMACHINE_GUN branch (ammo<32, loop 32); lang en_us.json submachine_gun.description_1 / tommy_gun.description_1"
+  },
+  {
+   "quest": "Energized Dust (Arsenal)",
+   "claim": "It can't be crafted here: it comes in the airdrop crate with the Laser Gun",
+   "code_truth": "The mod's recipe (amethyst + glowstone dust + redstone gives 4) is not removed, so JEI shows it. It is only effectively uncraftable because no pack loot table supplies glowstone dust (not checked for every table).",
+   "file_line": "arsenal.snbt:541; simple_guns_reworked data/recipes/rdut.json; tier3_loot_aligned_recipes.js:129 (only glowstone mention)"
+  },
+  {
+   "quest": "Reach Further (Tips)",
+   "claim": "That crafting table by the furnace reaches further than it looks",
+   "code_truth": "The base has no furnace. The cafe4 template has no furnace block and the build places none. The Crafting Station sits at local (3,1,6) next to the Culinary Generator.",
+   "file_line": "tips_and_tricks.snbt:255; playtest_starter_kit.js:1002-1017; kubejs/data/the_lost_city/structures/cafe4.nbt"
+  },
+  {
+   "quest": "Auto-Sort a Container (Tips)",
+   "claim": "Middle-click a container to auto-sort its items into it",
+   "code_truth": "The user reported middle-click sort failing in every container kind, and the replacement mod was declined ('leave as-is'). Current status not re-verified.",
+   "file_line": "tips_and_tricks.snbt:145; FEATURES.md:9582; QUEUE.md:430"
+  },
+  {
+   "quest": "Go Hardcore (Tips)",
+   "claim": "Die with it on ... the run is over for good: no respawn",
+   "code_truth": "The run only ends once every online player is dead. In multiplayer, dying while a friend is alive is an ordinary death with a respawn. Any player can toggle hardcore for the whole world; there is no permission check.",
+   "file_line": "tips_and_tricks.snbt:277; hardcore_death.js:22-29, 33-39; hardcore_toggle.js:1-3"
+  },
+  {
+   "quest": "Zombie Masher (Bounties)",
+   "claim": "claim it again every fifteen hundred after, for as long as they keep coming",
+   "code_truth": "On a shared team, the first member to claim the reward resets the quest for the whole team, so other members can't claim that cycle. The pack's own PLAYTESTING.md:226 says 'each quest team is paid one Zombie Masher per 1500'.",
+   "file_line": "bounties.snbt:149; FTBQ Quest.java:977-983 (checkRepeatable) called from TeamData.java:293-299"
+  },
+  {
+   "quest": "Shore It Up",
+   "claim": "Upgrades belong to the pedestal, so anyone can chip in; [Upgrades] in chat after a wave clears opens it",
+   "code_truth": "Levels can't be pooled: one player must hold the full 6/12/18 levels and pays alone. The [Upgrades] chat link only goes to players who can already afford a tier. Costs and effects themselves are correct (6/12/18; 300 to 600 HP; 45% armour; 3 dmg/s thorns).",
+   "file_line": "campaign.snbt:639; pedestal_upgrades.js:15, 129-136, 448-456; pedestal_health.js:29-31"
+  },
+  {
+   "quest": "Fragmentation / Fire for Effect",
+   "claim": "Subtitles list 'Turret Base' as an ingredient; 'refine it straight from Steel and Redstone'",
+   "code_truth": "Neither recipe uses a Turret Base; it is a separate block the head mounts on. Grenade turret: Sensor/Chamber/Barrel Tier II + cauldron + 3 stone. Rocket turret: 2 TNT + Tier III parts + Ferronite Frame + 2 cobbled deepslate. The steel + redstone recipe gives Raw Ferronite, which still has to be smelted.",
+   "file_line": "campaign.snbt:1201, 1218, 1251; omtreborn recipes grenade_turret.json, rocket_turret.json; tier4_turret_recipes.js:8-12"
+  },
+  {
+   "quest": "The Reaper",
+   "claim": "Every tenth horde brings something... wrote its name ('The Reaper')",
+   "code_truth": "Bosses alternate: The Reaper on waves 10, 30, 50, The Demolisher on waves 20, 40. Bounties also has a tier titled 'Reaper' (750 kills), so the '[Bounty] Reaper complete' chat line collides with the boss quest's name.",
+   "file_line": "campaign.snbt:322; boss_wave.js:13, 21, 38, 49-55; bounties.snbt:141; bounty_kills.js:41"
+  },
+  {
+   "quest": "Find the Pedestal",
+   "claim": "If it reaches zero the waves stop and the run is over",
+   "code_truth": "True, but incomplete. Any removal of the pedestal block, mining included, also ends the run, and nothing protects it from being broken.",
+   "file_line": "campaign.snbt:82; pedestal_destruction.js:1-4"
+  },
+  {
+   "quest": "Borrowed Time",
+   "claim": "Look close and the wear's already showing",
+   "code_truth": "Starter gear arrives undamaged (Lore tag only, no Damage tag; the sword has Sharpness 100). It is removed by a script at wave 5's clear. This is flavour covering a deliberate surprise, but the 'wear' is literally false.",
+   "file_line": "campaign.snbt:51; playtest_starter_kit.js:19-35; wave_status.js:25, 58-81"
+  },
+  {
+   "quest": "First Blood (Bounties)",
+   "claim": "Every wave zombie that goes down counts toward this, whoever or whatever drops it",
+   "code_truth": "Deaths from drowning, starving, freezing, falling, the void, cramming, suffocation and /kill don't count. Fire and lava do.",
+   "file_line": "bounties.snbt:13; bounty_kills.js:20-29"
+  },
+  {
+   "quest": "Verified accurate (no change needed)",
+   "claim": "Pedestal 300 HP / 64-block bar / melee reach; 10-minute minimum timer; wave 1 = 3 zombie, 2 husk, 1 zombie villager; border +5/+10/+15 per wave; bag odds 20/3.5/3/2%; Lure 40 blocks, 60 s, recipe; amulet buffs and fire-proofing; Tesla 6 dmg about every 1.6 s within 6 blocks; turret Flux 64/+32; Culinary Generator 4096 FE/t; trap, Sentry, I.M.S. and fence recipes; spike 4 dmg and stake 1 dmg",
+   "code_truth": "Matches the code and configs.",
+   "file_line": "pedestal_health.js:13,20,24,167-169; wave_status.js:40,46; wave_spawner.js:20; base_expansion.js:12-14; loot_bag_drops.js:34-37; lure_block.js:6-20; startup_scripts/amulet.js:17-19; amulet_worn.js:25-26; IEServerConfig$Machines defaults; config/generatorgalore/generators/culinary.json; securitycraft_traps.js; simplytraps.toml + SpikeTrap procedure (2.0 x 2.0)"
+  }
+ ],
+ "reward_economy": {
+  "totals": "One-time rewards per player across all 81 quests: 185 XP levels (Campaign 97, Bounties 50, Arsenal 24, Tips 14). Items: 10 Uncommon, 3 Rare, 2 Epic and 3 Legendary bags (one of the Legendary comes from each 1,500-kill Zombie Masher cycle), 33 iron ingots, 16 torches, 10 redstone, 6 ender pearls, 6 wooden stakes, 4 spike traps, 4 golden carrots, 4 copper ingots, 4 IE steel, 4 raw ferronite, 2 emeralds, 1 amulet, 1 waystone, 1 totem, 1 lightning rod, 1 golden apple. That is 76 XP-level reward entries against 40 item entries. There are no choice, random, loot-table, command or team rewards, and no autoclaim (data.snbt: default_autoclaim_rewards disabled, default_reward_team false). For scale: maxing all three pedestal upgrades costs 3 x (6+12+18) = 108 levels (pedestal_upgrades.js:15).",
+  "findings": [
+   "XP levels are effectively the pedestal currency. Upgrades are the only real XP sink (Waystone teleports cost 0: instance waystones-common.toml multipliers are 0.0). The book alone pays 185 levels per player, about 1.7 times the whole upgrade tree solo, before any kill XP. The 09-30 cost raise from 5/10/15 to 6/12/18 (+20%) is small next to that cumulative payout.",
+   "Free XP up front: 13 Tips checkmarks (14 levels) plus You're On Your Own and Borrowed Time (4) plus Find the Pedestal (2) give 20 levels before the horn. That buys all three tier-I upgrades (18) before wave 1 solo. In a 4-player party, each player claims their own 20 levels, enough for every upgrade at tier II and one at tier III before wave 1.",
+   "38 of 81 quests (all 24 Arsenal plus 14 Tips quests) pay only 1-2 levels for a checkbox or for holding an item. They inflate the XP economy without teaching anything that is checked.",
+   "Generic filler dominates the item rewards: '+4 iron' on 7 quests (33 iron in all), 16 torches, 2 to 8 redstone, copper, a golden apple. Several rewards arrive after the step they would have helped: Dinner Bell gives 2 redstone after the lure that needed 4; Sparks in the Dark gives a lightning rod after the coil; Fragmentation gives steel and Fire for Effect gives raw ferronite after the last build.",
+   "Chains worth keeping: Spoils of War's 2 emeralds plus Leave It Behind's 4 ender pearls make a Warp Stone (4 pearls + 4 amethyst + 1 emerald), which makes a Waystone for 'A Stone That Remembers' (waystones recipes waystone.json and warp_stone.json). Stakes and spikes are given to place straight away. Golden carrots arrive with the amulet as pedestal heals. The totem matters for hardcore.",
+   "Loot-bag rewards are opaque: the claim screen shows only the bag icon. A Legendary bag is one roll that can skip whole tiers: nether star 25%, Tesla Coil 6%, grenade turret 8%, rocket turret 6% (legendary.json). In today's 'Matt' save a held grenade turret already pre-fills Fragmentation (Tier 4) at about wave 7.",
+   "Claiming: every reward is a manual, per-player claim. The 'collect all' button exists (CollectRewardsButton calls ClaimAllRewardsMessage). Script-completed milestones raise FTB Quests' standard toast (notifications on by default, QuestObjectBase.shouldSendNotifications). Nothing else rewards the moment in-world: no title, sound or choice. The user does claim everything: the 'Matt' save has 33 claimed entries, exactly every reward of its 19 completed quests.",
+   "Bounty XP comes late: 5, 10, 15, 20 levels at roughly waves 3, 9, 13 and 19, by now the pedestal may already be maxed. The repeatable Zombie Masher pays one Legendary bag per team per 1,500 kills, to whoever claims first.",
+   "With default_reward_team false, every reward multiplies by party size. A 4-player party gets 4 Legendary bags from The Reaper, 4 from No Ceiling, 4 totems from No Turning Back (bosses already drop a totem per kill: boss_wave.js:185), 4 Wave-8 waystones, and 740 XP levels against a single 108-level shared pedestal. Waves do not scale with player count (fixed tables in wave_spawner.js:19-28 and 543-544; player-count scaling binned in IDEAS.md)."
+  ]
+ },
+ "multiplayer_findings": [
+  "No FTB Teams party exists in any current save, so per-player progress is the real case today. On the dedicated server world (last played 09-12), world/ftbteams/party is empty and world/ftbquests holds three player-team files (Halahad86 with 20 quests completed, saxonie 15, peterbug 3). The local saves 'Matt' (10-04) and 'New Worldasd' (09-30) also have empty party folders. The 'one shared party' assumption is unverified for the next multiplayer world, so the book has to work both ways. The script bridges already do: shared milestones loop over every online player (quest_milestones.js:49-55, 92-116), and bounty tiers run `change_progress @a` plus a per-player bar sync (bounty_kills.js:73, 229-259).",
+  "Every reward is per player (data.snbt default_reward_team false, no per-reward overrides) while wave sizes ignore player count. In a shared team, one completion pays every member: N times 185 levels into a single 108-level pedestal, N Legendary bags, N totems. Checkmark quests make this worse: one player ticks 13 Tips boxes and every member claims 14 levels.",
+  "The repeatable Zombie Masher only pays the first claimer each cycle. Quest.checkRepeatable resets the team's quest as soon as one player has claimed all its rewards (Quest.java:977-983, triggered from TeamData.markRewardAsClaimed:293-299), including through 'collect all'. The other members lose that cycle, yet the text (bounties.snbt:149) invites everyone to 'claim it again'.",
+  "The amulet trade-off collapses with more than one player. The border opens for the whole world while any amulet sits on the pedestal (amulet_pedestal.js:16, 29-31; amulet_border.js:43). With one amulet per player, one player parks theirs and everyone else keeps Regeneration and Resistance and can still leave, so Leave It Behind's 'You lose the buffs and the border opens' binds only one player. The stand also isn't owner-locked: anyone can press Take (pedestal_upgrades.js screen) and pocket another player's amulet. That closes the border on whoever is outside, and they get teleported back to the edge (amulet_border.js:45-62).",
+  "The 8-gold amulet hand-in (Not Just Jewelry, consume_items true, campaign.snbt:409-413) behaves differently by team setup. In a party, one hand-in lets every member claim an amulet, 4 golden carrots and 2 levels (intended per the 09-28 batch), so 4 players get 16 carrots, 160% of pedestal HP in heals, from 8 gold. With separate teams, as in the current saves, each player must hand in their own 8 gold. FTB Quests prevents re-claiming by leaving a party: claimed rewards stay claimed (ServerQuestFile.playerChangedTeam:236-240).",
+  "Shared completion means one player's action finishes each lesson for the whole team: the kill task, observation tasks, item tasks (including items passed between players, or a whole airdrop gun kit picked up by one person, which clears much of the Arsenal), checkmarks, and the per-player script milestones Open It and Wear It (quest_milestones.js:6-7). Teaching reaches only whoever acts first.",
+  "Late joiners get no starter gear after wave 5 (playtest_starter_kit.js:26-35). In a shared team, though, they can immediately claim every per-player reward of quests already completed: amulet, Legendary bags, totem and all the XP. That is a large catch-up package the design never sized.",
+  "Hardcore: anyone can run /hardcore enable or disable for the whole world (no permission check, hardcore_toggle.js:1-3). The run only ends when every online player is dead (hardcore_death.js:22-29). The Go Hardcore tip describes the solo behaviour only.",
+  "Tab conflict: the shipped options file binds the quest book to Tab (pack/options.txt:2), and vanilla's player list is also on Tab (live options.txt line 99). In multiplayer, pressing Tab to see who's online also opens the book; both bindings fire (FEATURES.md:9085-9089).",
+  "Any player mining the pedestal ends the run for everyone (pedestal_destruction.js:1-4). There is no break protection and no warning in the book.",
+  "Edge case in the bridge: its 'already given this milestone' flags live on the player, not the team, and are set before the command runs (quest_milestones.js:60-66). A player who leaves a party gets their pre-party progress back in their personal team (ServerQuestFile.playerChangedTeam:236-240), but the bridge won't re-apply shared milestones to that team. Similarly, the first player to log in owns the starter electrified fences (playtest_starter_kit.js:1363-1376), so only they can reconfigure or break them."
+ ],
+ "layout_findings": [
+  "Chapter images are empty (`images: []`, campaign.snbt:8). The v3 tinted panels behind each branch were dropped in commit 76adbdb (2026-09-11) after the user's 09-10 multiplayer feedback that 'the coloured sections ... are just always there and it looks weird' once quests became hidden. pack/kubejs/assets/kubejs/textures/quests/panel.png still ships unused. FTB Quests 2001.4.22 images support a `dependency` field, so each panel could appear only once a chosen quest is complete, plus hover text and click actions (ChapterImage.java:155, 327-329). That would fix the reason they were removed.",
+  "The lower half of the Campaign canvas is a dense, unlabelled block: 25 quests in x 13-28, y 1.5-11.5. Tier 1 is a vertical column at x=13 (y 1.5/3/4.5); Tier 2 traps sit at y=6-8 with the capstone at (28,8); storage, power and Tier 3 at y=9-10.5; Tier 4 at y=11.5. The tier names appear only in item tooltips (tooltip_tier_colors.js:6-11), never in the book.",
+  "Two dependency lines run through other quests. Claymore (20,6) to Electrified Fence (26,6) passes straight through Sentry (22,6), so the fence looks like it depends on the Sentry, with an empty slot at x=24. Point and Shoot (22,10.5) to Fragmentation (26,11.5) grazes Liquid Fire (24,10.5). Both computed from the snbt coordinates.",
+  "The shape grammar breaks in places. Shore It Up (10,-3) and Pack Mule (18,10.5) have no shape set and fall back to the file default 'circle' (data.snbt). Shore It Up floats alone at the amulet row's height; Pack Mule (a backpack) sits in the turret row; Waste Not (Item Collector) sits in the Tier 2 trap row; The Grid (storage) hangs off the Tesla Coil.",
+  "Every main-line node is the same size (rsquare 1.5), so milestones like wave 8, the boss and wave 15 don't stand out. Bounties does escalate nicely: diamonds at sizes 1.0, 1.25, 1.5 and 1.75, then a size-2.0 gear for the repeatable.",
+  "Arsenal: 24 identical size-1 circles in ragged rows (4/3/3/5 guns, then 4/5 ammo), no lines connecting each gun to its ammo, no labels, and the Grenade sits in the ammo row. Everything is visible from the start, including late airdrop-only weapons (Minigun, Laser Gun).",
+  "Tips: the rsquare 'keycap' cluster (R and U top row, Tab and A, Z and M) mimics a keyboard but nothing labels it. Icons look arbitrary: a nether star for Bookmark, an emerald for the Curios slot, a spider eye for Look at Anything.",
+  "Text presentation: colour codes (&e, &c, &6, &a) appear 62 times in Campaign and nowhere else. No page breaks or description images are used, and Campaign descriptions have a median of 49 words. Each chapter has a fitting icon and subtitle (book / 'Hold the pedestal. The waves don't stop.'; knowledge book; Legendary bag; pistol). There are no chapter groups.",
+  "Compared with 7 other local quest books (local_pack_stats.json), this one uses none of: chapter images (DeceasedCraft has 387, Cuboid Outpost 33), description images, choice or random rewards, team rewards, optional quests, quest links, or autoclaim/no-toast reward flags. It is also the smallest book (81 quests vs 255-1,429)."
+ ],
+ "coverage_gaps": [
+  "Supply airdrop every 5th wave (wave_airdrop.js:22, 92). It lands 90-110 blocks out and often past the border (lines 29-37), marked with a beacon, a Xaero waypoint and a compass direction. Contents: a Legendary bag, 2-4 netherite scrap, 2-4 diamond blocks, a 20% nether star, a gun kit and grenades (wave_airdrop.json). No quest covers it, though it is the natural payoff for the amulet and border mechanic.",
+  "Starter defences: the pre-placed Sentry, the auto-lever Tesla Coil and its Flux Point, the gate electrified fences, the stake walls, and the wall-top firing platforms and ladders (playtest_starter_kit.js:432-480, 1059-1070). None is ever pointed out, and the traps vanish at wave 5 (wave_status.js:83-117). Related exploit: the starter Tesla Coil can be mined and drops itself (IE loot table blocks/tesla_coil.json plus the pickaxe-mineable tag), with no break protection. That is a free Tier 3 item that also completes Sparks in the Dark.",
+  "The wave-5 loss of gear and starter defences, and the first airdrop at wave 5. Not announcing them ahead is deliberate, but there is no after-the-fact quest to help the player regroup either.",
+  "The Demolisher boss (even multiples of 10: boss_wave.js:38, 49-55) and boss loot (a Sentry, 12 Shrapnel and a Totem: boss_wave.js:182-185).",
+  "Enemy roster and behaviours, now that Know Your Enemy is gone: Crawlers climb walls; the Demolition Zombie carries TNT (wave 8); brutes from horde 20; underground ambushers from wave 2 burst out just outside the compound walls (wave_spawner.js:501-511); the last two mobs glow red through walls (wave_status.js:154-209); mobs climb ladders (ladder_climb_assist.js) and dig with Haste (wave_mob_dig_haste.js).",
+  "Pedestal safety: the free 5% heal on each wave clear (wave_status.js:271), and that breaking the pedestal by any means ends the run (pedestal_destruction.js:1-4).",
+  "Stake Wall: a Tier 1 item in the tooltips, craftable at 4 logs for 4, and already on the base walls (tier1_recipes.js:1-5). No quest.",
+  "Open Modular Turrets Reborn heads the pack never adopted but never removed (tier4_turret_recipes.js:1-2: 'the mod's own recipes are unchanged'). The Disposable Item and Potato Cannon turrets use cheap tier-I parts (one ferronite ingot, glass, cobblestone); the Machine Gun turret uses tier-II parts. None is in the book or the tier tooltips, and neither are the mod's upgrades, addons or turret-base tiers. Intent needs checking: add quests or remove the recipes.",
+  "Turret logistics: Gun Turret ammo (Casull rounds via empty casings: tier3_loot_aligned_recipes.js:93-100), Chem Turret fluid supply (creosote), rocket ammo (firework star + ferronite + gunpowder: omtreborn ammo_rocket.json), and joining a new Flux Point to the 'House Grid' network.",
+  "Where each gun comes from: crafted versus airdrop or Legendary-bag only (Laser Gun, Minigun, Potato Cannon, Charged Potato). The Arsenal is silent on this.",
+  "Your own explosives never hurt players or blocks (explosion_player_safety.js). This is a useful positive to teach, and the Bouncing Betty text currently implies the opposite.",
+  "Trap durability: placed stakes, stake walls and spikes have HP and break for good with no drop (trap_durability.js:1-20, stake 20 HP, spike 60). The book only hints at it ('worn down fast').",
+  "Death recovery through the Corpse mod (corpse-forge jar), which matters for 'it's the only one you'll get' with the amulet. Also the Xaero '[Add]' waypoint share line, and the Waves Cleared sidebar as the run's progress counter."
+ ],
+ "strengths_to_keep": [
+  "One Campaign chapter with a readable main line plus branches, and progressive reveal: 38 of 39 Campaign quests stay hidden until their prerequisites are done, so a new player sees one node. This matches the user's 'linear at the start' ask and their choice of hiding over linear mode.",
+  "World-driven milestones (horn, waves 1/8/15, any boss death, amulet worn or placed, bag opened) complete themselves through quest_milestones.js. They are recorded once per world and reach players who were offline. The bounty reflection bridge gives real kill-count bars despite FTB Quests not saving custom-task max progress (bounty_kills.js:211-225). Both bridges also work without a party.",
+  "ID hygiene and sync: no IDs start with 8-F, no duplicate IDs, and the repo, live instance and server copies are byte-identical. The generator lives in tools/quest_book (FEATURES.md:7140).",
+  "Mostly literal, verified numbers in short second-person text with a light diary voice on milestone pages only, as the v3 house rules require. Craft quests carry a recipe line under the title. Pedestal, timer, border, bag odds, Lure, upgrade costs, and Tesla/turret power numbers all match the code.",
+  "Look-at tasks for in-world landmarks (the pedestal, the Culinary Generator) are a cheap, working 'go look at this' device that a redesign could extend to entities (ObservationTask also supports entity types).",
+  "The 8-gold amulet hand-in is a good use of FTB Quests' item-submission feature and makes the amulet feel like a personal artifact (one per player, per-player claim, fire-proof).",
+  "Reward chains that feed the next step: emeralds and ender pearls lead to a Warp Stone and then a Waystone; stakes and spikes are given ready to place; golden carrots come alongside the amulet; steel and raw ferronite feed Tier 4.",
+  "The Bounties chapter's escalating sizes ending in a gear-shaped repeatable, the chat line on each tier, and the rule that only wave mobs count (structure mobs can't be farmed) are a good progress ladder.",
+  "The Arsenal's ammo cross-references ('Sniper uses Rifle Ammo, Heavy Sniper uses Sniper Ammo') are useful once its two wrong capacities are fixed.",
+  "Quests whose text fits in a sentence or two (Sound the Horn, Thin the Horde, Not Just Jewelry) show the brevity the user asked for."
+ ],
+ "live_vs_repo_drift": "No drift in the book itself. All six quest files (data.snbt, chapter_groups.snbt and the four chapter files) are byte-identical by md5 across the repo, the live CurseForge instance and the dedicated server's config folder, all dated 2026-09-30 22:37. No IDs start with 8-F and there are no duplicate IDs. Saves differ only in harmless leftovers: completed IDs of removed quests remain in the save files (server world: 8 for Halahad86 and 10 for saxonie, e.g. 03C4E700B07CBC15 'It's Up to You Now'; 'New Worldasd': 21; 'Matt' (today): 0). All three saves use per-player FTB teams only; no party exists in any of them. The 'Matt' save was last written today at 12:14 (playtest in progress) and is at about wave 7: 60 bounty kills, exactly waves 1-7 summed."
+}

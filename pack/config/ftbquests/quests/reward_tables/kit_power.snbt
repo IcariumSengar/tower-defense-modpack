@@ -1,0 +1,27 @@
+{
+	icon: "minecraft:chest"
+	id: "5DE441C224894669"
+	loot_size: 1
+	order_index: 1
+	rewards: [
+		{
+			item: {
+				Count: 1
+				id: "securitycraft:sentry"
+			}
+		}
+		{
+			item: {
+				Count: 16
+				id: "simple_guns_reworked:rifle_ammo"
+			}
+		}
+		{
+			item: {
+				Count: 8
+				id: "minecraft:golden_carrot"
+			}
+		}
+	]
+	title: "Pick a kit"
+}
