@@ -1,4 +1,5 @@
 {
+	autofocus_id: "46AB9754465218CF"
 	default_hide_dependency_lines: false
 	default_quest_shape: ""
 	filename: "campaign"
@@ -7,43 +8,43 @@
 	id: "1178FD42CF9984A2"
 	images: [
 		{
-			height: 2.5d
+			height: 1.0d
 			image: "kubejs:textures/quests/act1.png"
 			order: 0
 			rotation: 0.0d
-			width: 10.0d
-			x: 6.5d
-			y: -7.0d
+			width: 4.0d
+			x: -2.5d
+			y: -1.6d
 		}
 		{
 			dependency: "538A1BBC9A1B8EAC"
-			height: 2.5d
+			height: 1.0d
 			image: "kubejs:textures/quests/act2.png"
 			order: 0
 			rotation: 0.0d
-			width: 10.0d
-			x: 21.5d
-			y: -7.0d
+			width: 4.0d
+			x: 17.5d
+			y: -1.6d
 		}
 		{
 			dependency: "42EDC7E6DB5ABFAA"
-			height: 2.5d
+			height: 1.0d
 			image: "kubejs:textures/quests/act3.png"
 			order: 0
 			rotation: 0.0d
-			width: 10.0d
-			x: 34.0d
-			y: -7.0d
+			width: 4.0d
+			x: 31.0d
+			y: -1.6d
 		}
 		{
 			dependency: "10969EB1485216B4"
-			height: 2.5d
+			height: 1.0d
 			image: "kubejs:textures/quests/act4.png"
 			order: 0
 			rotation: 0.0d
-			width: 10.0d
-			x: 48.0d
-			y: -7.0d
+			width: 4.0d
+			x: 43.5d
+			y: -1.6d
 		}
 	]
 	order_index: 0
@@ -82,10 +83,11 @@
 		}
 		{
 			description: [
+				"{image:kubejs:textures/quests/legend.png width:190 height:78 align:center}"
 				"Every shape here means something. &eRounded squares&r are the story: most of them finish on their own as the run goes on. &eGears&r open a new act of the book. &eHexagons&r are things to craft, &epentagons&r are the amulet and the world past the border, and &ecircles&r are field notes."
-				"The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own."
-				"{image:kubejs:textures/quests/legend.png width:240 height:98 align:center}"
+				"{@pagebreak}"
 				"Small &ediamonds&r are optional field tests: they tick over on their own when your defences do the work. The &eChallenges&r chapter has the hard ones."
+				"The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own."
 			]
 			icon: "minecraft:compass"
 			id: "7474EBC3AA3D4B9E"
@@ -215,7 +217,7 @@
 		}
 		{
 			dependencies: ["7F675AEBC7301832"]
-			description: ["Every mob down means the wave is cleared, the timer to the next one starts, and the border grows: 5 blocks a wave for waves 1 to 3, then 10, then 15, another 5 every three waves. More ground to hold and more ground to loot."]
+			description: ["Every mob down means the wave is cleared, the timer to the next one starts, and the border grows: 5 blocks a wave for waves 1 to 3, 10 a wave for waves 4 to 6, 15 for 7 to 9, and 5 more every three waves after that. More ground to hold, and more ground to loot."]
 			hide_until_deps_complete: true
 			icon: "minecraft:iron_bars"
 			id: "0CBAE9737A4869E9"
@@ -278,7 +280,7 @@
 			dependencies: ["3BFCD0E4AA8C5B36"]
 			description: [
 				"Right-click a bag to open it - it does nothing sitting in your inventory. Better tiers carry better hauls, and Uncommon, Rare and Epic bags can carry &eShrapnel&r, the material the Sentry and shotgun shells need. Open them as you get them."
-				"Unlocks: the amulet, every trap branch, storage and the rest of the book."
+				"Unlocks: the amulet, the Tier 1 and Tier 2 traps, storage, and the road to wave 8."
 			]
 			hide_until_deps_complete: true
 			icon: "minecraft:chest"
@@ -357,7 +359,7 @@
 			dependencies: ["2965C45D5F6A0991"]
 			description: [
 				"The line above your hotbar tells you what the base needs. &c⚔ Wave N - Hostiles remaining&r means a wave is on: that many are still alive near the pedestal. &b⏱ Next wave in&r is your build time."
-				"{image:kubejs:textures/quests/hud.png width:240 height:70 align:center}"
+				"{image:kubejs:textures/quests/hud.png width:190 height:55 align:center}"
 				"If a pedestal alert replaces the line, the pedestal is being hit right now, wherever you are. Go home."
 			]
 			hide_until_deps_complete: true
@@ -587,7 +589,7 @@
 		}
 		{
 			dependencies: ["7D3A5F912E6C0B48"]
-			description: ["While it's on you: Regeneration, and Resistance, which takes 20% off every hit. And as long as the amulet is anywhere but the pedestal, the border is a wall: step over the line and it shoves you back."]
+			description: ["While it's on you: Regeneration, and Resistance, which takes 20% off every hit. And as long as your amulet isn't left at the pedestal, the border is a wall for you: step over the line and it shoves you back."]
 			hide_until_deps_complete: true
 			icon: "minecraft:golden_apple"
 			id: "46EBB02979D3B684"
@@ -630,7 +632,7 @@
 				}
 			]
 			shape: "pentagon"
-			subtitle: "Set the amulet on the pedestal"
+			subtitle: "Leave your amulet at the pedestal"
 			tasks: [
 				{
 					icon: "supplementaries:pedestal"
@@ -762,7 +764,7 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
+			dependencies: ["301FB94A5C1CD579"]
 			description: [
 				"After every fifth wave a plane drops a supply crate, and it lands well past the wall: 90 to 110 blocks from the pedestal. To reach it you'll need your amulet on the pedestal."
 				"Look up when it's announced, then follow the beam to where it came down. It's one crate for the whole team, so share it out."
@@ -794,7 +796,7 @@
 			]
 			title: "Special Delivery"
 			x: 22.5d
-			y: 0.0d
+			y: -1.5d
 		}
 		{
 			dependencies: ["4F1477C0746CED34"]
@@ -1035,7 +1037,7 @@
 				}
 			]
 			title: "Bouncing Betty"
-			x: 16.0d
+			x: 14.5d
 			y: 5.5d
 		}
 		{
@@ -1062,7 +1064,7 @@
 				}
 			]
 			title: "Claymore"
-			x: 18.0d
+			x: 16.5d
 			y: 5.5d
 		}
 		{
@@ -1096,7 +1098,7 @@
 				}
 			]
 			title: "Sentry"
-			x: 20.0d
+			x: 18.5d
 			y: 5.5d
 		}
 		{
@@ -1126,7 +1128,7 @@
 				}
 			]
 			title: "Trigger Happy"
-			x: 22.0d
+			x: 20.5d
 			y: 5.5d
 		}
 		{
@@ -1157,7 +1159,7 @@
 				}
 			]
 			title: "Watch Your Step"
-			x: 16.0d
+			x: 14.5d
 			y: 7.0d
 		}
 		{
@@ -1189,7 +1191,7 @@
 				}
 			]
 			title: "I.M.S."
-			x: 18.0d
+			x: 16.5d
 			y: 7.0d
 		}
 		{
@@ -1217,7 +1219,7 @@
 				}
 			]
 			title: "Defuser"
-			x: 20.0d
+			x: 18.5d
 			y: 7.0d
 		}
 		{
@@ -1249,7 +1251,7 @@
 				}
 			]
 			title: "Electrified Fence"
-			x: 22.0d
+			x: 20.5d
 			y: 7.0d
 		}
 		{
@@ -1258,7 +1260,7 @@
 				"659544B22656B3CD"
 				"17860922A24C885A"
 			]
-			description: ["Every trap on this branch is built: Bouncing Betty, Claymore, Sentry, Electrified Fence and the I.M.S. That's the whole Tier 2 kit, and from here it's about where you put it. Keep the totem on you for the night the line breaks anyway."]
+			description: ["The core of Tier 2 is built: Bouncing Betty, Claymore, Sentry, Electrified Fence and the I.M.S. From here it's about where you put them. Keep the totem on you for the night the line breaks anyway."]
 			hide_dependency_lines: true
 			hide_until_deps_complete: true
 			icon: "minecraft:totem_of_undying"
@@ -1272,7 +1274,7 @@
 			]
 			shape: "gear"
 			size: 1.5d
-			subtitle: "Build every Tier 2 trap"
+			subtitle: "Build the Sentry, the Electrified Fence and the I.M.S."
 			tasks: [
 				{
 					id: "0510E84D90253F28"
@@ -1280,7 +1282,7 @@
 				}
 			]
 			title: "No Turning Back"
-			x: 24.5d
+			x: 23.0d
 			y: 6.25d
 		}
 		{
@@ -1293,11 +1295,6 @@
 			icon: "sophisticatedstorage:barrel"
 			id: "5C44D121F112749F"
 			rewards: [
-				{
-					id: "32F2C9982116069C"
-					type: "xp_levels"
-					xp_levels: 2
-				}
 				{
 					count: 4
 					id: "75C72F3A8359B386"
@@ -1322,8 +1319,8 @@
 				}
 			]
 			title: "Room to Grow"
-			x: 16.0d
-			y: 9.0d
+			x: 12.5d
+			y: 3.0d
 		}
 		{
 			dependencies: ["5C44D121F112749F"]
@@ -1353,8 +1350,8 @@
 				}
 			]
 			title: "Bigger on the Inside"
-			x: 18.0d
-			y: 9.0d
+			x: 10.5d
+			y: 3.0d
 		}
 		{
 			dependencies: ["5C44D121F112749F"]
@@ -1384,8 +1381,8 @@
 				}
 			]
 			title: "Iron Sides"
-			x: 16.0d
-			y: 10.5d
+			x: 12.5d
+			y: 4.5d
 		}
 		{
 			dependencies: ["5C44D121F112749F"]
@@ -1411,11 +1408,11 @@
 				}
 			]
 			title: "Pack Mule"
-			x: 18.0d
-			y: 10.5d
+			x: 10.5d
+			y: 4.5d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
+			dependencies: ["5C44D121F112749F"]
 			description: ["Put an &eItem Collector&r on top of a chest and it pulls every dropped item within 5 blocks into that chest; right-click it to shrink the range. The quartz and redstone come out of Rare bags; ender pearls turn up in Rare and Epic bags and in gold-trimmed chests out in the ruins."]
 			hide_until_deps_complete: true
 			icon: "itemcollectors:basic_collector"
@@ -1439,11 +1436,11 @@
 				}
 			]
 			title: "Waste Not"
-			x: 14.0d
-			y: 9.0d
+			x: 11.0d
+			y: 1.5d
 		}
 		{
-			dependencies: ["538A1BBC9A1B8EAC"]
+			dependencies: ["301FB94A5C1CD579"]
 			description: ["That was the last page of the diary. Whoever kept it wrote down eight waves, then stopped writing. From here on they're Hordes: each one bigger than the last, with things in them you haven't met yet. There's no final wave coming, so build like you're staying."]
 			hide_until_deps_complete: true
 			icon: "minecraft:map"
@@ -1494,7 +1491,7 @@
 		}
 		{
 			dependencies: ["42EDC7E6DB5ABFAA"]
-			description: ["Every tenth wave brings something with it that the rest make way for. The diary only ever names one of them. You'll know it when it arrives; be ready before then."]
+			description: ["Every tenth wave brings something with it that the rest make way for. You'll know it when it arrives; be ready before then."]
 			hide_until_deps_complete: true
 			icon: "undeadnights:elite_zombie_spawn_egg"
 			id: "3E279D8E8116478F"
@@ -1745,11 +1742,6 @@
 			id: "04DC756B047A09D4"
 			rewards: [
 				{
-					id: "4ABE7C34407EAFA6"
-					type: "xp_levels"
-					xp_levels: 4
-				}
-				{
 					id: "682CC9C2AC1D45BA"
 					item: "minecraft:lightning_rod"
 					type: "item"
@@ -1880,7 +1872,7 @@
 					type: "item"
 				}
 			]
-			title: "The Grid"
+			title: "Heart of the Network"
 			x: 36.0d
 			y: 2.5d
 		}
@@ -2049,7 +2041,7 @@
 				}
 			]
 			title: "Live Wire"
-			x: 22.0d
+			x: 20.5d
 			y: 8.5d
 		}
 		{

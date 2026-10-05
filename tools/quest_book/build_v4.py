@@ -307,10 +307,11 @@ CAMPAIGN = [
     dict(key='own', old="You're On Your Own", x=0, y=0, rewards=[item('minecraft:torch', 16)]),
     dict(key='legend', title='Reading This Book', x=0, y=-3, shape='circle', root=True,
          subtitle='How to read the shapes on this map',
-         desc=["Every shape here means something. &eRounded squares&r are the story: most of them finish on their own as the run goes on. &eGears&r open a new act of the book. &eHexagons&r are things to craft, &epentagons&r are the amulet and the world past the border, and &ecircles&r are field notes.",
-               "The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own.",
-               "{image:kubejs:textures/quests/legend.png width:240 height:98 align:center}",
-               "Small &ediamonds&r are optional field tests: they tick over on their own when your defences do the work. The &eChallenges&r chapter has the hard ones."],
+         desc=["{image:kubejs:textures/quests/legend.png width:190 height:78 align:center}",
+               "Every shape here means something. &eRounded squares&r are the story: most of them finish on their own as the run goes on. &eGears&r open a new act of the book. &eHexagons&r are things to craft, &epentagons&r are the amulet and the world past the border, and &ecircles&r are field notes.",
+               PB,
+               "Small &ediamonds&r are optional field tests: they tick over on their own when your defences do the work. The &eChallenges&r chapter has the hard ones.",
+               "The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own."],
          icon='minecraft:compass', tasks=[t_check()], rewards=[]),
     dict(key='time', old='Borrowed Time', x=2, y=0, deps=['own'], rewards=[bag('u')]),
     dict(key='pedestal', old='Find the Pedestal', x=4, y=0, deps=['time'],
@@ -319,12 +320,13 @@ CAMPAIGN = [
          rewards=[bag('u')]),
     dict(key='horn', old='Sound the Horn', x=6, y=0, deps=['pedestal'], rewards=[bag('u')]),
     dict(key='thin', old='Thin the Horde', x=8, y=0, deps=['horn'], rewards=[item('minecraft:iron_ingot', 3)]),
-    dict(key='wave1', old='Wave One, Cleared', x=10, y=0, deps=['thin'], rewards=[bag('u'), xp(6)]),
+    dict(key='wave1', old='Wave One, Cleared', x=10, y=0, deps=['thin'], rewards=[bag('u'), xp(6)],
+         desc=["Every mob down means the wave is cleared, the timer to the next one starts, and the border grows: 5 blocks a wave for waves 1 to 3, 10 a wave for waves 4 to 6, 15 for 7 to 9, and 5 more every three waves after that. More ground to hold, and more ground to loot."]),
     dict(key='spoils', old='Spoils of War', x=12, y=0, deps=['wave1'], rewards=[bag('u', 2)]),
     dict(key='openit', old='Open It', x=14.5, y=0, deps=['spoils'], shape='gear', size=2.0,
          subtitle='Open a loot bag. Opens Act II: Dig In',
          desc=["Right-click a bag to open it - it does nothing sitting in your inventory. Better tiers carry better hauls, and Uncommon, Rare and Epic bags can carry &eShrapnel&r, the material the Sentry and shotgun shells need. Open them as you get them.",
-               "Unlocks: the amulet, every trap branch, storage and the rest of the book."],
+               "Unlocks: the amulet, the Tier 1 and Tier 2 traps, storage, and the road to wave 8."],
          rewards=[item('minecraft:iron_ingot', 2), bag('u', 2), choice('kit_dig_in'),
                   toast('New pages: Act II', 'Dig In - press Tab', 'minecraft:map')]),
     # pedestal notes (above the spine)
@@ -336,7 +338,7 @@ CAMPAIGN = [
     dict(key='hud', title='Read the Bar', x=6, y=-3, deps=['horn'], shape='circle',
          subtitle='Field notes on the action bar',
          desc=["The line above your hotbar tells you what the base needs. &c⚔ Wave N - Hostiles remaining&r means a wave is on: that many are still alive near the pedestal. &b⏱ Next wave in&r is your build time.",
-               "{image:kubejs:textures/quests/hud.png width:240 height:70 align:center}",
+               "{image:kubejs:textures/quests/hud.png width:190 height:55 align:center}",
                "If a pedestal alert replaces the line, the pedestal is being hit right now, wherever you are. Go home."],
          icon='minecraft:clock', tasks=[t_check()], rewards=[]),
     dict(key='corpse', title='Corpse Run', x=2, y=-3, deps=['time'], shape='circle', invisible=True,
@@ -371,8 +373,9 @@ CAMPAIGN = [
     # amulet and beyond (above)
     dict(key='njj', old='Not Just Jewelry', x=16, y=-3, deps=['openit'],
          rewards=[item('kubejs:amulet'), item('minecraft:golden_carrot', 4)]),
-    dict(key='wear', old='Wear It', x=18, y=-3, deps=['njj'], rewards=[item('minecraft:bread', 4)]),
-    dict(key='leave', old='Leave It Behind', x=20, y=-3, deps=['wear'],
+    dict(key='wear', old='Wear It', x=18, y=-3, deps=['njj'], rewards=[item('minecraft:bread', 4)],
+         desc=["While it's on you: Regeneration, and Resistance, which takes 20% off every hit. And as long as your amulet isn't left at the pedestal, the border is a wall for you: step over the line and it shoves you back."]),
+    dict(key='leave', old='Leave It Behind', x=20, y=-3, deps=['wear'], subtitle='Leave your amulet at the pedestal',
          desc=["Right-click the pedestal holding your amulet to leave it there. You lose its buffs and the border opens - but only for players whose own amulet is at the pedestal. Anyone still wearing theirs, or without one, is held at the line. The horde targets the pedestal either way.",
                "To take yours back, right-click the pedestal with an empty hand and press &eTake your amulet&r. The stand shows one amulet however many are left there, and each player can only take their own."]),
     dict(key='pastline', old='Past the Line', x=22, y=-3, deps=['leave'], rewards=[bag('r'), xp(6)],
@@ -392,7 +395,7 @@ CAMPAIGN = [
          desc=["That's the end of the borrowed time. The gear you arrived in has rusted through, and the old defences at the gate are gone - the gate and the gaps in the walls are open now.",
                "From here, everything that fights for you is something you built. Rebuild the gate first: Sentries, fences, spikes."],
          icon='minecraft:iron_bars', tasks=[t_custom('minecraft:iron_bars')], rewards=[bag('r'), item('kubejs:shrapnel', 4)]),
-    dict(key='delivery', title='Special Delivery', x=22.5, y=0, deps=['openit'], shape='circle',
+    dict(key='delivery', title='Special Delivery', x=22.5, y=-1.5, deps=['wave5'], shape='circle',
          subtitle='Completes when a supply crate lands',
          desc=["After every fifth wave a plane drops a supply crate, and it lands well past the wall: 90 to 110 blocks from the pedestal. To reach it you'll need your amulet on the pedestal.",
                "Look up when it's announced, then follow the beam to where it came down. It's one crate for the whole team, so share it out."],
@@ -426,57 +429,58 @@ CAMPAIGN = [
          rewards=[item('simply_traps:spike_trap', 4)]),
     dict(key='lure', old='Dinner Bell', x=20, y=2.5, deps=['spike'], rewards=[item('kubejs:lure_block')]),
     # Tier 2 (below)
-    dict(key='betty', old='Bouncing Betty', x=16, y=5.5, deps=['openit'],
+    dict(key='betty', old='Bouncing Betty', x=14.5, y=5.5, deps=['openit'],
          desc=["Step on it, it launches into the air, then explodes. Simple and cheap. Players set it off too, but its blast can't hurt a player or break blocks - stepping on your own just wastes the mine.",
                "Keep a stack: it's a mine, the I.M.S.'s ammunition and the core of a Claymore."],
          rewards=[item('securitycraft:bouncing_betty', 2)]),
-    dict(key='claymore', old='Claymore', x=18, y=5.5, deps=['betty'], rewards=[item('securitycraft:claymore')]),
-    dict(key='sentry', old='Sentry', x=20, y=5.5, deps=['claymore'],
+    dict(key='claymore', old='Claymore', x=16.5, y=5.5, deps=['betty'], rewards=[item('securitycraft:claymore')]),
+    dict(key='sentry', old='Sentry', x=18.5, y=5.5, deps=['claymore'],
          subtitle='Shrapnel, a Dispenser, redstone, a Portable Radar, 4 iron, an iron block',
          desc=["Set it on a solid block and it shoots by itself: &e8 damage&r a bullet, two shots a second, out to &e20 blocks&r. No ammo, no power, no wiring.",
                "It's already set to shoot hostile mobs only, whatever the placement message says. &cOnly the player who placed it can change its mode.&r",
                "Unlocks: Trigger Happy, and with the fence and the I.M.S., No Turning Back.",
                PB, "Field notes: a Speed Module doubles its fire rate. Put spikes inside its reach - slowed mobs stay in its fire longer. Break the block under it and the Sentry goes with it."],
          rewards=[item('kubejs:shrapnel', 2)]),
-    dict(key='speed', title='Trigger Happy', x=22, y=5.5, deps=['sentry'], shape='hexagon',
+    dict(key='speed', title='Trigger Happy', x=20.5, y=5.5, deps=['sentry'], shape='hexagon',
          subtitle='7 iron, paper, sugar',
          desc=["A &eSpeed Module&r is the cheapest damage upgrade in Tier 2. Right-click your Sentry with it and the Sentry fires twice as fast: every 5 ticks instead of 10. It speeds up an I.M.S. reload too.",
                "Only the player who placed the Sentry can fit it."],
          icon='securitycraft:speed_module', tasks=[t_item('securitycraft:speed_module')],
          rewards=[item('securitycraft:speed_module')]),
-    dict(key='mines', title='Watch Your Step', x=16, y=7, deps=['betty'], shape='hexagon',
+    dict(key='mines', title='Watch Your Step', x=14.5, y=7, deps=['betty'], shape='hexagon',
          subtitle='3 iron, 1 gunpowder make 3 Mines',
          desc=["A &eMine&r stays put and goes off when something steps on it. Craft one together with a block of sand, dirt or stone and you get a block mine that looks exactly like that block - a Sand Mine is invisible in the desert.",
                "Like every trap explosion here, it can't hurt players or break blocks."],
          icon='securitycraft:mine', tasks=[t_item('securitycraft:mine')], rewards=[item('securitycraft:mine', 3)]),
-    dict(key='ims', old='I.M.S.', x=18, y=7, deps=['betty'],
+    dict(key='ims', old='I.M.S.', x=16.5, y=7, deps=['betty'],
          desc=["Holds up to 4 Bouncing Betties and fires them at mobs that come close - the pack sets every new I.M.S. to mobs only. Each one tracks its target down before it goes off. Refill it by right-clicking with more Bouncing Betties. Breaking it returns at most 2 Bouncing Betties.",
                PB, "Field notes: put a chest of Bouncing Betties directly underneath it and it reloads itself, which is also how a teammate can keep your I.M.S. fed."],
          rewards=[item('securitycraft:bouncing_betty', 4)]),
-    dict(key='cutters', title='Defuser', x=20, y=7, deps=['claymore'], shape='hexagon',
+    dict(key='cutters', title='Defuser', x=18.5, y=7, deps=['claymore'], shape='hexagon',
          subtitle='Shears and 4 iron',
          desc=["Right-click a Claymore or a mine with &eWire Cutters&r to defuse it before you move it. Flint and steel arms it again."],
          icon='securitycraft:wire_cutters', tasks=[t_item('securitycraft:wire_cutters')],
          rewards=[item('minecraft:gunpowder', 4)]),
-    dict(key='fence', old='Electrified Fence', x=22, y=7, deps=['claymore'],
+    dict(key='fence', old='Electrified Fence', x=20.5, y=7, deps=['claymore'],
          desc=["Looks like a normal fence, but it's unbreakable and shocks any mob that touches it. It never hurts a player. Line a chokepoint with it and mobs pay for every step.",
                PB, "Field notes: zombies won't path through fences, so use them to build funnels. Anything standing beside one takes 6 damage a second, and that shock ignores armour. Build a spare: the Chemthrower Turret needs one."],
          rewards=[item('securitycraft:electrified_iron_fence', 2)]),
-    dict(key='ntb', old='No Turning Back', x=24.5, y=6.25, deps=['sentry', 'fence', 'ims'], shape='gear',
-         hide_lines=True),
+    dict(key='ntb', old='No Turning Back', x=23, y=6.25, deps=['sentry', 'fence', 'ims'], shape='gear',
+         hide_lines=True, subtitle='Build the Sentry, the Electrified Fence and the I.M.S.',
+         desc=["The core of Tier 2 is built: Bouncing Betty, Claymore, Sentry, Electrified Fence and the I.M.S. From here it's about where you put them. Keep the totem on you for the night the line breaks anyway."]),
     # storage (below)
-    dict(key='barrel', old='Room to Grow', x=16, y=9, deps=['openit']),
-    dict(key='stack', old='Bigger on the Inside', x=18, y=9, deps=['barrel'], rewards=[item('minecraft:iron_ingot', 4)]),
-    dict(key='ironsides', old='Iron Sides', x=16, y=10.5, deps=['barrel'], rewards=[item('minecraft:iron_ingot', 4)]),
-    dict(key='backpack', old='Pack Mule', x=18, y=10.5, deps=['barrel'], rewards=[item('minecraft:copper_ingot', 4)]),
-    dict(key='collector', old='Waste Not', x=14, y=9, deps=['openit'], rewards=[item('minecraft:iron_ingot', 4)]),
+    dict(key='barrel', old='Room to Grow', x=12.5, y=3, deps=['openit'], rewards=[item('minecraft:iron_ingot', 4)]),
+    dict(key='stack', old='Bigger on the Inside', x=10.5, y=3, deps=['barrel'], rewards=[item('minecraft:iron_ingot', 4)]),
+    dict(key='ironsides', old='Iron Sides', x=12.5, y=4.5, deps=['barrel'], rewards=[item('minecraft:iron_ingot', 4)]),
+    dict(key='backpack', old='Pack Mule', x=10.5, y=4.5, deps=['barrel'], rewards=[item('minecraft:copper_ingot', 4)]),
+    dict(key='collector', old='Waste Not', x=11, y=1.5, deps=['barrel'], rewards=[item('minecraft:iron_ingot', 4)]),
     # ---- Act III: Power ----
-    dict(key='wave8', old='The Last Written Wave', x=28, y=0, deps=['openit'], shape='gear', size=2.0,
+    dict(key='wave8', old='The Last Written Wave', x=28, y=0, deps=['wave5'], shape='gear', size=2.0,
          subtitle='Completes on its own when wave 8 is cleared. Opens Act III: Power',
          rewards=[bag('e'), item('waystones:waystone'), xp(12), choice('kit_power'),
                   toast('New pages: Act III', 'Power - press Tab', 'minecraft:map')]),
     dict(key='boss', old='The Reaper', title='Every Tenth Wave', x=34, y=0, deps=['wave8'],
-         desc=["Every tenth wave brings something with it that the rest make way for. The diary only ever names one of them. You'll know it when it arrives; be ready before then."],
+         desc=["Every tenth wave brings something with it that the rest make way for. You'll know it when it arrives; be ready before then."],
          rewards=[bag('l'), xp(12)]),
     dict(key='wave15', old='No Ceiling', x=40, y=0, deps=['boss'], shape='gear', size=2.0,
          subtitle='Completes on its own when wave 15 is cleared. Opens Act IV: Hordes',
@@ -507,7 +511,8 @@ CAMPAIGN = [
     dict(key='tesla', old='Sparks in the Dark', x=34, y=2.5, deps=['point'],
          desc=["The &eTesla Coil&r needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Then it picks one target within 6 blocks about every second and a half, hits it for 6 and stuns it, and stays quiet while nothing's in range. Put it where the horde bunches up.",
                "The netherite ingot is 4 netherite scrap and 4 gold ingots. Scrap turns up in supply crates and Epic bags.",
-               PB, "Field notes: it picks a random target in range, not the nearest, and draws power whenever its lever is on. Switch it off between waves."]),
+               PB, "Field notes: it picks a random target in range, not the nearest, and draws power whenever its lever is on. Switch it off between waves."],
+         rewards=[item('minecraft:lightning_rod')]),
     dict(key='steel', title='Steel Yourself', x=30, y=4, deps=['gen'], shape='hexagon',
          subtitle='Iron ingots in a vanilla Blast Furnace',
          desc=["Smelt iron ingots in a vanilla &eBlast Furnace&r and they come out as &eSteel&r - no Immersive Engineering machine needed. Steel goes into the turrets and into Raw Ferronite."],
@@ -519,7 +524,7 @@ CAMPAIGN = [
          rewards=[item('immersiveengineering:casull', 8)]),
     dict(key='chemturret', old='Liquid Fire', x=34, y=4, deps=['point'], rewards=[item('minecraft:iron_ingot', 4)]),
     # Refined Storage, one quest per part
-    dict(key='rs', old='The Grid', x=36, y=2.5, deps=['tesla'],
+    dict(key='rs', old='The Grid', title='Heart of the Network', x=36, y=2.5, deps=['tesla'],
          subtitle='4 Quartz Enriched Iron, an Advanced Processor, 2 silicon, a Machine Casing',
          desc=["The &eController&r is the heart of a Refined Storage network: put a Flux Point next to it for power. Every Refined Storage block touching it, or touching another one that does, joins the network."],
          rewards=[item('minecraft:quartz', 4)]),
@@ -540,7 +545,7 @@ CAMPAIGN = [
          subtitle='10 wave mobs die while slowed by your spikes',
          desc=["Spikes do the holding; the traps and turrets around them do the killing. Ten wave mobs that die while still slowed by spikes, whoever finishes them."],
          icon='simply_traps:spike_trap', tasks=[t_custom('simply_traps:spike_trap')], rewards=[item('simply_traps:spike_trap', 4)]),
-    dict(key='ft_fence', title='Live Wire', x=22, y=8.5, deps=['fence'], shape='diamond', optional=True,
+    dict(key='ft_fence', title='Live Wire', x=20.5, y=8.5, deps=['fence'], shape='diamond', optional=True,
          subtitle='10 wave mobs killed by fence shocks',
          desc=["Ten wave mobs killed by the shock from an electrified fence. Funnel them along the wire and let it work."],
          icon='securitycraft:electrified_iron_fence', tasks=[t_custom('securitycraft:electrified_iron_fence')],
@@ -659,15 +664,15 @@ TIPS = [
 # --------------------------------------------------------------------------
 SHR = 'kubejs:shrapnel'
 BOUNTIES = [
-    dict(key='b25', old='First Blood', x=0, y=0,
+    dict(key='b25', old='First Blood', x=0, y=0, subtitle='25 wave kills',
          desc=["Every wave mob that goes down counts toward this, whoever or whatever drops it - turrets and traps get credit too, and so does every other player's kill. Mobs from a structure's spawner don't count, and neither do deaths by drowning, falling, freezing, starving or /kill; fire and lava do. Twenty-five down. Just the start."],
          rewards=[bag('u'), item(SHR, 2)]),
-    dict(key='b100', old='Exterminator', x=2, y=0, deps=['b25'], rewards=[bag('u', 2), item(SHR, 4)]),
-    dict(key='b300', old='Culling', x=4.25, y=0, deps=['b100'], rewards=[bag('r', 2), item(SHR, 6)]),
-    dict(key='b750', old='Reaper', title='Undertaker', x=6.75, y=0, deps=['b300'],
+    dict(key='b100', old='Exterminator', x=2, y=0, deps=['b25'], subtitle='100 wave kills', rewards=[bag('u', 2), item(SHR, 4)]),
+    dict(key='b300', old='Culling', x=4.25, y=0, deps=['b100'], subtitle='300 wave kills', rewards=[bag('r', 2), item(SHR, 6)]),
+    dict(key='b750', old='Reaper', title='Undertaker', x=6.75, y=0, deps=['b300'], subtitle='750 wave kills',
          rewards=[bag('e'), item('minecraft:golden_apple'), item(SHR, 8)]),
-    dict(key='b1500', old='Zombie Masher', x=9.5, y=0, deps=['b750'], repeat=False,
-         desc=["Fifteen hundred kills. The horde doesn't get thinner, but your aim is getting better. There are more marks past this one."],
+    dict(key='b1500', old='Zombie Masher', x=9.5, y=0, deps=['b750'], repeat=False, subtitle='1,500 wave kills',
+         desc=["Fifteen hundred. There's another mark every fifteen hundred kills after this, and each one pays a Legendary bag."],
          rewards=[bag('l')]),
     dict(key='b3000', title='Body Count', x=12, y=0, deps=['b1500'], shape='gear', size=2.0,
          subtitle='3,000 wave kills', icon='minecraft:skeleton_skull',
@@ -695,22 +700,22 @@ ARSENAL = [
     # pistol ammo family (y=0)
     dict(key='a_pammo', old='Pistol Ammo', x=0, y=0, rewards=[item(G + 'pistol_ammo', 8)]),
     dict(key='a_pistol', old='Pistol', x=1.5, y=0, deps=['a_pammo'], rewards=[item(G + 'pistol_ammo', 16)]),
-    dict(key='a_revolver', old='Revolver', x=3, y=0, deps=['a_pammo'], rewards=[item(G + 'pistol_ammo', 16)]),
-    dict(key='a_smg', old='Submachine Gun', x=4.5, y=0, deps=['a_pammo'],
+    dict(key='a_revolver', old='Revolver', x=3, y=0, deps=['a_pistol'], rewards=[item(G + 'pistol_ammo', 16)]),
+    dict(key='a_smg', old='Submachine Gun', x=4.5, y=0, deps=['a_revolver'],
          desc=["Full-auto off a 32-round Pistol Ammo magazine, and a quick reload. Press R to reload."],
          rewards=[item(G + 'pistol_ammo', 16)]),
-    dict(key='a_tommy', old='Tommy Gun', x=6, y=0, deps=['a_pammo'],
+    dict(key='a_tommy', old='Tommy Gun', x=6, y=0, deps=['a_smg'],
          desc=["A 60-round Pistol Ammo drum, nearly twice the Submachine Gun's magazine, but it takes twice as long to reload."],
          rewards=[item(G + 'pistol_ammo', 16)]),
     # shotgun family (y=1.5)
     dict(key='a_sammo', old='Shotgun Ammo', x=0, y=1.5, rewards=[item(G + 'shotgun_ammo', 8)]),
     dict(key='a_shotgun', old='Shotgun', x=1.5, y=1.5, deps=['a_sammo'], rewards=[item(G + 'shotgun_ammo', 16)]),
-    dict(key='a_double', old='Double-Barrel Shotgun', x=3, y=1.5, deps=['a_sammo'], rewards=[item(G + 'shotgun_ammo', 16)]),
-    dict(key='a_auto', old='Automatic Shotgun', x=4.5, y=1.5, deps=['a_sammo'], rewards=[item(G + 'shotgun_ammo', 16)]),
+    dict(key='a_double', old='Double-Barrel Shotgun', x=3, y=1.5, deps=['a_shotgun'], rewards=[item(G + 'shotgun_ammo', 16)]),
+    dict(key='a_auto', old='Automatic Shotgun', x=4.5, y=1.5, deps=['a_double'], rewards=[item(G + 'shotgun_ammo', 16)]),
     # rifle family (y=3)
     dict(key='a_rammo', old='Rifle Ammo', x=0, y=3, rewards=[item(G + 'rifle_ammo', 8)]),
     dict(key='a_dmr', old='DMR', x=1.5, y=3, deps=['a_rammo'], rewards=[item(G + 'rifle_ammo', 16)]),
-    dict(key='a_sniper', old='Sniper', x=3, y=3, deps=['a_rammo'], rewards=[item(G + 'rifle_ammo', 16)]),
+    dict(key='a_sniper', old='Sniper', x=3, y=3, deps=['a_dmr'], rewards=[item(G + 'rifle_ammo', 16)]),
     dict(key='a_snammo', old='Sniper Ammo', x=0, y=4.5, rewards=[item(G + 'sniper_ammo', 5)]),
     dict(key='a_heavy', old='Heavy Sniper', x=1.5, y=4.5, deps=['a_snammo'], rewards=[item(G + 'sniper_ammo', 10)]),
     # heavy and special (y=6)
@@ -730,7 +735,7 @@ ARSENAL = [
     dict(key='a_cannon', old='Potato Cannon', x=4.5, y=7.5, deps=['a_potato'], shape='pentagon', subtitle='Airdrop only',
          rewards=[item(G + 'charged_potato', 4)]),
     dict(key='a_minigun', old='Minigun', x=6, y=7.5, shape='pentagon', subtitle='Airdrop or Legendary bag only',
-         rewards=[item(G + 'grenade', 4)]),
+         rewards=[]),
 ]
 
 
@@ -880,14 +885,16 @@ def write_new_chapter(chfile, quests, **fields):
 # Act banners over the spine. Each draws only once the team has completed
 # the act's gate quest (ChapterImage dependency), so the map grows as the run
 # does. Art: tools/quest_book/quest_art.py.
-ACT_BANNERS = [('act1', 6.5, None), ('act2', 21.5, 'openit'), ('act3', 34.0, 'wave8'), ('act4', 48.0, 'wave15')]
+# In the free band just above the spine, so they show at the book's default
+# zoom (about 15 x 9 units on screen); Act I sits left of the first quest.
+ACT_BANNERS = [('act1', -2.5, None), ('act2', 17.5, 'openit'), ('act3', 31.0, 'wave8'), ('act4', 43.5, 'wave15')]
 
 
 def banner_images(ids):
     out = []
     for i, (name, x, gate) in enumerate(ACT_BANNERS):
-        img = {'image': f'kubejs:textures/quests/{name}.png', 'x': D(x), 'y': D(-7.0), 'width': D(10.0),
-               'height': D(2.5), 'rotation': D(0.0), 'order': 0}
+        img = {'image': f'kubejs:textures/quests/{name}.png', 'x': D(x), 'y': D(-1.6), 'width': D(4.0),
+               'height': D(1.0), 'rotation': D(0.0), 'order': 0}
         if gate:
             img['dependency'] = ids[gate]
         out.append(img)
@@ -897,7 +904,9 @@ def banner_images(ids):
 def main():
     tables = build_tables()
     camp, camp_ids = build_chapter('campaign', CAMPAIGN)
-    write_chapter('campaign', camp, images=banner_images(camp_ids))
+    # autofocus_id: the book opens on the first quest instead of the middle of
+    # the whole chapter, which is empty space while most quests are hidden.
+    write_chapter('campaign', camp, images=banner_images(camp_ids), autofocus_id=camp_ids['own'])
     chal, _ = build_chapter('challenges', CHALLENGES)
     write_new_chapter('challenges', chal, title='Challenges', icon='minecraft:netherite_sword', order_index=4,
                       subtitle=['Optional, and hard. For when the campaign is old news.'])
@@ -907,7 +916,7 @@ def main():
     tips, _ = build_chapter('tips_and_tricks', tips_spec)
     write_chapter('tips_and_tricks', tips, title='Field Notes', subtitle=['Keys, habits and how things work'])
     bq, bq_ids = build_chapter('bounties', BOUNTIES)
-    write_chapter('bounties', bq)
+    write_chapter('bounties', bq, autofocus_id=bq_ids['b25'])
     ars, _ = build_chapter('arsenal', ARSENAL)
     write_chapter('arsenal', ars, subtitle=["Simple Guns: reworked - each ammo, and the guns it feeds"])
     tdir = os.path.join(QDIR, 'reward_tables')

@@ -61,7 +61,7 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["141453C0181A1605"]
+			dependencies: ["3A480744F2122BA6"]
 			description: ["A 6-round cylinder on the same Pistol Ammo as the Pistol - smaller magazine, same reload."]
 			icon: "simple_guns_reworked:revolver"
 			id: "7483FD92CA3E7272"
@@ -87,7 +87,7 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["141453C0181A1605"]
+			dependencies: ["7483FD92CA3E7272"]
 			description: ["Full-auto off a 32-round Pistol Ammo magazine, and a quick reload. Press R to reload."]
 			icon: "simple_guns_reworked:submachine_gun"
 			id: "6ED544422010E463"
@@ -113,7 +113,7 @@
 			y: 0.0d
 		}
 		{
-			dependencies: ["141453C0181A1605"]
+			dependencies: ["6ED544422010E463"]
 			description: ["A 60-round Pistol Ammo drum, nearly twice the Submachine Gun's magazine, but it takes twice as long to reload."]
 			icon: "simple_guns_reworked:tommy_gun"
 			id: "4A3CD2A952A112EC"
@@ -190,7 +190,7 @@
 			y: 1.5d
 		}
 		{
-			dependencies: ["14F359094B6672C7"]
+			dependencies: ["4C4A221676AB34F8"]
 			description: ["Only 2 shells of Shotgun Ammo before it needs reloading - hits hard, empties fast."]
 			icon: "simple_guns_reworked:double_barrel_shotgun"
 			id: "692CD04A7A5E46FC"
@@ -216,7 +216,7 @@
 			y: 1.5d
 		}
 		{
-			dependencies: ["14F359094B6672C7"]
+			dependencies: ["692CD04A7A5E46FC"]
 			description: ["9 rounds of Shotgun Ammo, and every pull of the trigger sends 2 pellets out at once."]
 			icon: "simple_guns_reworked:automatic_shotgun"
 			id: "31A20EB54D3A561D"
@@ -293,7 +293,7 @@
 			y: 3.0d
 		}
 		{
-			dependencies: ["4437D7E4684579F8"]
+			dependencies: ["5726CFC9AC81F0FF"]
 			description: ["5 rounds - also Rifle Ammo, not Sniper Ammo, despite the name."]
 			icon: "simple_guns_reworked:sniper"
 			id: "5C1C3BF5530BA5AD"
@@ -604,14 +604,6 @@
 			description: ["No ammo item needed - just click for a quick burst. The simplest gun there is."]
 			icon: "simple_guns_reworked:minguguuggn"
 			id: "08BD3E34907DDE23"
-			rewards: [
-				{
-					count: 4
-					id: "5A63E4C5264D5098"
-					item: "simple_guns_reworked:grenade"
-					type: "item"
-				}
-			]
 			shape: "pentagon"
 			subtitle: "Airdrop or Legendary bag only"
 			tasks: [

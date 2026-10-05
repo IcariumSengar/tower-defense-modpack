@@ -10183,3 +10183,29 @@ seen in real play). The book now has 131 quests in 5 chapters.
   **Needs a real client:** the banners, the theme, the inline diagrams, the
   completion toasts for hidden quests, and every per-player hook (Past the
   Line, the spawner break, the heal).
+
+**Review pass 2026-10-05** (on "do another check through the quest book,
+make sure the text makes sense and it looks visually appealing as it
+unlocks"). Every quest was read in unlock order, the geometry was checked by
+script, and the real book was screenshotted in the client sandbox at four
+points in a run.
+- Text: removed leftover XP from Room to Grow and Sparks in the Dark; Open It
+  no longer promises "the rest of the book"; the boss quest lost a line
+  pointing at a name it no longer shows; Wear It, Leave It Behind and No
+  Turning Back match the co-op amulet rule and the current branch; the RS
+  Controller is "Heart of the Network" (the Grid has its own quest);
+  bounties have subtitles; Zombie Masher no longer repeats Exterminator; the
+  Minigun pays nothing (it needs no ammo); clearer border-growth wording.
+- Layout: Arsenal rows are ammo-then-gun chains; Tier 2 drops straight down
+  from Open It; storage moved to the open space left of Open It, with Waste
+  Not under Room to Grow; the spine runs Open It -> Fend for Yourself (wave 5,
+  hidden) -> The Last Written Wave, so the wave-8 gate also stays hidden
+  until wave 5; Special Delivery moved off the spine. A script finds no
+  overlaps and no dependency line through another quest.
+- Seen in the client: Campaign and Bounties set `autofocus_id`, so a fresh
+  book opens on the first quest instead of empty space. Act banners are 4x1
+  in the band just above the spine (at the default zoom, about 15x9 units, the
+  old y=-7 was off-screen); all four were confirmed to appear when their gate
+  quest completes. The diagrams are 190 GUI px wide so they fit the quest
+  window; the legend leads Reading This Book, which now has two pages. The
+  dusk theme renders (aqua tasks, orange rewards, ember lines).
