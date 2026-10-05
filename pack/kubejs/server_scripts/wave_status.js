@@ -170,6 +170,9 @@ var TD_STRAGGLER_TAG = 'td_straggler'
 var tdStragglerTeamReady = false
 
 function tdStragglerMark(server, e) {
+  // "Last Two Standing" quest (quest_milestones.js); a no-op after the first.
+  var qmStragglerData = worldData(server.getLevel('minecraft:overworld'))
+  if (qmStragglerData) qmCompleteShared(server, qmStragglerData, 'stragglers')
   if (!tdStragglerTeamReady) {
     server.runCommandSilent(`team add ${TD_STRAGGLER_TEAM}`)
     server.runCommandSilent(`team modify ${TD_STRAGGLER_TEAM} color red`)

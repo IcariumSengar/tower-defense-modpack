@@ -1,0 +1,148 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "challenges"
+	group: ""
+	icon: "minecraft:netherite_sword"
+	id: "7A21BE7C3DD12592"
+	images: [ ]
+	order_index: 4
+	progression_mode: "flexible"
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Hold a whole wave, wave 5 or later, without a single hit landing on the pedestal. Kill zones out front, not repairs afterwards."]
+			icon: "supplementaries:pedestal"
+			id: "46223EAF13762170"
+			rewards: [
+				{
+					id: "609CF74AC482ECB0"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "octagon"
+			size: 1.5d
+			subtitle: "Clear a wave from wave 5 on without the pedestal taking damage"
+			tasks: [
+				{
+					icon: "supplementaries:pedestal"
+					id: "7392F838FA8CC7CA"
+					type: "custom"
+				}
+			]
+			title: "Not a Scratch"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			description: ["A boss dies while the pedestal is still untouched that wave. Meet it out in the ring and drag it off course."]
+			icon: "minecraft:crossbow"
+			id: "63E492F64F11BB17"
+			rewards: [
+				{
+					id: "64D4FFC8CF7FD7FD"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "octagon"
+			size: 1.5d
+			subtitle: "Kill a boss before the pedestal takes damage that wave"
+			tasks: [
+				{
+					icon: "minecraft:crossbow"
+					id: "22DE4C71A7372D6E"
+					type: "custom"
+				}
+			]
+			title: "Intercept"
+			x: 2.5d
+			y: 0.0d
+		}
+		{
+			description: ["Max HP, Armor and Thorns all at tier III. That's 108 levels poured into one stone block."]
+			icon: "minecraft:experience_bottle"
+			id: "55EBF9A276D342FD"
+			rewards: [
+				{
+					id: "60B0C2699EEC7F79"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "octagon"
+			size: 1.5d
+			subtitle: "Every pedestal upgrade at tier III"
+			tasks: [
+				{
+					icon: "minecraft:experience_bottle"
+					id: "5E83BD689FF3BF2E"
+					type: "custom"
+				}
+			]
+			title: "Fortified"
+			x: 5.0d
+			y: 0.0d
+		}
+		{
+			description: ["Twenty-five personal stashes looted out in the wasteland. Every one meant leaving the pedestal behind."]
+			icon: "lootr:lootr_chest"
+			id: "422D4F90905AE9BC"
+			rewards: [
+				{
+					id: "72235486A99ADD8C"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "octagon"
+			size: 1.5d
+			subtitle: "Loot 25 gold-trimmed stashes"
+			tasks: [
+				{
+					advancement: "lootr:25loot"
+					criterion: ""
+					icon: "lootr:lootr_chest"
+					id: "329C87A04ED04F11"
+					type: "advancement"
+				}
+			]
+			title: "Deep Pockets"
+			x: 7.5d
+			y: 0.0d
+		}
+		{
+			description: ["Twenty waves with permadeath switched on (/hardcore enable). No second chances on the way there."]
+			icon: "minecraft:totem_of_undying"
+			id: "6A3FCF056B9210D3"
+			rewards: [
+				{
+					id: "61489F43FF3BF3E7"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+				{
+					id: "6EA7A98EAD8EBD99"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "octagon"
+			size: 1.5d
+			subtitle: "Clear Horde 20 with hardcore on"
+			tasks: [
+				{
+					icon: "minecraft:totem_of_undying"
+					id: "2F2CDCEA7354D7D6"
+					type: "custom"
+				}
+			]
+			title: "Iron Will"
+			x: 10.0d
+			y: 0.0d
+		}
+	]
+	subtitle: ["Optional, and hard. For when the campaign is old news."]
+	title: "Challenges"
+}

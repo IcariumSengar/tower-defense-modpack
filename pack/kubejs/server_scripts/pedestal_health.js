@@ -204,6 +204,7 @@ BlockEvents.rightClicked('supplementaries:pedestal', (event) => {
   } else if (healPedestalByPercent(player, data, heal.percent)) {
     if (!player.isCreative()) event.item.shrink(1)
     player.notify(heal.message)
+    qmCompleteShared(player.getServer(), data, 'heal') // "First Aid" quest
   }
   pedestalHealClickResync(player, block)
   event.cancel()

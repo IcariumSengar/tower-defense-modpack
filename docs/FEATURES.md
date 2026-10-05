@@ -10143,3 +10143,43 @@ re-run; don't hand-edit the chapter files.
   anything that needs a real player. That covers the amulet rule (it needs
   two players), the choice-kit screen, the act toasts, the Lootr advancement
   task and how the map looks in the book.
+
+**Phases 2-4 built 2026-10-05** (same day, on "in fact just build out all
+phases"; live in the repo, the instance and the dedicated server, not yet
+seen in real play). The book now has 131 quests in 5 chapters.
+- **Phase 2 (the book reacts):** `quest_milestones.js` gained shared
+  milestones for the first countdown-started wave (The Clock Runs), the
+  straggler glow (Last Two Standing), a pedestal heal (First Aid), the first
+  upgrade (Shore It Up, no longer a checkmark), the first ambusher (hidden
+  "Something Below"), wave 5 (hidden "Fend for Yourself"), the first airdrop
+  landing (Special Delivery), a worn-out trap (Wear and Tear) and Horde 20/30/40
+  (Twenty/Thirty/Forty Deep). It also gained per-player ones for breaking a
+  spawner and for going 16 blocks past the closed border (Past the Line, now a
+  custom task that sees the starter ruin ring). Hooks are one call each in
+  wave_spawner.js (ambusher, countdown), wave_status.js (straggler),
+  trap_durability.js (worn trap) and pedestal_health.js (heal). Corpse Run
+  (hidden) is a native `minecraft:deaths` stat task; Big City is a structure
+  task on the new tag `#kubejs:towns`.
+- **Phase 3:** `field_tests.js` counts wave-mob kills by damage type into
+  td_ft_<key>: fence shock 10, Tesla 10, IE Gun Turret 25, OMT turrets 25, and
+  10 deaths while slowed by spikes. These complete five optional diamond
+  quests. The Sentry has none, because its bullets carry plain arrow damage
+  like the players' guns. Act banners are chapter images with `dependency`
+  on the gate quests (Act I always shown). Inline diagrams: the shape legend
+  in Reading This Book and the HUD in Read the Bar. Art comes from
+  `tools/quest_book/quest_art.py` into `kubejs/assets/kubejs/textures/quests/`.
+  Book theme: `kubejs/assets/ftbquests/ftb_quests_theme.txt`, FTB's default
+  with the dusk palette and drifting ember dependency lines.
+- **Phase 4:** a new Challenges chapter: Not a Scratch (clear a wave from
+  wave 5 on with no pedestal damage, tracked by qmTrackPedestalDamage),
+  Intercept (a boss dies with the pedestal untouched that wave), Fortified (all
+  upgrades at III), Deep Pockets (`lootr:25loot`), Iron Will (Horde 20 with
+  hardcore on).
+- Verified in the server sandbox: 53/53 scripts with 0 errors; "Loaded 5
+  chapters, 131 quests, 2 reward tables"; setting td_q_lastClearedWave 20 and
+  hardcore on raised exactly wave5/horde20/ch_hardcore20 (not horde30/40,
+  delivery or upgrade); one tagged zombie killed by `securitycraft:electricity`
+  and one slowed with Slowness III each moved their field-test counter.
+  **Needs a real client:** the banners, the theme, the inline diagrams, the
+  completion toasts for hidden quests, and every per-player hook (Past the
+  Line, the spawner break, the heal).

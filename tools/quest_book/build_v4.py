@@ -260,6 +260,25 @@ def t_adv(adv, **kw):
     return t
 
 
+def t_custom(icon, **kw):
+    """Completed by quest_milestones.js (its QM_TASKS must hold this task's id)."""
+    t = {'type': 'custom', 'icon': icon}
+    t.update(kw)
+    return t
+
+
+def t_stat(stat, value, **kw):
+    t = {'type': 'stat', 'stat': stat, 'value': value}
+    t.update(kw)
+    return t
+
+
+def t_structure(structure, **kw):
+    t = {'type': 'structure', 'structure': structure}
+    t.update(kw)
+    return t
+
+
 PB = '{@pagebreak}'
 
 # --------------------------------------------------------------------------
@@ -289,7 +308,9 @@ CAMPAIGN = [
     dict(key='legend', title='Reading This Book', x=0, y=-3, shape='circle', root=True,
          subtitle='How to read the shapes on this map',
          desc=["Every shape here means something. &eRounded squares&r are the story: most of them finish on their own as the run goes on. &eGears&r open a new act of the book. &eHexagons&r are things to craft, &epentagons&r are the amulet and the world past the border, and &ecircles&r are field notes.",
-               "The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own."],
+               "The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own.",
+               "{image:kubejs:textures/quests/legend.png width:240 height:98 align:center}",
+               "Small &ediamonds&r are optional field tests: they tick over on their own when your defences do the work. The &eChallenges&r chapter has the hard ones."],
          icon='minecraft:compass', tasks=[t_check()], rewards=[]),
     dict(key='time', old='Borrowed Time', x=2, y=0, deps=['own'], rewards=[bag('u')]),
     dict(key='pedestal', old='Find the Pedestal', x=4, y=0, deps=['time'],
@@ -315,9 +336,34 @@ CAMPAIGN = [
     dict(key='hud', title='Read the Bar', x=6, y=-3, deps=['horn'], shape='circle',
          subtitle='Field notes on the action bar',
          desc=["The line above your hotbar tells you what the base needs. &c⚔ Wave N - Hostiles remaining&r means a wave is on: that many are still alive near the pedestal. &b⏱ Next wave in&r is your build time.",
+               "{image:kubejs:textures/quests/hud.png width:240 height:70 align:center}",
                "If a pedestal alert replaces the line, the pedestal is being hit right now, wherever you are. Go home."],
          icon='minecraft:clock', tasks=[t_check()], rewards=[]),
+    dict(key='corpse', title='Corpse Run', x=2, y=-3, deps=['time'], shape='circle', invisible=True,
+         subtitle='Appears after your first death',
+         desc=["Dying doesn't cost you your gear: it waits in your corpse where you fell, and a friend can open it for you too. Your death point is marked on the map (M) - follow it back and open the corpse to take everything.",
+               "You come back with a few seconds of protection, so use them to get clear."],
+         icon='minecraft:skeleton_skull', tasks=[t_stat('minecraft:deaths', 1, icon='minecraft:skeleton_skull')],
+         rewards=[item('minecraft:bread', 8)]),
+    dict(key='clock', title='The Clock Runs', x=6, y=-4.5, deps=['hud'], shape='circle',
+         subtitle='Completes when the countdown starts a wave by itself',
+         desc=["Nobody blew the horn, and the wave came anyway. After every clear the countdown runs whether you're home or not, so plan trips past the border to be back before it hits zero."],
+         icon='minecraft:clock', tasks=[t_custom('minecraft:clock')], rewards=[item('minecraft:bread', 4)]),
+    dict(key='stragglers', title='Last Two Standing', x=8, y=-3, deps=['thin'], shape='circle',
+         subtitle='Completes when the last two mobs of a wave glow',
+         desc=["When a wave is down to its last two mobs, they glow red through walls so you can find them. The hostile count only covers mobs within 96 blocks of the pedestal, so a count that won't drop means stragglers: go and look for the glow."],
+         icon='minecraft:glowstone_dust', tasks=[t_custom('minecraft:glowstone_dust')], rewards=[bag('u')]),
+    dict(key='firstaid', title='First Aid', x=10, y=-4.5, deps=['shore'], shape='circle',
+         subtitle='Heal the pedestal',
+         desc=["A golden carrot gives the pedestal back 10% of its health, and a nether star heals it fully. A nether star is also the heart of a Totem of Undying, so spending one here is a real choice.",
+               "Clearing a wave heals it 5%, which won't out-heal a breach. Keep carrots on you."],
+         icon='minecraft:golden_carrot', tasks=[t_custom('minecraft:golden_carrot')], rewards=[item('minecraft:golden_carrot', 2)]),
+    dict(key='ambush', title='Something Below', x=12, y=-3, deps=['spoils'], shape='circle', invisible=True,
+         subtitle='Appears after the first ambush',
+         desc=["Not everything comes over the wall. Some of the horde digs in underground and bursts out a few blocks outside your walls - a spray of dirt marks the spot. Cover the ground just outside the walls with traps too, not only the gate."],
+         icon='minecraft:rooted_dirt', tasks=[t_custom('minecraft:rooted_dirt')], rewards=[item('simply_traps:spike_trap', 2)]),
     dict(key='shore', old='Shore It Up', x=10, y=-3, deps=['wave1'], shape='circle',
+         subtitle='Buy any pedestal upgrade', tasks=[t_custom('minecraft:experience_bottle')],
          desc=["The pedestal can be made tougher, and you pay in &eXP levels&r. Right-click the pedestal with an empty hand to open its upgrade screen (&e/pedestal&r opens it too). Three upgrades, three tiers each: &eMax HP&r (300 up to 600), &eArmor&r (up to 45% less damage) and &eThorns&r (up to 3 damage a second back at everything hitting it). Tiers cost 6, 12 and 18 levels.",
                "One player pays a tier's whole cost from their own levels - levels can't be pooled - but the upgrade belongs to the pedestal, so everyone benefits. After a wave clears, players who can afford a tier get an &a[Upgrades]&r link in chat."],
          rewards=[xp(6)]),
@@ -329,7 +375,28 @@ CAMPAIGN = [
     dict(key='leave', old='Leave It Behind', x=20, y=-3, deps=['wear'],
          desc=["Right-click the pedestal holding your amulet to leave it there. You lose its buffs and the border opens - but only for players whose own amulet is at the pedestal. Anyone still wearing theirs, or without one, is held at the line. The horde targets the pedestal either way.",
                "To take yours back, right-click the pedestal with an empty hand and press &eTake your amulet&r. The stand shows one amulet however many are left there, and each player can only take their own."]),
-    dict(key='pastline', old='Past the Line', x=22, y=-3, deps=['leave'], rewards=[bag('r'), xp(6)]),
+    dict(key='pastline', old='Past the Line', x=22, y=-3, deps=['leave'], rewards=[bag('r'), xp(6)],
+         subtitle='Go 16 blocks past the border line', tasks=[t_custom('minecraft:cracked_stone_bricks')],
+         desc=["Head out past the border line. The ruins, houses and towers out there hold the &6gold-trimmed&r stashes, and the further out, the better the haul. Watch for the spawner guarding them."]),
+    dict(key='spawner', title='Silence the Spawner', x=24, y=-4.5, deps=['goldtrim'], shape='pentagon',
+         subtitle='Break a monster spawner out in the ruins',
+         desc=["The stashes out there are guarded by spawners. Break the spawner with a pickaxe first and the guards stop coming, then loot in peace. The further out the stash, the nastier the guards."],
+         icon='minecraft:spawner', tasks=[t_custom('minecraft:spawner')], rewards=[bag('u')]),
+    dict(key='bigcity', title='Big City', x=26, y=-4.5, deps=['stone'], shape='pentagon',
+         subtitle='Reach a city or town',
+         desc=["The cities and towns out in the wasteland are expeditions, not quick trips: the nearest is often a long walk. Set a waystone on the way, bring food, and leave your amulet at the pedestal before you go."],
+         icon='minecraft:bricks', tasks=[t_structure('#kubejs:towns', icon='minecraft:bricks')], rewards=[bag('r')]),
+    # spine events of Act II
+    dict(key='wave5', title='Fend for Yourself', x=19, y=0, deps=['openit'], invisible=True,
+         subtitle='Appears after wave 5',
+         desc=["That's the end of the borrowed time. The gear you arrived in has rusted through, and the old defences at the gate are gone - the gate and the gaps in the walls are open now.",
+               "From here, everything that fights for you is something you built. Rebuild the gate first: Sentries, fences, spikes."],
+         icon='minecraft:iron_bars', tasks=[t_custom('minecraft:iron_bars')], rewards=[bag('r'), item('kubejs:shrapnel', 4)]),
+    dict(key='delivery', title='Special Delivery', x=22.5, y=0, deps=['openit'], shape='circle',
+         subtitle='Completes when a supply crate lands',
+         desc=["After every fifth wave a plane drops a supply crate, and it lands well past the wall: 90 to 110 blocks from the pedestal. To reach it you'll need your amulet on the pedestal.",
+               "Look up when it's announced, then follow the beam to where it came down. It's one crate for the whole team, so share it out."],
+         icon='minecraft:beacon', tasks=[t_custom('minecraft:beacon')], rewards=[item('simple_guns_reworked:pistol_ammo', 16), bag('u')]),
     dict(key='goldtrim', title='Gold Trim', x=24, y=-3, deps=['pastline'], shape='pentagon',
          subtitle='Open a gold-trimmed stash chest',
          desc=["The &6gold-trimmed&r chests and barrels out in the ruins are personal: each player gets their own roll from the same container, so a stash your friend emptied is still full for you. Once you've looted one it loses its trim for you.",
@@ -348,6 +415,11 @@ CAMPAIGN = [
                "Like stakes, the ones you place wear out after 20 points of damage from the mobs in them."],
          icon='simply_traps:stake_wall', tasks=[t_item('simply_traps:stake_wall')],
          rewards=[item('simply_traps:stake_wall', 4)]),
+    dict(key='worn', title='Wear and Tear', x=18, y=4, deps=['spike'], shape='circle',
+         subtitle='Completes when one of your traps wears out',
+         desc=["Traps don't last forever. Every placed stake, stake wall and spike trap has wear points (20, 20 and 60), and each mob that hits it takes its own attack damage off them. When they run out the trap breaks for good.",
+               "Rebuild between waves - the big hitters chew through a line fastest."],
+         icon='simply_traps:stake', tasks=[t_custom('simply_traps:stake')], rewards=[item('simply_traps:stake', 6)]),
     dict(key='spike', old='Better Than Nothing', x=18, y=2.5, deps=['stake'],
          desc=["Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them.",
                PB, "Field notes: a placed spike has 60 points of wear against a stake's 20. The slow lasts about 3 seconds after a mob steps off, so lay spikes inside your Sentry's or Tesla Coil's reach, not out on their own."],
@@ -409,6 +481,19 @@ CAMPAIGN = [
     dict(key='wave15', old='No Ceiling', x=40, y=0, deps=['boss'], shape='gear', size=2.0,
          subtitle='Completes on its own when wave 15 is cleared. Opens Act IV: Hordes',
          rewards=[bag('l'), xp(12), toast('New pages: Act IV', 'Hordes - press Tab', 'minecraft:map')]),
+    # ---- Act IV: Hordes ----
+    dict(key='horde20', title='Twenty Deep', x=44, y=0, deps=['wave15'], shape='rsquare', size=1.5,
+         subtitle='Completes on its own when Horde 20 is cleared',
+         desc=["Twenty waves held, and the pedestal's still standing."],
+         icon='minecraft:iron_sword', tasks=[t_custom('minecraft:iron_sword')], rewards=[bag('l')]),
+    dict(key='horde30', title='Thirty Deep', x=48, y=0, deps=['horde20'], shape='rsquare', size=1.5,
+         subtitle='Completes on its own when Horde 30 is cleared',
+         desc=["Thirty. Most runs never see this far."],
+         icon='minecraft:diamond_sword', tasks=[t_custom('minecraft:diamond_sword')], rewards=[bag('l')]),
+    dict(key='horde40', title='Forty Deep', x=52, y=0, deps=['horde30'], shape='rsquare', size=1.5,
+         subtitle='Completes on its own when Horde 40 is cleared',
+         desc=["Forty waves. You've outlasted the diary many times over, and there's still no ceiling."],
+         icon='minecraft:netherite_sword', tasks=[t_custom('minecraft:netherite_sword')], rewards=[bag('l')]),
     # Tier 3 (below the right half)
     dict(key='gen', old='Wired Different', x=28, y=2.5, deps=['wave8'], rewards=[item('minecraft:copper_ingot', 4)]),
     dict(key='plug', old='No Cables Needed', x=30, y=2.5, deps=['gen'],
@@ -450,6 +535,30 @@ CAMPAIGN = [
     dict(key='rsext', title='Hooked In', x=44, y=2.5, deps=['rsgrid'], shape='hexagon', subtitle='Recipe in JEI',
          desc=["Put an &eExternal Storage&r against a chest or barrel, joined to the network, and that container's contents show up in the Grid too. Your old stash stays where it is."],
          icon='refinedstorage:external_storage', tasks=[t_item('refinedstorage:external_storage')], rewards=[item('minecraft:quartz', 2)]),
+    # field tests (optional diamonds; counted by field_tests.js)
+    dict(key='ft_spikes', title='Spike Strip', x=20, y=4, deps=['spike'], shape='diamond', optional=True,
+         subtitle='10 wave mobs die while slowed by your spikes',
+         desc=["Spikes do the holding; the traps and turrets around them do the killing. Ten wave mobs that die while still slowed by spikes, whoever finishes them."],
+         icon='simply_traps:spike_trap', tasks=[t_custom('simply_traps:spike_trap')], rewards=[item('simply_traps:spike_trap', 4)]),
+    dict(key='ft_fence', title='Live Wire', x=22, y=8.5, deps=['fence'], shape='diamond', optional=True,
+         subtitle='10 wave mobs killed by fence shocks',
+         desc=["Ten wave mobs killed by the shock from an electrified fence. Funnel them along the wire and let it work."],
+         icon='securitycraft:electrified_iron_fence', tasks=[t_custom('securitycraft:electrified_iron_fence')],
+         rewards=[item('securitycraft:electrified_iron_fence', 2)]),
+    dict(key='ft_tesla', title='Coil Whine', x=36, y=4, deps=['tesla'], shape='diamond', optional=True,
+         subtitle='10 wave mobs killed by a Tesla Coil',
+         desc=["Ten wave mobs killed by a Tesla Coil. It hits one random target in range at a time, so it shines where the horde bunches up."],
+         icon='immersiveengineering:tesla_coil', tasks=[t_custom('immersiveengineering:tesla_coil')], rewards=[item('minecraft:redstone', 8)]),
+    dict(key='ft_gunturret', title='Overwatch', x=32, y=5.5, deps=['gunturret'], shape='diamond', optional=True,
+         subtitle='25 wave mobs killed by Gun Turrets',
+         desc=["Twenty-five wave mobs killed by Gun Turrets. Keep them loaded: no Casull rounds, no shots."],
+         icon='immersiveengineering:turret_gun', tasks=[t_custom('immersiveengineering:turret_gun')],
+         rewards=[item('immersiveengineering:casull', 16)]),
+    dict(key='ft_omt', title='Fire Mission', x=40, y=7, deps=['grenade'], shape='diamond', optional=True,
+         subtitle='25 wave mobs killed by Tier 4 turrets',
+         desc=["Twenty-five wave mobs killed by Grenade or Rocket Turrets."],
+         icon='omtreborn:grenade_turret', tasks=[t_custom('omtreborn:grenade_turret')],
+         rewards=[item('omtreborn:ammo_grenade', 8), item('omtreborn:ammo_rocket', 2)]),
     # Tier 4
     dict(key='ferro', title='Ferronite', x=36, y=5.5, deps=['gunturret', 'chemturret'], shape='hexagon',
          subtitle='2 Steel and a redstone',
@@ -470,6 +579,32 @@ CAMPAIGN = [
          subtitle='2 TNT, Sensor, Chamber and Barrel Tier III, a Ferronite Frame, 2 Cobbled Deepslate',
          desc=["The elite pick: rockets with real area damage, out to 30 blocks. Mount it on a Turret Base Tier 3 or higher. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite), and every shot costs 5,000 FE, so give it a Flux Point of its own."],
          rewards=[item('omtreborn:ammo_rocket', 4)]),
+]
+
+# --------------------------------------------------------------------------
+# CHALLENGES (new chapter; completed by quest_milestones.js)
+# --------------------------------------------------------------------------
+CHALLENGES = [
+    dict(key='ch_untouched', title='Not a Scratch', x=0, y=0, shape='octagon', size=1.5,
+         subtitle='Clear a wave from wave 5 on without the pedestal taking damage',
+         desc=["Hold a whole wave, wave 5 or later, without a single hit landing on the pedestal. Kill zones out front, not repairs afterwards."],
+         icon='supplementaries:pedestal', tasks=[t_custom('supplementaries:pedestal')], rewards=[bag('l')]),
+    dict(key='ch_intercept', title='Intercept', x=2.5, y=0, shape='octagon', size=1.5,
+         subtitle='Kill a boss before the pedestal takes damage that wave',
+         desc=["A boss dies while the pedestal is still untouched that wave. Meet it out in the ring and drag it off course."],
+         icon='minecraft:crossbow', tasks=[t_custom('minecraft:crossbow')], rewards=[bag('l')]),
+    dict(key='ch_maxed', title='Fortified', x=5, y=0, shape='octagon', size=1.5,
+         subtitle='Every pedestal upgrade at tier III',
+         desc=["Max HP, Armor and Thorns all at tier III. That's 108 levels poured into one stone block."],
+         icon='minecraft:experience_bottle', tasks=[t_custom('minecraft:experience_bottle')], rewards=[bag('l')]),
+    dict(key='ch_deep', title='Deep Pockets', x=7.5, y=0, shape='octagon', size=1.5,
+         subtitle='Loot 25 gold-trimmed stashes',
+         desc=["Twenty-five personal stashes looted out in the wasteland. Every one meant leaving the pedestal behind."],
+         icon='lootr:lootr_chest', tasks=[t_adv('lootr:25loot', icon='lootr:lootr_chest')], rewards=[bag('l')]),
+    dict(key='ch_hardcore20', title='Iron Will', x=10, y=0, shape='octagon', size=1.5,
+         subtitle='Clear Horde 20 with hardcore on',
+         desc=["Twenty waves with permadeath switched on (/hardcore enable). No second chances on the way there."],
+         icon='minecraft:totem_of_undying', tasks=[t_custom('minecraft:totem_of_undying')], rewards=[bag('l'), bag('l')]),
 ]
 
 # --------------------------------------------------------------------------
@@ -682,6 +817,12 @@ def build_chapter(chfile, spec, pos_default=None):
                 del q['hide_until_deps_complete']
         if s.get('hide_lines'):
             q['hide_dependency_lines'] = True
+        if s.get('optional'):
+            q['optional'] = True
+        if s.get('invisible'):
+            # Hidden until completed: the discovery quests, which must not
+            # announce what they explain.
+            q['invisible'] = True
         if old.get('can_repeat') and s.get('repeat', True):
             q['can_repeat'] = True
             if 'repeat_cooldown' in old:
@@ -722,10 +863,44 @@ def write_chapter(chfile, quests, **chapter_over):
         f.write(dump(ch))
 
 
+def write_new_chapter(chfile, quests, **fields):
+    """A chapter that has no file yet. Once written, later runs read it like
+    any other chapter and keep its id."""
+    if chfile in OLD_CH:
+        write_chapter(chfile, quests, **fields)
+        return
+    ch = {'id': mint('chapter:' + chfile), 'filename': chfile, 'group': '', 'progression_mode': 'flexible',
+          'default_hide_dependency_lines': False, 'default_quest_shape': '', 'quest_links': [], 'images': []}
+    ch.update(fields)
+    ch['quests'] = quests
+    with open(os.path.join(QDIR, 'chapters', chfile + '.snbt'), 'w', encoding='utf-8', newline='\n') as f:
+        f.write(dump(ch))
+
+
+# Act banners over the spine. Each draws only once the team has completed
+# the act's gate quest (ChapterImage dependency), so the map grows as the run
+# does. Art: tools/quest_book/quest_art.py.
+ACT_BANNERS = [('act1', 6.5, None), ('act2', 21.5, 'openit'), ('act3', 34.0, 'wave8'), ('act4', 48.0, 'wave15')]
+
+
+def banner_images(ids):
+    out = []
+    for i, (name, x, gate) in enumerate(ACT_BANNERS):
+        img = {'image': f'kubejs:textures/quests/{name}.png', 'x': D(x), 'y': D(-7.0), 'width': D(10.0),
+               'height': D(2.5), 'rotation': D(0.0), 'order': 0}
+        if gate:
+            img['dependency'] = ids[gate]
+        out.append(img)
+    return out
+
+
 def main():
     tables = build_tables()
     camp, camp_ids = build_chapter('campaign', CAMPAIGN)
-    write_chapter('campaign', camp)
+    write_chapter('campaign', camp, images=banner_images(camp_ids))
+    chal, _ = build_chapter('challenges', CHALLENGES)
+    write_new_chapter('challenges', chal, title='Challenges', icon='minecraft:netherite_sword', order_index=4,
+                      subtitle=['Optional, and hard. For when the campaign is old news.'])
     tips_spec = []
     for s in TIPS:
         tips_spec.append(s)
@@ -741,11 +916,20 @@ def main():
         with open(os.path.join(tdir, key + '.snbt'), 'w', encoding='utf-8', newline='\n') as f:
             f.write(dump(t))
     # report ids the scripts need
+    print('campaign custom task ids (quest_milestones.js QM_TASKS):')
+    for s, q in zip(CAMPAIGN, camp):
+        for t in q['tasks']:
+            if t['type'] == 'custom':
+                print(f'  {s["key"]}: {t["id"]}  ({q["title"]})')
     print('bounty task ids:')
     for q in bq:
         print(f'  {q["title"]}: quest {q["id"]} task {q["tasks"][0]["id"]}')
-    n = sum(len(x) for x in (camp, tips, bq, ars))
-    print(f'quests: campaign {len(camp)}, field notes {len(tips)}, bounties {len(bq)}, arsenal {len(ars)} = {n}')
+    for s_, q in zip(CHALLENGES, chal):
+        for t in q['tasks']:
+            if t['type'] == 'custom':
+                print(f'  {s_["key"]}: {t["id"]}  ({q["title"]})')
+    n = sum(len(x) for x in (camp, tips, bq, ars, chal))
+    print(f'quests: campaign {len(camp)}, field notes {len(tips)}, bounties {len(bq)}, arsenal {len(ars)}, challenges {len(chal)} = {n}')
 
 
 if __name__ == '__main__':

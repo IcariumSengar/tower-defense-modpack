@@ -753,6 +753,9 @@ PlayerEvents.tick(function (event) {
         server.runCommandSilent(
           `execute at @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest] run playsound minecraft:block.rooted_dirt.break hostile @a ~ ~ ~ 1.2 0.6`
         )
+        // Reveals the hidden "Something Below" quest (quest_milestones.js).
+        var qmAmbushData = worldData(level)
+        if (qmAmbushData) qmCompleteShared(server, qmAmbushData, 'ambush')
       }
       server.runCommandSilent(
         `tag @e[type=${spawn.mobType},tag=td_justSpawned,limit=1,sort=nearest] remove td_justSpawned`
@@ -787,7 +790,11 @@ PlayerEvents.tick(function (event) {
   // countdown stays at zero and tries again once a second, holding while a
   // wave is still open.
   if (remaining <= 0) {
-    if (-remaining % 20 === 0 && !data.getBoolean('td_inWave')) useWaveHorn(player)
+    if (-remaining % 20 === 0 && !data.getBoolean('td_inWave')) {
+      useWaveHorn(player)
+      // The countdown started this wave itself ("The Clock Runs" quest).
+      if (!data.getBoolean('td_countdownActive')) qmCompleteShared(player.getServer(), data, 'countdown')
+    }
     return
   }
 

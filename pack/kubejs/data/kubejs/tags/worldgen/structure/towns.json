@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "the_lost_city:city", "required": false },
+    { "id": "the_lost_city:big_city_structure", "required": false },
+    { "id": "the_lost_city:villages_city", "required": false },
+    { "id": "abandoned_urban:city", "required": false },
+    { "id": "philipsruins:lost_soul_city", "required": false }
+  ]
+}

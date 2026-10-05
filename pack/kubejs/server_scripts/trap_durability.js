@@ -153,6 +153,8 @@ ServerEvents.tick((event) => {
       event.server.runCommandSilent(`particle minecraft:block ${expectedId} ${cx} ${cy} ${cz} 0.3 0.3 0.3 0 15`)
       event.server.runCommandSilent(`playsound ${info.breakSound} block @a ${cx} ${cy} ${cz} 1 1`)
       event.server.runCommandSilent(`setblock ${trap.x} ${trap.y} ${trap.z} minecraft:air replace`)
+      // "Wear and Tear" quest (quest_milestones.js); a no-op after the first.
+      qmCompleteShared(event.server, data, 'trapWorn')
     }
   })
   if (changed) setTrapRegistry(data, survivors)

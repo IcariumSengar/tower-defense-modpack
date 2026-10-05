@@ -5,7 +5,47 @@
 	group: ""
 	icon: "minecraft:book"
 	id: "1178FD42CF9984A2"
-	images: [ ]
+	images: [
+		{
+			height: 2.5d
+			image: "kubejs:textures/quests/act1.png"
+			order: 0
+			rotation: 0.0d
+			width: 10.0d
+			x: 6.5d
+			y: -7.0d
+		}
+		{
+			dependency: "538A1BBC9A1B8EAC"
+			height: 2.5d
+			image: "kubejs:textures/quests/act2.png"
+			order: 0
+			rotation: 0.0d
+			width: 10.0d
+			x: 21.5d
+			y: -7.0d
+		}
+		{
+			dependency: "42EDC7E6DB5ABFAA"
+			height: 2.5d
+			image: "kubejs:textures/quests/act3.png"
+			order: 0
+			rotation: 0.0d
+			width: 10.0d
+			x: 34.0d
+			y: -7.0d
+		}
+		{
+			dependency: "10969EB1485216B4"
+			height: 2.5d
+			image: "kubejs:textures/quests/act4.png"
+			order: 0
+			rotation: 0.0d
+			width: 10.0d
+			x: 48.0d
+			y: -7.0d
+		}
+	]
 	order_index: 0
 	progression_mode: "flexible"
 	quest_links: [ ]
@@ -44,6 +84,8 @@
 			description: [
 				"Every shape here means something. &eRounded squares&r are the story: most of them finish on their own as the run goes on. &eGears&r open a new act of the book. &eHexagons&r are things to craft, &epentagons&r are the amulet and the world past the border, and &ecircles&r are field notes."
 				"The grey line under a title says what to do. Rewards are per player: in a party, the whole team shares progress, and each of you opens the quest and claims your own."
+				"{image:kubejs:textures/quests/legend.png width:240 height:98 align:center}"
+				"Small &ediamonds&r are optional field tests: they tick over on their own when your defences do the work. The &eChallenges&r chapter has the hard ones."
 			]
 			icon: "minecraft:compass"
 			id: "7474EBC3AA3D4B9E"
@@ -315,6 +357,7 @@
 			dependencies: ["2965C45D5F6A0991"]
 			description: [
 				"The line above your hotbar tells you what the base needs. &c⚔ Wave N - Hostiles remaining&r means a wave is on: that many are still alive near the pedestal. &b⏱ Next wave in&r is your build time."
+				"{image:kubejs:textures/quests/hud.png width:240 height:70 align:center}"
 				"If a pedestal alert replaces the line, the pedestal is being hit right now, wherever you are. Go home."
 			]
 			hide_until_deps_complete: true
@@ -330,6 +373,150 @@
 			]
 			title: "Read the Bar"
 			x: 6.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["70DA454A61DDC3A1"]
+			description: [
+				"Dying doesn't cost you your gear: it waits in your corpse where you fell, and a friend can open it for you too. Your death point is marked on the map (M) - follow it back and open the corpse to take everything."
+				"You come back with a few seconds of protection, so use them to get clear."
+			]
+			hide_until_deps_complete: true
+			icon: "minecraft:skeleton_skull"
+			id: "0F32F328F578813D"
+			invisible: true
+			rewards: [
+				{
+					count: 8
+					id: "367AC3A778324DAC"
+					item: "minecraft:bread"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Appears after your first death"
+			tasks: [
+				{
+					icon: "minecraft:skeleton_skull"
+					id: "3B302A3AB861740D"
+					stat: "minecraft:deaths"
+					type: "stat"
+					value: 1
+				}
+			]
+			title: "Corpse Run"
+			x: 2.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["3BF6AC6BEA0899C6"]
+			description: ["Nobody blew the horn, and the wave came anyway. After every clear the countdown runs whether you're home or not, so plan trips past the border to be back before it hits zero."]
+			hide_until_deps_complete: true
+			icon: "minecraft:clock"
+			id: "42BD6F3FEE130E09"
+			rewards: [
+				{
+					count: 4
+					id: "7F3E3748CE8444A9"
+					item: "minecraft:bread"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Completes when the countdown starts a wave by itself"
+			tasks: [
+				{
+					icon: "minecraft:clock"
+					id: "61D73004511CFD13"
+					type: "custom"
+				}
+			]
+			title: "The Clock Runs"
+			x: 6.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["7F675AEBC7301832"]
+			description: ["When a wave is down to its last two mobs, they glow red through walls so you can find them. The hostile count only covers mobs within 96 blocks of the pedestal, so a count that won't drop means stragglers: go and look for the glow."]
+			hide_until_deps_complete: true
+			icon: "minecraft:glowstone_dust"
+			id: "1EE18447D59F8E98"
+			rewards: [
+				{
+					id: "01B76724C7D3E793"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Completes when the last two mobs of a wave glow"
+			tasks: [
+				{
+					icon: "minecraft:glowstone_dust"
+					id: "6711A51E8E6BC502"
+					type: "custom"
+				}
+			]
+			title: "Last Two Standing"
+			x: 8.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["2E93FD4CE7F6AE87"]
+			description: [
+				"A golden carrot gives the pedestal back 10% of its health, and a nether star heals it fully. A nether star is also the heart of a Totem of Undying, so spending one here is a real choice."
+				"Clearing a wave heals it 5%, which won't out-heal a breach. Keep carrots on you."
+			]
+			hide_until_deps_complete: true
+			icon: "minecraft:golden_carrot"
+			id: "62404C832DA412E4"
+			rewards: [
+				{
+					count: 2
+					id: "1EDEEAC4AA9CD45E"
+					item: "minecraft:golden_carrot"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Heal the pedestal"
+			tasks: [
+				{
+					icon: "minecraft:golden_carrot"
+					id: "7DBE83849EA1F877"
+					type: "custom"
+				}
+			]
+			title: "First Aid"
+			x: 10.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["3BFCD0E4AA8C5B36"]
+			description: ["Not everything comes over the wall. Some of the horde digs in underground and bursts out a few blocks outside your walls - a spray of dirt marks the spot. Cover the ground just outside the walls with traps too, not only the gate."]
+			hide_until_deps_complete: true
+			icon: "minecraft:rooted_dirt"
+			id: "5EA891DEE5CD05B0"
+			invisible: true
+			rewards: [
+				{
+					count: 2
+					id: "0710AE77D4FAD57B"
+					item: "simply_traps:spike_trap"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Appears after the first ambush"
+			tasks: [
+				{
+					icon: "minecraft:rooted_dirt"
+					id: "7C39539CA1093C35"
+					type: "custom"
+				}
+			]
+			title: "Something Below"
+			x: 12.0d
 			y: -3.0d
 		}
 		{
@@ -349,11 +536,12 @@
 				}
 			]
 			shape: "circle"
-			subtitle: "Right-click the pedestal with an empty hand"
+			subtitle: "Buy any pedestal upgrade"
 			tasks: [
 				{
-					id: "1F6B4412FE03E2CD"
-					type: "checkmark"
+					icon: "minecraft:experience_bottle"
+					id: "3AFF52491B56CEC1"
+					type: "custom"
 				}
 			]
 			title: "Shore It Up"
@@ -456,7 +644,7 @@
 		}
 		{
 			dependencies: ["4B8F2D6A93E7C051"]
-			description: ["Stand inside any ruin, house or tower past the border. The &6gold-trimmed&r chests and barrels are the real stashes: each player gets their own roll, and the further out, the better the haul. A nearby spawner guards them; break it with a pickaxe to shut it off."]
+			description: ["Head out past the border line. The ruins, houses and towers out there hold the &6gold-trimmed&r stashes, and the further out, the better the haul. Watch for the spawner guarding them."]
 			hide_until_deps_complete: true
 			icon: "minecraft:cracked_stone_bricks"
 			id: "4F1477C0746CED34"
@@ -473,17 +661,140 @@
 				}
 			]
 			shape: "pentagon"
-			subtitle: "Stand inside any ruin beyond the border"
+			subtitle: "Go 16 blocks past the border line"
 			tasks: [
 				{
-					id: "3DB744E1A6C3BF21"
-					structure: "#kubejs:ruins"
-					type: "structure"
+					icon: "minecraft:cracked_stone_bricks"
+					id: "16BF12591766C9AC"
+					type: "custom"
 				}
 			]
 			title: "Past the Line"
 			x: 22.0d
 			y: -3.0d
+		}
+		{
+			dependencies: ["380C9CEEF11FC4E4"]
+			description: ["The stashes out there are guarded by spawners. Break the spawner with a pickaxe first and the guards stop coming, then loot in peace. The further out the stash, the nastier the guards."]
+			hide_until_deps_complete: true
+			icon: "minecraft:spawner"
+			id: "6AD35AE5949BD914"
+			rewards: [
+				{
+					id: "01801F3D1BD68DE0"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Break a monster spawner out in the ruins"
+			tasks: [
+				{
+					icon: "minecraft:spawner"
+					id: "6A5EEDAE53EEE2FF"
+					type: "custom"
+				}
+			]
+			title: "Silence the Spawner"
+			x: 24.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["216966530DE6E3DB"]
+			description: ["The cities and towns out in the wasteland are expeditions, not quick trips: the nearest is often a long walk. Set a waystone on the way, bring food, and leave your amulet at the pedestal before you go."]
+			hide_until_deps_complete: true
+			icon: "minecraft:bricks"
+			id: "17636E237C4BC539"
+			rewards: [
+				{
+					id: "759445C74AA62795"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Reach a city or town"
+			tasks: [
+				{
+					icon: "minecraft:bricks"
+					id: "4B868F158C044E9B"
+					structure: "#kubejs:towns"
+					type: "structure"
+				}
+			]
+			title: "Big City"
+			x: 26.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"That's the end of the borrowed time. The gear you arrived in has rusted through, and the old defences at the gate are gone - the gate and the gaps in the walls are open now."
+				"From here, everything that fights for you is something you built. Rebuild the gate first: Sentries, fences, spikes."
+			]
+			hide_until_deps_complete: true
+			icon: "minecraft:iron_bars"
+			id: "301FB94A5C1CD579"
+			invisible: true
+			rewards: [
+				{
+					id: "1304AB9EF804A7B4"
+					item: "bountybags:rare_loot_bag"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "4EBD987192700759"
+					item: "kubejs:shrapnel"
+					type: "item"
+				}
+			]
+			subtitle: "Appears after wave 5"
+			tasks: [
+				{
+					icon: "minecraft:iron_bars"
+					id: "6163F37DEF0131C1"
+					type: "custom"
+				}
+			]
+			title: "Fend for Yourself"
+			x: 19.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["538A1BBC9A1B8EAC"]
+			description: [
+				"After every fifth wave a plane drops a supply crate, and it lands well past the wall: 90 to 110 blocks from the pedestal. To reach it you'll need your amulet on the pedestal."
+				"Look up when it's announced, then follow the beam to where it came down. It's one crate for the whole team, so share it out."
+			]
+			hide_until_deps_complete: true
+			icon: "minecraft:beacon"
+			id: "16C57D4EEB5EFD8B"
+			rewards: [
+				{
+					count: 16
+					id: "284A74F851D06289"
+					item: "simple_guns_reworked:pistol_ammo"
+					type: "item"
+				}
+				{
+					id: "296B6DD39C9D78F7"
+					item: "bountybags:uncommon_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Completes when a supply crate lands"
+			tasks: [
+				{
+					icon: "minecraft:beacon"
+					id: "02AE15A46D5200D9"
+					type: "custom"
+				}
+			]
+			title: "Special Delivery"
+			x: 22.5d
+			y: 0.0d
 		}
 		{
 			dependencies: ["4F1477C0746CED34"]
@@ -605,6 +916,36 @@
 			]
 			title: "Picket Line"
 			x: 16.0d
+			y: 4.0d
+		}
+		{
+			dependencies: ["67A7BF98D2C077DE"]
+			description: [
+				"Traps don't last forever. Every placed stake, stake wall and spike trap has wear points (20, 20 and 60), and each mob that hits it takes its own attack damage off them. When they run out the trap breaks for good."
+				"Rebuild between waves - the big hitters chew through a line fastest."
+			]
+			hide_until_deps_complete: true
+			icon: "simply_traps:stake"
+			id: "74A900997B1305EA"
+			rewards: [
+				{
+					count: 6
+					id: "6C677AA38AB9AF47"
+					item: "simply_traps:stake"
+					type: "item"
+				}
+			]
+			shape: "circle"
+			subtitle: "Completes when one of your traps wears out"
+			tasks: [
+				{
+					icon: "simply_traps:stake"
+					id: "63CDD9727D7AD87E"
+					type: "custom"
+				}
+			]
+			title: "Wear and Tear"
+			x: 18.0d
 			y: 4.0d
 		}
 		{
@@ -1224,6 +1565,87 @@
 			y: 0.0d
 		}
 		{
+			dependencies: ["10969EB1485216B4"]
+			description: ["Twenty waves held, and the pedestal's still standing."]
+			hide_until_deps_complete: true
+			icon: "minecraft:iron_sword"
+			id: "38C19BF578A8413D"
+			rewards: [
+				{
+					id: "2C79DF57759BE33F"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when Horde 20 is cleared"
+			tasks: [
+				{
+					icon: "minecraft:iron_sword"
+					id: "5DF4CDD61C21DBF6"
+					type: "custom"
+				}
+			]
+			title: "Twenty Deep"
+			x: 44.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["38C19BF578A8413D"]
+			description: ["Thirty. Most runs never see this far."]
+			hide_until_deps_complete: true
+			icon: "minecraft:diamond_sword"
+			id: "134159F26D7D611D"
+			rewards: [
+				{
+					id: "6809DAAD289A5F29"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when Horde 30 is cleared"
+			tasks: [
+				{
+					icon: "minecraft:diamond_sword"
+					id: "5A023C20B3CFAA46"
+					type: "custom"
+				}
+			]
+			title: "Thirty Deep"
+			x: 48.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["134159F26D7D611D"]
+			description: ["Forty waves. You've outlasted the diary many times over, and there's still no ceiling."]
+			hide_until_deps_complete: true
+			icon: "minecraft:netherite_sword"
+			id: "1EECCB77EAB2EF17"
+			rewards: [
+				{
+					id: "14C012A18BB7F2E5"
+					item: "bountybags:legendary_loot_bag"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.5d
+			subtitle: "Completes on its own when Horde 40 is cleared"
+			tasks: [
+				{
+					icon: "minecraft:netherite_sword"
+					id: "66C9A90A69B83A51"
+					type: "custom"
+				}
+			]
+			title: "Forty Deep"
+			x: 52.0d
+			y: 0.0d
+		}
+		{
 			dependencies: ["42EDC7E6DB5ABFAA"]
 			description: [
 				"The &eCulinary Generator&r against the back wall downstairs burns any food for Flux - rotten flesh included, so every zombie you drop feeds it. Look at it to finish this. It already powers the house grid through the Flux Plug on top, and any Flux Point you join to that network draws from it."
@@ -1573,6 +1995,152 @@
 			title: "Hooked In"
 			x: 44.0d
 			y: 2.5d
+		}
+		{
+			dependencies: ["67A7BF98D2C077DE"]
+			description: ["Spikes do the holding; the traps and turrets around them do the killing. Ten wave mobs that die while still slowed by spikes, whoever finishes them."]
+			hide_until_deps_complete: true
+			icon: "simply_traps:spike_trap"
+			id: "28756A8EB66B4E3D"
+			optional: true
+			rewards: [
+				{
+					count: 4
+					id: "78451A67679DE60A"
+					item: "simply_traps:spike_trap"
+					type: "item"
+				}
+			]
+			shape: "diamond"
+			subtitle: "10 wave mobs die while slowed by your spikes"
+			tasks: [
+				{
+					icon: "simply_traps:spike_trap"
+					id: "29EF15EF1B80F815"
+					type: "custom"
+				}
+			]
+			title: "Spike Strip"
+			x: 20.0d
+			y: 4.0d
+		}
+		{
+			dependencies: ["659544B22656B3CD"]
+			description: ["Ten wave mobs killed by the shock from an electrified fence. Funnel them along the wire and let it work."]
+			hide_until_deps_complete: true
+			icon: "securitycraft:electrified_iron_fence"
+			id: "2D2E36E0EB8E2994"
+			optional: true
+			rewards: [
+				{
+					count: 2
+					id: "72568DA706665FB8"
+					item: "securitycraft:electrified_iron_fence"
+					type: "item"
+				}
+			]
+			shape: "diamond"
+			subtitle: "10 wave mobs killed by fence shocks"
+			tasks: [
+				{
+					icon: "securitycraft:electrified_iron_fence"
+					id: "76E811588BEC3472"
+					type: "custom"
+				}
+			]
+			title: "Live Wire"
+			x: 22.0d
+			y: 8.5d
+		}
+		{
+			dependencies: ["04DC756B047A09D4"]
+			description: ["Ten wave mobs killed by a Tesla Coil. It hits one random target in range at a time, so it shines where the horde bunches up."]
+			hide_until_deps_complete: true
+			icon: "immersiveengineering:tesla_coil"
+			id: "6ABB8B73DFDE0486"
+			optional: true
+			rewards: [
+				{
+					count: 8
+					id: "6D2501284CD18250"
+					item: "minecraft:redstone"
+					type: "item"
+				}
+			]
+			shape: "diamond"
+			subtitle: "10 wave mobs killed by a Tesla Coil"
+			tasks: [
+				{
+					icon: "immersiveengineering:tesla_coil"
+					id: "147200F34EA68865"
+					type: "custom"
+				}
+			]
+			title: "Coil Whine"
+			x: 36.0d
+			y: 4.0d
+		}
+		{
+			dependencies: ["54BAD02969997982"]
+			description: ["Twenty-five wave mobs killed by Gun Turrets. Keep them loaded: no Casull rounds, no shots."]
+			hide_until_deps_complete: true
+			icon: "immersiveengineering:turret_gun"
+			id: "1E0730D18FF57109"
+			optional: true
+			rewards: [
+				{
+					count: 16
+					id: "3BD8C8C137E3D25A"
+					item: "immersiveengineering:casull"
+					type: "item"
+				}
+			]
+			shape: "diamond"
+			subtitle: "25 wave mobs killed by Gun Turrets"
+			tasks: [
+				{
+					icon: "immersiveengineering:turret_gun"
+					id: "6CB2B153C2DCE888"
+					type: "custom"
+				}
+			]
+			title: "Overwatch"
+			x: 32.0d
+			y: 5.5d
+		}
+		{
+			dependencies: ["7BBD29C5816827E4"]
+			description: ["Twenty-five wave mobs killed by Grenade or Rocket Turrets."]
+			hide_until_deps_complete: true
+			icon: "omtreborn:grenade_turret"
+			id: "283A441B12C57C7E"
+			optional: true
+			rewards: [
+				{
+					count: 8
+					id: "02ECA9A2F3D445BD"
+					item: "omtreborn:ammo_grenade"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "1140F701DFC9D756"
+					item: "omtreborn:ammo_rocket"
+					type: "item"
+				}
+			]
+			shape: "diamond"
+			subtitle: "25 wave mobs killed by Tier 4 turrets"
+			tasks: [
+				{
+					icon: "omtreborn:grenade_turret"
+					id: "1A31C278C68063AA"
+					type: "custom"
+				}
+			]
+			title: "Fire Mission"
+			x: 40.0d
+			y: 7.0d
 		}
 		{
 			dependencies: [
