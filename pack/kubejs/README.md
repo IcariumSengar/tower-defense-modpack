@@ -24,7 +24,7 @@ quests and the world setup. Needs KubeJS, Rhino and Architectury (see
 | Wave loop | `wave_spawner.js` (horn, wave roster, spawning), `wave_status.js` (remaining count, wave clear, countdown), `boss_wave.js`, `base_expansion.js`, `wave_airdrop.js` |
 | Pedestal | `pedestal_health.js`, `pedestal_destruction.js`, `pedestal_upgrades.js`, `amulet_*.js` |
 | Mob steering | `mob_aggro.js`, `stuck_mob_nudge.js`, `ladder_climb_assist.js`, `wave_mob_dig_haste.js`, `lure_block.js`, `no_passive_mobs.js`, `enhanced_hordes_config.js` |
-| Defences | `securitycraft_traps.js`, `trap_durability.js`, `wave_mob_fence_shock.js`, `wave_mob_spike_slow.js`, `sentry_*.js`, `tesla_coil_*.js`, `tier4_turret_fx.js`, `starter_flux_network.js`, `gun_damage_bump.js` |
+| Defences | `securitycraft_traps.js`, `trap_durability.js`, `wave_mob_fence_shock.js`, `wave_mob_spike_slow.js`, `sentry_*.js`, `tesla_coil_*.js`, `tier4_turret_fx.js`, `starter_flux_network.js` |
 | Player safety | `explosion_player_safety.js`, `electric_trap_player_safety.js`, `mine_player_safety.js`, `omtreborn_grenade_safety.js` |
 | Loot and progression | `loot_*.js`, `structure_*.js`, `bounty_kills.js`, `quest_milestones.js`, `flesh_death_sound.js`, `tier*_recipes.js` |
 | Hardcore | `hardcore_toggle.js`, `hardcore_death.js`, `hardcore_totem_recipe.js` |
@@ -129,7 +129,9 @@ Minecraft and KubeJS APIs:
   `securitycraft.electricity`), not its registry id.
 - Players-only command arguments (`tellraw`, `title`, `ftbquests
   change_progress`) reject a raw UUID; use the player's name or
-  `execute as <uuid> run ... @s`.
+  `execute as <uuid> run ... @s`. Only the name reaches a player on the
+  death screen: a dead player leaves the world a second after dying, so
+  `execute as <uuid>` finds nobody until they respawn.
 
 Reflection:
 

@@ -6,9 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:pistol_ammo",
-          "weight": 14,
+          "name": "tacz:ammo",
           "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:9mm\"}"
+            },
             {
               "function": "minecraft:set_count",
               "count": {
@@ -16,13 +19,35 @@
                 "max": 10
               }
             }
-          ]
+          ],
+          "weight": 8
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:rifle_ammo",
-          "weight": 10,
+          "name": "tacz:ammo",
           "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:45acp\"}"
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 4,
+                "max": 10
+              }
+            }
+          ],
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:ammo",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:357mag\"}"
+            },
             {
               "function": "minecraft:set_count",
               "count": {
@@ -30,13 +55,35 @@
                 "max": 8
               }
             }
-          ]
+          ],
+          "weight": 3
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:shotgun_ammo",
-          "weight": 8,
+          "name": "tacz:ammo",
           "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:762x39\"}"
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 3,
+                "max": 8
+              }
+            }
+          ],
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:ammo",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:792x57\"}"
+            },
             {
               "function": "minecraft:set_count",
               "count": {
@@ -44,7 +91,26 @@
                 "max": 6
               }
             }
-          ]
+          ],
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:ammo",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:12g\"}"
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 2,
+                "max": 6
+              }
+            }
+          ],
+          "weight": 8
         },
         {
           "type": "minecraft:item",

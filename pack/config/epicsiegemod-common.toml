@@ -154,7 +154,10 @@
 	#Range: 0.0 ~ 1.0
 	webbingChance = 0.25
 	#Dying to zombies will turn your corpse into one of them [default: true]
-	infectiousZombies = true
+	#Off 2026-10-06: the zombie it raised wasn't a wave mob (never steered,
+	#counted or bagged) and copied the killer's name, so a boss kill made
+	#"<player> (The Reaper)".
+	infectiousZombies = false
 
 #Creeper settings
 [Creepers]

@@ -18,7 +18,7 @@ hash = "7a806b804e617ecc63180bb84aaafb39cb3d6f04c6ddeb59efd088d00c3df0c8"
 
 [[files]]
 file = "config/epicsiegemod-common.toml"
-hash = "a629e9cdf374d460ae985e955ee57d16d614b5db2c73eca883a5760fb03e831b"
+hash = "93c7d6664bd0c330821a64b2090db1f5697547bba53d9689b9bbd48c931107c0"
 
 [[files]]
 file = "config/fancymenu/assets/td/bar_background.png"
@@ -150,7 +150,7 @@ hash = "e57d8311aec9f524911ed1313cabf138bb7fa5a2d3ba985a00a2a267ff35ef78"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/arsenal.snbt"
-hash = "151e76d9f83d28b1b892d5b7ce0bd2b9ea78a6783eb531ffe7d9e376e5614650"
+hash = "96586ad1cd98adc9375d26e33818f410d5b93811ac3c6fe593fda5cc3b99b620"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/bounties.snbt"
@@ -158,7 +158,7 @@ hash = "1be7f7cdcaca3e6a0e89abd4179b7c55b880c61f30531c50376a8de1a07431da"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/campaign.snbt"
-hash = "fb2137c9cd37abff9e6f1b980b07a380f80d10ce49a5624a4ffe92aaf8dc1c23"
+hash = "da27c96238b8dd4a994020feb0fbfd4bf9fa85dcfb657ae056bf39f66a57bbd2"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/challenges.snbt"
@@ -166,7 +166,7 @@ hash = "c7f845e054a57f76849a32cee8400bc4497066590c746647c18c65db47cf86b6"
 
 [[files]]
 file = "config/ftbquests/quests/chapters/tips_and_tricks.snbt"
-hash = "26f1972294a14279b91d1a8af6a328591cddb6910d512c724c39af0f0735eaba"
+hash = "17ccd7c5c0168d2d8c66863b757088d267171dbac01891e25b1fcda6cfed8b25"
 
 [[files]]
 file = "config/ftbquests/quests/data.snbt"
@@ -174,11 +174,11 @@ hash = "b84deaaaefda8d8a76b7bfb41aa664093dfebf30e270067f78232adaeb0752a9"
 
 [[files]]
 file = "config/ftbquests/quests/reward_tables/kit_dig_in.snbt"
-hash = "da34e401d98088455da4edf79aabdf2c12675a81846acd8528b04d3be31b8f09"
+hash = "4e1d73dcb570f36336a425da39108376c246cfa8ba0fce7197bc8748ef0071b5"
 
 [[files]]
 file = "config/ftbquests/quests/reward_tables/kit_power.snbt"
-hash = "dceebe85060d6e7af72572485e910b454762b31b11e7e33a779d362d54f1633c"
+hash = "b999e3a66c37fcf57de7af556a06e13dfe7ac9bec27088035e03abe2fd224e7f"
 
 [[files]]
 file = "config/generatorgalore/defaults.lock"
@@ -209,6 +209,10 @@ file = "config/modernfix-mixins.properties"
 hash = "767d335425881699b395fe287ebf23b099f103606be8df1e66461173c7ba0a40"
 
 [[files]]
+file = "config/omtreborn-common.toml"
+hash = "ebdd652a22b4a54f68385efe4e761a6e4079c04bcce2fe61d415a9b8cc4321ae"
+
+[[files]]
 file = "config/securitycraft-client.toml"
 hash = "ddeeeb4bd6a01136808a62543fad87da1ee84d3a386c29781b7f04781b3c226a"
 
@@ -237,6 +241,10 @@ file = "config/supplementaries-common.toml"
 hash = "415c6df86d422bbdabb624d08397936539742e2aa5358d6c2413c784513d6a1b"
 
 [[files]]
+file = "config/tacz-common.toml"
+hash = "9f65863ac77d1a31795fad1b7aa21543b8c6107637ff4524f47d3e75c68545ee"
+
+[[files]]
 file = "config/undeadnights_difficulty_config.json"
 hash = "f3f747029895131f7b07e4e6010064b8e91ff83142d267af2563a16b2544134d"
 
@@ -253,10 +261,6 @@ file = "config/xaero/minimap/profiles/default.cfg"
 hash = "98efe3c6f4b954974a5df3b21a66024f2c33645905362d6634bb1cf2a1bc51ac"
 
 [[files]]
-file = "defaultconfigs/omtreborn-common.toml"
-hash = "3402a1e4a76ce476b66eb7d5e70b1ae2e814bc92aed14b53662f544fc0ac0abc"
-
-[[files]]
 file = "defaultconfigs/securitycraft-server.toml"
 hash = "43448b3a0b85423835ae3670afab3e1dee55beb1275cc147a419be896aacbe37"
 
@@ -265,12 +269,16 @@ file = "defaultconfigs/sophisticatedbackpacks-server.toml"
 hash = "e999e67732fc9d187bc86f989b5cf88d036e15da15a514370798fbe2c57be983"
 
 [[files]]
+file = "defaultconfigs/tacz-server.toml"
+hash = "ce39bfa4d9ca74b646f4c9b0089bea3891e1c91dff9e5e89cd7e5c18fb99fc63"
+
+[[files]]
 file = "defaultconfigs/undeadnights-server.toml"
 hash = "8fdeaee9684703c8fb6fbcf8818bf7a4c9f0f99cdfbb5ec9b05fb091c6507ab7"
 
 [[files]]
 file = "kubejs/README.md"
-hash = "743ff679a7ee15ef32327a1f01ee41761f33eb6e719015959da6549ed8df8025"
+hash = "2cb263d1f2efa8e15034e576a37e87612da3b6658cda196d33a2ee36d5598887"
 
 [[files]]
 file = "kubejs/assets/ftbquests/ftb_quests_theme.txt"
@@ -345,8 +353,12 @@ file = "kubejs/client_scripts/.gitkeep"
 hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
+file = "kubejs/client_scripts/sentry_mode_lock.js"
+hash = "92d9fe3ea369fc9f03b72f114ecd486cd51458f4f2796437add8e7621b1e1716"
+
+[[files]]
 file = "kubejs/client_scripts/tooltip_tier_colors.js"
-hash = "1e5f7125735ddea23e02798bc212ca43d68cec4218193a5ee72584fed2e455c6"
+hash = "5752df7c7f25f3a81e8da686d1debe8de488d6d7586bd3d8d613a700ae16d4a6"
 
 [[files]]
 file = "kubejs/data/abandoned_structures/structures/zapravka.nbt"
@@ -538,7 +550,7 @@ hash = "0e5d06ed873abdda83ffa48c0ac9498938c4922207706f0f77ac40acf4726e3c"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/legendary.json"
-hash = "3ed4fe4d1b9ff31de61bafc5410ccd244e9aff2774ea2b2aa30e9a558fb7665d"
+hash = "c82ecc2dedb7af5688087be0b45133dc402a16990893a27768f33337faced191"
 
 [[files]]
 file = "kubejs/data/bountybags/loot_tables/items/rare.json"
@@ -561,72 +573,72 @@ file = "kubejs/data/kubejs/curios/slots/necklace.json"
 hash = "e7a03d60a651fc3c68d8ee3c03b95c3c983398f9c8885ae5d13656d420d173a2"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/automatic_shotgun.json"
-hash = "c9e29d5d85e437e9949a7592c1ddae1756acbcc5a2ff31a8f6dfa75235242882"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/aa12.json"
+hash = "08fdf03039b052825384b9865ac0ea0530df9275d43461fbba56d16aa03d1b3e"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/bazooka.json"
-hash = "78ed3b688bd78a91eb8808aa4eb9e007c2ddbc97d89380b74ed91369bf658d6b"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/db_short.json"
+hash = "8fb340f151154c8bb505f82248a22e76143eabd38ce8b98823cced477baf6126"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/dmr.json"
-hash = "c1e1c1347d83c860ccf38c7ccc9500a04500335567f09212dc9dd300355758aa"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/deagle_golden.json"
+hash = "ff36fd73278127ba1609d3bd2489ef0515765940142f68a231c9b26f7530065b"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/double_barrel_shotgun.json"
-hash = "a63bfc91c0c9493d18299ff7b8c073ea8a3c55bef927571c2df9cdf389903015"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/glock_17.json"
+hash = "f11f30e78022cfbdf6dd5f1b306be20182b93fa384cbf940c9676677ba0004e2"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/flame_thrower.json"
-hash = "960c2c67768bfd77e6f00e7601652830846d2aa37c75360a2886496f13c6f4a3"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/hk_mp5a5.json"
+hash = "362b387720bb4eb614d3c179265aed273a572b14c4d9a11ca04ecdd863731750"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/heavy_sniper.json"
-hash = "769a5b65df586e64765784fee15682bf53623507e27a9d3fe1fb4febbce7f852"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/kar98.json"
+hash = "5f0739ab96318ad84e72691ec444e0deca79e18f743e08762113ff5f99fa6c20"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/laser_gun.json"
-hash = "ed3dabf231f0756aa319deefdd7ed6f86318102704f157318ec7064c67de56c1"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/m107.json"
+hash = "ea264682ff7747a790edc0262e2cb026152d3096cda63a66e08e4db6833dd4ea"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/minguguuggn.json"
-hash = "5176b460717b20202c93d6c21de56359d9604c84513ac91b82e391779e30a0f8"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/m249.json"
+hash = "b1046ab627c9473ceedec2c45a3845b916dea9b7bb4eb17b5ab32c2a80646389"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/pistol.json"
-hash = "82af5fca8fbdf33dc935a147cab77f87d5879ced82fdc4334c9e5001c97c77b0"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/m320.json"
+hash = "8c0b68c0ed61ac0f79615c7d477d483b3cd3043553a6034eb2e07e6e7a683017"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/potato_cannon.json"
-hash = "fcb506ecea56d91986a29d2e8f5c9c5017bda3b55c25656782b243ecbccae90f"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/m870.json"
+hash = "4a4dba0a1b778bf57a80ec32a74be10f6b574ceaecad0ae12e4754f530dd555b"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/revolver.json"
-hash = "f5e7b3cf53327b07947d671f921245c6917bf24a30accfb9eb9a8ca83e466ed2"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/minigun.json"
+hash = "9e8e4338506f6f19eaeea9e4b31a674c8b7eb7a20e2cf2ce96bbea4e2cac9b85"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/shotgun.json"
-hash = "6c89c33b8dfa5ed2f6d13a0bd95c1684cf94d4394d9bab519cbc666a1421b523"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/rhino357.json"
+hash = "e56c2f657ca9d509646a67cbba5025e23afa9b8a657c578f1fdaa06be3f08342"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/sniper.json"
-hash = "9db5a30b7b2e2ac380f176e1c32c4384d58d0176c64f262495117e2315a41154"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/rpg7.json"
+hash = "507204faa316b204e4577ba77c1f291691dcc78b1fad25252bc7dea8ad10ed93"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/submachine_gun.json"
-hash = "8c59cc5f8efa43031eca46d1e74aa68602ecfdbedfdb0abf96952973b6c64367"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/sks_tactical.json"
+hash = "78bf303c2e99151f468136bb7851d8d4323f2d0330f7595198f99b7ed69ef497"
 
 [[files]]
-file = "kubejs/data/kubejs/loot_tables/chests/airdrop/tommy_gun.json"
-hash = "d6a17d96072a90cd0110602a09b0746154c33cb547a937440ec794cec3a23c55"
+file = "kubejs/data/kubejs/loot_tables/chests/airdrop/ump45.json"
+hash = "ed57cbb9b18d3e2389c8de1b5769a8d3961595e64870f46231d31004f732e74f"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scav_ammo.json"
-hash = "fae67b8e0b8af139f927b809d7b9225ecf2ba5e25a24ed1655e8115eeffa584b"
+hash = "0c19f3b43c939bdcca7ead76635728052c3497e59e39cb860b14bf850d25669a"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scav_armory.json"
-hash = "35894b3c48fa990f9d3d86fde25daff9551e8814a6f5fbd20d8c8e4f3f7bb1a6"
+hash = "8fd840def8312698f80dae4a0ac35ff36263e44319e8fbde2eba018b58a63a25"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/scav_building.json"
@@ -654,7 +666,7 @@ hash = "f464af10b8908b2201aab918dd0208f552fcef3e936ab8087b486453b32ad01c"
 
 [[files]]
 file = "kubejs/data/kubejs/loot_tables/chests/wave_airdrop.json"
-hash = "93aa94bb7c14cd83ae73622ba95d75186f7452e665feae0af490d2d105f396cd"
+hash = "19eb698e0c5901f259e7b56dcf1f3be1121bb1d4d1dc0b859549d3ffa297e688"
 
 [[files]]
 file = "kubejs/data/kubejs/tags/worldgen/biome/ruins_biomes.json"
@@ -1402,11 +1414,11 @@ hash = "882cd6609e05edd414bc8d40808c2ebab7231a8f32010e6659c0337aa0df1a66"
 
 [[files]]
 file = "kubejs/server_scripts/boss_wave.js"
-hash = "3ff934a901ce2ae1d89188c9911455bc96bae915cefde43a47cf57482d3b6d6e"
+hash = "54e642c3e8e48c07084f20ea623dd8b70fc4b75984bf78cd398c1cf6f37f0ce5"
 
 [[files]]
 file = "kubejs/server_scripts/bounty_kills.js"
-hash = "8452c3530abdc3a541db3c2a4e90f8ad6f5a1775ffa10dc1d3b9170e0254334f"
+hash = "96b6fd344a6e85145826ba5323e1c5e5bfe33651883b0116d2c67fc2ee978266"
 
 [[files]]
 file = "kubejs/server_scripts/electric_trap_player_safety.js"
@@ -1418,19 +1430,15 @@ hash = "1c1b9dbc6a86fdd2e9e20bfdc8c40b501d77f8d65521f42450437f270ced085a"
 
 [[files]]
 file = "kubejs/server_scripts/explosion_player_safety.js"
-hash = "cf8325ff5f63a69c09ab2dd9caef188a3f280ea7bedea29729b3561ffb63130f"
+hash = "c5190ae3aece4d95acf613efcdad4dc8e64dd13b2b016f55da740b905afc380c"
 
 [[files]]
 file = "kubejs/server_scripts/field_tests.js"
-hash = "c4e32ba7b1caaccff6b20b29de0e1cd7d3a9f6679b94b240c9de593b7e92282e"
+hash = "308841c8f308e2ed77b5dbeaaabcc484f5eb32246c4c55cef26fecdfacdcb241"
 
 [[files]]
 file = "kubejs/server_scripts/flesh_death_sound.js"
 hash = "4fe8dc122f943a1674b48bc818c32591b5c9d3ef85a3d46304f08f63a7d1a7bb"
-
-[[files]]
-file = "kubejs/server_scripts/gun_damage_bump.js"
-hash = "6b4345af84f158aaf3eb0d3d8f228df705b6d224031a6fbe6dabb7131e3eef9a"
 
 [[files]]
 file = "kubejs/server_scripts/hardcore_death.js"
@@ -1477,6 +1485,10 @@ file = "kubejs/server_scripts/no_passive_mobs.js"
 hash = "f1c163362aa09f2b39c5cf443d49f73d60ef824f55a1d886bb51fe15c08c10d7"
 
 [[files]]
+file = "kubejs/server_scripts/omtreborn_base_always_active.js"
+hash = "835e056f235008fd37feb54518296c90cc099f455aa2690af03b91783ffbe35b"
+
+[[files]]
 file = "kubejs/server_scripts/omtreborn_grenade_safety.js"
 hash = "049108c969a2569d3858470244424315d058e6fb5a621e13d1c7d8284b3631ec"
 
@@ -1498,19 +1510,23 @@ hash = "5cd657ced70d40b0634326cdb9fedb6adb1d2f935229c240fe8f4a7e57cd3d69"
 
 [[files]]
 file = "kubejs/server_scripts/quest_milestones.js"
-hash = "1c3ae821671124cc861723b118f8d26028ea2989b5da9cad65bc2b4361356c95"
+hash = "66f07868e2c94cb448563bd5d468de0f058aba74e2fa8b00a5144ebbb7cd6ccc"
 
 [[files]]
 file = "kubejs/server_scripts/securitycraft_traps.js"
-hash = "679bc64de1b0c735678eac83cd77cf69456054c4b553acc89cd63edb56702030"
+hash = "7b083000d7b64fc9a700211f0f32ee66cdbb285aa9880bdf7095395c9eaae821"
 
 [[files]]
 file = "kubejs/server_scripts/sentry_combat_feedback.js"
-hash = "d928016b74b1d429d0aa1e458ea1a8fe9bfb2ad7a3d4e8e3838ff58366cb1a37"
+hash = "4034e6cf72c1910f73409680c36dfd1b36fe0860624d8c0fb6daa7868affb945"
 
 [[files]]
 file = "kubejs/server_scripts/sentry_default_mode.js"
-hash = "b176167f00b84677444a9cfb285e53171b73b7222dad3415a6d9783791251c3f"
+hash = "196b6b5ecbabd3c2e6fb071844e269037a5ae730dd70e0dbb86dcf50fc3bbf66"
+
+[[files]]
+file = "kubejs/server_scripts/simply_traps_player_safety.js"
+hash = "526211a4e06e391dbaa76fc7d25bc7069a4c3bd9a4eb1a80f4641e7fa767c768"
 
 [[files]]
 file = "kubejs/server_scripts/starter_flux_network.js"
@@ -1526,7 +1542,7 @@ hash = "4701e013ea93ff5d12be1c3e5e204eb51bb53b8526b2f8a6bc805c9e13faacc9"
 
 [[files]]
 file = "kubejs/server_scripts/structure_loot_progression.js"
-hash = "1c789ed4032268540def403152bf89b50d1dafeb38050b43de6e33bce3ed80d9"
+hash = "f389083aa839f1571bd1f98246b08cf284eccb06f778925b31eaa90f2fcd9a0f"
 
 [[files]]
 file = "kubejs/server_scripts/stuck_mob_nudge.js"
@@ -1550,11 +1566,11 @@ hash = "c2531e2c16b379a1d2764f2f18b03451863ef32c163dead453451cb4af7481de"
 
 [[files]]
 file = "kubejs/server_scripts/tier3_loot_aligned_recipes.js"
-hash = "b625bb3249d437ecbde964baa92134e6f964f9ff927f769d5a581559e983c946"
+hash = "3292dee19cf55800dc8a6b99e9bb5c2cbb9963b7c622f55373a1d8b0cd822ae1"
 
 [[files]]
 file = "kubejs/server_scripts/tier3_turret_recipes.js"
-hash = "8589f671ffe30ec39b479161c0eaf8b7a3d3b67050fd23e6244bea9360d02e07"
+hash = "13e44eb36e3a762d746908c1cce535559a1764d7e78d0f3febeecfdd85e1a9e4"
 
 [[files]]
 file = "kubejs/server_scripts/tier4_turret_fx.js"
@@ -1562,15 +1578,15 @@ hash = "ad959c364ba637e990b91a3737a482aa773618f970b431bf53c5c15ffe243108"
 
 [[files]]
 file = "kubejs/server_scripts/tier4_turret_recipes.js"
-hash = "7b08ae9e052f2a59c10b524819e68480826d4d45e6900fda03e1b7ac1de34f52"
+hash = "88871e9370e60e9c3ff68f6f5c8ae575420bbafb0fd05b5044125c162f82b41e"
 
 [[files]]
 file = "kubejs/server_scripts/trap_durability.js"
-hash = "cc6142db99412d7bc69a84a2768526a6f6fa26602c490e6c2f66beed61741a4e"
+hash = "19267fa00d61eb4fe8962f388c0633628dda96245ee0fc9566c7353a80a1c8b7"
 
 [[files]]
 file = "kubejs/server_scripts/wave_airdrop.js"
-hash = "5595c266daee381e42d99ebaaf16eba69e5dab08f09642e306ccfad0852a76fe"
+hash = "4b0155217a79f961eba17022714616628161c9b7438b29e263501609e3aee837"
 
 [[files]]
 file = "kubejs/server_scripts/wave_mob_dig_haste.js"
@@ -1618,7 +1634,7 @@ hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 [[files]]
 file = "mods/ImmersiveEngineering-1.20.1-10.2.0-183-tdcoilfilter.jar"
-hash = "b8e9ebe21d2b45ba01c8a1ba3446f0e55e8c1ece90b94f8fed7ffd6d3dc57b82"
+hash = "af16f5b3182c4b9a3ba437ca875dcaca068acd958598565f004e90ab7e4f675f"
 
 [[files]]
 file = "mods/MobDismemberment-1.20.1-8.0.1.jar"
@@ -1959,11 +1975,6 @@ hash = "2720aee58db6299559f89ea9dc8b1d573b8324f2b4af1e594c5239607585487b"
 metafile = true
 
 [[files]]
-file = "mods/simple-guns-reworked.pw.toml"
-hash = "e30eae8cbe6349caee7e9b2bb372999368629a8d7b00cd7d819052b6439108cc"
-metafile = true
-
-[[files]]
 file = "mods/simply-traps.pw.toml"
 hash = "2a632372b5101ac10a01b1c94414b4d466c0ebf60c40bf487e325dacbe9c4ac6"
 metafile = true
@@ -2009,6 +2020,11 @@ hash = "fd6874e968f6252ec903171e30f1aa66c87caeb5e11a48fd50f5ced37658790e"
 metafile = true
 
 [[files]]
+file = "mods/timeless-and-classics-zero.pw.toml"
+hash = "8a075e55a4f27c8ff9ba92f99f09ba4598c9195e69a839d240e81225fdf88509"
+metafile = true
+
+[[files]]
 file = "mods/toast-control.pw.toml"
 hash = "1195cdfa90ac4ef4d5ebed8dbca1df990cf58b0a0fe3b9b965ccefa0cfd5a2e3"
 metafile = true
@@ -2044,4 +2060,4 @@ hash = "09d9a3e011419c83101ba2ad4f4ce20841bd271cb5af4b927052b739ed524ce6"
 
 [[files]]
 file = "options.txt"
-hash = "5acc250e697c9d80cf8642a4ee52ab1758882f946614b326f2b52948adad8679"
+hash = "b8def91b7bfe4b7307ebfa9cfdb88bc35dfb732316c22ee7cd751e4ad13b2702"

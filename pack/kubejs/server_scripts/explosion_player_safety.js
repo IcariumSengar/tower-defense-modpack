@@ -1,5 +1,6 @@
-// Friendly explosions still hurt mobs but spare players, dropped items, XP orbs
-// and blocks. A blast is an enemy's only when getExploder() returns something
+// No explosion breaks blocks. Friendly explosions also spare players, dropped
+// items and XP orbs, and still hurt mobs; enemy blasts still hurt players.
+// A blast is an enemy's only when getExploder() returns something
 // other than a player or a Sentry; null means friendly. getExploder() is
 // vanilla's Explosion#getIndirectSourceEntity(): the exploding entity if it is
 // living, a PrimedTnt's owner or a projectile's owner, else null.
@@ -7,7 +8,8 @@
 // The wave roster's only explosive mob is Undead Nights' Demolition Zombie,
 // which owns the TNT it throws and is the source of its own blast. Player
 // weapons, SecurityCraft mines and I.M.S. bombs, turret shells and the
-// airdrop plane crash give null or a player. A Sentry owns whatever it fires
+// airdrop plane crash give null or a player. (A TaCZ RPG-7 or M320 blast's
+// source is the projectile, whose owner is the shooter.) A Sentry owns whatever it fires
 // from the container under it, Supplementaries bombs included. Supplementaries
 // cannon balls never fire the Detonate event, so the pack's
 // supplementaries-common.toml disables the cannon and its balls.
@@ -31,16 +33,11 @@ function spareFriendlyBlast(event) {
 // afterExplosion fires on Forge's ExplosionEvent.Detonate, before vanilla
 // applies the blast's entity and block lists.
 LevelEvents.afterExplosion((event) => {
-  // No explosion removes the pedestal block, whatever its source, or the
-  // airdrop crate's beacon (wave_airdrop.js), which would drop as a free item.
-  var level = event.getLevel()
-  var data = worldData(level)
-  if (data && data.contains('td_pedestalX')) {
-    event.removeAffectedBlock(level.getBlock(data.getInt('td_pedestalX'), data.getInt('td_pedestalY'), data.getInt('td_pedestalZ')))
-  }
-  if (data && data.getBoolean('td_airdropBeaconActive')) {
-    event.removeAffectedBlock(level.getBlock(data.getInt('td_airdropBeaconX'), data.getInt('td_airdropBeaconY'), data.getInt('td_airdropBeaconZ')))
-  }
+  // Enemy blasts lost their block damage too (direct ask 2026-10-05, after a
+  // Demolition Zombie's TNT wrecked a player's base). This also keeps the
+  // pedestal and the airdrop crate's beacon (wave_airdrop.js) in place, and a
+  // blast with an empty block list starts no fires.
+  event.removeAllAffectedBlocks()
 
   var exploder = event.getExploder()
   if (exploder != null && !FRIENDLY_EXPLODER_TYPES.includes(`${exploder.type}`)) return

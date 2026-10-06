@@ -50,8 +50,8 @@ const TIER_DAMAGE = {
   'securitycraft:electrified_iron_fence': 'Damage: 6/s to mobs beside it, ignores armour.',
   'securitycraft:ims': 'Damage: 4 bombs, blast up to 99 each, one every 4s.',
   'immersiveengineering:tesla_coil': 'Damage: 6 + stun every 1.6s, 6-block reach, ignores armour.',
-  'immersiveengineering:turret_gun': 'Damage: 10 a Casull round, 2 shots/s, 16-block range.',
-  'immersiveengineering:turret_chem': 'Damage: ~12/s + fire with creosote, 8-block range.',
+  'immersiveengineering:turret_gun': 'Damage: 10 a shot, 2 shots/s, 16-block range. Needs no ammo.',
+  'immersiveengineering:turret_chem': 'Damage: ~12/s + fire, 8-block range. Needs no fuel.',
   'omtreborn:grenade_turret': 'Damage: 5 to all within 3 blocks, every 2s, 18-block range.',
   'omtreborn:rocket_turret': 'Damage: 8 to all within 5 blocks, every 2s, 30-block range.',
 }

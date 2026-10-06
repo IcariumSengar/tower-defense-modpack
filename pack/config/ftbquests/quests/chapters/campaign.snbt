@@ -775,8 +775,14 @@
 			rewards: [
 				{
 					count: 16
-					id: "284A74F851D06289"
-					item: "simple_guns_reworked:pistol_ammo"
+					id: "077850D1C0E2A141"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:9mm"
+						}
+					}
 					type: "item"
 				}
 				{
@@ -860,7 +866,7 @@
 		{
 			dependencies: ["538A1BBC9A1B8EAC"]
 			description: [
-				"Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike, and horde mobs are slowed a little while they're on it. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."
+				"Any mob that walks over a &eWooden Stake&r takes 1 damage a step, and horde mobs are slowed a little while they're on it. Your own stakes never hurt you. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack."
 				"{@pagebreak}"
 				"Field notes: every placed stake has 20 points of wear, and each mob that hits it takes its own attack damage off that. Big hitters break them fastest. Rebuild the line between waves."
 			]
@@ -953,7 +959,7 @@
 		{
 			dependencies: ["159356F3DD573B5A"]
 			description: [
-				"Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."
+				"Any mob that walks over a &eSpike Trap&r takes 4 damage a step; you walk through unhurt. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them."
 				"{@pagebreak}"
 				"Field notes: a placed spike has 60 points of wear against a stake's 20. The slow lasts about 3 seconds after a mob steps off, so lay spikes inside your Sentry's or Tesla Coil's reach, not out on their own."
 			]
@@ -1071,7 +1077,7 @@
 			dependencies: ["1F577A9343223A6D"]
 			description: [
 				"Set it on a solid block and it shoots by itself: &e8 damage&r a bullet, two shots a second, out to &e20 blocks&r. No ammo, no power, no wiring."
-				"It's already set to shoot hostile mobs only, whatever the placement message says. &cOnly the player who placed it can change its mode.&r"
+				"It only ever shoots hostile mobs, whatever the placement message says. Its mode is locked, so right-clicking it changes nothing."
 				"Unlocks: Trigger Happy, and with the fence and the I.M.S., No Turning Back."
 				"{@pagebreak}"
 				"Field notes: a Speed Module doubles its fire rate. Put spikes inside its reach - slowed mobs stay in its fire longer. Break the block under it and the Sentry goes with it."
@@ -1676,34 +1682,6 @@
 		}
 		{
 			dependencies: ["4B07331734543EB4"]
-			description: ["A &eFlux Plug&r takes power in from whatever it touches and shares it over a named network, with no cable in between. The generator downstairs already has one, on the House Grid network."]
-			hide_until_deps_complete: true
-			icon: "fluxnetworks:flux_plug"
-			id: "4F7597CFC2BED87F"
-			rewards: [
-				{
-					count: 8
-					id: "29A52298F11180E8"
-					item: "minecraft:redstone"
-					type: "item"
-				}
-			]
-			shape: "hexagon"
-			subtitle: "Recipe in JEI"
-			tasks: [
-				{
-					consume_items: false
-					id: "6930B743A3CDA08B"
-					item: "fluxnetworks:flux_plug"
-					type: "item"
-				}
-			]
-			title: "No Cables Needed"
-			x: 30.0d
-			y: 2.5d
-		}
-		{
-			dependencies: ["4F7597CFC2BED87F"]
 			description: ["A &eFlux Point&r puts the network's power back out. Set one next to a machine, right-click it and join House Grid, and the machine runs. Every machine needs its own Point."]
 			hide_until_deps_complete: true
 			icon: "fluxnetworks:flux_point"
@@ -1716,7 +1694,7 @@
 				}
 			]
 			shape: "hexagon"
-			subtitle: "Recipe in JEI (press R on it)"
+			subtitle: "2 Flux Cores and a Redstone Block"
 			tasks: [
 				{
 					consume_items: false
@@ -1792,7 +1770,7 @@
 		{
 			dependencies: ["14A5143438CA55C2"]
 			description: [
-				"Auto-aims at anything hostile within 16 blocks. It needs Flux (a Flux Point next to it), a redstone signal (a lever or a redstone block) and real ammunition: load &eCasull Cartridges&r into its screen, 10 damage a shot, two shots a second. No rounds, no shots."
+				"Auto-aims at anything hostile within 16 blocks: 10 damage a shot, two shots a second. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block), but no ammo. Rounds you load into its screen are fired first."
 				"Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."
 			]
 			hide_until_deps_complete: true
@@ -1800,9 +1778,9 @@
 			id: "54BAD02969997982"
 			rewards: [
 				{
-					count: 8
-					id: "431BEBE20111A04B"
-					item: "immersiveengineering:casull"
+					count: 4
+					id: "36E31F87F2D2C356"
+					item: "immersiveengineering:ingot_steel"
 					type: "item"
 				}
 			]
@@ -1822,7 +1800,7 @@
 		}
 		{
 			dependencies: ["14A5143438CA55C2"]
-			description: ["Sprays whatever fluid it's fed at anything hostile in range. Its pilot light is on when you place it, so creosote or any other flammable fluid sets mobs burning; switch Ignite Fluid off in its screen for a cold spray. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."]
+			description: ["Sprays burning creosote at anything hostile in range, and needs no fuel: an empty tank sprays creosote for free. Its pilot light is on when you place it; switch Ignite Fluid off in its screen for a cold spray. Fluid you pour in is sprayed first. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."]
 			hide_until_deps_complete: true
 			icon: "immersiveengineering:turret_chem"
 			id: "63884A2BC335FF75"
@@ -2074,16 +2052,16 @@
 		}
 		{
 			dependencies: ["54BAD02969997982"]
-			description: ["Twenty-five wave mobs killed by Gun Turrets. Keep them loaded: no Casull rounds, no shots."]
+			description: ["Twenty-five wave mobs killed by Gun Turrets. Put them where the horde has to walk into their sixteen-block reach."]
 			hide_until_deps_complete: true
 			icon: "immersiveengineering:turret_gun"
 			id: "1E0730D18FF57109"
 			optional: true
 			rewards: [
 				{
-					count: 16
-					id: "3BD8C8C137E3D25A"
-					item: "immersiveengineering:casull"
+					count: 8
+					id: "27BD15CC47886AA2"
+					item: "immersiveengineering:ingot_steel"
 					type: "item"
 				}
 			]
@@ -2109,15 +2087,9 @@
 			optional: true
 			rewards: [
 				{
-					count: 8
-					id: "02ECA9A2F3D445BD"
-					item: "omtreborn:ammo_grenade"
-					type: "item"
-				}
-				{
-					count: 2
-					id: "1140F701DFC9D756"
-					item: "omtreborn:ammo_rocket"
+					count: 4
+					id: "7CFC21BA5E9D1F35"
+					item: "omtreborn:ferronite_ingot"
 					type: "item"
 				}
 			]
@@ -2167,7 +2139,7 @@
 		}
 		{
 			dependencies: ["0E7858268273D986"]
-			description: ["Tier 4 turrets sit on a &eTurret Base&r, and the base tier has to match the head: a Grenade Turret needs a Tier 2 base or better, or the head pops off. Ammo goes in the base, and a Flux Point next to it powers it."]
+			description: ["Tier 4 turrets sit on a &eTurret Base&r, and the base tier has to match the head: a Grenade Turret needs a Tier 2 base or better, or the head pops off. A Flux Point next to the base powers it. No ammo: turrets run on power alone."]
 			hide_until_deps_complete: true
 			icon: "omtreborn:turret_base_tier_2"
 			id: "1FFD11753AABED49"
@@ -2197,16 +2169,16 @@
 			dependencies: ["1FFD11753AABED49"]
 			description: [
 				"Mount it on a Turret Base Tier 2 or higher and it lobs area-damage grenades at anything hostile from 4 to 18 blocks out. It can't hit what's hugging it, so keep spikes or a fence between the turret and the horde."
-				"Ammo is cheap and renewable: a redstone, 3 iron nuggets and a gunpowder per Grenade Ammo. The Sensor, Chamber and Barrel need &eFerronite&r."
+				"It needs no ammo, just power. The Sensor, Chamber and Barrel need &eFerronite&r."
 			]
 			hide_until_deps_complete: true
 			icon: "omtreborn:grenade_turret"
 			id: "7BBD29C5816827E4"
 			rewards: [
 				{
-					count: 8
-					id: "7F48C5A87AD2E1B4"
-					item: "omtreborn:ammo_grenade"
+					count: 4
+					id: "21F1603BC44420B6"
+					item: "omtreborn:ferronite_ingot"
 					type: "item"
 				}
 			]
@@ -2226,7 +2198,7 @@
 		}
 		{
 			dependencies: ["7BBD29C5816827E4"]
-			description: ["A Rocket Turret needs a &eTurret Base Tier 3&r or better under it. Same rules as before: ammo in the base, a Flux Point beside it."]
+			description: ["A Rocket Turret needs a &eTurret Base Tier 3&r or better under it. Same rule as before: a Flux Point beside it, and no ammo."]
 			hide_until_deps_complete: true
 			icon: "omtreborn:turret_base_tier_3"
 			id: "4358FF04A93BD514"
@@ -2254,15 +2226,14 @@
 		}
 		{
 			dependencies: ["4358FF04A93BD514"]
-			description: ["The elite pick: rockets with real area damage, out to 30 blocks. Mount it on a Turret Base Tier 3 or higher. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite), and every shot costs 5,000 FE, so give it a Flux Point of its own."]
+			description: ["The elite pick: rockets with real area damage, out to 30 blocks. Mount it on a Turret Base Tier 3 or higher. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite). It takes no ammo, but every shot costs 5,000 FE, so give it a Flux Point of its own."]
 			hide_until_deps_complete: true
 			icon: "omtreborn:rocket_turret"
 			id: "3BE0613054FB082E"
 			rewards: [
 				{
-					count: 4
-					id: "786A425E2BA79377"
-					item: "omtreborn:ammo_rocket"
+					id: "2851083E281F7E44"
+					item: "fluxnetworks:flux_point"
 					type: "item"
 				}
 			]

@@ -6,9 +6,12 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:pistol_ammo",
-          "weight": 16,
+          "name": "tacz:ammo",
           "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:9mm\"}"
+            },
             {
               "function": "minecraft:set_count",
               "count": {
@@ -16,13 +19,35 @@
                 "max": 16
               }
             }
-          ]
+          ],
+          "weight": 10
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:rifle_ammo",
-          "weight": 12,
+          "name": "tacz:ammo",
           "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:45acp\"}"
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 8,
+                "max": 16
+              }
+            }
+          ],
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:ammo",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:357mag\"}"
+            },
             {
               "function": "minecraft:set_count",
               "count": {
@@ -30,13 +55,35 @@
                 "max": 12
               }
             }
-          ]
+          ],
+          "weight": 3
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:shotgun_ammo",
-          "weight": 12,
+          "name": "tacz:ammo",
           "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:762x39\"}"
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 6,
+                "max": 12
+              }
+            }
+          ],
+          "weight": 7
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:ammo",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:792x57\"}"
+            },
             {
               "function": "minecraft:set_count",
               "count": {
@@ -44,11 +91,30 @@
                 "max": 8
               }
             }
-          ]
+          ],
+          "weight": 5
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:grenade",
+          "name": "tacz:ammo",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AmmoId:\"tacz:12g\"}"
+            },
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 4,
+                "max": 8
+              }
+            }
+          ],
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "supplementaries:bomb",
           "weight": 8,
           "functions": [
             {
@@ -86,37 +152,79 @@
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:pistol",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\"}"
+            }
+          ],
           "weight": 6
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:revolver",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:rhino357\",GunFireMode:\"SEMI\"}"
+            }
+          ],
           "weight": 4
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:shotgun",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\"}"
+            }
+          ],
           "weight": 4
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:double_barrel_shotgun",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:db_short\",GunFireMode:\"SEMI\"}"
+            }
+          ],
           "weight": 3
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:submachine_gun",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:hk_mp5a5\",GunFireMode:\"AUTO\"}"
+            }
+          ],
           "weight": 3
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:dmr",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\"}"
+            }
+          ],
           "weight": 1
         },
         {
           "type": "minecraft:item",
-          "name": "simple_guns_reworked:sniper",
+          "name": "tacz:modern_kinetic_gun",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{GunId:\"tacz:kar98\",GunFireMode:\"SEMI\"}"
+            }
+          ],
           "weight": 1
         },
         {
@@ -153,6 +261,116 @@
           "type": "minecraft:item",
           "name": "minecraft:iron_boots",
           "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:sight_t2\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:scope_acog_ta31\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:scope_elcan_4x\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:grip_vertical_military\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:laser_compact\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:light_extended_mag_2\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:extended_mag_2\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:muzzle_choke_sg\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:ammo_mod_hp\"}"
+            }
+          ],
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "tacz:attachment",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{AttachmentId:\"tacz:ammo_mod_i\"}"
+            }
+          ],
+          "weight": 1
         }
       ]
     }

@@ -143,6 +143,9 @@ doesn't desync the campaign or re-trigger the base build. Built
   (4 logs → 4) exists if you want more elsewhere. Stake Walls you place
   yourself wear out like Wooden Stakes (same 20 HP); the ones built into
   the base walls never do.
+- Since 2026-10-06, Spike Traps, Wooden Stakes and Stake Walls never
+  hurt players (`simply_traps_player_safety.js`), and a Spike Trap
+  broken with any tool, or none, drops itself (`trap_durability.js`).
 - No Bear Trap, no Slime Trap, no Barbed Wire — all removed with no
   replacement (Trapcraft dropped entirely 2026-09-08, Create/Create:
   Crafts & Additions removed entirely 2026-09-11).
@@ -226,9 +229,11 @@ Auto-given on first login. 4 chapters:
   at its next login; each quest team is paid one Zombie Masher per 1500
   kills.
 - **Tips & Tricks** — standalone gameplay tips.
-- **Arsenal** — 24 flat, dependency-free item-possession quests, one
-  per Simple Guns gun/ammo type; completes on pickup or crafting, not
-  just crafting.
+- **Arsenal** — TaCZ guns (since 2026-10-06; was Simple Guns): Gun
+  Basics, Kitted Out (any attachment), then one item-possession quest per
+  round and per gun, each round to the left of the guns it feeds, plus
+  Bombs. Completes on pickup or crafting; gun tasks match the GunId only,
+  so fire mode, loaded rounds and attachments don't matter.
 
 Clicking an item icon in a quest should jump to JEI showing its recipe
 (FTB XMod Compat). Quest progress does not carry over into a new world.

@@ -178,8 +178,9 @@ function endBossFight(server, bossEntity, killed) {
   server.runCommandSilent(`execute as @a at @s run playsound minecraft:entity.wither.death master @s ~ ~ ~ 1 1 1`)
   server.runCommandSilent(`particle minecraft:totem_of_undying ${x} ${y + 1} ${z} 1.0 1.0 1.0 0.02 100`)
 
-  // Invulnerable, so the fire a demolition_zombie's blast leaves behind can't
-  // burn the rewards.
+  // Invulnerable, so fire or a later blast can't destroy the rewards. (Blasts
+  // no longer start fires: explosion_player_safety.js empties their block
+  // lists.)
   server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"securitycraft:sentry",Count:1b},Invulnerable:1b}`)
   server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"kubejs:shrapnel",Count:12b},Invulnerable:1b}`)
   server.runCommandSilent(`summon minecraft:item ${x} ${y + 1} ${z} {Item:{id:"minecraft:totem_of_undying",Count:1b},Invulnerable:1b}`)

@@ -6,7 +6,7 @@
 // The counts live on the world-state marker (td_ft_<key>), and the quest
 // completes for everyone through quest_milestones.js when a count reaches
 // its target. The Sentry has no field test: its bullets carry plain arrow
-// damage, the same as the players' guns.
+// damage, the same as the players' bows.
 
 var FIELD_TESTS = {
   ft_fence: { types: ['securitycraft:electricity'], target: 10 },

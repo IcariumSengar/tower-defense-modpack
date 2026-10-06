@@ -224,7 +224,7 @@
 			y: 0.0d
 		}
 		{
-			description: ["A Sentry, an I.M.S. or any other SecurityCraft defence belongs to the player who placed it: only they can change its mode, fit modules or break it. Decide between you who builds what."]
+			description: ["A Sentry, an I.M.S. or any other SecurityCraft defence belongs to the player who placed it: only they can fit modules, change its settings or break it. Decide between you who builds what."]
 			icon: "securitycraft:sentry"
 			id: "4615FBCBD0498332"
 			shape: "circle"
@@ -240,11 +240,11 @@
 			y: 1.5d
 		}
 		{
-			description: ["Mines, Claymores, the I.M.S., your rockets and grenades never hurt a player or break a block, so you can fight inside your own minefield. Spikes and stakes are different: they bite you just like they bite the horde."]
+			description: ["Mines, Claymores, the I.M.S., your rockets and grenades never hurt a player or break a block, and spikes and stakes never hurt a player, so you can fight inside your own minefield and trap line."]
 			icon: "securitycraft:claymore"
 			id: "35B59A58BE75BAD4"
 			shape: "circle"
-			subtitle: "Your own explosions are safe"
+			subtitle: "Your own traps and blasts are safe"
 			tasks: [
 				{
 					id: "60DF688CC0243632"

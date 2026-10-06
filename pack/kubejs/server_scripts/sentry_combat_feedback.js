@@ -61,9 +61,8 @@ ServerEvents.tick((event) => {
 // entity is a Sentry bullet. Sentry.performRangedAttack fires a bullet owned
 // by the Sentry or, with an ammo container below it, a dispensed projectile
 // it sets itself as owner of. A Sentry bullet deals vanilla 'arrow' damage,
-// so matching the damage id would also catch player bows and Simple Guns
-// bullets. getImmediate() and getActual() are KubeJS's names for
-// getDirectEntity() and getEntity().
+// so matching the damage id would also catch player bows. getImmediate() and
+// getActual() are KubeJS's names for getDirectEntity() and getEntity().
 EntityEvents.hurt((event) => {
   var source = event.getSource()
   var direct = source.getImmediate()

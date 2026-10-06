@@ -17,7 +17,7 @@
 
 // Damage type ids that don't count: environmental deaths, plus generic_kill
 // from /kill and /tdforceclear. Fire and lava do count: the Chemthrower Turret
-// and the Simple Guns flamethrower kill by burning, and lava moats by lava.
+// and incendiary gun rounds kill by burning, and lava moats by lava.
 var BOUNTY_EXCLUDED_DAMAGE_TYPES = [
   'minecraft:drown',
   'minecraft:starve',

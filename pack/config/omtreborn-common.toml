@@ -18,3 +18,10 @@
     #even runs - covers every turret type this mod has, current and
     #future, not just Grenade/Rocket.
     globalCanTargetPlayers = false
+    #Ask 2026-10-05: turrets run on power alone. With this off, getAmmoStack()
+    #hands every turret an empty stack and the "no ammo, no shot" checks are
+    #skipped, so a powered, active base fires. Covers every turret this mod
+    #has. This file is in config/, not defaultconfigs/: Forge copies a
+    #defaultconfigs file only when the config is missing, so an install that
+    #already had one would have kept doTurretsNeedAmmo = true.
+    doTurretsNeedAmmo = false

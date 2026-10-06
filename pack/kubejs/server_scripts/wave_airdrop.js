@@ -55,7 +55,8 @@ var WAVE_AIRDROP_BEACON_BLOCK = 'minecraft:beacon'
 // A beacon draws no beam without a full 3x3 layer of #beacon_base_blocks under
 // it. Reinforced iron is in that tag, and a survival player can't break or
 // un-reinforce one placed by command (it has no owner), so the base is no
-// source of iron.
+// source of iron. Both are buried under the crate (placeAirdropBeacon), so
+// only the beam shows.
 var WAVE_AIRDROP_BEACON_BASE_BLOCK = 'securitycraft:reinforced_iron_block'
 
 // The launch comes 12 s after the wave clear, so the LOOK UP title doesn't
@@ -206,18 +207,30 @@ function findLandedCrateY(level, x, z, fromY) {
 }
 
 // Removes the tracked beacon and its base. Given crate coordinates, it only
-// does so if the beacon stands on that crate, so ending the watch on an older
-// crate can't take down the newest drop's beam. Each block is read before it
-// is set: the read loads its chunk (the base can reach into a neighbouring
-// one), and a setblock into an unloaded chunk fails silently and would leave
-// an untracked, breakable beacon.
+// does so if the beacon belongs to that crate, so ending the watch on an older
+// crate can't take down the newest drop's beam. A buried beacon puts back the
+// ground it replaced (td_airdropBeaconRestore); one placed above a crate by an
+// older version of this file, with no restore list, is cleared to air. Each
+// block is read before it is set: the read loads its chunk (the base can reach
+// into a neighbouring one), and a setblock into an unloaded chunk fails
+// silently and would leave an untracked, breakable beacon.
 function removeAirdropBeacon(server, level, data, crateX, crateY, crateZ) {
   if (!data.getBoolean('td_airdropBeaconActive')) return
   var bx = data.getInt('td_airdropBeaconX')
   var by = data.getInt('td_airdropBeaconY')
   var bz = data.getInt('td_airdropBeaconZ')
-  if (crateX !== undefined && (bx !== crateX || by <= crateY || bz !== crateZ)) return
+  if (crateX !== undefined && (bx !== crateX || bz !== crateZ || Math.abs(by - crateY) > 4)) return
   data.putBoolean('td_airdropBeaconActive', false)
+  var restore = `${data.getString('td_airdropBeaconRestore')}`
+  data.putString('td_airdropBeaconRestore', '')
+  if (restore) {
+    restore.split('|').forEach((cell) => {
+      var parts = cell.split(' ')
+      level.getBlock(Number(parts[0]), Number(parts[1]), Number(parts[2]))
+      server.runCommandSilent(`setblock ${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`)
+    })
+    return
+  }
   if (`${level.getBlock(bx, by, bz).getId()}` === WAVE_AIRDROP_BEACON_BLOCK) {
     server.runCommandSilent(`setblock ${bx} ${by} ${bz} minecraft:air`)
   }
@@ -239,38 +252,60 @@ function airdropChunkLoaded(level, x, z) {
   }
 }
 
-// A beacon over the landed crate marks it from far away: a 3x3 base on top of
-// the crate with the beacon on it. The base only goes into air, so where the
-// ground beside the crate is higher it is raised up to two blocks, and without
-// room it isn't placed at all. The crate fell through this column, so the sky
-// above the beacon is clear. One beacon is tracked at a time. Returns whether
-// it was placed.
+// A beacon marks the landed crate from far away, buried so only its beam
+// shows: the beacon replaces the block the crate rests on and its 3x3 base the
+// layer below that. The crate block blocks no light (its getLightBlock is 0),
+// so the beam rises through it and seems to come out of the crate. The crate
+// fell through this column, so the sky above it is clear. The replaced blocks
+// are recorded as "x y z state" cells, base layer first, and put back when the
+// beacon is removed. Where the ground can't hide the beacon
+// (airdropBeaconBurialSite) there is no beacon. One beacon is tracked at a
+// time. Returns whether it was placed.
 function placeAirdropBeacon(server, level, data, x, y, z) {
   removeAirdropBeacon(server, level, data)
-  for (var baseY = y + 1; baseY <= y + 3; baseY++) {
-    if (!airdropBeaconRoom(level, x, baseY, z)) continue
-    server.runCommandSilent(`fill ${x - 1} ${baseY} ${z - 1} ${x + 1} ${baseY} ${z + 1} ${WAVE_AIRDROP_BEACON_BASE_BLOCK}`)
-    server.runCommandSilent(`setblock ${x} ${baseY + 1} ${z} ${WAVE_AIRDROP_BEACON_BLOCK}`)
-    data.putInt('td_airdropBeaconX', x)
-    data.putInt('td_airdropBeaconY', baseY + 1)
-    data.putInt('td_airdropBeaconZ', z)
-    data.putBoolean('td_airdropBeaconActive', true)
-    return true
-  }
-  return false
-}
-
-// Whether the 3x3 layer at baseY around (x, z) and the block above its centre
-// are all air. The reads also load every chunk the base touches, which the
-// fill needs.
-function airdropBeaconRoom(level, x, baseY, z) {
-  if (!level.getBlock(x, baseY + 1, z).getBlockState().isAir()) return false
+  if (!airdropBeaconBurialSite(level, x, y - 1, z)) return false
+  var restore = []
   for (var dx = -1; dx <= 1; dx++) {
     for (var dz = -1; dz <= 1; dz++) {
-      if (!level.getBlock(x + dx, baseY, z + dz).getBlockState().isAir()) return false
+      restore.push(`${x + dx} ${y - 2} ${z + dz} ${airdropBlockStateString(level.getBlock(x + dx, y - 2, z + dz))}`)
+    }
+  }
+  restore.push(`${x} ${y - 1} ${z} ${airdropBlockStateString(level.getBlock(x, y - 1, z))}`)
+  server.runCommandSilent(`fill ${x - 1} ${y - 2} ${z - 1} ${x + 1} ${y - 2} ${z + 1} ${WAVE_AIRDROP_BEACON_BASE_BLOCK}`)
+  server.runCommandSilent(`setblock ${x} ${y - 1} ${z} ${WAVE_AIRDROP_BEACON_BLOCK}`)
+  data.putInt('td_airdropBeaconX', x)
+  data.putInt('td_airdropBeaconY', y - 1)
+  data.putInt('td_airdropBeaconZ', z)
+  data.putString('td_airdropBeaconRestore', restore.join('|'))
+  data.putBoolean('td_airdropBeaconActive', true)
+  return true
+}
+
+// Whether a beacon at (x, beaconY, z) under the crate would stay hidden: its
+// own block, its four side neighbours and the 3x3 layer below it must all be
+// full opaque blocks (canOcclude), and the blocks it replaces must have no
+// block entity, which a setblock restore would lose. The reads also load
+// every chunk the base touches, which the fill needs.
+function airdropBeaconBurialSite(level, x, beaconY, z) {
+  var hides = (bx, by, bz) => level.getBlock(bx, by, bz).getBlockState().canOcclude()
+  var replaceable = (bx, by, bz) => hides(bx, by, bz) && !level.getBlock(bx, by, bz).getEntity()
+  if (!replaceable(x, beaconY, z)) return false
+  if (!hides(x + 1, beaconY, z) || !hides(x - 1, beaconY, z)) return false
+  if (!hides(x, beaconY, z + 1) || !hides(x, beaconY, z - 1)) return false
+  for (var dx = -1; dx <= 1; dx++) {
+    for (var dz = -1; dz <= 1; dz++) {
+      if (!replaceable(x + dx, beaconY - 1, z + dz)) return false
     }
   }
   return true
+}
+
+// A block's state in setblock syntax, e.g. minecraft:grass_block[snowy=false].
+// BlockState#toString gives "Block{minecraft:grass_block}[snowy=false]".
+function airdropBlockStateString(block) {
+  var state = `${block.getBlockState()}`
+  var props = state.indexOf('[')
+  return `${block.getId()}${props >= 0 ? state.substring(props) : ''}`
 }
 
 // Eight-point compass direction ("north", "north-east", ...) from the pedestal

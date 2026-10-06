@@ -3,622 +3,1277 @@
 	default_quest_shape: ""
 	filename: "arsenal"
 	group: ""
-	icon: "simple_guns_reworked:pistol"
+	icon: {
+		Count: 1
+		id: "tacz:modern_kinetic_gun"
+		tag: {
+			GunId: "tacz:glock_17"
+		}
+	}
 	id: "648C387B65C81C68"
 	order_index: 3
 	progression_mode: "flexible"
 	quest_links: [ ]
 	quests: [
 		{
-			description: ["Reloads the Pistol, Revolver, Submachine Gun and Tommy Gun - have some in your inventory and press R with one of those in hand."]
-			icon: "simple_guns_reworked:pistol_ammo"
-			id: "141453C0181A1605"
-			rewards: [
+			description: [
+				"Every gun works the same way. Left-click fires, right-click aims down the sights, &eR&r reloads from the matching rounds in your inventory, and &eX&r switches between the fire modes that gun has. &eV&r is a melee bash, &eH&r inspects it."
+				"Nobody here makes guns: they turn up in supply drops, stash chests and loot bags. Rounds you can make - each kind at a crafting table, from a copper ingot, gunpowder and nuggets."
+			]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:glock_17"
+				}
+			}
+			id: "32C94BF025EF564F"
+			shape: "circle"
+			tasks: [
 				{
-					count: 8
-					id: "24208B9D4302075E"
-					item: "simple_guns_reworked:pistol_ammo"
-					type: "item"
+					id: "6DD5F930A195A88A"
+					type: "checkmark"
 				}
 			]
+			title: "Gun Basics"
+			x: 0.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["32C94BF025EF564F"]
+			description: [
+				"Sights, scopes, grips, longer magazines and special rounds come in armory crates and supply drops. Hold the gun and press &eI&r to fit them; each gun takes only the parts that suit it."
+				"Hollow-point rounds hit unarmoured targets harder. Incendiary rounds set the target alight."
+			]
+			icon: {
+				Count: 1
+				id: "tacz:attachment"
+				tag: {
+					AttachmentId: "tacz:sight_t2"
+				}
+			}
+			id: "6AB25537AC4B8C5C"
 			shape: "circle"
 			tasks: [
 				{
 					consume_items: false
-					id: "10F271A7C88281D6"
-					item: "simple_guns_reworked:pistol_ammo"
+					id: "6327B4400D344B57"
+					item: "tacz:attachment"
+					match_nbt: false
 					type: "item"
 				}
 			]
-			title: "Pistol Ammo"
+			title: "Kitted Out"
+			x: 1.5d
+			y: -1.5d
+		}
+		{
+			description: ["10 rounds from a copper ingot, a gunpowder and 2 iron nuggets. Feeds the Glock 17 and the HK-MP5A5."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:9mm"
+				}
+			}
+			id: "2A0C776D7D493691"
+			rewards: [
+				{
+					count: 8
+					id: "6F212EE7A27FB190"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:9mm"
+						}
+					}
+					type: "item"
+				}
+			]
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "2A25F205FDA895FF"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:9mm"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "9mm Rounds"
 			x: 0.0d
 			y: 0.0d
 		}
 		{
-			dependencies: ["141453C0181A1605"]
-			description: ["Holds 15 rounds of Pistol Ammo - right-click to fire, press R to reload from any in your inventory."]
-			icon: "simple_guns_reworked:pistol"
-			id: "3A480744F2122BA6"
+			dependencies: ["2A0C776D7D493691"]
+			description: ["A 17-round 9mm pistol, one shot per click: 6 damage a hit. The gun you're most likely to find first."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:glock_17"
+				}
+			}
+			id: "722C2540C83F715C"
 			rewards: [
 				{
 					count: 16
-					id: "6D4A9ED757F21A81"
-					item: "simple_guns_reworked:pistol_ammo"
+					id: "2DBABBFA175CC341"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:9mm"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
 			tasks: [
 				{
 					consume_items: false
-					id: "68950A6CE6A95951"
-					item: "simple_guns_reworked:pistol"
+					id: "3FB908362EDC0253"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:glock_17"
+						}
+					}
+					match_nbt: true
 					type: "item"
+					weak_nbt_match: true
 				}
 			]
-			title: "Pistol"
+			title: "Glock 17"
 			x: 1.5d
 			y: 0.0d
 		}
 		{
-			dependencies: ["3A480744F2122BA6"]
-			description: ["A 6-round cylinder on the same Pistol Ammo as the Pistol - smaller magazine, same reload."]
-			icon: "simple_guns_reworked:revolver"
-			id: "7483FD92CA3E7272"
+			dependencies: ["722C2540C83F715C"]
+			description: ["A 9mm submachine gun with a 30-round magazine: full-auto, burst or single shots. Fast and light."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:hk_mp5a5"
+				}
+			}
+			id: "53B43282614D2537"
 			rewards: [
 				{
 					count: 16
-					id: "778CC21932B5AB01"
-					item: "simple_guns_reworked:pistol_ammo"
+					id: "2F51DCB66A524F4B"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:9mm"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
 			tasks: [
 				{
 					consume_items: false
-					id: "5029D7CAE01251EE"
-					item: "simple_guns_reworked:revolver"
+					id: "01A57A696A5C9EA5"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:hk_mp5a5"
+						}
+					}
+					match_nbt: true
 					type: "item"
+					weak_nbt_match: true
 				}
 			]
-			title: "Revolver"
+			title: "HK-MP5A5"
 			x: 3.0d
 			y: 0.0d
 		}
 		{
-			dependencies: ["7483FD92CA3E7272"]
-			description: ["Full-auto off a 32-round Pistol Ammo magazine, and a quick reload. Press R to reload."]
-			icon: "simple_guns_reworked:submachine_gun"
-			id: "6ED544422010E463"
+			description: ["10 rounds from a copper ingot, a gunpowder and 3 iron nuggets. Feeds the UMP45."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:45acp"
+				}
+			}
+			id: "027D172DCE61BB2A"
 			rewards: [
 				{
-					count: 16
-					id: "1B9F2828F2174E65"
-					item: "simple_guns_reworked:pistol_ammo"
+					count: 8
+					id: "21438A89079F204D"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:45acp"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
+			subtitle: "Crafting table, recipe in JEI"
 			tasks: [
 				{
 					consume_items: false
-					id: "580B305C197C8C93"
-					item: "simple_guns_reworked:submachine_gun"
+					id: "2D5FFFF335604117"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:45acp"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: ".45 ACP Rounds"
+			x: 0.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["027D172DCE61BB2A"]
+			description: ["A .45 submachine gun with a 25-round magazine, full-auto or burst: 9 damage a hit, half again the MP5's, at a slightly slower rate."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:ump45"
+				}
+			}
+			id: "7584080AB7946F82"
+			rewards: [
+				{
+					count: 16
+					id: "6526AFB12F658391"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:45acp"
+						}
+					}
 					type: "item"
 				}
 			]
-			title: "Submachine Gun"
+			tasks: [
+				{
+					consume_items: false
+					id: "20521AC6FC8F10CF"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:ump45"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "UMP45"
+			x: 1.5d
+			y: 1.5d
+		}
+		{
+			description: ["6 rounds from a copper ingot, a gunpowder, 2 iron nuggets and a gold nugget. Feeds the .357 Rhino and the Golden Deagle."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:357mag"
+				}
+			}
+			id: "0599326720BBABD5"
+			rewards: [
+				{
+					count: 6
+					id: "6F92613BBE7AB3C6"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:357mag"
+						}
+					}
+					type: "item"
+				}
+			]
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "274BD7DA7F812A4D"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:357mag"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: ".357 Magnum Rounds"
+			x: 0.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["0599326720BBABD5"]
+			description: ["A 6-round revolver: slow, but 10.5 damage a hit, close to two Glock rounds."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:rhino357"
+				}
+			}
+			id: "7EBAFC40A778057C"
+			rewards: [
+				{
+					count: 12
+					id: "778315C8F6093A70"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:357mag"
+						}
+					}
+					type: "item"
+				}
+			]
+			tasks: [
+				{
+					consume_items: false
+					id: "6F2B64160035E10D"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:rhino357"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: ".357 Rhino"
+			x: 1.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["7EBAFC40A778057C"]
+			description: ["A gold-plated .357 pistol: 9 rounds of 12 damage, and it fires faster than the Rhino."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:deagle_golden"
+				}
+			}
+			id: "68AFEC5CE2BD37DE"
+			rewards: [
+				{
+					count: 12
+					id: "2A934564ACA510C7"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:357mag"
+						}
+					}
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Supply drops only"
+			tasks: [
+				{
+					consume_items: false
+					id: "1B296796C99DB13B"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:deagle_golden"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "Golden Deagle"
+			x: 3.0d
+			y: 3.0d
+		}
+		{
+			description: ["6 shells from a copper ingot, a gunpowder and a Shrapnel. Feeds the M870, the DB-2 Durin and the AA12."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:12g"
+				}
+			}
+			id: "756DF7C29E8671BB"
+			rewards: [
+				{
+					count: 6
+					id: "21A37C18AA506D96"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:12g"
+						}
+					}
+					type: "item"
+				}
+			]
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "37CA937573517A10"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:12g"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "12 Gauge Shells"
+			x: 0.0d
+			y: 4.5d
+		}
+		{
+			dependencies: ["756DF7C29E8671BB"]
+			description: ["A pump shotgun, 5 shells. Each shell throws 9 pellets: brutal up close, wasted at range."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:m870"
+				}
+			}
+			id: "5415519E45CB6EE9"
+			rewards: [
+				{
+					count: 12
+					id: "7F65498371EC8D79"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:12g"
+						}
+					}
+					type: "item"
+				}
+			]
+			tasks: [
+				{
+					consume_items: false
+					id: "4E0A26074FFEEE6E"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:m870"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "M870"
+			x: 1.5d
+			y: 4.5d
+		}
+		{
+			dependencies: ["5415519E45CB6EE9"]
+			description: ["A short double-barrel: 2 shells of 16 pellets each, then a reload."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:db_short"
+				}
+			}
+			id: "6A8D81414AF8B8A0"
+			rewards: [
+				{
+					count: 12
+					id: "3CE694F7782EF2B5"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:12g"
+						}
+					}
+					type: "item"
+				}
+			]
+			tasks: [
+				{
+					consume_items: false
+					id: "184EA40507C83C3D"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:db_short"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "DB-2 Durin"
+			x: 3.0d
+			y: 4.5d
+		}
+		{
+			dependencies: ["6A8D81414AF8B8A0"]
+			description: ["A full-auto shotgun, 8 shells of 10 pellets each. It empties fast; carry spares."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:aa12"
+				}
+			}
+			id: "785561A80E3C051F"
+			rewards: [
+				{
+					count: 12
+					id: "6213A048C0D83D82"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:12g"
+						}
+					}
+					type: "item"
+				}
+			]
+			tasks: [
+				{
+					consume_items: false
+					id: "31D91DD46DF8EB75"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:aa12"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "AA12"
 			x: 4.5d
-			y: 0.0d
+			y: 4.5d
 		}
 		{
-			dependencies: ["6ED544422010E463"]
-			description: ["A 60-round Pistol Ammo drum, nearly twice the Submachine Gun's magazine, but it takes twice as long to reload."]
-			icon: "simple_guns_reworked:tommy_gun"
-			id: "4A3CD2A952A112EC"
-			rewards: [
-				{
-					count: 16
-					id: "063A9F4530913AD8"
-					item: "simple_guns_reworked:pistol_ammo"
-					type: "item"
+			description: ["8 rounds from a copper ingot, 2 gunpowder and 2 iron nuggets. Feeds the SKS Tactical."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:762x39"
 				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "30E90EFC71BE0CC0"
-					item: "simple_guns_reworked:tommy_gun"
-					type: "item"
-				}
-			]
-			title: "Tommy Gun"
-			x: 6.0d
-			y: 0.0d
-		}
-		{
-			description: ["Reloads the Shotgun, Double-Barrel Shotgun and Automatic Shotgun."]
-			icon: "simple_guns_reworked:shotgun_ammo"
-			id: "14F359094B6672C7"
+			}
+			id: "097754C28B756B56"
 			rewards: [
 				{
 					count: 8
-					id: "72C35D3A05B1501B"
-					item: "simple_guns_reworked:shotgun_ammo"
+					id: "493EB9EE30BB6216"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:762x39"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
+			subtitle: "Crafting table, recipe in JEI"
 			tasks: [
 				{
 					consume_items: false
-					id: "5052CE5493FC86B3"
-					item: "simple_guns_reworked:shotgun_ammo"
+					id: "2F7584ADEAB80F90"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:762x39"
+						}
+					}
+					match_nbt: true
 					type: "item"
+					weak_nbt_match: true
 				}
 			]
-			title: "Shotgun Ammo"
-			x: 0.0d
-			y: 1.5d
+			title: "7.62x39mm Rounds"
+			x: 7.5d
+			y: 0.0d
 		}
 		{
-			dependencies: ["14F359094B6672C7"]
-			description: ["5 shells of Shotgun Ammo. Press R to reload."]
-			icon: "simple_guns_reworked:shotgun"
-			id: "4C4A221676AB34F8"
+			dependencies: ["097754C28B756B56"]
+			description: ["A 10-round semi-automatic rifle: 11 damage a hit, nearly twice the Glock, and it reaches much further."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:sks_tactical"
+				}
+			}
+			id: "18BD5F9F5454DCB3"
 			rewards: [
 				{
 					count: 16
-					id: "21577F8B18FF1DE2"
-					item: "simple_guns_reworked:shotgun_ammo"
+					id: "15A830FB9FC2A67B"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:762x39"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
 			tasks: [
 				{
 					consume_items: false
-					id: "2046968D67485C56"
-					item: "simple_guns_reworked:shotgun"
+					id: "076274706BB83FEA"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:sks_tactical"
+						}
+					}
+					match_nbt: true
 					type: "item"
+					weak_nbt_match: true
 				}
 			]
-			title: "Shotgun"
-			x: 1.5d
-			y: 1.5d
+			title: "SKS Tactical"
+			x: 9.0d
+			y: 0.0d
 		}
 		{
-			dependencies: ["4C4A221676AB34F8"]
-			description: ["Only 2 shells of Shotgun Ammo before it needs reloading - hits hard, empties fast."]
-			icon: "simple_guns_reworked:double_barrel_shotgun"
-			id: "692CD04A7A5E46FC"
-			rewards: [
-				{
-					count: 16
-					id: "3EDF0FE64465FED1"
-					item: "simple_guns_reworked:shotgun_ammo"
-					type: "item"
+			description: ["5 rounds from a copper ingot, 2 gunpowder and 2 gold nuggets. Feeds the Kar98k."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:792x57"
 				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "0061792A8E9D6383"
-					item: "simple_guns_reworked:double_barrel_shotgun"
-					type: "item"
-				}
-			]
-			title: "Double-Barrel Shotgun"
-			x: 3.0d
-			y: 1.5d
-		}
-		{
-			dependencies: ["692CD04A7A5E46FC"]
-			description: ["9 rounds of Shotgun Ammo, and every pull of the trigger sends 2 pellets out at once."]
-			icon: "simple_guns_reworked:automatic_shotgun"
-			id: "31A20EB54D3A561D"
-			rewards: [
-				{
-					count: 16
-					id: "261C2C7114DBB6BC"
-					item: "simple_guns_reworked:shotgun_ammo"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "10E0405E57C42E02"
-					item: "simple_guns_reworked:automatic_shotgun"
-					type: "item"
-				}
-			]
-			title: "Automatic Shotgun"
-			x: 4.5d
-			y: 1.5d
-		}
-		{
-			description: ["Reloads the DMR and, oddly, the Sniper too - the Heavy Sniper wants Sniper Ammo instead."]
-			icon: "simple_guns_reworked:rifle_ammo"
-			id: "4437D7E4684579F8"
-			rewards: [
-				{
-					count: 8
-					id: "1CBCA1CF3ECF38A3"
-					item: "simple_guns_reworked:rifle_ammo"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "637A76083780F5A0"
-					item: "simple_guns_reworked:rifle_ammo"
-					type: "item"
-				}
-			]
-			title: "Rifle Ammo"
-			x: 0.0d
-			y: 3.0d
-		}
-		{
-			dependencies: ["4437D7E4684579F8"]
-			description: ["8 rounds of Rifle Ammo. Press R to reload."]
-			icon: "simple_guns_reworked:dmr"
-			id: "5726CFC9AC81F0FF"
-			rewards: [
-				{
-					count: 16
-					id: "3747A7CB36BD5B62"
-					item: "simple_guns_reworked:rifle_ammo"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "0E10E6E1E7F9B21A"
-					item: "simple_guns_reworked:dmr"
-					type: "item"
-				}
-			]
-			title: "DMR"
-			x: 1.5d
-			y: 3.0d
-		}
-		{
-			dependencies: ["5726CFC9AC81F0FF"]
-			description: ["5 rounds - also Rifle Ammo, not Sniper Ammo, despite the name."]
-			icon: "simple_guns_reworked:sniper"
-			id: "5C1C3BF5530BA5AD"
-			rewards: [
-				{
-					count: 16
-					id: "6C7819BC63FB473A"
-					item: "simple_guns_reworked:rifle_ammo"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "36AF90EE5C5FF357"
-					item: "simple_guns_reworked:sniper"
-					type: "item"
-				}
-			]
-			title: "Sniper"
-			x: 3.0d
-			y: 3.0d
-		}
-		{
-			description: ["Reloads only the Heavy Sniper - the regular Sniper actually takes Rifle Ammo."]
-			icon: "simple_guns_reworked:sniper_ammo"
-			id: "402131BBA0FB3640"
+			}
+			id: "7E4DCF0A5CEFC7C0"
 			rewards: [
 				{
 					count: 5
-					id: "51E14E12000A83AB"
-					item: "simple_guns_reworked:sniper_ammo"
+					id: "5C87E8B9312E4500"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:792x57"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
+			subtitle: "Crafting table, recipe in JEI"
 			tasks: [
 				{
 					consume_items: false
-					id: "0E393514349307D4"
-					item: "simple_guns_reworked:sniper_ammo"
+					id: "2D6A91329F95EB99"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:792x57"
+						}
+					}
+					match_nbt: true
 					type: "item"
+					weak_nbt_match: true
 				}
 			]
-			title: "Sniper Ammo"
-			x: 0.0d
-			y: 4.5d
+			title: "8mm Mauser Rounds"
+			x: 7.5d
+			y: 1.5d
 		}
 		{
-			dependencies: ["402131BBA0FB3640"]
-			description: ["5 rounds of real Sniper Ammo this time. Hits harder than the regular Sniper."]
-			icon: "simple_guns_reworked:heavy_sniper"
-			id: "2C198B117C767347"
+			dependencies: ["7E4DCF0A5CEFC7C0"]
+			description: ["A bolt-action rifle, 4 rounds. Slow to work, but each hit does 26 damage."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:kar98"
+				}
+			}
+			id: "1A991062691ACB9D"
 			rewards: [
 				{
 					count: 10
-					id: "351753258E7EA5DE"
-					item: "simple_guns_reworked:sniper_ammo"
+					id: "1F9B7E296A9A7D3D"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:792x57"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
 			tasks: [
 				{
 					consume_items: false
-					id: "4D66B7FAD21727D0"
-					item: "simple_guns_reworked:heavy_sniper"
+					id: "17635E6382F93E03"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:kar98"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "Kar98k"
+			x: 9.0d
+			y: 1.5d
+		}
+		{
+			description: ["4 rounds from 2 copper ingots, 3 gunpowder and a diamond. Feeds the M107."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:50bmg"
+				}
+			}
+			id: "5F3FC0495D6DD502"
+			rewards: [
+				{
+					count: 4
+					id: "44228EB9B88117C0"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:50bmg"
+						}
+					}
 					type: "item"
 				}
 			]
-			title: "Heavy Sniper"
-			x: 1.5d
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "7C796DDD54D87511"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:50bmg"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: ".50 BMG Rounds"
+			x: 7.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["5F3FC0495D6DD502"]
+			description: ["A .50 rifle, 10 rounds of 55 damage, and each round goes on through up to five targets. It weighs 10 kg: holding it slows you down."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:m107"
+				}
+			}
+			id: "28B8F3D9738AF2AF"
+			rewards: [
+				{
+					count: 8
+					id: "4F2B66FB551A901E"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:50bmg"
+						}
+					}
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Supply drops only"
+			tasks: [
+				{
+					consume_items: false
+					id: "093B6E9FF358546A"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:m107"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "M107"
+			x: 9.0d
+			y: 3.0d
+		}
+		{
+			description: ["10 rounds from a copper ingot, 2 gunpowder and 3 iron nuggets. Feeds the M249."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:556x45"
+				}
+			}
+			id: "153434B4A91F1F70"
+			rewards: [
+				{
+					count: 10
+					id: "2D7E4B4B8A9BC8DE"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:556x45"
+						}
+					}
+					type: "item"
+				}
+			]
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "1B50A1DCB904777E"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:556x45"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "5.56x45mm Rounds"
+			x: 7.5d
 			y: 4.5d
 		}
 		{
-			description: ["The Bazooka's ammo, one per reload."]
-			icon: "simple_guns_reworked:rocket"
-			id: "00A564E6563A4B1D"
+			dependencies: ["153434B4A91F1F70"]
+			description: ["A belt-fed machine gun: 75 rounds on full-auto, 7.5 damage a hit. Heavy to hold."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:m249"
+				}
+			}
+			id: "7BF32D566DBBEBA4"
 			rewards: [
 				{
-					count: 2
-					id: "1BB6CD04D0E02772"
-					item: "simple_guns_reworked:rocket"
+					count: 30
+					id: "0A06B5BFC09661FD"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:556x45"
+						}
+					}
 					type: "item"
 				}
 			]
-			shape: "circle"
+			shape: "pentagon"
+			subtitle: "Supply drops only"
 			tasks: [
 				{
 					consume_items: false
-					id: "1ACC2E9BA138E138"
-					item: "simple_guns_reworked:rocket"
+					id: "28CD454CF349534E"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:m249"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "M249"
+			x: 9.0d
+			y: 4.5d
+		}
+		{
+			description: ["10 rounds from a copper ingot, 2 gunpowder, 2 iron nuggets and a gold nugget. Feeds the M134 Minigun."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:308"
+				}
+			}
+			id: "0B14C7945F1C8820"
+			rewards: [
+				{
+					count: 10
+					id: "246BE19CDC5281CF"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:308"
+						}
+					}
 					type: "item"
 				}
 			]
-			title: "Rocket"
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "678BD171231D10BC"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:308"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: ".308 Rounds"
+			x: 7.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["0B14C7945F1C8820"]
+			description: ["It spins up and fires 1,200 rounds a minute, fed straight from the .308 in your inventory: no magazine, no reload. At 15 kg it is the heaviest thing you can hold."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:minigun"
+				}
+			}
+			id: "192AE938BFBD168A"
+			rewards: [
+				{
+					count: 48
+					id: "74CB19E97E55F0DE"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:308"
+						}
+					}
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Supply drops or a Legendary bag only"
+			tasks: [
+				{
+					consume_items: false
+					id: "463AD74BF97C0FA3"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:minigun"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "M134 Minigun"
+			x: 9.0d
+			y: 6.0d
+		}
+		{
+			description: ["One rocket from a TNT and an iron ingot. Feeds the RPG-7."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:rpg_rocket"
+				}
+			}
+			id: "6F42C228C92BBFD3"
+			rewards: [
+				{
+					id: "09CFFAE8C776BC4C"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:rpg_rocket"
+						}
+					}
+					type: "item"
+				}
+			]
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "2330256C5AB6925F"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:rpg_rocket"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "RPG-7 Rockets"
 			x: 0.0d
 			y: 6.0d
 		}
 		{
-			dependencies: ["00A564E6563A4B1D"]
-			description: ["Single-shot - one Rocket loaded per press of R."]
-			icon: "simple_guns_reworked:bazooka"
-			id: "3256332BEFDCB38A"
+			dependencies: ["6F42C228C92BBFD3"]
+			description: ["One rocket per reload, and a blast that hits everything within 3 blocks. Like every explosion here it breaks no blocks, and yours never hurt a player."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:rpg7"
+				}
+			}
+			id: "648B686510A232D6"
 			rewards: [
 				{
 					count: 2
-					id: "2F0B42324F954A1E"
-					item: "simple_guns_reworked:rocket"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "0B64A9CB806B7C97"
-					item: "simple_guns_reworked:bazooka"
-					type: "item"
-				}
-			]
-			title: "Bazooka"
-			x: 1.5d
-			y: 6.0d
-		}
-		{
-			description: ["Reloads the Flame Thrower for 30 charges. Comes back empty - refill it with 2 gunpowder and 2 coal."]
-			icon: "simple_guns_reworked:fuel_tank"
-			id: "00D9C888CB4CD297"
-			rewards: [
-				{
-					id: "6960E752C4CCA008"
-					item: "simple_guns_reworked:fuel_tank"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "0ED85366D4F6B2A6"
-					item: "simple_guns_reworked:fuel_tank"
-					type: "item"
-				}
-			]
-			title: "Fuel Tank"
-			x: 3.0d
-			y: 6.0d
-		}
-		{
-			dependencies: ["00D9C888CB4CD297"]
-			description: ["Doesn't hit directly - it sets whatever it touches on fire instead. Holds 30 charges from a Fuel Tank; reloading hands back the tank empty, ready to refill."]
-			icon: "simple_guns_reworked:flame_thrower"
-			id: "4AA00240AA7AE7B3"
-			rewards: [
-				{
-					id: "40828729EF532566"
-					item: "simple_guns_reworked:fuel_tank"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "1B19CF8F73DA68A8"
-					item: "simple_guns_reworked:flame_thrower"
-					type: "item"
-				}
-			]
-			title: "Flame Thrower"
-			x: 4.5d
-			y: 6.0d
-		}
-		{
-			description: ["Right-click to throw - it explodes on the first thing it hits, wall or mob, no fuse to wait out. Get clear fast."]
-			icon: "simple_guns_reworked:grenade"
-			id: "369E47BBAAAA193F"
-			rewards: [
-				{
-					count: 4
-					id: "544A0AE88C8C59ED"
-					item: "simple_guns_reworked:grenade"
-					type: "item"
-				}
-			]
-			shape: "circle"
-			tasks: [
-				{
-					consume_items: false
-					id: "1DB21AC84C2E27B3"
-					item: "simple_guns_reworked:grenade"
-					type: "item"
-				}
-			]
-			title: "Grenade"
-			x: 6.0d
-			y: 6.0d
-		}
-		{
-			description: ["The Laser Gun's ammo, burned one at a time with no reload. JEI shows a recipe, but it needs glowstone, which turns up nowhere here - in practice it comes in the airdrop crate with the Laser Gun."]
-			icon: "simple_guns_reworked:energized_dust"
-			id: "7CB29CE4A8798C66"
-			rewards: [
-				{
-					count: 8
-					id: "5D950CFFA9B53A55"
-					item: "simple_guns_reworked:energized_dust"
+					id: "30C23F224F7EBBB3"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:rpg_rocket"
+						}
+					}
 					type: "item"
 				}
 			]
 			shape: "pentagon"
-			subtitle: "Airdrop only, in practice"
+			subtitle: "Supply drops only"
 			tasks: [
 				{
 					consume_items: false
-					id: "4C92C827E8BF7A7E"
-					item: "simple_guns_reworked:energized_dust"
+					id: "73D8BC0943A3B68A"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:rpg7"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "RPG-7"
+			x: 1.5d
+			y: 6.0d
+		}
+		{
+			description: ["2 grenades from a TNT and a copper ingot. Feeds the M320."]
+			icon: {
+				Count: 1
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:40mm"
+				}
+			}
+			id: "7D28B3A0B36FA692"
+			rewards: [
+				{
+					count: 2
+					id: "0E1961F6DC8A1537"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:40mm"
+						}
+					}
 					type: "item"
 				}
 			]
-			title: "Energized Dust"
+			subtitle: "Crafting table, recipe in JEI"
+			tasks: [
+				{
+					consume_items: false
+					id: "35E081458AC51A08"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:40mm"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "40mm Grenades"
+			x: 3.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["7D28B3A0B36FA692"]
+			description: ["A single-shot grenade launcher: a weaker blast than the RPG-7, but twice as wide."]
+			icon: {
+				Count: 1
+				id: "tacz:modern_kinetic_gun"
+				tag: {
+					GunId: "tacz:m320"
+				}
+			}
+			id: "2FAE24BDE2E1C94A"
+			rewards: [
+				{
+					count: 4
+					id: "4858A1120ED55F56"
+					item: {
+						Count: 1
+						id: "tacz:ammo"
+						tag: {
+							AmmoId: "tacz:40mm"
+						}
+					}
+					type: "item"
+				}
+			]
+			shape: "pentagon"
+			subtitle: "Supply drops only"
+			tasks: [
+				{
+					consume_items: false
+					id: "44A912E415E0703F"
+					item: {
+						Count: 1
+						id: "tacz:modern_kinetic_gun"
+						tag: {
+							GunId: "tacz:m320"
+						}
+					}
+					match_nbt: true
+					type: "item"
+					weak_nbt_match: true
+				}
+			]
+			title: "M320"
+			x: 4.5d
+			y: 6.0d
+		}
+		{
+			description: ["Right-click to throw one; it bursts a moment later. Your bombs, like all your explosions, never hurt a player or break a block."]
+			icon: "supplementaries:bomb"
+			id: "66DB49825B8F5E10"
+			rewards: [
+				{
+					count: 2
+					id: "552E645FB0B3D571"
+					item: "supplementaries:bomb"
+					type: "item"
+				}
+			]
+			subtitle: "Armory crates, stashes and supply drops"
+			tasks: [
+				{
+					consume_items: false
+					id: "6E6457A15700BDBD"
+					item: "supplementaries:bomb"
+					type: "item"
+				}
+			]
+			title: "Bombs"
 			x: 0.0d
-			y: 7.5d
-		}
-		{
-			dependencies: ["7CB29CE4A8798C66"]
-			description: ["No magazine at all - burns one Energized Dust straight from your inventory per shot, no reload needed."]
-			icon: "simple_guns_reworked:laser_gun"
-			id: "7D2C2E4D1A781FE6"
-			rewards: [
-				{
-					count: 8
-					id: "3B2640EEE5ABB0B8"
-					item: "simple_guns_reworked:energized_dust"
-					type: "item"
-				}
-			]
-			shape: "pentagon"
-			subtitle: "Airdrop only"
-			tasks: [
-				{
-					consume_items: false
-					id: "042536060B998E9D"
-					item: "simple_guns_reworked:laser_gun"
-					type: "item"
-				}
-			]
-			title: "Laser Gun"
-			x: 1.5d
-			y: 7.5d
-		}
-		{
-			description: ["The Potato Cannon's only ammo, one per reload."]
-			icon: "simple_guns_reworked:charged_potato"
-			id: "7B94CCF8C7C7D8C4"
-			rewards: [
-				{
-					count: 4
-					id: "4945C5C20598830F"
-					item: "simple_guns_reworked:charged_potato"
-					type: "item"
-				}
-			]
-			shape: "pentagon"
-			subtitle: "Needs blaze powder from far stashes"
-			tasks: [
-				{
-					consume_items: false
-					id: "632036AC646EC22A"
-					item: "simple_guns_reworked:charged_potato"
-					type: "item"
-				}
-			]
-			title: "Charged Potato"
-			x: 3.0d
-			y: 7.5d
-		}
-		{
-			dependencies: ["7B94CCF8C7C7D8C4"]
-			description: ["Single-shot - one Charged Potato loaded per press of R."]
-			icon: "simple_guns_reworked:potato_cannon"
-			id: "2C543CA93035356F"
-			rewards: [
-				{
-					count: 4
-					id: "5D9E6D8A4D7028E8"
-					item: "simple_guns_reworked:charged_potato"
-					type: "item"
-				}
-			]
-			shape: "pentagon"
-			subtitle: "Airdrop only"
-			tasks: [
-				{
-					consume_items: false
-					id: "0752DE2A4C153972"
-					item: "simple_guns_reworked:potato_cannon"
-					type: "item"
-				}
-			]
-			title: "Potato Cannon"
-			x: 4.5d
-			y: 7.5d
-		}
-		{
-			description: ["No ammo item needed - just click for a quick burst. The simplest gun there is."]
-			icon: "simple_guns_reworked:minguguuggn"
-			id: "08BD3E34907DDE23"
-			shape: "pentagon"
-			subtitle: "Airdrop or Legendary bag only"
-			tasks: [
-				{
-					consume_items: false
-					id: "477E78461E626643"
-					item: "simple_guns_reworked:minguguuggn"
-					type: "item"
-				}
-			]
-			title: "Minigun"
-			x: 6.0d
 			y: 7.5d
 		}
 	]
-	subtitle: ["Simple Guns: reworked - each ammo, and the guns it feeds"]
+	subtitle: ["Every round, and the guns it feeds"]
 	title: "The Arsenal"
 }

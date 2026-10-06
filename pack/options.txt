@@ -3,3 +3,6 @@ key_key.ftbquests.quests:key.keyboard.tab
 key_gui.xaero_new_waypoint:key.keyboard.k
 key_justzoom.keybinds.keybind.zoom:key.keyboard.z
 key_gui.xaero_enlarge_map:key.keyboard.unknown
+key_key.tacz.refit.desc:key.keyboard.i
+key_key.tacz.fire_select.desc:key.keyboard.x
+key_key.tacz.crawl.desc:key.keyboard.unknown

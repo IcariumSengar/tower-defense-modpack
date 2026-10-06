@@ -98,6 +98,18 @@ BlockEvents.broken(TRAP_IDS, (event) => {
   if (filtered.length !== list.length) setTrapRegistry(data, filtered)
 })
 
+// The Spike Trap only drops for a pickaxe, the vanilla rule for metal blocks,
+// so one broken by hand or with a sword was lost with its five iron ingots.
+// This drops it for any tool. A creative player gets no drop, as with any
+// block.
+BlockEvents.broken('simply_traps:spike_trap', (event) => {
+  var player = event.player
+  if (!player || player.isCreative()) return
+  var block = event.getBlock()
+  if (player.hasCorrectToolForDrops(block.getBlockState())) return
+  event.getLevel().getServer().runCommandSilent(`summon minecraft:item ${block.getX() + 0.5} ${block.getY() + 0.25} ${block.getZ() + 0.5} {Item:{id:"simply_traps:spike_trap",Count:1b}}`)
+})
+
 ServerEvents.tick((event) => {
   var level = event.server.getLevel('minecraft:overworld')
   if (!level) return

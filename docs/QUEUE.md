@@ -42,7 +42,7 @@ sub-decision.
 
 ## Ready to build (held until the user says so)
 
-Nothing queued. Quest book v4 Phases 1-4 are built (FEATURES.md).
+Nothing queued.
 
 ## Awaiting real-play confirmation
 
@@ -62,6 +62,45 @@ server — nobody has actually confirmed these work in a real session yet.
      Up, Special Delivery, Wear and Tear and Past the Line tick on their events;
      the hidden quests (Fend for Yourself, Something Below, Corpse Run)
      appear only after their moment; field tests and Challenges progress.
+
+- **Gun mod swap: Simple Guns -> TaCZ** (2026-10-06, live with a fresh
+  world, friend zip 0.2.7; spec: FEATURES.md "Gun mod swap plan
+  (2026-10-05)"). In play, check:
+  1. A supply drop gives a TaCZ gun with its rounds (sometimes an
+     attachment); it fires, reloads (R) and switches modes (X).
+  2. I opens the attachment screen on a gun; Z still zooms, G still opens
+     Curios.
+  3. An RPG-7 or M320 blast next to you and your walls: no damage to you,
+     no broken blocks, dropped items survive.
+  4. Ammo crafts at a crafting table (JEI), and Arsenal quests complete
+     on pickup with their icons showing.
+  5. On the dedicated server: everyone can shoot right after joining and
+     after dying (TaCZ issue #228).
+  6. Guns feel right against waves 5-10 (damage multiplier is 1.0; the
+     old +50% script is gone).
+
+- **Playtest batch B, 2026-10-05** (IE turrets + explosions; spec:
+  FEATURES.md "2026-10-05 playtest batch B"). In play, check:
+  1. JEI shows the Turntable with planks and the Wooden Grip with sticks.
+  2. A powered, switched-on Gun Turret with an empty ammo slot fires at
+     zombies, and no casings pile up in its screen. (Sandbox-verified
+     2026-10-06: killed a zombie in ~1 s from an empty slot, no casings.)
+  3. A Chemthrower Turret with an empty tank sprays burning creosote.
+     (Sandbox-verified 2026-10-06: zombie set alight and killed in ~2 s,
+     tank still empty.)
+  4. A Demolition Zombie's TNT next to your walls hurts you but leaves
+     every block, and starts no fire.
+
+- **Bot playtest fixes, 2026-10-06** (spec: FEATURES.md "2026-10-06 bot
+  playtest fixes"). In play, check:
+  1. Die during a wave and stay on the death screen until the turrets
+     clear it: the wave's quest still completes.
+  2. An existing world whose Act II never opened unlocks within a second
+     of logging in.
+  3. Standing in your own stakes or spikes costs no health; zombies in
+     them still take damage.
+  4. A Spike Trap broken by hand drops itself.
+  5. Dying to a zombie raises no zombie named after you.
 
 - **Playtest batch, 2026-09-30** (13 items from the first session on the
   bug-sweep build). Bag opens were failing (a sweep regression that also
@@ -243,7 +282,8 @@ server — nobody has actually confirmed these work in a real session yet.
   now 0.2.2 (friends need Backpacks to join the server).
   - **Guns:** every Simple Guns projectile's base damage x1.5 on spawn
     (`gun_damage_bump.js`). Sandbox: a gun bullet read 3.0 vs a vanilla
-    arrow's 2.0. Blasts are unchanged.
+    arrow's 2.0. Blasts are unchanged. (Superseded by the TaCZ swap,
+    2026-10-06: the script is gone.)
   - **Backpacks:** pinned to 3.26.3.2157, because the newest build
     crashes against our Sophisticated Core (see MODS.md).
   - **Backpack settings:** mob backpack spawns and chest-loot injection

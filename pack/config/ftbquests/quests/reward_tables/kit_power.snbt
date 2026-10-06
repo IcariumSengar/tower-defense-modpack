@@ -13,7 +13,10 @@
 		{
 			item: {
 				Count: 16
-				id: "simple_guns_reworked:rifle_ammo"
+				id: "tacz:ammo"
+				tag: {
+					AmmoId: "tacz:762x39"
+				}
 			}
 		}
 		{

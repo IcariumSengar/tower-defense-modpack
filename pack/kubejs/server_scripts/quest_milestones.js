@@ -11,7 +11,8 @@
 // world_state.js), and every player gets it from the poll below, including
 // players who were offline when it happened or join later. td_qp_<key> in the
 // player's persistentData records that the player has been given a milestone,
-// shared or their own.
+// shared or their own, and once per server session qmVerifyPlayer() sends
+// again any of those that FTB Quests has no record of.
 //
 // QM_TASKS must match the custom task ids in
 // config/ftbquests/quests/chapters/campaign.snbt.
@@ -87,15 +88,70 @@ function qmCompleteShared(server, data, key) {
   for (var i = 0; i < players.length; i++) qmCompleteForPlayer(players[i], key)
 }
 
-// Once per player. change_progress's players-only argument rejects a raw UUID
-// (vanilla treats it as a selector that may match non-players), so the command
-// runs as the player and targets @s.
+// Once per player.
 function qmCompleteForPlayer(player, key) {
   var flag = 'td_qp_' + key
   var pdata = player.persistentData
   if (pdata.getBoolean(flag)) return
   pdata.putBoolean(flag, true)
-  player.getServer().runCommandSilent('execute as ' + player.uuid + ' run ftbquests change_progress @s complete ' + QM_TASKS[key])
+  qmSendCompletion(player, key)
+}
+
+// The player is targeted by name, which resolves through the player list.
+// change_progress's players-only argument rejects a raw UUID (vanilla treats
+// it as a selector that may match non-players), and `execute as <uuid>` finds
+// nobody while the player is on the death screen: a dead player leaves the
+// world a second after dying. That lost every milestone that fired while its
+// player was dead, such as a wave the turrets cleared.
+function qmSendCompletion(player, key) {
+  player.getServer().runCommandSilent(`ftbquests change_progress ${player.getName().getString()} complete ${QM_TASKS[key]}`)
+}
+
+// Once per player per server session: a milestone the player has been given
+// (td_qp_<key>) whose task has no progress in FTB Quests is sent again. That
+// repairs saves that lost milestones on the death screen. A task with progress
+// but not completed is left alone: its quest still has dependencies open, and
+// FTB Quests completes it when they are done.
+var qmVerifiedPlayers = {}
+var qmServerQuestFileCls = null
+
+function qmVerifyPlayer(player) {
+  var uuid = `${player.uuid}`
+  if (qmVerifiedPlayers[uuid]) return
+  try {
+    if (!qmServerQuestFileCls) qmServerQuestFileCls = Java.loadClass('dev.ftb.mods.ftbquests.quest.ServerQuestFile')
+    var file = qmServerQuestFileCls.INSTANCE
+    if (!file) return // not loaded yet; the next poll retries
+    qmVerifiedPlayers[uuid] = true
+    var pdata = player.persistentData
+    var keyByTaskId = {}
+    var given = 0
+    Object.keys(QM_TASKS).forEach((key) => {
+      if (!pdata.getBoolean('td_qp_' + key)) return
+      keyByTaskId[QM_TASKS[key]] = key
+      given++
+    })
+    if (given === 0) return
+    var teamData = file['getOrCreateTeamData(net.minecraft.world.entity.Entity)'](player)
+    var resent = []
+    // Task ids are 64-bit, past JS number precision, so tasks are matched by
+    // their hex code string.
+    file.getAllChapters().forEach((chapter) => {
+      chapter.getQuests().forEach((quest) => {
+        quest.getTasks().forEach((task) => {
+          var key = keyByTaskId[`${task.getCodeString()}`]
+          if (!key) return
+          if (teamData.isCompleted(task) || Number(teamData.getProgress(task)) > 0) return
+          qmSendCompletion(player, key)
+          resent.push(key)
+        })
+      })
+    })
+    if (resent.length > 0) console.log(`[quest_milestones] re-sent ${resent.join(', ')} to ${player.getName().getString()}`)
+  } catch (e) {
+    qmVerifiedPlayers[uuid] = true
+    console.log(`[quest_milestones] milestone check failed for ${player.getName().getString()}: ${e}`)
+  }
 }
 
 // Raises td_q_lastClearedWave (also read by playtest_starter_kit.js). A wave is
@@ -157,6 +213,7 @@ ServerEvents.tick(function (event) {
     // td_amuletWorn lives on the player (set by startup_scripts/amulet.js).
     if (player.persistentData.getBoolean('td_amuletWorn')) qmCompleteForPlayer(player, 'amuletWorn')
     qmCheckPastLine(player, level, data)
+    qmVerifyPlayer(player)
   }
 })
 

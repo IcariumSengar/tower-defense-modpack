@@ -5370,7 +5370,8 @@ or traps (bouncing betty etc)"). Decompiled `GrenadeProjectile`/
 - **Block damage** was already off by the mod's own shipped default
   (`canGrenadesDestroyBlocks`/`canRocketsDestroyBlocks`/
   `canRailgunDestroyBlocks` all default `false`) - pinned explicitly in
-  a new `pack/defaultconfigs/omtreborn-common.toml` anyway, so a future
+  a new `pack/defaultconfigs/omtreborn-common.toml` (moved to
+  `pack/config/` 2026-10-05) anyway, so a future
   mod update can't silently reopen it (same precedent as
   `securitycraft-server.toml`'s pinned `sentry_bullet_damage`). Rocket
   Turret's own `explode()` never calls a vanilla `Level#explode` at all
@@ -9748,7 +9749,9 @@ PLAYTESTING.md "Ask-audit batch".
   - If the exploder is null or a player, the blast loses all block damage
     and every player is pruned from its hit list; mobs are still hurt.
   - Enemy blasts (exploder is a mob: the Demolition Zombie's TNT and its
-    burning self-destruct) are untouched.
+    burning self-destruct) are untouched. (Superseded 2026-10-05: every
+    blast loses its block damage; enemy blasts still hurt players. See
+    "2026-10-05 playtest batch B".)
   - Covered: I.M.S. bombs, bazooka, grenades, charged potato, every
     SecurityCraft mine, OMT grenade, IE HE and gunpowder barrel,
     Supplementaries bombs, vanilla TNT, beds and anchors.
@@ -10018,6 +10021,307 @@ Decisions came from one question round.
     (`td_pedestalTakenItems`) and `ServerEvents.tick`, which KubeJS posts
     after the write-back, gives it once the screen is closed. Pickups are
     refused while the screen is open, since they would be wiped too.
+
+## 2026-10-05 playtest batch (5 items)
+
+*live in the repo, not yet seen in real play; not synced, because the
+user's game was running from the instance.* From a session in world
+"New World". The rocket turret cause was read from the save (block
+entities in r.-36.-18.mca), not guessed. Items 4 and 5 were decided in
+one question round.
+
+1. **Airdrop beacon is buried.** `wave_airdrop.js` puts the beacon in the
+   block the crate lands on and its 3x3 reinforced-iron base in the layer
+   under that, so only the beam shows. The crate block's light-block
+   value is 0 (`AirdroplargeBlock.getLightBlock`), so the beam passes
+   through it. The replaced blocks are saved as setblock strings
+   (`td_airdropBeaconRestore`) and put back when the crate is looted. A
+   site where the beacon would show (a non-opaque block beside it or
+   under it, or a block entity) gets no beacon; the waypoint still goes
+   out. A beacon placed above a crate by the old code is still cleared to
+   air.
+2. **Sentry mode is locked to hostiles only.** `sentry_default_mode.js`
+   cancels the right-click that would cycle the mode (empty hand or any
+   item that has no other use on a Sentry; sneaking, modules, the
+   Universal Block Modifier and the Owner Changer still work), and any
+   Sentry not in AGGRESSIVE_H is switched when it spawns or loads.
+   `client_scripts/sentry_mode_lock.js` cancels the same click on the
+   client so it doesn't show a fake mode change. The Sentry Remote Access
+   Tool lost its recipe. Quest text updated.
+3. **"No Cables Needed" (Flux Plug quest) removed.** Point of Use now
+   depends on Wired Different, which already explains the generator's
+   Plug.
+4. **Flux Point = 2 Flux Cores + a Redstone Block** (stock: 4 Cores), so
+   18 gold instead of 36 per Point. Recipe `kubejs:loot_aligned/flux_point`;
+   the stock wipe recipe stays.
+5. **Rocket Turrets idle.** Both bases had 150,000 FE but `active: 0` (the
+   Configure screen's Active/Inactive button) and no ammo. An inactive
+   base's turrets skip targeting entirely. Fixes:
+   - `omtreborn_base_always_active.js` switches bases back on every 2 s.
+     It learns bases on place and right-click, and scans the base's
+     forceload square once per server start.
+   - Turrets run on power alone (user's choice): `doTurretsNeedAmmo =
+     false`. `omtreborn-common.toml` moved from `defaultconfigs/` to
+     `config/`, because Forge copies a defaultconfigs file only when the
+     config is missing, so existing installs never got it.
+   - Grenade/Rocket ammo recipes removed. Quest text no longer mentions
+     ammo; ammo rewards became Ferronite ingots and, for Fire for Effect,
+     a Flux Point.
+
+## 2026-10-05 playtest batch B (4 items)
+
+*live in the repo, not yet seen in real play.* A second batch the same
+day, handled in a parallel session.
+
+1. **IE turret parts use plain wood.** The only treated wood in either
+   turret's recipe tree was the Turntable (1 treated plank) and the
+   Wooden Grip (5 treated sticks; it goes into the Revolver and the
+   Chemthrower). `tier3_turret_recipes.js` re-adds both with their stock
+   patterns on `#minecraft:planks` and `minecraft:stick`. The
+   planks+coal treated-wood recipe stays for the rest of IE.
+2. **Gun mod replacement**: research only. Plan in "Gun mod swap plan
+   (2026-10-05)" below. Nothing changed yet.
+3. **IE turrets need no ammo.** Jar patch (MODS.md, patched-jars
+   section): an empty Gun Turret fires free Casull rounds and leaves no
+   casings; an empty Chemthrower Turret sprays free creosote, lit by the
+   Ignite default `tier3_turret_recipes.js` already sets. Loaded ammo or
+   fluid is fired first. Flux and the redstone signal are still needed.
+   Point and Shoot, Liquid Fire and Overwatch lost their ammo text; their
+   Casull rewards became steel ingots (4 and 8). Tooltips updated.
+4. **No explosion breaks blocks.** The base damage came from the
+   Demolition Zombie (Undead Nights): its thrown TNT and its burning
+   self-destruct were the one blast type `explosion_player_safety.js`
+   deliberately left alone. That script now empties every blast's block
+   list first, which also means no blast lights fires (vanilla only
+   places explosion fire inside the block list). Enemy blasts still hurt
+   players; friendly ones still spare them. The pedestal and airdrop
+   beacon guards became redundant and were removed. ESM's own TNT drops
+   stay off (`demolitionMobs = []`).
+
+## 2026-10-06 bot playtest fixes (4 items)
+
+*live in the repo. Items 1-3 checked in the client sandbox, item 4
+config only; none seen in real play yet.* From the bot playtest of
+2026-10-05 (Normal, singleplayer: waves 1-8 and Horde 9 cleared, the
+pedestal fell on Horde 10). Log and tooling: `D:\mc-client-sandbox\autopilot\`.
+Item 1 was read from the playtest save's FTB Quests timestamps and the
+decompiled FTB Quests and vanilla classes. Items 2-4 were decided in one
+question round.
+
+1. **Milestones lost on the death screen.** `quest_milestones.js` sent
+   each milestone as `execute as <uuid> run ftbquests change_progress @s
+   ...`. A dead player leaves the world a second after dying
+   (`LivingEntity.tickDeath` removes it at deathTime 20) and comes back
+   only on respawn, so the selector found nobody and the command did
+   nothing. td_qp_<key> was already set, so it was never sent again. In
+   the playtest, wave 1 cleared while the player was on the death screen:
+   "Wave One, Cleared" never completed, which held up Spoils of War, Open
+   It and Act II, including the amulet. Now the command targets the player
+   by name (looked up in the player list, dead or alive). Once per player
+   per server session, `qmVerifyPlayer()` sends again any milestone the
+   player was given that FTB Quests has no progress for. That repairs
+   saves that already lost one.
+   Not a bug, although the first report counted it as one: in flexible
+   progression, a milestone that fires before its quest's dependencies
+   are done is kept as task progress, and FTB Quests completes it when the
+   last dependency completes. Open It did exactly that in the save. "Find
+   the Pedestal" only stuck because the playtest ticked Borrowed Time with
+   a quest-level `change_progress`. That marks the quest complete without
+   running FTB's check of the quests that depend on it.
+2. **Simply Traps spare players.** The Spike Trap, Wooden Stake and Stake
+   Wall hurt anything whose hitbox overlaps them, even by a sliver. The bot
+   died three times to its own ring. New `simply_traps_player_safety.js`
+   cancels a generic hit (the traps' damage type, with no attacker) on a
+   player whose hitbox covers one of those blocks. Mobs are hurt as
+   before. Quest text updated: Cheap and Cheerful, Better Than Nothing, and
+   Friendly Fire in Field Notes.
+3. **Spike Traps always drop.** Like other metal blocks, a Spike Trap
+   dropped only for a pickaxe, so one broken by hand or with a sword lost
+   its 5 iron. `trap_durability.js` now drops it for any tool. A pickaxe
+   drops it as before, and creative gets nothing. Wear can't be reset this
+   way: any player break already drops the trap's wear entry.
+4. **Epic Siege Mod infection off** (`infectiousZombies = false`). A
+   player killed by a zombie raised a persistent zombie named after them.
+   It wasn't a wave mob: never steered, counted or bagged. It also copied
+   the killer's name, so the boss made "<player> (The Reaper)".
+
+## Gun mod swap plan (2026-10-05)
+
+*live 2026-10-06 with a fresh world (instance, dedicated server, friend
+zip 0.2.7); see "Build notes" at the end of this section.* Ask: "research a better
+gun mod and come up with a plan to swap it out of the pack". Research came from the platforms' APIs, the
+downloaded jars' `mods.toml`, a decompile, and a static check of every
+Forge/Minecraft reference against the server's 47.4.10 jars (it can't
+see client-only classes or mixin targets, so only a boot proves the
+Forge floor).
+
+**Candidates**
+
+| Mod | Latest 1.20.1 Forge | Forge range | New deps | Jar | Items | World systems of its own |
+|---|---|---|---|---|---|---|
+| Simple Guns: reworked (current) | 1.9.9 (2026-04-14) | runs | none | 0.7 MB | plain ids, 16 guns | none |
+| **Timeless and Classics Zero (TaCZ)** | 1.1.8-hotfix2 (2026-10-02) | `[46,)` | none (libs bundled) | 57.5 MB | one id `tacz:modern_kinetic_gun` + NBT `GunId`; ammo `tacz:ammo` + `AmmoId` | none (one bonus-chest gun, a 3-gunpowder recipe) |
+| Vic's Point Blank | 2.2.0 (2026-09-11) | `[47,)`, GeckoLib 4.4.7+ (pack has 4.8.4) | none | 21.4 MB | plain ids, 61 guns | gunmetal mob drops 35%, Arms Dealer village house (both on by default) |
+| Superb Warfare | 0.8.9.2 | `[47,)` | Cloth Config, Ponder, Flywheel | 42 MB | - | vehicles, worldgen, loot modifiers |
+| Just Enough Guns / Scorched Guns 2 (CGM forks) | 0.14.5 / 0.5.5 (2025-11) | `[46,48)` | Framework | 10-19 MB | per-gun ids | gunner mobs, supply drops, ores, raids |
+
+MrCrayfish's Gun Mod has no 1.20.1 build (last is 1.19.4). Guns Without
+Roses and Musket Mod are tiny but have fewer guns than Simple Guns.
+
+**Recommendation: TaCZ.** Runner-up: Point Blank.
+- TaCZ adds no mobs, worldgen, structures or villagers, and no new
+  dependencies. Its 1.20.1 Forge line is the main one, actively updated
+  (MR 31.7M + CF 37.6M downloads, GPL-3).
+- Damage is a server config value (`DamageBaseMultiplier` in
+  `tacz-server.toml`, bullets and blasts), so `gun_damage_bump.js` goes.
+- Native KubeJS events (`TimelessGunEvents`: hurt/kill/shoot) and a
+  recipe schema.
+- It resets mob i-frames per hit, so full-auto fire and every shotgun
+  pellet land on a horde.
+- Its blasts fire Forge's Detonate event with the bullet as source, and
+  vanilla follows a projectile to its owner, so `explosion_player_safety.js`
+  sees the player and treats the blast as friendly. Backstop in
+  `tacz-common.toml`: `ExplosiveAmmoDestroysBlock=false`,
+  `DestroyGlass=false`, `IgniteBlock=false`.
+- Costs: 80x the jar size and a heavy client (bedrock models, Lua gun
+  scripts); a server mixin ticks gun state on every LivingEntity (about
+  10 calls + 8 capability lookups per mob per tick, unmeasured); every
+  gun is NBT, so loot needs `set_nbt` and quests need NBT matching (both
+  supported); open server issues #228/#257 (can't shoot until a dimension
+  change) involve hybrid servers or plugins, so probably not ours, but
+  test it. The default gunpack has no flamethrower, laser, potato cannon
+  or hand grenade.
+- Point Blank instead if TaCZ fails the FPS bench: plain item ids (almost
+  drop-in loot/quests), hitscan guns (no bullet entities); needs
+  `itemDropChance=0`, `armsDealerHouse=0`,
+  `explosionDestroyBlocksEnabled=false` and a damage boost (glock 3.5);
+  closed source, no KubeJS hooks.
+
+**TaCZ swap, file by file**
+- `packwiz remove simple-guns-reworked`; add TaCZ (CF 1028108, file
+  9037989) side=both; `git diff pack/mods` after (the export-drop
+  lesson). The default gunpack unpacks to `<gameDir>/tacz/` on each
+  launch; don't commit it.
+- Airdrop tables (`kubejs:chests/airdrop/*`, 15 files): same per-gun
+  shape, NBT via `set_nbt`. `GunFireMode` must be uppercase and one of
+  the gun's own modes. Example:
+  `{"type":"minecraft:item","name":"tacz:modern_kinetic_gun","functions":[{"function":"minecraft:set_nbt","tag":"{GunId:\"tacz:m870\",GunFireMode:\"SEMI\"}"}]}`
+  plus `tacz:ammo` with `{AmmoId:\"tacz:12g\"}` and `set_count`.
+- Proposed roster: pistol `glock_17` (9mm), revolver `rhino357` or
+  `m1911`, SMG `hk_mp5a5` (9mm), tommy gun `ump45` (.45), shotgun `m870`,
+  double barrel `db_short`, auto shotgun `aa12` (12g), DMR `sks_tactical`
+  and the dead assault rifle slot `ak47` (7.62x39), sniper `kar98`, heavy
+  sniper `m107` (.50), minigun `minigun` (.308 from inventory, so its
+  table needs ammo now), bazooka `rpg7`, potato cannon `m320` (40mm).
+  Laser and flamethrower: no equivalent. Grenades become
+  `supplementaries:bomb` (already in the pack, already friendly).
+- `scav_ammo.json`, `scav_armory.json`, `wave_airdrop.json` pool 4,
+  bountybags `legendary.json` (minigun + .308): same NBT pattern.
+- `structure_loot_progression.js`: an `nbt` field per PRIZE_POOL gun,
+  passed as `Item.of(item, count, nbt)` (SNBT string from Rhino
+  unverified).
+- Delete `gun_damage_bump.js`; `DamageBaseMultiplier` 1.0 in
+  `pack/defaultconfigs/tacz-server.toml`, tuned after a playtest, taking
+  the earlier +50% into account. The existing world needs the server's
+  `world/serverconfig` copy edited by hand.
+- `tier3_loot_aligned_recipes.js`: drop the Simple Guns block (Fuel
+  Tank, shrapnel swap); remove `tacz:gunpowder`; the rest depends on the
+  crafting decision.
+- Quests: rewrite `ARSENAL`, the two kit tables and the `delivery`
+  reward in `build_v4.py`. Tasks match NBT as a subset:
+  `item:{id:"tacz:modern_kinetic_gun",Count:1b,tag:{GunId:"tacz:glock_17"}}`,
+  `match_nbt:true, weak_nbt_match:true`. New controls in the text (left
+  fire, right aim, R reload, G fire mode, Z attachments, V melee, C
+  crawl).
+- `pack/options.txt`: TaCZ's attachment key Z collides with Just Zoom;
+  rebind one.
+- Comment-only: `bounty_kills.js`, `field_tests.js`,
+  `sentry_combat_feedback.js`, `explosion_player_safety.js`. Docs: MODS.md
+  row, the FEATURES.md gun entries, PLAYTESTING.md, QUEUE.md.
+
+**Decided 2026-10-05 (one question round)**
+1. **TaCZ**, gated on the FPS bench; Point Blank is the fallback.
+2. **Guns loot-only, ammo craftable** (today's model): remove the Gun
+   Smith Table's gun recipes and `tacz:gunpowder`, keep ammo recipes.
+3. **Fresh world**: the swap ships with the next new world; no
+   converter. The current world keeps Simple Guns until then.
+4. **Fill the two lost slots**: flamethrower -> `m249` (5.56x45, 75-round
+   belt, auto, 7.5 dmg, 750 rpm); laser -> `deagle_golden` (.357, 9
+   rounds, semi, 12 dmg). Both read from the jar's gun data; swap the
+   picks at build time if they play badly.
+
+Still open, smaller: attachments (craft, loot or none),
+`WeightSpeedMultiplier` (default slows 1.5%/kg), and `EnableCrawl`
+(crawling through 1-block gaps could cheese hordes).
+
+**Verification**: full mod-set boot on 47.4.10 (gunpack scan, no loot or
+recipe errors); `/loot give` each airdrop table over RCON and read the
+NBT; fire, reload and switch modes on every gun in the client sandbox;
+RPG/M320 next to a player, blocks, the pedestal and dropped items (no
+damage to any); kill times at waves 5 and 10 against today's guns;
+Arsenal tasks complete on pickup and icons render; `bench_run.sh` (120
+mobs) while firing, against the current baseline, plus server TPS in a
+wave (this decides TaCZ vs Point Blank); two clients on the dedicated
+server shooting after join, death and a dimension change; no key
+conflicts.
+
+**Build notes (2026-10-06, after "build it").** Second question round:
+attachments loot-only, weight slowdown kept (TaCZ default 1.5%/kg),
+crawl off.
+- Mods: `packwiz remove simple-guns-reworked`; TaCZ added
+  (`timeless-and-classics-zero.pw.toml`, CF 1028108 / file 9037989,
+  side=both, sha1 5c2f72df..., no other mod touched).
+- Loot: the 15 per-gun airdrop tables are now named by TaCZ gun id
+  (`kubejs:chests/airdrop/glock_17` ...), each the gun (`set_nbt` GunId +
+  GunFireMode), its ammo, and a 35% roll for one attachment that gun
+  accepts (from the gunpack's allow_attachments tags). Vanilla clamps a
+  `set_count` above the item's stack size instead of splitting it, so
+  the minigun, M249, RPG-7 and M320 roll their ammo pool 1-3 times with
+  counts inside one stack. `wave_airdrop.json` keeps its weights; its
+  grenade pool is Supplementaries bombs. `scav_ammo`/`scav_armory`
+  swap weight for weight (armory also gets the 10 curated attachments
+  at weight 1). The Legendary bag's minigun is a `loot_table` entry
+  pointing at the minigun airdrop table, so it comes with .308.
+- `structure_loot_progression.js`: PRIZE_POOL guns carry an SNBT `nbt`
+  passed as `Item.of(item, count, nbt)` (probe-verified in Rhino).
+- Recipes (`tier3_loot_aligned_recipes.js`): every
+  `tacz:gun_smith_table_crafting` recipe removed (0 left), plus the
+  three workbenches and `tacz:gunpowder`; 11 shapeless ammo recipes
+  `kubejs:loot_aligned/ammo_*` (copper ingot + gunpowder + nuggets;
+  shells take Shrapnel; .50 BMG a diamond; rockets/40mm TNT). Ammo boxes
+  stay.
+- `gun_damage_bump.js` deleted; `DamageBaseMultiplier` 1.0.
+- Configs: `pack/config/tacz-common.toml` (ExplosiveAmmoDestroysBlock,
+  DestroyGlass, IgniteBlock off), `pack/defaultconfigs/tacz-server.toml`
+  (EnableCrawl off; new worlds only). Keys in `pack/options.txt`:
+  attachments I (Z is Just Zoom), fire mode X (G is Curios), crawl
+  unbound.
+- Quests: Arsenal rebuilt (29 quests: Gun Basics, Kitted Out, one per
+  round and per gun, Bombs); kit tables and Special Delivery reward 9mm
+  / 7.62x39. Tasks match `GunId`/`AmmoId` with `match_nbt` +
+  `weak_nbt_match`.
+- Sandbox-verified (server, fresh world): boots on 47.4.10, 54/54
+  scripts, 0 failed recipes, no loot-table errors; every airdrop,
+  scav, wave and Legendary table rolled over RCON with the right NBT.
+- FPS bench (`bench_run.sh`, 120 mobs, 1920x1080 off-screen, median
+  FPS): Simple Guns SMG in hand 101, TaCZ MP5 in hand 85, TaCZ empty
+  hand 98. TaCZ itself is nearly free; drawing its 3D gun model in first
+  person costs ~15%. The user kept TaCZ and asked to try "TaCZ:
+  Accelerated" (Modrinth `tacza` 1.2.0, closed source, needs Quantified
+  API 2.2.0, a 9.5 MB library that starts with developer mode, a local
+  port and Vulkan/OpenCL compute on): median 41 and 38.5 FPS in two runs,
+  half of plain TaCZ. Rejected; not in the pack.
+- Deployed 2026-10-06: TaCZ jar into the instance (Simple Guns jar out),
+  sync_instance.sh + sync_server.sh (hashes match repo -> instance ->
+  server; the server's mods are byte-identical to the sandbox that booted
+  clean), the server's old world renamed `world_simpleguns_backup_20261006`
+  so a new one generates, pack 0.2.7 friend zip (`packwiz cf export
+  --side both`: TaCZ in the manifest, no Simple Guns, key binds in
+  overrides/options.txt).
+- Not verified: firing, reloading and damage in a real client (posted
+  mouse clicks don't reach the sandbox), RPG/M320 blast safety in play
+  (config + explosion_player_safety.js cover it on paper), the
+  dedicated-server shooting issue #228, quest icons in the book.
 
 ## Quest book v4 plan (2026-10-05)
 

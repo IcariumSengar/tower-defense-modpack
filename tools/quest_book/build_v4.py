@@ -281,18 +281,37 @@ def t_structure(structure, **kw):
 
 PB = '{@pagebreak}'
 
+
+# Every TaCZ gun is one item, tacz:modern_kinetic_gun, told apart by its
+# GunId tag; every round is tacz:ammo with an AmmoId.
+TZ_GUN = 'tacz:modern_kinetic_gun'
+
+
+def tz_gun(gid):
+    return {'id': TZ_GUN, 'Count': 1, 'tag': {'GunId': 'tacz:' + gid}}
+
+
+def tz_ammo(aid):
+    return {'id': 'tacz:ammo', 'Count': 1, 'tag': {'AmmoId': 'tacz:' + aid}}
+
+
+def t_tz(stack):
+    """Has-item task matched on GunId/AmmoId alone: weak_nbt_match is a subset
+    match, so fire mode, rounds loaded and attachments don't matter."""
+    return t_item(stack, match_nbt=True, weak_nbt_match=True)
+
 # --------------------------------------------------------------------------
 # reward tables (choice kits)
 # --------------------------------------------------------------------------
 TABLES = [
     {'key': 'kit_dig_in', 'title': 'Pick a kit', 'icon': 'minecraft:chest', 'rewards': [
         {'item': {'id': 'securitycraft:bouncing_betty', 'Count': 4}},
-        {'item': {'id': 'simple_guns_reworked:pistol_ammo', 'Count': 32}},
+        {'item': {'id': 'tacz:ammo', 'Count': 32, 'tag': {'AmmoId': 'tacz:9mm'}}},
         {'item': {'id': 'minecraft:golden_carrot', 'Count': 4}},
     ]},
     {'key': 'kit_power', 'title': 'Pick a kit', 'icon': 'minecraft:chest', 'rewards': [
         {'item': {'id': 'securitycraft:sentry', 'Count': 1}},
-        {'item': {'id': 'simple_guns_reworked:rifle_ammo', 'Count': 16}},
+        {'item': {'id': 'tacz:ammo', 'Count': 16, 'tag': {'AmmoId': 'tacz:762x39'}}},
         {'item': {'id': 'minecraft:golden_carrot', 'Count': 8}},
     ]},
 ]
@@ -399,7 +418,7 @@ CAMPAIGN = [
          subtitle='Completes when a supply crate lands',
          desc=["After every fifth wave a plane drops a supply crate, and it lands well past the wall: 90 to 110 blocks from the pedestal. To reach it you'll need your amulet on the pedestal.",
                "Look up when it's announced, then follow the beam to where it came down. It's one crate for the whole team, so share it out."],
-         icon='minecraft:beacon', tasks=[t_custom('minecraft:beacon')], rewards=[item('simple_guns_reworked:pistol_ammo', 16), bag('u')]),
+         icon='minecraft:beacon', tasks=[t_custom('minecraft:beacon')], rewards=[item(tz_ammo('9mm'), 16), bag('u')]),
     dict(key='goldtrim', title='Gold Trim', x=24, y=-3, deps=['pastline'], shape='pentagon',
          subtitle='Open a gold-trimmed stash chest',
          desc=["The &6gold-trimmed&r chests and barrels out in the ruins are personal: each player gets their own roll from the same container, so a stash your friend emptied is still full for you. Once you've looted one it loses its trim for you.",
@@ -409,7 +428,7 @@ CAMPAIGN = [
          rewards=[item('minecraft:ender_pearl', 2)]),
     # Tier 1 (below)
     dict(key='stake', old='Cheap and Cheerful', x=16, y=2.5, deps=['openit'],
-         desc=["Anything that walks over a &eWooden Stake&r takes 1 damage a step, mobs and you alike, and horde mobs are slowed a little while they're on it. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack.",
+         desc=["Any mob that walks over a &eWooden Stake&r takes 1 damage a step, and horde mobs are slowed a little while they're on it. Your own stakes never hurt you. Cheap, fast, and worn down fast - a horde chews through a line of these in a hurry. The real cheapest defence in the pack.",
                PB, "Field notes: every placed stake has 20 points of wear, and each mob that hits it takes its own attack damage off that. Big hitters break them fastest. Rebuild the line between waves."],
          rewards=[item('simply_traps:stake', 6)]),
     dict(key='stakewall', title='Picket Line', x=16, y=4, deps=['stake'], shape='hexagon',
@@ -424,7 +443,7 @@ CAMPAIGN = [
                "Rebuild between waves - the big hitters chew through a line fastest."],
          icon='simply_traps:stake', tasks=[t_custom('simply_traps:stake')], rewards=[item('simply_traps:stake', 6)]),
     dict(key='spike', old='Better Than Nothing', x=18, y=2.5, deps=['stake'],
-         desc=["Anything that walks over a &eSpike Trap&r takes 4 damage a step, mobs and you alike. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them.",
+         desc=["Any mob that walks over a &eSpike Trap&r takes 4 damage a step; you walk through unhurt. Horde mobs caught in the spikes are also slowed hard, and it lingers for a few seconds after they step off, so a strip of spikes holds them in your turrets' fire for longer. Real iron cost, and it holds up longer than a Wooden Stake under repeated hits. Line the approach to the pedestal with them.",
                PB, "Field notes: a placed spike has 60 points of wear against a stake's 20. The slow lasts about 3 seconds after a mob steps off, so lay spikes inside your Sentry's or Tesla Coil's reach, not out on their own."],
          rewards=[item('simply_traps:spike_trap', 4)]),
     dict(key='lure', old='Dinner Bell', x=20, y=2.5, deps=['spike'], rewards=[item('kubejs:lure_block')]),
@@ -437,7 +456,7 @@ CAMPAIGN = [
     dict(key='sentry', old='Sentry', x=18.5, y=5.5, deps=['claymore'],
          subtitle='Shrapnel, a Dispenser, redstone, a Portable Radar, 4 iron, an iron block',
          desc=["Set it on a solid block and it shoots by itself: &e8 damage&r a bullet, two shots a second, out to &e20 blocks&r. No ammo, no power, no wiring.",
-               "It's already set to shoot hostile mobs only, whatever the placement message says. &cOnly the player who placed it can change its mode.&r",
+               "It only ever shoots hostile mobs, whatever the placement message says. Its mode is locked, so right-clicking it changes nothing.",
                "Unlocks: Trigger Happy, and with the fence and the I.M.S., No Turning Back.",
                PB, "Field notes: a Speed Module doubles its fire rate. Put spikes inside its reach - slowed mobs stay in its fire longer. Break the block under it and the Sentry goes with it."],
          rewards=[item('kubejs:shrapnel', 2)]),
@@ -500,11 +519,10 @@ CAMPAIGN = [
          icon='minecraft:netherite_sword', tasks=[t_custom('minecraft:netherite_sword')], rewards=[bag('l')]),
     # Tier 3 (below the right half)
     dict(key='gen', old='Wired Different', x=28, y=2.5, deps=['wave8'], rewards=[item('minecraft:copper_ingot', 4)]),
-    dict(key='plug', old='No Cables Needed', x=30, y=2.5, deps=['gen'],
-         desc=["A &eFlux Plug&r takes power in from whatever it touches and shares it over a named network, with no cable in between. The generator downstairs already has one, on the House Grid network."],
-         rewards=[item('minecraft:redstone', 8)]),
-    dict(key='point', title='Point of Use', x=32, y=2.5, deps=['plug'], shape='hexagon',
-         subtitle='Recipe in JEI (press R on it)',
+    # No Flux Plug quest: the generator's Plug is pre-built and Wired Different
+    # explains it (cut 2026-10-05).
+    dict(key='point', title='Point of Use', x=32, y=2.5, deps=['gen'], shape='hexagon',
+         subtitle='2 Flux Cores and a Redstone Block',
          desc=["A &eFlux Point&r puts the network's power back out. Set one next to a machine, right-click it and join House Grid, and the machine runs. Every machine needs its own Point."],
          icon='fluxnetworks:flux_point', tasks=[t_item('fluxnetworks:flux_point')],
          rewards=[item('minecraft:lapis_block')]),
@@ -519,10 +537,12 @@ CAMPAIGN = [
          icon='immersiveengineering:ingot_steel', tasks=[t_item('immersiveengineering:ingot_steel')],
          rewards=[item('minecraft:iron_ingot', 8)]),
     dict(key='gunturret', old='Point and Shoot', x=32, y=4, deps=['point'],
-         desc=["Auto-aims at anything hostile within 16 blocks. It needs Flux (a Flux Point next to it), a redstone signal (a lever or a redstone block) and real ammunition: load &eCasull Cartridges&r into its screen, 10 damage a shot, two shots a second. No rounds, no shots.",
+         desc=["Auto-aims at anything hostile within 16 blocks: 10 damage a shot, two shots a second. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block), but no ammo. Rounds you load into its screen are fired first.",
                "Built from a Revolver, not bought - and it eats a &eSentry&r for its targeting brain, so build one of those first if you haven't."],
-         rewards=[item('immersiveengineering:casull', 8)]),
-    dict(key='chemturret', old='Liquid Fire', x=34, y=4, deps=['point'], rewards=[item('minecraft:iron_ingot', 4)]),
+         rewards=[item('immersiveengineering:ingot_steel', 4)]),
+    dict(key='chemturret', old='Liquid Fire', x=34, y=4, deps=['point'],
+         desc=["Sprays burning creosote at anything hostile in range, and needs no fuel: an empty tank sprays creosote for free. Its pilot light is on when you place it; switch Ignite Fluid off in its screen for a cold spray. Fluid you pour in is sprayed first. It needs Flux (a Flux Point next to it) and a redstone signal (a lever or a redstone block) to run. Built from a Chemthrower, and it eats an &eElectrified Iron Fence&r for its targeting brain, so build one of those first if you haven't."],
+         rewards=[item('minecraft:iron_ingot', 4)]),
     # Refined Storage, one quest per part
     dict(key='rs', old='The Grid', title='Heart of the Network', x=36, y=2.5, deps=['tesla'],
          subtitle='4 Quartz Enriched Iron, an Advanced Processor, 2 silicon, a Machine Casing',
@@ -556,34 +576,34 @@ CAMPAIGN = [
          icon='immersiveengineering:tesla_coil', tasks=[t_custom('immersiveengineering:tesla_coil')], rewards=[item('minecraft:redstone', 8)]),
     dict(key='ft_gunturret', title='Overwatch', x=32, y=5.5, deps=['gunturret'], shape='diamond', optional=True,
          subtitle='25 wave mobs killed by Gun Turrets',
-         desc=["Twenty-five wave mobs killed by Gun Turrets. Keep them loaded: no Casull rounds, no shots."],
+         desc=["Twenty-five wave mobs killed by Gun Turrets. Put them where the horde has to walk into their sixteen-block reach."],
          icon='immersiveengineering:turret_gun', tasks=[t_custom('immersiveengineering:turret_gun')],
-         rewards=[item('immersiveengineering:casull', 16)]),
+         rewards=[item('immersiveengineering:ingot_steel', 8)]),
     dict(key='ft_omt', title='Fire Mission', x=40, y=7, deps=['grenade'], shape='diamond', optional=True,
          subtitle='25 wave mobs killed by Tier 4 turrets',
          desc=["Twenty-five wave mobs killed by Grenade or Rocket Turrets."],
          icon='omtreborn:grenade_turret', tasks=[t_custom('omtreborn:grenade_turret')],
-         rewards=[item('omtreborn:ammo_grenade', 8), item('omtreborn:ammo_rocket', 2)]),
+         rewards=[item('omtreborn:ferronite_ingot', 4)]),
     # Tier 4
     dict(key='ferro', title='Ferronite', x=36, y=5.5, deps=['gunturret', 'chemturret'], shape='hexagon',
          subtitle='2 Steel and a redstone',
          desc=["&eRaw Ferronite&r without the mining: 2 Steel and a redstone. Smelt it into Ferronite ingots for the Tier 4 turret parts. Nothing in Tier 4 needs the Nether or the End."],
          icon='omtreborn:raw_ferronite', tasks=[t_item('omtreborn:raw_ferronite')], rewards=[item('minecraft:redstone', 4)]),
     dict(key='base2', title='Foundations', x=38, y=5.5, deps=['ferro'], shape='hexagon', subtitle='Recipe in JEI',
-         desc=["Tier 4 turrets sit on a &eTurret Base&r, and the base tier has to match the head: a Grenade Turret needs a Tier 2 base or better, or the head pops off. Ammo goes in the base, and a Flux Point next to it powers it."],
+         desc=["Tier 4 turrets sit on a &eTurret Base&r, and the base tier has to match the head: a Grenade Turret needs a Tier 2 base or better, or the head pops off. A Flux Point next to the base powers it. No ammo: turrets run on power alone."],
          icon='omtreborn:turret_base_tier_2', tasks=[t_item('omtreborn:turret_base_tier_2')], rewards=[item('minecraft:redstone', 4)]),
     dict(key='grenade', old='Fragmentation', x=40, y=5.5, deps=['base2'],
          subtitle='Sensor, Chamber and Barrel Tier II, a Cauldron, 3 stone',
          desc=["Mount it on a Turret Base Tier 2 or higher and it lobs area-damage grenades at anything hostile from 4 to 18 blocks out. It can't hit what's hugging it, so keep spikes or a fence between the turret and the horde.",
-               "Ammo is cheap and renewable: a redstone, 3 iron nuggets and a gunpowder per Grenade Ammo. The Sensor, Chamber and Barrel need &eFerronite&r."],
-         rewards=[item('omtreborn:ammo_grenade', 8)]),
+               "It needs no ammo, just power. The Sensor, Chamber and Barrel need &eFerronite&r."],
+         rewards=[item('omtreborn:ferronite_ingot', 4)]),
     dict(key='base3', title='Heavy Footing', x=42, y=5.5, deps=['grenade'], shape='hexagon', subtitle='Recipe in JEI',
-         desc=["A Rocket Turret needs a &eTurret Base Tier 3&r or better under it. Same rules as before: ammo in the base, a Flux Point beside it."],
+         desc=["A Rocket Turret needs a &eTurret Base Tier 3&r or better under it. Same rule as before: a Flux Point beside it, and no ammo."],
          icon='omtreborn:turret_base_tier_3', tasks=[t_item('omtreborn:turret_base_tier_3')], rewards=[item('minecraft:redstone', 4)]),
     dict(key='rocket', old='Fire for Effect', x=44, y=5.5, deps=['base3'],
          subtitle='2 TNT, Sensor, Chamber and Barrel Tier III, a Ferronite Frame, 2 Cobbled Deepslate',
-         desc=["The elite pick: rockets with real area damage, out to 30 blocks. Mount it on a Turret Base Tier 3 or higher. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite), and every shot costs 5,000 FE, so give it a Flux Point of its own."],
-         rewards=[item('omtreborn:ammo_rocket', 4)]),
+         desc=["The elite pick: rockets with real area damage, out to 30 blocks. Mount it on a Turret Base Tier 3 or higher. Steep on Ferronite (a Sensor Tier III alone eats a full Block of Ferronite). It takes no ammo, but every shot costs 5,000 FE, so give it a Flux Point of its own."],
+         rewards=[item('fluxnetworks:flux_point')]),
 ]
 
 # --------------------------------------------------------------------------
@@ -639,11 +659,11 @@ TIPS = [
          icon='minecraft:player_head', tasks=[t_check()], rewards=[]),
     dict(key='tip_owner', title='Who Owns What', x=11.5, y=1.5, shape='circle', root=True,
          subtitle='SecurityCraft defences have one owner',
-         desc=["A Sentry, an I.M.S. or any other SecurityCraft defence belongs to the player who placed it: only they can change its mode, fit modules or break it. Decide between you who builds what."],
+         desc=["A Sentry, an I.M.S. or any other SecurityCraft defence belongs to the player who placed it: only they can fit modules, change its settings or break it. Decide between you who builds what."],
          icon='securitycraft:sentry', tasks=[t_check()], rewards=[]),
     dict(key='tip_blast', title='Friendly Fire', x=11.5, y=3.0, shape='circle', root=True,
-         subtitle='Your own explosions are safe',
-         desc=["Mines, Claymores, the I.M.S., your rockets and grenades never hurt a player or break a block, so you can fight inside your own minefield. Spikes and stakes are different: they bite you just like they bite the horde."],
+         subtitle='Your own traps and blasts are safe',
+         desc=["Mines, Claymores, the I.M.S., your rockets and grenades never hurt a player or break a block, and spikes and stakes never hurt a player, so you can fight inside your own minefield and trap line."],
          icon='securitycraft:claymore', tasks=[t_check()], rewards=[]),
     dict(key='tip_beam', title='Follow the Light', x=13.0, y=0.0, shape='circle', root=True,
          subtitle='A beam means loot worth the detour',
@@ -693,49 +713,93 @@ BOUNTIES = [
 ]
 
 # --------------------------------------------------------------------------
-# ARSENAL: ammo on the left, the guns it feeds to its right
+# ARSENAL (TaCZ): rounds on the left, the guns they feed to their right
 # --------------------------------------------------------------------------
-G = 'simple_guns_reworked:'
+# The recipes quoted in the ammo quests are tier3_loot_aligned_recipes.js's;
+# the gun numbers are the default gunpack's (damage per hit, before distance
+# falloff).
+def ars_ammo(key, title, aid, x, y, recipe, feeds, reward_n):
+    return dict(key=key, title=title, x=x, y=y, icon=tz_ammo(aid), tasks=[t_tz(tz_ammo(aid))],
+                subtitle='Crafting table, recipe in JEI',
+                desc=[f'{recipe} Feeds {feeds}.'], rewards=[item(tz_ammo(aid), reward_n)])
+
+
+def ars_gun(key, title, gid, aid, x, y, deps, desc, reward_n, subtitle=None, shape=None):
+    q = dict(key=key, title=title, x=x, y=y, deps=deps, icon=tz_gun(gid), tasks=[t_tz(tz_gun(gid))],
+             desc=desc, rewards=[item(tz_ammo(aid), reward_n)])
+    if subtitle:
+        q['subtitle'] = subtitle
+    if shape:
+        q['shape'] = shape
+    return q
+
+
+AIRDROP = 'Supply drops only'
 ARSENAL = [
-    # pistol ammo family (y=0)
-    dict(key='a_pammo', old='Pistol Ammo', x=0, y=0, rewards=[item(G + 'pistol_ammo', 8)]),
-    dict(key='a_pistol', old='Pistol', x=1.5, y=0, deps=['a_pammo'], rewards=[item(G + 'pistol_ammo', 16)]),
-    dict(key='a_revolver', old='Revolver', x=3, y=0, deps=['a_pistol'], rewards=[item(G + 'pistol_ammo', 16)]),
-    dict(key='a_smg', old='Submachine Gun', x=4.5, y=0, deps=['a_revolver'],
-         desc=["Full-auto off a 32-round Pistol Ammo magazine, and a quick reload. Press R to reload."],
-         rewards=[item(G + 'pistol_ammo', 16)]),
-    dict(key='a_tommy', old='Tommy Gun', x=6, y=0, deps=['a_smg'],
-         desc=["A 60-round Pistol Ammo drum, nearly twice the Submachine Gun's magazine, but it takes twice as long to reload."],
-         rewards=[item(G + 'pistol_ammo', 16)]),
-    # shotgun family (y=1.5)
-    dict(key='a_sammo', old='Shotgun Ammo', x=0, y=1.5, rewards=[item(G + 'shotgun_ammo', 8)]),
-    dict(key='a_shotgun', old='Shotgun', x=1.5, y=1.5, deps=['a_sammo'], rewards=[item(G + 'shotgun_ammo', 16)]),
-    dict(key='a_double', old='Double-Barrel Shotgun', x=3, y=1.5, deps=['a_shotgun'], rewards=[item(G + 'shotgun_ammo', 16)]),
-    dict(key='a_auto', old='Automatic Shotgun', x=4.5, y=1.5, deps=['a_double'], rewards=[item(G + 'shotgun_ammo', 16)]),
-    # rifle family (y=3)
-    dict(key='a_rammo', old='Rifle Ammo', x=0, y=3, rewards=[item(G + 'rifle_ammo', 8)]),
-    dict(key='a_dmr', old='DMR', x=1.5, y=3, deps=['a_rammo'], rewards=[item(G + 'rifle_ammo', 16)]),
-    dict(key='a_sniper', old='Sniper', x=3, y=3, deps=['a_dmr'], rewards=[item(G + 'rifle_ammo', 16)]),
-    dict(key='a_snammo', old='Sniper Ammo', x=0, y=4.5, rewards=[item(G + 'sniper_ammo', 5)]),
-    dict(key='a_heavy', old='Heavy Sniper', x=1.5, y=4.5, deps=['a_snammo'], rewards=[item(G + 'sniper_ammo', 10)]),
-    # heavy and special (y=6)
-    dict(key='a_rocket', old='Rocket', x=0, y=6, rewards=[item(G + 'rocket', 2)]),
-    dict(key='a_bazooka', old='Bazooka', x=1.5, y=6, deps=['a_rocket'], rewards=[item(G + 'rocket', 2)]),
-    dict(key='a_fuel', old='Fuel Tank', x=3, y=6, rewards=[item(G + 'fuel_tank')]),
-    dict(key='a_flamer', old='Flame Thrower', x=4.5, y=6, deps=['a_fuel'], rewards=[item(G + 'fuel_tank')]),
-    dict(key='a_grenade', old='Grenade', x=6, y=6, rewards=[item(G + 'grenade', 4)]),
-    # airdrop and loot only (pentagons, y=7.5)
-    dict(key='a_dust', old='Energized Dust', x=0, y=7.5, shape='pentagon', subtitle='Airdrop only, in practice',
-         desc=["The Laser Gun's ammo, burned one at a time with no reload. JEI shows a recipe, but it needs glowstone, which turns up nowhere here - in practice it comes in the airdrop crate with the Laser Gun."],
-         rewards=[item(G + 'energized_dust', 8)]),
-    dict(key='a_laser', old='Laser Gun', x=1.5, y=7.5, deps=['a_dust'], shape='pentagon', subtitle='Airdrop only',
-         rewards=[item(G + 'energized_dust', 8)]),
-    dict(key='a_potato', old='Charged Potato', x=3, y=7.5, shape='pentagon', subtitle='Needs blaze powder from far stashes',
-         rewards=[item(G + 'charged_potato', 4)]),
-    dict(key='a_cannon', old='Potato Cannon', x=4.5, y=7.5, deps=['a_potato'], shape='pentagon', subtitle='Airdrop only',
-         rewards=[item(G + 'charged_potato', 4)]),
-    dict(key='a_minigun', old='Minigun', x=6, y=7.5, shape='pentagon', subtitle='Airdrop or Legendary bag only',
+    dict(key='a_basics', title='Gun Basics', x=0, y=-1.5, shape='circle', icon=tz_gun('glock_17'), tasks=[t_check()],
+         desc=["Every gun works the same way. Left-click fires, right-click aims down the sights, &eR&r reloads from the matching rounds in your inventory, and &eX&r switches between the fire modes that gun has. &eV&r is a melee bash, &eH&r inspects it.",
+               "Nobody here makes guns: they turn up in supply drops, stash chests and loot bags. Rounds you can make - each kind at a crafting table, from a copper ingot, gunpowder and nuggets."],
          rewards=[]),
+    dict(key='a_attach', title='Kitted Out', x=1.5, y=-1.5, deps=['a_basics'], shape='circle',
+         icon={'id': 'tacz:attachment', 'Count': 1, 'tag': {'AttachmentId': 'tacz:sight_t2'}},
+         tasks=[t_item('tacz:attachment', match_nbt=False)],
+         desc=["Sights, scopes, grips, longer magazines and special rounds come in armory crates and supply drops. Hold the gun and press &eI&r to fit them; each gun takes only the parts that suit it.",
+               "Hollow-point rounds hit unarmoured targets harder. Incendiary rounds set the target alight."],
+         rewards=[]),
+    # pistol calibers and shotguns (left block)
+    ars_ammo('a_9mm', '9mm Rounds', '9mm', 0, 0, '10 rounds from a copper ingot, a gunpowder and 2 iron nuggets.', 'the Glock 17 and the HK-MP5A5', 8),
+    ars_gun('a_glock', 'Glock 17', 'glock_17', '9mm', 1.5, 0, ['a_9mm'],
+            ["A 17-round 9mm pistol, one shot per click: 6 damage a hit. The gun you're most likely to find first."], 16),
+    ars_gun('a_mp5', 'HK-MP5A5', 'hk_mp5a5', '9mm', 3, 0, ['a_glock'],
+            ["A 9mm submachine gun with a 30-round magazine: full-auto, burst or single shots. Fast and light."], 16),
+    ars_ammo('a_45', '.45 ACP Rounds', '45acp', 0, 1.5, '10 rounds from a copper ingot, a gunpowder and 3 iron nuggets.', 'the UMP45', 8),
+    ars_gun('a_ump', 'UMP45', 'ump45', '45acp', 1.5, 1.5, ['a_45'],
+            ["A .45 submachine gun with a 25-round magazine, full-auto or burst: 9 damage a hit, half again the MP5's, at a slightly slower rate."], 16),
+    ars_ammo('a_357', '.357 Magnum Rounds', '357mag', 0, 3, '6 rounds from a copper ingot, a gunpowder, 2 iron nuggets and a gold nugget.', 'the .357 Rhino and the Golden Deagle', 6),
+    ars_gun('a_rhino', '.357 Rhino', 'rhino357', '357mag', 1.5, 3, ['a_357'],
+            ['A 6-round revolver: slow, but 10.5 damage a hit, close to two Glock rounds.'], 12),
+    ars_gun('a_deagle', 'Golden Deagle', 'deagle_golden', '357mag', 3, 3, ['a_rhino'],
+            ['A gold-plated .357 pistol: 9 rounds of 12 damage, and it fires faster than the Rhino.'], 12,
+            subtitle=AIRDROP, shape='pentagon'),
+    ars_ammo('a_12g', '12 Gauge Shells', '12g', 0, 4.5, '6 shells from a copper ingot, a gunpowder and a Shrapnel.', 'the M870, the DB-2 Durin and the AA12', 6),
+    ars_gun('a_m870', 'M870', 'm870', '12g', 1.5, 4.5, ['a_12g'],
+            ['A pump shotgun, 5 shells. Each shell throws 9 pellets: brutal up close, wasted at range.'], 12),
+    ars_gun('a_db', 'DB-2 Durin', 'db_short', '12g', 3, 4.5, ['a_m870'],
+            ['A short double-barrel: 2 shells of 16 pellets each, then a reload.'], 12),
+    ars_gun('a_aa12', 'AA12', 'aa12', '12g', 4.5, 4.5, ['a_db'],
+            ['A full-auto shotgun, 8 shells of 10 pellets each. It empties fast; carry spares.'], 12),
+    # rifles and heavy guns (right block)
+    ars_ammo('a_762', '7.62x39mm Rounds', '762x39', 7.5, 0, '8 rounds from a copper ingot, 2 gunpowder and 2 iron nuggets.', 'the SKS Tactical', 8),
+    ars_gun('a_sks', 'SKS Tactical', 'sks_tactical', '762x39', 9, 0, ['a_762'],
+            ['A 10-round semi-automatic rifle: 11 damage a hit, nearly twice the Glock, and it reaches much further.'], 16),
+    ars_ammo('a_792', '8mm Mauser Rounds', '792x57', 7.5, 1.5, '5 rounds from a copper ingot, 2 gunpowder and 2 gold nuggets.', 'the Kar98k', 5),
+    ars_gun('a_kar', 'Kar98k', 'kar98', '792x57', 9, 1.5, ['a_792'],
+            ['A bolt-action rifle, 4 rounds. Slow to work, but each hit does 26 damage.'], 10),
+    ars_ammo('a_50', '.50 BMG Rounds', '50bmg', 7.5, 3, '4 rounds from 2 copper ingots, 3 gunpowder and a diamond.', 'the M107', 4),
+    ars_gun('a_m107', 'M107', 'm107', '50bmg', 9, 3, ['a_50'],
+            ['A .50 rifle, 10 rounds of 55 damage, and each round goes on through up to five targets. It weighs 10 kg: holding it slows you down.'], 8,
+            subtitle=AIRDROP, shape='pentagon'),
+    ars_ammo('a_556', '5.56x45mm Rounds', '556x45', 7.5, 4.5, '10 rounds from a copper ingot, 2 gunpowder and 3 iron nuggets.', 'the M249', 10),
+    ars_gun('a_m249', 'M249', 'm249', '556x45', 9, 4.5, ['a_556'],
+            ['A belt-fed machine gun: 75 rounds on full-auto, 7.5 damage a hit. Heavy to hold.'], 30,
+            subtitle=AIRDROP, shape='pentagon'),
+    ars_ammo('a_308', '.308 Rounds', '308', 7.5, 6, '10 rounds from a copper ingot, 2 gunpowder, 2 iron nuggets and a gold nugget.', 'the M134 Minigun', 10),
+    ars_gun('a_minigun', 'M134 Minigun', 'minigun', '308', 9, 6, ['a_308'],
+            ['It spins up and fires 1,200 rounds a minute, fed straight from the .308 in your inventory: no magazine, no reload. At 15 kg it is the heaviest thing you can hold.'], 48,
+            subtitle='Supply drops or a Legendary bag only', shape='pentagon'),
+    # launchers and bombs (bottom of the left block)
+    ars_ammo('a_rocket', 'RPG-7 Rockets', 'rpg_rocket', 0, 6, 'One rocket from a TNT and an iron ingot.', 'the RPG-7', 1),
+    ars_gun('a_rpg', 'RPG-7', 'rpg7', 'rpg_rocket', 1.5, 6, ['a_rocket'],
+            ['One rocket per reload, and a blast that hits everything within 3 blocks. Like every explosion here it breaks no blocks, and yours never hurt a player.'], 2,
+            subtitle=AIRDROP, shape='pentagon'),
+    ars_ammo('a_40mm', '40mm Grenades', '40mm', 3, 6, '2 grenades from a TNT and a copper ingot.', 'the M320', 2),
+    ars_gun('a_m320', 'M320', 'm320', '40mm', 4.5, 6, ['a_40mm'],
+            ['A single-shot grenade launcher: a weaker blast than the RPG-7, but twice as wide.'], 4,
+            subtitle=AIRDROP, shape='pentagon'),
+    dict(key='a_bomb', title='Bombs', x=0, y=7.5, icon='supplementaries:bomb', tasks=[t_item('supplementaries:bomb')],
+         subtitle='Armory crates, stashes and supply drops',
+         desc=['Right-click to throw one; it bursts a moment later. Your bombs, like all your explosions, never hurt a player or break a block.'],
+         rewards=[item('supplementaries:bomb', 2)]),
 ]
 
 
@@ -918,7 +982,7 @@ def main():
     bq, bq_ids = build_chapter('bounties', BOUNTIES)
     write_chapter('bounties', bq, autofocus_id=bq_ids['b25'])
     ars, _ = build_chapter('arsenal', ARSENAL)
-    write_chapter('arsenal', ars, subtitle=["Simple Guns: reworked - each ammo, and the guns it feeds"])
+    write_chapter('arsenal', ars, icon=tz_gun('glock_17'), subtitle=["Every round, and the guns it feeds"])
     tdir = os.path.join(QDIR, 'reward_tables')
     os.makedirs(tdir, exist_ok=True)
     for key, t in tables:

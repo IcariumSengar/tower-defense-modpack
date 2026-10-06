@@ -7,7 +7,36 @@
 // Gun Turret, the Electrified Iron Fence for the Chemthrower Turret. The
 // other slots (s, b, g, t, e) keep their stock items. A placed turret takes
 // power from a Flux Point next to it, like any other machine.
+//
+// The two turret parts that need treated wood take plain wood instead: the
+// Turntable any planks, the Wooden Grip (in the Revolver and the Chemthrower)
+// vanilla sticks. Their patterns are stock.
+//
+// Neither turret needs ammo: the pack's IE jar is patched so an empty Gun
+// Turret fires free Casull rounds and an empty Chemthrower Turret sprays free
+// creosote (tools/turret_free_ammo/).
 ServerEvents.recipes((event) => {
+  event.remove({ output: 'immersiveengineering:turntable' })
+  event.shaped('immersiveengineering:turntable', [
+    'iwi',
+    'rcr',
+  ], {
+    i: '#forge:ingots/iron',
+    w: '#minecraft:planks',
+    r: '#forge:dusts/redstone',
+    c: 'immersiveengineering:coil_lv',
+  })
+
+  event.remove({ output: 'immersiveengineering:wooden_grip' })
+  event.shaped('immersiveengineering:wooden_grip', [
+    'ss',
+    'cs',
+    'ss',
+  ], {
+    s: 'minecraft:stick',
+    c: '#forge:nuggets/copper',
+  })
+
   event.remove({ output: 'immersiveengineering:turret_gun' })
   event.shaped('immersiveengineering:turret_gun', [
     ' s ',

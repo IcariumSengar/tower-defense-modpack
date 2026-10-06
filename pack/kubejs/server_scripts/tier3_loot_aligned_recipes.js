@@ -55,6 +55,18 @@ ServerEvents.recipes((event) => {
     e: 'minecraft:ender_pearl',
   }).id('kubejs:loot_aligned/flux_core')
 
+  // Flux Point: 2 Flux Cores in place of the stock 4. Every machine needs its
+  // own Point, and at 4 Cores each one cost 4 gold blocks.
+  event.remove({ id: 'fluxnetworks:fluxpoint' }) // the stock recipe; its wipe recipe stays
+  event.shaped('fluxnetworks:flux_point', [
+    'c',
+    'b',
+    'c',
+  ], {
+    c: 'fluxnetworks:flux_core',
+    b: 'minecraft:redstone_block',
+  }).id('kubejs:loot_aligned/flux_point')
+
   // Flux Dust otherwise only forms in-world (redstone dropped on obsidian that
   // sits on bedrock), so this adds a crafting route.
   event.shapeless('4x fluxnetworks:flux_dust', [
@@ -90,8 +102,9 @@ ServerEvents.recipes((event) => {
     c: 'minecraft:coal',
   }).id('kubejs:loot_aligned/treated_wood')
 
-  // Casull rounds (Gun Turret ammo) are otherwise an Engineer's Workbench
-  // blueprint that needs lead nuggets. This crafting route uses iron nuggets.
+  // Casull rounds (optional Gun Turret ammo: an empty turret fires free ones)
+  // are otherwise an Engineer's Workbench blueprint that needs lead nuggets.
+  // This crafting route uses iron nuggets.
   event.shapeless('4x immersiveengineering:casull', [
     'immersiveengineering:empty_casing', 'immersiveengineering:empty_casing',
     'immersiveengineering:empty_casing', 'immersiveengineering:empty_casing',
@@ -133,24 +146,43 @@ ServerEvents.recipes((event) => {
     'minecraft:lapis_lazuli',
   ]).id('kubejs:loot_aligned/construction_core')
 
-  // --- Simple Guns: reworked ---
-  // Fuel Tank (Flame Thrower ammo): gunpowder and coal replace the stock blaze
-  // powder, magma cream and water bucket.
-  event.remove({ output: 'simple_guns_reworked:fuel_tank' })
-  event.shapeless('simple_guns_reworked:fuel_tank', [
-    'simple_guns_reworked:empty_fuel_tank',
-    'minecraft:gunpowder', 'minecraft:gunpowder',
-    'minecraft:coal', 'minecraft:coal',
-  ]).id('kubejs:loot_aligned/fuel_tank')
+  // --- TaCZ (Timeless and Classics Zero) ---
+  // Guns and attachments come only from loot, so every Gun Smith Table recipe
+  // goes (guns, ammo, attachments, a painting), with the three workbenches
+  // and TaCZ's flint-and-sugar gunpowder. Ammo is crafted at a crafting table
+  // instead: a copper ingot for the cases, gunpowder, and nuggets for the
+  // bullets, more of each for bigger rounds. Shotgun shells take Shrapnel, a
+  // loot-bag drop. Each recipe's ingredients differ from every other's, so
+  // none shadows another. Ammo is one item, tacz:ammo; AmmoId picks the round.
+  if (Platform.isLoaded('tacz')) {
+    event.remove({ type: 'tacz:gun_smith_table_crafting' })
+    event.remove({ id: 'tacz:gun_smith_table' })
+    event.remove({ id: 'tacz:ammo_workbench' })
+    event.remove({ id: 'tacz:attachment_workbench' })
+    event.remove({ id: 'tacz:gunpowder' })
 
-  // Shotgun ammo (r_3, the only Simple Guns recipe with gravel) takes Shrapnel,
-  // a loot-bag drop, in place of gravel.
-  event.replaceInput({ id: 'simple_guns_reworked:r_3' }, 'minecraft:gravel', 'kubejs:shrapnel')
+    var cu = 'minecraft:copper_ingot'
+    var gp = 'minecraft:gunpowder'
+    var fe = 'minecraft:iron_nugget'
+    var au = 'minecraft:gold_nugget'
+    var ammo = (id, count, ingredients) => {
+      event.shapeless(Item.of('tacz:ammo', count, `{AmmoId:"tacz:${id}"}`), ingredients)
+        .id(`kubejs:loot_aligned/ammo_${id}`)
+    }
+    ammo('9mm', 10, [cu, gp, fe, fe])
+    ammo('45acp', 10, [cu, gp, fe, fe, fe])
+    ammo('357mag', 6, [cu, gp, fe, fe, au])
+    ammo('12g', 6, [cu, gp, 'kubejs:shrapnel'])
+    ammo('762x39', 8, [cu, gp, gp, fe, fe])
+    ammo('556x45', 10, [cu, gp, gp, fe, fe, fe])
+    ammo('308', 10, [cu, gp, gp, fe, fe, au])
+    ammo('792x57', 5, [cu, gp, gp, au, au])
+    ammo('50bmg', 4, [cu, cu, gp, gp, gp, 'minecraft:diamond'])
+    ammo('rpg_rocket', 1, ['minecraft:tnt', 'minecraft:iron_ingot'])
+    ammo('40mm', 2, ['minecraft:tnt', cu])
+  }
 
   // --- Dead ends ---
-  // The Assault Rifle cannot fire: Simple Guns' firing code has no branch for
-  // it. r_10 is its only recipe, and no recipe takes it as an input.
-  event.remove({ id: 'simple_guns_reworked:r_10' })
   // IE's Generator Block and Radiator only build the Diesel Generator and the
   // Excavator. The pack uses neither (Tier 3 power is the Culinary Generator),
   // and no recipe takes either block.

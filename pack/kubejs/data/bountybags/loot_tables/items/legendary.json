@@ -6,7 +6,7 @@
       "entries": [
         { "type": "minecraft:item", "name": "minecraft:nether_star", "weight": 25 },
         { "type": "minecraft:item", "name": "minecraft:totem_of_undying", "weight": 8 },
-        { "type": "minecraft:item", "name": "simple_guns_reworked:minguguuggn", "weight": 10 },
+        { "type": "minecraft:loot_table", "name": "kubejs:chests/airdrop/minigun", "weight": 10 },
         { "type": "minecraft:item", "name": "omtreborn:grenade_turret", "weight": 8 },
         { "type": "minecraft:item", "name": "omtreborn:rocket_turret", "weight": 6 },
         { "type": "minecraft:item", "name": "immersiveengineering:tesla_coil", "weight": 6 },

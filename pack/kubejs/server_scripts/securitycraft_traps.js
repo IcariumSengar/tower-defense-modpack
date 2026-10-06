@@ -1,7 +1,8 @@
 // SecurityCraft trap recipes. The stock Sentry, I.M.S. and Electrified Iron
 // Fence recipes need Reinforced parts from the Universal Block Reinforcer,
 // which is uncraftable here, so they use plain vanilla parts instead. The
-// Trophy System and Cage Trap are cut from the pack. Quest subtitles in
+// Trophy System, Cage Trap and Sentry Remote Access Tool are cut from the
+// pack. Quest subtitles in
 // campaign.snbt list these ingredients; keep them in step.
 ServerEvents.recipes((event) => {
   // Sentry: plain parts for the Reinforced ones, an ingot at each end of the
@@ -37,6 +38,10 @@ ServerEvents.recipes((event) => {
   event.remove({ output: 'securitycraft:trophy_system' })
 
   event.remove({ output: 'securitycraft:cage_trap' })
+
+  // Sentry Remote Access Tool: no recipe. It only sets Sentry modes remotely,
+  // and the Sentry is locked to hostiles-only (sentry_default_mode.js).
+  event.remove({ output: 'securitycraft:remote_access_sentry' })
 
   // Electrified Iron Fence: a plain oak fence in place of the Reinforced one.
   event.remove({ output: 'securitycraft:electrified_iron_fence' })

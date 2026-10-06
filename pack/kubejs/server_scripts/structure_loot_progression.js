@@ -61,7 +61,10 @@ var HIGH_TIER_POOL = [
 ]
 
 // PRIZE: one PRIZE_CHANCE roll per Lootr open at any distance, for a gun or a
-// treasure item. Golden carrots heal the pedestal (pedestal_health.js).
+// treasure item. Golden carrots heal the pedestal (pedestal_health.js). Every
+// TaCZ gun is the one item tacz:modern_kinetic_gun; its nbt picks the gun and
+// a fire mode it has.
+var PRIZE_GUN = 'tacz:modern_kinetic_gun'
 var PRIZE_POOL = [
   { item: 'minecraft:diamond', weight: 14, min: 1, max: 2 },
   { item: 'minecraft:ender_pearl', weight: 12, min: 1, max: 3 },
@@ -69,14 +72,14 @@ var PRIZE_POOL = [
   { item: 'minecraft:experience_bottle', weight: 10, min: 4, max: 8 },
   { item: 'minecraft:golden_carrot', weight: 6, min: 2, max: 4 },
   { item: 'minecraft:emerald', weight: 6, min: 2, max: 4 },
-  { item: 'simple_guns_reworked:pistol', weight: 8, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:revolver', weight: 6, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:shotgun', weight: 6, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:double_barrel_shotgun', weight: 4, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:submachine_gun', weight: 4, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:dmr', weight: 2, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:sniper', weight: 2, min: 1, max: 1 },
-  { item: 'simple_guns_reworked:grenade', weight: 6, min: 2, max: 4 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:glock_17",GunFireMode:"SEMI"}', weight: 8, min: 1, max: 1 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:rhino357",GunFireMode:"SEMI"}', weight: 6, min: 1, max: 1 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:m870",GunFireMode:"SEMI"}', weight: 6, min: 1, max: 1 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:db_short",GunFireMode:"SEMI"}', weight: 4, min: 1, max: 1 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:hk_mp5a5",GunFireMode:"AUTO"}', weight: 4, min: 1, max: 1 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:sks_tactical",GunFireMode:"SEMI"}', weight: 2, min: 1, max: 1 },
+  { item: PRIZE_GUN, nbt: '{GunId:"tacz:kar98",GunFireMode:"SEMI"}', weight: 2, min: 1, max: 1 },
+  { item: 'supplementaries:bomb', weight: 6, min: 2, max: 4 },
 ]
 
 // Each Lootr open gets one tier roll plus this chance of a second.
@@ -209,7 +212,7 @@ LootJS.modifiers((event) => {
     }
     if (Math.random() < PRIZE_CHANCE) {
       var prize = weightedRoll(PRIZE_POOL)
-      context.addLoot(Item.of(prize.item, randomCount(prize)))
+      context.addLoot(prize.nbt ? Item.of(prize.item, randomCount(prize), prize.nbt) : Item.of(prize.item, randomCount(prize)))
     }
   })
 })
